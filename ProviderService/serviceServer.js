@@ -8,9 +8,9 @@ const port = process.env.BOOKS_API_PORT || 8084;
 const dbConfig = require('./config/database');
 const {databaseConnect} = require('./db')
 
-const customerRoutes = require('./routes/customer');
+const serviceRoutes = require('./routes/service');
  
-app.use('/api/v1', customerRoutes);
+app.use('/api/v1', serviceRoutes  );
 
 
 //Database connection

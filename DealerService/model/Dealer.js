@@ -7,7 +7,7 @@ const dealarSchema = new mongoose.Schema({
       required: true,
     },
     street: {
-      type: String,
+      type: String, 
       required: true,
     },
     city: {

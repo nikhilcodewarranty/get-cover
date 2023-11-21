@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const priceCategory = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+});
+
 const priceSchema = new mongoose.Schema({
     name: {
       type: String,
@@ -26,9 +33,11 @@ const priceSchema = new mongoose.Schema({
       required: true,
     },   
     category: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref:'PriceCategory',
       required: true,
     },
-  });
+  }); 
 
 module.exports = mongoose.model('PriceBook', priceSchema);
+module.exports = mongoose.model('PriceCategory', priceCategory);

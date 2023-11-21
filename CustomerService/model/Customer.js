@@ -1,10 +1,27 @@
 const mongoose = require('mongoose');
-
-
-
 // Email, Phone, First Name, Last Name, Password
 const customerSchema = new mongoose.Schema({
-  Name: {
+  username: {
+    type: String,
+    required: true,
+  },
+  email:{
+    type: String,
+    required: true,
+  },
+  phone:{
+    type: String,
+    required: true,
+  },
+  first_name:{
+    type: String,
+    required: true,
+  },
+  last_name:{
+    type: String,
+    required: true,
+  },
+  password:{
     type: String,
     required: true,
   },
@@ -29,11 +46,13 @@ const customerSchema = new mongoose.Schema({
     required: true,
   },
   Dealer_id: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'Dealer',
     required: true,
   },
   Service_provider: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref:'ServiceProvider',
     required: true,
   },
   Token: {

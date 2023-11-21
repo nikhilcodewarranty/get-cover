@@ -1,4 +1,5 @@
 const {Users}=require('../model/User');
+const {Roles}=require('../model/Role');
 exports.getAllUsers = async (req, res) => {
     try {
       const users = await Users.find();
