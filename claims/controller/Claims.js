@@ -1,5 +1,7 @@
 
 const {Claims}=require('../model/Claims');
+const {Claimes_Part}=require('../model/Claimes_Part');
+const {Claims_Status}=require('../model/Claims_Status');
 exports.getAllClaims = async (req, res) => {
     try {
       const claims = await Claims.find();
