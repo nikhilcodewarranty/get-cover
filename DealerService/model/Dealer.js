@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 
+
 const dealarSchema = new mongoose.Schema({
     name: {
       type: String,
