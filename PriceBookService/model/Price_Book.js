@@ -22,7 +22,7 @@ const priceSchema = new mongoose.Schema({
       required: true,
     },
     admin_fee: {
-      type: Number,
+      type: Number, 
       required: true,
     },   
     category: {
