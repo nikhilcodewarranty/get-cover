@@ -25,10 +25,7 @@ const priceSchema = new mongoose.Schema({
       type: Number,
       required: true,
     },   
-    category: {
-      type: String,
-      required: true,
-    },
+    category: {type: mongoose.Schema.Types.ObjectId, ref: 'User'}
   });
 
 module.exports = mongoose.model('PriceBook', priceSchema);

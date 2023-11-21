@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+
+
+// Email, Phone, First Name, Last Name, Password
 const customerSchema = new mongoose.Schema({
   Name: {
     type: String,

@@ -1,4 +1,8 @@
+
+const { ObjectId } = require('mongodb');
 const mongoose = require('mongoose');
+
+
 
 const usersSchema = new mongoose.Schema({
     first_name: {
@@ -18,7 +22,7 @@ const usersSchema = new mongoose.Schema({
       required: true,
     },
     role_id: {
-      type: String,
+      type: ObjectId,
       required: true,
     },
     email: {
