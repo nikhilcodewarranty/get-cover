@@ -5,7 +5,7 @@ module.exports = class claimService {
     try {
       const allClaims = await claims.find();
       return allClaims;
-    } catch (error) {
+    } catch (error) { 
       console.log(`Could not fetch claims ${error}`);
     }
   }
