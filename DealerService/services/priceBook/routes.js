@@ -1,8 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const priceController = require('./controller');
+const priceController = require("./controller");
 
-router.get('/', priceController.getAllUsers);
-//router.post('/', priceController.createUser);
+router.get("/", priceController.getAllUsers);
 
 module.exports = router;

@@ -1,10 +1,10 @@
-const {PRICES}=require('../model/Price_Book');
+const { Prices } = require("../model/priceBook");
 
 exports.getAllPriceBook = async (req, res) => {
-    try {
-      const users = await PRICES.find();
-      res.json(users); 
-    } catch (error) {
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
+  try {
+    const users = await Prices.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};

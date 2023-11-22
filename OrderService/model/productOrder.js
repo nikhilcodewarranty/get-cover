@@ -1,29 +1,28 @@
-const mongoose = require('mongoose');
-// Email, Phone, First Name, Last Name, Password
-const ProductOrderSchema = new mongoose.Schema({
-  order_id: {
+const mongoose = require("mongoose");
+const productOrderSchema = new mongoose.Schema({
+  orderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Orders',
+    ref: "orders",
     required: true,
   },
-  dealer_book_id: {
+  dealerBookId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Dealer_Price',
+    ref: "dealerPrice",
     required: true,
   },
-  cost_per_unit: {
+  costPerUnit: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Dealer_Price',
+    ref: "dealerPrice",
     required: true,
   },
-  quantity:{
+  quantity: {
     type: Number,
     required: true,
   },
-  total:{
+  total: {
     type: Number,
     required: true,
   },
 });
 
-module.exports = mongoose.model('Product_Order', ProductOrderSchema);
+module.exports = mongoose.model("productOrder", productOrderSchema);

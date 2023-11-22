@@ -1,76 +1,75 @@
-const mongoose = require('mongoose');
-// Email, Phone, First Name, Last Name, Password
+const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema({
-  dealer_id: {
+  dealerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Dealer',
+    ref: "dealer",
     required: true,
   },
-  serviceprov_id: {
+  serviceprovId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'ServiceProvider',
+    ref: "serviceProvider",
     required: true,
   },
-  customer_id: {
+  customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Customer',
+    ref: "customer",
     required: true,
   },
-  order_amount:{
+  orderAmount: {
     type: Number,
     required: true,
   },
-  payment_method:{
+  paymentMethod: {
     type: String,
     required: true,
   },
-  payment_status:{
+  paymentStatus: {
     type: String,
     required: true,
   },
-  paid_amount:{
+  paidAmount: {
     type: Number,
     required: true,
   },
-  due_amount:{
+  dueAmount: {
     type: Number,
     required: true,
   },
-  order_date: {
+  orderDate: {
     type: Date,
-    default:Date.now,
+    default: Date.now,
     required: true,
   },
-  created_by: {
+  createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'Users',
+    ref: "users",
     required: true,
   },
-  vender_order: {
+  venderOrder: {
     type: String,
     required: true,
   },
-  coverage_start_date: {
+  coverageStartDate: {
     type: Date,
     required: true,
   },
-  wait_period_bd: {
+  waitPeriodBd: {
     type: Number,
     required: true,
   },
-  wait_period_adh: {
+  waitPeriodAdh: {
     type: Number,
-    ref:'Dealer',
+    ref: "dealer",
     required: true,
   },
   store: {
-    type:String,
+    type: String,
     required: true,
   },
-  service_coverage: {
+  serviceCoverage: {
     type: String,
     required: true,
   },
 });
 
-module.exports = mongoose.model('Orders', orderSchema);
+module.exports = mongoose.model("orders", orderSchema);

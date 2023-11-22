@@ -1,42 +1,42 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const customerSchema = new mongoose.Schema({
-  Name: {
+  name: {
     type: String,
     required: true,
   },
-  Street: {
+  street: {
     type: String,
     required: true,
   },
-  City: {
+  city: {
     type: String,
     required: true,
   },
-  Zip: {
+  zip: {
     type: String,
     required: true,
   },
-  State: {
+  state: {
     type: String,
     required: true,
   },
-  Country: {
+  country: {
     type: String,
     required: true,
   },
-  Dealer_id: {
+  dealerId: {
     type: String,
     required: true,
   },
-  Service_provider: {
+  serviceProvider: {
     type: String,
     required: true,
   },
-  Token: {
+  token: {
     type: String,
     required: true,
   },
 });
 
-module.exports = mongoose.model('Customer', customerSchema);
+module.exports = mongoose.model("customer", customerSchema);

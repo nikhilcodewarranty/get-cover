@@ -1,7 +1,7 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 exports.databaseConnect = async (mongouri) => {
-  console.log(mongouri)
+  console.log(mongouri);
   try {
     await mongoose.connect(mongouri);
     console.log("database connection connected");
