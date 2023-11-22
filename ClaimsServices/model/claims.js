@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const claimsSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'contracts',
+    ref: "contracts",
     required: true,
   },
   claimsStatus: {
@@ -13,23 +13,23 @@ const claimsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  bdAdh:{
+  bdAdh: {
     type: String,
     required: true,
   },
-  diagnosis:{
+  diagnosis: {
     type: String,
     required: true,
   },
-  receiptImage:{
+  receiptImage: {
     type: String,
     required: true,
   },
-  shippingCarrier:{
+  shippingCarrier: {
     type: String,
     required: true,
   },
-  shippingLabel:{
+  shippingLabel: {
     type: String,
     required: true,
   },
@@ -49,12 +49,10 @@ const claimsSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-
-
   totalAmount: {
-    type:Number,
+    type: Number,
     required: true,
   },
 });
 
-module.exports = mongoose.model('claims', claimsSchema);
+module.exports = mongoose.model("claims", claimsSchema);

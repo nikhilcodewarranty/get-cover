@@ -1,7 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const claimsController = require('../controller/claims');
+const claimsController = require("../controller/claims");
 
-router.get('/claims', claimsController.getAllClaims);
+router.get("/claims", claimsController.getAllClaims);
 
 module.exports = router;

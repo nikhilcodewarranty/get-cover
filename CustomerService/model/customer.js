@@ -1,26 +1,26 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   username: {
     type: String,
     required: true,
   },
-  email:{
+  email: {
     type: String,
     required: true,
   },
-  phone:{
+  phone: {
     type: String,
     required: true,
   },
-  firstName:{
+  firstName: {
     type: String,
     required: true,
   },
-  lastName:{
+  lastName: {
     type: String,
     required: true,
   },
-  password:{
+  password: {
     type: String,
     required: true,
   },
@@ -46,12 +46,12 @@ const customerSchema = new mongoose.Schema({
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'dealer',
+    ref: "dealer",
     required: true,
   },
   serviceProvider: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'serviceProvider',
+    ref: "serviceProvider",
     required: true,
   },
   token: {
@@ -60,4 +60,4 @@ const customerSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('customer', customerSchema);
+module.exports = mongoose.model("customer", customerSchema);

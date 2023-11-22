@@ -1,13 +1,13 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const claimsPart = new mongoose.Schema({
-  clameId: {
+  claimId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'claims',
+    ref: "claims",
     required: true,
   },
   serviceproId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'serviceProvider',
+    ref: "serviceProvider",
     required: true,
   },
   name: {
@@ -18,22 +18,22 @@ const claimsPart = new mongoose.Schema({
     type: String,
     required: true,
   },
-  serial:{
+  serial: {
     type: String,
     required: true,
   },
-  manufacture:{
+  manufacture: {
     type: String,
     required: true,
   },
-  model:{
+  model: {
     type: String,
     required: true,
   },
-  price:{
+  price: {
     type: Number,
     required: true,
   },
 });
 
-module.exports = mongoose.model('claimsPart', claimsPart);
+module.exports = mongoose.model("claimsPart", claimsPart);

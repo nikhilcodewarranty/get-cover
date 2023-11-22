@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const claimsStatus = new mongoose.Schema({
-  clameId: {
+  claimId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref:'claims',
+    ref: "claims",
     required: true,
   },
   status: {
@@ -13,7 +13,6 @@ const claimsStatus = new mongoose.Schema({
     type: Date,
     required: true,
   },
- 
 });
 
-module.exports = mongoose.model('claimsStatus', claimsStatus);
+module.exports = mongoose.model("claimsStatus", claimsStatus);
