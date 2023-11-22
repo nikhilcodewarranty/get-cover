@@ -62,7 +62,7 @@ exports.deleteContract = async (req, res, next) => {
   try {
     const deleteContract = await contractService.deleteContract(req.body.id);
     if (!deleteContract) {
-      res.status(404).json("There are no deleted published yet!");
+      res.status(404).json("There are no contract deleted yet!");
     }
     res.json(deleteContract);
   } catch (error) {
