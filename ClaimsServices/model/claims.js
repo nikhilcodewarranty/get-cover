@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const claimsSchema = new mongoose.Schema({
   contractId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId, 
     ref:'contracts',
     required: true,
   },
