@@ -42,9 +42,11 @@ module.exports = class providerService {
     }
   }
 
-  static async deleteServiceProvider(orderId) {
+  static async deleteServiceProvider(serviceProviderId) {
     try {
-      const deletedResponse = await serviceProvider.findOneAndDelete(orderId);
+      const deletedResponse = await serviceProvider.findOneAndDelete(
+        serviceProviderId
+      );
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete service provider ${error}`);
