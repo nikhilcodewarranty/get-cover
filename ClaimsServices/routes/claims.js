@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const claimsController = require('../controller/Claims');
+const claimsController = require('../controller/claims');
 
 router.get('/claims', claimsController.getAllClaims);
 

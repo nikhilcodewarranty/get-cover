@@ -1,5 +1,5 @@
 
-const {Customers}=require('../model/Customer');
+const {Customers}=require('../model/customer');
 exports.getAllCustomer = async (req, res) => {
     try {
       const users = await Customers.find();
