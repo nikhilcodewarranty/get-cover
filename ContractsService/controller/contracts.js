@@ -1,6 +1,6 @@
 const { Contracts } = require("../model/contracts");
 const contractResourceResponse = require("../utils/constant");
-const contractService = require("../services/contractService");
+const contractService = require("../services/contractsService");
 
 exports.getAllContracts = async (req, res, next) => {
   try {

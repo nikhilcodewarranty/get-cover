@@ -1,4 +1,4 @@
-const customResourceResponse = {};
+const claimResourceResponse = {};
 
 claimResourceResponse.success = { statusCode: 200, message: 'Request has been processed successfully.' };
 claimResourceResponse.reqCreated = { statusCode: 201, message: 'Record has been created successfully.' };
