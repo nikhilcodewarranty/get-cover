@@ -1,26 +1,27 @@
-const claims = require("../model/claims");
+const claim = require("../model/claim");
 
 module.exports = class claimService {
   static async getAllClaims() {
     try {
-      const allClaims = await claims.find();
+      const allClaims = await claim.find();
       return allClaims;
     } catch (error) { 
       console.log(`Could not fetch claims ${error}`);
     }
   }
 
-  static async createClaims(data) {
+  static async createClaim(data) {
     try {
-      const response = await new claims(data).save();
+      const response = await new claim(data).save();
       return response;
     } catch (error) {
       console.log(error);
     }
   }
-  static async getClaimbyId(claimId) {
+
+  static async getClaimById(claimId) {
     try {
-      const singleClaimResponse = await claims.findById({ _id: claimId });
+      const singleClaimResponse = await claim.findById({ _id: claimId });
       return singleClaimResponse;
     } catch (error) {
       console.log(`claim not found. ${error}`);
@@ -29,12 +30,12 @@ module.exports = class claimService {
 
   static async updateClaim(title, body, articleImage) {
     try {
-      const updateResponse = await claims.updateOne(
+      const updatedResponse = await claim.updateOne(
         { title, body, articleImage },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update claim ${error}`);
     }
@@ -42,7 +43,7 @@ module.exports = class claimService {
 
   static async deleteClaim(claimId) {
     try {
-      const deletedResponse = await claims.findOneAndDelete(claimId);
+      const deletedResponse = await claim.findOneAndDelete(claimId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could  not delete claim ${error}`);

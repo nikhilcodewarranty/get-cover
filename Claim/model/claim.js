@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const claimsSchema = new mongoose.Schema({
+const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "contracts",
+    ref: "contract",
     required: true,
   },
-  claimsStatus: {
+  claimStatus: {
     type: String,
     required: true,
   },
@@ -55,4 +55,4 @@ const claimsSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("claims", claimsSchema);
+module.exports = mongoose.model("claim", claimSchema);

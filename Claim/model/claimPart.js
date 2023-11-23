@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
-const claimsPart = new mongoose.Schema({
+const claimPartSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "claims",
+    ref: "claim",
     required: true,
   },
   serviceproId: {
@@ -36,4 +36,4 @@ const claimsPart = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("claimsPart", claimsPart);
+module.exports = mongoose.model("claimPart", claimPartSchema);

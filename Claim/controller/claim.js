@@ -1,8 +1,8 @@
-const { Claims } = require("../model/claims");
-const { ClaimsPart } = require("../model/claimsPart");
-const { ClaimsStatus } = require("../model/claimsStatus");
-const ClaimResourceResponse = require("../utils/constant");
-const claimService = require("../services/claimsService");
+const { claim } = require("../model/claim");
+const { claimPart } = require("../model/claimPart");
+const { claimStatus } = require("../model/claimStatus");
+const claimResourceResponse = require("../utils/constant");
+const claimService = require("../services/claimService");
 
 exports.getAllClaims = async (req, res, next) => {
   try {
@@ -18,13 +18,13 @@ exports.getAllClaims = async (req, res, next) => {
   }
 };
 
-exports.createClaims = async (req, res, next) => {
+exports.createClaim = async (req, res, next) => {
   try {
-    const createdClaims = await claimService.createClaims(req.body);
-    if (!createdClaims) {
+    const createdClaim = await claimService.createClaim(req.body);
+    if (!createdClaim) {
       res.status(404).json("There are no claim created yet!");
     }
-    res.json(createdClaims);
+    res.json(createdClaim);
   } catch (error) {
     res
       .status(claimResourceResponse.serverError.statusCode)
@@ -48,11 +48,11 @@ exports.getClaimbyId = async (req, res, next) => {
 
 exports.updateClaim = async (req, res, next) => {
   try {
-    const updateClaim = await claimService.updateClaim(req.body);
-    if (!updateClaim) {
+    const updatedClaim = await claimService.updateClaim(req.body);
+    if (!updatedClaim) {
       res.status(404).json("There are no claim updated yet!");
     }
-    res.json(updateClaim);
+    res.json(updatedClaim);
   } catch (error) {
     res
       .status(claimResourceResponse.serverError.statusCode)
@@ -61,11 +61,11 @@ exports.updateClaim = async (req, res, next) => {
 };
 exports.deleteClaim = async (req, res, next) => {
   try {
-    const deleteClaim = await claimService.deleteClaim(req.body.id);
-    if (!deleteClaim) {
+    const deletedClaim = await claimService.deleteClaim(req.body.id);
+    if (!deletedClaim) {
       res.status(404).json("There are no claim deleted yet!");
     }
-    res.json(deleteClaim);
+    res.json(deletedClaim);
   } catch (error) {
     res
       .status(claimResourceResponse.serverError.statusCode)
