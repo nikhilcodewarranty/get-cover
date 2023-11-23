@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const usersSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
     required: true,
@@ -19,7 +19,7 @@ const usersSchema = new mongoose.Schema({
   },
   roleId: {
     type: [mongoose.Schema.Types.ObjectId],
-    ref: "roles",
+    ref: "role",
     required: true,
   },
   email: {
@@ -32,4 +32,4 @@ const usersSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("users", usersSchema);
+module.exports = mongoose.model("user", userSchema);

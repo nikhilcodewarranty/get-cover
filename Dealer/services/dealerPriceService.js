@@ -18,6 +18,7 @@ module.exports = class dealerPriceService {
       console.log(error);
     }
   }
+
   static async getDealerPriceById(dealerPriceId) {
     try {
       const singleDealerPriceResponse = await dealerPrice.findById({
@@ -31,12 +32,12 @@ module.exports = class dealerPriceService {
 
   static async updateDealerPrice(data) {
     try {
-      const updateResponse = await dealerPrice.updateOne(
+      const updatedResponse = await dealerPrice.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer price ${error}`);
     }

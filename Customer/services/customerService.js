@@ -1,18 +1,18 @@
-const customers = require("../model/customer");
+const customer = require("../model/customer");
 
 module.exports = class customerService {
   static async getAllCustomers() {
     try {
-      const allCustomers = await customers.find();
+      const allCustomers = await customer.find();
       return allCustomers;
     } catch (error) {
-      console.log(`Could not fetch customers ${error}`);
+      console.log(`Could not fetch customer ${error}`);
     }
   }
 
-  static async createCustomers(data) {
+  static async createCustomer(data) {
     try {
-      const response = await new customers(data).save();
+      const response = await new customer(data).save();
       return response;
     } catch (error) {
       console.log(error);
@@ -21,7 +21,7 @@ module.exports = class customerService {
 
   static async getCustomerById(customerId) {
     try {
-      const singleCustomerResponse = await customers.findById({
+      const singleCustomerResponse = await customer.findById({
         _id: customerId,
       });
       return singleCustomerResponse;
@@ -32,12 +32,12 @@ module.exports = class customerService {
 
   static async updateCustomer(data) {
     try {
-      const updateResponse = await customers.updateOne(
+      const updatedResponse = await customer.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update customer ${error}`);
     }
@@ -45,7 +45,7 @@ module.exports = class customerService {
 
   static async deleteCustomer(customerId) {
     try {
-      const deletedResponse = await customers.findOneAndDelete(customerId);
+      const deletedResponse = await customer.findOneAndDelete(customerId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could  not delete customer ${error}`);

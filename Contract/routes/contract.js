@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const contractController = require("../controller/contracts");
+const contractController = require("../controller/contract");
 
-router.get("/contracts", contractController.getAllContracts);
+router.get("/contract", contractController.getAllContracts);
 
 module.exports = router;

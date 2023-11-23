@@ -12,7 +12,7 @@ const contractRoutes = require("./routes/contract");
 app.use("/api/v1", contractRoutes);
 
 //Database connection
-databaseConnect(dbConfig.contractsMongoURI);
+databaseConnect(dbConfig.contractMongoURI);
 
 app.use(bodyParser.json());
 app.listen(port, () => {

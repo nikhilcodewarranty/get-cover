@@ -1,18 +1,18 @@
-const orders = require("../model/order");
+const order = require("../model/order");
 
 module.exports = class orderService {
   static async getAllOrders() {
     try {
-      const allOrders = await orders.find();
+      const allOrders = await order.find();
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch orders ${error}`);
+      console.log(`Could not fetch order ${error}`);
     }
   }
 
   static async createOrder(data) {
     try {
-      const response = await new orders(data).save();
+      const response = await new order(data).save();
       return response;
     } catch (error) {
       console.log(error);
@@ -20,7 +20,7 @@ module.exports = class orderService {
   }
   static async getOrderById(orderId) {
     try {
-      const singleOrderResponse = await orders.findById({
+      const singleOrderResponse = await order.findById({
         _id: orderId,
       });
       return singleOrderResponse;
@@ -31,12 +31,12 @@ module.exports = class orderService {
 
   static async updateOrder(data) {
     try {
-      const updateResponse = await orders.updateOne(
+      const updatedResponse = await order.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update order ${error}`);
     }
@@ -44,7 +44,7 @@ module.exports = class orderService {
 
   static async deleteOrder(orderId) {
     try {
-      const deletedResponse = await orders.findOneAndDelete(orderId);
+      const deletedResponse = await order.findOneAndDelete(orderId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete order ${error}`);

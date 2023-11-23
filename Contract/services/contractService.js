@@ -1,18 +1,18 @@
-const contracts = require("../model/contracts");
+const contract = require("../model/contract");
 
 module.exports = class contractService {
   static async getAllContracts() {
     try {
-      const allContracts = await contracts.find();
+      const allContracts = await contract.find();
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);
     }
   }
 
-  static async createContracts(data) {
+  static async createContract(data) {
     try {
-      const response = await new contracts(data).save();
+      const response = await new contract(data).save();
       return response;
     } catch (error) {
       console.log(error);
@@ -20,7 +20,7 @@ module.exports = class contractService {
   }
   static async getContractById(contractId) {
     try {
-      const singleContractResponse = await contracts.findById({
+      const singleContractResponse = await contract.findById({
         _id: contractId,
       });
       return singleContractResponse;
@@ -31,12 +31,12 @@ module.exports = class contractService {
 
   static async updateContract(data) {
     try {
-      const updateResponse = await contracts.updateOne(
+      const updatedResponse = await contract.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update contract ${error}`);
     }
@@ -44,7 +44,7 @@ module.exports = class contractService {
 
   static async deleteContract(contractId) {
     try {
-      const deletedResponse = await contracts.findOneAndDelete(contractId);
+      const deletedResponse = await contract.findOneAndDelete(contractId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could  not delete contract ${error}`);

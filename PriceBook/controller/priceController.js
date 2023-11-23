@@ -1,14 +1,14 @@
-const { Prices } = require("../model/priceBook");
+const { PriceBook } = require("../model/priceBook");
 const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
 
 exports.getAllPriceBook = async (req, res, next) => {
   try {
-    const priceBook = await priceBookService.getAllPriceBook();
-    if (!priceBook) {
+    const priceBooks = await priceBookService.getAllPriceBook();
+    if (!priceBooks) {
       res.status(404).json("There are no price book published yet!");
     }
-    res.json(priceBook);
+    res.json(priceBooks);
   } catch (error) {
     res
       .status(priceBookResourceResponse.serverError.statusCode)

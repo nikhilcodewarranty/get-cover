@@ -31,12 +31,12 @@ module.exports = class providerService {
 
   static async updateServiceProvider(data) {
     try {
-      const updateResponse = await serviceProvider.updateOne(
+      const updatedResponse = await serviceProvider.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update service provider ${error}`);
     }

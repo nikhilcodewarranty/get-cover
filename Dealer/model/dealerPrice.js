@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const dealerBook = new mongoose.Schema({
+const dealerBookSchema = new mongoose.Schema({
   priceBook: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "priceBook",
@@ -16,4 +16,4 @@ const dealerBook = new mongoose.Schema({
     required: true,
   },
 });
-module.exports = mongoose.model("dealerPrice", dealerBook);
+module.exports = mongoose.model("dealerPrice", dealerBookSchema);
