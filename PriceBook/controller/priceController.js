@@ -2,9 +2,9 @@ const { PriceBook } = require("../model/priceBook");
 const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
 
-exports.getAllPriceBook = async (req, res, next) => {
+exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    const priceBooks = await priceBookService.getAllPriceBook();
+    const priceBooks = await priceBookService.getAllPriceBooks();
     if (!priceBooks) {
       res.status(404).json("There are no price book published yet!");
     }
