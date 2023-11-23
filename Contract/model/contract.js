@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const contractSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "orders",
+    ref: "order",
     required: true,
   },
   productOrderId: {
@@ -42,7 +42,7 @@ const contractSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  claimsStatus: {
+  claimStatus: {
     type: String,
     required: true,
   },
@@ -64,4 +64,4 @@ const contractSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("contracts", contractSchema);
+module.exports = mongoose.model("contract", contractSchema);

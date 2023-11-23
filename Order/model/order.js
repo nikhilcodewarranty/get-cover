@@ -42,7 +42,7 @@ const orderSchema = new mongoose.Schema({
   },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+    ref: "user",
     required: true,
   },
   venderOrder: {
@@ -72,4 +72,4 @@ const orderSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("orders", orderSchema);
+module.exports = mongoose.model("order", orderSchema);

@@ -1,4 +1,4 @@
-const { Orders } = require("../model/order");
+const { Order } = require("../model/order");
 const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
 
@@ -16,13 +16,13 @@ exports.getAllOrders = async (req, res, next) => {
   }
 };
 
-exports.createOrders = async (req, res, next) => {
+exports.createOrder = async (req, res, next) => {
   try {
-    const createOrders = await orderService.createOrders(req.body);
-    if (!createOrders) {
+    const createOrder = await orderService.createOrder(req.body);
+    if (!createOrder) {
       res.status(404).json("There are no order created yet!");
     }
-    res.json(createOrders);
+    res.json(createOrder);
   } catch (error) {
     res
       .status(orderResourceResponse.serverError.statusCode)
@@ -46,11 +46,11 @@ exports.getOrderById = async (req, res, next) => {
 
 exports.updateOrder = async (req, res, next) => {
   try {
-    const updateOrder = await orderService.updateOrder(req.body);
-    if (!updateOrder) {
+    const updatedOrder = await orderService.updateOrder(req.body);
+    if (!updatedOrder) {
       res.status(404).json("There are no order updated yet!");
     }
-    res.json(updateOrder);
+    res.json(updatedOrder);
   } catch (error) {
     res
       .status(orderResourceResponse.serverError.statusCode)
@@ -60,11 +60,11 @@ exports.updateOrder = async (req, res, next) => {
 
 exports.deleteOrder = async (req, res, next) => {
   try {
-    const deleteOrder = await orderService.deleteOrder(req.body.id);
-    if (!deleteOrder) {
+    const deletedOrder = await orderService.deleteOrder(req.body.id);
+    if (!deletedOrder) {
       res.status(404).json("There are no order deleted yet!");
     }
-    res.json(deleteOrder);
+    res.json(deletedOrder);
   } catch (error) {
     res
       .status(orderResourceResponse.serverError.statusCode)

@@ -1,6 +1,6 @@
-const { Contracts } = require("../model/contracts");
+const { Contracts } = require("../model/contract");
 const contractResourceResponse = require("../utils/constant");
-const contractService = require("../services/contractsService");
+const contractService = require("../services/contractService");
 
 exports.getAllContracts = async (req, res, next) => {
   try {
@@ -16,13 +16,13 @@ exports.getAllContracts = async (req, res, next) => {
   }
 };
 
-exports.createContracts = async (req, res, next) => {
+exports.createContract = async (req, res, next) => {
   try {
-    const createdContracts = await contractService.createContracts(req.body);
-    if (!createdContracts) {
+    const createdContract = await contractService.createContract(req.body);
+    if (!createdContract) {
       res.status(404).json("There are no contract created yet!");
     }
-    res.json(createdContracts);
+    res.json(createdContract);
   } catch (error) {
     res
       .status(contractResourceResponse.serverError.statusCode)
@@ -46,11 +46,11 @@ exports.getContractById = async (req, res, next) => {
 
 exports.updateContract = async (req, res, next) => {
   try {
-    const updateContract = await contractService.updateContract(req.body);
-    if (!updateContract) {
+    const updatedContract = await contractService.updateContract(req.body);
+    if (!updatedContract) {
       res.status(404).json("There are no contract updated yet!");
     }
-    res.json(updateContract);
+    res.json(updatedContract);
   } catch (error) {
     res
       .status(contractResourceResponse.serverError.statusCode)
@@ -60,11 +60,11 @@ exports.updateContract = async (req, res, next) => {
 
 exports.deleteContract = async (req, res, next) => {
   try {
-    const deleteContract = await contractService.deleteContract(req.body.id);
-    if (!deleteContract) {
+    const deletedContract = await contractService.deleteContract(req.body.id);
+    if (!deletedContract) {
       res.status(404).json("There are no contract deleted yet!");
     }
-    res.json(deleteContract);
+    res.json(deletedContract);
   } catch (error) {
     res
       .status(contractResourceResponse.serverError.statusCode)

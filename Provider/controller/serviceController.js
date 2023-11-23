@@ -16,14 +16,15 @@ exports.getAllServiceProviders = async (req, res, next) => {
   }
 };
 
-exports.createServiceProviders = async (req, res, next) => {
+exports.createServiceProvider = async (req, res, next) => {
   try {
-    const createdServiceProviders =
-      await providerService.createServiceProviders(req.body);
-    if (!createdServiceProviders) {
+    const createdServiceProvider = await providerService.createServiceProvider(
+      req.body
+    );
+    if (!createdServiceProvider) {
       res.status(404).json("There are no service provider created yet!");
     }
-    res.json(createdServiceProviders);
+    res.json(createdServiceProvider);
   } catch (error) {
     res
       .status(serviceResourceResponse.serverError.statusCode)

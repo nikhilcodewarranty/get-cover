@@ -1,9 +1,9 @@
-const users = require("../model/users");
+const user = require("../model/users");
 
 module.exports = class userService {
   static async getAllUsers() {
     try {
-      const allUsers = await users.find();
+      const allUsers = await user.find();
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -12,7 +12,7 @@ module.exports = class userService {
 
   static async createUser(data) {
     try {
-      const response = await new users(data).save();
+      const response = await new user(data).save();
       return response;
     } catch (error) {
       console.log(error);
@@ -20,7 +20,7 @@ module.exports = class userService {
   }
   static async getUserById(userId) {
     try {
-      const singleUserResponse = await users.findById({
+      const singleUserResponse = await user.findById({
         _id: userId,
       });
       return singleUserResponse;
@@ -31,12 +31,12 @@ module.exports = class userService {
 
   static async updateUser(data) {
     try {
-      const updateResponse = await users.updateOne(
+      const updatedResponse = await user.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update user ${error}`);
     }
@@ -44,7 +44,7 @@ module.exports = class userService {
 
   static async deleteUser(userId) {
     try {
-      const deletedResponse = await users.findOneAndDelete(userId);
+      const deletedResponse = await user.findOneAndDelete(userId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete user ${error}`);

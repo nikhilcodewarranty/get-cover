@@ -31,12 +31,12 @@ module.exports = class productOrderService {
 
   static async updateProductOrder(data) {
     try {
-      const updateResponse = await productOrder.updateOne(
+      const updatedResponse = await productOrder.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update product order ${error}`);
     }

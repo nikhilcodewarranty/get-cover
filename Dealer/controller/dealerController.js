@@ -7,7 +7,7 @@ exports.getAllDealers = async (req, res, next) => {
   try {
     const dealers = await dealerService.getAllDealers();
     if (!dealers) {
-      res.status(404).json("There are no dealers published yet!");
+      res.status(404).json("There are no dealer published yet!");
     }
     res.json(dealers);
   } catch (error) {
@@ -17,13 +17,13 @@ exports.getAllDealers = async (req, res, next) => {
   }
 };
 
-exports.createDealers = async (req, res, next) => {
+exports.createDealer = async (req, res, next) => {
   try {
-    const createdDealers = await dealerService.createDealers(req.body);
-    if (!createdDealers) {
+    const createdDealer = await dealerService.createDealer(req.body);
+    if (!createdDealer) {
       res.status(404).json("There are no dealer created yet!");
     }
-    res.json(createdDealers);
+    res.json(createdDealer);
   } catch (error) {
     res
       .status(dealerResourceResponse.serverError.statusCode)
@@ -47,11 +47,11 @@ exports.getDealerById = async (req, res, next) => {
 
 exports.updateDealer = async (req, res, next) => {
   try {
-    const updateDealer = await dealerService.updateDealer(req.body);
-    if (!updateDealer) {
+    const updatedDealer = await dealerService.updateDealer(req.body);
+    if (!updatedDealer) {
       res.status(404).json("There are no dealer updated yet!");
     }
-    res.json(updateDealer);
+    res.json(updatedDealer);
   } catch (error) {
     res
       .status(dealerResourceResponse.serverError.statusCode)
@@ -61,11 +61,11 @@ exports.updateDealer = async (req, res, next) => {
 
 exports.deleteDealer = async (req, res, next) => {
   try {
-    const deleteDealer = await dealerService.deleteDealer(req.body.id);
-    if (!deleteDealer) {
+    const deletedDealer = await dealerService.deleteDealer(req.body.id);
+    if (!deletedDealer) {
       res.status(404).json("There are no dealer deleted yet!");
     }
-    res.json(deleteDealer);
+    res.json(deletedDealer);
   } catch (error) {
     res
       .status(dealerResourceResponse.serverError.statusCode)

@@ -18,6 +18,7 @@ module.exports = class priceBookService {
       console.log(error);
     }
   }
+
   static async getPriceBookById(priceBookId) {
     try {
       const singlePriceBookResponse = await priceBook.findById({
@@ -31,12 +32,12 @@ module.exports = class priceBookService {
 
   static async updatePriceBook(data) {
     try {
-      const updateResponse = await priceBook.updateOne(
+      const updatedResponse = await priceBook.updateOne(
         { data },
         { $set: { date: new Date.now() } }
       );
 
-      return updateResponse;
+      return updatedResponse;
     } catch (error) {
       console.log(`Could not update price book ${error}`);
     }
