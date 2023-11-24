@@ -9,6 +9,6 @@ exports.databaseConnect = async (mongouri) => {
     console.log(
       "🚀 ~ file: mongoDb.js:8 ~ exports.databaseConnect= ~ error:",
       error
-    );
+    ); 
   }
 };
