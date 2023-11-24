@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "http://3.108.215.169:3000/",
+    "host": "http://3.108.215.169:3000",
     "basePath": "/api-docs",
     "schemes": [
       "http"
@@ -20,7 +20,6 @@
     "definitions": {
       "Claims": {
         "required": [
-          "contractId",
           "_id"
         ],
         "properties": {
@@ -68,7 +67,6 @@
       },
       "ClaimPart": {
         "required": [
-          "contractId",
           "_id"
         ],
         "properties": {
@@ -104,7 +102,6 @@
       },
       "ClaimStatus": {
         "required": [
-          "contractId",
           "_id"
         ],
         "properties": {
@@ -249,6 +246,27 @@
           "password": {
             "type": "string"
           }
+        }
+      },
+      "DealerPrice": {
+        "required": [
+          "_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "priceBook": {
+            "type": "String(PriceBookId)"
+          },
+          "dealerId": {
+            "type": "DealerId"
+          },
+          "brokerFee": {
+            "type": "Number"
+          }
+       
         }
       },
       "Customer": {
