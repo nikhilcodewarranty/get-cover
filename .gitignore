@@ -3,12 +3,19 @@ node_modules/
 Claim/node_modules/
 Claim/.env
 Contract/node_modules/
+Contract/.env
 Customer/node_modules/
+Customer/.env
 Dealer/node_modules/
+Dealer/.env
 Order/node_modules/
+Order/.env
 PriceBook/node_modules/
+PriceBook/.env
 Provider/node_modules/
+Provider/.env
 User/node_modules/
+User/.env
 # Optional npm cache directory
 .npm
 
