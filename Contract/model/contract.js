@@ -34,10 +34,6 @@ const contractSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  claimAmount: {
-    type: Number,
-    required: true,
-  },
   regDate: {
     type: Date,
     required: true,

@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhostssss:3000",
+    "host": "http://3.108.215.169:3000/",
     "basePath": "/api-docs",
     "schemes": [
       "http"
@@ -300,6 +300,118 @@
             "type": "mongoose.Schema.Types.ObjectId"
           },
           "token": {
+            "type": "string"
+          }
+        }
+      },
+      "Contract": {
+        "required": [
+          "_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "covEndDate": {
+            "type": "string"
+          },
+          "deductible": {
+            "type": "Number"
+          },
+          "lastName": {
+            "type": "String"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "regDate": {
+            "type": "Date"
+          },
+          "claimAmount": {
+            "type": "Number"
+          },
+          "serial": {
+            "type": "String"
+          },
+          "productValue": {
+            "type": "Number"
+          },
+          "manufacture": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "String(OrderId)"
+          },
+          "productOrderId": {
+            "type": "mString(OrderId)"
+          },
+          "productName": {
+            "type": "string"
+          }
+        }
+      },
+      "Orders": {
+        "required": [
+          "_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "dealerId": {
+            "type": "string"
+          },
+          "serviceprovId": {
+            "type": "Number"
+          },
+          "customerId": {
+            "type": "String"
+          },
+          "orderAmount": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "Date"
+          },
+          "paymentStatus": {
+            "type": "Number"
+          },
+          "paidAmount": {
+            "type": "String"
+          },
+          "dueAmount": {
+            "type": "Number"
+          },
+          "orderDate": {
+            "type": "Date"
+          },
+          "createdBy": {
+            "type": "Date"
+          },
+          "venderOrder": {
+            "type": "string"
+          },
+          "coverageStartDate": {
+            "type": "Date"
+          },
+          "waitPeriodBd": {
+            "type": "Number)"
+          },
+          "waitPeriodAdh": {
+            "type": "Number"
+          },
+          "store": {
+            "type": "string"
+          },
+          "serviceCoverage": {
             "type": "string"
           }
         }
