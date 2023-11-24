@@ -195,7 +195,7 @@
           }
         }
       },
-      "serviceProvider": {
+      "ServiceProvider": {
         "required": [
           "_id"
         ],
