@@ -1,8 +1,15 @@
 # Dependency directories
 node_modules/
-
+Claim/node_modules/
+Contract/node_modules/
+Customer/node_modules/
+Dealer/node_modules/
+Order/node_modules/
+PriceBook/node_modules/
+Provider/node_modules/
+User/node_modules/
 # Optional npm cache directory
 .npm
 
 # dotenv environment variables file
-.env
+.env/
