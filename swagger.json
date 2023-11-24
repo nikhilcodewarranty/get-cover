@@ -3,14 +3,19 @@
     "info": {
       "version": "1.0.0",
       "title": "Get Cover Api Documentation",
-      "description": "Yet Another Node.js Blogg Application API",
+      "description": "Get Cover Model",
       "license": {
-        "name": "MIT",
-        "url": "https://opensource.org/licenses/MIT"
+        "name": "GetCover"
       }
     },
     "host": "localhost:3000",
-    "basePath": "/api/v1",
+    "basePath": "/api-docs",
+    "tags": [
+      {
+        "name": "Users",
+        "description": "API for users in the system"
+      }
+    ],
     "schemes": [
       "http"
     ],
@@ -32,7 +37,7 @@
             "uniqueItems": true
           },
           "contractId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "ContractId"
           },
           "claimStatus": {
             "type": "string"
@@ -80,10 +85,10 @@
             "uniqueItems": true
           },
           "claimId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "ClaimId"
           },
           "serviceproId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "ServiceProviderId"
           },
           "name": {
             "type": "string"
@@ -116,7 +121,7 @@
             "uniqueItems": true
           },
           "claimId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "ClaimId"
           },
           "status": {
             "type": "string"
@@ -190,7 +195,7 @@
           }
         }
       },
-      "serviceProvider": {
+      "ServiceProvider": {
         "required": [
           "_id"
         ],
@@ -238,7 +243,7 @@
             "type": "string"
           },
           "accountId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "DearlerId or ServiceProviderId"
           },
           "phoneNumber": {
             "type": "string"
