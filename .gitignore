@@ -1,6 +1,7 @@
 # Dependency directories
 node_modules/
 Claim/node_modules/
+Claim/.env/
 Contract/node_modules/
 Customer/node_modules/
 Dealer/node_modules/
