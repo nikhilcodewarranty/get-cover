@@ -2,20 +2,12 @@
     "swagger": "2.0",
     "info": {
       "version": "1.0.0",
-      "title": "Get Cover Api Documentation",
-      "description": "Get Cover Model",
       "license": {
         "name": "GetCover"
       }
     },
     "host": "localhost:3000",
     "basePath": "/api-docs",
-    "tags": [
-      {
-        "name": "Users",
-        "description": "API for users in the system"
-      }
-    ],
     "schemes": [
       "http"
     ],
