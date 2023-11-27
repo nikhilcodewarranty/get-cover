@@ -28,7 +28,7 @@
             "uniqueItems": true
           },
           "contractId": {
-            "type": "ContractId"
+            "type": "Reff:Contract(ContractId)"
           },
           "claimStatus": {
             "type": "string"
@@ -75,10 +75,10 @@
             "uniqueItems": true
           },
           "claimId": {
-            "type": "ClaimId"
+            "type": "Reff:Claims(ClaimId)"
           },
           "serviceproId": {
-            "type": "ServiceProviderId"
+            "type": "Reff:ServiceProvider(ServiceProviderId)"
           },
           "name": {
             "type": "string"
@@ -110,7 +110,7 @@
             "uniqueItems": true
           },
           "claimId": {
-            "type": "ClaimId"
+            "type": "Reff:Claims(ClaimId)"
           },
           "status": {
             "type": "string"
@@ -147,6 +147,9 @@
           "country": {
             "type": "string"
           },
+          "createdBy": {
+            "type": "string"
+          },
           "token": {
             "type": "string"
           }
@@ -173,7 +176,10 @@
           "frontingFee": {
             "type": "string"
           },
-          "reinsurenceFee": {
+          "reinsuranceFee": {
+            "type": "string"
+          },
+          "reserve_future_fee": {
             "type": "string"
           },
           "adminFee": {
@@ -181,6 +187,9 @@
           },
           "category": {
             "type": "mongoose.Schema.Types.ObjectId"
+          },
+          "status": {
+            "type": "string"
           }
         }
       },
@@ -232,7 +241,7 @@
             "type": "string"
           },
           "accountId": {
-            "type": "DearlerId or ServiceProviderId"
+            "type": "Reff : Dealer(DearlerId) or ServiceProvider(ServiceProviderId) or Customer(CustomerId)"
           },
           "phoneNumber": {
             "type": "string"
@@ -240,15 +249,18 @@
           "roleId": {
             "type": "string"
           },
-          "email": {
+          "is_primary": {
+            "type": "boolean"
+          },
+          "status": {
             "type": "string"
           },
-          "password": {
+          "createdBy": {
             "type": "string"
           }
         }
       },
-      "DealerPrice": {
+      "DealerPriceBook": {
         "required": [
           "_id"
         ],
@@ -258,10 +270,10 @@
             "uniqueItems": true
           },
           "priceBook": {
-            "type": "String(PriceBookId)"
+            "type": "Reff: Price(PriceBookId)"
           },
           "dealerId": {
-            "type": "DealerId"
+            "type": "Reff: Dealer(DealerId)"
           },
           "brokerFee": {
             "type": "Number"
@@ -312,10 +324,10 @@
             "type": "string"
           },
           "dealerId": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "Reff: Dealer(DealerId)"
           },
           "serviceProvider": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "Reff:ServiceProvider(ServiceProviderId) "
           },
           "token": {
             "type": "string"
@@ -333,10 +345,7 @@
           },
           "covEndDate": {
             "type": "string"
-          },
-          "deductible": {
-            "type": "Number"
-          },
+          },       
           "lastName": {
             "type": "String"
           },
@@ -348,6 +357,9 @@
           },
           "claimAmount": {
             "type": "Number"
+          },
+          "productName": {
+            "type": "string"
           },
           "serial": {
             "type": "String"
@@ -365,14 +377,14 @@
             "type": "string"
           },
           "orderId": {
-            "type": "String(OrderId)"
+            "type": "Reff : Order(OrderId)"
           },
           "productOrderId": {
-            "type": "mString(OrderId)"
+            "type": "Reff:ProductOrder(ProductOrderId)"
           },
-          "productName": {
+          "product_condition": {
             "type": "string"
-          }
+          }          
         }
       },
       "Orders": {
@@ -385,9 +397,12 @@
             "uniqueItems": true
           },
           "dealerId": {
-            "type": "string"
+            "type": "Reff:Dealer(DealerId)"
           },
           "serviceprovId": {
+            "type": "Number"
+          },
+          "deductible": {
             "type": "Number"
           },
           "customerId": {
@@ -426,10 +441,56 @@
           "waitPeriodAdh": {
             "type": "Number"
           },
-          "store": {
+          "serviceCoverageType": {
             "type": "string"
           },
-          "serviceCoverage": {
+          "coverageType": {
+              "type": "string"
+          },
+          "additional_notes": {
+            "type": "string"
+         },
+         "send_notification": {
+          "type": "Boolean"
+        },
+         "productsArray":{
+            "type":"string"
+          },
+         "status":{
+            "type":"string"
+          },
+          "claimStatus":{
+            "type":"string"
+          }
+        }
+      },
+      "PriceBookCategory": {
+        "required": [
+          "_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "Roles": {
+        "required": [
+          "_id"
+        ],
+        "properties": {
+          "_id": {
+            "type": "string",
+            "uniqueItems": true
+          },
+          "role": {
             "type": "string"
           }
         }

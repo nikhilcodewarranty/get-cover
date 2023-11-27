@@ -24,12 +24,16 @@ const priceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  reinsurenceFee: {
+  reinsuranceFee: {
     type: Number,
     required: true,
   },
   adminFee: {
     type: Number,
+    required: true,
+  },
+  status: {
+    type: String,
     required: true,
   },
   category: {
