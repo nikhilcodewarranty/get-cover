@@ -379,8 +379,8 @@
           "orderId": {
             "type": "Reff : Order(OrderId)"
           },
-          "productOrderId": {
-            "type": "Reff:ProductOrder(ProductOrderId)"
+          "dealerPriceBookId": {
+            "type": "Reff:DealerPriceBook(_id)"
           },
           "product_condition": {
             "type": "string"

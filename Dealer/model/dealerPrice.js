@@ -16,4 +16,4 @@ const dealerBookSchema = new mongoose.Schema({
     required: true,
   },
 });
-module.exports = mongoose.model("dealerPrice", dealerBookSchema);
+module.exports = mongoose.model("dealerPriceBook", dealerBookSchema);

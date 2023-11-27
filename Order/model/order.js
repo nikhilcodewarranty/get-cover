@@ -41,8 +41,7 @@ const orderSchema = new mongoose.Schema({
     required: true,
   },
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
+    type: String,
     required: true,
   },
   venderOrder: {
@@ -62,12 +61,20 @@ const orderSchema = new mongoose.Schema({
     ref: "dealer",
     required: true,
   },
-  store: {
+  serviceCoverageType: {
     type: String,
     required: true,
   },
-  serviceCoverage: {
+  CoverageType: {
     type: String,
+    required: true,
+  },
+  additional_notes: {
+    type: String,
+    required: true,
+  },
+  send_notification: {
+    type: Boolean,
     required: true,
   },
 });

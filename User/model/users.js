@@ -22,14 +22,14 @@ const userSchema = new mongoose.Schema({
     ref: "role",
     required: true,
   },
-  email: {
+  is_primary: {
     type: String,
     required: true,
   },
-  password: {
+  status: {
     type: String,
     required: true,
-  },
+  }
 });
 
 module.exports = mongoose.model("user", userSchema);
