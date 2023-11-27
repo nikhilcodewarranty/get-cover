@@ -380,7 +380,7 @@
             "type": "Reff : Order(OrderId)"
           },
           "dealerPriceBookId": {
-            "type": "Reff:DealerPriceBook(_id)"
+            "type": "Reff:DealerPriceBook(DealerPriceBookId)"
           },
           "product_condition": {
             "type": "string"
