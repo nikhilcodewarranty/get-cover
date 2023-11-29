@@ -19,8 +19,8 @@ module.exports = class userService {
   }
   static async findOneUser(query) {
     try {
-      const allUsers = await user.findOne(query);
-      return allUsers;
+      const loggedInUser = await user.findOne(query);
+      return loggedInUser;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
     }

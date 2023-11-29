@@ -100,7 +100,7 @@ exports.createSuperAdmin = async (req, res) => {
       password: hashedPassword,
       accountId: req.body.accountId,
       phoneNumber: req.body.phoneNumber,
-      roleId: superRole._id, // Assign super role
+      roleId:'65672dd3c8f0946352589287', // Assign super role
       is_primary: req.body.is_primary,
       status: req.body.status,
     });
@@ -123,7 +123,7 @@ exports.createSuperAdmin = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
-    const user = await users.findOne({ email: req.body.email });
+    const user = await userService.findOneUser({ email: req.body.email });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
@@ -131,7 +131,7 @@ exports.login = async (req, res) => {
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
-      return res.status(401).json({ message: "Invalid email or password" });
+         return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Generate JWT token
