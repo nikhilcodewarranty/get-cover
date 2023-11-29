@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
     ref: "role",
     required: true,
   },
-  is_primary: {
+  isPrimary: {
     type: String,
     required: true,
   },

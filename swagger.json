@@ -237,6 +237,12 @@
           "firstName": {
             "type": "string"
           },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
           "lastName": {
             "type": "string"
           },
@@ -247,9 +253,9 @@
             "type": "string"
           },
           "roleId": {
-            "type": "string"
+            "type": "Reff: Roles(RoleId)"
           },
-          "is_primary": {
+          "isPrimary": {
             "type": "boolean"
           },
           "status": {
@@ -491,6 +497,9 @@
             "uniqueItems": true
           },
           "role": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }
