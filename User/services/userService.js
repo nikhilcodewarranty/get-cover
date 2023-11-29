@@ -9,6 +9,22 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
+  static async findUser(query) {
+    try {
+      const allUsers = await user.find(query);
+      return allUsers;
+    } catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
+  static async findOneUser(query) {
+    try {
+      const allUsers = await user.findOne(query);
+      return allUsers;
+    } catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
 
   static async createUser(data) {
     try {

@@ -13,7 +13,7 @@ const userRoutes = require("./routes/user");
 app.use("/api/v1", userRoutes);
 
 //Database connection
-databaseConnect(dbConfig.usersMongoURI);
+ databaseConnect(dbConfig.usersMongoURI);
 
 app.use(bodyParser.json());
 

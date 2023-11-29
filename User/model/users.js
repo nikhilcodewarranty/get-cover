@@ -38,7 +38,8 @@ const userSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
-  }
-});
+  },
+ 
+},{timestamps:true});
 
 module.exports = mongoose.model("user", userSchema);
