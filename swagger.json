@@ -275,7 +275,7 @@
             "type": "string",
             "uniqueItems": true
           },
-          "priceBook": {
+          "priceBookId": {
             "type": "Reff: Price(PriceBookId)"
           },
           "dealerId": {
