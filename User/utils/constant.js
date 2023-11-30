@@ -5,3 +5,5 @@ userResourceResponse.reqCreated = { statusCode: 201, message: 'Record has been c
 userResourceResponse.recordNotFound = { statusCode: 404, message: 'No record found.' };
 userResourceResponse.serverError = { statusCode: 500, message: 'Internal server error.' };
 userResourceResponse.reqValidationError = { statusCode: 422, message: 'Data validation failed.' };
+
+module.exports=userResourceResponse

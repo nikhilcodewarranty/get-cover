@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({
 }));
 app.use(bodyParser.json());
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 //app.use('/api/v1', router);
 
 app.listen(3000);

@@ -6,10 +6,11 @@
         "name": "GetCover"
       }
     },
-    "host": "http://3.108.215.169:3000",
-    "basePath": "/api-docs",
+    "host": "localhost:8080",
+    "basePath": "/api-v1",
     "schemes": [
-      "http"
+      "http",
+      "https"
     ],
     "consumes": [
       "application/json"
@@ -17,7 +18,46 @@
     "produces": [
       "application/json"
     ],
-    "definitions": {
+    "paths": {
+      "/users": {
+        "get": {
+          "tags": ["Users"],
+          "summary": "Get all users",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+      "create-superAdmin":{
+        "post":{
+          "tags": ["Create Super Admin"],
+           "summary": "Create Super Admin",
+           "parameters": [
+            {
+              "firstName": "user",
+              "in": "body",
+              "lastName": "User object",
+              "required": true,
+              "schema": {
+                "$ref": "#/definitions/Users"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      }
+    },
+     "definitions": {
       "Claims": {
         "required": [
           "_id"

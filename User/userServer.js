@@ -8,12 +8,24 @@ const port = process.env.USER_API_ENDPOINT || 8080;
 const dbConfig = require("./config/database");
 const { databaseConnect } = require("./db");
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
 const userRoutes = require("./routes/user");
 
-app.use("/api/v1", userRoutes);
+
+
+app.use("/api-v1", userRoutes);
 
 //Database connection
  databaseConnect(dbConfig.usersMongoURI);
+
+
+
 
 app.use(bodyParser.json());
 

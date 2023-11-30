@@ -1,6 +1,7 @@
 const { Users } = require("../model/users");
 const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
+console.log(userResourceResponse)
 const userService = require("../services/userService");
 const users = require("../model/users");
 const role = require("../model/role");
@@ -8,7 +9,8 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 exports.getAllusers = async (req, res, next) => {
   try {
-    const users = await userService.getAllusers();
+    const users = await userService.getAllUsers();
+    console.log(users)
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
