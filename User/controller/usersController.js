@@ -82,25 +82,17 @@ exports.createSuperAdmin = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
     }
-
-    // Check if the provided role is 'super'
-    const superRole = await role.findOne({ role: "super" });
-    if (!superRole) {
-      return res.status(500).json({ message: "Super role not found" });
-    }
-
-    // Hash the password
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
 
     // Create a new user with the provided data
-    const savedUser =  userService.createUser({
+    const savedUser =  await userService.createUser({
       firstName: req.body.firstName,
       lastName: req.body.lastName,
       email: req.body.email,
       password: hashedPassword,
       accountId: req.body.accountId,
       phoneNumber: req.body.phoneNumber,
-      roleId:'65672dd3c8f0946352589287', // Assign super role
+      roleId:req.body.roleId, // Assign super role
       is_primary: req.body.is_primary,
       status: req.body.status,
     });
