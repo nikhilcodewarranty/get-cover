@@ -77,7 +77,7 @@
           "claimId": {
             "type": "Reff:Claims(ClaimId)"
           },
-          "serviceproId": {
+          "serviceProId": {
             "type": "Reff:ServiceProvider(ServiceProviderId)"
           },
           "name": {
@@ -179,7 +179,7 @@
           "reinsuranceFee": {
             "type": "string"
           },
-          "reserve_future_fee": {
+          "reserveFutureFee": {
             "type": "string"
           },
           "adminFee": {
@@ -317,12 +317,6 @@
           "country": {
             "type": "String"
           },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
           "city": {
             "type": "string"
           },
@@ -332,7 +326,7 @@
           "dealerId": {
             "type": "Reff: Dealer(DealerId)"
           },
-          "serviceProvider": {
+          "serviceProviderId": {
             "type": "Reff:ServiceProvider(ServiceProviderId) "
           },
           "token": {
@@ -388,7 +382,7 @@
           "dealerPriceBookId": {
             "type": "Reff:DealerPriceBook(DealerPriceBookId)"
           },
-          "product_condition": {
+          "productCondition": {
             "type": "string"
           }          
         }
@@ -405,7 +399,7 @@
           "dealerId": {
             "type": "Reff:Dealer(DealerId)"
           },
-          "serviceprovId": {
+          "serviceProvId": {
             "type": "Number"
           },
           "deductible": {
@@ -442,7 +436,7 @@
             "type": "Date"
           },
           "waitPeriodBd": {
-            "type": "Number)"
+            "type": "Number"
           },
           "waitPeriodAdh": {
             "type": "Number"
@@ -453,14 +447,14 @@
           "coverageType": {
               "type": "string"
           },
-          "additional_notes": {
+          "additionalNotes": {
             "type": "string"
          },
-         "send_notification": {
+         "sendNotification": {
           "type": "Boolean"
         },
          "productsArray":{
-            "type":"string"
+            "type":"Array"
           },
          "status":{
             "type":"string"
