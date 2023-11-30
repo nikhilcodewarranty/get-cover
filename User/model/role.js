@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
-
+const connection = require('../../db')
 const roleSchema = new mongoose.Schema({
   role: {
     type: String,
-    required: true,
+    default:''
   },
 });
-module.exports = mongoose.model("role", roleSchema);
+module.exports = connection.userConnection.model("role", roleSchema);

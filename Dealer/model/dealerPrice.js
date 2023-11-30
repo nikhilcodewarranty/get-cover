@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
 
 const dealerBookSchema = new mongoose.Schema({
   priceBook: {
@@ -16,4 +17,4 @@ const dealerBookSchema = new mongoose.Schema({
     required: true,
   },
 });
-module.exports = mongoose.model("dealerPriceBook", dealerBookSchema);
+module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);

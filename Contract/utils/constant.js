@@ -5,3 +5,5 @@ contractResourceResponse.reqCreated = { statusCode: 201, message: 'Record has be
 contractResourceResponse.recordNotFound = { statusCode: 404, message: 'No record found.' };
 contractResourceResponse.serverError = { statusCode: 500, message: 'Internal server error.' };
 contractResourceResponse.reqValidationError = { statusCode: 422, message: 'Data validation failed.' };
+
+module.exports=contractResourceResponse

@@ -5,3 +5,5 @@ customerResourceResponse.reqCreated = { statusCode: 201, message: 'Record has be
 customerResourceResponse.recordNotFound = { statusCode: 404, message: 'No record found.' };
 customerResourceResponse.serverError = { statusCode: 500, message: 'Internal server error.' };
 customerResourceResponse.reqValidationError = { statusCode: 422, message: 'Data validation failed.' };
+
+module.exports=customerResourceResponse
