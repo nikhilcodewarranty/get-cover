@@ -1,45 +1,43 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
 const userSchema = new mongoose.Schema({
   firstName: {
     type: String,
-    required: true,
+    default: ''
   },
-
   lastName: {
     type: String,
-    required: true,
+    default: ''
   },
   email: {
     type: String,
-    required: true,
+    default: ''
   },
   password: {
     type: String,
-    required: true,
+    default: ''
   },
   accountId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
-    required: true,
   },
   phoneNumber: {
     type: String,
-    required: true,
+    default: ''
   },
   roleId: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "role",
-    required: true,
   },
   isPrimary: {
     type: String,
-    required: true,
+    default: ''
   },
   status: {
     type: String,
-    required: true,
+    default: ''
   },
- 
-},{timestamps:true});
 
-module.exports = mongoose.model("user", userSchema);
+}, { timestamps: true });
+
+module.exports = connection.userConnection.model("user", userSchema);

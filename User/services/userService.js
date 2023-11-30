@@ -28,12 +28,16 @@ module.exports = class userService {
 
   static async createUser(data) {
     try {
+      console.log('first step______---------------')
       const response = await new user(data).save();
+      console.log('second step______---------------')
       return response;
     } catch (error) {
       console.log(error);
     }
   }
+
+  
   static async getUserById(userId) {
     try {
       const singleUserResponse = await user.findById({

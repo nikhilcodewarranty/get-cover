@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
 
 const dealarSchema = new mongoose.Schema({
   name: {
@@ -35,4 +36,4 @@ const dealarSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("dealer", dealarSchema);
+module.exports = connection.dealerConnection.model("dealer", dealarSchema);
