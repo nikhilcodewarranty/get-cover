@@ -1,34 +1,53 @@
 // app.js
-const express = require("express");
-const mongoose = require("mongodb").MongoClient;
-const bodyParser = require("body-parser");
 require("dotenv").config();
-const app = express();
-const port = process.env.USER_API_ENDPOINT || 8080;
+const express = require("express");
+var createError = require('http-errors');
+const bodyParser = require("body-parser");
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+const http = require('http')
+const cors = require('cors')
+var path = require('path');
+// const port = process.env.USER_API_ENDPOINT || 8080;
 const dbConfig = require("./config/database");
 const { databaseConnect } = require("./db");
 
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE');
-  res.header('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
-
 const userRoutes = require("./routes/user");
 
-
-
-app.use("/api-v1", userRoutes);
-
-//Database connection
- databaseConnect(dbConfig.usersMongoURI);
-
-
-
-
+var app = express();
 app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors())
+const httpServer = http.createServer(app)
+// view engine setup
+app.use("/api/v1", userRoutes);
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/uploads/', express.static('./uploads'))
+
+
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+  next(createError(404));
 });
+
+// error handler
+app.use(function (err, req, res, next) {
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
+});
+
+const PORT = process.env.USER_API_ENDPOINT || 8080
+httpServer.listen(PORT, () => console.log(`users Server is running on port ${PORT}`))
+
+module.exports = app;
