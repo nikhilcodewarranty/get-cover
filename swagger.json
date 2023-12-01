@@ -31,19 +31,47 @@
           }
         }
       },
-      "create-superAdmin":{
+      "/createSuperAdmin":{
         "post":{
           "tags": ["Create Super Admin"],
            "summary": "Create Super Admin",
            "parameters": [
             {
-              "firstName": "user",
-              "in": "body",
-              "lastName": "User object",
+              "name": "userDetails",
+              "description": "username to get userType",
               "required": true,
+              "in": "body",
               "schema": {
                 "$ref": "#/definitions/Users"
               }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+      "/login":{
+        "post":{
+          "tags": ["Login User"],
+           "summary": "Create Login", 
+           "parameters": [
+            {
+              "name": "Email",
+              "description": "Email",
+              "required": true,
+              "in": "formData"
+            },
+            {
+              "name": "Password",
+              "description": "Password",
+              "required": true,
+              "in": "formData"
             }
           ],
           "responses": {

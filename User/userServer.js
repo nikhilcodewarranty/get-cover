@@ -20,7 +20,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors())
 const httpServer = http.createServer(app)
 // view engine setup
-app.use("/api/v1", userRoutes);
+app.use( (request, response, next) => {
+  response.header("Access-Control-Allow-Origin", "*");
+  response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+app.use("/api-v1", userRoutes);
 
 app.use(logger('dev'));
 app.use(express.json());

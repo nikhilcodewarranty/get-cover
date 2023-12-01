@@ -15,7 +15,7 @@ const cors = require('cors')
 
 var app = express();
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 //app.use('/api/v1', router);
 app.use(cors())
 const httpServer = http.createServer(app)
@@ -46,7 +46,7 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-const PORT = 6000
+const PORT = 3000
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
 
 module.exports = app;
