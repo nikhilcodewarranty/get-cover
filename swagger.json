@@ -18,9 +18,17 @@
     "produces": [
       "application/json"
     ],
+    "securityDefinitions": {
+      "Bearer": {
+          "type": "apiKey",
+          "name": "x-access-token",
+          "in": "header"
+      }
+  },
     "paths": {
       "/users": {
         "get": {
+        "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
@@ -33,6 +41,7 @@
       },
       "/roles": {
         "get": {
+          "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
           "responses": {
@@ -45,6 +54,7 @@
       },
       "/addRole":{
         "post":{
+          "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
            "summary": "Add Role",
            "parameters": [
@@ -68,6 +78,7 @@
      
       "/createSuperAdmin":{
         "post":{
+          "security": [ { "Bearer": [] } ],
           "tags": ["Create Super Admin"],
            "summary": "Create Super Admin",
            "parameters": [
@@ -90,6 +101,7 @@
       },
       "/createDealer":{
         "post":{
+          "security": [ { "Bearer": [] } ],
           "tags": ["Dealers"],
            "summary": "Create Dealer",
            "parameters": [
@@ -112,6 +124,7 @@
       },
       "/login":{
         "post":{
+          "security": [ { "Bearer": [] } ],
           "tags": ["Login User"],
            "summary": "Create Login", 
            "parameters": [
