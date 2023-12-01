@@ -11,8 +11,6 @@ var logger = require('morgan');
 const http = require('http')
 const cors = require('cors')
 
-
-
 var app = express();
 
 app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

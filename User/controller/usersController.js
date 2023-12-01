@@ -8,7 +8,7 @@ const users = require("../model/users");
 const role = require("../model/role");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-exports.getAllusers = async (req, res, next) => {
+exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
     if (!users) {
@@ -21,6 +21,7 @@ exports.getAllusers = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
 
 exports.createUser = async (req, res, next) => {
   try {
@@ -35,6 +36,7 @@ exports.createUser = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
 
 exports.getUserById = async (req, res, next) => {
   try {
@@ -140,7 +142,9 @@ exports.createSuperAdmin = async (req, res) => {
 
 // Login route
 exports.login = async (req, res) => {
+  
   try {
+    
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
     if (!user) {
@@ -179,5 +183,34 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+exports.getAllRoles = async (req, res, next) => {
+  try {
+    const users = await userService.getAllRoles();
+    if (!users) {
+      res.status(404).json("There are no user published yet!");
+    }
+    res.json(users);
+  } catch (error) {
+    res
+      .status(userResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+exports.addRole = async (req, res, next) => {
+  try {
+    const createdUser = await userService.addRole(req.body);
+    if (!createdUser) {
+      res.status(404).json("There are no user created yet!");
+    }
+    res.json(createdUser);
+  } catch (error) {
+    res
+      .status(userResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
   }
 };

@@ -1,8 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const {getAllusers, createSuperAdmin, login} = require("../controller/usersController");
+const {getAllUsers, createSuperAdmin, login, addRole,getAllRoles} = require("../controller/usersController");
 
-router.get("/users", getAllusers);
+router.get("/users", getAllUsers);
+router.get("/roles", getAllRoles);
+
+
 router.post("/createSuperAdmin", createSuperAdmin);
 router.post("/login", login);
+router.post("/addRole", addRole);
+
 module.exports = router;

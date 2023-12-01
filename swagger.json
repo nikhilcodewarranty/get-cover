@@ -31,6 +31,44 @@
           }
         }
       },
+      "/roles": {
+        "get": {
+          "tags": ["Roles"],
+          "summary": "Get all user Roles",
+          "responses": {
+            "200": {
+              "description": "ok"
+            }
+          }
+        }
+        
+      },
+      "/addRole":{
+        "post":{
+          "tags": ["Roles"],
+           "summary": "Add Role",
+           "parameters": [
+            {
+              "name": "Role Name",
+              "description": "Roles Description",
+              "required": true,
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/Roles"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+     
       "/createSuperAdmin":{
         "post":{
           "tags": ["Create Super Admin"],
@@ -62,16 +100,13 @@
            "summary": "Create Login", 
            "parameters": [
             {
-              "name": "Email",
-              "description": "Email",
+              "name": "loginBody",
+              "description": "username to get userType",
               "required": true,
-              "in": "formData"
-            },
-            {
-              "name": "Password",
-              "description": "Password",
-              "required": true,
-              "in": "formData"
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/loginBody"
+              }
             }
           ],
           "responses": {
@@ -86,6 +121,17 @@
       }
     },
      "definitions": {
+      "loginBody":{
+        "properties": {
+        
+          "email": {
+            "type": "string"
+          },"password": {
+            "type": "string"
+          }
+         
+        }
+      },
       "Claims": {
         "required": [
           "_id"
@@ -544,14 +590,7 @@
         }
       },
       "Roles": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "role": {
             "type": "string"
           },

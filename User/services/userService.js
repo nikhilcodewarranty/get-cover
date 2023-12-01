@@ -1,4 +1,5 @@
 const user = require("../model/users");
+const role = require("../model/role");
 
 module.exports = class userService {
   static async getAllUsers() {
@@ -70,4 +71,28 @@ module.exports = class userService {
       console.log(`Could not delete user ${error}`);
     }
   }
+
+  static async getAllRoles() {
+    try {
+      const roles = await role.find();
+      return roles;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  }
+
+
+  static async addRole(data) {
+    try {
+      console.log('first step______---------------')
+      const response = await new role(data).save();
+      console.log('second step______---------------')
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  
+  
 };
