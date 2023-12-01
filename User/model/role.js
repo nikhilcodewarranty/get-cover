@@ -5,5 +5,13 @@ const roleSchema = new mongoose.Schema({
     type: String,
     default:''
   },
+  status: {
+    type: Boolean,
+    default: true
+  },
+  isDeleted: {
+    type: String,
+    default: false
+  },
 });
 module.exports = connection.userConnection.model("role", roleSchema);

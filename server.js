@@ -11,6 +11,9 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const http = require('http')
 const cors = require('cors')
+const createHttpError = require('http-errors')
+
+
 
 var app = express();
 
@@ -29,7 +32,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use('/uploads/',express.static('./uploads'))
 
-
+app.set("views", path.join(__dirname, "views"))
+app.set("view engine", "pug")
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
@@ -45,6 +49,14 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+//* Catch HTTP 404 
+app.use((req, res, next) => {
+  next(createHttpError(404));
+})
+
+
 
 const PORT = 3000
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))

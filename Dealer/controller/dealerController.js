@@ -1,7 +1,9 @@
 const { Dealer } = require("../model/dealer");
 const { DealerPrice } = require("../model/dealerPrice");
+const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
+const constant = require('../../config/constant')
 
 exports.getAllDealers = async (req, res, next) => {
   try {
@@ -33,11 +35,33 @@ exports.createDealer = async (req, res, next) => {
 
 exports.getDealerById = async (req, res, next) => {
   try {
-    const singleDealer = await dealerService.getDealerById(dealerId);
-    if (!singleDealer) {
-      res.status(404).json("There are no dealer found yet!");
+    //fetching data from user table
+    let data = req.body
+    let getUser = await USER.findOne({_id:req.userId})
+    if(!getUser){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid token ID"
+      })
+      return;
     }
-    res.json(singleDealer);
+
+    const singleDealer = await dealerService.getDealerById({_id:getUser.accountId});
+    let result = getUser.toObject()
+    result.metaData = singleDealer
+    if (!singleDealer) {
+     res.send({
+      code:constant.errorCode,
+      message:"No data found"
+     })
+    }else{
+      res.send({
+        code:constant.successCode,
+        message:"Success",
+        result:result
+       })
+    }
+    
   } catch (error) {
     res
       .status(dealerResourceResponse.serverError.statusCode)

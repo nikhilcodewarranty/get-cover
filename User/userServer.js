@@ -11,6 +11,7 @@ var path = require('path');
 // const port = process.env.USER_API_ENDPOINT || 8080;
 const dbConfig = require("./config/database");
 const { databaseConnect } = require("./db");
+const createHttpError = require('http-errors')
 
 const userRoutes = require("./routes/user");
 
@@ -27,7 +28,8 @@ app.use( (request, response, next) => {
 });
 
 app.use("/api-v1", userRoutes);
-
+app.set("views", path.join(__dirname, "views"))
+app.set("view engine", "pug")
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -52,6 +54,11 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+//* Catch HTTP 404 
+app.use((req, res, next) => {
+  next(createHttpError(404));
+})
 
 const PORT = process.env.USER_API_ENDPOINT || 8080
 httpServer.listen(PORT, () => console.log(`users Server is running on port ${PORT}`))

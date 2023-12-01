@@ -3,37 +3,45 @@ const claimPartSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "claim",
-    required: true,
+    // required: true,
   },
   serviceproId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceProvider",
-    required: true,
+    // required: true,
   },
   name: {
     type: String,
-    required: true,
+    // required: true,
   },
   description: {
     type: String,
-    required: true,
+    // required: true,
   },
   serial: {
     type: String,
-    required: true,
+    // required: true,
   },
   manufacture: {
     type: String,
-    required: true,
+    // required: true,
   },
   model: {
     type: String,
-    required: true,
+    // required: true,
+  },
+  status:{
+    type:Boolean,
+    default:true
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   price: {
     type: Number,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("claimPart", claimPartSchema);
