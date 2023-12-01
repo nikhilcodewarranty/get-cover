@@ -1,13 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const {getAllUsers, createSuperAdmin, login, addRole,getAllRoles} = require("../controller/usersController");
+const userController = require("../controller/usersController");
 
-router.get("/users", getAllUsers);
-router.get("/roles", getAllRoles);
+router.get("/users", userController.getAllUsers);
+router.get("/roles", userController.getAllRoles);
 
 
 router.post("/createSuperAdmin", createSuperAdmin);
-router.post("/login", login);
-router.post("/addRole", addRole);
+router.post("/login", userController.login);
+router.post("/addRole", userController.addRole);
+router.post("/createDealer", userController.createDealer);
+
+
 
 module.exports = router;
