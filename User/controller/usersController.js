@@ -1,13 +1,17 @@
 require("dotenv").config();
-const { Users } = require("../model/users");
-const { Roles } = require("../model/role");
+// const { Users } = require("../model/users");
+// const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
 console.log(userResourceResponse)
 const userService = require("../services/userService");
+const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");
 const role = require("../model/role");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const constant = require('../../config/constant')
+
+
 exports.getAllusers = async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
@@ -81,8 +85,6 @@ exports.deleteUser = async (req, res, next) => {
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
-
-    consle.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
@@ -105,9 +107,7 @@ exports.createSuperAdmin = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    // Create a new user with the provided data
-    const savedUser = userService.createUser({
+    let userData = {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
@@ -117,7 +117,10 @@ exports.createSuperAdmin = async (req, res) => {
       roleId: '65672dd3c8f0946352589287', // Assign super role
       is_primary: data.is_primary,
       status: data.status,
-    });
+    }
+
+    // Create a new user with the provided data
+    const savedUser = userService.createUser(userData);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -137,6 +140,88 @@ exports.createSuperAdmin = async (req, res) => {
     });
   }
 };
+
+exports.createDealer = async (req, res) => {
+  try {
+    let data = req.body
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Email already exist"
+      })
+      return;
+    }
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // Create a new dealer meta data
+    let dealerMeta = {
+      name: data.name,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      createdBy: data.createdBy
+    }
+    let createMetaData = await dealerService.createDealer(dealerMeta)
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
+      })
+      return;
+    }
+    let checkRole = await role.findOne({ role: data.role })
+    if (!checkRole) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid role"
+      })
+      return;
+    }
+
+    let dealerData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      accountId: createMetaData._id,
+      phoneNumber: data.phoneNumber,
+      roleId: checkRole._id, // Assign super role
+      is_primary: data.is_primary,
+    }
+
+    let createDealer = await userService.createUser(dealerData)
+
+    if (createDealer) {
+      let result = createDealer.toObject()
+      result.role = data.role
+      result.meta = createMetaData
+      const token = jwt.sign(
+        { userId: createDealer._id, email: createDealer.email },
+        process.env.JWT_SECRET, // Replace with your secret key
+        { expiresIn: "1h" }
+      );
+      res.send({
+        code: constant.successCode,
+        message: 'Successfully Created',
+        result: result,
+        jwtToken:token
+      })
+    } else {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the dealer"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 // Login route
 exports.login = async (req, res) => {
@@ -171,9 +256,9 @@ exports.login = async (req, res) => {
     res.send({
       code: 200,
       message: "Login Successful",
-      result:{
-        token:token,
-        email:user.email
+      result: {
+        token: token,
+        email: user.email
       }
     })
   } catch (error) {

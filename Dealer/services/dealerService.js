@@ -12,15 +12,17 @@ module.exports = class dealerService {
 
   static async createDealer(data) {
     try {
+      console.log('data meta---------',data)
       const response = await new dealer(data).save();
       return response;
     } catch (error) {
       console.log(error);
     }
   }
+
   static async getDealerById(dealerId) {
     try {
-      const singleDealerResponse = await dealer.findById({
+      const singleDealerResponse = await dealer.findOne({
         _id: dealerId,
       });
       return singleDealerResponse;

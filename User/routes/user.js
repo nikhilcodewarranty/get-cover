@@ -1,8 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const {getAllusers, createSuperAdmin, login} = require("../controller/usersController");
+const userController = require("../controller/usersController");
 
-router.get("/users", getAllusers);
-router.post("/createSuperAdmin", createSuperAdmin);
-router.post("/login", login);
+router.get("/users", userController.getAllusers);
+router.post("/createSuperAdmin", userController.createSuperAdmin);
+router.post("/login", userController.login);
+router.post("/createDealer", userController.createDealer);
 module.exports = router;
