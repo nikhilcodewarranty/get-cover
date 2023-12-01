@@ -18,16 +18,14 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   accountId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "dealer",
+    type:String
   },
   phoneNumber: {
     type: String,
     default: ''
   },
   roleId: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "role",
+    type: String,
   },
   isPrimary: {
     type: String,

@@ -85,6 +85,8 @@ exports.deleteUser = async (req, res, next) => {
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
+
+   // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
