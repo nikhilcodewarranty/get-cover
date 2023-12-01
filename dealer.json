@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:8080",
+    "host": "3.108.215.169:8080",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -19,77 +19,14 @@
       "application/json"
     ],
     "paths": {
-      "/users": {
+      "/dealers": {
         "get": {
-          "tags": ["Users"],
-          "summary": "Get all users",
+          "tags": ["Dealers"],
+          "summary": "Get all Dealers",
           "responses": {
             "200": {
               "description": "ok"
 
-            }
-          }
-        }
-      },
-      "/roles": {
-        "get": {
-          "tags": ["Roles"],
-          "summary": "Get all user Roles",
-          "responses": {
-            "200": {
-              "description": "ok"
-            }
-          }
-        }
-        
-      },
-      "/addRole":{
-        "post":{
-          "tags": ["Roles"],
-           "summary": "Add Role",
-           "parameters": [
-            {
-              "name": "Role Name",
-              "description": "Roles Description",
-              "required": true,
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/Roles"
-              }
-            }
-          ],
-          "responses": {
-            "201": {
-              "description": "User created successfully"
-            },
-            "400": {
-              "description": "Bad request"
-            }
-          }
-        }
-      },
-     
-      "/createSuperAdmin":{
-        "post":{
-          "tags": ["Create Super Admin"],
-           "summary": "Create Super Admin",
-           "parameters": [
-            {
-              "name": "userDetails",
-              "description": "username to get userType",
-              "required": true,
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/Users"
-              }
-            }
-          ],
-          "responses": {
-            "201": {
-              "description": "User created successfully"
-            },
-            "400": {
-              "description": "Bad request"
             }
           }
         }
@@ -100,12 +37,12 @@
            "summary": "Create Dealer",
            "parameters": [
             {
-              "name": "Dealer Body",
-              "description": "Dealer Body",
+              "name": "userDetails",
+              "description": "username to get userType",
               "required": true,
               "in": "body",
               "schema": {
-                "$ref": "#/definitions/dealerBody"
+                "$ref": "#/definitions/Dealer"
               }
             }
           ],
@@ -147,8 +84,7 @@
     },
      "definitions": {
       "loginBody":{
-        "properties": {
-        
+        "properties": {        
           "email": {
             "type": "string"
           },"password": {
@@ -159,46 +95,9 @@
       },
       "dealerBody":{
         "properties": {        
-          "name": {
-            "type": "string"
-          },
-          "street": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "zip": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
           "email": {
             "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "isPrimary": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "role": {
-            "type": "string"
-          },
-          "lastName": {
+          },"password": {
             "type": "string"
           }
          
@@ -307,14 +206,8 @@
         }
       },
       "Dealer": {
-        "required": [
-          "_id"
-        ],
+       
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "name": {
             "type": "string"
           },

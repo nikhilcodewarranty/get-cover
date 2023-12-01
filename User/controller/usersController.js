@@ -194,7 +194,7 @@ exports.createDealer = async (req, res) => {
       accountId: createMetaData._id,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id, // Assign super role
-      is_primary: data.is_primary,
+      isPrimary: data.is_primary,
     }
 
     let createDealer = await userService.createUser(dealerData)
