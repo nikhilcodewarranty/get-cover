@@ -82,7 +82,7 @@ exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
 
-    consle.log(data)
+   // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {

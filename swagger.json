@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:6000",
+    "host": "localhost:8080",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -294,14 +294,8 @@
         }
       },
       "Users": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+          
           "firstName": {
             "type": "string"
           },
@@ -315,13 +309,13 @@
             "type": "string"
           },
           "accountId": {
-            "type": "Reff : Dealer(DearlerId) or ServiceProvider(ServiceProviderId) or Customer(CustomerId)"
+            "type": "string"
           },
           "phoneNumber": {
             "type": "string"
           },
           "roleId": {
-            "type": "Reff: Roles(RoleId)"
+            "type": "string"
           },
           "isPrimary": {
             "type": "boolean"
