@@ -13,7 +13,7 @@ const jwt = require("jsonwebtoken");
 const constant = require('../../config/constant')
 
 
-exports.getAllusers = async (req, res, next) => {
+exports.getAllUsers = async (req, res, next) => {
   try {
     const users = await userService.getAllUsers();
     if (!users) {

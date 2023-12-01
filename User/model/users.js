@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   roleId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,ref:"roles",
   },
   isPrimary: {
     type: String,

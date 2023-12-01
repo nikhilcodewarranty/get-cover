@@ -6,7 +6,7 @@ router.get("/users", userController.getAllUsers);
 router.get("/roles", userController.getAllRoles);
 
 
-router.post("/createSuperAdmin", createSuperAdmin);
+router.post("/createSuperAdmin", userController.createSuperAdmin);
 router.post("/login", userController.login);
 router.post("/addRole", userController.addRole);
 router.post("/createDealer", userController.createDealer);
