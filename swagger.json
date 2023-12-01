@@ -49,9 +49,6 @@
            "summary": "Add Role",
            "parameters": [
             {
-              "name": "Role Name",
-              "description": "Roles Description",
-              "required": true,
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/Roles"
@@ -75,9 +72,6 @@
            "summary": "Create Super Admin",
            "parameters": [
             {
-              "name": "userDetails",
-              "description": "username to get userType",
-              "required": true,
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/Users"
@@ -100,9 +94,6 @@
            "summary": "Create Dealer",
            "parameters": [
             {
-              "name": "Dealer Body",
-              "description": "Dealer Body",
-              "required": true,
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/dealerBody"
