@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require("../controller/usersController");
 const {verifyToken} = require('../../middleware/auth')
 const validator = require('../config/validation');
-router.get("/users", userController.getAllUsers);
+router.get("/users",[verifyToken] ,userController.getAllUsers);
 router.get("/roles", userController.getAllRoles);
 
 
