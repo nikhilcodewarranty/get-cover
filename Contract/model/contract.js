@@ -3,61 +3,69 @@ const contractSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "order",
-    required: true,
+    // required: true,
   },
   productOrderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "productOrder",
-    required: true,
+    // required: true,
   },
   productName: {
     type: String,
-    required: true,
+    // required: true,
   },
   description: {
     type: String,
-    required: true,
+    // required: true,
   },
   model: {
     type: String,
-    required: true,
+    // required: true,
   },
   manufacture: {
     type: String,
-    required: true,
+    // required: true,
   },
   productValue: {
     type: Number,
-    required: true,
+    // required: true,
   },
   serial: {
     type: String,
-    required: true,
+    // required: true,
   },
   regDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
   claimStatus: {
     type: String,
-    required: true,
+    // required: true,
   },
   claimAmount: {
     type: Number,
-    required: true,
+    // required: true,
   },
   eligibilty: {
     type: String,
-    required: true,
+    // required: true,
   },
   covEndDate: {
     type: Date,
-    required: true,
+    // required: true,
+  },
+  status:{
+    type:Boolean,
+    default:true
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   deductible: {
     type: Number,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("contract", contractSchema);

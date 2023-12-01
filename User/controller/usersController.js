@@ -89,7 +89,7 @@ exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
 
-   // console.log(data)
+    // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
@@ -212,7 +212,7 @@ exports.createDealer = async (req, res) => {
         code: constant.successCode,
         message: 'Successfully Created',
         result: result,
-        jwtToken:token
+        jwtToken: token
       })
     } else {
       res.send({
@@ -230,9 +230,7 @@ exports.createDealer = async (req, res) => {
 
 // Login route
 exports.login = async (req, res) => {
-  
   try {
-    
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
     if (!user) {

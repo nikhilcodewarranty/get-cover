@@ -2,62 +2,70 @@ const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   username: {
     type: String,
-    required: true,
+    // required: true,
   },
   email: {
     type: String,
-    required: true,
+    // required: true,
   },
   phone: {
     type: String,
-    required: true,
+    // required: true,
   },
   firstName: {
     type: String,
-    required: true,
+    // required: true,
   },
   lastName: {
     type: String,
-    required: true,
+    // required: true,
   },
   password: {
     type: String,
-    required: true,
+    // required: true,
   },
   street: {
     type: String,
-    required: true,
+    // required: true,
   },
   city: {
     type: String,
-    required: true,
+    // required: true,
   },
   zip: {
     type: String,
-    required: true,
+    // required: true,
   },
   state: {
     type: String,
-    required: true,
+    // required: true,
   },
   country: {
     type: String,
-    required: true,
+    // required: true,
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
-    required: true,
+    // required: true,
   },
   serviceProvider: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceProvider",
-    required: true,
+    // required: true,
+  },
+  status:{
+    type:Boolean,
+    default:true
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   token: {
     type: String,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("customer", customerSchema);

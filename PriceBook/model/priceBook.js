@@ -33,15 +33,19 @@ const priceSchema = new mongoose.Schema({
     required: true,
   },
   status: {
-    type: String,
+    type: Boolean,
     required: true,
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "priceCategory",
     required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("priceBook", priceSchema);
 module.exports = mongoose.model("priceCategory", priceCategorySchema);

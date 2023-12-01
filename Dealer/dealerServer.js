@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors())
 const httpServer = http.createServer(app)
 // view engine setup
-app.use("/api/v1", dealerRoutes);
+app.use("/api-v1", dealerRoutes);
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -48,6 +48,6 @@ app.use(function (err, req, res, next) {
 });
 
 const PORT = process.env.DEALER_API_ENDPOINT || 8082
-httpServer.listen(PORT, () => console.log(`users Server is running on port ${PORT}`))
+httpServer.listen(PORT, () => console.log(`Dealer server is running on port ${PORT}`))
 
 module.exports = app;

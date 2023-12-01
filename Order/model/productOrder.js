@@ -3,26 +3,26 @@ const productOrderSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "order",
-    required: true,
+    // required: true,
   },
   dealerBookId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealerPrice",
-    required: true,
+    // required: true,
   },
   costPerUnit: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealerPrice",
-    required: true,
+    // required: true,
   },
   quantity: {
     type: Number,
-    required: true,
+    // required: true,
   },
   total: {
     type: Number,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("productOrder", productOrderSchema);

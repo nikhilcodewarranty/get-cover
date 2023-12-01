@@ -25,10 +25,18 @@ const serviceProviderSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  status: {
+    type: Boolean,
+    default: true
+  },
+  isDeleted: {
+    type: String,
+    default: false
+  },
   token: {
     type: String,
     required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("serviceProvider", serviceProviderSchema);
