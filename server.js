@@ -19,8 +19,11 @@ const createHttpError = require('http-errors')
 
 var app = express();
 
-app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api-v1/dealerApi', swaggerUi1.serve, swaggerUi1.setup(swaggerDocumentDealer));
+app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
+app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
+
+// app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// app.use('/api-v1/dealerApi', swaggerUi1.serve, swaggerUi1.setup(swaggerDocumentDealer));
 //app.use('/api/v1', router);
 app.use(cors())
 const httpServer = http.createServer(app)
