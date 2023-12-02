@@ -7,7 +7,7 @@ const roleSchema = new mongoose.Schema({
   },
   status: {
     type: Boolean,
-    default: true
+    enum : ['0','1'],
   },
   isDeleted: {
     type: String,

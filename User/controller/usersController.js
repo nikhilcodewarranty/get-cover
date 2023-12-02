@@ -2,7 +2,7 @@ require("dotenv").config();
 // const { Users } = require("../model/users");
 // const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
-console.log(userResourceResponse)
+//console.log(userResourceResponse)
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");
@@ -19,10 +19,16 @@ exports.getAllUsers = async (req, res, next) => {
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-    res.json(users);
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: {
+          users: users
+        }
+      })
   } catch (error) {
     res
-      .status(userResourceResponse.serverError.statusCode)
+      .status(constant.errorCode)
       .json({ error: "Internal server error" });
   }
 };
@@ -239,6 +245,7 @@ exports.login = async (req, res) => {
       return;
     }
 
+    console.log('check user++++++++++++++++++',user,req.body.password)
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
@@ -257,7 +264,7 @@ exports.login = async (req, res) => {
     );
 
     res.send({
-      code: 200,
+      code: constant.successCode,
       message: "Login Successful",
       result: {
         token: token,
@@ -266,21 +273,31 @@ exports.login = async (req, res) => {
     })
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 
 exports.getAllRoles = async (req, res, next) => {
   try {
-    const users = await userService.getAllRoles();
+    const roles = await userService.getAllRoles();
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-    res.json(users);
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        roles: roles
+      }
+    })
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 
@@ -292,9 +309,10 @@ exports.addRole = async (req, res, next) => {
     }
     res.json(createdUser);
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 

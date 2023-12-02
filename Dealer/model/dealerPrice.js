@@ -21,8 +21,8 @@ const dealerBookSchema = new mongoose.Schema({
     default: false
   },
   status:{
-    type:Boolean,
-    default:true
+    type:String,
+    enum : ['Active','Inactive'],
   },
   isDeleted:{
     type:Boolean,
