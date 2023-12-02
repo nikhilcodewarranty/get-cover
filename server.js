@@ -14,10 +14,17 @@ var logger = require('morgan');
 const http = require('http')
 const cors = require('cors')
 const createHttpError = require('http-errors')
+const userRoutes = require("./User/routes/user");
+const dealerRoutes = require("./Dealer/routes/dealer");
+const priceRoutes = require("./PriceBook/routes/price");
 
 
 
 var app = express();
+
+
+
+
 
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
@@ -34,6 +41,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+//common routing for server
+app.use("/api-v1/user", userRoutes);
+app.use("/api-v1/dealer", dealerRoutes);
+app.use("/api-v1/price", priceRoutes);
 
 // app.use('/uploads/',express.static('./uploads'))
 
