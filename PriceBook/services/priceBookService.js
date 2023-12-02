@@ -2,9 +2,9 @@ const priceBook = require("../model/priceBook");
 const priceCategory = require("../model/priceCategory");
 
 module.exports = class priceBookService {
-  static async getAllPriceBook(query,projection) {
+  static async getAllPriceBook(query, projection) {
     try {
-      const allPriceBook = await priceBook.find(query,projection);
+      const allPriceBook = await priceBook.find(query, projection);
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
@@ -14,28 +14,25 @@ module.exports = class priceBookService {
   static async createPriceBook(data) {
     try {
       const response = await new priceBook(data).save();
-     return response;
+      return response;
     } catch (error) {
       console.log(error);
     }
   }
 
-  static async getPriceBookById(query,projection) {
+  static async getPriceBookById(query, projection) {
     try {
-      const singlePriceBookResponse = await priceBook.findById({query,projection});
+      const singlePriceBookResponse = await priceBook.findOne({ _id: query._id },projection);
+      console.log('____----------------------',query,singlePriceBookResponse)
       return singlePriceBookResponse;
     } catch (error) {
       console.log(`Price book not found. ${error}`);
     }
   }
 
-  static async updatePriceBook(data) {
+  static async updatePriceBook(criteria,newValue,option) {
     try {
-      const updatedResponse = await priceBook.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
-
+      const updatedResponse = await priceBook.findOneAndUpdate(criteria,newValue,option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update price book ${error}`);
@@ -51,48 +48,48 @@ module.exports = class priceBookService {
     }
   }
 
-// ---------------------PRIVE CATEGORY SERVICES-------------- //
+  // ---------------------PRIVE CATEGORY SERVICES-------------- //
 
-//get price category by id service
-static async getPriceCatById(data) {
-  try {
-    const singlePriceCatResponse = await priceCategory.findOne(data);
-    return singlePriceCatResponse;
-  } catch (error) {
-    console.log(`Price category not found. ${error}`);
+  //get price category by id service
+  static async getPriceCatById(ID,projection) {
+    try {
+      const singlePriceCatResponse = await priceCategory.findOne({_id:ID},projection);
+      return singlePriceCatResponse;
+    } catch (error) {
+      console.log(`Price category not found. ${error}`);
+    }
   }
-}
 
-//create price category  service
-static async createPriceCat(data) {
-  try {
-    const response = await new priceCategory(data).save();
-    return response;
-  } catch (error) {
-    console.log(error);
+  //create price category  service
+  static async createPriceCat(data) {
+    try {
+      const response = await new priceCategory(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
   }
-}
 
-//get price categories service
-static async getAllPriceCat(query,projection) {
-  try {
-    const allPriceCategories = await priceCategory.find(query,projection);
-    return allPriceCategories;
-  } catch (error) {
-    console.log(`Could not fetch price categories ${error}`);
+  //get price categories service
+  static async getAllPriceCat(query, projection) {
+    try {
+      const allPriceCategories = await priceCategory.find(query, projection);
+      return allPriceCategories;
+    } catch (error) {
+      console.log(`Could not fetch price categories ${error}`);
+    }
   }
-}
 
-// update price category
+  // update price category
 
-static async updatePriceCategory(criteria,newValue,options){
-  try {
-    const updatedPriceCat = await priceCategory.updateMany(criteria,newValue,options);
-    return updatedPriceCat;
-  } catch (error) {
-    console.log(`Could not fetch price categories ${error}`);
+  static async updatePriceCategory(criteria, newValue, options) {
+    try {
+      const updatedPriceCat = await priceCategory.updateMany(criteria, newValue, options);
+      return updatedPriceCat;
+    } catch (error) {
+      console.log(`Could not fetch price categories ${error}`);
+    }
   }
-}
 
 
 };

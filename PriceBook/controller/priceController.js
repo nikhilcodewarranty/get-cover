@@ -3,21 +3,26 @@ const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
 const constant = require("../../config/constant");
 
+
+//------------- price book api's------------------//
+
+//get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    let query = {status:true,isDeleted:false}
-    let projection = {isDeleted:0,__v:0}
-    const priceBooks = await priceBookService.getAllPriceBook(query,projection);
+    let query = { status: true, isDeleted: false }
+    let projection = { isDeleted: 0, __v: 0 }
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
     if (!priceBooks) {
-     res.send({
-      code:constant.errorCode,
-      message:"Unable to fetch the data"
-     })
-     return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
     }
     res.send({
-      code:constant.successCode,
-      message:"Success"
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
     })
   } catch (error) {
     res
@@ -26,6 +31,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
   }
 };
 
+//create new price book
 exports.createPriceBook = async (req, res, next) => {
   try {
     let data = req.body
@@ -67,26 +73,26 @@ exports.createPriceBook = async (req, res, next) => {
   }
 };
 
+//get price book by id 
 exports.getPriceBookById = async (req, res, next) => {
   try {
-    let query = {_id:req.params.priceId}
-    let projection = {isDeleted:0,__v:0}
+    let query = { _id: "656afb66a4f03f40871df55d" }
+    let projection = { isDeleted: 0, __v: 0 }
     const singlePriceBook = await priceBookService.getPriceBookById(
-      query,projection
+      query, projection
     );
     if (!singlePriceBook) {
-     res.send({
-      code:constant.errorCode,
-      message:"Unable to fetch the price detail"
-     })
-     return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the price detail"
+      })
+      return;
     }
     res.send({
-      code:constant.successCode,
-      message:"Success",
-      result:singlePriceBook
+      code: constant.successCode,
+      message: "Success",
+      result: singlePriceBook
     })
-    res.json(singlePriceBook);
   } catch (error) {
     res
       .status(priceBookResourceResponse.serverError.statusCode)
@@ -94,20 +100,56 @@ exports.getPriceBookById = async (req, res, next) => {
   }
 };
 
+//update price book
 exports.updatePriceBook = async (req, res, next) => {
   try {
-    const updatedPriceBook = await priceBookService.updatePriceBook(req.body);
-    if (!updatedPriceBook) {
-      res.status(404).json("There are no price book updated yet!");
+    let data = req.body
+    let criteria = { _id: req.params.priceId }
+    // let checkCat = await priceBookService.getPriceCatById(criteria)
+    // if (!checkCat) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Invalid category ID"
+    //   })
+    //   return;
+    // };
+
+    let newValue = {
+      $set: {
+        name: data.name,
+        description: data.description,
+        term: data.term,
+        frontingFee: data.frontingFee,
+        reserveFutureFee: data.reserveFutureFee,
+        reinsuranceFee: data.reinsuranceFee,
+        adminFee: data.adminFee,
+        category: data.category,
+      }
+    };
+    let option = { new: true }
+
+    let updateCat = await priceBookService.updatePriceBook(criteria, newValue, option)
+    if (!updateCat) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the price"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Successfully updated"
+      })
     }
-    res.json(updatedPriceBook);
+
   } catch (error) {
-    res
-      .status(priceBookResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
+//delete price 
 exports.deletePriceBook = async (req, res, next) => {
   try {
     const deletedPriceBook = await priceBookService.deletePriceBook(
@@ -129,8 +171,7 @@ exports.deletePriceBook = async (req, res, next) => {
 //----------------- price categories api's --------------------------//
 
 
-// price category api's
-
+// create price category api's
 exports.createPriceCat = async (req, res) => {
   try {
     let data = req.body
@@ -219,6 +260,32 @@ exports.udpatePriceCat = async (req, res) => {
       })
     }
 
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+// get price category by ID
+exports.getPriceCatById = async (req, res) => {
+  try {
+    let ID = req.params.catId
+    let projection = { isDeleted: 0, __v: 0 }
+    let getPriceCat = await priceBookService.getPriceCatById(ID, projection)
+    if (!getPriceCat) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the price category"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getPriceCat
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,
