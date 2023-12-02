@@ -1,4 +1,5 @@
 swaggerUi = require('swagger-ui-express');
+swaggerUi1 = require('swagger-ui-express');
 swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
 const user = require('./User/userServer')
@@ -19,7 +20,7 @@ const createHttpError = require('http-errors')
 var app = express();
 
 app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api-v1/dealerApi', swaggerUi.serve, swaggerUi.setup(swaggerDocumentDealer));
+app.use('/api-v1/dealerApi', swaggerUi1.serve, swaggerUi1.setup(swaggerDocumentDealer));
 //app.use('/api/v1', router);
 app.use(cors())
 const httpServer = http.createServer(app)
