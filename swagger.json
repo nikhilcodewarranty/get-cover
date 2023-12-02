@@ -23,12 +23,7 @@
           "type": "apiKey",
           "name": "x-access-token",
           "in": "header"
-      },
-      "apiKey": {
-        "type": "apiKey",
-        "name": "apiKey",
-        "in": "header"
-    }
+      }
   },
     "paths": {
       "/users": {
