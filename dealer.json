@@ -61,19 +61,37 @@
             }
           }
         }
+      },
+
+      "/createPriceBook":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBook"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
       }
     },
      "definitions": {
      
       "PriceBook": {
-        "required": [
-          "_id"
-        ],
+        
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "name": {
             "type": "string"
           },
@@ -96,7 +114,7 @@
             "type": "string"
           },
           "category": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "string"
           },
           "status": {
             "type": "string"

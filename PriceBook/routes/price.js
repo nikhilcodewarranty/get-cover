@@ -6,7 +6,6 @@ const {verifyToken} = require('../../middleware/auth')
 // price book api's
 router.post("/createPriceBook",[verifyToken],priceController.createPriceBook);
 router.get("/priceBook",[verifyToken],priceController.getAllPriceBooks);
-router.get("/priceBook/create-priceBook",[verifyToken], priceController.createPriceBook);
 
 
 // price categories api's
