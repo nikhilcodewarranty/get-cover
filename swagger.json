@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "3.108.215.169:8080",
+    "host": "3.108.215.169:3000",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -26,9 +26,9 @@
       }
   },
     "paths": {
-      "/users": {
+      "/user/users": {
         "get": {
-        "security": [ { "apiKey": [] } ],
+        "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
@@ -39,7 +39,85 @@
           }
         }
       },
-      "/roles": {
+      "/price/getPriceCat": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+          "summary": "Get All Price Categories",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+      "/price/createPriceCat":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book Category",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBookCategory"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Category Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+
+      "/price/priceBook": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+          "summary": "Get All Price Book",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+
+      "/price/createPriceBook":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBook"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+      "/user/roles": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
@@ -52,7 +130,7 @@
         }
         
       },
-      "/addRole":{
+      "/user/addRole":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
@@ -78,7 +156,7 @@
         }
       },
      
-      "/createSuperAdmin":{
+      "/user/createSuperAdmin":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Create Super Admin"],
@@ -104,7 +182,7 @@
           }
         }
       },
-      "/createDealer":{
+      "/dealer/createDealer":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Dealers"],
@@ -130,7 +208,7 @@
           }
         }
       },
-      "/login":{
+      "/user/login":{
         "post":{
           "tags": ["Login User"],
            "summary": "Create Login", 
@@ -335,37 +413,7 @@
           }
         }
       },
-      "PriceBook": {
-        "properties": {     
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "term": {
-            "type": "string"
-          },
-          "frontingFee": {
-            "type": "string"
-          },
-          "reinsuranceFee": {
-            "type": "string"
-          },
-          "reserveFutureFee": {
-            "type": "string"
-          },
-          "adminFee": {
-            "type": "string"
-          },
-          "category": {
-            "type": "string"
-          },
-          "isDeleted":{
-            "type": "String"
-          }
-        }
-      },
+      
       "ServiceProvider": {
         "properties": {        
           "name": {
@@ -436,26 +484,7 @@
           }
         }
       },
-      "DealerPriceBook": {
-        "properties": {
-      
-          "priceBookId": {
-            "type": "string"
-          },
-          "dealerId": {
-            "type": "string"
-          },
-          "brokerFee": {
-            "type": "Number"
-          },
-          "status": {
-            "type": "Enum"
-          },
-          "isDeleted":{
-            "type": "String"
-          }     
-        }
-      },
+     
       "Customer": {
         "properties": {
           "username": {
@@ -619,21 +648,7 @@
           }
         }
       },
-      "PriceBookCategory": {
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "status": {
-            "type": "string"
-          },
-
-          "description":{
-            "type":"string"
-          }
-
-        }
-      },
+    
       "Roles": {
         "properties": {
           "role": {
@@ -643,6 +658,63 @@
             "type": "string"
           },
           "isDeleted":{
+            "type": "string"
+          }
+        }
+      },
+      "PriceBook": {
+        
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "term": {
+            "type": "string"
+          },
+          "frontingFee": {
+            "type": "string"
+          },
+          "reinsuranceFee": {
+            "type": "string"
+          },
+          "reserveFutureFee": {
+            "type": "string"
+          },
+          "adminFee": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },      
+      "DealerPriceBook": {
+      
+        "properties": {
+          "priceBookId": {
+            "type": "string"
+          },
+          "dealerId": {
+            "type": "string"
+          },
+          "brokerFee": {
+            "type": "Number"
+          }
+       
+        }
+      },   
+      "PriceBookCategory": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "description": {
             "type": "string"
           }
         }

@@ -1,14 +1,8 @@
-FROM node:20
-
+FROM node:latest
+RUN mkdir -p /app
 WORKDIR /app
-COPY package*.json ./
+COPY package.json /app
 RUN npm install
-COPY . .
-
-ENV DB_URL = "mongodb+srv://cameron:N8wdCkcqyQO7oG9D@cluster0.apbn0iy.mongodb.net/"
-ENV JWT_SECRET = "GET_COVER_SECRET"
-ENV DEALER_API_ENDPOINT = 8082
-ENV USERS_API_DATABASE_NAME="USERS"
-ENV USER_API_ENDPOINT=8080
+COPY . /usr/src/app
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD ["npm","run" "start"]
