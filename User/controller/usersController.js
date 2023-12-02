@@ -273,21 +273,31 @@ exports.login = async (req, res) => {
     })
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 
 exports.getAllRoles = async (req, res, next) => {
   try {
-    const users = await userService.getAllRoles();
+    const roles = await userService.getAllRoles();
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-    res.json(users);
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        roles: roles
+      }
+    })
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 
@@ -299,9 +309,10 @@ exports.addRole = async (req, res, next) => {
     }
     res.json(createdUser);
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
 
