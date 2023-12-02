@@ -4,7 +4,7 @@ const role = require("../model/role");
 module.exports = class userService {
   static async getAllUsers() {
     try {
-      const allUsers = await user.find();
+      const allUsers = await user.find().select('-password');
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);

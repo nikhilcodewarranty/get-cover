@@ -2,7 +2,7 @@ require("dotenv").config();
 // const { Users } = require("../model/users");
 // const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
-console.log(userResourceResponse)
+//console.log(userResourceResponse)
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");

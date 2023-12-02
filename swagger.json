@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "3.108.215.169:8080",
+    "host": "localhost:8080",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -23,12 +23,17 @@
           "type": "apiKey",
           "name": "x-access-token",
           "in": "header"
-      }
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "name": "apiKey",
+        "in": "header"
+    }
   },
     "paths": {
       "/users": {
         "get": {
-        "security": [ { "Bearer": [] } ],
+        "security": [ { "apiKey": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
@@ -379,7 +384,7 @@
             "type": "mongoose.Schema.Types.ObjectId"
           },
           "status": {
-            "type": "string"
+            "type": "Enum"
           }
         }
       },
@@ -467,6 +472,9 @@
           },
           "brokerFee": {
             "type": "Number"
+          },
+          "status": {
+            "type": "Enum"
           }
        
         }

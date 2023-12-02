@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    default: ''
+    select: false
   },
   accountId: {
     type: String
@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
   },
   status: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isDeleted: {
     type: String,
