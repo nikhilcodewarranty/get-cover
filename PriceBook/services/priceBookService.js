@@ -1,4 +1,5 @@
 const priceBook = require("../model/priceBook");
+const priceCategory = require("../model/priceCategory");
 
 module.exports = class priceBookService {
   static async getAllPriceBook() {
@@ -51,4 +52,37 @@ module.exports = class priceBookService {
       console.log(`Could not delete price book ${error}`);
     }
   }
+
+// ---------------------PRIVE CATEGORY SERVICES-------------- //
+
+//get price category by id service
+static async getPriceCatById(data) {
+  try {
+    const singlePriceCatResponse = await priceCategory.findOne(data);
+    return singlePriceCatResponse;
+  } catch (error) {
+    console.log(`Price category not found. ${error}`);
+  }
+}
+
+//create price category  service
+static async createPriceCat(data) {
+  try {
+    const response = await new priceCategory(data).save();
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+//get price categories service
+static async getAllPriceCat(query,projection) {
+  try {
+    const allPriceCategories = await priceCategory.find(query,projection);
+    return allPriceCategories;
+  } catch (error) {
+    console.log(`Could not fetch price categories ${error}`);
+  }
+}
+
 };

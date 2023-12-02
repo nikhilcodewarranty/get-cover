@@ -26,7 +26,6 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
-
   static async createUser(data) {
     try {
       console.log('first step______---------------')
@@ -37,8 +36,6 @@ module.exports = class userService {
       console.log(error);
     }
   }
-
-  
   static async getUserById(userId) {
     try {
       const singleUserResponse = await user.findById({
@@ -49,7 +46,6 @@ module.exports = class userService {
       console.log(`User not found. ${error}`);
     }
   }
-
   static async updateUser(data) {
     try {
       const updatedResponse = await user.updateOne(
@@ -62,7 +58,6 @@ module.exports = class userService {
       console.log(`Could not update user ${error}`);
     }
   }
-
   static async deleteUser(userId) {
     try {
       const deletedResponse = await user.findOneAndDelete(userId);
@@ -71,7 +66,6 @@ module.exports = class userService {
       console.log(`Could not delete user ${error}`);
     }
   }
-
   static async getAllRoles() {
     try {
       const roles = await role.find();
@@ -80,8 +74,6 @@ module.exports = class userService {
       console.log(`Could not find role ${error}`);
     }
   }
-
-
   static async addRole(data) {
     try {
       console.log('first step______---------------')
@@ -92,7 +84,4 @@ module.exports = class userService {
       console.log(error);
     }
   }
-
-  
-  
 };

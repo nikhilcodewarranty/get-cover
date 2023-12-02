@@ -3,6 +3,7 @@ swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
 const user = require('./User/userServer')
 const dealer = require('./Dealer/dealerServer')
+const price = require('./PriceBook/priceServer')
 require("dotenv").config()
 var createError = require('http-errors');
 var express = require('express');

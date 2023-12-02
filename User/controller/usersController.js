@@ -27,7 +27,6 @@ exports.getAllUsers = async (req, res, next) => {
   }
 };
 
-
 exports.createUser = async (req, res, next) => {
   try {
     const createdUser = await userService.createUser(req.body);
@@ -41,7 +40,6 @@ exports.createUser = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
-
 
 exports.getUserById = async (req, res, next) => {
   try {
@@ -226,7 +224,7 @@ exports.createDealer = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 // Login route
 exports.login = async (req, res) => {
@@ -272,7 +270,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
 exports.getAllRoles = async (req, res, next) => {
   try {
     const users = await userService.getAllRoles();
@@ -300,3 +297,23 @@ exports.addRole = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
+// exports.sendLinkToEmail = async(req,res)=>{
+//   try{
+//     let data = req.body
+//     let checkEmail = await userService.findOneUser({email:data.email})
+//     if(!checkEmail){
+//       res.send({
+//         code:constant.errorCode,
+//         message:"Invalid email"
+//       })
+//     }else{
+
+//     }
+//   }catch(err){
+//     res.send({
+//       code:constant.errorCode,
+//       message:err.message
+//     })
+//   }
+// }

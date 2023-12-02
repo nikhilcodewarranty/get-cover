@@ -1,9 +1,6 @@
 require("dotenv").config()
-
-
 const mongoose = require('mongoose')
-
-const dbUrl = process.env.DB_URL + 'PriceBook'
+const dbUrl = process.env.DB_URL + 'Dealer'
 
 
 const connection = {
@@ -17,5 +14,5 @@ mongoose
         console.info('Connected to db')
     })
     .catch((e) => {
-        console.log('Unable to connect to the db', e)
+        console.log('Unable to connect to the db--', e)
     })
