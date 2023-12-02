@@ -104,6 +104,10 @@ exports.deletePriceBook = async (req, res, next) => {
 };
 
 
+
+//----------------- price categories api's --------------------------//
+
+
 // price category api's
 
 exports.createPriceCat = async (req, res) => {
@@ -159,4 +163,41 @@ exports.getPriceCat = async (req, res) => {
   }
 }
 
+//update price category 
+exports.udpatePriceCat = async(res,res)=>{
+  try{
+    let data = req.body
+    let criteria = {_id:req.params.catId}
+    let checkCat = await priceBookService.getPriceCatById(criteria)
+    if(!checkCat){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid category ID"
+      })
+      return;
+    };
+
+    let newValue = {
+      $set:{
+        name:data.name ? data.name :checkCat.name,
+        description:data.description?data.description:checkCat.description,
+      }
+    };
+    let option = {new:true}
+
+    let updateCat = await priceBookService.udpatePriceCat(criteria,newValue,option)
+    if(!updateCat){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to update the data"
+      })
+    }
+
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 

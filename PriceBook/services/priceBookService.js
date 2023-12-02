@@ -85,4 +85,16 @@ static async getAllPriceCat(query,projection) {
   }
 }
 
+// update price category
+
+static async updatePriceCategory(criteria,newValue,options){
+  try {
+    const updatedPriceCat = await priceCategory.updateMany(criteria,newValue,options);
+    return updatedPriceCat;
+  } catch (error) {
+    console.log(`Could not fetch price categories ${error}`);
+  }
+}
+
+
 };
