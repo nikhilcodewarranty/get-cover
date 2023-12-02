@@ -115,27 +115,18 @@
           },
           "category": {
             "type": "string"
-          },
-          "status": {
-            "type": "string"
           }
         }
       },    
      
       "DealerPriceBook": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "priceBookId": {
-            "type": "Reff: Price(PriceBookId)"
+            "type": "string"
           },
           "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
+            "type": "string"
           },
           "brokerFee": {
             "type": "Number"

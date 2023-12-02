@@ -124,7 +124,6 @@
       },
       "/login":{
         "post":{
-          "security": [ { "Bearer": [] } ],
           "tags": ["Login User"],
            "summary": "Create Login", 
            "parameters": [
@@ -324,7 +323,7 @@
             "type": "string"
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       },
@@ -353,9 +352,6 @@
           },
           "category": {
             "type": "string"
-          },
-          "status": {
-            "type": "Boolean"
           },
           "isDeleted":{
             "type": "String"
