@@ -23,12 +23,7 @@
           "type": "apiKey",
           "name": "x-access-token",
           "in": "header"
-      },
-      "apiKey": {
-        "type": "apiKey",
-        "name": "apiKey",
-        "in": "header"
-    }
+      }
   },
     "paths": {
       "/users": {
@@ -65,6 +60,8 @@
            "parameters": [
             {
               "in": "body",
+              "required": true,
+               "name":"Add Role",
               "schema": {
                 "$ref": "#/definitions/Roles"
               }
@@ -85,10 +82,13 @@
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Create Super Admin"],
+         
            "summary": "Create Super Admin",
            "parameters": [
             {
               "in": "body",
+              "required": true,
+              "name":"Add Super Admin",
               "schema": {
                 "$ref": "#/definitions/Users"
               }
@@ -109,8 +109,11 @@
           "security": [ { "Bearer": [] } ],
           "tags": ["Dealers"],
            "summary": "Create Dealer",
+        
            "parameters": [
             {
+              "required": true,
+              "name": "Create Dealer",
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/dealerBody"
@@ -129,7 +132,6 @@
       },
       "/login":{
         "post":{
-          "security": [ { "Bearer": [] } ],
           "tags": ["Login User"],
            "summary": "Create Login", 
            "parameters": [
@@ -329,38 +331,35 @@
             "type": "string"
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       },
       "PriceBook": {
         "properties": {     
           "name": {
-            "type": "String"
+            "type": "string"
           },
           "description": {
-            "type": "String"
+            "type": "string"
           },
           "term": {
-            "type": "String"
+            "type": "string"
           },
           "frontingFee": {
-            "type": "String"
+            "type": "string"
           },
           "reinsuranceFee": {
-            "type": "String"
+            "type": "string"
           },
           "reserveFutureFee": {
-            "type": "String"
+            "type": "string"
           },
           "adminFee": {
-            "type": "String"
+            "type": "string"
           },
           "category": {
-            "type": "String"
-          },
-          "status": {
-            "type": "Boolean"
+            "type": "string"
           },
           "isDeleted":{
             "type": "String"
@@ -370,28 +369,28 @@
       "ServiceProvider": {
         "properties": {        
           "name": {
-            "type": "String"
+            "type": "string"
           },
           "street": {
-            "type": "String"
+            "type": "string"
           },
           "city": {
-            "type": "String"
+            "type": "string"
           },
           "zip": {
-            "type": "String"
+            "type": "string"
           },
           "state": {
-            "type": "String"
+            "type": "string"
           },
           "country": {
-            "type": "String"
+            "type": "string"
           },
           "token": {
-            "type": "String"
+            "type": "string"
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       },
@@ -429,11 +428,11 @@
             "type": "string"
           },
           "approvedStatus": {
-            "type": "String",
+            "type": "string",
             "enum": ["Pending", "Approved", "Rejected"]
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       },
@@ -441,10 +440,10 @@
         "properties": {
       
           "priceBookId": {
-            "type": "Reff: Price(PriceBookId)"
+            "type": "string"
           },
           "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
+            "type": "string"
           },
           "brokerFee": {
             "type": "Number"
@@ -460,37 +459,37 @@
       "Customer": {
         "properties": {
           "username": {
-            "type": "String"
+            "type": "string"
           },
           "firstName": {
-            "type": "String"
+            "type": "string"
           },
           "lastName": {
-            "type": "String"
+            "type": "string"
           },
           "phone": {
-            "type": "String"
+            "type": "string"
           },
           "street": {
-            "type": "String"
+            "type": "string"
           },
           "state": {
-            "type": "String"
+            "type": "string"
           },
           "country": {
-            "type": "String"
+            "type": "string"
           },
           "city": {
-            "type": "String"
+            "type": "string"
           },
           "zip": {
-            "type": "String"
+            "type": "string"
           },
           "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
+            "type": "string"
           },
           "serviceProviderId": {
-            "type": "Reff:ServiceProvider(ServiceProviderId) "
+            "type": "string "
           },
           "token": {
             "type": "String"
@@ -623,14 +622,14 @@
       "PriceBookCategory": {
         "properties": {
           "name": {
-            "type": "String"
+            "type": "string"
           },
           "status": {
-            "type": "String"
+            "type": "string"
           },
 
           "description":{
-            "type":"String"
+            "type":"string"
           }
 
         }
@@ -638,13 +637,13 @@
       "Roles": {
         "properties": {
           "role": {
-            "type": "String"
+            "type": "string"
           },
           "description": {
-            "type": "String"
+            "type": "string"
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       }

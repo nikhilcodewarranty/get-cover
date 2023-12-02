@@ -46,9 +46,51 @@
            "summary": "Create Price Book",
            "parameters": [
             {
+              "required": true,
+              "name": "Create Price Book Category",
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/PriceBookCategory"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Category Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+
+      "/priceBook": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+          "summary": "Get All Price Book",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+
+      "/createPriceBook":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBook"
               }
             }
           ],
@@ -66,14 +108,8 @@
      "definitions": {
      
       "PriceBook": {
-        "required": [
-          "_id"
-        ],
+        
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "name": {
             "type": "string"
           },
@@ -96,28 +132,18 @@
             "type": "string"
           },
           "category": {
-            "type": "mongoose.Schema.Types.ObjectId"
-          },
-          "status": {
             "type": "string"
           }
         }
-      },    
-     
+      },      
       "DealerPriceBook": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "priceBookId": {
-            "type": "Reff: Price(PriceBookId)"
+            "type": "string"
           },
           "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
+            "type": "string"
           },
           "brokerFee": {
             "type": "Number"
