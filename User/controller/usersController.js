@@ -19,10 +19,16 @@ exports.getAllUsers = async (req, res, next) => {
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-    res.json(users);
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: {
+          users: users
+        }
+      })
   } catch (error) {
     res
-      .status(userResourceResponse.serverError.statusCode)
+      .status(constant.errorCode)
       .json({ error: "Internal server error" });
   }
 };
@@ -259,7 +265,7 @@ exports.login = async (req, res) => {
     );
 
     res.send({
-      code: 200,
+      code: constant.successCode,
       message: "Login Successful",
       result: {
         token: token,

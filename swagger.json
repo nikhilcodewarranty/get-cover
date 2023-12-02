@@ -214,34 +214,27 @@
         }
       },
       "Claims": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "contractId": {
             "type": "Reff:Contract(ContractId)"
           },
           "claimStatus": {
-            "type": "string"
+            "type": "String"
           },
           "bdAdh": {
-            "type": "string"
+            "type": "String"
           },
           "diagnosis": {
-            "type": "string"
+            "type": "String"
           },
           "receiptImage": {
-            "type": "string"
+            "type": "String"
           },
           "shippingCarrier": {
             "type": "string"
           },
           "shippingLabel": {
-            "type": "string"
+            "type": "String"
           },
           "claimDate": {
             "type": "Date"
@@ -257,18 +250,16 @@
           },
           "totalAmount": {
             "type": "Number"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
       "ClaimPart": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+      
           "claimId": {
             "type": "Reff:Claims(ClaimId)"
           },
@@ -296,14 +287,8 @@
         }
       },
       "ClaimStatus": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+      
           "claimId": {
             "type": "Reff:Claims(ClaimId)"
           },
@@ -316,14 +301,9 @@
         }
       },
       "Dealer": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+        
           "name": {
             "type": "string"
           },
@@ -347,76 +327,71 @@
           },
           "token": {
             "type": "string"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
       "PriceBook": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+        "properties": {     
           "name": {
-            "type": "string"
+            "type": "String"
           },
           "description": {
-            "type": "string"
+            "type": "String"
           },
           "term": {
-            "type": "string"
+            "type": "String"
           },
           "frontingFee": {
-            "type": "string"
+            "type": "String"
           },
           "reinsuranceFee": {
-            "type": "string"
+            "type": "String"
           },
           "reserveFutureFee": {
-            "type": "string"
+            "type": "String"
           },
           "adminFee": {
-            "type": "string"
+            "type": "String"
           },
           "category": {
-            "type": "mongoose.Schema.Types.ObjectId"
+            "type": "String"
           },
           "status": {
-            "type": "Enum"
+            "type": "Boolean"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
       "ServiceProvider": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+        "properties": {        
           "name": {
-            "type": "string"
+            "type": "String"
           },
           "street": {
-            "type": "string"
+            "type": "String"
           },
           "city": {
-            "type": "string"
+            "type": "String"
           },
           "zip": {
-            "type": "string"
+            "type": "String"
           },
           "state": {
-            "type": "string"
+            "type": "String"
           },
           "country": {
-            "type": "string"
+            "type": "String"
           },
           "token": {
-            "type": "string"
+            "type": "String"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
@@ -452,18 +427,19 @@
           },
           "createdBy": {
             "type": "string"
+          },
+          "approvedStatus": {
+            "type": "String",
+            "enum": ["Pending", "Approved", "Rejected"]
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
       "DealerPriceBook": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+      
           "priceBookId": {
             "type": "Reff: Price(PriceBookId)"
           },
@@ -475,45 +451,40 @@
           },
           "status": {
             "type": "Enum"
-          }
-       
+          },
+          "isDeleted":{
+            "type": "String"
+          }     
         }
       },
       "Customer": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "username": {
-            "type": "string"
+            "type": "String"
           },
           "firstName": {
-            "type": "string"
+            "type": "String"
           },
           "lastName": {
             "type": "String"
           },
           "phone": {
-            "type": "string"
+            "type": "String"
           },
           "street": {
-            "type": "string"
+            "type": "String"
           },
           "state": {
-            "type": "string"
+            "type": "String"
           },
           "country": {
             "type": "String"
           },
           "city": {
-            "type": "string"
+            "type": "String"
           },
           "zip": {
-            "type": "string"
+            "type": "String"
           },
           "dealerId": {
             "type": "Reff: Dealer(DealerId)"
@@ -522,27 +493,20 @@
             "type": "Reff:ServiceProvider(ServiceProviderId) "
           },
           "token": {
-            "type": "string"
+            "type": "String"
           }
         }
       },
       "Contract": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "covEndDate": {
-            "type": "string"
+            "type": "String"
           },       
           "lastName": {
             "type": "String"
           },
           "phone": {
-            "type": "string"
+            "type": "String"
           },
           "regDate": {
             "type": "Date"
@@ -551,7 +515,7 @@
             "type": "Number"
           },
           "productName": {
-            "type": "string"
+            "type": "String"
           },
           "serial": {
             "type": "String"
@@ -560,13 +524,13 @@
             "type": "Number"
           },
           "manufacture": {
-            "type": "string"
+            "type": "String"
           },
           "model": {
-            "type": "string"
+            "type": "String"
           },
           "description": {
-            "type": "string"
+            "type": "String"
           },
           "orderId": {
             "type": "Reff : Order(OrderId)"
@@ -575,7 +539,7 @@
             "type": "Reff:DealerPriceBook(DealerPriceBookId)"
           },
           "productCondition": {
-            "type": "string"
+            "type": "String"
           }          
         }
       },
@@ -657,29 +621,30 @@
         }
       },
       "PriceBookCategory": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "name": {
-            "type": "string"
+            "type": "String"
           },
           "status": {
-            "type": "string"
+            "type": "String"
+          },
+
+          "description":{
+            "type":"String"
           }
+
         }
       },
       "Roles": {
         "properties": {
           "role": {
-            "type": "string"
+            "type": "String"
           },
           "description": {
-            "type": "string"
+            "type": "String"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       }

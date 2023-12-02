@@ -4,7 +4,30 @@ const role = require("../model/role");
 module.exports = class userService {
   static async getAllUsers() {
     try {
-      const allUsers = await user.find().select('-password');
+      const allUsers = await user.aggregate([
+    
+        // Join with user_role table
+        {
+            $lookup:{
+                from: "roles", 
+                localField: "roleId", /*-------------Field in User Collection---------*/ 
+                foreignField: "_id",  /*-------------Field in Role Collection---------*/ 
+                as: "user_role"
+            }
+        },
+        {   $unwind:"$user_role" },
+        
+        {   
+            $project:{
+                _id : 1,
+                email : 1,
+                firstName : 1,
+                lastName : 1,
+                role : "$user_role.role",
+                accountId:1
+            } 
+        }
+    ]);
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
