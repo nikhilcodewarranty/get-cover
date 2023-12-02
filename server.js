@@ -33,7 +33,7 @@ app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swagge
 // app.use('/api-v1/dealerApi', swaggerUi1.serve, swaggerUi1.setup(swaggerDocumentDealer));
 //app.use('/api/v1', router);
 app.use(cors())
-const httpServer = http.createServer(app)
+const httpServer = http.createServer(app) 
 // view engine setup
 
 app.use(logger('dev'));
