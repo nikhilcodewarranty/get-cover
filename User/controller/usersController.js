@@ -245,6 +245,7 @@ exports.login = async (req, res) => {
       return;
     }
 
+    console.log('check user++++++++++++++++++',user,req.body.password)
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {

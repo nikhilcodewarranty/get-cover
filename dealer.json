@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "3.108.215.169:8080",
+    "host": "localhost:8083",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -18,11 +18,19 @@
     "produces": [
       "application/json"
     ],
+    "securityDefinitions": {
+      "Bearer": {
+          "type": "apiKey",
+          "name": "x-access-token",
+          "in": "header"
+      }
+  },
     "paths": {
-      "/dealers": {
+      "/getPriceCat": {
         "get": {
-          "tags": ["Dealers"],
-          "summary": "Get all Dealers",
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+          "summary": "Get All Price Categories",
           "responses": {
             "200": {
               "description": "ok"
@@ -31,43 +39,16 @@
           }
         }
       },
-      "/createDealer":{
+      "/createPriceCat":{
         "post":{
-          "tags": ["Dealers"],
-           "summary": "Create Dealer",
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+           "summary": "Create Price Book",
            "parameters": [
             {
-              "name": "userDetails",
-              "description": "username to get userType",
-              "required": true,
               "in": "body",
               "schema": {
-                "$ref": "#/definitions/Dealer"
-              }
-            }
-          ],
-          "responses": {
-            "201": {
-              "description": "User created successfully"
-            },
-            "400": {
-              "description": "Bad request"
-            }
-          }
-        }
-      },
-      "/login":{
-        "post":{
-          "tags": ["Login User"],
-           "summary": "Create Login", 
-           "parameters": [
-            {
-              "name": "loginBody",
-              "description": "username to get userType",
-              "required": true,
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/loginBody"
+                "$ref": "#/definitions/PriceBookCategory"
               }
             }
           ],
@@ -83,157 +64,7 @@
       }
     },
      "definitions": {
-      "loginBody":{
-        "properties": {        
-          "email": {
-            "type": "string"
-          },"password": {
-            "type": "string"
-          }
-         
-        }
-      },
-      "dealerBody":{
-        "properties": {        
-          "email": {
-            "type": "string"
-          },"password": {
-            "type": "string"
-          }
-         
-        }
-      },
-      "Claims": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "contractId": {
-            "type": "Reff:Contract(ContractId)"
-          },
-          "claimStatus": {
-            "type": "string"
-          },
-          "bdAdh": {
-            "type": "string"
-          },
-          "diagnosis": {
-            "type": "string"
-          },
-          "receiptImage": {
-            "type": "string"
-          },
-          "shippingCarrier": {
-            "type": "string"
-          },
-          "shippingLabel": {
-            "type": "string"
-          },
-          "claimDate": {
-            "type": "Date"
-          },  
-        "claimType": {
-            "type": "String"
-          },
-          "servicePaymentStatus": {
-            "type": "String"
-          },
-          "shippingAmount": {
-            "type": "Number"
-          },
-          "totalAmount": {
-            "type": "Number"
-          }
-        }
-      },
-      "ClaimPart": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "claimId": {
-            "type": "Reff:Claims(ClaimId)"
-          },
-          "serviceProId": {
-            "type": "Reff:ServiceProvider(ServiceProviderId)"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "serial": {
-            "type": "string"
-          },
-          "manufacture": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "price": {
-            "type": "Number"
-          }
-        }
-      },
-      "ClaimStatus": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "claimId": {
-            "type": "Reff:Claims(ClaimId)"
-          },
-          "status": {
-            "type": "string"
-          },
-          "updateDate": {
-            "type": "Date"
-          }
-        }
-      },
-      "Dealer": {
-       
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "street": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "zip": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          },
-          "token": {
-            "type": "string"
-          }
-        }
-      },
+     
       "PriceBook": {
         "required": [
           "_id"
@@ -271,74 +102,8 @@
             "type": "string"
           }
         }
-      },
-      "ServiceProvider": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "name": {
-            "type": "string"
-          },
-          "street": {
-            "type": "string"
-          },
-          "city": {
-            "type": "string"
-          },
-          "zip": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
-          "country": {
-            "type": "string"
-          },
-          "token": {
-            "type": "string"
-          }
-        }
-      },
-      "Users": {
-        "properties": {
-          
-          "firstName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "password": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "accountId": {
-            "type": "string"
-          },
-          "phoneNumber": {
-            "type": "string"
-          },
-          "roleId": {
-            "type": "string"
-          },
-          "isPrimary": {
-            "type": "boolean"
-          },
-          "status": {
-            "type": "string"
-          },
-          "createdBy": {
-            "type": "string"
-          }
-        }
-      },
+      },    
+     
       "DealerPriceBook": {
         "required": [
           "_id"
@@ -359,204 +124,13 @@
           }
        
         }
-      },
-      "Customer": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "username": {
-            "type": "string"
-          },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "String"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "street": {
-            "type": "string"
-          },
-          "state": {
-            "type": "string"
-          },
-          "country": {
-            "type": "String"
-          },
-          "city": {
-            "type": "string"
-          },
-          "zip": {
-            "type": "string"
-          },
-          "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
-          },
-          "serviceProviderId": {
-            "type": "Reff:ServiceProvider(ServiceProviderId) "
-          },
-          "token": {
-            "type": "string"
-          }
-        }
-      },
-      "Contract": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "covEndDate": {
-            "type": "string"
-          },       
-          "lastName": {
-            "type": "String"
-          },
-          "phone": {
-            "type": "string"
-          },
-          "regDate": {
-            "type": "Date"
-          },
-          "claimAmount": {
-            "type": "Number"
-          },
-          "productName": {
-            "type": "string"
-          },
-          "serial": {
-            "type": "String"
-          },
-          "productValue": {
-            "type": "Number"
-          },
-          "manufacture": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "orderId": {
-            "type": "Reff : Order(OrderId)"
-          },
-          "dealerPriceBookId": {
-            "type": "Reff:DealerPriceBook(DealerPriceBookId)"
-          },
-          "productCondition": {
-            "type": "string"
-          }          
-        }
-      },
-      "Orders": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "dealerId": {
-            "type": "Reff:Dealer(DealerId)"
-          },
-          "serviceProvId": {
-            "type": "Number"
-          },
-          "deductible": {
-            "type": "Number"
-          },
-          "customerId": {
-            "type": "String"
-          },
-          "orderAmount": {
-            "type": "string"
-          },
-          "paymentMethod": {
-            "type": "Date"
-          },
-          "paymentStatus": {
-            "type": "Number"
-          },
-          "paidAmount": {
-            "type": "String"
-          },
-          "dueAmount": {
-            "type": "Number"
-          },
-          "orderDate": {
-            "type": "Date"
-          },
-          "createdBy": {
-            "type": "Date"
-          },
-          "venderOrder": {
-            "type": "string"
-          },
-          "coverageStartDate": {
-            "type": "Date"
-          },
-          "waitPeriodBd": {
-            "type": "Number"
-          },
-          "waitPeriodAdh": {
-            "type": "Number"
-          },
-          "serviceCoverageType": {
-            "type": "string"
-          },
-          "coverageType": {
-              "type": "string"
-          },
-          "additionalNotes": {
-            "type": "string"
-         },
-         "sendNotification": {
-          "type": "Boolean"
-        },
-         "productsArray":{
-            "type":"Array"
-          },
-         "status":{
-            "type":"string"
-          },
-          "claimStatus":{
-            "type":"string"
-          }
-        }
-      },
+      },   
       "PriceBookCategory": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "name": {
             "type": "string"
           },
           "status": {
-            "type": "string"
-          }
-        }
-      },
-      "Roles": {
-        "properties": {
-          "role": {
             "type": "string"
           },
           "description": {
