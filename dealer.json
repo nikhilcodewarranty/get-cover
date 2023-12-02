@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:8083",
+    "host": "3.108.215.169:8083",
     "basePath": "/api-v1",
     "schemes": [
       "http",

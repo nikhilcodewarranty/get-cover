@@ -19,7 +19,7 @@ const createHttpError = require('http-errors')
 var app = express();
 
 app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api-v1/priceBookApi', swaggerUi.serve, swaggerUi.setup(swaggerDocumentDealer));
+app.use('/api-v1/dealerApi', swaggerUi.serve, swaggerUi.setup(swaggerDocumentDealer));
 //app.use('/api/v1', router);
 app.use(cors())
 const httpServer = http.createServer(app)
