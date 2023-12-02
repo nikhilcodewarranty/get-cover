@@ -2,9 +2,9 @@ const priceBook = require("../model/priceBook");
 const priceCategory = require("../model/priceCategory");
 
 module.exports = class priceBookService {
-  static async getAllPriceBook() {
+  static async getAllPriceBook(query,projection) {
     try {
-      const allPriceBook = await priceBook.find();
+      const allPriceBook = await priceBook.find(query,projection);
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
@@ -14,17 +14,15 @@ module.exports = class priceBookService {
   static async createPriceBook(data) {
     try {
       const response = await new priceBook(data).save();
-      return response;
+     return response;
     } catch (error) {
       console.log(error);
     }
   }
 
-  static async getPriceBookById(priceBookId) {
+  static async getPriceBookById(query,projection) {
     try {
-      const singlePriceBookResponse = await priceBook.findById({
-        _id: priceBookId,
-      });
+      const singlePriceBookResponse = await priceBook.findById({query,projection});
       return singlePriceBookResponse;
     } catch (error) {
       console.log(`Price book not found. ${error}`);

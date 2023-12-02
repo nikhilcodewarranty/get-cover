@@ -5,11 +5,20 @@ const constant = require("../../config/constant");
 
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    const priceBooks = await priceBookService.getAllPriceBooks();
+    let query = {status:true,isDeleted:false}
+    let projection = {isDeleted:0,__v:0}
+    const priceBooks = await priceBookService.getAllPriceBook(query,projection);
     if (!priceBooks) {
-      res.status(404).json("There are no price book published yet!");
+     res.send({
+      code:constant.errorCode,
+      message:"Unable to fetch the data"
+     })
+     return;
     }
-    res.json(priceBooks);
+    res.send({
+      code:constant.successCode,
+      message:"Success"
+    })
   } catch (error) {
     res
       .status(priceBookResourceResponse.serverError.statusCode)
@@ -29,29 +38,30 @@ exports.createPriceBook = async (req, res, next) => {
       return;
     }
     let priceBookData = {
-      name:data.name,
-      description:data.description,
-      term:data.term,
-      frontingFee:data.frontingFee,
-      reinsuranceFee:data.reinsuranceFee,
-      adminFee:data.adminFee,
-      category:checkCat._id,
+      name: data.name,
+      description: data.description,
+      term: data.term,
+      frontingFee: data.frontingFee,
+      reinsuranceFee: data.reinsuranceFee,
+      adminFee: data.adminFee,
+      reserveFutureFee: data.reserveFutureFee,
+      category: checkCat._id,
     }
-    let savePriceBook = await priceBookService.savePriceBook(priceBookData)
-    if(!savePriceBook){
+    let savePriceBook = await priceBookService.createPriceBook(priceBookData)
+    if (!savePriceBook) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to save the price book"
+        code: constant.errorCode,
+        message: "Unable to save the price book"
       })
-    }else{
+    } else {
       res.send({
-        code:constant.successCode,
-        message:"Success"
+        code: constant.successCode,
+        message: "Success"
       })
     }
-  } catch (error) {
+  } catch (err) {
     res.send({
-      code: code.errorCode,
+      code: constant.errorCode,
       message: err.message
     })
   }
@@ -59,12 +69,23 @@ exports.createPriceBook = async (req, res, next) => {
 
 exports.getPriceBookById = async (req, res, next) => {
   try {
+    let query = {_id:req.params.priceId}
+    let projection = {isDeleted:0,__v:0}
     const singlePriceBook = await priceBookService.getPriceBookById(
-      priceBookId
+      query,projection
     );
     if (!singlePriceBook) {
-      res.status(404).json("There are no price book found yet!");
+     res.send({
+      code:constant.errorCode,
+      message:"Unable to fetch the price detail"
+     })
+     return;
     }
+    res.send({
+      code:constant.successCode,
+      message:"Success",
+      result:singlePriceBook
+    })
     res.json(singlePriceBook);
   } catch (error) {
     res
@@ -164,39 +185,44 @@ exports.getPriceCat = async (req, res) => {
 }
 
 //update price category 
-exports.udpatePriceCat = async(res,res)=>{
-  try{
+exports.udpatePriceCat = async (req, res) => {
+  try {
     let data = req.body
-    let criteria = {_id:req.params.catId}
+    let criteria = { _id: req.params.catId }
     let checkCat = await priceBookService.getPriceCatById(criteria)
-    if(!checkCat){
+    if (!checkCat) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid category ID"
+        code: constant.errorCode,
+        message: "Invalid category ID"
       })
       return;
     };
 
     let newValue = {
-      $set:{
-        name:data.name ? data.name :checkCat.name,
-        description:data.description?data.description:checkCat.description,
+      $set: {
+        name: data.name ? data.name : checkCat.name,
+        description: data.description ? data.description : checkCat.description,
       }
     };
-    let option = {new:true}
+    let option = { new: true }
 
-    let updateCat = await priceBookService.udpatePriceCat(criteria,newValue,option)
-    if(!updateCat){
+    let updateCat = await priceBookService.updatePriceCategory(criteria, newValue, option)
+    if (!updateCat) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to update the data"
+        code: constant.errorCode,
+        message: "Unable to update the data"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Successfully updated"
       })
     }
 
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }

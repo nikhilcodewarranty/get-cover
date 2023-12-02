@@ -18,6 +18,10 @@ const priceSchema = new mongoose.Schema({
     type: Number,
     // required: true,
   },
+  reserveFutureFee: {
+    type: String,
+    default:''
+  },
   reinsuranceFee: {
     type: Number,
     // required: true,
