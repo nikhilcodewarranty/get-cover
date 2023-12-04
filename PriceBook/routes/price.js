@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const validator = require('../config/validation')
 const priceController = require("../controller/priceController");
 const {verifyToken} = require('../../middleware/auth')
 
@@ -11,10 +12,10 @@ router.put("/updatePriceBook/:priceId",[verifyToken],priceController.updatePrice
 
 
 // price categories api's
-router.post('/createPriceCat',[verifyToken],priceController.createPriceCat)
+router.post('/createPriceCat',[verifyToken],validator("create_price_cat_validation"),priceController.createPriceCat)
 router.get('/getPriceCat',[verifyToken],priceController.getPriceCat)
 router.get('/getPriceCatById/:catId',[verifyToken],priceController.getPriceCatById)
-router.put('/udpatePriceCat/:catId',[verifyToken],priceController.udpatePriceCat)
+router.put('/udpatePriceCat/:catId',[verifyToken],validator("create_price_cat_validation"),priceController.udpatePriceCat)
 
 
 module.exports = router;
