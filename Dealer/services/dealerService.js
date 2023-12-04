@@ -1,15 +1,17 @@
 const dealer = require("../model/dealer");
 
 module.exports = class dealerService {
-  static async getAllDealers() {
+  // Get all dealers
+  static async getAllDealers(query,projection) {
     try {
-      const AllDealers = await dealer.find();
+      const AllDealers = await dealer.find(query,projection).sort({"createdAt":-1});
       return AllDealers;
     } catch (error) {
       console.log(`Could not fetch dealers ${error}`);
     }
   }
 
+  // Create new dealer
   static async createDealer(data) {
     try {
       console.log('data meta---------', data)
@@ -20,6 +22,7 @@ module.exports = class dealerService {
     }
   }
 
+  // Get dealer detail with ID
   static async getDealerById(dealerId) {
     try {
       const singleDealerResponse = await dealer.findOne({
@@ -31,22 +34,20 @@ module.exports = class dealerService {
     }
   }
 
-  static async updateDealer(data) {
+  // Update dealer detail with ID
+  static async updateDealer(criteria,newValue,option) {
     try {
-      const updatedResponse = await dealer.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
-
+      const updatedResponse = await dealer.updateOne(criteria,newValue,option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer ${error}`);
     }
   }
 
-  static async deleteDealer(dealerId) {
+  // Delete dealer by id
+  static async deleteDealer(criteria,newValue,option) {
     try {
-      const deletedResponse = await dealer.findOneAndDelete(dealerId);
+      const deletedResponse = await dealer.findOneAndDelete(criteria,newValue,option);
       return deletedResponse;
     } catch (error) {
       console.log(`Could  not delete dealer ${error}`);

@@ -1,16 +1,11 @@
 require("dotenv").config()
-
-
 const mongoose = require('mongoose')
-
 const dbUrl = process.env.DB_URL + 'Dealer'
-
 
 const connection = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }
-
 mongoose
     .connect(dbUrl, connection)
     .then((res) => {

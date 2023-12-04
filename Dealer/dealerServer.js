@@ -9,6 +9,7 @@ var logger = require('morgan');
 const http = require('http')
 const cors = require('cors')
 var path = require('path');
+
 const db = require('./db')
 const dealerRoutes = require("./routes/dealer");
 
@@ -21,15 +22,12 @@ app.use(cors())
 const httpServer = http.createServer(app)
 // view engine setup
 app.use("/api-v1", dealerRoutes);
-
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/uploads/', express.static('./uploads'))
-
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

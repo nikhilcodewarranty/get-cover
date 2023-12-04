@@ -1,38 +1,44 @@
 const user = require("../model/users");
 const role = require("../model/role");
 
+
+//-------------------------- user's services ------------------------------//
+
 module.exports = class userService {
+  // get all users
   static async getAllUsers() {
     try {
       const allUsers = await user.aggregate([
-    
+
         // Join with user_role table
         {
-            $lookup:{
-                from: "roles", 
-                localField: "roleId", /*-------------Field in User Collection---------*/ 
-                foreignField: "_id",  /*-------------Field in Role Collection---------*/ 
-                as: "user_role"
-            }
+          $lookup: {
+            from: "roles",
+            localField: "roleId", /*-------------Field in User Collection---------*/
+            foreignField: "_id",  /*-------------Field in Role Collection---------*/
+            as: "user_role"
+          }
         },
-        {   $unwind:"$user_role" },
-        
-        {   
-            $project:{
-                _id : 1,
-                email : 1,
-                firstName : 1,
-                lastName : 1,
-                role : "$user_role.role",
-                accountId:1
-            } 
+        { $unwind: "$user_role" },
+
+        {
+          $project: {
+            _id: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            role: "$user_role.role",
+            accountId: 1
+          }
         }
-    ]);
+      ]);
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
     }
   }
+
+  //find user
   static async findUser(query) {
     try {
       const allUsers = await user.find(query);
@@ -41,6 +47,8 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
+
+  //find user for unique checks
   static async findOneUser(query) {
     try {
       const loggedInUser = await user.findOne(query);
@@ -49,6 +57,8 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
+
+  //create user 
   static async createUser(data) {
     try {
       console.log('first step______---------------')
@@ -58,37 +68,40 @@ module.exports = class userService {
     } catch (error) {
       console.log(error);
     }
-  }
-  static async getUserById(userId) {
+  };
+
+  // get user detail with id
+  static async getUserById(userId, projection) {
     try {
-      const singleUserResponse = await user.findById({
-        _id: userId,
-      });
+      const singleUserResponse = await user.findById({ _id: userId, }, { projection });
       return singleUserResponse;
     } catch (error) {
       console.log(`User not found. ${error}`);
     }
-  }
-  static async updateUser(data) {
+  };
+
+  //update user details with ID
+  static async updateUser(criteria, data, option) {
     try {
-      const updatedResponse = await user.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
+      const updatedResponse = await user.findOneAndUpdate(criteria, data, option);
 
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update user ${error}`);
     }
-  }
-  static async deleteUser(userId) {
+  };
+
+  //delete user with ID
+  static async deleteUser(criteria, newValue, option) {
     try {
-      const deletedResponse = await user.findOneAndDelete(userId);
+      const deletedResponse = await user.findOneAndUpdate(criteria, newValue, option);
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete user ${error}`);
     }
-  }
+  };
+
+  //get all roles
   static async getAllRoles() {
     try {
       const roles = await role.find();
@@ -96,15 +109,15 @@ module.exports = class userService {
     } catch (error) {
       console.log(`Could not find role ${error}`);
     }
-  }
+  };
+
+  //add role
   static async addRole(data) {
     try {
-      console.log('first step______---------------')
       const response = await new role(data).save();
-      console.log('second step______---------------')
       return response;
     } catch (error) {
       console.log(error);
     }
-  }
+  };
 };

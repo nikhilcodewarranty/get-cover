@@ -5,12 +5,10 @@ const dealerBookSchema = new mongoose.Schema({
   priceBook: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "priceBook",
-    // required: true,
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
-    // required: true,
   },
   status: {
     type: Boolean,
@@ -21,8 +19,8 @@ const dealerBookSchema = new mongoose.Schema({
     default: false
   },
   status:{
-    type:String,
-    enum : ['Active','Inactive'],
+    type:Boolean,
+    default:true
   },
   isDeleted:{
     type:Boolean,
@@ -30,7 +28,7 @@ const dealerBookSchema = new mongoose.Schema({
   },
   brokerFee: {
     type: Number,
-    // required: true,
+    default:0
   },
 },{timestamps:true});
 module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);

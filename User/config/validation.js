@@ -1,11 +1,7 @@
-//* middlewares/Validator.js
-const createHttpError = require('http-errors')
-//* Include joi to check error type 
-const Joi = require('joi')
-//* Include all validators
-const Validators = require('../validators')
+const createHttpError = require('http-errors'); //* middlewares/Validator.js
+const Joi = require('joi'); //* Include joi to check error type 
+const Validators = require('../validators'); //* Include all validators
 
-//console.log('jsdhfjshdfkjshfkjshdfkjshfkjshfkjs')
 
 module.exports = function (validator) {
     //! If validator is not exist, throw err
@@ -14,19 +10,17 @@ module.exports = function (validator) {
 
     return async function (req, res, next) {
         try {
-            const validated = await Validators[validator].validateAsync(req.body)
-            req.body = validated
-            next()
+            const validated = await Validators[validator].validateAsync(req.body);
+            req.body = validated;
+            next();
         } catch (err) {
             //* Pass err to next
-            //! If validation error occurs call next with HTTP 422. Otherwise HTTP 500
+            //! If validation error occurs 
             if (err.isJoi)
                 res.send({
-                    code:406,
-                    message:err.message.replace(/['"]+/g, '')
-                })
-            // return next(createHttpError(422, { message: err.message.replace(/['"]+/g, '') }))
-            // next(createHttpError(500))
-        }
-    }
-}
+                    code: 406,
+                    message: err.message.replace(/['"]+/g, '')
+                });
+        };
+    };
+};

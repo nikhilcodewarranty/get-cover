@@ -1,23 +1,27 @@
 require("dotenv").config();
-// const { Users } = require("../model/users");
-// const { Roles } = require("../model/role");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+
 const userResourceResponse = require("../utils/constant");
-//console.log(userResourceResponse)
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");
 const role = require("../model/role");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-const constant = require('../../config/constant')
+const constant = require('../../config/constant');
 
 
-exports.getAllUsers = async (req, res, next) => {
+//----------------------- api's function ---------------//
+
+// get all users 
+exports.getAllUsers = async (req, res) => {
   try {
     const users = await userService.getAllUsers();
     if (!users) {
-      res.status(404).json("There are no user published yet!");
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return
     }
     res.send({
       code: constant.successCode,
@@ -33,27 +37,46 @@ exports.getAllUsers = async (req, res, next) => {
   }
 };
 
-exports.createUser = async (req, res, next) => {
+// create user 
+exports.createUser = async (req, res) => {
   try {
     const createdUser = await userService.createUser(req.body);
     if (!createdUser) {
-      res.status(404).json("There are no user created yet!");
-    }
-    res.json(createdUser);
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the user"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+    });
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  };
 };
 
-exports.getUserById = async (req, res, next) => {
+//get user detail with ID
+exports.getUserById = async (req, res) => {
   try {
-    const singleUser = await userService.getUserById(userId);
+    let projection = { __v: 0, status: 0 }
+    const singleUser = await userService.getUserById(userId, projection);
     if (!singleUser) {
-      res.status(404).json("There are no user found yet!");
-    }
-    res.json(singleUser);
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the user detail"
+      })
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: singleUser
+    })
   } catch (error) {
     res
       .status(userResourceResponse.serverError.statusCode)
@@ -61,32 +84,58 @@ exports.getUserById = async (req, res, next) => {
   }
 };
 
-exports.updateUser = async (req, res, next) => {
+// update user details with ID
+exports.updateUser = async (req, res) => {
   try {
-    const updateUser = await userService.updateUser(req.body);
+    let criteria = { _id: req.params.userId };
+    let option = { new: true };
+    const updateUser = await userService.updateUser(criteria, req.body, option);
     if (!updateUser) {
-      res.status(404).json("There are no user updated yet!");
-    }
-    res.json(updateUser);
-  } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the user data"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully",
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
 };
 
 //delete user api
-exports.deleteUser = async (req, res, next) => {
+exports.deleteUser = async (req, res) => {
   try {
-    const deleteUser = await userService.deleteUser(req.body.id);
+    let criteria = { _id: req.params.userId };
+    let newValue = {
+      $set: {
+        isDeleted: true
+      }
+    };
+    let option = { new: true }
+    const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
-      res.status(404).json("There are no user deleted yet!");
-    }
-    res.json(deleteUser);
-  } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to delete the user"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Deleted Successfully"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
   }
 };
 
@@ -94,13 +143,11 @@ exports.deleteUser = async (req, res, next) => {
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
-
-    // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
       res.send({
-        code: 401,
+        code: constant.errorCode,
         message: "Email already exist"
       })
       return;
@@ -110,7 +157,7 @@ exports.createSuperAdmin = async (req, res) => {
     const superRole = await role.findOne({ role: "super" });
     if (!superRole) {
       res.send({
-        code: 401,
+        code: constant.errorCode,
         message: "Role not found"
       })
       return;
@@ -125,7 +172,7 @@ exports.createSuperAdmin = async (req, res) => {
       password: hashedPassword,
       accountId: data.accountId,
       phoneNumber: data.phoneNumber,
-      roleId: superRole._id, // Assign super role
+      roleId: superRole._id, //Assign super role
       is_primary: data.is_primary,
       status: data.status,
     }
@@ -136,17 +183,17 @@ exports.createSuperAdmin = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign(
       { userId: savedUser._id, email: savedUser.email },
-      process.env.JWT_SECRET, // Replace with your secret key
+      process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-
+    //success response 
     res.send({
-      code: 200,
+      code: constant.successCode,
       message: "Account created successfully"
     })
   } catch (error) {
     res.send({
-      code: 401,
+      code: constant.errorCode,
       message: error.message
     });
   }
@@ -155,7 +202,7 @@ exports.createSuperAdmin = async (req, res) => {
 //create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
-    let data = req.body
+    let data = req.body;
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
       res.send({
@@ -175,24 +222,24 @@ exports.createDealer = async (req, res) => {
       state: data.state,
       country: data.country,
       createdBy: data.createdBy
-    }
+    };
     let createMetaData = await dealerService.createDealer(dealerMeta)
     if (!createMetaData) {
       res.send({
         code: constant.errorCode,
         message: "Something went wrong"
-      })
+      });
       return;
-    }
-    let checkRole = await role.findOne({ role: data.role })
+    };
+    let checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
       res.send({
         code: constant.errorCode,
         message: "Invalid role"
-      })
+      });
       return;
-    }
-
+    };
+    // dealer user data 
     let dealerData = {
       firstName: data.firstName,
       lastName: data.lastName,
@@ -205,16 +252,16 @@ exports.createDealer = async (req, res) => {
     }
 
     let createDealer = await userService.createUser(dealerData)
-
     if (createDealer) {
       let result = createDealer.toObject()
-      result.role = data.role
-      result.meta = createMetaData
+      result.role = data.role //adding role to the response
+      result.meta = createMetaData // merging the dealer data with user data
       const token = jwt.sign(
         { userId: createDealer._id, email: createDealer.email },
-        process.env.JWT_SECRET, // Replace with your secret key
+        process.env.JWT_SECRET,
         { expiresIn: "1h" }
       );
+      //success response
       res.send({
         code: constant.successCode,
         message: 'Successfully Created',
@@ -243,18 +290,17 @@ exports.login = async (req, res) => {
     const user = await userService.findOneUser({ email: req.body.email });
     if (!user) {
       res.send({
-        code: 401,
+        code: constant.errorCode,
         message: "Invalid Credentials"
       })
       return;
     }
 
-    console.log('check user++++++++++++++++++', user, req.body.password)
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
       res.send({
-        code: 401,
+        code: constant.errorCode,
         message: "Invalid Credentials"
       })
       return;
@@ -275,22 +321,26 @@ exports.login = async (req, res) => {
         email: user.email
       }
     })
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: "Unable to create the dealer"
+      message: err.message
     })
   }
 };
 
 // get all roles
-exports.getAllRoles = async (req, res, next) => {
+exports.getAllRoles = async (req, res) => {
   try {
     const roles = await userService.getAllRoles();
     if (!users) {
-      res.status(404).json("There are no user published yet!");
-    }
+     res.send({
+      code:constant.errorCode,
+      message:"Unable to fetch the roles "
+     });
+     return;
+    };
+    //success response
     res.send({
       code: constant.successCode,
       message: "Successful",
@@ -307,7 +357,7 @@ exports.getAllRoles = async (req, res, next) => {
 };
 
 // add new roles
-exports.addRole = async (req, res, next) => {
+exports.addRole = async (req, res) => {
   try {
     const createdUser = await userService.addRole(req.body);
     if (!createdUser) {
