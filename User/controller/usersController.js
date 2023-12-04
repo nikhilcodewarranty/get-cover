@@ -1,8 +1,5 @@
 require("dotenv").config();
-// const { Users } = require("../model/users");
-// const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
-//console.log(userResourceResponse)
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");
@@ -94,8 +91,6 @@ exports.deleteUser = async (req, res, next) => {
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
-
-    // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
