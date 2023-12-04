@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:3000",
+    "host": "3.108.215.169:3000",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -33,13 +33,12 @@
     "paths": {
       "/user/users": {
         "get": {
-        "security": [ { "token": [] } ],
+          "security": [ { "token": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
             "200": {
               "description": "ok"
-
             }
           }
         }
@@ -121,10 +120,10 @@
             }
           }
         }
-      },
+      }, 
       "/user/roles": {
         "get": {
-          "security": [ { "Bearer": [] } ],
+          "security": [ { "token": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
           "responses": {
