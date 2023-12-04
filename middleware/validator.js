@@ -12,10 +12,12 @@ module.exports = function(validator) {
 
     return async function(req, res, next) {
         try {
+            console.log('validation++++++++++++++++++++++++++++++++1111111')
             const validated = await Validators[validator].validateAsync(req.body)
             req.body = validated
             next()
         } catch (err) {
+            console.log('validation++++++++++++++++++++++++++++++++2222')
             //* Pass err to next
             //! If validation error occurs call next with HTTP 422. Otherwise HTTP 500
             if(err.isJoi) 
