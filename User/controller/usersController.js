@@ -1,10 +1,9 @@
 require("dotenv").config();
-<<<<<<< HEAD
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-=======
->>>>>>> c2cf65ecd4884b23904e2fd9dbfd52ecce5cd18f
+
 const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
