@@ -33,6 +33,7 @@
     "paths": {
       "/user/users": {
         "get": {
+          "security": [ { "token": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
