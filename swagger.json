@@ -123,7 +123,7 @@
       },
       "/user/roles": {
         "get": {
-          "security": [ { "Bearer": [] } ],
+          "security": [ { "token": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
           "responses": {
