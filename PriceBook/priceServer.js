@@ -8,8 +8,6 @@ var logger = require('morgan');
 const http = require('http')
 const cors = require('cors')
 var path = require('path');
-// const port = process.env.USER_API_ENDPOINT || 8080;
-// const  databaseConnect  = require("./db");
 const createHttpError = require('http-errors')
 
 const priceRoute = require("./routes/price");
@@ -20,7 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors())
 const httpServer = http.createServer(app)
 // view engine setup
-app.use( (request, response, next) => {
+app.use((request, response, next) => {
   response.header("Access-Control-Allow-Origin", "*");
   response.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
@@ -34,9 +32,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/uploads/', express.static('./uploads'))
-
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

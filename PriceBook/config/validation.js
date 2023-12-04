@@ -1,11 +1,6 @@
-//* middlewares/Validator.js
-const createHttpError = require('http-errors')
-//* Include joi to check error type 
-const Joi = require('joi')
-//* Include all validators
-const Validators = require('../validators')
-
-//console.log('jsdhfjshdfkjshfkjshdfkjshfkjshfkjs')
+const createHttpError = require('http-errors') //* middlewares/Validator.js
+const Joi = require('joi') //* Include joi to check error type 
+const Validators = require('../validators') //* Include all validators
 
 module.exports = function (validator) {
     //! If validator is not exist, throw err

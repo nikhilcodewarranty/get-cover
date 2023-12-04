@@ -1,15 +1,17 @@
 const dealerPrice = require("../model/dealerPrice");
 
 module.exports = class dealerPriceService {
+  // get all dealer prices 
   static async getAllDealerPrice() {
     try {
-      const AllDealerPrice = await dealerPrice.find();
+      const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
+  // create new dealer price 
   static async createDealerPrice(data) {
     try {
       const response = await new dealerPrice(data).save();
@@ -19,6 +21,7 @@ module.exports = class dealerPriceService {
     }
   }
 
+  // get dealer price detail with ID
   static async getDealerPriceById(dealerPriceId) {
     try {
       const singleDealerPriceResponse = await dealerPrice.findById({
@@ -30,6 +33,7 @@ module.exports = class dealerPriceService {
     }
   }
 
+  // update dealer price by ID
   static async updateDealerPrice(data) {
     try {
       const updatedResponse = await dealerPrice.updateOne(
@@ -43,6 +47,7 @@ module.exports = class dealerPriceService {
     }
   }
 
+  // delete dealer price with ID
   static async deleteDealerPrice(dealerPriceId) {
     try {
       const deletedResponse = await dealerPrice.findOneAndDelete(dealerPriceId);

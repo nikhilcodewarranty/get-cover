@@ -24,10 +24,11 @@ exports.getAllPriceBooks = async (req, res, next) => {
       message: "Success",
       result: priceBooks
     })
-  } catch (error) {
-    res
-      .status(priceBookResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -43,6 +44,7 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
+    // price book data 
     let priceBookData = {
       name: data.name,
       description: data.description,
@@ -76,7 +78,7 @@ exports.createPriceBook = async (req, res, next) => {
 //get price book by id 
 exports.getPriceBookById = async (req, res, next) => {
   try {
-    let query = { _id: "656afb66a4f03f40871df55d" }
+    let query = { _id: req.params.priceId }
     let projection = { isDeleted: 0, __v: 0 }
     const singlePriceBook = await priceBookService.getPriceBookById(
       query, projection
@@ -93,10 +95,11 @@ exports.getPriceBookById = async (req, res, next) => {
       message: "Success",
       result: singlePriceBook
     })
-  } catch (error) {
-    res
-      .status(priceBookResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -105,15 +108,45 @@ exports.updatePriceBook = async (req, res, next) => {
   try {
     let data = req.body
     let criteria = { _id: req.params.priceId }
-    // let checkCat = await priceBookService.getPriceCatById(criteria)
-    // if (!checkCat) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Invalid category ID"
-    //   })
-    //   return;
-    // };
+    if (data.priceCatId) {
+      let checkCat = await priceBookService.getPriceCatById({ _id: data.priceCatId })
+      if (!checkCat) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid category ID"
+        })
+        return;
+      }
+      //data to
+      let newValue = {
+        $set: {
+          name: data.name,
+          description: data.description,
+          term: data.term,
+          frontingFee: data.frontingFee,
+          reserveFutureFee: data.reserveFutureFee,
+          reinsuranceFee: data.reinsuranceFee,
+          adminFee: data.adminFee,
+          category: data.category,
+        }
+      };
+      let option = { new: true }
 
+      let updateCat = await priceBookService.updatePriceBook(criteria, newValue, option)
+      if (!updateCat) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the price"
+        })
+      } else {
+        res.send({
+          code: constant.successCode,
+          message: "Successfully updated"
+        })
+      }
+    }
+
+    //data to
     let newValue = {
       $set: {
         name: data.name,
@@ -152,17 +185,30 @@ exports.updatePriceBook = async (req, res, next) => {
 //delete price 
 exports.deletePriceBook = async (req, res, next) => {
   try {
-    const deletedPriceBook = await priceBookService.deletePriceBook(
-      req.body.id
-    );
+    let criteria = {_id:req.params.priceId};
+    let newValue = {
+      $set:{
+        isDeleted:true
+      }
+    };
+    let option = {new:true};
+    const deletedPriceBook = await priceBookService.deletePriceBook(criteria,newValue,option);
     if (!deletedPriceBook) {
-      res.status(404).json("There are no price book deleted yet!");
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to delete the price book"
+      })
+    return;
     }
-    res.json(deletedPriceBook);
-  } catch (error) {
-    res
-      .status(priceBookResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code:constant.successCode,
+      message:"Deleted Successfully"
+    })
+  } catch (err) {
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
   }
 };
 

@@ -7,16 +7,6 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 router.get("/dealers", dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 
-//--------------- post api's endpoints ---------------------------//
-
-
-
-//--------------- put api's endpoints ---------------------------//
-
-
-
-//--------------- delete api's endpoints ---------------------------//
-
 
 
 module.exports = router;
