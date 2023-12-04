@@ -15,29 +15,35 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    default: ''
+   
   },
   accountId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "dealer",
+    type: String
   },
   phoneNumber: {
     type: String,
     default: ''
   },
   roleId: {
-    type: [mongoose.Schema.Types.ObjectId],
-    ref: "role",
+    type: mongoose.Schema.Types.ObjectId, ref: "roles",
   },
   isPrimary: {
-    type: String,
-    default: ''
+    type: Boolean,
+    default: false
   },
   status: {
-    type: String,
-    default: ''
+    type: Boolean,
+    default: false,
   },
-
+  isDeleted: {
+    type: String,
+    default: false
+  },
+  approvedStatus: {
+    type: String,
+    enum: ["Pending", "Approved", "Rejected"],
+    default:"Pending"
+  }
 }, { timestamps: true });
 
 module.exports = connection.userConnection.model("user", userSchema);

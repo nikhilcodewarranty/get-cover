@@ -1,22 +1,34 @@
 require("dotenv").config();
-const { Users } = require("../model/users");
-const { Roles } = require("../model/role");
+// const { Users } = require("../model/users");
+// const { Roles } = require("../model/role");
 const userResourceResponse = require("../utils/constant");
+//console.log(userResourceResponse)
 const userService = require("../services/userService");
+const dealerService = require('../../Dealer/services/dealerService')
 const users = require("../model/users");
 const role = require("../model/role");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-exports.getAllusers = async (req, res, next) => {
+
+const constant = require('../../config/constant')
+
+
+exports.getAllUsers = async (req, res, next) => {
   try {
-    const users = await userService.getAllusers();
+    const users = await userService.getAllUsers();
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-    res.json(users);
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: {
+          users: users
+        }
+      })
   } catch (error) {
     res
-      .status(userResourceResponse.serverError.statusCode)
+      .status(constant.errorCode)
       .json({ error: "Internal server error" });
   }
 };
@@ -63,6 +75,7 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
+//delete user api
 exports.deleteUser = async (req, res, next) => {
   try {
     const deleteUser = await userService.deleteUser(req.body.id);
@@ -77,9 +90,12 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
+// create super admin credentials
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
+
+    // console.log(data)
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
@@ -102,19 +118,20 @@ exports.createSuperAdmin = async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(data.password, 10);
-
-    // Create a new user with the provided data
-    const savedUser = userService.createUser({
+    let userData = {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       password: hashedPassword,
       accountId: data.accountId,
       phoneNumber: data.phoneNumber,
-      roleId: '65672dd3c8f0946352589287', // Assign super role
+      roleId: superRole._id, // Assign super role
       is_primary: data.is_primary,
       status: data.status,
-    });
+    }
+
+    // Create a new user with the provided data
+    const savedUser = userService.createUser(userData);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -135,6 +152,90 @@ exports.createSuperAdmin = async (req, res) => {
   }
 };
 
+//create a new dealer from SA 
+exports.createDealer = async (req, res) => {
+  try {
+    let data = req.body
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Email already exist"
+      })
+      return;
+    }
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // Create a new dealer meta data
+    let dealerMeta = {
+      name: data.name,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      createdBy: data.createdBy
+    }
+    let createMetaData = await dealerService.createDealer(dealerMeta)
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
+      })
+      return;
+    }
+    let checkRole = await role.findOne({ role: data.role })
+    if (!checkRole) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid role"
+      })
+      return;
+    }
+
+    let dealerData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      accountId: createMetaData._id,
+      phoneNumber: data.phoneNumber,
+      roleId: checkRole._id, // Assign super role
+      isPrimary: data.is_primary,
+    }
+
+    let createDealer = await userService.createUser(dealerData)
+
+    if (createDealer) {
+      let result = createDealer.toObject()
+      result.role = data.role
+      result.meta = createMetaData
+      const token = jwt.sign(
+        { userId: createDealer._id, email: createDealer.email },
+        process.env.JWT_SECRET, // Replace with your secret key
+        { expiresIn: "1h" }
+      );
+      res.send({
+        code: constant.successCode,
+        message: 'Successfully Created',
+        result: result,
+        jwtToken: token
+      })
+    } else {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the dealer"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+
 // Login route
 exports.login = async (req, res) => {
   try {
@@ -148,6 +249,7 @@ exports.login = async (req, res) => {
       return;
     }
 
+    console.log('check user++++++++++++++++++',user,req.body.password)
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
@@ -166,15 +268,76 @@ exports.login = async (req, res) => {
     );
 
     res.send({
-      code: 200,
+      code: constant.successCode,
       message: "Login Successful",
-      result:{
-        token:token,
-        email:user.email
+      result: {
+        token: token,
+        email: user.email
       }
     })
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
   }
 };
+
+// get all roles
+exports.getAllRoles = async (req, res, next) => {
+  try {
+    const roles = await userService.getAllRoles();
+    if (!users) {
+      res.status(404).json("There are no user published yet!");
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        roles: roles
+      }
+    })
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+
+// add new roles
+exports.addRole = async (req, res, next) => {
+  try {
+    const createdUser = await userService.addRole(req.body);
+    if (!createdUser) {
+      res.status(404).json("There are no user created yet!");
+    }
+    res.json(createdUser);
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+
+// exports.sendLinkToEmail = async(req,res)=>{
+//   try{
+//     let data = req.body
+//     let checkEmail = await userService.findOneUser({email:data.email})
+//     if(!checkEmail){
+//       res.send({
+//         code:constant.errorCode,
+//         message:"Invalid email"
+//       })
+//     }else{
+
+//     }
+//   }catch(err){
+//     res.send({
+//       code:constant.errorCode,
+//       message:err.message
+//     })
+//   }
+// }

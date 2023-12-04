@@ -1,47 +1,48 @@
 const mongoose = require("mongoose");
-
-const priceCategorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-});
+const connection = require('../../db')
 
 const priceSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    // required: true,
   },
   description: {
     type: String,
-    required: true,
+    // required: true,
   },
   term: {
     type: Number,
-    required: true,
+    // required: true,
   },
   frontingFee: {
     type: Number,
-    required: true,
+    // required: true,
+  },
+  reserveFutureFee: {
+    type: String,
+    default:''
   },
   reinsuranceFee: {
     type: Number,
-    required: true,
+    // required: true,
   },
   adminFee: {
     type: Number,
-    required: true,
-  },
-  status: {
-    type: String,
-    required: true,
+    // required: true,
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "priceCategory",
-    required: true,
+    // required: true,
   },
-});
+  status:{
+    type:Boolean,
+    default:true
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
+  }
+},{timestamps:true});
 
-module.exports = mongoose.model("priceBook", priceSchema);
-module.exports = mongoose.model("priceCategory", priceCategorySchema);
+module.exports = connection.dealerConnection.model("priceBook", priceSchema);

@@ -1,9 +1,33 @@
 const user = require("../model/users");
+const role = require("../model/role");
 
 module.exports = class userService {
   static async getAllUsers() {
     try {
-      const allUsers = await user.find();
+      const allUsers = await user.aggregate([
+    
+        // Join with user_role table
+        {
+            $lookup:{
+                from: "roles", 
+                localField: "roleId", /*-------------Field in User Collection---------*/ 
+                foreignField: "_id",  /*-------------Field in Role Collection---------*/ 
+                as: "user_role"
+            }
+        },
+        {   $unwind:"$user_role" },
+        
+        {   
+            $project:{
+                _id : 1,
+                email : 1,
+                firstName : 1,
+                lastName : 1,
+                role : "$user_role.role",
+                accountId:1
+            } 
+        }
+    ]);
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -25,7 +49,6 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
-
   static async createUser(data) {
     try {
       console.log('first step______---------------')
@@ -36,8 +59,6 @@ module.exports = class userService {
       console.log(error);
     }
   }
-
-  
   static async getUserById(userId) {
     try {
       const singleUserResponse = await user.findById({
@@ -48,7 +69,6 @@ module.exports = class userService {
       console.log(`User not found. ${error}`);
     }
   }
-
   static async updateUser(data) {
     try {
       const updatedResponse = await user.updateOne(
@@ -61,13 +81,30 @@ module.exports = class userService {
       console.log(`Could not update user ${error}`);
     }
   }
-
   static async deleteUser(userId) {
     try {
       const deletedResponse = await user.findOneAndDelete(userId);
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete user ${error}`);
+    }
+  }
+  static async getAllRoles() {
+    try {
+      const roles = await role.find();
+      return roles;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  }
+  static async addRole(data) {
+    try {
+      console.log('first step______---------------')
+      const response = await new role(data).save();
+      console.log('second step______---------------')
+      return response;
+    } catch (error) {
+      console.log(error);
     }
   }
 };

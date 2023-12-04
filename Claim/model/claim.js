@@ -3,56 +3,64 @@ const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "contract",
-    required: true,
+    // required: true,
   },
   claimStatus: {
     type: String,
-    required: true,
+    // required: true,
   },
   action: {
     type: String,
-    required: true,
+    // required: true,
   },
   bdAdh: {
     type: String,
-    required: true,
+    // required: true,
   },
   diagnosis: {
     type: String,
-    required: true,
+    // required: true,
   },
   receiptImage: {
     type: String,
-    required: true,
+    // required: true,
   },
   shippingCarrier: {
     type: String,
-    required: true,
+    // required: true,
   },
   shippingLabel: {
     type: String,
-    required: true,
+    // required: true,
   },
   claimDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
   claimType: {
     type: String,
-    required: true,
+    // required: true,
   },
   servicePaymentStatus: {
     type: String,
-    required: true,
+    // required: true,
   },
   shippingAmount: {
     type: Number,
-    required: true,
+    // required: true,
+  },
+  status:{
+    type:Boolean,
+    default:true
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   totalAmount: {
     type: Number,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("claim", claimSchema);

@@ -1,6 +1,8 @@
 FROM node:latest
+RUN mkdir -p /app
 WORKDIR /app
-COPY . /app
+COPY package.json /app
 RUN npm install
-EXPOSE 8000
-CMD ["npm","run","start"]
+COPY . /usr/src/app
+EXPOSE 3000
+CMD ["npm","run" "start"]

@@ -3,16 +3,20 @@ const claimStatusSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "claim",
-    required: true,
+    // required: true,
   },
   status: {
     type: String,
-    required: true,
+    // required: true,
+  },
+  isDeleted:{
+    type:Boolean,
+    default:false
   },
   updateDate: {
     type: Date,
-    required: true,
+    // required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = mongoose.model("claimStatus", claimStatusSchema);

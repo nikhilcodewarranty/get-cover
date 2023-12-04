@@ -6,10 +6,11 @@
         "name": "GetCover"
       }
     },
-    "host": "http://3.108.215.169:3000",
-    "basePath": "/api-docs",
+    "host": "localhost:3000",
+    "basePath": "/api-v1",
     "schemes": [
-      "http"
+      "http",
+      "https"
     ],
     "consumes": [
       "application/json"
@@ -17,36 +18,308 @@
     "produces": [
       "application/json"
     ],
-    "definitions": {
-      "Claims": {
-        "required": [
-          "_id"
-        ],
+    "securityDefinitions": {
+      "Bearer": {
+          "type": "apiKey",
+          "name": "x-access-token",
+          "in": "header"
+      },
+      "token": {
+        "type": "apiKey",
+        "name": "token",
+        "in": "header"
+    }
+  },
+    "paths": {
+      "/user/users": {
+        "get": {
+        "security": [ { "token": [] } ],
+          "tags": ["Users"],
+          "summary": "Get all users",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+      "/price/getPriceCat": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+          "summary": "Get All Price Categories",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+      "/price/createPriceCat":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Category"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book Category",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBookCategory"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Category Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+
+      "/price/priceBook": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+          "summary": "Get All Price Book",
+          "responses": {
+            "200": {
+              "description": "ok"
+
+            }
+          }
+        }
+      },
+
+      "/price/createPriceBook":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Price Book"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBook"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "Price Book created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+      "/user/roles": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Roles"],
+          "summary": "Get all user Roles",
+          "responses": {
+            "200": {
+              "description": "ok"
+            }
+          }
+        }
+        
+      },
+      "/user/addRole":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Roles"],
+           "summary": "Add Role",
+           "parameters": [
+            {
+              "in": "body",
+              "required": true,
+               "name":"Add Role",
+              "schema": {
+                "$ref": "#/definitions/Roles"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+     
+      "/user/createSuperAdmin":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+         
+           "summary": "Super Admin",
+           "parameters": [
+            {
+              "in": "body",
+              "required": true,
+              "name":"Add Super Admin",
+              "schema": {
+                "$ref": "#/definitions/Users"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+      "/dealer/createDealer":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Dealers"],
+           "summary": "Create Dealer",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/dealerBody"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      },
+      "/user/login":{
+        "post":{
+          "tags": ["Login User"],
+           "summary": "Create Login", 
+           "parameters": [
+            {
+              "name": "loginBody",
+              "description": "username to get userType",
+              "required": true,
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/loginBody"
+              }
+            }
+          ],
+          "responses": {
+            "201": {
+              "description": "User created successfully"
+            },
+            "400": {
+              "description": "Bad request"
+            }
+          }
+        }
+      }
+    },
+     "definitions": {
+      "loginBody":{
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
+        
+          "email": {
+            "type": "string"
+          },"password": {
+            "type": "string"
+          }
+         
+        }
+      },
+      "dealerBody":{
+        "properties": {        
+          "name": {
+            "type": "string"
           },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdBy": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "isPrimary": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          }
+         
+        }
+      },
+      "Claims": {
+        "properties": {
           "contractId": {
             "type": "Reff:Contract(ContractId)"
           },
           "claimStatus": {
-            "type": "string"
+            "type": "String"
           },
           "bdAdh": {
-            "type": "string"
+            "type": "String"
           },
           "diagnosis": {
-            "type": "string"
+            "type": "String"
           },
           "receiptImage": {
-            "type": "string"
+            "type": "String"
           },
           "shippingCarrier": {
             "type": "string"
           },
           "shippingLabel": {
-            "type": "string"
+            "type": "String"
           },
           "claimDate": {
             "type": "Date"
@@ -62,18 +335,16 @@
           },
           "totalAmount": {
             "type": "Number"
+          },
+          "isDeleted":{
+            "type": "String"
           }
         }
       },
       "ClaimPart": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+      
           "claimId": {
             "type": "Reff:Claims(ClaimId)"
           },
@@ -101,14 +372,8 @@
         }
       },
       "ClaimStatus": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+      
           "claimId": {
             "type": "Reff:Claims(ClaimId)"
           },
@@ -121,14 +386,9 @@
         }
       },
       "Dealer": {
-        "required": [
-          "_id"
-        ],
+      
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+        
           "name": {
             "type": "string"
           },
@@ -152,56 +412,15 @@
           },
           "token": {
             "type": "string"
-          }
-        }
-      },
-      "PriceBook": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
           },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string"
-          },
-          "term": {
-            "type": "string"
-          },
-          "frontingFee": {
-            "type": "string"
-          },
-          "reinsuranceFee": {
-            "type": "string"
-          },
-          "reserveFutureFee": {
-            "type": "string"
-          },
-          "adminFee": {
-            "type": "string"
-          },
-          "category": {
-            "type": "mongoose.Schema.Types.ObjectId"
-          },
-          "status": {
+          "isDeleted":{
             "type": "string"
           }
         }
       },
+      
       "ServiceProvider": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+        "properties": {        
           "name": {
             "type": "string"
           },
@@ -222,18 +441,15 @@
           },
           "token": {
             "type": "string"
+          },
+          "isDeleted":{
+            "type": "string"
           }
         }
       },
       "Users": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
+          
           "firstName": {
             "type": "string"
           },
@@ -247,13 +463,13 @@
             "type": "string"
           },
           "accountId": {
-            "type": "Reff : Dealer(DearlerId) or ServiceProvider(ServiceProviderId) or Customer(CustomerId)"
+            "type": "string"
           },
           "phoneNumber": {
             "type": "string"
           },
           "roleId": {
-            "type": "Reff: Roles(RoleId)"
+            "type": "string"
           },
           "isPrimary": {
             "type": "boolean"
@@ -263,39 +479,19 @@
           },
           "createdBy": {
             "type": "string"
-          }
-        }
-      },
-      "DealerPriceBook": {
-        "required": [
-          "_id"
-        ],
-        "properties": {
-          "_id": {
+          },
+          "approvedStatus": {
             "type": "string",
-            "uniqueItems": true
+            "enum": ["Pending", "Approved", "Rejected"]
           },
-          "priceBookId": {
-            "type": "Reff: Price(PriceBookId)"
-          },
-          "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
-          },
-          "brokerFee": {
-            "type": "Number"
+          "isDeleted":{
+            "type": "string"
           }
-       
         }
       },
+     
       "Customer": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "username": {
             "type": "string"
           },
@@ -303,7 +499,7 @@
             "type": "string"
           },
           "lastName": {
-            "type": "String"
+            "type": "string"
           },
           "phone": {
             "type": "string"
@@ -315,7 +511,7 @@
             "type": "string"
           },
           "country": {
-            "type": "String"
+            "type": "string"
           },
           "city": {
             "type": "string"
@@ -324,33 +520,26 @@
             "type": "string"
           },
           "dealerId": {
-            "type": "Reff: Dealer(DealerId)"
+            "type": "string"
           },
           "serviceProviderId": {
-            "type": "Reff:ServiceProvider(ServiceProviderId) "
+            "type": "string "
           },
           "token": {
-            "type": "string"
+            "type": "String"
           }
         }
       },
       "Contract": {
-        "required": [
-          "_id"
-        ],
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "covEndDate": {
-            "type": "string"
+            "type": "String"
           },       
           "lastName": {
             "type": "String"
           },
           "phone": {
-            "type": "string"
+            "type": "String"
           },
           "regDate": {
             "type": "Date"
@@ -359,7 +548,7 @@
             "type": "Number"
           },
           "productName": {
-            "type": "string"
+            "type": "String"
           },
           "serial": {
             "type": "String"
@@ -368,13 +557,13 @@
             "type": "Number"
           },
           "manufacture": {
-            "type": "string"
+            "type": "String"
           },
           "model": {
-            "type": "string"
+            "type": "String"
           },
           "description": {
-            "type": "string"
+            "type": "String"
           },
           "orderId": {
             "type": "Reff : Order(OrderId)"
@@ -383,7 +572,7 @@
             "type": "Reff:DealerPriceBook(DealerPriceBookId)"
           },
           "productCondition": {
-            "type": "string"
+            "type": "String"
           }          
         }
       },
@@ -464,33 +653,70 @@
           }
         }
       },
-      "PriceBookCategory": {
-        "required": [
-          "_id"
-        ],
+    
+      "Roles": {
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
-          "name": {
+          "role": {
             "type": "string"
           },
-          "status": {
+          "description": {
+            "type": "string"
+          },
+          "isDeleted":{
             "type": "string"
           }
         }
       },
-      "Roles": {
-        "required": [
-          "_id"
-        ],
+      "PriceBook": {
+        
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
+          "name": {
+            "type": "string"
           },
-          "role": {
+          "description": {
+            "type": "string"
+          },
+          "term": {
+            "type": "string"
+          },
+          "frontingFee": {
+            "type": "string"
+          },
+          "reinsuranceFee": {
+            "type": "string"
+          },
+          "reserveFutureFee": {
+            "type": "string"
+          },
+          "adminFee": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      },      
+      "DealerPriceBook": {
+      
+        "properties": {
+          "priceBookId": {
+            "type": "string"
+          },
+          "dealerId": {
+            "type": "string"
+          },
+          "brokerFee": {
+            "type": "Number"
+          }
+       
+        }
+      },   
+      "PriceBookCategory": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "status": {
             "type": "string"
           },
           "description": {
