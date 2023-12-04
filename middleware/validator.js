@@ -22,7 +22,7 @@ module.exports = function (validator) {
             //! If validation error occurs call next with HTTP 422. Otherwise HTTP 500
             if (err.isJoi)
                 res.send({
-                    code: 405,
+                    code: 406,
                     message: err.message.replace(/['"]+/g, '')
                 })
         }
