@@ -29,6 +29,9 @@ var app = express();
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'jade');
+
 // app.use('/api-v1/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 // app.use('/api-v1/dealerApi', swaggerUi1.serve, swaggerUi1.setup(swaggerDocumentDealer));
 //app.use('/api/v1', router);
@@ -49,8 +52,7 @@ app.use("/api-v1/price", priceRoutes);
 
 // app.use('/uploads/',express.static('./uploads'))
 
-app.set("views", path.join(__dirname, "views"))
-app.set("view engine", "pug")
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
@@ -63,8 +65,8 @@ app.use(function (err, req, res, next) {
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // // render the error page
-  // res.status(err.status || 500);
-  // res.render('error');
+  res.status(err.status || 500);
+  res.render('error');
 });
 
 

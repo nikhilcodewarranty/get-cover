@@ -97,18 +97,31 @@ exports.deleteDealer = async (req, res, next) => {
   }
 };
 
-exports.statusUpdate = async (req, res, next) => {
-  try {
-    const deletedDealer = await dealerService.statusUpdate(req.body.id);
-    if (!deletedDealer) {
-      res.status(404).json("There are no dealer deleted yet!");
-    }
-    res.json(deletedDealer);
-  } catch (error) {
-    res
-      .status(dealerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
+// exports.statusUpdate = async (req, res) => {
+//   try {
+//     let data = req.body
+//     let criteria = {_id:req.params.dealerId};
+//     let checkDealer = await dealerService.getDealerById(req.params.dealerId)
+//     if(checkDealer.)
+//     let newValue = {
+//       $set:{
+
+//       }
+//     }
+//     const approoveAccount = await dealerService.statusUpdate(criteria,newValue,option);
+//     if (!approoveAccount) {
+//       res.send({
+//         code:constant.errorCode,
+//         message:"Unable to approve the account"
+//       })
+//       return;
+//     }
+//     res.json(approoveAccount);
+//   } catch (error) {
+//     res
+//       .status(dealerResourceResponse.serverError.statusCode)
+//       .json({ error: "Internal server error" });
+//   }
+// };
 
 

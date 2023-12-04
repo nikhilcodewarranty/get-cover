@@ -19,13 +19,13 @@ exports.getAllUsers = async (req, res, next) => {
     if (!users) {
       res.status(404).json("There are no user published yet!");
     }
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: {
-          users: users
-        }
-      })
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: {
+        users: users
+      }
+    })
   } catch (error) {
     res
       .status(constant.errorCode)
@@ -249,7 +249,7 @@ exports.login = async (req, res) => {
       return;
     }
 
-    console.log('check user++++++++++++++++++',user,req.body.password)
+    console.log('check user++++++++++++++++++', user, req.body.password)
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
@@ -311,7 +311,10 @@ exports.addRole = async (req, res, next) => {
   try {
     const createdUser = await userService.addRole(req.body);
     if (!createdUser) {
-      res.status(404).json("There are no user created yet!");
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the role"
+      })
     }
     res.json(createdUser);
   } catch (error) {
