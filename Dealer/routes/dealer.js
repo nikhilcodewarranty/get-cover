@@ -1,11 +1,22 @@
 const express = require("express");
 const router = express.Router();
-const dealerController = require("../controller/dealerController");
-const {verifyToken} = require('../../middleware/auth')
+const dealerController = require("../controller/dealerController"); // dealer controller 
+const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 
-router.get("/dealers", dealerController.getAllDealers);
-router.get("/getDealerById", [verifyToken],dealerController.getDealerById);
+//--------------- get api's endpoints ---------------------------//
+router.get("/dealers", dealerController.getAllDealers); // get dealers list
+router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 
-router.post("/create-dealer", dealerController.createDealer);
+//--------------- post api's endpoints ---------------------------//
+
+
+
+//--------------- put api's endpoints ---------------------------//
+
+
+
+//--------------- delete api's endpoints ---------------------------//
+
+
 
 module.exports = router;
