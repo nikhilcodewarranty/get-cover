@@ -7,7 +7,7 @@ const Validators = require('../validators')
 
 //console.log('jsdhfjshdfkjshfkjshdfkjshfkjshfkjs')
 
-module.exports = function(validator) {
+module.exports = function(validator) { 
     //! If validator is not exist, throw err
     if(!Validators.hasOwnProperty(validator))
         throw new Error(`'${validator}' validator is not exist`)

@@ -10,7 +10,7 @@ router.get("/roles", [verifyTokenCommon],userController.getAllRoles);
 router.get("/roles",[verifyToken], userController.getAllRoles);
 
 
-router.post("/createSuperAdmin", userController.createSuperAdmin);
+router.post("/createSuperAdmin", userController.createSuperAdmin); 
 router.post("/login",validator('login_validation'),userController.login);
 router.post("/addRole", userController.addRole);
 router.post("/createDealer",[verifyToken], userController.createDealer);
