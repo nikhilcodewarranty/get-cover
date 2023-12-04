@@ -126,7 +126,7 @@
           "security": [ { "token": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
-          "responses": {
+          "responses": { 
             "200": {
               "description": "ok"
             }
