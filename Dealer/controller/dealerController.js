@@ -97,3 +97,18 @@ exports.deleteDealer = async (req, res, next) => {
   }
 };
 
+exports.statusUpdate = async (req, res, next) => {
+  try {
+    const deletedDealer = await dealerService.statusUpdate(req.body.id);
+    if (!deletedDealer) {
+      res.status(404).json("There are no dealer deleted yet!");
+    }
+    res.json(deletedDealer);
+  } catch (error) {
+    res
+      .status(dealerResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+

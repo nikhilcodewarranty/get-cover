@@ -52,4 +52,15 @@ module.exports = class dealerService {
       console.log(`Could  not delete dealer ${error}`);
     }
   }
+
+  static async statusUpdate(dealerId) {
+    const {delaerId} = dealerId
+    try {
+      const deletedResponse = await dealer.findByIdAndUpdate(dealerId,{status:requestAnimationFrame.body.status});
+      return deletedResponse;
+    } catch (error) {
+      console.log(`Could  not delete dealer ${error}`);
+    }
+  }
+  
 };

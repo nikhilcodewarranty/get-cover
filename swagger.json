@@ -164,9 +164,9 @@
       "/user/createSuperAdmin":{
         "post":{
           "security": [ { "Bearer": [] } ],
-          "tags": ["Create Super Admin"],
+          "tags": ["Super Admin"],
          
-           "summary": "Create Super Admin",
+           "summary": "Super Admin",
            "parameters": [
             {
               "in": "body",
