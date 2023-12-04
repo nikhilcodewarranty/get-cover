@@ -1,8 +1,7 @@
-FROM node:latest
-RUN mkdir -p /app
-WORKDIR /app
-COPY package.json /app
+FROM node:alpine
+WORKDIR /getCover/src/app
+COPY ./package.json ./
+COPY ./package-lock.json ./
 RUN npm install
-COPY . /usr/src/app
-EXPOSE 3000
-CMD ["npm","run" "start"]
+COPY ./.env ./
+COPY ./db.js ./

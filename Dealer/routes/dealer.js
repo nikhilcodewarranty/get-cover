@@ -8,4 +8,5 @@ router.get("/dealers", dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 
 
+
 module.exports = router;
