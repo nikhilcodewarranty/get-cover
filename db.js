@@ -1,6 +1,7 @@
 require("dotenv").config();
 const mongoose = require('mongoose');
 
+// db connection function
 const makeNewConnection = (uri) => {
     const db = mongoose.createConnection(uri, {
         useNewUrlParser: true,
@@ -23,11 +24,12 @@ const makeNewConnection = (uri) => {
     return db;
 }
 
-const userConnection = makeNewConnection(`${process.env.DB_URL}User`);
-const dealerConnection = makeNewConnection(`${process.env.DB_URL}Dealer`);
-const serviceConnection = makeNewConnection(`${process.env.DB_URL}ServiceProvider`);
-const orderConnection = makeNewConnection(`${process.env.DB_URL}Order`);
-const claimConnection = makeNewConnection(`${process.env.DB_URL}Claim`);
+//db's connection strings
+const userConnection = makeNewConnection(`${process.env.DB_URL}User`); //user database 
+const dealerConnection = makeNewConnection(`${process.env.DB_URL}Dealer`); // dealer database
+const serviceConnection = makeNewConnection(`${process.env.DB_URL}ServiceProvider`); //service provider database
+const orderConnection = makeNewConnection(`${process.env.DB_URL}Order`); // order database
+const claimConnection = makeNewConnection(`${process.env.DB_URL}Claim`); // claim database 
 
 module.exports = {
     userConnection,

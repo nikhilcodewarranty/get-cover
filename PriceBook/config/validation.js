@@ -19,14 +19,12 @@ module.exports = function (validator) {
             next()
         } catch (err) {
             //* Pass err to next
-            //! If validation error occurs call next with HTTP 422. Otherwise HTTP 500
+            //! If validation error occurs 
             if (err.isJoi)
                 res.send({
-                    code:406,
-                    message:err.message.replace(/['"]+/g, '')
+                    code: 406,
+                    message: err.message.replace(/['"]+/g, '')
                 })
-            // return next(createHttpError(422, { message: err.message.replace(/['"]+/g, '') }))
-            // next(createHttpError(500))
         }
     }
 }
