@@ -5,7 +5,7 @@ const Joi = require('joi')
 //* Include all validators
 const Validators = require('../validators')
 
-console.log('jsdhfjshdfkjshfkjshdfkjshfkjshfkjs')
+//console.log('jsdhfjshdfkjshfkjshdfkjshfkjshfkjs')
 
 module.exports = function(validator) {
     //! If validator is not exist, throw err
