@@ -75,6 +75,7 @@ exports.updateUser = async (req, res, next) => {
   }
 };
 
+//delete user api
 exports.deleteUser = async (req, res, next) => {
   try {
     const deleteUser = await userService.deleteUser(req.body.id);
@@ -89,6 +90,7 @@ exports.deleteUser = async (req, res, next) => {
   }
 };
 
+// create super admin credentials
 exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
@@ -150,6 +152,7 @@ exports.createSuperAdmin = async (req, res) => {
   }
 };
 
+//create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
     let data = req.body
@@ -232,6 +235,7 @@ exports.createDealer = async (req, res) => {
   }
 };
 
+
 // Login route
 exports.login = async (req, res) => {
   try {
@@ -280,6 +284,7 @@ exports.login = async (req, res) => {
   }
 };
 
+// get all roles
 exports.getAllRoles = async (req, res, next) => {
   try {
     const roles = await userService.getAllRoles();
@@ -301,6 +306,7 @@ exports.getAllRoles = async (req, res, next) => {
   }
 };
 
+// add new roles
 exports.addRole = async (req, res, next) => {
   try {
     const createdUser = await userService.addRole(req.body);

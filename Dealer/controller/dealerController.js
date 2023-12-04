@@ -96,3 +96,4 @@ exports.deleteDealer = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
