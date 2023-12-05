@@ -220,8 +220,6 @@ exports.createSuperAdmin = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     let data = req.body;
-
-
     // Create a new dealer meta data
     let dealerMeta = {
       name: data.name,
@@ -253,8 +251,8 @@ exports.createDealer = async (req, res) => {
     // dealer user data 
     let dealerUserArray = data.dealers
     for (let i = 0; i < dealerUserArray.length; i++) {
-          // Hash the password
-    const hashedPassword = await bcrypt.hash(dealerUserArray[i].password, 10);
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(dealerUserArray[i].password, 10);
       const existingUser = await userService.findOneUser({ email: dealerUserArray[i].email });
       if (!existingUser) {
         let dealerData = {
@@ -269,9 +267,8 @@ exports.createDealer = async (req, res) => {
         }
         let createDealer = await userService.createUser(dealerData)
       }
-      console.log('-------------------------',i)
+      console.log('-------------------------', i)
     }
-
     res.send({
       code: constant.successCode,
       message: 'Successfully Created',
