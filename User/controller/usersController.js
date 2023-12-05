@@ -225,19 +225,21 @@ exports.createDealer = async (req, res) => {
       country: data.country,
       createdBy: data.createdBy
     };
-    let createMetaData = await dealerService.createDealer(dealerMeta)
-    if (!createMetaData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Something went wrong"
-      });
-      return;
-    };
+    // check role is exist or not 
     let checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
       res.send({
         code: constant.errorCode,
         message: "Invalid role"
+      });
+      return;
+    };
+
+    let createMetaData = await dealerService.createDealer(dealerMeta)
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
       });
       return;
     };
@@ -336,11 +338,11 @@ exports.getAllRoles = async (req, res) => {
   try {
     const roles = await userService.getAllRoles();
     if (!users) {
-     res.send({
-      code:constant.errorCode,
-      message:"Unable to fetch the roles "
-     });
-     return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the roles "
+      });
+      return;
     };
     //success response
     res.send({
