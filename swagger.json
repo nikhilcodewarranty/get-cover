@@ -209,7 +209,6 @@
      
       "/admin/createSuperAdmin":{
         "post":{
-          "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
          
            "summary": "Super Admin",
