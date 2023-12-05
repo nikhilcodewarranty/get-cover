@@ -128,6 +128,7 @@ exports.updatePriceBook = async (req, res, next) => {
           reinsuranceFee: data.reinsuranceFee,
           adminFee: data.adminFee,
           category: data.category,
+          status:data.status
         }
       };
       let option = { new: true }
@@ -320,6 +321,7 @@ exports.updatePriceCat = async (req, res) => {
       $set: {
         name: data.name ? data.name : checkCat.name,
         description: data.description ? data.description : checkCat.description,
+        status:data.status
       }
     };
     let option = { new: true }
