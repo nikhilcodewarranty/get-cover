@@ -47,62 +47,11 @@
           }
         }
       },
-      "/price/getPriceCat": {
-        "get": {
-          "security": [ { "Bearer": [] } ],
-          "tags": ["Price Book Category"],
-          "summary": "Get All Price Categories",
-          "responses": {
-            "200": {
-              "description": "Ok"
-            },
-            "401": {
-              "description": "Error"
-            },
-            "404": {
-              "description": "No found"
-            },
-            "406": {
-              "description": "Validation Error"
-            }
-          }
-        }
-      },
-      "/price/createPriceCat":{
-        "post":{
-          "security": [ { "Bearer": [] } ],
-          "tags": ["Standard Price Category"],
-           "summary": "Create Price Book",
-           "parameters": [
-            {
-              "required": true,
-              "name": "Create Price Book Category",
-              "in": "body",
-              "schema": {
-                "$ref": "#/definitions/PriceBookCategory"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Price Category Book created successfully"
-            },
-            "401": {
-              "description": "Error"
-            },
-            "404": {
-              "description": "No found"
-            },
-            "406": {
-              "description": "Validation Error"
-            }
-          }
-        }
-      },
+
       "/price/priceBook": {
         "get": {
           "security": [ { "Bearer": [] } ],
-          "tags": ["Price Book"],
+          "tags": ["Standard Price Book"],
           "summary": "Get All Price Book",
           "responses": {
             "200": {
@@ -120,11 +69,10 @@
           }
         }
       },
-
       "/price/createPriceBook":{
         "post":{
           "security": [ { "Bearer": [] } ],
-          "tags": ["Price Book"],
+          "tags": ["Standard Price Book"],
            "summary": "Create Price Book",
            "parameters": [
             {
@@ -152,6 +100,58 @@
           }
         }
       }, 
+      "/price/createPriceCat":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Standard Price Book"],
+           "summary": "Create Price Book",
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Price Book Category",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/PriceBookCategory"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Price Category Book created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/price/getPriceCat": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Standard Price Book"],
+          "summary": "Get All Price Categories",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
       "/user/roles": {
         "get": {
           "security": [ { "Bearer": [] } ],
