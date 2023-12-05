@@ -6,7 +6,7 @@ module.exports = class priceBookService {
   //get all price book 
   static async getAllPriceBook(query, projection) {
     try {
-      const allPriceBook = await priceBook.find(query, projection);
+      const allPriceBook = await priceBook.find(query, projection).sort({'createdAt':-1});
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
@@ -79,7 +79,7 @@ module.exports = class priceBookService {
   //get price categories service
   static async getAllPriceCat(query, projection) {
     try {
-      const allPriceCategories = await priceCategory.find(query, projection);
+      const allPriceCategories = await priceCategory.find(query, projection).sort({"createAt":-1});
       return allPriceCategories;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);

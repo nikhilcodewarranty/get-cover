@@ -30,7 +30,7 @@ module.exports = class userService {
                   accountId:1
               } 
           }
-    ]);
+    ]).sort({"createdAt":-1});
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -101,9 +101,9 @@ module.exports = class userService {
   };
 
   //get all roles
-  static async getAllRoles() {
+  static async getAllRoles(query,projection) {
     try {
-      const roles = await role.find();
+      const roles = await role.find(query,projection).sort({"createdAt":-1});
       return roles;
     } catch (error) {
       console.log(`Could not find role ${error}`);

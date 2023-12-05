@@ -421,7 +421,9 @@ exports.login = async (req, res) => {
 // get all roles
 exports.getAllRoles = async (req, res) => {
   try {
-    const roles = await userService.getAllRoles();
+    let query = {isDeleted:false}
+    let projection = {__v:0}
+    const roles = await userService.getAllRoles(query,projection);
     if (!users) {
       res.send({
         code: constant.errorCode,
