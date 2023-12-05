@@ -394,9 +394,12 @@ exports.createServiceProvider = async (req, res) => {
 
 // Login route
 exports.login = async (req, res) => {
+  console.log(req.body.password);
+
   try {
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
+    console.log(user);
     if (!user) {
       res.send({
         code: constant.errorCode,
