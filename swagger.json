@@ -33,7 +33,16 @@
           "summary": "Get all users",
           "responses": {
             "200": {
-              "description": "ok"
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -45,8 +54,16 @@
           "summary": "Get All Price Categories",
           "responses": {
             "200": {
-              "description": "ok"
-
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -70,13 +87,18 @@
             "200": {
               "description": "Price Category Book created successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
       },
-
       "/price/priceBook": {
         "get": {
           "security": [ { "Bearer": [] } ],
@@ -85,7 +107,15 @@
           "responses": {
             "200": {
               "description": "ok"
-
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -107,11 +137,17 @@
             }
           ],
           "responses": {
-            "201": {
+            "200": {
               "description": "Price Book created successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -121,11 +157,21 @@
           "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
-          "responses": { 
+          "responses": {
             "200": {
-              "description": "ok"
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
+        
         }
         
       },
@@ -145,11 +191,17 @@
             }
           ],
           "responses": {
-            "201": {
+            "200": {
               "description": "User created successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -171,12 +223,19 @@
               }
             }
           ],
+
           "responses": {
-            "201": {
+            "200": {
               "description": "User created successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -198,11 +257,17 @@
             }
           ],
           "responses": {
-            "201": {
+            "200": {
               "description": "User created successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
@@ -223,11 +288,17 @@
             }
           ],
           "responses": {
-            "201": {
-              "description": "User created successfully"
+            "200": {
+              "description": "LoggedIn successfully"
             },
-            "400": {
-              "description": "Bad request"
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
             }
           }
         }
