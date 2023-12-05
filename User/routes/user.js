@@ -15,9 +15,12 @@ router.get("/roles", [verifyToken],userController.getAllRoles); //get all roles
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
 router.post("/login",validator('login_validation'),userController.login); //login api for all users
 router.post("/addRole",[verifyToken],validator("add_role_validation") ,userController.addRole); //add role api
-router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); //create dealer api from super admin
 
+//create dealer api from super admin
+router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
 
+//create service provider api from super admin
+router.post('/createServiceProvider', [verifyToken],validator("create_service_provider_validation") ,userController.createServiceProvider );
 
 
 

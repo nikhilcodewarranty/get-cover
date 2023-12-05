@@ -272,7 +272,7 @@ exports.getPriceCat = async (req, res) => {
 }
 
 //update price category 
-exports.updatePriceCat = async (req, res) => {
+exports.udpatePriceCat = async (req, res) => {
   try {
     let data = req.body
     let criteria = { _id: req.params.catId }

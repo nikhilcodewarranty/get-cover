@@ -3,27 +3,27 @@ const mongoose = require("mongoose");
 const serviceProviderSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
+    default:''
   },
   street: {
     type: String,
-    required: true,
+    default:''
   },
   city: {
     type: String,
-    required: true,
+    default:''
   },
   state: {
     type: String,
-    required: true,
+    default:''
   },
   zip: {
     type: String,
-    required: true,
+    default:''
   },
   country: {
     type: String,
-    required: true,
+    default:''
   },
   status: {
     type: Boolean,
@@ -35,7 +35,7 @@ const serviceProviderSchema = new mongoose.Schema({
   },
   token: {
     type: String,
-    required: true,
+    default:''
   },
 },{timestamps:true});
 
