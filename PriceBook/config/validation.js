@@ -6,10 +6,7 @@ const constant = require('../../config/constant')
 module.exports = function (validator) {
     //! If validator is not exist, throw err
     if (!Validators.hasOwnProperty(validator))
-        res.send({
-            code: constant.errorCode,
-            message: `'${validator}' validator is not exist`
-        })
+        throw new Error(`'${validator}' validator is not exist`)
 
     return async function (req, res, next) {
         try {
@@ -21,7 +18,7 @@ module.exports = function (validator) {
             //! If validation error occurs 
             if (err.isJoi)
                 res.send({
-                    code: constant.errorCode,
+                    code: constant.validationError,
                     message: err.message.replace(/['"]+/g, '')
                 })
         }
