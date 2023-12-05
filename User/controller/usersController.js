@@ -405,8 +405,12 @@ exports.login = async (req, res) => {
       return;
     }
 
+    console.log(req.body.password);
+    console.log(user.password);
+
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
+
     if (!passwordMatch) {
       res.send({
         code: constant.errorCode,
