@@ -23,7 +23,8 @@ const jwt = require('jsonwebtoken');
           })
       }
       req.userId = decoded.userId;
-      req.email = decoded.email
+      req.email = decoded.email;
+      req.role = decoded.role;
       next();
   })
 }

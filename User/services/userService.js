@@ -8,29 +8,29 @@ module.exports = class userService {
   // get all users
   static async getAllUsers() {
     try {
-      const allUsers = await user.aggregate([    
+      const allUsers = await user.aggregate([
         // Join with user_role table
-          {
-              $lookup:{
-                  from: "roles", 
-                  localField: "roleId", 
-                  foreignField: "_id", 
-                  as: "user_role"
-              }
-          },
-          {   $unwind:"$user_role" },
-          
-          {   
-              $project:{
-                  _id : 1,
-                  email : 1,
-                  firstName : 1,
-                  lastName : 1,
-                  role : "$user_role.role",
-                  accountId:1
-              } 
+        {
+          $lookup: {
+            from: "roles",
+            localField: "roleId",
+            foreignField: "_id",
+            as: "user_role"
           }
-    ]).sort({"createdAt":-1});
+        },
+        { $unwind: "$user_role" },
+        {
+          $project: {
+            _id: 1,
+            email: 1,
+            firstName: 1,
+            lastName: 1,
+            role: "$user_role.role",
+            accountId: 1
+          }
+        }
+      ]).sort({ "createdAt": -1 });
+
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -101,9 +101,9 @@ module.exports = class userService {
   };
 
   //get all roles
-  static async getAllRoles(query,projection) {
+  static async getAllRoles(query, projection) {
     try {
-      const roles = await role.find(query,projection).sort({"createdAt":-1});
+      const roles = await role.find(query, projection).sort({ "createdAt": -1 });
       return roles;
     } catch (error) {
       console.log(`Could not find role ${error}`);
@@ -119,4 +119,14 @@ module.exports = class userService {
       console.log(error);
     }
   };
+
+  static async getRoleById(query, projection) {
+    try {
+      const response = await role.findOne(query, projection)
+      return response
+    } catch (err) {
+      console.log(err);
+
+    }
+  }
 };

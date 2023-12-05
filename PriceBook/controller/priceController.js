@@ -11,6 +11,13 @@ exports.getAllPriceBooks = async (req, res, next) => {
   try {
     let query = { status: true, isDeleted: false }
     let projection = { isDeleted: 0, __v: 0 }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     const priceBooks = await priceBookService.getAllPriceBook(query, projection);
     if (!priceBooks) {
       res.send({
@@ -36,6 +43,13 @@ exports.getAllPriceBooks = async (req, res, next) => {
 exports.createPriceBook = async (req, res, next) => {
   try {
     let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let checkCat = await priceBookService.getPriceCatById({ _id: data.priceCatId })
     if (!checkCat) {
       res.send({
@@ -128,7 +142,7 @@ exports.updatePriceBook = async (req, res, next) => {
           reinsuranceFee: data.reinsuranceFee,
           adminFee: data.adminFee,
           category: data.category,
-          status:data.status
+          status: data.status
         }
       };
       let option = { new: true }
@@ -186,29 +200,29 @@ exports.updatePriceBook = async (req, res, next) => {
 //delete price 
 exports.deletePriceBook = async (req, res, next) => {
   try {
-    let criteria = {_id:req.params.priceId};
+    let criteria = { _id: req.params.priceId };
     let newValue = {
-      $set:{
-        isDeleted:true
+      $set: {
+        isDeleted: true
       }
     };
-    let option = {new:true};
-    const deletedPriceBook = await priceBookService.deletePriceBook(criteria,newValue,option);
+    let option = { new: true };
+    const deletedPriceBook = await priceBookService.deletePriceBook(criteria, newValue, option);
     if (!deletedPriceBook) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to delete the price book"
+        code: constant.errorCode,
+        message: "Unable to delete the price book"
       })
-    return;
+      return;
     }
     res.send({
-      code:constant.successCode,
-      message:"Deleted Successfully"
+      code: constant.successCode,
+      message: "Deleted Successfully"
     })
   } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 };
@@ -216,13 +230,15 @@ exports.deletePriceBook = async (req, res, next) => {
 //Search price price books
 exports.searchPriceBook = async (req, res, next) => {
   try {
-    let query =  { $or:[
-      { 'name': { '$regex': req.body.name, '$options': 'i' }},
-      { 'description': { '$regex': req.body.name, '$options': 'i' }},
-      { 'state': { '$regex': req.body.name, '$options': 'i' }},
-      { 'city': { '$regex': req.body.name, '$options': 'i' }},
-      { 'zip': { '$regex': req.body.name, '$options': 'i' }},
-    ]};
+    let query = {
+      $or: [
+        { 'name': { '$regex': req.body.name, '$options': 'i' } },
+        { 'description': { '$regex': req.body.name, '$options': 'i' } },
+        { 'state': { '$regex': req.body.name, '$options': 'i' } },
+        { 'city': { '$regex': req.body.name, '$options': 'i' } },
+        { 'zip': { '$regex': req.body.name, '$options': 'i' } },
+      ]
+    };
     let projection = { isDeleted: 0, __v: 0 };
     const priceBooks = await priceBookService.getAllPriceBook(query, projection);
     if (!priceBooks) {
@@ -253,6 +269,13 @@ exports.searchPriceBook = async (req, res, next) => {
 exports.createPriceBookCat = async (req, res) => {
   try {
     let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let catData = {
       name: data.name,
       description: data.description
@@ -280,6 +303,13 @@ exports.createPriceBookCat = async (req, res) => {
 // get all price category
 exports.getPriceBookCat = async (req, res) => {
   try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let projection = { isDeleted: 0, __v: 0 }
     let query = { status: true, isDeleted: false }
     let getCat = await priceBookService.getAllPriceCat(query, projection)
@@ -308,6 +338,13 @@ exports.updatePriceBookCat = async (req, res) => {
   try {
     let data = req.body
     let criteria = { _id: req.params.catId }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let checkCat = await priceBookService.getPriceCatById(criteria)
     if (!checkCat) {
       res.send({
@@ -321,7 +358,7 @@ exports.updatePriceBookCat = async (req, res) => {
       $set: {
         name: data.name ? data.name : checkCat.name,
         description: data.description ? data.description : checkCat.description,
-        status:data.status
+        status: data.status
       }
     };
     let option = { new: true }
@@ -375,27 +412,27 @@ exports.getPriceBookCatById = async (req, res) => {
 
 // search price category with name
 exports.searchPriceBookCategories = async (req, res) => {
-  try{
+  try {
     let data = req.body;
-    let query = { 'name': { '$regex': req.body.name, '$options': 'i' }};
-    let projection = {__v:0,status:0};
-    let seachCategory = await priceBookService.getAllPriceCat(query,projection);
-    if(!seachCategory){
+    let query = { 'name': { '$regex': req.body.name, '$options': 'i' } };
+    let projection = { __v: 0, status: 0 };
+    let seachCategory = await priceBookService.getAllPriceCat(query, projection);
+    if (!seachCategory) {
       res.send({
-        code:constant.errorCode,
-        message:"No data found for price categories"
+        code: constant.errorCode,
+        message: "No data found for price categories"
       });
       return;
     };
     res.send({
-      code:constant.successCode,
-      message:"Success",
-      result:seachCategory
+      code: constant.successCode,
+      message: "Success",
+      result: seachCategory
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }

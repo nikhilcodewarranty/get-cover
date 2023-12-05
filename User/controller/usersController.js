@@ -18,6 +18,13 @@ const constant = require('../../config/constant');
 // get all users 
 exports.getAllUsers = async (req, res) => {
   try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    };
     const users = await userService.getAllUsers();
     if (!users) {
       res.send({
@@ -43,6 +50,13 @@ exports.getAllUsers = async (req, res) => {
 // create user 
 exports.createUser = async (req, res) => {
   try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    };
     const createdUser = await userService.createUser(req.body);
     if (!createdUser) {
       res.send({
@@ -157,7 +171,7 @@ exports.createSuperAdmin = async (req, res) => {
     }
 
     // Check if the provided role is 'super'
-    const superRole = await role.findOne({ role: "super" });
+    const superRole = await role.findOne({ role: "Super Admin" });
     if (!superRole) {
       res.send({
         code: constant.errorCode,
@@ -206,16 +220,8 @@ exports.createSuperAdmin = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     let data = req.body;
-    const existingUser = await userService.findOneUser({ email: data.email });
-    if (existingUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Email already exist"
-      })
-      return;
-    }
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+
     // Create a new dealer meta data
     let dealerMeta = {
       name: data.name,
@@ -245,40 +251,57 @@ exports.createDealer = async (req, res) => {
       return;
     };
     // dealer user data 
-    let dealerData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      password: hashedPassword,
-      accountId: createMetaData._id,
-      phoneNumber: data.phoneNumber,
-      roleId: checkRole._id, // Assign super role
-      isPrimary: data.is_primary,
+    let dealerUserArray = data.dealers
+    for (let i = 0; i < dealerUserArray.length; i++) {
+          // Hash the password
+    const hashedPassword = await bcrypt.hash(dealerUserArray[i].password, 10);
+      const existingUser = await userService.findOneUser({ email: dealerUserArray[i].email });
+      if (!existingUser) {
+        let dealerData = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          password: hashedPassword,
+          accountId: createMetaData._id,
+          phoneNumber: data.phoneNumber,
+          roleId: checkRole._id, // Assign super role
+          isPrimary: data.is_primary,
+        }
+        let createDealer = await userService.createUser(dealerData)
+      }
+      console.log('-------------------------',i)
     }
 
-    let createDealer = await userService.createUser(dealerData)
-    if (createDealer) {
-      let result = createDealer.toObject()
-      result.role = data.role //adding role to the response
-      result.meta = createMetaData // merging the dealer data with user data
-      const token = jwt.sign(
-        { userId: createDealer._id, email: createDealer.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      //success response
-      res.send({
-        code: constant.successCode,
-        message: 'Successfully Created',
-        result: result,
-        jwtToken: token
-      })
-    } else {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create the dealer"
-      })
-    }
+    res.send({
+      code: constant.successCode,
+      message: 'Successfully Created',
+    })
+
+    //----------------------- these codes may be used in future --------------------//
+    /*
+        if (createDealer) {
+          let result = createDealer.toObject()
+          result.role = data.role //adding role to the response
+          result.meta = createMetaData // merging the dealer data with user data
+          const token = jwt.sign(
+            { userId: createDealer._id, email: createDealer.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "1h" }
+          );
+          //success response
+          res.send({
+            code: constant.successCode,
+            message: 'Successfully Created',
+            result: result,
+            jwtToken: token
+          })
+        } else {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to create the dealer"
+          })
+        }
+        */
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -311,15 +334,15 @@ exports.createServiceProvider = async (req, res) => {
       country: data.country,
       createdBy: data.createdBy
     };
-     // check role is exist or not 
-     let checkRole = await role.findOne({ role: data.role });
-     if (!checkRole) {
-       res.send({
-         code: constant.errorCode,
-         message: "Invalid role"
-       });
-       return;
-     };
+    // check role is exist or not 
+    let checkRole = await role.findOne({ role: data.role });
+    if (!checkRole) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid role"
+      });
+      return;
+    };
 
     let createMetaData = await providerService.createServiceProvider(providerMeta)
     if (!createMetaData) {
@@ -394,10 +417,13 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    let roleQuery = { _id: user.roleId }
+    let roleProjection = { __v: 0 }
+    let getRole = await userService.getRoleById(roleQuery, roleProjection)
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id, email: user.email },
+      { userId: user._id, email: user.email, role: getRole.role },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "1h" }
     );
@@ -421,9 +447,9 @@ exports.login = async (req, res) => {
 // get all roles
 exports.getAllRoles = async (req, res) => {
   try {
-    let query = {isDeleted:false}
-    let projection = {__v:0}
-    const roles = await userService.getAllRoles(query,projection);
+    let query = { isDeleted: false }
+    let projection = { __v: 0 }
+    const roles = await userService.getAllRoles(query, projection);
     if (!users) {
       res.send({
         code: constant.errorCode,
