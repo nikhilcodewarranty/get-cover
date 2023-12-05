@@ -1,18 +1,28 @@
-version: "3"
+version: '3.9'
+
 services:
- app:
- container_name: app
- image: Dockerfile
- restart: always
- build: .
- ports:
- - "3000:3000"
- links:
- - mongo
- mongo:
- container_name: mongo
- image: mongo
- volumes:
- - ./data:/data/db
- ports:
- - '27017:27017'
+  # Mongodb service
+  mongo_db:
+    image: mongo:6.0.6
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+
+  # Node api service
+  api:
+    build: .
+    ports:
+      # local->container
+      - 3001:3001
+    environment:
+      PORT: 3001
+      DB_URL:   mongodb+srv://cameron:N8wdCkcqyQO7oG9D@cluster0.apbn0iy.mongodb.net/,
+      JWT_SECRET: GET_COVER_SECRET
+      DEALER_API_ENDPOINT: 8082
+      USER_API_ENDPOINT: 8080
+      authentication_code: abcdefgh1234567
+    depends_on:   
+      - mongo_db
+
+volumes:
+  mongo_data: {}
