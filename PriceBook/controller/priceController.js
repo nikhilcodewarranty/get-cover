@@ -250,7 +250,7 @@ exports.searchPriceBook = async (req, res, next) => {
 
 
 // create price category api's
-exports.createPriceCat = async (req, res) => {
+exports.createPriceBookCat = async (req, res) => {
   try {
     let data = req.body
     let catData = {
@@ -278,7 +278,7 @@ exports.createPriceCat = async (req, res) => {
 }
 
 // get all price category
-exports.getPriceCat = async (req, res) => {
+exports.getPriceBookCat = async (req, res) => {
   try {
     let projection = { isDeleted: 0, __v: 0 }
     let query = { status: true, isDeleted: false }
@@ -304,7 +304,7 @@ exports.getPriceCat = async (req, res) => {
 }
 
 //update price category 
-exports.updatePriceCat = async (req, res) => {
+exports.updatePriceBookCat = async (req, res) => {
   try {
     let data = req.body
     let criteria = { _id: req.params.catId }
@@ -348,7 +348,7 @@ exports.updatePriceCat = async (req, res) => {
 }
 
 // get price category by ID
-exports.getPriceCatById = async (req, res) => {
+exports.getPriceBookCatById = async (req, res) => {
   try {
     let ID = req.params.catId
     let projection = { isDeleted: 0, __v: 0 }
@@ -374,7 +374,7 @@ exports.getPriceCatById = async (req, res) => {
 }
 
 // search price category with name
-exports.searchPriceCategories = async (req, res) => {
+exports.searchPriceBookCategories = async (req, res) => {
   try{
     let data = req.body;
     let query = { 'name': { '$regex': req.body.name, '$options': 'i' }};

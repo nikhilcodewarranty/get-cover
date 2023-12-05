@@ -13,12 +13,12 @@ router.put("/updatePriceBook/:priceId",[verifyToken],validator('update_price_val
 
 
 // price categories api's
-router.post('/createPriceCat',[verifyToken],validator("create_price_cat_validation"),priceController.createPriceCat) // create price book category with uninque name
-router.post('/searchPriceCategories',[verifyToken],validator("search_price_cat_validation"),priceController.searchPriceCategories) // search price book category with  name
-router.put('/updatePriceCat/:catId',[verifyToken],validator("update_price_validation"),priceController.updatePriceCat) //update price book category with ID
-router.get('/getPriceCat',[verifyToken],priceController.getPriceCat) // get price book category api
-router.get('/getPriceCatById/:catId',[verifyToken],priceController.getPriceCatById) // get price book category detail with ID
-router.put('/updatePriceCat/:catId',[verifyToken],validator("create_price_cat_validation"),priceController.updatePriceCat) //update price book category with ID
+router.post('/createPriceBookCat',[verifyToken],validator("create_price_cat_validation"),priceController.createPriceBookCat) // create price book category with uninque name
+router.post('/searchPriceBookCategories',[verifyToken],validator("search_price_cat_validation"),priceController.searchPriceBookCategories) // search price book category with  name
+router.put('/updatePriceBookCat/:catId',[verifyToken],validator("update_price_validation"),priceController.updatePriceBookCat) //update price book category with ID
+router.get('/getPriceBookCat',[verifyToken],priceController.getPriceBookCat) // get price book category api
+router.get('/getPriceBookCatById/:catId',[verifyToken],priceController.getPriceBookCatById) // get price book category detail with ID
+router.put('/updatePriceBookCat/:catId',[verifyToken],validator("create_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
  
 
 module.exports = router;
