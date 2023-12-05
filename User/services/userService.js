@@ -8,32 +8,6 @@ module.exports = class userService {
   // get all users
   static async getAllUsers() {
     try {
-<<<<<<< HEAD
-      const allUsers = await user.aggregate([
-
-        // Join with user_role table
-        {
-          $lookup: {
-            from: "roles",
-            localField: "roleId", /*-------------Field in User Collection---------*/
-            foreignField: "_id",  /*-------------Field in Role Collection---------*/
-            as: "user_role"
-          }
-        },
-        { $unwind: "$user_role" },
-
-        {
-          $project: {
-            _id: 1,
-            email: 1,
-            firstName: 1,
-            lastName: 1,
-            role: "$user_role.role",
-            accountId: 1
-          }
-        }
-      ]);
-=======
       const allUsers = await user.aggregate([    
         // Join with user_role table
           {
@@ -57,7 +31,6 @@ module.exports = class userService {
               } 
           }
     ]);
->>>>>>> c2cf65ecd4884b23904e2fd9dbfd52ecce5cd18f
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);

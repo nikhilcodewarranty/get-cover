@@ -46,7 +46,7 @@
       "/price/getPriceCat": {
         "get": {
           "security": [ { "Bearer": [] } ],
-          "tags": ["Price Category"],
+          "tags": ["Price Book Category"],
           "summary": "Get All Price Categories",
           "responses": {
             "200": {
@@ -59,7 +59,7 @@
       "/price/createPriceCat":{
         "post":{
           "security": [ { "Bearer": [] } ],
-          "tags": ["Price Category"],
+          "tags": ["Standered Price Category"],
            "summary": "Create Price Book",
            "parameters": [
             {
@@ -72,7 +72,7 @@
             }
           ],
           "responses": {
-            "201": {
+            "200": {
               "description": "Price Category Book created successfully"
             },
             "400": {
@@ -160,7 +160,7 @@
         }
       },
      
-      "/user/createSuperAdmin":{
+      "/admin/createSuperAdmin":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -186,10 +186,10 @@
           }
         }
       },
-      "/dealer/createDealer":{
+      "/admin/createDealer":{
         "post":{
           "security": [ { "Bearer": [] } ],
-          "tags": ["Dealers"],
+          "tags": ["Super Admin"],
            "summary": "Create Dealer",
         
            "parameters": [
