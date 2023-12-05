@@ -18,7 +18,7 @@ router.post('/searchPriceCategories',[verifyToken],validator("search_price_cat_v
 router.put('/updatePriceCat/:catId',[verifyToken],validator("update_price_validation"),priceController.updatePriceCat) //update price book category with ID
 router.get('/getPriceCat',[verifyToken],priceController.getPriceCat) // get price book category api
 router.get('/getPriceCatById/:catId',[verifyToken],priceController.getPriceCatById) // get price book category detail with ID
-router.put('/udpatePriceCat/:catId',[verifyToken],validator("create_price_cat_validation"),priceController.udpatePriceCat) //update price book category with ID
+router.put('/updatePriceCat/:catId',[verifyToken],validator("create_price_cat_validation"),priceController.updatePriceCat) //update price book category with ID
  
 
 module.exports = router;
