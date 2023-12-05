@@ -23,17 +23,12 @@
           "type": "apiKey",
           "name": "x-access-token",
           "in": "header"
-      },
-      "token": {
-        "type": "apiKey",
-        "name": "token",
-        "in": "header"
-    }
+      }
   },
     "paths": {
       "/user/users": {
         "get": {
-          "security": [ { "token": [] } ],
+          "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
           "responses": {
@@ -123,7 +118,7 @@
       }, 
       "/user/roles": {
         "get": {
-          "security": [ { "token": [] } ],
+          "security": [ { "Bearer": [] } ],
           "tags": ["Roles"],
           "summary": "Get all user Roles",
           "responses": { 
