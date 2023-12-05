@@ -212,6 +212,37 @@ exports.deletePriceBook = async (req, res, next) => {
   }
 };
 
+//Search price price books
+exports.searchPriceBook = async (req, res, next) => {
+  try {
+    let query =  { $or:[
+      { 'name': { '$regex': req.body.name, '$options': 'i' }},
+      { 'description': { '$regex': req.body.name, '$options': 'i' }},
+      { 'state': { '$regex': req.body.name, '$options': 'i' }},
+      { 'city': { '$regex': req.body.name, '$options': 'i' }},
+      { 'zip': { '$regex': req.body.name, '$options': 'i' }},
+    ]};
+    let projection = { isDeleted: 0, __v: 0 };
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+    if (!priceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
+};
 
 
 //----------------- price categories api's --------------------------//
@@ -340,3 +371,29 @@ exports.getPriceCatById = async (req, res) => {
   }
 }
 
+// search price category with name
+exports.searchPriceCategories = async (req, res) => {
+  try{
+    let data = req.body;
+    let query = { 'name': { '$regex': req.body.name, '$options': 'i' }};
+    let projection = {__v:0,status:0};
+    let seachCategory = await priceBookService.getAllPriceCat(query,projection);
+    if(!seachCategory){
+      res.send({
+        code:constant.errorCode,
+        message:"No data found for price categories"
+      });
+      return;
+    };
+    res.send({
+      code:constant.successCode,
+      message:"Success",
+      result:seachCategory
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}

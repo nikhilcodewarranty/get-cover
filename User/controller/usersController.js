@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
+const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
 const role = require("../model/role");
 const constant = require('../../config/constant');
@@ -285,6 +286,90 @@ exports.createDealer = async (req, res) => {
     })
   }
 };
+
+//Create new service provider
+exports.createServiceProvider = async (req, res) => {
+  try {
+    let data = req.body
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Email already exist"
+      })
+      return;
+    }
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // Create a new dealer meta data
+    let providerMeta = {
+      name: data.name,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      createdBy: data.createdBy
+    };
+     // check role is exist or not 
+     let checkRole = await role.findOne({ role: data.role });
+     if (!checkRole) {
+       res.send({
+         code: constant.errorCode,
+         message: "Invalid role"
+       });
+       return;
+     };
+
+    let createMetaData = await providerService.createServiceProvider(providerMeta)
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
+      });
+      return;
+    };
+    let providerData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      accountId: createMetaData._id,
+      phoneNumber: data.phoneNumber,
+      roleId: checkRole._id, // Assign  role
+      isPrimary: data.is_primary,
+    }
+
+    let createDealer = await userService.createUser(providerData)
+    if (createDealer) {
+      let result = createDealer.toObject()
+      result.role = data.role //adding role to the response
+      result.meta = createMetaData // merging the provider data with user data
+      const token = jwt.sign(
+        { userId: createDealer._id, email: createDealer.email },
+        process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+      //success response
+      res.send({
+        code: constant.successCode,
+        message: 'Successfully Created',
+        result: result,
+        jwtToken: token
+      })
+    } else {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the service provider"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 // Login route

@@ -1,6 +1,7 @@
 const createHttpError = require('http-errors'); //* middlewares/Validator.js
 const Joi = require('joi'); //* Include joi to check error type 
 const Validators = require('../validators'); //* Include all validators
+const constant = require('../../config/constant')
 
 
 module.exports = function (validator) {
@@ -18,7 +19,7 @@ module.exports = function (validator) {
             //! If validation error occurs 
             if (err.isJoi)
                 res.send({
-                    code: 406,
+                    code: constant.validationError,
                     message: err.message.replace(/['"]+/g, '')
                 });
         };
