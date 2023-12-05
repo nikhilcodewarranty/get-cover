@@ -394,7 +394,7 @@ exports.createServiceProvider = async (req, res) => {
 
 // Login route
 exports.login = async (req, res) => {
-  console.log(req.body.password);
+  console.log(req.body.email);
 
   try {
     // Check if the user with the provided email exists
