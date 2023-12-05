@@ -71,7 +71,7 @@
       "/price/createPriceCat":{
         "post":{
           "security": [ { "Bearer": [] } ],
-          "tags": ["Standered Price Category"],
+          "tags": ["Standard Price Category"],
            "summary": "Create Price Book",
            "parameters": [
             {
