@@ -14,6 +14,10 @@ const dealarSchema = new mongoose.Schema({
     type: String,
     default:''
   },
+  userAccount:{
+    type:Boolean,
+    defaul:true
+  },
   zip: {
     type: String,
     default:''

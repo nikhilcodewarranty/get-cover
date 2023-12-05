@@ -28,6 +28,10 @@ const priceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "priceCategory",
   },
+  userId:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "users",
+  },
   status: {
     type: Boolean,
     default: true

@@ -6,6 +6,13 @@ const constant = require('../../config/constant')
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
   try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let query = { isDeleted: false }
     let projection = { __v: 0, isDeleted: 0 }
     const dealers = await dealerService.getAllDealers(query, projection);
@@ -33,6 +40,13 @@ exports.getAllDealers = async (req, res) => {
 //create new dealer
 exports.createDealer = async (req, res) => {
   try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     let data = req.body
     let dealerData = {}
     const createdDealer = await dealerService.createDealer(dealerData);
@@ -147,8 +161,8 @@ exports.deleteDealer = async (req, res) => {
     })
   } catch (error) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 };
