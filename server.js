@@ -40,6 +40,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //common routing for server
 app.use("/api-v1/user", userRoutes);
+app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
 app.use("/api-v1/price", priceRoutes);
 
