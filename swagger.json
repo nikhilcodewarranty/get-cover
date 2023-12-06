@@ -367,6 +367,24 @@
               },
               "required": ["email", "password", "firstName", "lastName"]
             }
+          },
+          "priceBook": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "priceBook": {
+                  "type": "string"
+                },
+                "dealerId": {
+                  "type": "string"
+                },
+                "brokerFee": {
+                  "type": "string"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
           }
                
          
@@ -781,6 +799,9 @@
           },
           "brokerFee": {
             "type": "Number"
+          },
+          "status":{
+            "type": "boolean"
           }
        
         }

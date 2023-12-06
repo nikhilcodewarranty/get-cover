@@ -10,6 +10,13 @@ const create_dealer_validation = Joi.object({
         isPrimary: Joi.boolean().required(),
     }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique."),
 
+    priceBook: Joi.array().items(Joi.object().keys({
+        priceBook: Joi.string().required(),
+        dealerId: Joi.string().required(),
+        brokerFee: Joi.string().required()
+    }).unknown(true)).unique((a, b) => a.priceBook === b.priceBook).message("Each dealer's price must be unique."),
+
+
     name: Joi.string().required(),
     street: Joi.string().required(),
     city: Joi.string().required(),

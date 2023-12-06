@@ -14,14 +14,6 @@ const dealerBookSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  isDeleted: {
-    type: String,
-    default: false
-  },
-  status:{
-    type:Boolean,
-    default:true
-  },
   isDeleted:{
     type:Boolean,
     default:false

@@ -221,7 +221,7 @@ exports.createDealer = async (req, res) => {
   try {
     let data = req.body;
 
-    //console.log(data);return false;
+    console.log(data);
     // Create a new dealer meta data
     let dealerMeta = {
       name: data.name,
@@ -258,19 +258,31 @@ exports.createDealer = async (req, res) => {
       const existingUser = await userService.findOneUser({ email: dealerUserArray[i].email });
       if (!existingUser) {
         let dealerData = {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
+          firstName: dealerUserArray[i].firstName,
+          lastName: dealerUserArray[i].lastName,
+          email: dealerUserArray[i].email,
           password: hashedPassword,
           accountId: createMetaData._id,
-          phoneNumber: data.phoneNumber,
+          phoneNumber: dealerUserArray[i].phoneNumber,
           roleId: checkRole._id, // Assign super role
-          isPrimary: data.isPrimary,
+          isPrimary: dealerUserArray[i].isPrimary,
         }
         let createDealer = await userService.createUser(dealerData)
       }
-      console.log('-------------------------', i)
-    }
+      console.log('-------------------------', i)   
+     }
+
+      // dealer Price Book data 
+
+      let dealerPriceArray = data.priceBook
+      for (let i = 0; i < dealerPriceArray.length; i++) {
+          let dealerPriceData = {
+            priceBook: "657021498c1145eb256e0371",
+            dealerId:createMetaData._id,
+            brokerFee: dealerPriceArray[i].brokerFee
+        }
+        let createPriceBook = await dealerService.createPriceBook(dealerPriceData)
+      }
     res.send({
       code: constant.successCode,
       message: 'Successfully Created',

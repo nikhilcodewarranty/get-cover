@@ -1,4 +1,5 @@
 const dealer = require("../model/dealer");
+const dealerPrice = require("../model/dealerPrice");
 
 module.exports = class dealerService {
   // Get all dealers
@@ -53,4 +54,16 @@ module.exports = class dealerService {
       console.log(`Could  not delete dealer ${error}`);
     }
   }
+
+  static async createPriceBook(data) {
+      try {
+        console.log('data meta Price---------', data)
+        const response = await new dealerPrice(data).save();
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
+  }
+
+  
 };
