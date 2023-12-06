@@ -783,7 +783,7 @@
           "adminFee": {
             "type": "string"
           },
-          "category": {
+          "priceCatId": {
             "type": "string"
           }
         }
