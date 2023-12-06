@@ -100,7 +100,7 @@
           }
         }
       }, 
-      "/price/createPriceCat":{
+      "/price/createPriceBookCat":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Standard Price Book"],
@@ -131,7 +131,7 @@
           }
         }
       },
-      "/price/getPriceCat": {
+      "/price/getPriceBookCat": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Standard Price Book"],
