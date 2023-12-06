@@ -190,7 +190,7 @@ exports.createSuperAdmin = async (req, res) => {
       accountId: data.accountId,
       phoneNumber: data.phoneNumber,
       roleId: superRole._id, //Assign super role
-      is_primary: data.is_primary,
+      isPrimary: data.isPrimary,
       status: data.status,
     }
 
@@ -220,6 +220,8 @@ exports.createSuperAdmin = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     let data = req.body;
+
+    //console.log(data);return false;
     // Create a new dealer meta data
     let dealerMeta = {
       name: data.name,
@@ -263,7 +265,7 @@ exports.createDealer = async (req, res) => {
           accountId: createMetaData._id,
           phoneNumber: data.phoneNumber,
           roleId: checkRole._id, // Assign super role
-          isPrimary: data.is_primary,
+          isPrimary: data.isPrimary,
         }
         let createDealer = await userService.createUser(dealerData)
       }
@@ -357,7 +359,7 @@ exports.createServiceProvider = async (req, res) => {
       accountId: createMetaData._id,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id, // Assign  role
-      isPrimary: data.is_primary,
+      isPrimary: data.isPrimary,
     }
 
     let createDealer = await userService.createUser(providerData)
