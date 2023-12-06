@@ -277,7 +277,7 @@ exports.createDealer = async (req, res) => {
       let dealerPriceArray = data.priceBook
       for (let i = 0; i < dealerPriceArray.length; i++) {
           let dealerPriceData = {
-            priceBook: "657021498c1145eb256e0371",
+            priceBook: "657028a5ea99c1493f53c9b6",
             dealerId:createMetaData._id,
             brokerFee: dealerPriceArray[i].brokerFee
         }
