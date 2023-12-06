@@ -48,7 +48,7 @@
         }
       },
 
-      "/price/priceBook": {
+      "/price/priceBooks": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Standard Price Book"],
