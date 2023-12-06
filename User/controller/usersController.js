@@ -220,19 +220,16 @@ exports.createSuperAdmin = async (req, res) => {
 //create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
-    let data = req.body;
-
-    console.log(data);
-    // Create a new dealer meta data
-    let dealerMeta = {
-      name: data.name,
-      street: data.street,
-      city: data.city,
-      zip: data.zip,
-      state: data.state,
-      country: data.country,
-      createdBy: data.createdBy
-    };
+      let data = req.body;
+      let dealerMeta = {
+        name: data.name,
+        street: data.street,
+        city: data.city,
+        zip: data.zip,
+        state: data.state,
+        country: data.country,
+        createdBy: data.createdBy
+      };
     // check role is exist or not 
     let checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
@@ -252,38 +249,16 @@ exports.createDealer = async (req, res) => {
       return;
     };
     // dealer user data 
-    let dealerUserArray = data.dealers
-    for (let i = 0; i < dealerUserArray.length; i++) {
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(dealerUserArray[i].password, 10);
-      const existingUser = await userService.findOneUser({ email: dealerUserArray[i].email });
-      if (!existingUser) {
-        let dealerData = {
-          firstName: dealerUserArray[i].firstName,
-          lastName: dealerUserArray[i].lastName,
-          email: dealerUserArray[i].email,
-          password: hashedPassword,
-          accountId: createMetaData._id,
-          phoneNumber: dealerUserArray[i].phoneNumber,
-          roleId: checkRole._id, // Assign super role
-          isPrimary: dealerUserArray[i].isPrimary,
-        }
-        let createDealer = await userService.createUser(dealerData)
-      }
-      console.log('-------------------------', i)   
-     }
-
-      // dealer Price Book data 
-
-      let dealerPriceArray = data.priceBook
-      for (let i = 0; i < dealerPriceArray.length; i++) {
-          let dealerPriceData = {
-            priceBook: "657028a5ea99c1493f53c9b6",
-            dealerId:createMetaData._id,
-            brokerFee: dealerPriceArray[i].brokerFee
-        }
-        let createPriceBook = await dealerPriceService.createDealerPrice(dealerPriceData)
-      }
+    let dealerUserArray = data.dealers;
+    let emailValues = dealerUserArray.map(value => value.email);// get all email from body
+    /**------------------------Find Data By email-------------------------- */
+   let userData= await userService.findByEmail(emailValues);
+  const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
+   resultDealerData = resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
+  let createDealer = await userService.insertManyUser(resultDealerData)     
+   // dealer Price Book data 
+   let dealerPriceArray = data.priceBook
+   let createPriceBook = await dealerPriceService.insertManyPrices(dealerPriceArray) 
     res.send({
       code: constant.successCode,
       message: 'Successfully Created',
@@ -405,8 +380,6 @@ exports.createServiceProvider = async (req, res) => {
     })
   }
 }
-
-
 // Login route
 exports.login = async (req, res) => {
   try {
@@ -419,13 +392,8 @@ exports.login = async (req, res) => {
       })
       return;
     }
-
-    console.log(req.body.password);
-    console.log(user.password);
-
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
-
     if (!passwordMatch) {
       res.send({
         code: constant.errorCode,

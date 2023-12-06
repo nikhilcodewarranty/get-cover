@@ -21,6 +21,19 @@ module.exports = class dealerPriceService {
     }
   }
 
+  static async insertManyPrices(data) {
+    try {
+      const response = await dealerPrice.insertMany(data);
+      return response;
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+  
+
   // get dealer price detail with ID
   static async getDealerPriceById(dealerPriceId) {
     try {

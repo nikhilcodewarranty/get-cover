@@ -1,6 +1,6 @@
 const user = require("../model/users");
 const role = require("../model/role");
-
+const dealerModel = require("../../Dealer/model/dealer");
 
 //-------------------------- user's services ------------------------------//
 
@@ -30,6 +30,11 @@ module.exports = class userService {
           }
         }
       ]).sort({ "createdAt": -1 });
+
+
+      /**--------------------------Get account name from accoun ID iN diffrent database-------------------------- */
+
+
 
       return allUsers;
     } catch (error) {
@@ -69,6 +74,19 @@ module.exports = class userService {
     }
   };
 
+  static async insertManyUser(data) {
+
+    console.log('--------------Many User-----------',data)
+    try {
+      const response = user.insertMany(data);
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+
+  
   // get user detail with id
   static async getUserById(userId, projection) {
     try {
@@ -129,4 +147,16 @@ module.exports = class userService {
 
     }
   }
+
+  static async findByEmail(query, projection) {
+    try {
+         const response = await user.find({'email': { $in:query}});
+         return response;
+    } catch (err) {
+      console.log(err);
+
+    }
+  }
+
+  
 };
