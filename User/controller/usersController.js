@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
+const dealerPriceService = require('../../Dealer/services/dealerPriceService')
 const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
 const role = require("../model/role");
@@ -281,7 +282,7 @@ exports.createDealer = async (req, res) => {
             dealerId:createMetaData._id,
             brokerFee: dealerPriceArray[i].brokerFee
         }
-        let createPriceBook = await dealerService.createPriceBook(dealerPriceData)
+        let createPriceBook = await dealerPriceService.createDealerPrice(dealerPriceData)
       }
     res.send({
       code: constant.successCode,
