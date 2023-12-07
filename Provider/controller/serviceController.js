@@ -84,6 +84,8 @@ exports.deleteServiceProvide = async (req, res, next) => {
 
 
 exports.registerServiceProvider = async (req, res, next) => {
+
+  console.log(req.body)
   try {
     const createdServiceProvider = await providerService.registerServiceProvider(
       req.body

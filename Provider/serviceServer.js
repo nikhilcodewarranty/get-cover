@@ -10,6 +10,7 @@ const cors = require('cors')
 var path = require('path');
 const createHttpError = require('http-errors')
 
+
 const serviceRoute = require("./routes/service");
 
 var app = express();
@@ -55,7 +56,7 @@ app.use((req, res, next) => {
   next(createHttpError(404));
 })
 
-const PORT = process.env.PRICE_API_ENDPOINT || 8084
+const PORT =  8084
 httpServer.listen(PORT, () => console.log(`Service server is running on port ${PORT}`))
 
 module.exports = app;

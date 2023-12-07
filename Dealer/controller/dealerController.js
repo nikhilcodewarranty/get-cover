@@ -1,7 +1,9 @@
 const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
+const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
+const bcrypt = require("bcrypt");
 
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
@@ -169,23 +171,71 @@ exports.deleteDealer = async (req, res) => {
 /**---------------------------------------------------Register Dealer-------------------------------------------- */
 exports.registerDealer = async (req, res) => {
   try {
-    let data = req.body
-    const createdDealer = await dealerService.registerDealer(data);
-    if (!createdDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to Register"
-      });
-      return;
+    const data = req.body;
+    
+    // Extracting necessary data for dealer creation
+    const dealerMeta = {
+      name: data.name,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
     };
-    res.send({
-      code: constant.successCode,
-      message: "Success"
-    })
+
+    // Check if the specified role exists
+    const checkRole = await role.findOne({ role: data.role });
+    if (!checkRole) {
+      return res.send({
+        code: constant.errorCode,
+        message: 'Invalid role',
+      });
+    }
+
+    // Register the dealer
+    const createMetaData = await dealerService.registerDealer(dealerMeta);
+    if (!createMetaData) {
+      return res.send({
+        code: constant.errorCode,
+        message: 'Unable to create dealer account',
+      });
+    }
+
+    // Check if the email already exists
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
+      return res.send({
+        code: constant.errorCode,
+        message: 'Email already exists',
+      });
+    }
+
+    // Hash the password before storing
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // Create user metadata
+    const userMetaData = {
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phoneNumber: data.phoneNumber,
+      roleId: checkRole._id,
+      password: hashedPassword,
+      accountId: createMetaData._id,
+    };
+
+    // Create the user
+    const createDealer = await userService.createUser(userMetaData);
+    if (createDealer) {
+      return res.send({
+        code: constant.successCode,
+        message: 'Success',
+      });
+    }
   } catch (err) {
-    res.send({
+    return res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
 };

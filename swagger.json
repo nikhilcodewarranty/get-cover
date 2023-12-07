@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -345,7 +345,7 @@
               "name": "Register Dealer",
               "in": "body",
               "schema": {
-                "$ref": "#/definitions/Dealer"
+                "$ref": "#/definitions/DealerRegister"
               }
             }
           ],
@@ -436,6 +436,47 @@
           },"password": {
             "type": "string"
           }
+         
+        }
+      },
+      "DealerRegister":{
+        "properties": {        
+          "name": {
+            "type": "string"
+          },
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "zip": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },       
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "role":{
+            "type": "string"
+          } 
          
         }
       },
