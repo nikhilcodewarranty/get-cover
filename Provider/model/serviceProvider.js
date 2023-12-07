@@ -13,6 +13,10 @@ const serviceProviderSchema = new mongoose.Schema({
     type: String,
     default:''
   },
+  userAccount:{
+    type:Boolean,
+    default:false
+  },
   state: {
     type: String,
     default:''

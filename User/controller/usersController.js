@@ -224,6 +224,7 @@ exports.createDealer = async (req, res) => {
       let dealerMeta = {
         name: data.name,
         street: data.street,
+        userAccount:req.body.customerAccountCreated,
         city: data.city,
         zip: data.zip,
         state: data.state,
@@ -250,16 +251,37 @@ exports.createDealer = async (req, res) => {
     };
     // dealer user data 
     let dealerUserArray = data.dealers;
-    let accountCreationFlag = req.body.accountCreated;
+    let accountCreationFlag = req.body.customerAccountCreated;
     let emailValues = dealerUserArray.map(value => value.email);// get all email from body
     /**-----------------------------------------Find Data By email--------------------------------- */
    let userData= await userService.findByEmail(emailValues);
    const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
    resultDealerData = accountCreationFlag==1 ? resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id,'status':true})):resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
-  let createDealer = await userService.insertManyUser(resultDealerData)     
+  console.log(resultDealerData);
+   let createUsers = await userService.insertManyUser(resultDealerData)    
+  if (!createUsers) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to save users"
+    });
+    return;
+  }; 
    // dealer Price Book data 
    let dealerPriceArray = data.priceBook
-   let createPriceBook = await dealerPriceService.insertManyPrices(dealerPriceArray) 
+   let resultPriceData = dealerPriceArray.map(obj=>({
+    'priceBook':obj.priceBook,
+    'dealerId':createMetaData._id,
+    'brokerFee':obj.brokerFee
+   }))
+   console.log(resultPriceData)
+   let createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData) 
+   if (!createPriceBook) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to save price book"
+    });
+    return;
+  }; 
     res.send({
       code: constant.successCode,
       message: 'Successfully Created',
@@ -298,89 +320,79 @@ exports.createDealer = async (req, res) => {
   }
 };
 
-//Create new service provider
+//Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
   try {
-    let data = req.body
-    const existingUser = await userService.findOneUser({ email: data.email });
-    if (existingUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Email already exist"
-      })
-      return;
-    }
+    const data = req.body;
+
     // Hash the password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    // Create a new dealer meta data
-    let providerMeta = {
+    //const hashedPassword = await bcrypt.hash(data.password, 10);
+
+    // Check if the specified role exists
+    const checkRole = await role.findOne({ role: data.role });
+    if (!checkRole) {
+      return res.send({
+        code: constant.errorCode,
+        message: 'Invalid role',
+      });
+    }
+
+    // Create a new provider meta data
+    const providerMeta = {
       name: data.name,
       street: data.street,
       city: data.city,
       zip: data.zip,
+      userAccount:req.body.customerAccountCreated,
       state: data.state,
       country: data.country,
-      createdBy: data.createdBy
-    };
-    // check role is exist or not 
-    let checkRole = await role.findOne({ role: data.role });
-    if (!checkRole) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid role"
-      });
-      return;
+      createdBy: data.createdBy,
     };
 
-    let createMetaData = await providerService.createServiceProvider(providerMeta)
+    // Create the service provider
+    const createMetaData = await providerService.createServiceProvider(providerMeta);
     if (!createMetaData) {
-      res.send({
+      return res.send({
         code: constant.errorCode,
-        message: "Something went wrong"
+        message: 'Unable to create servicer account',
       });
-      return;
-    };
-    let providerData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      password: hashedPassword,
-      accountId: createMetaData._id,
-      phoneNumber: data.phoneNumber,
-      roleId: checkRole._id, // Assign  role
-      isPrimary: data.isPrimary,
     }
 
-    let createDealer = await userService.createUser(providerData)
-    if (createDealer) {
-      let result = createDealer.toObject()
-      result.role = data.role //adding role to the response
-      result.meta = createMetaData // merging the provider data with user data
-      const token = jwt.sign(
-        { userId: createDealer._id, email: createDealer.email },
-        process.env.JWT_SECRET,
-        { expiresIn: "1h" }
-      );
-      //success response
-      res.send({
-        code: constant.successCode,
-        message: 'Successfully Created',
-        result: result,
-        jwtToken: token
-      })
-    } else {
-      res.send({
+    // Provider user data
+    const providerUserArray = data.providers;
+    const accountCreationFlag = req.body.customerAccountCreated;
+    const emailValues = providerUserArray.map(value => value.email);
+
+    // Find data by email
+    const userData = await userService.findByEmail(emailValues);
+
+    // Remove duplicates
+     const resultProvider = providerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
+     resultProviderData = accountCreationFlag ? resultProvider.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id,'status':true})):resultProvider.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
+    // Map provider data
+
+
+    // Create provider users
+    const createProviderUsers = await userService.insertManyUser(resultProviderData);
+    if (!createProviderUsers) {
+      return res.send({
         code: constant.errorCode,
-        message: "Unable to create the service provider"
-      })
+        message: 'Unable to create users',
+      });
     }
+
+    return res.send({
+      code: constant.successCode,
+      message: 'Successfully Created',
+    });
+
   } catch (err) {
-    res.send({
+    return res.send({
       code: constant.errorCode,
-      message: err.message
-    })
+      message: err.message,
+    });
   }
-}
+};
 // Login route
 exports.login = async (req, res) => {
   try {

@@ -1,7 +1,8 @@
-const Joi = require('joi')
+const Joi = require('joi');
 
-const login_validation = Joi.object({
-    email:Joi.string().email().required(),
-    password:Joi.string().required()
+const loginValidation = Joi.object({
+    email: Joi.string().email().pattern(new RegExp('^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,50}$', 'i')).required(),
+    password: Joi.string().required()
 });
-module.exports = login_validation
+
+module.exports = loginValidation;
