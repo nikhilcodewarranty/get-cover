@@ -147,10 +147,10 @@ module.exports = class userService {
     }
   }
 
-  static async findByEmail(query, projection) {
+  static async findByEmail(query) {
     try {
-         const response = await user.find({'email': { $in:query}});
-         return response;
+      const response = await user.find({ 'email': { $in: query }}).select('-_id email');
+      return response;
     } catch (err) {
       console.log(err);
 

@@ -334,6 +334,19 @@ exports.createDealer = async (req, res) => {
 exports.createServiceProvider = async (req, res) => {
   try {
     const data = req.body;
+    const providerUserArray = data.providers;
+      // Find data by email
+    const emailValues = providerUserArray.map(value => value.email);
+
+    const userData = await userService.findByEmail(emailValues);
+
+    if(userData){
+      return res.send({
+        code: constant.errorCode,
+        message: 'Email Already Exists',
+        data:userData
+      });
+    }
 
     // Hash the password
     //const hashedPassword = await bcrypt.hash(data.password, 10);
@@ -366,15 +379,7 @@ exports.createServiceProvider = async (req, res) => {
         code: constant.errorCode,
         message: 'Unable to create servicer account',
       });
-    }
-
-    // Provider user data
-    const providerUserArray = data.providers;
-    const accountCreationFlag = req.body.customerAccountCreated;
-    const emailValues = providerUserArray.map(value => value.email);
-
-    // Find data by email
-    const userData = await userService.findByEmail(emailValues);
+    }  
 
     // Remove duplicates
      const resultProvider = providerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
