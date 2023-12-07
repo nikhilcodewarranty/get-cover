@@ -256,8 +256,19 @@ exports.createDealer = async (req, res) => {
     /**-----------------------------------------Find Data By email--------------------------------- */
    let userData= await userService.findByEmail(emailValues);
    const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
-   resultDealerData = accountCreationFlag==1 ? resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id,'status':true})):resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
-  console.log(resultDealerData);
+   const resultDealerData = accountCreationFlag
+   ? await Promise.all(resultDealer.map(async (obj) => {
+       const hashedPassword = await bcrypt.hash(obj.password, 10);
+       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+     }))
+   : await Promise.all(resultDealer.map(async (obj) => {
+       const hashedPassword = await bcrypt.hash(obj.password, 10);
+       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
+     }));  
+     
+    //  console.log(resultDealerData);
+
+    //  return false;
    let createUsers = await userService.insertManyUser(resultDealerData)    
   if (!createUsers) {
     res.send({
@@ -267,13 +278,12 @@ exports.createDealer = async (req, res) => {
     return;
   }; 
    // dealer Price Book data 
-   let dealerPriceArray = data.priceBook
+   let dealerPriceArray = data.priceBook;
    let resultPriceData = dealerPriceArray.map(obj=>({
     'priceBook':obj.priceBook,
     'dealerId':createMetaData._id,
     'brokerFee':obj.brokerFee
    }))
-   console.log(resultPriceData)
    let createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData) 
    if (!createPriceBook) {
     res.send({
@@ -368,8 +378,17 @@ exports.createServiceProvider = async (req, res) => {
 
     // Remove duplicates
      const resultProvider = providerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
-     resultProviderData = accountCreationFlag ? resultProvider.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id,'status':true})):resultProvider.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
-    // Map provider data
+     const resultProviderData = accountCreationFlag
+   ? await Promise.all(resultProvider.map(async (obj) => {
+       const hashedPassword = await bcrypt.hash(obj.password, 10);
+       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+     }))
+   : await Promise.all(resultProvider.map(async (obj) => {
+       const hashedPassword = await bcrypt.hash(obj.password, 10);
+       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
+     })); 
+
+     // Map provider data
 
 
     // Create provider users
