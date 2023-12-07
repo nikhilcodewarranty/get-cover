@@ -166,4 +166,26 @@ exports.deleteDealer = async (req, res) => {
     })
   }
 };
-
+/**---------------------------------------------------Register Dealer-------------------------------------------- */
+exports.registerDealer = async (req, res) => {
+  try {
+    let data = req.body
+    const createdDealer = await dealerService.registerDealer(data);
+    if (!createdDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to Register"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Success"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};

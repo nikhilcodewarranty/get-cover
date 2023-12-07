@@ -13,10 +13,12 @@ swaggerUi1 = require('swagger-ui-express');
 swaggerDocument = require('./swagger.json');
 swaggerDocumentDealer = require('./dealer.json');
 const user = require('./User/userServer')
+const service = require('./Provider/serviceServer')
 const dealer = require('./Dealer/dealerServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
+const serviceRoutes = require("./Provider/routes/service");
 const priceRoutes = require("./PriceBook/routes/price");
 
 
@@ -42,6 +44,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use("/api-v1/user", userRoutes);
 app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
+app.use("/api-v1/serviceProvider", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
 
 // catch 404 and forward to error handler

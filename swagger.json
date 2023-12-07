@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -335,6 +335,66 @@
           }
         }
       },
+      "/dealer/register":{
+        "post":{
+          "tags": ["Dealer"],
+           "summary": "Register Dealer",        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Register Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/Dealer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },    
+      "/serviceProvider/register":{
+        "post":{
+          "tags": ["Service Provider"],
+           "summary": "Register Service Provider",        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Register Service Provider",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/ServiceProvider"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },     
       "/user/login":{
         "post":{
           "tags": ["Login User"],
@@ -404,6 +464,9 @@
           },       
           "role": {
             "type": "string"
+          },
+          "customerAccountCreated":{
+            "type": "number"
           },
           "dealers": {
             "type": "array",
@@ -541,10 +604,8 @@
           }
         }
       },
-      "Dealer": {
-      
-        "properties": {
-        
+      "Dealer": {      
+        "properties": {        
           "name": {
             "type": "string"
           },
@@ -567,9 +628,6 @@
             "type": "string"
           },
           "token": {
-            "type": "string"
-          },
-          "isDeleted":{
             "type": "string"
           }
         }

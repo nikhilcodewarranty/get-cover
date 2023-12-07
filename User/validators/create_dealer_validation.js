@@ -25,5 +25,7 @@ const create_dealer_validation = Joi.object({
     country: Joi.string().required(),
     createdBy: Joi.string().optional(),
     role: Joi.string().required(),
+    accountCreated: Joi.string().required(),
+    
 });
 module.exports = create_dealer_validation

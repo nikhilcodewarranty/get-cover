@@ -250,11 +250,12 @@ exports.createDealer = async (req, res) => {
     };
     // dealer user data 
     let dealerUserArray = data.dealers;
+    let accountCreationFlag = req.body.accountCreated;
     let emailValues = dealerUserArray.map(value => value.email);// get all email from body
-    /**------------------------Find Data By email-------------------------- */
+    /**-----------------------------------------Find Data By email--------------------------------- */
    let userData= await userService.findByEmail(emailValues);
-  const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
-   resultDealerData = resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
+   const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
+   resultDealerData = accountCreationFlag==1 ? resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id,'status':true})):resultDealer.map(obj => ({ ...obj, 'roleId': checkRole._id ,'accountId':createMetaData._id}));
   let createDealer = await userService.insertManyUser(resultDealerData)     
    // dealer Price Book data 
    let dealerPriceArray = data.priceBook

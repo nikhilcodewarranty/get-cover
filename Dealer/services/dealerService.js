@@ -65,5 +65,19 @@ module.exports = class dealerService {
       }
   }
 
+
+  //--------------------------------------Register Dealer---------------------------------------  
+  static async registerDealer(data) {
+    try {
+      console.log('Dealer Date---------', data)
+      const response = await new dealer(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   
 };
+
+

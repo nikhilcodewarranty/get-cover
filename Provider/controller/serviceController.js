@@ -16,6 +16,8 @@ exports.getAllServiceProviders = async (req, res, next) => {
   }
 };
 
+
+//-------------------------Created By Super Admin
 exports.createServiceProvider = async (req, res, next) => {
   try {
     const createdServiceProvider = await providerService.createServiceProvider(
@@ -79,3 +81,21 @@ exports.deleteServiceProvide = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
+
+exports.registerServiceProvider = async (req, res, next) => {
+  try {
+    const createdServiceProvider = await providerService.registerServiceProvider(
+      req.body
+    );
+    if (!createdServiceProvider) {
+      res.status(404).json("There are no service provider created yet!");
+    }
+    res.json(createdServiceProvider);
+  } catch (error) {
+    res
+      .status(serviceResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+

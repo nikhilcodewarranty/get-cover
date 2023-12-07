@@ -52,4 +52,15 @@ module.exports = class providerService {
       console.log(`Could not delete service provider ${error}`);
     }
   }
+
+  static async registerServiceProvider(data) {
+    try {
+      const response = await new serviceProvider(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  
 };
