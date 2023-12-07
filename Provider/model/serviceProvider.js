@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-
+const connection = require('../../db')
 const serviceProviderSchema = new mongoose.Schema({
   name: {
     type: String,

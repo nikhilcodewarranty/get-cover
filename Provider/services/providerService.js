@@ -54,6 +54,7 @@ module.exports = class providerService {
   }
 
   static async registerServiceProvider(data) {
+
     try {
       const response = await new serviceProvider(data).save();
       return response;

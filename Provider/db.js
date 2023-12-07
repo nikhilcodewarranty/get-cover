@@ -1,6 +1,8 @@
 require("dotenv").config()
 
 
+console.log('---------------------------herererererr')
+
 const mongoose = require('mongoose')
 
 const dbUrl = process.env.DB_URL + 'ServiceProvider'
