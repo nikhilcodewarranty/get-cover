@@ -2,6 +2,7 @@ const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const userService = require("../../User/services/userService");
+const role = require("../../User/model/role");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
 
@@ -172,6 +173,8 @@ exports.deleteDealer = async (req, res) => {
 exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
+
+    console.log(data);
     
     // Extracting necessary data for dealer creation
     const dealerMeta = {
