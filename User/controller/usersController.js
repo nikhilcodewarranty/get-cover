@@ -217,10 +217,23 @@ exports.createSuperAdmin = async (req, res) => {
   }
 };
 
-//create a new dealer from SA 
+//---------------------------create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
       let data = req.body;
+      const dealerUserArray = data.dealers;
+      // Find data by email
+    const emailValues = dealerUserArray.map(value => value.email);
+
+    const userData = await userService.findByEmail(emailValues);
+
+    if(userData){
+      return res.send({
+        code: constant.errorCode,
+        message: 'Email Already Exists',
+        data:userData
+      });
+    }
       let dealerMeta = {
         name: data.name,
         street: data.street,
@@ -250,11 +263,11 @@ exports.createDealer = async (req, res) => {
       return;
     };
     // dealer user data 
-    let dealerUserArray = data.dealers;
-    let accountCreationFlag = req.body.customerAccountCreated;
-    let emailValues = dealerUserArray.map(value => value.email);// get all email from body
+    // let dealerUserArray = data.dealers;
+    // let accountCreationFlag = req.body.customerAccountCreated;
+    // let emailValues = dealerUserArray.map(value => value.email);// get all email from body
     /**-----------------------------------------Find Data By email--------------------------------- */
-   let userData= await userService.findByEmail(emailValues);
+   //let userData= await userService.findByEmail(emailValues);
    const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
    const resultDealerData = accountCreationFlag
    ? await Promise.all(resultDealer.map(async (obj) => {

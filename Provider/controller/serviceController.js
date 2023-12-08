@@ -7,15 +7,33 @@ const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
-    const serviceProviders = await providerService.getAllServiceProviders();
-    if (!serviceProviders) {
-      res.status(404).json("There are no service provider published yet!");
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
     }
-    res.json(serviceProviders);
-  } catch (error) {
-    res
-      .status(serviceResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    let query = { isDeleted: false }
+    let projection = { __v: 0, isDeleted: 0 }
+    const serviceProviders = await providerService.getAllServiceProvider(query, projection);
+    if (!serviceProviders) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: serviceProviders
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -155,6 +173,36 @@ exports.registerServiceProvider = async (req, res) => {
       });
     }
   } catch (err) {
+    return res.send({
+      code: constant.errorCode,
+      message: err.message,
+    });
+  }
+};
+exports.statusUpdate = async (req, res) => {
+  let data = req.body;
+    let criteria = { _id: req.body.servicerId };
+    let newValue = {
+      $set: {
+        status:req.body.status
+      }
+    };
+    let option = { new: true };
+   try {
+    const updatedResult = await providerService.statusUpdate(criteria, newValue, option)
+    if (!updatedResult) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the dealer status"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully"
+    })
+    }
+    catch (err) {
     return res.send({
       code: constant.errorCode,
       message: err.message,

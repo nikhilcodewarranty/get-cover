@@ -31,7 +31,6 @@ exports.getAllDealers = async (req, res) => {
       message: "Success",
       result: dealers
     })
-    res.json(dealers);
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -242,3 +241,35 @@ exports.registerDealer = async (req, res) => {
     });
   }
 };
+exports.statusUpdate = async (req, res) => {
+  let data = req.body;
+    let criteria = { _id: req.body.dealerId };
+    let newValue = {
+      $set: {
+        status:req.body.status
+      }
+    };
+    let option = { new: true };
+   try {
+    const updatedResult = await dealerService.statusUpdate(criteria, newValue, option)
+    if (!updatedResult) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the dealer status"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully"
+    })
+    }
+    catch (err) {
+    return res.send({
+      code: constant.errorCode,
+      message: err.message,
+    });
+  }
+};
+
+

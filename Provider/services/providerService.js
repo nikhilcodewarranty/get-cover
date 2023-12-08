@@ -1,9 +1,9 @@
 const serviceProvider = require("../model/serviceProvider");
 
 module.exports = class providerService {
-  static async getAllServiceProvider() {
+  static async getAllServiceProvider(query,projection) {
     try {
-      const allServiceProvider = await serviceProvider.find();
+      const allServiceProvider = await serviceProvider.find(query,projection).sort({"createdAt":-1});
       return allServiceProvider;
     } catch (error) {
       console.log(`Could not fetch service provider ${error}`);
@@ -58,6 +58,21 @@ module.exports = class providerService {
     try {
       const response = await new serviceProvider(data).save();
       return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
+
+  static async statusUpdate(criteria, newValue, option) {
+    try {
+      const updatedResult = await serviceProvider.findByIdAndUpdate(
+        criteria,
+        newValue,
+        option
+      );
+      return updatedResult;
     } catch (error) {
       console.log(error);
     }
