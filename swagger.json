@@ -427,7 +427,7 @@
           ],
           "responses": {
             "200": {
-              "description": "User created successfully"
+              "description": "Update successfully"
             },
             "401": {
               "description": "Error"
@@ -450,7 +450,7 @@
            "parameters": [
             {
               "required": true,
-              "name": "Create Dealer",
+              "name": "Status Update",
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/updateServicerBody"
@@ -459,7 +459,7 @@
           ],
           "responses": {
             "200": {
-              "description": "User created successfully"
+              "description": "Update successfully"
             },
             "401": {
               "description": "Error"
