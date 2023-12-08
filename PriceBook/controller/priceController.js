@@ -270,9 +270,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-
-  console.log('delaer Price Id----------------',priceId)
-  console.log('delaer Price categoryStatus----------------',categoryStatus)
   if (!categoryStatus) {
     const criteria = { priceBook: priceId };
     const newValue = { status: categoryStatus };
@@ -427,9 +424,10 @@ exports.getPriceBookCat = async (req, res) => {
 
 // Function to update price book category
 const updatePriceBookCategory = async (catId, newData) => {
-  const criteria = { _id: catId };
+
+  //const criteria = { _id: catId };
   let projection = { isDeleted: 0, __v: 0 }
-  const existingCat = await priceBookService.getPriceCatById(criteria,projection);
+  const existingCat = await priceBookService.getPriceCatById({ _id: catId },projection);
 
   if (!existingCat) {
     return {
@@ -445,7 +443,8 @@ const updatePriceBookCategory = async (catId, newData) => {
       status: newData.status
     }
   };
-
+  const criteria = { _id: { $in: catId } }
+  console.log(criteria);
   const option = { new: true };
   const updatedCat = await priceBookService.updatePriceCategory(criteria, newValue, option);
 
@@ -458,15 +457,26 @@ const updatePriceBookCategory = async (catId, newData) => {
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   if (!categoryStatus) {
-    const criteria = { category: catId };
+    //const criteria = { category: catId };
+    const criteria = { category: { $in: [catId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
     const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
+     /**---------------------------Get and update Dealer Price Book Status---------------------------- */
+    let projection = { isDeleted: 0, __v: 0 }
+    const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
+    const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+    if(priceIdsToUpdate){
+        dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+        const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
+        return {
+          success: !!updatedPriceBook1,
+          message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
+        };
+     }
+     
 
-    return {
-      success: !!updatedPriceBook,
-      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
-    };
+  
   }
 
   return { success: true, message: "No update needed for Price Book" };

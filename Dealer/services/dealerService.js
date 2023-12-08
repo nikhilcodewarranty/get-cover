@@ -78,11 +78,9 @@ module.exports = class dealerService {
   }
 
   static async statusUpdate(criteria, newValue, option) {
-    console.log(criteria)
-    console.log(newValue)
-    console.log(option)
+
     try {
-      const updatedResult = await dealer.findByIdAndUpdate(
+      const updatedResult = await dealerPrice.findByIdAndUpdate(
         criteria,
         newValue,
         option

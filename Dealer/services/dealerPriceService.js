@@ -62,9 +62,7 @@ module.exports = class dealerPriceService {
 
   static async updateDealerPrice(criteria, newValue, option) {
     try {
-      const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);
-
-      
+      const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);     
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);

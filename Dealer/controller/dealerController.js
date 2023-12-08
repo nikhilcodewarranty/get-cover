@@ -250,7 +250,7 @@ exports.statusUpdate = async (req, res) => {
     return;
   }
   let data = req.body;
-    let criteria = { _id: req.body.dealerId };
+    let criteria = { _id: req.params.dealerPriceBook };
     let newValue = {
       $set: {
         status:req.body.status
@@ -262,7 +262,7 @@ exports.statusUpdate = async (req, res) => {
     if (!updatedResult) {
       res.send({
         code: constant.errorCode,
-        message: "Unable to update the dealer status"
+        message: "Unable to update the dealer price status"
       });
       return;
     };

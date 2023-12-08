@@ -23,7 +23,7 @@ module.exports = class priceBookService {
     }
   }
 
-  // get price book by id
+  // get price book by ids
   static async getPriceBookById(query, projection) {
     try {
       const singlePriceBookResponse = await priceBook.findOne(query, projection);
@@ -33,10 +33,25 @@ module.exports = class priceBookService {
       console.log(`Price book not found. ${error}`);
     }
   }
+
+  static async getAllPriceIds(query, projection) {
+    try {
+      const allIds = await priceBook.find(query, projection);
+      return allIds;
+    } catch (error) {
+      console.log(`Price book not found. ${error}`);
+    }
+  }
+
+  
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
-      const updatedResponse = await priceBook.updateMany(criteria, newValue, option);
+      const updatedResponse = await priceBook.updateMany(
+        criteria,
+        newValue,
+        option
+      );
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update price book ${error}`);
@@ -88,7 +103,11 @@ module.exports = class priceBookService {
   // update price category
   static async updatePriceCategory(criteria, newValue, options) {
     try {
-      const updatedPriceCat = await priceCategory.updateMany(criteria, newValue, options);
+      const updatedPriceCat = await priceCategory.updateMany(
+        criteria,
+        newValue,
+        options
+      );
       return updatedPriceCat;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);

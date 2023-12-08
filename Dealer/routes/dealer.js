@@ -9,6 +9,9 @@ router.post("/register",dealerController.registerDealer)
 router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 
+router.put("/changedealerPriceBookStatus/:dealerPriceBook",[verifyToken],dealerController.statusUpdate); // update price book detail with ID
+
+
 
 
 module.exports = router;
