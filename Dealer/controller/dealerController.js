@@ -242,6 +242,13 @@ exports.registerDealer = async (req, res) => {
   }
 };
 exports.statusUpdate = async (req, res) => {
+  if (req.role != "Super Admin") {
+    res.send({
+      code: constant.errorCode,
+      message: "Only super admin allow to do this action"
+    })
+    return;
+  }
   let data = req.body;
     let criteria = { _id: req.body.dealerId };
     let newValue = {
