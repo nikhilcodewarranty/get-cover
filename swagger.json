@@ -824,6 +824,9 @@
           "role": {
             "type": "string"
           },
+          "isAccountCreate":{
+            "type": "boolean"
+          },
           "customerAccountCreated":{
             "type": "boolean"
           },
@@ -901,6 +904,9 @@
           },       
           "role": {
             "type": "string"
+          },
+          "isAccountCreate":{
+            "type": "boolean"
           },
           "customerAccountCreated":{
             "type": "boolean"
