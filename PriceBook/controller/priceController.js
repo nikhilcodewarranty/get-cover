@@ -204,21 +204,16 @@ exports.updatePriceBookById = async (req, res, next) => {
   try {
     const { body, params, role } = req;
 
-    console.log(body)
-    console.log(params)
-    console.log(role);
-
-
-    if (!isSuperAdmin(role)) {
+      if (!isSuperAdmin(role)) {
       return res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
     }
 
-    const updateCatResult = await updatePriceBookStatus(params.priceId, body);
+    const updateresult = await updatePriceBookStatus(params.priceId, body);
 
-    if (updateCatResult.success) {
+    if (updateresult.success) {
       const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
 
       return res.send({
@@ -229,7 +224,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     return res.send({
       code: constant.errorCode,
-      message: updateCatResult.message
+      message: updateresult.message
     });
 
   } catch (error) {
@@ -258,9 +253,9 @@ const updatePriceBookStatus = async (priceId, newData) => {
       status: newData.status
     }
   };
-
+  const statusCreateria = { _id: { $in: [priceId] } }
   const option = { new: true };
-  const updatedCat = await priceBookService.updatePriceBook(criteria, newValue, option);
+  const updatedCat = await priceBookService.updatePriceBook(statusCreateria, newValue, option);
 
   return {
     success: !!updatedCat,
@@ -271,7 +266,7 @@ const updatePriceBookStatus = async (priceId, newData) => {
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
   if (!categoryStatus) {
-    const criteria = { priceBook: priceId };
+    const criteria = { priceBook: { $in: [priceId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
     const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);

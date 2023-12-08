@@ -27,7 +27,6 @@ module.exports = class priceBookService {
   static async getPriceBookById(query, projection) {
     try {
       const singlePriceBookResponse = await priceBook.findOne(query, projection);
-      console.log('____----------------------', query, singlePriceBookResponse)
       return singlePriceBookResponse;
     } catch (error) {
       console.log(`Price book not found. ${error}`);
