@@ -827,6 +827,33 @@
           "isAccountCreate":{
             "type": "boolean"
           },
+          "dealerPrimary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "string"
+                },
+                "isPrimary": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          },
           "customerAccountCreated":{
             "type": "boolean"
           },

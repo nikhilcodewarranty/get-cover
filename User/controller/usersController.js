@@ -220,128 +220,126 @@ exports.createSuperAdmin = async (req, res) => {
 //---------------------------create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
-      let data = req.body;
-      const dealerUserArray = data.dealers;
-      // Find data by email
-    const emailValues = dealerUserArray.map(value => value.email);
+    const data = req.body;
 
-    let userData = await userService.findByEmail(emailValues);
- 
-    if(userData){
-      return res.send({
-        code: constant.errorCode,
-        message: 'Email Already Exists',
-        data:userData
-      });
-    }
-      let dealerMeta = {
-        name: data.name,
-        street: data.street,
-        userAccount:req.body.customerAccountCreated,
-        city: data.city,
-        zip: data.zip,
-        state: data.state,
-        country: data.country,
-        createdBy: data.createdBy
-      };
-    // check role is exist or not 
-    let checkRole = await role.findOne({ role: data.role });
+    // Check if the role exists
+    const checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
-      res.send({
+      return res.send({
         code: constant.errorCode,
         message: "Invalid role"
       });
-      return;
+    }
+
+    // Create Dealer Meta Data
+    const dealerMeta = {
+      name: data.name,
+      street: data.street,
+      userAccount: req.body.customerAccountCreated,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      createdBy: data.createdBy
     };
 
-    let createMetaData = await dealerService.createDealer(dealerMeta)
+    // Create Dealer
+    const createMetaData = await dealerService.createDealer(dealerMeta);
     if (!createMetaData) {
-      res.send({
+      return res.send({
         code: constant.errorCode,
         message: "Something went wrong"
       });
-      return;
-    };
-    // dealer user data 
-    // let dealerUserArray = data.dealers;
-    // let accountCreationFlag = req.body.customerAccountCreated;
-    // let emailValues = dealerUserArray.map(value => value.email);// get all email from body
-    /**-----------------------------------------Find Data By email--------------------------------- */
-   //let userData= await userService.findByEmail(emailValues);
-   const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));//Remove duplicasy
-   const resultDealerData = accountCreationFlag
-   ? await Promise.all(resultDealer.map(async (obj) => {
-       const hashedPassword = await bcrypt.hash(obj.password, 10);
-       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-     }))
-   : await Promise.all(resultDealer.map(async (obj) => {
-       const hashedPassword = await bcrypt.hash(obj.password, 10);
-       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
-     }));  
-     
-    //  console.log(resultDealerData);
+    }
 
-    //  return false;
-   let createUsers = await userService.insertManyUser(resultDealerData)    
-  if (!createUsers) {
-    res.send({
-      code: constant.errorCode,
-      message: "Unable to save users"
-    });
-    return;
-  }; 
-   // dealer Price Book data 
-   let dealerPriceArray = data.priceBook;
-   let resultPriceData = dealerPriceArray.map(obj=>({
-    'priceBook':obj.priceBook,
-    'dealerId':createMetaData._id,
-    'brokerFee':obj.brokerFee
-   }))
-   let createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData) 
-   if (!createPriceBook) {
-    res.send({
-      code: constant.errorCode,
-      message: "Unable to save price book"
-    });
-    return;
-  }; 
-    res.send({
+    let accountCreationFlag = req.body.customerAccountCreated;
+
+    // Primary Account Creation with status false
+    if (!req.body.isAccountCreate) {
+      const dealerPrimaryUserArray = data.dealerPrimary;
+      const primaryEmailValues = dealerPrimaryUserArray.map(value => value.email);
+      const primaryUserData = await userService.findByEmail(primaryEmailValues);
+      if(primaryUserData){
+          return res.send({
+            code: constant.errorCode,
+            message: 'Email Already Exists',
+            data:userData
+          });
+    }
+      const resultPrimaryDealer = primaryUserData.filter(obj => !primaryUserData.some(excludeObj => obj.email === excludeObj.email));
+      const resultPrimaryDealerData = await Promise.all(resultPrimaryDealer.map(async (obj) => {
+        const hashedPassword = await bcrypt.hash(obj.password, 10);
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+      }));
+
+      const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
+      if (!createUsers) {
+        return res.send({
+          code: constant.errorCode,
+          message: "Unable to save users"
+        });
+      }
+
+      accountCreationFlag = false;
+    }
+
+    // If account Creation is true
+    if (accountCreationFlag) {
+      const dealerUserArray = data.dealers;
+      const emailValues = dealerUserArray.map(value => value.email);
+      const userData = await userService.findByEmail(emailValues);
+
+      if (userData.length > 0) {
+        return res.send({
+          code: constant.errorCode,
+          message: 'Email Already Exists',
+          data: userData
+        });
+      }
+
+      const resultDealer = dealerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
+      const resultDealerData = await Promise.all(resultDealer.map(async (obj) => {
+        const hashedPassword = await bcrypt.hash(obj.password, 10);
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+      }));
+
+      const createUsers = await userService.insertManyUser(resultDealerData);
+      if (!createUsers) {
+        return res.send({
+          code: constant.errorCode,
+          message: "Unable to save users"
+        });
+      }
+
+      // Dealer Price Book Data
+      const dealerPriceArray = data.priceBook;
+      const resultPriceData = dealerPriceArray.map(obj => ({
+        'priceBook': obj.priceBook,
+        'dealerId': createMetaData._id,
+        'brokerFee': obj.brokerFee
+      }));
+
+      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+      if (!createPriceBook) {
+        return res.send({
+          code: constant.errorCode,
+          message: "Unable to save price book"
+        });
+      }
+    }
+
+    return res.send({
       code: constant.successCode,
       message: 'Successfully Created',
-    })
-
-    //----------------------- these codes may be used in future --------------------//
-    /*
-        if (createDealer) {
-          let result = createDealer.toObject()
-          result.role = data.role //adding role to the response
-          result.meta = createMetaData // merging the dealer data with user data
-          const token = jwt.sign(
-            { userId: createDealer._id, email: createDealer.email },
-            process.env.JWT_SECRET,
-            { expiresIn: "1h" }
-          );
-          //success response
-          res.send({
-            code: constant.successCode,
-            message: 'Successfully Created',
-            result: result,
-            jwtToken: token
-          })
-        } else {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to create the dealer"
-          })
-        }
-        */
+    });
   } catch (err) {
-    res.send({
+    return res.send({
       code: constant.errorCode,
       message: err.message
-    })
+    });
   }
 };
+
 
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
