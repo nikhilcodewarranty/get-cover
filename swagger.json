@@ -583,7 +583,7 @@
       "updateBody":{
         "properties": {
         
-          "servicerId": {
+          "dealerId": {
             "type": "string"
           },"status": {
             "type": "string"
@@ -594,7 +594,7 @@
       "updateServicerBody":{
         "properties": {
         
-          "dealerId": {
+          "servicerId": {
             "type": "string"
           },"status": {
             "type": "string"
