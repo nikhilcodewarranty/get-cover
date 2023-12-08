@@ -26,7 +26,7 @@ module.exports = class priceBookService {
   // get price book by id
   static async getPriceBookById(query, projection) {
     try {
-      const singlePriceBookResponse = await priceBook.findOne({ _id: query._id }, projection);
+      const singlePriceBookResponse = await priceBook.findOne(query, projection);
       console.log('____----------------------', query, singlePriceBookResponse)
       return singlePriceBookResponse;
     } catch (error) {
@@ -36,7 +36,7 @@ module.exports = class priceBookService {
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
-      const updatedResponse = await priceBook.findOneAndUpdate(criteria, newValue, option);
+      const updatedResponse = await priceBook.updateMany(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update price book ${error}`);
@@ -58,7 +58,7 @@ module.exports = class priceBookService {
   //get price category by id service
   static async getPriceCatById(ID, projection) {
     try {
-      const singlePriceCatResponse = await priceCategory.findOne({ _id: ID }, projection);
+      const singlePriceCatResponse = await priceCategory.findOne(ID, projection);
       return singlePriceCatResponse;
     } catch (error) {
       console.log(`Price category not found. ${error}`);

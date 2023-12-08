@@ -1,6 +1,7 @@
 const { PriceBook } = require("../model/priceBook");
 const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
+const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
 
 
@@ -123,7 +124,7 @@ exports.updatePriceBook = async (req, res, next) => {
     let data = req.body
     let criteria = { _id: req.params.priceId }
     if (data.priceCatId) {
-      let checkCat = await priceBookService.getPriceCatById({ _id: data.priceCatId })
+      let checkCat = await priceBookService.getPrice({ _id: data.priceCatId })
       if (!checkCat) {
         res.send({
           code: constant.errorCode,
@@ -196,6 +197,97 @@ exports.updatePriceBook = async (req, res, next) => {
     })
   }
 };
+
+
+//Update by Price Id by me
+exports.updatePriceBookById = async (req, res, next) => {
+  try {
+    const { body, params, role } = req;
+
+    console.log(body)
+    console.log(params)
+    console.log(role);
+
+
+    if (!isSuperAdmin(role)) {
+      return res.send({
+        code: constant.errorCode,
+        message: "Only Super Admin is allowed to perform this action"
+      });
+    }
+
+    const updateCatResult = await updatePriceBookStatus(params.priceId, body);
+
+    if (updateCatResult.success) {
+      const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
+
+      return res.send({
+        code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
+        message: updateDealerPriceBookResult.message
+      });
+    }
+
+    return res.send({
+      code: constant.errorCode,
+      message: updateCatResult.message
+    });
+
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+// Function to update price book by me
+const updatePriceBookStatus = async (priceId, newData) => {
+  const criteria = { _id: priceId };
+  let projection = { isDeleted: 0, __v: 0 }
+  const existingCat = await priceBookService.getPriceBookById(criteria,projection);
+
+  if (!existingCat) {
+    return {
+      success: false,
+      message: "Invalid Price ID"
+    };
+  }
+
+  const newValue = {
+    $set: {
+      status: newData.status
+    }
+  };
+
+  const option = { new: true };
+  const updatedCat = await priceBookService.updatePriceBook(criteria, newValue, option);
+
+  return {
+    success: !!updatedCat,
+    message: updatedCat ? "Successfully updated" : "Unable to update the data"
+  };
+};
+
+// Function to update Dealer Price Book based on category status
+const updateDealerPriceStatus = async (priceId, categoryStatus) => {
+
+  console.log('delaer Price Id----------------',priceId)
+  console.log('delaer Price categoryStatus----------------',categoryStatus)
+  if (!categoryStatus) {
+    const criteria = { priceBook: priceId };
+    const newValue = { status: categoryStatus };
+    const option = { new: true };
+    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
+
+    return {
+      success: !!updatedPriceBook,
+      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
+    };
+  }
+
+  return { success: true, message: "No update needed for Price Book" };
+};
+
 
 //delete price 
 exports.deletePriceBook = async (req, res, next) => {
@@ -333,14 +425,11 @@ exports.getPriceBookCat = async (req, res) => {
   }
 }
 
-//update price category 
-
-
-
 // Function to update price book category
 const updatePriceBookCategory = async (catId, newData) => {
   const criteria = { _id: catId };
-  const existingCat = await priceBookService.getPriceCatById(criteria);
+  let projection = { isDeleted: 0, __v: 0 }
+  const existingCat = await priceBookService.getPriceCatById(criteria,projection);
 
   if (!existingCat) {
     return {
@@ -365,7 +454,6 @@ const updatePriceBookCategory = async (catId, newData) => {
     message: updatedCat ? "Successfully updated" : "Unable to update the data"
   };
 };
-
 
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {

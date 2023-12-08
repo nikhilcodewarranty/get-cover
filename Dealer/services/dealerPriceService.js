@@ -47,16 +47,27 @@ module.exports = class dealerPriceService {
   }
 
   // update dealer price by ID
-  static async updateDealerPrice(data) {
-    try {
-      const updatedResponse = await dealerPrice.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
+  // static async updateDealerPrice(data) {
+  //   try {
+  //     const updatedResponse = await dealerPrice.updateOne(
+  //       { data },
+  //       { $set: { date: new Date.now() } }
+  //     );
 
+  //     return updatedResponse;
+  //   } catch (error) {
+  //     console.log(`Could not update dealer price ${error}`);
+  //   }
+  // }
+
+  static async updateDealerPrice(criteria, newValue, option) {
+    try {
+      const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);
+
+      
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer price ${error}`);
+      console.log(`Could not update dealer book ${error}`);
     }
   }
 
