@@ -149,28 +149,30 @@ module.exports = class userService {
 
   static async findByEmail(query) {
     try {
-      const response = await user.aggregate([
-        {
-          $facet: {
-            matchingResults: [
-              { $match: { 'email': { $in: query } } },
-              { $addFields: { exist: 1 } },
-              { $project: { _id: 0, email: 1, exist: 1 } },
+      const response = await user.find({ 'email': { $in: query }}).select('-_id email');
+      return response;
+      // const response = await user.aggregate([
+      //   {
+      //     $facet: {
+      //       matchingResults: [
+      //         { $match: { 'email': { $in: query } } },
+      //         { $addFields: { exist: 1 } },
+      //         { $project: { _id: 0, email: 1, exist: 1 } },
               
-            ],
-            nonMatchingResults: [
-              { $match: { 'email': { $nin: query } } },
-              { $addFields: { exist: 0 } },
-              { $project: { _id: 0, email: 1, exist: 1 } }
-            ]
-          }
-        },
-        {
-          $project: {
-            allResults: { $concatArrays: ['$matchingResults', '$nonMatchingResults'] }
-          }
-        }
-      ]).exec();
+      //       ],
+      //       nonMatchingResults: [
+      //         { $match: { 'email': { $nin: query } } },
+      //         { $addFields: { exist: 0 } },
+      //         { $project: { _id: 0, email: 1, exist: 1 } }
+      //       ]
+      //     }
+      //   },
+      //   {
+      //     $project: {
+      //       allResults: { $concatArrays: ['$matchingResults', '$nonMatchingResults'] }
+      //     }
+      //   }
+      // ]).exec();
       return response;
     } catch (err) {
       console.log(err);
