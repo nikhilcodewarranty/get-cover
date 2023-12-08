@@ -334,55 +334,92 @@ exports.getPriceBookCat = async (req, res) => {
 }
 
 //update price category 
+
+
+
+// Function to update price book category
+const updatePriceBookCategory = async (catId, newData) => {
+  const criteria = { _id: catId };
+  const existingCat = await priceBookService.getPriceCatById(criteria);
+
+  if (!existingCat) {
+    return {
+      success: false,
+      message: "Invalid category ID"
+    };
+  }
+
+  const newValue = {
+    $set: {
+      name: newData.name || existingCat.name,
+      description: newData.description || existingCat.description,
+      status: newData.status
+    }
+  };
+
+  const option = { new: true };
+  const updatedCat = await priceBookService.updatePriceCategory(criteria, newValue, option);
+
+  return {
+    success: !!updatedCat,
+    message: updatedCat ? "Successfully updated" : "Unable to update the data"
+  };
+};
+
+
+// Function to update Price Book based on category status
+const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
+  if (!categoryStatus) {
+    const criteria = { category: catId };
+    const newValue = { status: categoryStatus };
+    const option = { new: true };
+    const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
+
+    return {
+      success: !!updatedPriceBook,
+      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
+    };
+  }
+
+  return { success: true, message: "No update needed for Price Book" };
+};
+
+// Function to check if the user is a Super Admin
+const isSuperAdmin = (role) => role === "Super Admin";
+// Exported function to update price book category
 exports.updatePriceBookCat = async (req, res) => {
   try {
-    let data = req.body
-    let criteria = { _id: req.params.catId }
-    if (req.role != "Super Admin") {
-      res.send({
+    const { body, params, role } = req;
+    if (!isSuperAdmin(role)) {
+      return res.send({
         code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
+        message: "Only Super Admin is allowed to perform this action"
+      });
     }
-    let checkCat = await priceBookService.getPriceCatById(criteria)
-    if (!checkCat) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid category ID"
-      })
-      return;
-    };
 
-    let newValue = {
-      $set: {
-        name: data.name ? data.name : checkCat.name,
-        description: data.description ? data.description : checkCat.description,
-        status: data.status
-      }
-    };
-    let option = { new: true }
+    const updateCatResult = await updatePriceBookCategory(params.catId, body);
 
-    let updateCat = await priceBookService.updatePriceCategory(criteria, newValue, option)
-    if (!updateCat) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update the data"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Successfully updated"
-      })
+    if (updateCatResult.success) {
+      const updatePriceBookResult = await updatePriceBookByCategoryStatus(params.catId, body.status);
+
+      return res.send({
+        code: updatePriceBookResult.success ? constant.successCode : constant.errorCode,
+        message: updatePriceBookResult.message
+      });
     }
+
+    return res.send({
+      code: constant.errorCode,
+      message: updateCatResult.message
+    });
 
   } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
-    })
+    });
   }
-}
+};
 
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {

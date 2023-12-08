@@ -225,8 +225,8 @@ exports.createDealer = async (req, res) => {
       // Find data by email
     const emailValues = dealerUserArray.map(value => value.email);
 
-    const userData = await userService.findByEmail(emailValues);
-
+    let userData = await userService.findByEmail(emailValues);
+ 
     if(userData){
       return res.send({
         code: constant.errorCode,

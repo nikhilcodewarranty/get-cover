@@ -33,7 +33,6 @@ module.exports = class priceBookService {
       console.log(`Price book not found. ${error}`);
     }
   }
-
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
