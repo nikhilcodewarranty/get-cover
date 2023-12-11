@@ -1,11 +1,10 @@
-require("dotenv").config()
-module.exports ={
-    credentials:{
-        service: "gmail",
-        auth: {
-            user: process.env.userEmail,
-            pass: process.env.userPassword,
-        }
-    },
-    from_email:"anil@codenomad.net",
+module.exports = {
+    msg: (ID,resetCode,toEmail) => {
+        return {
+          to: toEmail,
+          from: 'anil@codenomad.net',
+          subject: 'Sending an email using SendGrid',
+          text: `Set Password Link:- http://15.207.221.207/newPassword/${ID}/${resetCode}`,
+        };
+      }
 }
