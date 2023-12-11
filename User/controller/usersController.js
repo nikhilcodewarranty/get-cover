@@ -211,7 +211,8 @@ exports.createSuperAdmin = async (req, res) => {
     //success response 
     res.send({
       code: constant.successCode,
-      message: "Account created successfully"
+      message: "Account created successfully",
+      data:savedUser
     })
   } catch (error) {
     res.send({
@@ -544,7 +545,7 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, "anil@codenomad.net"))
+      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
         res.send({
