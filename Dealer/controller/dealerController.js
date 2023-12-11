@@ -214,7 +214,7 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Hash the password before storing
-    const hashedPassword = await bcrypt.hash(data.password, 10);
+    // const hashedPassword = await bcrypt.hash(data.password, 10);
 
     // Create user metadata
     const userMetaData = {
@@ -223,7 +223,7 @@ exports.registerDealer = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      password: hashedPassword,
+      // password: hashedPassword,
       accountId: createMetaData._id,
     };
 
