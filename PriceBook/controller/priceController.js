@@ -10,7 +10,7 @@ const constant = require("../../config/constant");
 //get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    let query = { status: true, isDeleted: false }
+    let query = {isDeleted: false }
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
@@ -571,3 +571,6 @@ exports.searchPriceBookCategories = async (req, res) => {
     })
   }
 }
+
+
+

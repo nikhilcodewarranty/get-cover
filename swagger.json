@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -67,7 +67,28 @@
               "description": "Validation Error"
             }
           }
-        }
+        }        
+      },
+      "/dealer/dealerPriceBooks": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Standard Price Book"],
+          "summary": "Get All Dealer Price Book",
+          "responses": {
+            "200": {
+              "description": "ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }        
       },
       "/price/getPriceBookById/{priceId}": {
         "get": {
@@ -225,6 +246,25 @@
             "406": {
               "description": "Validation Error"
             }
+          }
+        }
+      },
+      "dealerPriceBooks": {
+        "security": [ { "Bearer": [] } ],
+        "tags": ["Standard Price Book"],
+        "summary": "Get All Price Book",
+        "responses": {
+          "200": {
+            "description": "ok"
+          },
+          "401": {
+            "description": "Error"
+          },
+          "404": {
+            "description": "No found"
+          },
+          "406": {
+            "description": "Validation Error"
           }
         }
       },
