@@ -233,7 +233,7 @@ exports.updatePriceBookById = async (req, res, next) => {
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };
@@ -253,6 +253,14 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   const newValue = {
     $set: {
+      name: newData.name,
+      description: newData.description,
+      term: newData.term,
+      frontingFee: newData.frontingFee,
+      reserveFutureFee: newData.reserveFutureFee,
+      reinsuranceFee: newData.reinsuranceFee,
+      adminFee: newData.adminFee,
+      category: newData.category,
       status: newData.status
     }
   };
