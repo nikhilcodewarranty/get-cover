@@ -253,9 +253,10 @@ exports.statusUpdate = async (req, res) => {
     return;
   }
   let data = req.body;
-    let criteria = { _id: req.params.dealerPriceBook };
+    let criteria = { _id: req.params.dealerPriceBookId };
     let newValue = {
       $set: {
+        brokerFee:req.body.brokerFee,
         status:req.body.status
       }
     };

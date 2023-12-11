@@ -639,14 +639,14 @@
           }
         }
       },
-      "/dealer/changeDealerPriceBookStatus/{dealerPriceBook}": {
+      "/dealer/changeDealerPriceBook/{dealerPriceBookId}": {
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Update Status",
           "parameters": [
             {
-              "name": "dealerPriceBook",
+              "name": "dealerPriceBookId",
               "in": "path",
               "required": true,
               "type": "string",
@@ -660,6 +660,9 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "brokerFee": {
+                    "type": "number"
+                  },
                   "status": {
                     "type": "boolean"
                   }
