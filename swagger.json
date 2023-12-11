@@ -119,18 +119,23 @@
         }
       },
       "/user/sendLinkToEmail": {
-        "get": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Send link to email",
           "parameters": [
             {
-              "name": "userId",
+              "name": "email",
               "in": "body",
               "required": true,
-              "type": "string",
-              "default": "exampleId",  
-              "description": "ID of the User"
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           ],
           "responses": {

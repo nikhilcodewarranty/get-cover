@@ -537,6 +537,7 @@ exports.addRole = async (req, res) => {
 exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
+    console.log(data)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkEmail = await userService.findOneUser({ email: data.email })
     if (!checkEmail) {
@@ -545,7 +546,7 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
+      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, 'amit@codenomad.net'))
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
         res.send({
