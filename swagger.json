@@ -1077,9 +1077,6 @@
           },
           "createdBy": {
             "type": "string"
-          },
-          "token": {
-            "type": "string"
           }
         }
       },
@@ -1144,9 +1141,6 @@
             "type": "string"
           },
           "country": {
-            "type": "string"
-          },
-          "token": {
             "type": "string"
           },
           "isDeleted":{
@@ -1384,19 +1378,19 @@
             "type": "string"
           },
           "term": {
-            "type": "string"
+            "type": "number"
           },
           "frontingFee": {
-            "type": "string"
+            "type": "number"
           },
           "reinsuranceFee": {
-            "type": "string"
+            "type": "number"
           },
           "reserveFutureFee": {
-            "type": "string"
+            "type": "number"
           },
           "adminFee": {
-            "type": "string"
+            "type": "number"
           },
           "priceCatId": {
             "type": "string"
@@ -1406,8 +1400,7 @@
           }
         }
       },      
-      "DealerPriceBook": {
-      
+      "DealerPriceBook": {      
         "properties": {
           "priceBookId": {
             "type": "string"
