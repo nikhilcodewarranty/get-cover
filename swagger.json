@@ -83,7 +83,7 @@
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
-          "summary": "Get Single User",
+          "summary": "Reset Password",
           "parameters": [
             {
               "name": "userId",
@@ -614,7 +614,7 @@
           }
         }
       },
-      "/admin/createServiceProvider":{
+      "/admin/createServicer":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -785,7 +785,7 @@
         }
       },     
          
-      "/serviceProvider/register":{
+      "/servicer/register":{
         "post":{
           "tags": ["Service Provider"],
            "summary": "Register Service Provider",        
@@ -795,7 +795,7 @@
               "name": "Register Service Provider",
               "in": "body",
               "schema": {
-                "$ref": "#/definitions/ServiceProviderRegister"
+                "$ref": "#/definitions/servicerRegister"
               }
             }
           ],
@@ -1226,7 +1226,7 @@
           }
         }
       },
-      "ServiceProviderRegister":{
+      "servicerRegister":{
         "properties": {        
           "name": {
             "type": "string"
@@ -1266,8 +1266,7 @@
           } 
          
         }
-      },
-      
+      },      
       "ServiceProvider": {
         "properties": {        
           "name": {

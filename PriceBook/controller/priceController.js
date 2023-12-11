@@ -268,7 +268,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-  if (!categoryStatus) {
     const criteria = { priceBook: { $in: [priceId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
@@ -278,9 +277,7 @@ const updateDealerPriceStatus = async (priceId, categoryStatus) => {
       success: !!updatedPriceBook,
       message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
     };
-  }
 
-  return { success: true, message: "No update needed for Price Book" };
 };
 
 
@@ -400,7 +397,7 @@ exports.getPriceBookCat = async (req, res) => {
       return;
     }
     let projection = { isDeleted: 0, __v: 0 }
-    let query = { status: true, isDeleted: false }
+    let query = { isDeleted: false }
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
       res.send({
@@ -456,7 +453,6 @@ const updatePriceBookCategory = async (catId, newData) => {
 
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
-  if (!categoryStatus) {
     //const criteria = { category: catId };
     const criteria = { category: { $in: [catId] } }
     const newValue = { status: categoryStatus };
@@ -474,13 +470,7 @@ const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
           message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
         };
      }
-     
-
-  
-  }
-
-  return { success: true, message: "No update needed for Price Book" };
-};
+    };
 
 // Function to check if the user is a Super Admin
 const isSuperAdmin = (role) => role === "Super Admin";
