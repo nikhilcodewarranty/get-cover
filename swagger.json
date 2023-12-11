@@ -1387,16 +1387,16 @@
             "type": "string"
           },
           "frontingFee": {
-            "type": "string"
+            "type": "Number"
           },
           "reinsuranceFee": {
-            "type": "string"
+            "type": "Number"
           },
           "reserveFutureFee": {
-            "type": "string"
+            "type": "Number"
           },
           "adminFee": {
-            "type": "string"
+            "type": "Number"
           },
           "priceCatId": {
             "type": "string"
@@ -1406,8 +1406,7 @@
           }
         }
       },      
-      "DealerPriceBook": {
-      
+      "DealerPriceBook": {      
         "properties": {
           "priceBookId": {
             "type": "string"

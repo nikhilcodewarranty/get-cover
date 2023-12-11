@@ -15,7 +15,7 @@ const priceSchema = new mongoose.Schema({
     type: Number,
   },
   reserveFutureFee: {
-    type: String,
+    type: Number,
     default: ''
   },
   reinsuranceFee: {
