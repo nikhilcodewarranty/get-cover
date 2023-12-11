@@ -104,7 +104,7 @@ exports.getPriceBookById = async (req, res, next) => {
     if (!singlePriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Unable to fetch the price detail"
+        message: "Unable to fetch the price book detail"
       })
       return;
     }

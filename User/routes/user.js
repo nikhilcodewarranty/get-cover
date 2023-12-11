@@ -10,6 +10,7 @@ const validator = require('../config/validation');
 
 //-------------------- get api's endpoints--------------------------//
 router.get("/users" ,[verifyToken],userController.getAllUsers); // get all users 
+router.get("/getUserById/:userId" ,[verifyToken],userController.getUserById); // get all users 
 router.get("/roles", [verifyToken],userController.getAllRoles); //get all roles
 router.get("/dealers", [verifyToken],dealerController.getAllDealers); //get all dealers
 router.get("/servicer", [verifyToken],serviceController.getAllServiceProviders); //get all dealers

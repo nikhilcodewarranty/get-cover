@@ -165,11 +165,12 @@ exports.registerServiceProvider = async (req, res) => {
     };
 
     // Create the user
-    const createDealer = await userService.createUser(userMetaData);
-    if (createDealer) {
+    const createUser = await userService.createUser(userMetaData);
+    if (createUser) {
       return res.send({
         code: constant.successCode,
         message: 'Success',
+        data:createUser
       });
     }
   } catch (err) {

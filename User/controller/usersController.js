@@ -520,7 +520,11 @@ exports.addRole = async (req, res) => {
         message: "Unable to create the role"
       })
     }
-    res.json(createdUser);
+    res.send({
+      code: constant.successCode,
+      message: "Created Successfully",
+      data:createdUser
+    })
   } catch (error) {
     res.send({
       code: constant.errorCode,

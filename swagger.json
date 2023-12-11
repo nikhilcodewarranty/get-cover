@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -31,6 +31,77 @@
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+
+      "/user/getUserById/{userId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Users"],
+          "summary": "Get Single User",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/user/resetPassword/{userId}/{code}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Users"],
+          "summary": "Get Single User",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            },
+            {
+              "name": "code",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "code"
+            }
+          ],
           "responses": {
             "200": {
               "description": "Ok"
@@ -1011,43 +1082,43 @@
       "Claims": {
         "properties": {
           "contractId": {
-            "type": "Reff:Contract(ContractId)"
+            "type": "string"
           },
           "claimStatus": {
-            "type": "String"
+            "type": "string"
           },
           "bdAdh": {
-            "type": "String"
+            "type": "string"
           },
           "diagnosis": {
-            "type": "String"
+            "type": "string"
           },
           "receiptImage": {
-            "type": "String"
+            "type": "string"
           },
           "shippingCarrier": {
             "type": "string"
           },
           "shippingLabel": {
-            "type": "String"
+            "type": "string"
           },
           "claimDate": {
             "type": "Date"
           },  
         "claimType": {
-            "type": "String"
+            "type": "string"
           },
           "servicePaymentStatus": {
-            "type": "String"
+            "type": "string"
           },
           "shippingAmount": {
-            "type": "Number"
+            "type": "number"
           },
           "totalAmount": {
-            "type": "Number"
+            "type": "number"
           },
           "isDeleted":{
-            "type": "String"
+            "type": "string"
           }
         }
       },
@@ -1120,7 +1191,6 @@
           }
         }
       },
-
       "ServiceProviderRegister":{
         "properties": {        
           "name": {
@@ -1307,10 +1377,10 @@
             "type": "string"
           },
           "orderId": {
-            "type": "Reff : Order(OrderId)"
+            "type": "string"
           },
           "dealerPriceBookId": {
-            "type": "Reff:DealerPriceBook(DealerPriceBookId)"
+            "type": "string"
           },
           "productCondition": {
             "type": "string"
@@ -1318,16 +1388,13 @@
         }
       },
       "Orders": {
-        "required": [
-          "_id"
-        ],
         "properties": {
           "_id": {
             "type": "string",
             "uniqueItems": true
           },
           "dealerId": {
-            "type": "Reff:Dealer(DealerId)"
+            "type": "string"
           },
           "serviceProvId": {
             "type": "string"
@@ -1336,7 +1403,7 @@
             "type": "number"
           },
           "customerId": {
-            "type": "String"
+            "type": "string"
           },
           "orderAmount": {
             "type": "number"
@@ -1348,7 +1415,7 @@
             "type": "number"
           },
           "paidAmount": {
-            "type": "String"
+            "type": "string"
           },
           "dueAmount": {
             "type": "number"
