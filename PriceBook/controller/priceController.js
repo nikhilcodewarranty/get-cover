@@ -69,17 +69,20 @@ exports.createPriceBook = async (req, res, next) => {
       adminFee: data.adminFee,
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
+      status: data.status
     }
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
     if (!savePriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Unable to save the price book"
+        message: "Unable to save the price book",
+        
       })
     } else {
       res.send({
         code: constant.successCode,
-        message: "Success"
+        message: "Success",
+        data:savePriceBook
       })
     }
   } catch (err) {
@@ -369,11 +372,13 @@ exports.createPriceBookCat = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to create the price category"
+      
       })
     } else {
       res.send({
         code: constant.successCode,
-        message: "Created Successfully"
+        message: "Created Successfully",
+        data:createPriceCat
       })
     }
   } catch (err) {

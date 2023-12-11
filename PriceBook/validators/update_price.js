@@ -8,7 +8,8 @@ const update_price_validation = Joi.object({
     reinsuranceFee:Joi.number().optional(),
     adminFee:Joi.number().optional(),
     reserveFutureFee:Joi.number().optional(),
-    priceCatId:Joi.string().optional()
+    priceCatId:Joi.string().optional(),
+    status: Joi.boolean().optional()
 })
 
 module.exports = update_price_validation
