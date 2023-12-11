@@ -168,6 +168,7 @@ exports.deleteDealer = async (req, res) => {
     })
   }
 };
+
 /**---------------------------------------------------Register Dealer-------------------------------------------- */
 exports.registerDealer = async (req, res) => {
   try {
@@ -241,6 +242,7 @@ exports.registerDealer = async (req, res) => {
     });
   }
 };
+
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
     res.send({

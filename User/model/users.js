@@ -22,6 +22,14 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  resetPasswordCode:{
+    type:String,
+    default:null
+  },
+  isResetPassword:{
+    type:Boolean,
+    default:false
+  },
   phoneNumber: {
     type: String,
     default: ''

@@ -2,7 +2,9 @@ require("dotenv").config();
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const randtoken = require('rand-token').generator()
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
 
 const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
@@ -12,6 +14,8 @@ const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
 const role = require("../model/role");
 const constant = require('../../config/constant');
+const emailConstant = require('../../config/emailConstant');
+const mail = require("@sendgrid/mail");
 
 
 //----------------------- api's function ---------------//
@@ -259,13 +263,13 @@ exports.createDealer = async (req, res) => {
       const dealerPrimaryUserArray = data.dealerPrimary;
       const primaryEmailValues = dealerPrimaryUserArray.map(value => value.email);
       const primaryUserData = await userService.findByEmail(primaryEmailValues);
-      if(primaryUserData){
-          return res.send({
-            code: constant.errorCode,
-            message: 'Email Already Exists',
-            data:userData
-          });
-    }
+      if (primaryUserData) {
+        return res.send({
+          code: constant.errorCode,
+          message: 'Email Already Exists',
+          data: userData
+        });
+      }
       const resultPrimaryDealer = primaryUserData.filter(obj => !primaryUserData.some(excludeObj => obj.email === excludeObj.email));
       const resultPrimaryDealerData = await Promise.all(resultPrimaryDealer.map(async (obj) => {
         const hashedPassword = await bcrypt.hash(obj.password, 10);
@@ -346,16 +350,16 @@ exports.createServiceProvider = async (req, res) => {
   try {
     const data = req.body;
     const providerUserArray = data.providers;
-      // Find data by email
+    // Find data by email
     const emailValues = providerUserArray.map(value => value.email);
 
     const userData = await userService.findByEmail(emailValues);
 
-    if(userData){
+    if (userData) {
       return res.send({
         code: constant.errorCode,
         message: 'Email Already Exists',
-        data:userData
+        data: userData
       });
     }
 
@@ -377,7 +381,7 @@ exports.createServiceProvider = async (req, res) => {
       street: data.street,
       city: data.city,
       zip: data.zip,
-      userAccount:req.body.customerAccountCreated,
+      userAccount: req.body.customerAccountCreated,
       state: data.state,
       country: data.country,
       createdBy: data.createdBy,
@@ -390,21 +394,21 @@ exports.createServiceProvider = async (req, res) => {
         code: constant.errorCode,
         message: 'Unable to create servicer account',
       });
-    }  
+    }
 
     // Remove duplicates
-     const resultProvider = providerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
-     const resultProviderData = accountCreationFlag
-   ? await Promise.all(resultProvider.map(async (obj) => {
-       const hashedPassword = await bcrypt.hash(obj.password, 10);
-       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-     }))
-   : await Promise.all(resultProvider.map(async (obj) => {
-       const hashedPassword = await bcrypt.hash(obj.password, 10);
-       return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
-     })); 
+    const resultProvider = providerUserArray.filter(obj => !userData.some(excludeObj => obj.email === excludeObj.email));
+    const resultProviderData = accountCreationFlag
+      ? await Promise.all(resultProvider.map(async (obj) => {
+        const hashedPassword = await bcrypt.hash(obj.password, 10);
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+      }))
+      : await Promise.all(resultProvider.map(async (obj) => {
+        const hashedPassword = await bcrypt.hash(obj.password, 10);
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
+      }));
 
-     // Map provider data
+    // Map provider data
 
 
     // Create provider users
@@ -428,11 +432,12 @@ exports.createServiceProvider = async (req, res) => {
     });
   }
 };
+
 // Login route
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
-    const user = await userService.findOneUser({email: req.body.email});
+    const user = await userService.findOneUser({ email: req.body.email });
     if (!user) {
       res.send({
         code: constant.errorCode,
@@ -524,22 +529,74 @@ exports.addRole = async (req, res) => {
   }
 };
 
-// exports.sendLinkToEmail = async(req,res)=>{
-//   try{
-//     let data = req.body
-//     let checkEmail = await userService.findOneUser({email:data.email})
-//     if(!checkEmail){
-//       res.send({
-//         code:constant.errorCode,
-//         message:"Invalid email"
-//       })
-//     }else{
+exports.sendLinkToEmail = async (req, res) => {
+  try {
+    let data = req.body
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+    let checkEmail = await userService.findOneUser({ email: data.email })
+    if (!checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid email"
+      })
+    } else {
+      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, "anil@codenomad.net"))
+      if (mailing) {
+        let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+        res.send({
+          code: constant.successCode,
+          message: "Email has been sent",
+          codes:resetPasswordCode
+        })
+      }
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
-//     }
-//   }catch(err){
-//     res.send({
-//       code:constant.errorCode,
-//       message:err.message
-//     })
-//   }
-// }
+exports.resetPassword = async (req, res) => {
+  try {
+    let data = req.body
+    let checkUser = await userService.findOneUser({ _id: req.params.userId })
+    if (!checkUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid link"
+      })
+      return;
+    };
+    if (checkUser.resetPasswordCode != req.params.code) {
+      res.send({
+        code: constant.errorCode,
+        message: "Link has been expired"
+      })
+      return;
+    };
+    let hash = await bcrypt.hashSync(data.password, 10);
+    let newValues = {
+      $set: {
+        password: hash,
+        resetPasswordCode: null,
+        isResetPassword: false
+      }
+    }
+    let option = { new: true }
+    let criteria = { _id: checkUser._id }
+    let updatePassword = await userService.updateUser(criteria, newValues, option)
+    if (updatePassword) {
+      res.send({
+        code: constant.successCode,
+        message: "Password updated successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
