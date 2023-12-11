@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:3002",
+    "host": "15.207.221.207:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -1274,37 +1274,37 @@
       "Contract": {
         "properties": {
           "covEndDate": {
-            "type": "String"
+            "type": "string"
           },       
           "lastName": {
-            "type": "String"
+            "type": "string"
           },
           "phone": {
-            "type": "String"
+            "type": "string"
           },
           "regDate": {
             "type": "Date"
           },
           "claimAmount": {
-            "type": "Number"
+            "type": "number"
           },
           "productName": {
-            "type": "String"
+            "type": "string"
           },
           "serial": {
-            "type": "String"
+            "type": "string"
           },
           "productValue": {
-            "type": "Number"
+            "type": "number"
           },
           "manufacture": {
-            "type": "String"
+            "type": "string"
           },
           "model": {
-            "type": "String"
+            "type": "string"
           },
           "description": {
-            "type": "String"
+            "type": "string"
           },
           "orderId": {
             "type": "Reff : Order(OrderId)"
@@ -1313,7 +1313,7 @@
             "type": "Reff:DealerPriceBook(DealerPriceBookId)"
           },
           "productCondition": {
-            "type": "String"
+            "type": "string"
           }          
         }
       },
@@ -1330,28 +1330,28 @@
             "type": "Reff:Dealer(DealerId)"
           },
           "serviceProvId": {
-            "type": "Number"
+            "type": "string"
           },
           "deductible": {
-            "type": "Number"
+            "type": "number"
           },
           "customerId": {
             "type": "String"
           },
           "orderAmount": {
-            "type": "string"
+            "type": "number"
           },
           "paymentMethod": {
-            "type": "Date"
+            "type": "string"
           },
           "paymentStatus": {
-            "type": "Number"
+            "type": "number"
           },
           "paidAmount": {
             "type": "String"
           },
           "dueAmount": {
-            "type": "Number"
+            "type": "number"
           },
           "orderDate": {
             "type": "Date"
@@ -1366,10 +1366,10 @@
             "type": "Date"
           },
           "waitPeriodBd": {
-            "type": "Number"
+            "type": "number"
           },
           "waitPeriodAdh": {
-            "type": "Number"
+            "type": "number"
           },
           "serviceCoverageType": {
             "type": "string"
@@ -1381,13 +1381,13 @@
             "type": "string"
          },
          "sendNotification": {
-          "type": "Boolean"
+          "type": "boolean"
         },
          "productsArray":{
             "type":"Array"
           },
          "status":{
-            "type":"string"
+            "type":"boolean"
           },
           "claimStatus":{
             "type":"string"
@@ -1449,7 +1449,7 @@
             "type": "string"
           },
           "brokerFee": {
-            "type": "Number"
+            "type": "number"
           },
           "status":{
             "type": "boolean"
