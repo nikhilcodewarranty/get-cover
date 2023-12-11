@@ -639,7 +639,7 @@
           }
         }
       },
-      "/dealer/changeDealerPriceBook/{dealerPriceBookId}": {
+      "/dealer/updateDealerPriceBook/{dealerPriceBookId}": {
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -670,6 +670,46 @@
               }
             }
           ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/dealer/uploadsDealerPriceBook": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Upload",
+          "consumes": ["multipart/form-data"],
+            "produces": ["application/json"],
+            "parameters": [
+              {
+                "name": "dealerId",
+                "in": "formData",
+                "description": "Id of the Dealer",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "name": "file",
+                "in": "formData",
+                "description": "The file to upload",
+                "required": true,
+                "type": "file"
+              }
+             
+            ],
           "responses": {
             "200": {
               "description": "Ok"

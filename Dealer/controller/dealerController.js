@@ -6,7 +6,7 @@ const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
-
+const csvParser = require('csv-parser');
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
   try {
@@ -317,6 +317,42 @@ exports.getAllDealerPriceBooks = async (req, res) => {
     })
   }
 }
+exports.uploadPriceBook = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+     // Use csv-parser to parse CSV file
+    const results = [];
+    require('fs')
+      .createReadStream(req.file.path)
+      .pipe(csvParser())
+      .on('data', (data) => results.push(data))
+      .on('end', async () => {
+        // Use map to extract specific fields from each object
+          const newArray = results.map((obj) => ({
+            priceBook: obj.priceBook,
+            status: obj.status=='TRUE' ? true :false,
+            brokerFee: obj.brokerFee,
+            dealerId: req.body.dealerId
+          }));
+        const uploaded = await dealerPriceService.uploadPriceBook(newArray)
+        if (uploaded) {
+          return res.send({
+            code: constant.successCode,
+            message: 'Success',
+          });
+        }
+      
+      });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 
 

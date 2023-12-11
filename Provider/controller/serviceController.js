@@ -207,7 +207,8 @@ exports.statusUpdate = async (req, res) => {
     };
     res.send({
       code: constant.successCode,
-      message: "Updated Successfully"
+      message: "Updated Successfully",
+      data:updatedResult
     })
     }
     catch (err) {

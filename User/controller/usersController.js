@@ -336,6 +336,7 @@ exports.createDealer = async (req, res) => {
     return res.send({
       code: constant.successCode,
       message: 'Successfully Created',
+      data:createMetaData
     });
   } catch (err) {
     return res.send({
@@ -430,6 +431,7 @@ exports.createServiceProvider = async (req, res) => {
     return res.send({
       code: constant.errorCode,
       message: err.message,
+      data:createMetaData
     });
   }
 };

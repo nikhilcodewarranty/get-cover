@@ -78,4 +78,15 @@ module.exports = class dealerPriceService {
       console.log(`Could not delete dealer price ${error}`);
     }
   }
+
+ // upload csv
+ static async uploadPriceBook(dealerPriceId) {
+  try {
+    const uploadPriceBook = await dealerPrice.insertMany(dealerPriceId);
+    return uploadPriceBook;
+  } catch (error) {
+    console.log(`Could not delete dealer price ${error}`);
+  }
+}
+  
 };
