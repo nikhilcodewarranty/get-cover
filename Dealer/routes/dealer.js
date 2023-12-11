@@ -6,7 +6,7 @@ const dealerController = require("../controller/dealerController"); // dealer co
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const upload = multer({ dest: 'uploads/' });
 router.post("/register",dealerController.registerDealer)
-router.post("/uploadsDealerPriceBook",upload.single('file'),dealerController.uploadPriceBook)
+router.post("/uploadsDealerPriceBook",[verifyToken],upload.single('file'),dealerController.uploadPriceBook)
 
 //--------------- get api's endpoints ---------------------------//
 router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
