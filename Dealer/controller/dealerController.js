@@ -1,6 +1,7 @@
 const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
+const dealerPriceService = require("../services/dealerPriceService");
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const constant = require('../../config/constant')
@@ -280,5 +281,40 @@ exports.statusUpdate = async (req, res) => {
     });
   }
 };
+
+// All Dealer Books
+
+exports.getAllDealerPriceBooks = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = {isDeleted: false }
+    let getDealerPrice = await dealerPriceService.getAllDealerPrice(query, projection)
+    if (!getDealerPrice) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 

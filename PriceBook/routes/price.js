@@ -21,6 +21,8 @@ router.put('/changeCatStatus/:catId',[verifyToken],priceController.updatePriceBo
 router.get('/getPriceBookCat',[verifyToken],priceController.getPriceBookCat) // get price book category api
 router.get('/getPriceBookCatById/:catId',[verifyToken],priceController.getPriceBookCatById) // get price book category detail with ID
 
+// Dealer Price Book api's
+
 
 
 module.exports = router;
