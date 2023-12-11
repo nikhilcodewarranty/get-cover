@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [
       "http",
@@ -1216,7 +1216,7 @@
             "type": "boolean"
           },
           "status": {
-            "type": "string"
+            "type": "boolean"
           },
           "createdBy": {
             "type": "string"
@@ -1226,7 +1226,7 @@
             "enum": ["Pending", "Approved", "Rejected"]
           },
           "isDeleted":{
-            "type": "string"
+            "type": "boolean"
           }
         }
       },
