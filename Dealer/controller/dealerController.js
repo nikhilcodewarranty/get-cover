@@ -234,6 +234,7 @@ exports.registerDealer = async (req, res) => {
       return res.send({
         code: constant.successCode,
         message: 'Success',
+        data:createDealer
       });
     }
   } catch (err) {
