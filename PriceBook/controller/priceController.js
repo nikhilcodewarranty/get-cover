@@ -10,17 +10,23 @@ const constant = require("../../config/constant");
 //get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    // let query = {isDeleted: false }
+    let categorySearch = req.body.category ? req.body.category :''
+    let queryCategories = {
+      $and: [
+        { isDeleted: false },
+        { 'name': { '$regex': categorySearch, '$options': 'i' } }
+      ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchName = req.body.name ? req.body.name :''
     let query = {
       $and: [
         { isDeleted: false },
         {
           $or: [
-            { 'name': { '$regex': req.body.name, '$options': 'i' } },
-            { 'description': { '$regex': req.body.name, '$options': 'i' } },
-            { 'state': { '$regex': req.body.name, '$options': 'i' } },
-            { 'city': { '$regex': req.body.name, '$options': 'i' } },
-            { 'zip': { '$regex': req.body.name, '$options': 'i' } },
+            { 'name': { '$regex': searchName, '$options': 'i' } },
+            {'category':{ $in: catIdsArray } }
           ]
         }
       ]

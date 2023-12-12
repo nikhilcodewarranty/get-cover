@@ -274,7 +274,7 @@ exports.createDealer = async (req, res) => {
         return res.send({
           code: constant.errorCode,
           message: 'Email Already Exists',
-          data: userData
+          data: primaryUserData
         });
       }
       const resultPrimaryDealer = primaryUserData.filter(obj => !primaryUserData.some(excludeObj => obj.email === excludeObj.email));
