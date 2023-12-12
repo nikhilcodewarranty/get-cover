@@ -35,6 +35,16 @@ module.exports = class dealerService {
     }
   }
 
+  // Get dealer detail with Name
+  static async getDealerByName(query,projection) {
+    try {
+      const singleDealerResponse = await dealer.findOne(query,projection);
+      return singleDealerResponse;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+  }
+
   // Update dealer detail with ID
   static async updateDealer(criteria,newValue,option) {
     try {
@@ -69,7 +79,6 @@ module.exports = class dealerService {
   //--------------------------------------Register Dealer---------------------------------------  
   static async registerDealer(data) {
     try {
-      console.log('Dealer Date---------', data)
       const response = await new dealer(data).save();
       return response;
     } catch (error) {

@@ -175,9 +175,25 @@ exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
 
-    console.log(data);
-    
-    // Extracting necessary data for dealer creation
+    // Check if the specified role exists
+    const checkRole = await role.findOne({ role: data.role });
+    if (!checkRole) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Invalid role',
+      });
+    }
+
+    // Check if the dealer already exists
+    const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    if (existingDealer) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Dealer name already exists',
+      });
+    }
+
+    // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
       street: data.street,
@@ -187,19 +203,10 @@ exports.registerDealer = async (req, res) => {
       country: data.country,
     };
 
-    // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
-    if (!checkRole) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Invalid role',
-      });
-    }
-
     // Register the dealer
-    const createMetaData = await dealerService.registerDealer(dealerMeta);
-    if (!createMetaData) {
-      return res.send({
+    const createdDealer = await dealerService.registerDealer(dealerMeta);
+    if (!createdDealer) {
+      return res.status(500).json({
         code: constant.errorCode,
         message: 'Unable to create dealer account',
       });
@@ -208,14 +215,11 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
-      return res.send({
+      return res.status(400).json({
         code: constant.errorCode,
         message: 'Email already exists',
       });
     }
-
-    // Hash the password before storing
-    // const hashedPassword = await bcrypt.hash(data.password, 10);
 
     // Create user metadata
     const userMetaData = {
@@ -224,21 +228,20 @@ exports.registerDealer = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      // password: hashedPassword,
-      accountId: createMetaData._id,
+      accountId: createdDealer._id,
     };
 
     // Create the user
-    const createDealer = await userService.createUser(userMetaData);
-    if (createDealer) {
-      return res.send({
+    const createdUser = await userService.createUser(userMetaData);
+    if (createdUser) {
+      return res.status(201).json({
         code: constant.successCode,
         message: 'Success',
-        data:createDealer
+        data: createdUser,
       });
     }
   } catch (err) {
-    return res.send({
+    return res.status(500).json({
       code: constant.errorCode,
       message: err.message,
     });
