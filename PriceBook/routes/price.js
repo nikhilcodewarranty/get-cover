@@ -5,7 +5,7 @@ const priceController = require("../controller/priceController"); // price contr
 const {verifyToken} = require('../../middleware/auth') // authentication with jwt as middleware
 
 // price book api's
-router.get("/priceBooks",[verifyToken],priceController.getAllPriceBooks); //get price books api
+router.post("/priceBooks",[verifyToken],priceController.getAllPriceBooks); //get price books api
 router.get("/getPriceBookById/:priceId",[verifyToken],priceController.getPriceBookById); //get price book detail with ID
 router.post("/createPriceBook",[verifyToken],validator('create_price_validation'),priceController.createPriceBook); // create price book with defined price category ID
 router.post("/searchPriceBook",[verifyToken],validator('search_price_book_validation'),priceController.searchPriceBook); // search price book with defined price category ID
@@ -18,7 +18,7 @@ router.post('/createPriceBookCategory',[verifyToken],validator("create_price_cat
 router.post('/searchPriceBookCategories',[verifyToken],validator("search_price_cat_validation"),priceController.searchPriceBookCategories) // search price book category with  name
 router.put('/updatePriceBookCategory/:catId',[verifyToken],validator("update_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
 //router.put('/updateCategory/:catId',[verifyToken],validator("update_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
-router.get('/getPriceBookCategory',[verifyToken],priceController.getPriceBookCat) // get price book category api
+router.post('/getPriceBookCategory',[verifyToken],priceController.getPriceBookCat) // get price book category api
 router.get('/getPriceBookCatById/:catId',[verifyToken],priceController.getPriceBookCatById) // get price book category detail with ID
 
 // Dealer Price Book api's
