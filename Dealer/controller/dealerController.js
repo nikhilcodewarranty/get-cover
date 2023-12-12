@@ -254,7 +254,17 @@ exports.statusUpdate = async (req, res) => {
     return;
   }
   let data = req.body;
-    let criteria = { _id: req.params.dealerPriceBookId };
+  let criteria = { _id: req.params.dealerPriceBookId };
+  let projection = { isDeleted: 0, __v: 0 }
+  const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+
+  if (!existingDealerPriceBook) {
+    return {
+      success: false,
+      message: "Invalid Dealer Price Book ID"
+    };
+  }
+    
     let newValue = {
       $set: {
         brokerFee:req.body.brokerFee,

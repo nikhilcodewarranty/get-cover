@@ -116,7 +116,7 @@ exports.createPriceBook = async (req, res, next) => {
 //get price book by id 
 exports.getPriceBookById = async (req, res, next) => {
   try {
-    let query = { _id: req.params.priceId }
+    let query = { _id: req.params.priceBookId }
     let projection = { isDeleted: 0, __v: 0 }
     const singlePriceBook = await priceBookService.getPriceBookById(
       query, projection
@@ -236,18 +236,22 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     const updateresult = await updatePriceBookStatus(params.priceId, body);
 
+  console.log(updateresult);
+
     if (updateresult.success) {
       const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
 
       return res.send({
         code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
-        message: updateDealerPriceBookResult.message
+        message: updateDealerPriceBookResult.message,
+        data:updateresult.data
       });
     }
 
     return res.send({
       code: constant.errorCode,
-      message: updateresult.message
+      message: updateresult.message,
+      data:updateresult.data
     });
 
   } catch (error) {
@@ -273,10 +277,11 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   const newValue = {
     $set: {
-      description: newData.description,
-      term: newData.term,
-      category: newData.category,
-      status: newData.status
+      status: newData.status,
+      frontingFee: newData.frontingFee,
+      reserveFutureFee: newData.reserveFutureFee,
+      reinsuranceFee:newData.reinsuranceFee,
+      adminFee:newData.adminFee,
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
@@ -285,7 +290,8 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   return {
     success: !!updatedCat,
-    message: updatedCat ? "Successfully updated" : "Unable to update the data"
+    message: updatedCat ? "Successfully updated" : "Unable to update the data",
+    data:updatedCat
   };
 };
 
@@ -550,9 +556,12 @@ exports.updatePriceBookCat = async (req, res) => {
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
-    let ID = req.params.catId
+    let ID ={_id:req.params.catId} 
     let projection = { isDeleted: 0, __v: 0 }
-    let getPriceCat = await priceBookService.getPriceCatById(ID, projection)
+    console.log(ID);
+    console.log(projection);
+    let getPriceCat = await priceBookService.getPriceCatById(ID, projection);
+    console.log('getPriceCat.........', getPriceCat);
     if (!getPriceCat) {
       res.send({
         code: constant.errorCode,

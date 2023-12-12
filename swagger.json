@@ -8,7 +8,7 @@
     },
     "host": "15.207.221.207:3002",
     "basePath": "/api-v1",
-    "schemes": [
+    "schemes": [  
       "http",
       "https"
     ],
@@ -433,10 +433,25 @@
         }
       },
       "/price/priceBooks": {
-        "get": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Get All Price Book",
+          "parameters": [
+            {
+              "name": "category",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "category": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
           "responses": {
             "200": {
               "description": "ok"
@@ -474,21 +489,21 @@
           }
         }        
       },
-      "/price/getPriceBookById/{priceId}": {
+      "/price/getPriceBookById/{priceBookId}": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Get Single Price Book",
           "parameters": [
             {
-              "name": "priceId",
+              "name": "priceBookId",
               "in": "path",
               "required": true,
               "type": "string",
               "default": "exampleId",  
               "description": "ID of the Price Book"
             }
-          ],
+          ],  
           "responses": {
             "200": {
               "description": "Ok"
@@ -504,7 +519,7 @@
             }
           }
         }
-      },
+      }, 
      
       "/price/createPriceBook":{
         "post":{
@@ -568,11 +583,26 @@
           }
         }
       },
-      "/price/getPriceBookCategory": {
-        "get": {
+      "/price/getPriceBookCategories": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Get All Price Categories",
+          "parameters": [
+            {
+              "name": "name",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          ],
           "responses": {
             "200": {
               "description": "Ok"
@@ -784,7 +814,7 @@
           }
         }
       },
-      "/price/getPriceBookCatById/{catId}": {
+      "/price/getPriceBookCategoryById/{catId}": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],

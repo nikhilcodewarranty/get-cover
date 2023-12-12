@@ -35,11 +35,9 @@ module.exports = class dealerPriceService {
   
 
   // get dealer price detail with ID
-  static async getDealerPriceById(dealerPriceId) {
+  static async getDealerPriceById(ID,projection) {
     try {
-      const singleDealerPriceResponse = await dealerPrice.findById({
-        _id: dealerPriceId,
-      });
+      const singleDealerPriceResponse = await dealerPrice.findOne(ID,projection);
       return singleDealerPriceResponse;
     } catch (error) {
       console.log(`Dealer price not found. ${error}`);
