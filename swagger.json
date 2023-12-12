@@ -90,7 +90,7 @@
         }
       },
       "/user/resetPassword/{userId}/{code}": {
-        "get": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Reset Password",
@@ -527,7 +527,7 @@
           }
         }
       }, 
-      "/price/createPriceBookCat":{
+      "/price/createPriceBookCategory":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -558,7 +558,7 @@
           }
         }
       },
-      "/price/getPriceBookCat": {
+      "/price/getPriceBookCategory": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -583,7 +583,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Price Book",
           "parameters": [
             {
               "name": "catId",
@@ -653,7 +653,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Dealer Price Book",
           "parameters": [
             {
               "name": "dealerPriceBookId",
@@ -740,7 +740,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Price Book",
           "parameters": [
             {
               "name": "priceId",
@@ -757,25 +757,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  },
                   "description": {
                     "type": "string"
                   },
                   "term": {
-                    "type": "number"
-                  },
-                  "frontingFee": {
-                    "type": "number"
-                  },
-                  "reinsuranceFee": {
-                    "type": "number"
-                  },
-                  "adminFee": {
-                    "type": "number"
-                  },
-                  "reserveFutureFee": {
                     "type": "number"
                   },
                   "category": {
@@ -870,12 +855,12 @@
          
       "/servicer/register":{
         "post":{
-          "tags": ["Service Provider"],
-           "summary": "Register Service Provider",        
+          "tags": ["Servicer"],
+           "summary": "Register Servicer",        
            "parameters": [
             {
               "required": true,
-              "name": "Register Service Provider",
+              "name": "Register Servicer",
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/servicerRegister"
@@ -1234,21 +1219,17 @@
           },
           "totalAmount": {
             "type": "number"
-          },
-          "isDeleted":{
-            "type": "string"
           }
         }
       },
       "ClaimPart": {
       
-        "properties": {
-      
+        "properties": {      
           "claimId": {
-            "type": "Reff:Claims(ClaimId)"
+            "type": "string"
           },
           "serviceProId": {
-            "type": "Reff:ServiceProvider(ServiceProviderId)"
+            "type": "string"
           },
           "name": {
             "type": "string"
@@ -1266,15 +1247,14 @@
             "type": "string"
           },
           "price": {
-            "type": "Number"
+            "type": "number"
           }
         }
       },
       "ClaimStatus": {
-        "properties": {
-      
+        "properties": {      
           "claimId": {
-            "type": "Reff:Claims(ClaimId)"
+            "type": "string"
           },
           "status": {
             "type": "string"
@@ -1350,7 +1330,7 @@
          
         }
       },      
-      "ServiceProvider": {
+      "Servicer": {
         "properties": {        
           "name": {
             "type": "string"
@@ -1368,9 +1348,6 @@
             "type": "string"
           },
           "country": {
-            "type": "string"
-          },
-          "isDeleted":{
             "type": "string"
           }
         }
@@ -1411,9 +1388,6 @@
           "approvedStatus": {
             "type": "string",
             "enum": ["Pending", "Approved", "Rejected"]
-          },
-          "isDeleted":{
-            "type": "boolean"
           }
         }
       },
@@ -1451,17 +1425,14 @@
             "type": "string"
           },
           "serviceProviderId": {
-            "type": "string "
-          },
-          "token": {
-            "type": "String"
+            "type": "string"
           }
         }
       },
       "Contract": {
         "properties": {
           "covEndDate": {
-            "type": "string"
+            "type": "Date"
           },       
           "lastName": {
             "type": "string"
@@ -1506,10 +1477,6 @@
       },
       "Orders": {
         "properties": {
-          "_id": {
-            "type": "string",
-            "uniqueItems": true
-          },
           "dealerId": {
             "type": "string"
           },
@@ -1585,9 +1552,6 @@
             "type": "string"
           },
           "description": {
-            "type": "string"
-          },
-          "isDeleted":{
             "type": "string"
           }
         }
