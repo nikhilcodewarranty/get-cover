@@ -10,54 +10,53 @@ const constant = require("../../config/constant");
 //get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    let categorySearch = req.body.category ? req.body.category :''
+    let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
         { isDeleted: false },
         { 'name': { '$regex': categorySearch, '$options': 'i' } }
       ]
     };
+
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    console.log('fist00000000000', getCatIds)
     let catIdsArray = getCatIds.map(category => category._id)
-    let searchName = req.body.name ? req.body.name :''
+    let searchName = req.body.name ? req.body.name : ''
     let query = {
-      $and: [
+      $or: [
         { isDeleted: false },
-        {
-          $or: [
-            { 'name': { '$regex': searchName, '$options': 'i' } },
-            {'category':{ $in: catIdsArray } }
-          ]
-        }
+        { 'name': { '$regex': searchName, '$options': 'i' } },
+        { 'category': { $in: catIdsArray } }
       ]
-    };
-    let projection = { isDeleted: 0, __v: 0 }
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
-    if (!priceBooks) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      })
-      return;
-    }
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: priceBooks
-    })
-  } catch (err) {
+  };
+  let projection = { isDeleted: 0, __v: 0 }
+  if (req.role != "Super Admin") {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: "Only super admin allow to do this action"
     })
+    return;
   }
+  const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+  console.log('price books_-------------', priceBooks)
+  if (!priceBooks) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to fetch the data"
+    })
+    return;
+  }
+  res.send({
+    code: constant.successCode,
+    message: "Success",
+    result: priceBooks
+  })
+} catch (err) {
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
 };
 
 //create new price book
@@ -514,11 +513,11 @@ exports.updatePriceBookCat = async (req, res) => {
         message: "Only Super Admin is allowed to perform this action"
       });
     }
-    console.log(body.name,'===================')
-    if(body.name==undefined && body.description==undefined){
+    console.log(body.name, '===================')
+    if (body.name == undefined && body.description == undefined) {
       res.send({
-        code:constant.errorCode,
-        message:"No data provided"
+        code: constant.errorCode,
+        message: "No data provided"
       })
       return
     }
