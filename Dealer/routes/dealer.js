@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const multer = require('multer');
+const validator = require('../config/validation');
+
 
 const dealerController = require("../controller/dealerController"); // dealer controller 
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
@@ -13,7 +15,7 @@ router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dea
 router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceBooks);
 
-router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],dealerController.statusUpdate); // update price book detail with ID
+router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],validator('update_dealer_price_validation'),dealerController.statusUpdate); // update price book detail with ID
 
 
 

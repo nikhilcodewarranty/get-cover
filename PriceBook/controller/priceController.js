@@ -514,6 +514,14 @@ exports.updatePriceBookCat = async (req, res) => {
         message: "Only Super Admin is allowed to perform this action"
       });
     }
+    console.log(body.name,'===================')
+    if(body.name==undefined && body.description==undefined){
+      res.send({
+        code:constant.errorCode,
+        message:"No data provided"
+      })
+      return
+    }
 
     const updateCatResult = await updatePriceBookCategory(params.catId, body);
 
