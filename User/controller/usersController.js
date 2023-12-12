@@ -206,7 +206,7 @@ exports.createSuperAdmin = async (req, res) => {
     }
 
     // Create a new user with the provided data
-    const savedUser = userService.createUser(userData);
+    const savedUser = await userService.createUser(userData);
 
     // Generate JWT token
     const token = jwt.sign(
@@ -284,6 +284,7 @@ exports.createDealer = async (req, res) => {
       }));
 
       const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
+      console.log(createUsers);
       if (!createUsers) {
         return res.send({
           code: constant.errorCode,
