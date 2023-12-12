@@ -65,9 +65,7 @@ module.exports = class userService {
   //create user 
   static async createUser(data) {
     try {
-      console.log('first step______---------------')
       const response = await new user(data).save();
-      console.log('second step______---------------')
       return response;
     } catch (error) {
       console.log(error);

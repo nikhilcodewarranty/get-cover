@@ -342,6 +342,7 @@ exports.uploadPriceBook = async (req, res) => {
           return res.send({
             code: constant.successCode,
             message: 'Success',
+            data:uploaded
           });
         }
       
