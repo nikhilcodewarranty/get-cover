@@ -20,7 +20,7 @@ router.get("/servicer", [verifyToken],serviceController.getAllServiceProviders);
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
 router.post("/login",validator('login_validation'),userController.login); //login api for all users
 router.post("/addRole",[verifyToken],validator("add_role_validation") ,userController.addRole); //add role api
-router.post("/sendLinkToEmail" ,userController.sendLinkToEmail); //send password link to email 
+router.get("/sendLinkToEmail" ,userController.sendLinkToEmail); //send password link to email 
 router.post("/resetPassword/:userId/:code" ,userController.resetPassword); //reset password 
 router.post("/dealerStatusUpdate",[verifyToken] ,dealerController.statusUpdate); //Update Status
 router.post("/servicerStatusUpdate",[verifyToken] ,serviceController.statusUpdate); //Update Status
