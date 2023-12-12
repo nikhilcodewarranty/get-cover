@@ -3,6 +3,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const randtoken = require('rand-token').generator()
+const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
 
@@ -30,7 +31,12 @@ exports.getAllUsers = async (req, res) => {
       })
       return;
     };
-    const users = await userService.getAllUsers();
+    const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
+    console.log('role+++++++++++++++++++++++++++++++++=',checkRole)
+    let query = {roleId:new mongoose.Types.ObjectId(checkRole._id),isDeleted:false}
+    console.log(query)
+    let projection = {isDeleted:0,__v:0}
+    const users = await userService.getAllUsers(query,projection);
     if (!users) {
       res.send({
         code: constant.errorCode,
@@ -548,7 +554,7 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, 'amit@codenomad.net'))
+      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
         res.send({

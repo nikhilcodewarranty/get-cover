@@ -10,7 +10,21 @@ const constant = require("../../config/constant");
 //get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
-    let query = {isDeleted: false }
+    // let query = {isDeleted: false }
+    let query = {
+      $and: [
+        { isDeleted: false },
+        {
+          $or: [
+            { 'name': { '$regex': req.body.name, '$options': 'i' } },
+            { 'description': { '$regex': req.body.name, '$options': 'i' } },
+            { 'state': { '$regex': req.body.name, '$options': 'i' } },
+            { 'city': { '$regex': req.body.name, '$options': 'i' } },
+            { 'zip': { '$regex': req.body.name, '$options': 'i' } },
+          ]
+        }
+      ]
+    };
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
@@ -76,13 +90,13 @@ exports.createPriceBook = async (req, res, next) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to save the price book",
-        
+
       })
     } else {
       res.send({
         code: constant.successCode,
         message: "Success",
-        data:savePriceBook
+        data: savePriceBook
       })
     }
   } catch (err) {
@@ -207,7 +221,7 @@ exports.updatePriceBookById = async (req, res, next) => {
   try {
     const { body, params, role } = req;
 
-      if (!isSuperAdmin(role)) {
+    if (!isSuperAdmin(role)) {
       return res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
@@ -242,7 +256,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 const updatePriceBookStatus = async (priceId, newData) => {
   const criteria = { _id: priceId };
   let projection = { isDeleted: 0, __v: 0 }
-  const existingCat = await priceBookService.getPriceBookById(criteria,projection);
+  const existingCat = await priceBookService.getPriceBookById(criteria, projection);
 
   if (!existingCat) {
     return {
@@ -276,15 +290,15 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-    const criteria = { priceBook: { $in: [priceId] } }
-    const newValue = { status: categoryStatus };
-    const option = { new: true };
-    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
+  const criteria = { priceBook: { $in: [priceId] } }
+  const newValue = { status: categoryStatus };
+  const option = { new: true };
+  const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
 
-    return {
-      success: !!updatedPriceBook,
-      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
-    };
+  return {
+    success: !!updatedPriceBook,
+    message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
+  };
 
 };
 
@@ -377,13 +391,13 @@ exports.createPriceBookCat = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to create the price category"
-      
+
       })
     } else {
       res.send({
         code: constant.successCode,
         message: "Created Successfully",
-        data:createPriceCat
+        data: createPriceCat
       })
     }
   } catch (err) {
@@ -405,7 +419,14 @@ exports.getPriceBookCat = async (req, res) => {
       return;
     }
     let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false }
+    // let query = { isDeleted: false }
+    let query = {
+      $and: [
+        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
+        { isDeleted: false }
+      ]
+    };
+
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
       res.send({
@@ -432,7 +453,7 @@ const updatePriceBookCategory = async (catId, newData) => {
 
   //const criteria = { _id: catId };
   let projection = { isDeleted: 0, __v: 0 }
-  const existingCat = await priceBookService.getPriceCatById({ _id: catId },projection);
+  const existingCat = await priceBookService.getPriceCatById({ _id: catId }, projection);
 
   if (!existingCat) {
     return {
@@ -461,24 +482,24 @@ const updatePriceBookCategory = async (catId, newData) => {
 
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
-    //const criteria = { category: catId };
-    const criteria = { category: { $in: [catId] } }
-    const newValue = { status: categoryStatus };
-    const option = { new: true };
-    const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
-     /**---------------------------Get and update Dealer Price Book Status---------------------------- */
-    let projection = { isDeleted: 0, __v: 0 }
-    const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
-    const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
-    if(priceIdsToUpdate){
-        dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
-        const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
-        return {
-          success: !!updatedPriceBook1,
-          message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
-        };
-     }
+  //const criteria = { category: catId };
+  const criteria = { category: { $in: [catId] } }
+  const newValue = { status: categoryStatus };
+  const option = { new: true };
+  const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
+  /**---------------------------Get and update Dealer Price Book Status---------------------------- */
+  let projection = { isDeleted: 0, __v: 0 }
+  const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
+  const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+  if (priceIdsToUpdate) {
+    dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+    const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
+    return {
+      success: !!updatedPriceBook1,
+      message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
     };
+  }
+};
 
 // Function to check if the user is a Super Admin
 const isSuperAdmin = (role) => role === "Super Admin";
