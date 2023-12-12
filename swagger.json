@@ -26,11 +26,21 @@
       }
   },
     "paths": {
-      "/user/users": {
+      "/user/users/{role}": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all users",
+          "parameters": [
+            {
+              "name": "role",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "role",  
+              "description": "Role of the User"
+            }
+          ],
           "responses": {
             "200": {
               "description": "Ok"
