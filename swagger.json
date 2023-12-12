@@ -91,7 +91,6 @@
       },
       "/user/resetPassword/{userId}/{code}": {
         "post": {
-          "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Reset Password",
           "parameters": [
@@ -110,6 +109,18 @@
               "type": "string",
               "default": "exampleId",  
               "description": "code"
+            },
+            {
+              "name": "Password",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  }
+                }              }
             }
           ],
           "responses": {
@@ -130,7 +141,6 @@
       },
       "/user/sendLinkToEmail": {
         "post": {
-          "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Send link to email",
           "parameters": [
@@ -600,12 +610,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "description": {
-                    "type": "string"
-                  },
                   "status": {
                     "type": "boolean"
                   }
@@ -757,15 +761,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "description": {
-                    "type": "string"
-                  },
-                  "term": {
-                    "type": "number"
-                  },
-                  "category": {
-                    "type": "string"
-                  },
                   "status": {
                     "type": "boolean"
                   }
