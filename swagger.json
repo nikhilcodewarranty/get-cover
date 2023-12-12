@@ -527,7 +527,7 @@
           }
         }
       }, 
-      "/price/createPriceBookCat":{
+      "/price/createPriceBookCategory":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -558,7 +558,7 @@
           }
         }
       },
-      "/price/getPriceBookCat": {
+      "/price/getPriceBookCategory": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
