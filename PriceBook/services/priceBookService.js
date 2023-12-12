@@ -6,7 +6,11 @@ module.exports = class priceBookService {
   //get all price book 
   static async getAllPriceBook(query, projection) {
     try {
-      const allPriceBook = await priceBook.find(query, projection).sort({'createdAt':-1});
+      const allPriceBook = await priceBook.find(query, projection)
+      // .populate({
+      //   path: 'category',
+      //   select: 'name' // Specify the fields you want to retrieve from the 'category' collection
+      // }).sort({'createdAt':-1});
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
