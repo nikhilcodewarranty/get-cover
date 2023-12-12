@@ -6,9 +6,14 @@ const dealerModel = require("../../Dealer/model/dealer");
 
 module.exports = class userService {
   // get all users
-  static async getAllUsers() {
+  static async getAllUsers(query,projection) {
     try {
       const allUsers = await user.aggregate([
+        {
+          $match:{
+            roleId:query.roleId
+          }
+        },
         // Join with user_role table
         {
           $lookup: {
