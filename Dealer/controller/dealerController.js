@@ -6,7 +6,18 @@ const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
+const mongoose = require('mongoose');
+
 const csvParser = require('csv-parser');
+
+const checkObjectId = async (Id) => {
+    // Check if the potentialObjectId is a valid ObjectId
+if (mongoose.Types.ObjectId.isValid(Id)) {
+  return true;
+} else {
+  return false;
+ }
+}
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
   try {
@@ -175,9 +186,25 @@ exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
 
-    console.log(data);
-    
-    // Extracting necessary data for dealer creation
+    // Check if the specified role exists
+    const checkRole = await role.findOne({ role: data.role });
+    if (!checkRole) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Invalid role',
+      });
+    }
+
+    // Check if the dealer already exists
+    const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    if (existingDealer) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Dealer name already exists',
+      });
+    }
+
+    // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
       street: data.street,
@@ -187,19 +214,10 @@ exports.registerDealer = async (req, res) => {
       country: data.country,
     };
 
-    // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
-    if (!checkRole) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Invalid role',
-      });
-    }
-
     // Register the dealer
-    const createMetaData = await dealerService.registerDealer(dealerMeta);
-    if (!createMetaData) {
-      return res.send({
+    const createdDealer = await dealerService.registerDealer(dealerMeta);
+    if (!createdDealer) {
+      return res.status(500).json({
         code: constant.errorCode,
         message: 'Unable to create dealer account',
       });
@@ -208,14 +226,11 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: data.email });
     if (existingUser) {
-      return res.send({
+      return res.status(400).json({
         code: constant.errorCode,
         message: 'Email already exists',
       });
     }
-
-    // Hash the password before storing
-    // const hashedPassword = await bcrypt.hash(data.password, 10);
 
     // Create user metadata
     const userMetaData = {
@@ -224,21 +239,20 @@ exports.registerDealer = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      // password: hashedPassword,
-      accountId: createMetaData._id,
+      accountId: createdDealer._id,
     };
 
     // Create the user
-    const createDealer = await userService.createUser(userMetaData);
-    if (createDealer) {
-      return res.send({
+    const createdUser = await userService.createUser(userMetaData);
+    if (createdUser) {
+      return res.status(201).json({
         code: constant.successCode,
         message: 'Success',
-        data:createDealer
+        data: createdUser,
       });
     }
   } catch (err) {
-    return res.send({
+    return res.status(500).json({
       code: constant.errorCode,
       message: err.message,
     });
@@ -246,55 +260,80 @@ exports.registerDealer = async (req, res) => {
 };
 
 exports.statusUpdate = async (req, res) => {
-  if (req.role != "Super Admin") {
-    res.send({
-      code: constant.errorCode,
-      message: "Only super admin allow to do this action"
-    })
-    return;
-  }
-  let data = req.body;
-  let criteria = { _id: req.params.dealerPriceBookId };
-  let projection = { isDeleted: 0, __v: 0 }
-  const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+  try {
+    // Check if the user has the required role
+    if (req.role !== "Super Admin") {
+      return res.status(403).json({
+        code: constant.errorCode,
+        message: "Only super admin is allowed to perform this action"
+      });
+    }
 
-  if (!existingDealerPriceBook) {
-    return {
-      success: false,
-      message: "Invalid Dealer Price Book ID"
-    };
-  }
-    
-    let newValue = {
+    // Check if the dealerPriceBookId is a valid ObjectId
+    const isValid = await checkObjectId(req.params.dealerPriceBookId);
+    if (!isValid) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Invalid Dealer Price Book ID"
+      });
+    }
+
+    // Fetch existing dealer price book data
+    const criteria = { _id: req.params.dealerPriceBookId };
+    const projection = { isDeleted: 0, __v: 0 };
+    const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+
+    if (!existingDealerPriceBook) {
+      return res.status(404).json({
+        code: constant.errorCode,
+        message: "Dealer Price Book ID not found"
+      });
+    }
+
+    // Check if the priceBook is a valid ObjectId
+    const isPriceBookValid = await checkObjectId(req.body.priceBook);
+    if (!isPriceBookValid) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Invalid Price Book ID"
+      });
+    }
+
+    // Prepare the update data
+    const newValue = {
       $set: {
-        brokerFee:req.body.brokerFee,
-        status:req.body.status
+        brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
+        status: req.body.status || existingDealerPriceBook.status,
+        retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
+        priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
       }
     };
-    let option = { new: true };
-   try {
-    const updatedResult = await dealerService.statusUpdate(criteria, newValue, option)
+
+    const option = { new: true };
+
+    // Update the dealer price status
+    const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
+
     if (!updatedResult) {
-      res.send({
+      return res.status(500).json({
         code: constant.errorCode,
         message: "Unable to update the dealer price status"
       });
-      return;
-    };
-    res.send({
+    }
+
+    return res.status(200).json({
       code: constant.successCode,
       message: "Updated Successfully",
-      data:updatedResult
-    })
-    }
-    catch (err) {
-    return res.send({
+      data: updatedResult
+    });
+
+  } catch (err) {
+    return res.status(500).json({
       code: constant.errorCode,
       message: err.message,
     });
   }
 };
-
 // All Dealer Books
 
 exports.getAllDealerPriceBooks = async (req, res) => {
