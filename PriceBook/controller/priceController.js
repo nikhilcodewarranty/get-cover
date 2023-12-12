@@ -15,7 +15,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let queryCategories = {
       $and: [
         { isDeleted: false },
-        { 'name': { '$regex': categorySearch, '$options': 'i' } }
+        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
       ]
     };
 
@@ -23,40 +23,39 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query = {
-      $or: [
+      $and: [
         { isDeleted: false },
         { 'name': { '$regex': searchName, '$options': 'i' } },
         { 'category': { $in: catIdsArray } }
       ]
-  };
-  let projection = { isDeleted: 0, __v: 0 }
-  if (req.role != "Super Admin") {
+    };
+    let projection = { isDeleted: 0, __v: 0 }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+    if (!priceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    })
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: "Only super admin allow to do this action"
+      message: err.message
     })
-    return;
   }
-  const priceBooks = await priceBookService.getAllPriceBook(query, projection);
-  console.log('price books_-------------', priceBooks)
-  if (!priceBooks) {
-    res.send({
-      code: constant.errorCode,
-      message: "Unable to fetch the data"
-    })
-    return;
-  }
-  res.send({
-    code: constant.successCode,
-    message: "Success",
-    result: priceBooks
-  })
-} catch (err) {
-  res.send({
-    code: constant.errorCode,
-    message: err.message
-  })
-}
 };
 
 //create new price book
@@ -234,11 +233,24 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
     }
 
+<<<<<<< HEAD
     // Check if the request body is empty
     if (Object.keys(body).length === 0) {
       return res.status(400).json({
         code: constant.errorCode,
         message: "Content cannot be empty"
+=======
+    const updateresult = await updatePriceBookStatus(params.priceId, body);
+
+
+    if (updateresult.success) {
+      const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
+
+      return res.send({
+        code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
+        message: updateDealerPriceBookResult.message,
+        data: updateresult.data
+>>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
       });
     }
 
@@ -275,7 +287,12 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     return res.status(500).json({
       code: constant.errorCode,
+<<<<<<< HEAD
       message: updateResult.message,
+=======
+      message: updateresult.message,
+      data: updateresult.data
+>>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
     });
 
   } catch (error) {
@@ -301,6 +318,7 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   const newValue = {
     $set: {
+<<<<<<< HEAD
       status: newData.status || existingPriceBook.status,
       frontingFee: newData.frontingFee || existingPriceBook.frontingFee,
       reserveFutureFee: newData.reserveFutureFee || existingPriceBook.reserveFutureFee,
@@ -308,6 +326,15 @@ const updatePriceBookStatus = async (priceId, newData) => {
       adminFee:newData.adminFee || existingPriceBook.adminFee,
       category:newData.category || existingPriceBook.category,
       description:newData.description || existingPriceBook.status,
+=======
+      status: newData.status,
+      frontingFee: newData.frontingFee,
+      reserveFutureFee: newData.reserveFutureFee,
+      reinsuranceFee: newData.reinsuranceFee,
+      adminFee: newData.adminFee,
+      category: newData.category,
+      description: newData.description,
+>>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
@@ -316,16 +343,20 @@ const updatePriceBookStatus = async (priceId, newData) => {
   return {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
+<<<<<<< HEAD
+=======
+    data: updatedCat
+>>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
   };
 };
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-  if(!categoryStatus){
+  if (!categoryStatus) {
     const criteria = { priceBook: { $in: [priceId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
-    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);  
+    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
     return {
       success: !!updatedPriceBook,
       message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
@@ -429,13 +460,13 @@ exports.createPriceBookCat = async (req, res) => {
       });
     }
     let projection = { isDeleted: 0, __v: 0 }
-     let query = { isDeleted: false }
-      // Check Total Counts
+    let query = { isDeleted: false }
+    // Check Total Counts
     const count = await priceBookService.getTotalCount();
     const catData = {
       name: data.name,
       description: data.description,
-      unique_key:parseInt(count)+1
+      unique_key: parseInt(count) + 1
     };
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
@@ -536,8 +567,8 @@ const updatePriceBookCategory = async (catId, newData) => {
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   //const criteria = { category: catId };
-  if(!categoryStatus){
-      const criteria = { category: { $in: [catId] } }
+  if (!categoryStatus) {
+    const criteria = { category: { $in: [catId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
     const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
@@ -558,7 +589,7 @@ const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   return {
     message: "Successfully updated"
   };
-  
+
 };
 
 const checkObjectId = async (Id) => {
@@ -626,7 +657,7 @@ exports.updatePriceBookCat = async (req, res) => {
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
-    let ID ={_id:req.params.catId} 
+    let ID = { _id: req.params.catId }
     let projection = { isDeleted: 0, __v: 0 }
     console.log(ID);
     console.log(projection);
