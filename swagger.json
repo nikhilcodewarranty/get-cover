@@ -1345,7 +1345,7 @@
          
         }
       },      
-      "ServiceProvider": {
+      "Servicer": {
         "properties": {        
           "name": {
             "type": "string"
