@@ -14,49 +14,47 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let queryCategories = {
       $and: [
         { isDeleted: false },
-        { 'name': { '$regex': categorySearch, '$options': 'i' } }
+        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
       ]
     };
 
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
-    console.log('fist00000000000', getCatIds)
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query = {
-      $or: [
+      $and: [
         { isDeleted: false },
         { 'name': { '$regex': searchName, '$options': 'i' } },
         { 'category': { $in: catIdsArray } }
       ]
-  };
-  let projection = { isDeleted: 0, __v: 0 }
-  if (req.role != "Super Admin") {
+    };
+    let projection = { isDeleted: 0, __v: 0 }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+    if (!priceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    })
+  } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: "Only super admin allow to do this action"
+      message: err.message
     })
-    return;
   }
-  const priceBooks = await priceBookService.getAllPriceBook(query, projection);
-  console.log('price books_-------------', priceBooks)
-  if (!priceBooks) {
-    res.send({
-      code: constant.errorCode,
-      message: "Unable to fetch the data"
-    })
-    return;
-  }
-  res.send({
-    code: constant.successCode,
-    message: "Success",
-    result: priceBooks
-  })
-} catch (err) {
-  res.send({
-    code: constant.errorCode,
-    message: err.message
-  })
-}
 };
 
 //create new price book
@@ -242,14 +240,14 @@ exports.updatePriceBookById = async (req, res, next) => {
       return res.send({
         code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
         message: updateDealerPriceBookResult.message,
-        data:updateresult.data
+        data: updateresult.data
       });
     }
 
     return res.send({
       code: constant.errorCode,
       message: updateresult.message,
-      data:updateresult.data
+      data: updateresult.data
     });
 
   } catch (error) {
@@ -278,10 +276,10 @@ const updatePriceBookStatus = async (priceId, newData) => {
       status: newData.status,
       frontingFee: newData.frontingFee,
       reserveFutureFee: newData.reserveFutureFee,
-      reinsuranceFee:newData.reinsuranceFee,
-      adminFee:newData.adminFee,
-      category:newData.category,
-      description:newData.description,
+      reinsuranceFee: newData.reinsuranceFee,
+      adminFee: newData.adminFee,
+      category: newData.category,
+      description: newData.description,
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
@@ -291,17 +289,17 @@ const updatePriceBookStatus = async (priceId, newData) => {
   return {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
-    data:updatedCat
+    data: updatedCat
   };
 };
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-  if(!categoryStatus){
+  if (!categoryStatus) {
     const criteria = { priceBook: { $in: [priceId] } }
     const newValue = { status: categoryStatus };
     const option = { new: true };
-    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);  
+    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
     return {
       success: !!updatedPriceBook,
       message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
@@ -405,13 +403,13 @@ exports.createPriceBookCat = async (req, res) => {
       });
     }
     let projection = { isDeleted: 0, __v: 0 }
-     let query = { isDeleted: false }
-      // Check Total Counts
+    let query = { isDeleted: false }
+    // Check Total Counts
     const count = await priceBookService.getTotalCount();
     const catData = {
       name: data.name,
       description: data.description,
-      unique_key:parseInt(count)+1
+      unique_key: parseInt(count) + 1
     };
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
@@ -513,29 +511,29 @@ const updatePriceBookCategory = async (catId, newData) => {
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   //const criteria = { category: catId };
-  if(!categoryStatus){
+  if (!categoryStatus) {
     const criteria = { category: { $in: [catId] } }
-  const newValue = { status: categoryStatus };
-  const option = { new: true };
-  const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
-  /**---------------------------Get and update Dealer Price Book Status---------------------------- */
-  let projection = { isDeleted: 0, __v: 0 }
-  const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
-  const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
-  if (priceIdsToUpdate) {
-    dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
-    const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
+    const newValue = { status: categoryStatus };
+    const option = { new: true };
+    const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
+    /**---------------------------Get and update Dealer Price Book Status---------------------------- */
+    let projection = { isDeleted: 0, __v: 0 }
+    const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
+    const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+    if (priceIdsToUpdate) {
+      dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+      const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
       return {
         success: !!updatedPriceBook1,
         message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
       };
-  }
+    }
   }
 
   return {
     message: "Successfully updated"
   };
-  
+
 };
 
 // Function to check if the user is a Super Admin
@@ -586,7 +584,7 @@ exports.updatePriceBookCat = async (req, res) => {
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
-    let ID ={_id:req.params.catId} 
+    let ID = { _id: req.params.catId }
     let projection = { isDeleted: 0, __v: 0 }
     console.log(ID);
     console.log(projection);
