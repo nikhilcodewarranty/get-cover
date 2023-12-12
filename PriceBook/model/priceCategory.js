@@ -11,6 +11,9 @@ const priceCategorySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  unique_key: {
+    type: String,
+  },
   isDeleted: {
     type: Boolean,
     default: false

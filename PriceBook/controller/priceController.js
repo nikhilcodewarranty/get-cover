@@ -3,7 +3,7 @@ const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
-
+const randtoken = require('rand-token').generator()
 
 //------------- price book api's------------------//
 
@@ -236,7 +236,6 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     const updateresult = await updatePriceBookStatus(params.priceId, body);
 
-  console.log(updateresult);
 
     if (updateresult.success) {
       const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
@@ -282,6 +281,8 @@ const updatePriceBookStatus = async (priceId, newData) => {
       reserveFutureFee: newData.reserveFutureFee,
       reinsuranceFee:newData.reinsuranceFee,
       adminFee:newData.adminFee,
+      category:newData.category,
+      description:newData.description,
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
@@ -297,15 +298,20 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
 // Function to update Dealer Price Book based on category status
 const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-  const criteria = { priceBook: { $in: [priceId] } }
-  const newValue = { status: categoryStatus };
-  const option = { new: true };
-  const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
-
+  if(!categoryStatus){
+    const criteria = { priceBook: { $in: [priceId] } }
+    const newValue = { status: categoryStatus };
+    const option = { new: true };
+    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);  
+    return {
+      success: !!updatedPriceBook,
+      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
+    };
+  }
   return {
-    success: !!updatedPriceBook,
-    message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
+    message: "Successfully updated"
   };
+
 
 };
 
@@ -381,39 +387,57 @@ exports.searchPriceBook = async (req, res, next) => {
 // create price category api's
 exports.createPriceBookCat = async (req, res) => {
   try {
-    let data = req.body
-    if (req.role != "Super Admin") {
-      res.send({
+    // Ensure the user has the required role
+    if (req.role !== 'Super Admin') {
+      return res.status(403).json({
         code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
+        message: 'Only super admin is allowed to perform this action'
+      });
     }
-    let catData = {
-      name: data.name,
-      description: data.description
-    }
-    let createPriceCat = await priceBookService.createPriceCat(catData)
-    if (!createPriceCat) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create the price category"
 
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Created Successfully",
-        data: createPriceCat
-      })
+    const data = req.body;
+
+    // Check if the category already exists
+    const existingCategory = await priceBookService.getPriceCatByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    if (existingCategory) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Category name already exists'
+      });
     }
+    let projection = { isDeleted: 0, __v: 0 }
+     let query = { isDeleted: false }
+      // Check Total Counts
+    const count = await priceBookService.getTotalCount();
+    const catData = {
+      name: data.name,
+      description: data.description,
+      unique_key:parseInt(count)+1
+    };
+    // Create the price category
+    const createdCategory = await priceBookService.createPriceCat(catData);
+    if (!createdCategory) {
+      return res.status(500).json({
+        code: constant.errorCode,
+        message: 'Unable to create the price category'
+      });
+    }
+
+    // Return success response
+    res.status(201).json({
+      code: constant.successCode,
+      message: 'Created Successfully',
+      data: createdCategory
+    });
+
   } catch (err) {
-    res.send({
+    // Handle unexpected errors
+    res.status(500).json({
       code: constant.errorCode,
       message: err.message
-    })
+    });
   }
-}
+};
 
 // get all price category
 exports.getPriceBookCat = async (req, res) => {
@@ -490,7 +514,8 @@ const updatePriceBookCategory = async (catId, newData) => {
 // Function to update Price Book based on category status
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   //const criteria = { category: catId };
-  const criteria = { category: { $in: [catId] } }
+  if(!categoryStatus){
+    const criteria = { category: { $in: [catId] } }
   const newValue = { status: categoryStatus };
   const option = { new: true };
   const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
@@ -501,11 +526,17 @@ const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   if (priceIdsToUpdate) {
     dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
     const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
-    return {
-      success: !!updatedPriceBook1,
-      message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
-    };
+      return {
+        success: !!updatedPriceBook1,
+        message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
+      };
   }
+  }
+
+  return {
+    message: "Successfully updated"
+  };
+  
 };
 
 // Function to check if the user is a Super Admin

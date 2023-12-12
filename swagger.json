@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [  
       "http",
@@ -642,8 +642,15 @@
                 "properties": {
                   "status": {
                     "type": "boolean"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
                   }
-                }              }
+                }              
+              }
             }
           ],
      
@@ -792,6 +799,24 @@
                 "type": "object",
                 "properties": {
                   "status": {
+                    "type": "boolean"
+                  },
+                  "category": {
+                    "type": "string"
+                  },
+                  "reinsuranceFee": {
+                    "type": "number"
+                  },
+                  "adminFee": {
+                    "type": "number"
+                  },
+                  "reserveFutureFee": {
+                    "type": "number"
+                  },
+                  "frontingFee": {
+                    "type": "number"
+                  },
+                  "description": {
                     "type": "boolean"
                   }
                 }

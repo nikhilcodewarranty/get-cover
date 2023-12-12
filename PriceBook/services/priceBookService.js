@@ -13,6 +13,16 @@ module.exports = class priceBookService {
     }
   }
 
+  static async getTotalCount() {
+    try {
+      const count = await priceCategory.countDocuments();
+      return count;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
+    }
+  }
+  
+
   //create new price book
   static async createPriceBook(data) {
     try {
@@ -78,7 +88,15 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
-
+  //get price category by name service
+  static async getPriceCatByName(name, projection) {
+    try {
+      const singlePriceCatResponse = await priceCategory.findOne(name, projection);
+      return singlePriceCatResponse;
+    } catch (error) {
+      console.log(`Price category not found. ${error}`);
+    }
+  }
   //create price category  service
   static async createPriceCat(data) {
     try {
