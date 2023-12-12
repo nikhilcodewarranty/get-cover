@@ -90,7 +90,7 @@
         }
       },
       "/user/resetPassword/{userId}/{code}": {
-        "get": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Reset Password",
