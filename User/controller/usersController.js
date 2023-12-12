@@ -33,7 +33,7 @@ exports.getAllUsers = async (req, res) => {
     };
     const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
     console.log('role+++++++++++++++++++++++++++++++++=',checkRole)
-    let query = {roleId:new mongoose.Types.ObjectId(checkRole._id),isDeleted:false}
+    let query = {roleId:new mongoose.Types.ObjectId(checkRole?checkRole._id:'000000000000000000000000'),isDeleted:false}
     console.log(query)
     let projection = {isDeleted:0,__v:0}
     const users = await userService.getAllUsers(query,projection);
