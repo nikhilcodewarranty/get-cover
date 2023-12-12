@@ -92,6 +92,7 @@ exports.createUser = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     let projection = { __v: 0, status: 0 }
+    let userId = req.params.userId?req.params.userId:'000000000000000000000000'
     const singleUser = await userService.getUserById(userId, projection);
     if (!singleUser) {
       res.send({
