@@ -14,10 +14,12 @@ router.get("/getUserById/:userId" ,[verifyToken],userController.getUserById); //
 router.get("/roles", [verifyToken],userController.getAllRoles); //get all roles
 router.get("/dealers", [verifyToken],dealerController.getAllDealers); //get all dealers
 router.get("/servicer", [verifyToken],serviceController.getAllServiceProviders); //get all dealers
+router.get("/getAllTerms",userController.getAllTerms); //get all dealers
 
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
+router.post("/createTerms", userController.createTerms); //to create the super admin credentials
 router.post("/login",validator('login_validation'),userController.login); //login api for all users
 router.post("/addRole",[verifyToken],validator("add_role_validation") ,userController.addRole); //add role api
 router.post("/sendLinkToEmail" ,userController.sendLinkToEmail); //send password link to email 

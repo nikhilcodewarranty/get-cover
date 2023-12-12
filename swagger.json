@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [  
       "http",
@@ -41,6 +41,26 @@
               "description": "Role of the User"
             }
           ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/user/getAllTerms": {
+        "get": {
+          "tags": ["Users"],
+          "summary": "Get all terms",
           "responses": {
             "200": {
               "description": "Ok"
@@ -823,7 +843,7 @@
                     "type": "number"
                   },
                   "description": {
-                    "type": "boolean"
+                    "type": "string"
                   }
                 }
               }
@@ -1166,9 +1186,14 @@
                   "type": "string"
                 },
                 "brokerFee": {
-                  "type": "string"
+                  "type": "number"
+                },
+                "retailPrice": {
+                  "type": "number"
                 }
+                
               },
+
               "required": ["email", "password", "firstName", "lastName"]
             }
           }

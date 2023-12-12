@@ -1,0 +1,17 @@
+const mongoose = require("mongoose");
+const connection = require('../../db')
+const termSchema = new mongoose.Schema({
+  terms: {
+    type: String,
+    default:''
+  },
+  status: {
+    type: Boolean,
+    default:true
+  },
+  isDeleted: {
+    type: String,
+    default: false
+  },
+});
+module.exports = connection.userConnection.model("terms", termSchema);

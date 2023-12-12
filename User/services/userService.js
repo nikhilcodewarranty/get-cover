@@ -1,5 +1,6 @@
 const user = require("../model/users");
 const role = require("../model/role");
+const terms = require("../model/terms");
 const dealerModel = require("../../Dealer/model/dealer");
 
 //-------------------------- user's services ------------------------------//
@@ -130,6 +131,18 @@ module.exports = class userService {
     }
   };
 
+    //get all TERMS
+    static async getAllTerms(query, projection) {
+      try {
+        const allTerms = await terms.find(query, projection).sort({ "createdAt": -1 });
+        return allTerms;
+      } catch (error) {
+        console.log(`Could not find role ${error}`);
+      }
+    };
+
+  
+
   //add role
   static async addRole(data) {
     try {
@@ -139,6 +152,16 @@ module.exports = class userService {
       console.log(error);
     }
   };
+
+  static async createTerms(data) {
+    try {
+      const response = await new terms(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
 
   static async getRoleById(query, projection) {
     try {

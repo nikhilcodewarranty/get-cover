@@ -4,6 +4,7 @@ const priceBookService = require("../services/priceBookService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
+const mongoose = require('mongoose');
 
 //------------- price book api's------------------//
 
@@ -19,7 +20,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
     };
 
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
-    console.log('fist00000000000', getCatIds)
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query = {
@@ -226,30 +226,56 @@ exports.updatePriceBookById = async (req, res, next) => {
   try {
     const { body, params, role } = req;
 
+    // Check if the user is a Super Admin
     if (!isSuperAdmin(role)) {
-      return res.send({
+      return res.status(403).json({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
     }
 
-    const updateresult = await updatePriceBookStatus(params.priceId, body);
-
-
-    if (updateresult.success) {
-      const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
-
-      return res.send({
-        code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
-        message: updateDealerPriceBookResult.message,
-        data:updateresult.data
+    // Check if the request body is empty
+    if (Object.keys(body).length === 0) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Content cannot be empty"
       });
     }
 
-    return res.send({
+    // Check if the priceId is a valid ObjectId
+    const isValidPriceId = await checkObjectId(params.priceId);
+    if (!isValidPriceId) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Invalid Price Book Id format"
+      });
+    }
+
+    // Check if the category is a valid ObjectId
+    const isValidCategory = await checkObjectId(body.category);
+    if (!isValidCategory) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Invalid Category Id format"
+      });
+    }
+
+    // Update Price Book Status
+    const updateResult = await updatePriceBookStatus(params.priceId, body);
+
+    if (updateResult.success) {
+      // Update Dealer Price Book Status
+      const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
+
+      return res.status(updateDealerResult.success ? 200 : 500).json({
+        code: updateDealerResult.success ? constant.successCode : constant.errorCode,
+        message: updateDealerResult.message,
+      });
+    }
+
+    return res.status(500).json({
       code: constant.errorCode,
-      message: updateresult.message,
-      data:updateresult.data
+      message: updateResult.message,
     });
 
   } catch (error) {
@@ -264,34 +290,32 @@ exports.updatePriceBookById = async (req, res, next) => {
 const updatePriceBookStatus = async (priceId, newData) => {
   const criteria = { _id: priceId };
   let projection = { isDeleted: 0, __v: 0 }
-  const existingCat = await priceBookService.getPriceBookById(criteria, projection);
+  const existingPriceBook = await priceBookService.getPriceBookById(criteria, projection);
 
-  if (!existingCat) {
+  if (!existingPriceBook) {
     return {
       success: false,
-      message: "Invalid Price ID"
+      message: "Invalid Price Book ID"
     };
   }
 
   const newValue = {
     $set: {
-      status: newData.status,
-      frontingFee: newData.frontingFee,
-      reserveFutureFee: newData.reserveFutureFee,
-      reinsuranceFee:newData.reinsuranceFee,
-      adminFee:newData.adminFee,
-      category:newData.category,
-      description:newData.description,
+      status: newData.status || existingPriceBook.status,
+      frontingFee: newData.frontingFee || existingPriceBook.frontingFee,
+      reserveFutureFee: newData.reserveFutureFee || existingPriceBook.reserveFutureFee,
+      reinsuranceFee:newData.reinsuranceFee || existingPriceBook.reinsuranceFee,
+      adminFee:newData.adminFee || existingPriceBook.adminFee,
+      category:newData.category || existingPriceBook.category,
+      description:newData.description || existingPriceBook.status,
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
   const option = { new: true };
   const updatedCat = await priceBookService.updatePriceBook(statusCreateria, newValue, option);
-
   return {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
-    data:updatedCat
   };
 };
 
@@ -500,7 +524,6 @@ const updatePriceBookCategory = async (catId, newData) => {
     }
   };
   const criteria = { _id: { $in: catId } }
-  console.log(criteria);
   const option = { new: true };
   const updatedCat = await priceBookService.updatePriceCategory(criteria, newValue, option);
 
@@ -514,22 +537,22 @@ const updatePriceBookCategory = async (catId, newData) => {
 const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   //const criteria = { category: catId };
   if(!categoryStatus){
-    const criteria = { category: { $in: [catId] } }
-  const newValue = { status: categoryStatus };
-  const option = { new: true };
-  const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
-  /**---------------------------Get and update Dealer Price Book Status---------------------------- */
-  let projection = { isDeleted: 0, __v: 0 }
-  const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
-  const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
-  if (priceIdsToUpdate) {
-    dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
-    const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
-      return {
-        success: !!updatedPriceBook1,
-        message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
-      };
-  }
+      const criteria = { category: { $in: [catId] } }
+    const newValue = { status: categoryStatus };
+    const option = { new: true };
+    const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
+    /**---------------------------Get and update Dealer Price Book Status---------------------------- */
+    let projection = { isDeleted: 0, __v: 0 }
+    const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
+    const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+    if (priceIdsToUpdate) {
+      dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+      const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
+        return {
+          success: !!updatedPriceBook1,
+          message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
+        };
+    }
   }
 
   return {
@@ -538,6 +561,14 @@ const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
   
 };
 
+const checkObjectId = async (Id) => {
+  // Check if the potentialObjectId is a valid ObjectId
+      if (mongoose.Types.ObjectId.isValid(Id)) {
+      return true;
+      } else {
+      return false;
+      }
+}
 // Function to check if the user is a Super Admin
 const isSuperAdmin = (role) => role === "Super Admin";
 // Exported function to update price book category
@@ -550,7 +581,16 @@ exports.updatePriceBookCat = async (req, res) => {
         message: "Only Super Admin is allowed to perform this action"
       });
     }
-    console.log(body.name, '===================')
+
+    
+    // Check if the categoryId is a valid ObjectId
+    const isValid = await checkObjectId(req.params.catId);
+    if (!isValid) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: "Invalid category format"
+      });
+    }
     if (body.name == undefined && body.description == undefined) {
       res.send({
         code: constant.errorCode,
