@@ -870,12 +870,12 @@
          
       "/servicer/register":{
         "post":{
-          "tags": ["Service Provider"],
-           "summary": "Register Service Provider",        
+          "tags": ["Servicer"],
+           "summary": "Register Servicer",        
            "parameters": [
             {
               "required": true,
-              "name": "Register Service Provider",
+              "name": "Register Servicer",
               "in": "body",
               "schema": {
                 "$ref": "#/definitions/servicerRegister"
