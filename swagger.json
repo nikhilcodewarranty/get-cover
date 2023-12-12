@@ -757,25 +757,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "name": {
-                    "type": "string"
-                  },
                   "description": {
                     "type": "string"
                   },
                   "term": {
-                    "type": "number"
-                  },
-                  "frontingFee": {
-                    "type": "number"
-                  },
-                  "reinsuranceFee": {
-                    "type": "number"
-                  },
-                  "adminFee": {
-                    "type": "number"
-                  },
-                  "reserveFutureFee": {
                     "type": "number"
                   },
                   "category": {
