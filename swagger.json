@@ -583,7 +583,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Price Book",
           "parameters": [
             {
               "name": "catId",
@@ -653,7 +653,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Dealer Price Book",
           "parameters": [
             {
               "name": "dealerPriceBookId",
@@ -740,7 +740,7 @@
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Update Status",
+          "summary": "Update Price Book",
           "parameters": [
             {
               "name": "priceId",
