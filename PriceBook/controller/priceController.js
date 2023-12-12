@@ -233,24 +233,11 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
     }
 
-<<<<<<< HEAD
     // Check if the request body is empty
     if (Object.keys(body).length === 0) {
       return res.status(400).json({
         code: constant.errorCode,
         message: "Content cannot be empty"
-=======
-    const updateresult = await updatePriceBookStatus(params.priceId, body);
-
-
-    if (updateresult.success) {
-      const updateDealerPriceBookResult = await updateDealerPriceStatus(params.priceId, body.status);
-
-      return res.send({
-        code: updateDealerPriceBookResult.success ? constant.successCode : constant.errorCode,
-        message: updateDealerPriceBookResult.message,
-        data: updateresult.data
->>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
       });
     }
 
@@ -287,12 +274,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     return res.status(500).json({
       code: constant.errorCode,
-<<<<<<< HEAD
       message: updateResult.message,
-=======
-      message: updateresult.message,
-      data: updateresult.data
->>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
     });
 
   } catch (error) {
@@ -318,7 +300,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   const newValue = {
     $set: {
-<<<<<<< HEAD
       status: newData.status || existingPriceBook.status,
       frontingFee: newData.frontingFee || existingPriceBook.frontingFee,
       reserveFutureFee: newData.reserveFutureFee || existingPriceBook.reserveFutureFee,
@@ -326,15 +307,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
       adminFee:newData.adminFee || existingPriceBook.adminFee,
       category:newData.category || existingPriceBook.category,
       description:newData.description || existingPriceBook.status,
-=======
-      status: newData.status,
-      frontingFee: newData.frontingFee,
-      reserveFutureFee: newData.reserveFutureFee,
-      reinsuranceFee: newData.reinsuranceFee,
-      adminFee: newData.adminFee,
-      category: newData.category,
-      description: newData.description,
->>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
@@ -343,10 +315,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
   return {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
-<<<<<<< HEAD
-=======
-    data: updatedCat
->>>>>>> 17d79ab1e79b3fccdd8f47412673eff80100b3e3
   };
 };
 
