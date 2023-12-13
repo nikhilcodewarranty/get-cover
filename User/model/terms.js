@@ -13,5 +13,5 @@ const termSchema = new mongoose.Schema({
     type: String,
     default: false
   },
-});
+},{timestamps:true});
 module.exports = connection.userConnection.model("terms", termSchema);

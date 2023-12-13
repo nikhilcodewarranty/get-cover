@@ -371,57 +371,6 @@ exports.getAllDealerPriceBooks = async (req, res) => {
     })
   }
 }
-// exports.uploadPriceBook = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).send('No file uploaded.');
-//     }
-//      // Use csv-parser to parse CSV file
-//     const results = [];
-//     let priceBookName = [];
-//     let allpriceBookIds = [];
-//     require('fs')
-//       .createReadStream(req.file.path)
-//       .pipe(csvParser())
-//       .on('data', (data) => results.push(data))
-//       .on('end', async () => { 
-//          priceBookName = results.map(obj => obj.priceBook);  
-//          //check name is exist in table and get data only ids
-//          let priceBookIds = await priceBookService.findByName(priceBookName)
-//          allpriceBookIds = priceBookIds.map(obj => obj._id); 
-//          //console.log(allpriceBookIds);return false; 
-//         //check id  is exist in table and get data only ids
-//           const existingData = await dealerPriceService.findByIds(allpriceBookIds)
-//           if(existingData){
-//             return res.send({
-//               code: constant.successCode,
-//               message: 'Uploaded files should be unique! Duplicasy found. Please check file and upload again',
-//             });
-//          }
-//         const newArray = results.map((obj) => ({
-//             priceBook: obj.priceBook,
-//             status: obj.status=='TRUE' ? true :false,
-//             brokerFee: obj.brokerFee,
-//             dealerId: req.body.dealerId
-//           }));
-//         const uploaded = await dealerPriceService.uploadPriceBook(newArray)
-//         if (uploaded) {
-//           return res.send({
-//             code: constant.successCode,
-//             message: 'Success',
-//             data:uploaded
-//           });
-//         }
-      
-//       });
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
-
 
 exports.uploadPriceBook = async (req, res) => {
   try {
@@ -454,7 +403,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (existingData.length > 0) {
         return res.send({
           code: constant.successCode,
-          message: 'Uploaded files should be unique! Duplicasy found. Please check file and upload again',
+          message: 'Uploaded file should be unique! Duplicasy found. Please check file and upload again',
         });
       }
     }
