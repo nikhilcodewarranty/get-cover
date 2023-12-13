@@ -400,8 +400,10 @@ exports.uploadPriceBook = async (req, res) => {
 
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
-          _id: product._id,
-          name: product.name
+          priceBook: product._id,
+          name: product.name,
+          dealerId: req.body.dealerId,
+          status:true
         }));
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
@@ -421,7 +423,7 @@ exports.uploadPriceBook = async (req, res) => {
           });
         }
         // Extract _id values from priceBookIds
-        const allpriceBookIds = foundProductData.map(obj => obj._id);
+        const allpriceBookIds = foundProductData.map(obj => obj.priceBook);
         // Check for duplicates and return early if found
         if (allpriceBookIds.length > 0) {
           let query = {
@@ -430,27 +432,42 @@ exports.uploadPriceBook = async (req, res) => {
               { 'dealerId': req.body.dealerId }
             ]
           }
-          console.log(query);
           const existingData = await dealerPriceService.findByIds(query);
           if (existingData.length > 0) {
-            return res.send({
+             res.send({
               code: constant.errorCode,
               message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
             });
+
           }
         }
 
-        // Map CSV data to a new array with required structure
-        const newArray = results.map((obj) => ({
-          priceBook: '657028a5ea99c1493f53c9b6',
+
+        let newArray1 = results.map((obj) => ({
+          priceBook: obj.priceBook,
           status: true,
           brokerFee: obj.brokerFee,
           dealerId: req.body.dealerId
         }));
 
+        // Merge brokerFee from newArray into foundProductData based on priceBook
+      const mergedArray = foundProductData.map(foundProduct => ({
+        ...foundProduct,
+        brokerFee: newArray1.find(item => item.priceBook === foundProduct.name)?.brokerFee || foundProduct.brokerFee
+      }));
 
+// console.log(mergedArray);return false;
+   
+            // Map CSV data to a new array with required structure
+            // let newArray = results.map((obj) => ({
+            //   priceBook: '6579877f1f67a3830048125f',
+            //   status: true,
+            //   brokerFee: obj.brokerFee,
+            //   dealerId: req.body.dealerId
+            // }));
+       
         // Upload the new data to the dealerPriceService
-        const uploaded = await dealerPriceService.uploadPriceBook(newArray);
+        const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
         // Respond with success message and uploaded data
         if (uploaded) {
