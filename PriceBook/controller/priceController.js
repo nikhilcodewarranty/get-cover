@@ -289,7 +289,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
 
       res.send({
-        code: updateDealerResult.success ? constant.successCode : constant.errorCode,
+        code: updateResult.success ? constant.successCode : constant.errorCode,
         message: updateResult.message,
       });
       return;
@@ -335,6 +335,7 @@ const updatePriceBookStatus = async (priceId, newData) => {
   const statusCreateria = { _id: { $in: [priceId] } }
   const option = { new: true };
   const updatedCat = await priceBookService.updatePriceBook(statusCreateria, newValue, option);
+  console.log(updatedCat);
   return {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
