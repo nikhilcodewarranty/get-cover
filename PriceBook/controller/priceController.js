@@ -729,6 +729,7 @@ exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body
     let checkPriceBook = await priceBookService.getPriceBookById({ name: req.params.name }, {})
+    console.log('checkPriceBook==================',checkPriceBook);
     if (!checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -737,6 +738,7 @@ exports.getCategoryByPriceBook = async (req, res) => {
       return;
     }
     let getCategoryDetail = await priceBookService.getPriceCatByName({ _id: checkPriceBook.category }, {})
+    console.log('getCategoryDetail=======================',getCategoryDetail)
     if (!getCategoryDetail) {
       res.send({
         code: constant.errorCode,
