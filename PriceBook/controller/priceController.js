@@ -633,12 +633,13 @@ exports.updatePriceBookCat = async (req, res) => {
       //  code: updatePriceBookResult.success ? constant.successCode : constant.errorCode,
       //   message: updatePriceBookResult.message
       // });
+      res.send({
+        code: constant.successCode,
+        message: updateCatResult.message
+      });
     }
 
-     res.send({
-      code: constant.errorCode,
-      message: updateCatResult.message
-    });
+
 
     return;
 
