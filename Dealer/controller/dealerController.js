@@ -411,7 +411,7 @@ exports.uploadPriceBook = async (req, res) => {
     // Map CSV data to a new array with required structure
     const newArray = results.map((obj) => ({
       priceBook: obj.priceBook,
-      status: obj.status === 'TRUE',
+      status: true,
       brokerFee: obj.brokerFee,
       dealerId: req.body.dealerId
     }));
