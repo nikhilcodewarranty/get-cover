@@ -494,7 +494,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer price book alreadt create with this price book"
+        message: "Dealer price book already create with this price book"
       })
       return;
     }

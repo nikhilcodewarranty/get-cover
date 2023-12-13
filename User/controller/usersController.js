@@ -234,10 +234,13 @@ exports.createSuperAdmin = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
-
+    res.send({
+      code: constant.errorCode,
+      message: data
+    });
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
-       res.status(403).json({
+      res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
@@ -247,7 +250,7 @@ exports.createDealer = async (req, res) => {
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
-       res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: "Invalid role"
       });
@@ -257,7 +260,7 @@ exports.createDealer = async (req, res) => {
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-       res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: 'Dealer name already exists',
       });
@@ -273,31 +276,31 @@ exports.createDealer = async (req, res) => {
 
       const primaryUserData = await userService.findByEmail(primaryEmailValues);
       if (primaryUserData.length > 0) {
-         res.status(400).json({
+        res.send({
           code: constant.errorCode,
           message: 'Email Already Exists',
           data: primaryUserData
         });
         return;
       }
-
-      const resultPrimaryDealerData = await Promise.all(dealerPrimaryUserArray.map(async (obj) => {
-        const hashedPassword = await bcrypt.hash(obj.password, 10);
-        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-      }));
-
-      const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
-      if (!createUsers) {
-         res.status(500).json({
-          code: constant.errorCode,
-          message: "Unable to save users"
-        });
-        return;
-      }
       accountCreationFlag = false;
     }
 
-    // Create Dealer Meta Data
+    if (accountCreationFlag) {
+      const dealerUserArray = data.dealers;
+      const emailValues = dealerUserArray.map(value => value.email);
+
+      const userData = await userService.findByEmail(emailValues);
+      if (userData.length > 0) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Email Already Exists',
+          data: userData
+        });
+        return;
+      }
+
+          // Create Dealer Meta Data
     const dealerMeta = {
       name: data.name,
       street: data.street,
@@ -312,28 +315,12 @@ exports.createDealer = async (req, res) => {
     // Create Dealer
     const createMetaData = await dealerService.createDealer(dealerMeta);
     if (!createMetaData) {
-       res.status(500).json({
+      res.send({
         code: constant.errorCode,
         message: "Something went wrong"
       });
       return;
     }
-
-    // If account Creation is true
-    if (accountCreationFlag) {
-      const dealerUserArray = data.dealers;
-      const emailValues = dealerUserArray.map(value => value.email);
-
-      const userData = await userService.findByEmail(emailValues);
-      if (userData.length > 0) {
-         res.status(400).json({
-          code: constant.errorCode,
-          message: 'Email Already Exists',
-          data: userData
-        });
-        return;
-      }
-
       const resultDealerData = await Promise.all(dealerUserArray.map(async (obj) => {
         const hashedPassword = await bcrypt.hash(obj.password, 10);
         return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
@@ -341,7 +328,7 @@ exports.createDealer = async (req, res) => {
 
       const createUsers = await userService.insertManyUser(resultDealerData);
       if (!createUsers) {
-         res.status(500).json({
+        res.send({
           code: constant.errorCode,
           message: "Unable to save users"
         });
@@ -359,7 +346,7 @@ exports.createDealer = async (req, res) => {
 
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
       if (!createPriceBook) {
-         res.status(500).json({
+        res.send({
           code: constant.errorCode,
           message: "Unable to save price book"
         });
@@ -367,17 +354,56 @@ exports.createDealer = async (req, res) => {
       }
     }
 
-     res.status(201).json({
+    // Create Dealer Meta Data
+    const dealerMeta = {
+      name: data.name,
+      street: data.street,
+      userAccount: req.body.customerAccountCreated,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      createdBy: data.createdBy
+    };
+
+    // Create Dealer
+    const createMetaData = await dealerService.createDealer(dealerMeta);
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
+      });
+      return;
+    }
+
+    const resultPrimaryDealerData = await Promise.all(dealerPrimaryUserArray.map(async (obj) => {
+      const hashedPassword = await bcrypt.hash(obj.password, 10);
+      return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+    }));
+    const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
+    if (!createUsers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to save users"
+      });
+      return;
+    }
+
+    // If account Creation is true
+  
+
+    res.send({
       code: constant.successCode,
       message: 'Successfully Created',
       data: createMetaData
     });
     return;
   } catch (err) {
-    return res.status(500).json({
+     res.send({
       code: constant.errorCode,
       message: err.message
     });
+    return;
   }
 };
 

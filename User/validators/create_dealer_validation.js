@@ -6,7 +6,7 @@ const create_dealer_validation = Joi.object({
         password: Joi.string().optional().allow(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
-        phoneNumber: Joi.string().min(5).max(16).required(),
+        phoneNumber: Joi.number().required(),
         isPrimary: Joi.boolean().required(),
     }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique.").optional(),
     dealerPrimary: Joi.array().items(Joi.object().keys({
@@ -14,7 +14,7 @@ const create_dealer_validation = Joi.object({
         password: Joi.string().optional().allow(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
-        phoneNumber: Joi.string().min(5).max(16).required(),
+        phoneNumber: Joi.number().required(),
         isPrimary: Joi.boolean().required(),
     }).unknown(true)).required(),
 
@@ -27,7 +27,7 @@ const create_dealer_validation = Joi.object({
     name: Joi.string().required(),
     street: Joi.string().required(),
     city: Joi.string().required(),
-    zip: Joi.string().required(),
+    zip: Joi.number().required(),
     state: Joi.string().required(),
     country: Joi.string().required(),
     createdBy: Joi.string().optional(),
