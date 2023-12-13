@@ -273,19 +273,21 @@ exports.statusUpdate = async (req, res) => {
   try {
     // Check if the user has the required role
     if (req.role !== "Super Admin") {
-      return res.status(403).json({
+      res.send({
         code: constant.errorCode,
         message: "Only super admin is allowed to perform this action"
       });
+      return
     }
 
     // Check if the dealerPriceBookId is a valid ObjectId
     const isValid = await checkObjectId(req.params.dealerPriceBookId);
     if (!isValid) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: "Invalid Dealer Price Book ID"
       });
+      return;
     }
 
     // Fetch existing dealer price book data
@@ -294,26 +296,28 @@ exports.statusUpdate = async (req, res) => {
     const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
 
     if (!existingDealerPriceBook) {
-      return res.status(404).json({
+      res.send({
         code: constant.errorCode,
         message: "Dealer Price Book ID not found"
       });
+      return;
     }
 
     // Check if the priceBook is a valid ObjectId
     const isPriceBookValid = await checkObjectId(req.body.priceBook);
     if (!isPriceBookValid) {
-      return res.status(400).json({
+        res.send({
         code: constant.errorCode,
         message: "Invalid Price Book ID"
       });
+      return;
     }
 
     // Prepare the update data
     const newValue = {
       $set: {
         brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
-        status: req.body.status || existingDealerPriceBook.status,
+        status: req.body.status,
         retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
         priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
       }
@@ -325,23 +329,28 @@ exports.statusUpdate = async (req, res) => {
     const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
 
     if (!updatedResult) {
-      return res.status(500).json({
+       res.send({
         code: constant.errorCode,
         message: "Unable to update the dealer price status"
       });
-    }
 
-    return res.status(200).json({
+      return;
+      
+    }
+      res.send({
       code: constant.successCode,
       message: "Updated Successfully",
       data: updatedResult
     });
 
+    return
+
   } catch (err) {
-    return res.status(500).json({
+      res.send({
       code: constant.errorCode,
       message: err.message,
     });
+    return
   }
 };
 // All Dealer Books
