@@ -90,7 +90,7 @@ exports.createPriceBook = async (req, res, next) => {
       status: data.status
     }
 
-    let checkPriceBook = await priceBookService.getPriceBookById({ name: data.name }, {})
+    let checkPriceBook = await priceBookService.getPriceBookById({ name: {'$regex':data.name} }, {})
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -441,7 +441,7 @@ exports.createPriceBookCat = async (req, res) => {
 
     const data = req.body;
     // Check if the category already exists
-    const existingCategory = await priceBookService.getPriceCatByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    const existingCategory = await priceBookService.getPriceCatByName({ name: {'$regex':data.name} }, { isDeleted: 0, __v: 0 });
     if (existingCategory) {
       res.send({
         code: constant.errorCode,
@@ -543,7 +543,7 @@ const updatePriceBookCategory = async (catId, newData) => {
     $set: {
       name: newData.name || existingCat.name,
       description: newData.description || existingCat.description,
-      status: newData.status
+      status: newData.status || existingCat.status
     }
   };
   const criteria = { _id: { $in: catId } }
@@ -611,10 +611,11 @@ exports.updatePriceBookCat = async (req, res) => {
     // Check if the categoryId is a valid ObjectId
     const isValid = await checkObjectId(req.params.catId);
     if (!isValid) {
-      return res.status(400).json({
+       res.send({
         code: constant.errorCode,
         message: "Invalid category format"
       });
+      return;
     }
     if (body.name == undefined && body.description == undefined) {
       res.send({
@@ -628,17 +629,18 @@ exports.updatePriceBookCat = async (req, res) => {
 
     if (updateCatResult.success) {
       const updatePriceBookResult = await updatePriceBookByCategoryStatus(params.catId, body.status);
-
-      return res.send({
-        code: updatePriceBookResult.success ? constant.successCode : constant.errorCode,
-        message: updatePriceBookResult.message
-      });
+      //  res.send({
+      //  code: updatePriceBookResult.success ? constant.successCode : constant.errorCode,
+      //   message: updatePriceBookResult.message
+      // });
     }
 
-    return res.send({
+     res.send({
       code: constant.errorCode,
       message: updateCatResult.message
     });
+
+    return;
 
   } catch (err) {
     res.send({
