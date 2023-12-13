@@ -389,42 +389,59 @@ exports.uploadPriceBook = async (req, res) => {
       .on('end', async () => { 
     // Extract priceBook names from results
     const priceBookName = results.map(obj => obj.priceBook);
-    //console.log(priceBookName);return false;
-    // Find priceBookIds based on names
-    const priceBookIds = await priceBookService.findByName(priceBookName);
-    if (priceBookIds.length == 0) {
+   
+    const foundProducts = await priceBookService.findByName(priceBookName);
+  
+    // Extract the names and ids of found products
+    const foundProductData = foundProducts.map(product => ({
+      _id: product._id,
+      name: product.name
+    }));
+
+     const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
+    //  return;
+     if (missingProductNames.length > 0) {
+      return res.status(400).json({
+        code: constant.errorCode,
+        message: 'Some product names do not match.',
+        missingProductNames: missingProductNames
+      });
+    }
+
+    if (foundProducts.length == 0) {
       return res.send({
         code: constant.errorCode,
         message: 'Product name is not exist. Please uploads the products and then try again',
       });
     }
-
-    console.log("priceBookIds=========================",priceBookIds)
     // Extract _id values from priceBookIds
-    const allpriceBookIds = priceBookIds.map(obj => obj._id);
-    console.log("allpriceBookIds=========================",allpriceBookIds)
-
+    const allpriceBookIds = foundProductData.map(obj => obj._id);
     // Check for duplicates and return early if found
     if (allpriceBookIds.length > 0) {
-      const existingData = await dealerPriceService.findByIds(allpriceBookIds);
-      console.log("priceBookIds=========================",existingData)
+      let query ={
+        $and:[
+          { 'priceBook': { $in: allpriceBookIds }},
+          {'dealerId':req.body.dealerId}
+        ]
+      }
+      console.log(query);
+      const existingData = await dealerPriceService.findByIds(query);
       if (existingData.length > 0) {
         return res.send({
           code: constant.errorCode,
-          message: 'Uploaded file should be unique! Duplicasy found. Please check file and upload again',
+          message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
         });
       }
     }
 
     // Map CSV data to a new array with required structure
     const newArray = results.map((obj) => ({
-      priceBook: obj.priceBook,
+      priceBook: '657028a5ea99c1493f53c9b6',
       status: true,
       brokerFee: obj.brokerFee,
       dealerId: req.body.dealerId
     }));
 
-    console.log("newArray=========================",newArray)
 
     // Upload the new data to the dealerPriceService
     const uploaded = await dealerPriceService.uploadPriceBook(newArray);

@@ -84,9 +84,9 @@ module.exports = class dealerPriceService {
 }
 
  // Find By Multiple Ids
- static async findByIds(ids) {
+ static async findByIds(query) {
   try {
-    const response = await dealerPrice.find({ 'priceBook': { $in: ids }}).select('_id');
+    const response = await dealerPrice.find(query).select('_id');
     return response;
   } catch (error) {
     console.log(`Could not delete dealer price ${error}`);
