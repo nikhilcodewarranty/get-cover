@@ -290,15 +290,15 @@ exports.updatePriceBookById = async (req, res, next) => {
 
       res.send({
         code: updateDealerResult.success ? constant.successCode : constant.errorCode,
-        message: updateDealerResult.message,
+        message: updateResult.message,
       });
       return;
     }
 
-    return res.status(500).json({
-      code: constant.errorCode,
-      message: updateResult.message,
-    });
+    // return res.status(500).json({
+    //   code: constant.errorCode,
+    //   message: updateResult.message,
+    // });
 
   } catch (error) {
     res.send({
