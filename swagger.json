@@ -1191,7 +1191,7 @@
             "type": "string"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "number"
           },
           "role":{
             "type": "string"
@@ -1246,7 +1246,7 @@
                   "type": "string"
                 },
                 "phoneNumber": {
-                  "type": "string"
+                  "type": "number"
                 },
                 "isPrimary": {
                   "type": "boolean"
@@ -1276,7 +1276,7 @@
                   "type": "string"
                 },
                 "phoneNumber": {
-                  "type": "string"
+                  "type": "number"
                 },
                 "isPrimary": {
                   "type": "boolean"
@@ -1362,7 +1362,7 @@
                   "type": "string"
                 },
                 "phoneNumber": {
-                  "type": "string"
+                  "type": "number"
                 },
                 "isPrimary": {
                   "type": "boolean"
@@ -1514,7 +1514,7 @@
             "type": "string"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "number"
           },
           "role":{
             "type": "string"
@@ -1563,7 +1563,7 @@
             "type": "string"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "number"
           },
           "roleId": {
             "type": "string"
