@@ -31,12 +31,12 @@ exports.getAllUsers = async (req, res) => {
       })
       return;
     };
-    const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
-    console.log('role+++++++++++++++++++++++++++++++++=',checkRole)
-    let query = {roleId:new mongoose.Types.ObjectId(checkRole?checkRole._id:'000000000000000000000000'),isDeleted:false}
+    const checkRole = await role.findOne({ role: { '$regex': req.params.role } });
+    console.log('role+++++++++++++++++++++++++++++++++=', checkRole)
+    let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
     console.log(query)
-    let projection = {isDeleted:0,__v:0}
-    const users = await userService.getAllUsers(query,projection);
+    let projection = { isDeleted: 0, __v: 0 }
+    const users = await userService.getAllUsers(query, projection);
     if (!users) {
       res.send({
         code: constant.errorCode,
@@ -92,7 +92,7 @@ exports.createUser = async (req, res) => {
 exports.getUserById = async (req, res) => {
   try {
     let projection = { __v: 0, status: 0 }
-    let userId = req.params.userId?req.params.userId:'000000000000000000000000'
+    let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
     const singleUser = await userService.getUserById(userId, projection);
     if (!singleUser) {
       res.send({
@@ -108,8 +108,8 @@ exports.getUserById = async (req, res) => {
     })
   } catch (error) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 };
@@ -220,7 +220,7 @@ exports.createSuperAdmin = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Account created successfully",
-      data:savedUser
+      data: savedUser
     })
   } catch (error) {
     res.send({
@@ -237,7 +237,7 @@ exports.createDealer = async (req, res) => {
 
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
-       res.status(403).json({
+      res.status(403).json({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
@@ -247,7 +247,7 @@ exports.createDealer = async (req, res) => {
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: data.role });
     if (!checkRole) {
-       res.status(400).json({
+      res.status(400).json({
         code: constant.errorCode,
         message: "Invalid role"
       });
@@ -257,7 +257,7 @@ exports.createDealer = async (req, res) => {
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-       res.status(400).json({
+      res.status(400).json({
         code: constant.errorCode,
         message: 'Dealer name already exists',
       });
@@ -273,7 +273,7 @@ exports.createDealer = async (req, res) => {
 
       const primaryUserData = await userService.findByEmail(primaryEmailValues);
       if (primaryUserData.length > 0) {
-         res.status(400).json({
+        res.status(400).json({
           code: constant.errorCode,
           message: 'Email Already Exists',
           data: primaryUserData
@@ -288,7 +288,7 @@ exports.createDealer = async (req, res) => {
 
       const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
       if (!createUsers) {
-         res.status(500).json({
+        res.status(500).json({
           code: constant.errorCode,
           message: "Unable to save users"
         });
@@ -312,7 +312,7 @@ exports.createDealer = async (req, res) => {
     // Create Dealer
     const createMetaData = await dealerService.createDealer(dealerMeta);
     if (!createMetaData) {
-       res.status(500).json({
+      res.status(500).json({
         code: constant.errorCode,
         message: "Something went wrong"
       });
@@ -326,7 +326,7 @@ exports.createDealer = async (req, res) => {
 
       const userData = await userService.findByEmail(emailValues);
       if (userData.length > 0) {
-         res.status(400).json({
+        res.status(400).json({
           code: constant.errorCode,
           message: 'Email Already Exists',
           data: userData
@@ -341,7 +341,7 @@ exports.createDealer = async (req, res) => {
 
       const createUsers = await userService.insertManyUser(resultDealerData);
       if (!createUsers) {
-         res.status(500).json({
+        res.status(500).json({
           code: constant.errorCode,
           message: "Unable to save users"
         });
@@ -359,7 +359,7 @@ exports.createDealer = async (req, res) => {
 
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
       if (!createPriceBook) {
-         res.status(500).json({
+        res.status(500).json({
           code: constant.errorCode,
           message: "Unable to save price book"
         });
@@ -367,7 +367,7 @@ exports.createDealer = async (req, res) => {
       }
     }
 
-     res.status(201).json({
+    res.status(201).json({
       code: constant.successCode,
       message: 'Successfully Created',
       data: createMetaData
@@ -465,7 +465,7 @@ exports.createServiceProvider = async (req, res) => {
     return res.send({
       code: constant.errorCode,
       message: err.message,
-      data:createMetaData
+      data: createMetaData
     });
   }
 };
@@ -482,10 +482,10 @@ exports.login = async (req, res) => {
       })
       return;
     }
-    if(user.status==false){
+    if (user.status == false) {
       res.send({
-        code:constant.errorCode,
-        message:"Account is not approved"
+        code: constant.errorCode,
+        message: "Account is not approved"
       })
       return;
     }
@@ -596,7 +596,7 @@ exports.addRole = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Created Successfully",
-      data:createdUser
+      data: createdUser
     })
   } catch (error) {
     res.send({
@@ -657,6 +657,13 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
+      if (checkEmail.status == false || isDeleted == true) {
+        res.send({
+          code: constant.errorCode,
+          message: "You account is approved yet or blocked by the admin"
+        })
+        return;
+      }
       const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
 
       if (mailing) {
@@ -664,7 +671,7 @@ exports.sendLinkToEmail = async (req, res) => {
         res.send({
           code: constant.successCode,
           message: "Email has been sent",
-          codes:resetPasswordCode
+          codes: resetPasswordCode
         })
       }
     }
