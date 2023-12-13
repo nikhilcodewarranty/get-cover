@@ -401,7 +401,9 @@ exports.uploadPriceBook = async (req, res) => {
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
           priceBook: product._id,
-          name: product.name
+          name: product.name,
+          dealerId: req.body.dealerId,
+          status:true
         }));
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
@@ -439,16 +441,33 @@ exports.uploadPriceBook = async (req, res) => {
 
           }
         }
+
+
+        let newArray1 = results.map((obj) => ({
+          priceBook: obj.priceBook,
+          status: true,
+          brokerFee: obj.brokerFee,
+          dealerId: req.body.dealerId
+        }));
+
+        // Merge brokerFee from newArray into foundProductData based on priceBook
+      const mergedArray = foundProductData.map(foundProduct => ({
+        ...foundProduct,
+        brokerFee: newArray1.find(item => item.priceBook === foundProduct.name)?.brokerFee || foundProduct.brokerFee
+      }));
+
+// console.log(mergedArray);return false;
+   
             // Map CSV data to a new array with required structure
-            let newArray = results.map((obj) => ({
-              priceBook: '6579877f1f67a3830048125f',
-              status: true,
-              brokerFee: obj.brokerFee,
-              dealerId: req.body.dealerId
-            }));
+            // let newArray = results.map((obj) => ({
+            //   priceBook: '6579877f1f67a3830048125f',
+            //   status: true,
+            //   brokerFee: obj.brokerFee,
+            //   dealerId: req.body.dealerId
+            // }));
        
         // Upload the new data to the dealerPriceService
-        const uploaded = await dealerPriceService.uploadPriceBook(newArray);
+        const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
         // Respond with success message and uploaded data
         if (uploaded) {
