@@ -30,10 +30,6 @@ module.exports = class dealerPriceService {
       console.log(error);
     }
   }
-
-
-  
-
   // get dealer price detail with ID
   static async getDealerPriceById(ID,projection) {
     try {
@@ -86,5 +82,16 @@ module.exports = class dealerPriceService {
     console.log(`Could not delete dealer price ${error}`);
   }
 }
+
+ // Find By Multiple Ids
+ static async findByIds(ids) {
+  try {
+    const response = await dealerPrice.find({ 'priceBook': { $in: ids }}).select('_id');
+    return response;
+  } catch (error) {
+    console.log(`Could not delete dealer price ${error}`);
+  }
+}
+
   
 };

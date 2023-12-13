@@ -591,22 +591,42 @@ exports.addRole = async (req, res) => {
 };
 
 // add new terms
-exports.createTerms = async (req, res) => {
 
-  //console.log(req.body);return false;
+exports.createTerms = async (req, res) => {
   try {
-    const createdTerms = await userService.createTerms(req.body);
+    const monthTerms = generateMonthTerms(10); // You can specify the number of months as needed
+
+    console.log(monthTerms);
+
+    const createdTerms = await userService.createTerms(monthTerms);
+
     res.send({
       code: constant.successCode,
       message: "Created Successfully",
-      data:createdTerms
-    })
+      data: createdTerms
+    });
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: "Unable to create the dealer"
-    })
+      message: "Unable to create the terms"
+    });
   }
+};
+
+const generateMonthTerms = (numberOfTerms) => {
+  const monthTerms = [];
+
+  for (let i = 1; i <= numberOfTerms; i++) {
+    const months = i * 12;
+    const monthObject = {
+      terms: `${months} Month`,
+      status: true
+    };
+
+    monthTerms.push(monthObject);
+  }
+
+  return monthTerms;
 };
 
 

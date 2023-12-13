@@ -134,7 +134,7 @@ module.exports = class userService {
     //get all TERMS
     static async getAllTerms(query, projection) {
       try {
-        const allTerms = await terms.find(query, projection).sort({ "createdAt": -1 });
+        const allTerms = await terms.find(query, projection);
         return allTerms;
       } catch (error) {
         console.log(`Could not find role ${error}`);
@@ -155,7 +155,7 @@ module.exports = class userService {
 
   static async createTerms(data) {
     try {
-      const response = await new terms(data).save();
+      const response = await terms.insertMany(data);
       return response;
     } catch (error) {
       console.log(error);

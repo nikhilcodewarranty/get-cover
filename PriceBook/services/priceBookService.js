@@ -138,6 +138,14 @@ module.exports = class priceBookService {
 
   //get Dealer price  Books
 
-  
+    // Find By Name
+    static async findByName(priceBooksName) {
+      try {
+        const response = await priceBook.find({ 'name': { $in: priceBooksName }}).select('_id');
+        return response;
+      } catch (error) {
+        console.log(`Could not fetch price book name ${error}`);
+      }
+    }
 
 };

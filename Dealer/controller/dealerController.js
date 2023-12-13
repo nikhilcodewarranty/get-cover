@@ -2,11 +2,15 @@ const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const dealerPriceService = require("../services/dealerPriceService");
+const priceBookService = require("../../PriceBook/services/priceBookService");
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
 const mongoose = require('mongoose');
+const fs = require('fs');
+
+// Promisify fs.createReadStream for asynchronous file reading
 
 const csvParser = require('csv-parser');
 
@@ -367,43 +371,122 @@ exports.getAllDealerPriceBooks = async (req, res) => {
     })
   }
 }
+// exports.uploadPriceBook = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).send('No file uploaded.');
+//     }
+//      // Use csv-parser to parse CSV file
+//     const results = [];
+//     let priceBookName = [];
+//     let allpriceBookIds = [];
+//     require('fs')
+//       .createReadStream(req.file.path)
+//       .pipe(csvParser())
+//       .on('data', (data) => results.push(data))
+//       .on('end', async () => { 
+//          priceBookName = results.map(obj => obj.priceBook);  
+//          //check name is exist in table and get data only ids
+//          let priceBookIds = await priceBookService.findByName(priceBookName)
+//          allpriceBookIds = priceBookIds.map(obj => obj._id); 
+//          //console.log(allpriceBookIds);return false; 
+//         //check id  is exist in table and get data only ids
+//           const existingData = await dealerPriceService.findByIds(allpriceBookIds)
+//           if(existingData){
+//             return res.send({
+//               code: constant.successCode,
+//               message: 'Uploaded files should be unique! Duplicasy found. Please check file and upload again',
+//             });
+//          }
+//         const newArray = results.map((obj) => ({
+//             priceBook: obj.priceBook,
+//             status: obj.status=='TRUE' ? true :false,
+//             brokerFee: obj.brokerFee,
+//             dealerId: req.body.dealerId
+//           }));
+//         const uploaded = await dealerPriceService.uploadPriceBook(newArray)
+//         if (uploaded) {
+//           return res.send({
+//             code: constant.successCode,
+//             message: 'Success',
+//             data:uploaded
+//           });
+//         }
+      
+//       });
+//   } catch (err) {
+//     res.send({
+//       code: constant.errorCode,
+//       message: err.message
+//     })
+//   }
+// }
+
+
 exports.uploadPriceBook = async (req, res) => {
   try {
+    // Check if a file is uploaded
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
-     // Use csv-parser to parse CSV file
-    const results = [];
+       const results = [];
+        let priceBookName = [];
+        let allpriceBookIds = [];
+    // Use async/await for cleaner CSV parsing
     require('fs')
       .createReadStream(req.file.path)
       .pipe(csvParser())
       .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        // Use map to extract specific fields from each object
-          const newArray = results.map((obj) => ({
-            priceBook: obj.priceBook,
-            status: obj.status=='TRUE' ? true :false,
-            brokerFee: obj.brokerFee,
-            dealerId: req.body.dealerId
-          }));
-        const uploaded = await dealerPriceService.uploadPriceBook(newArray)
-        if (uploaded) {
-          return res.send({
-            code: constant.successCode,
-            message: 'Success',
-            data:uploaded
-          });
-        }
-      
+      .on('end', async () => { 
+    // Extract priceBook names from results
+    const priceBookName = results.map(obj => obj.priceBook);
+    //console.log(priceBookName);return false;
+    // Find priceBookIds based on names
+    const priceBookIds = await priceBookService.findByName(priceBookName);
+
+    // Extract _id values from priceBookIds
+    const allpriceBookIds = priceBookIds.map(obj => obj._id);
+
+    // Check for duplicates and return early if found
+    if (allpriceBookIds.length > 0) {
+      const existingData = await dealerPriceService.findByIds(allpriceBookIds);
+
+      if (existingData.length > 0) {
+        return res.send({
+          code: constant.successCode,
+          message: 'Uploaded files should be unique! Duplicasy found. Please check file and upload again',
+        });
+      }
+    }
+
+    // Map CSV data to a new array with required structure
+    const newArray = results.map((obj) => ({
+      priceBook: obj.priceBook,
+      status: obj.status === 'TRUE',
+      brokerFee: obj.brokerFee,
+      dealerId: req.body.dealerId
+    }));
+
+    // Upload the new data to the dealerPriceService
+    const uploaded = await dealerPriceService.uploadPriceBook(newArray);
+
+    // Respond with success message and uploaded data
+    if (uploaded) {
+      return res.send({
+        code: constant.successCode,
+        message: 'Success',
+        data: uploaded
       });
-  } catch (err) {
+    }
+  });
+} catch (err) {
+    // Handle errors and respond with an error message
     res.send({
       code: constant.errorCode,
       message: err.message
-    })
+    });
   }
-}
-
+};
 
 
 
