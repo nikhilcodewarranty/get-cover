@@ -19,7 +19,7 @@ const dealarSchema = new mongoose.Schema({
     default:false
   },
   zip: {
-    type: String,
+    type: Number,
     default:''
   },
   state: {
