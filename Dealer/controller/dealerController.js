@@ -367,6 +367,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
     })
   }
 }
+
 exports.uploadPriceBook = async (req, res) => {
   try {
     if (!req.file) {
@@ -403,6 +404,19 @@ exports.uploadPriceBook = async (req, res) => {
     })
   }
 }
+
+exports.createDealerPriceBook = async(req,res)=>{
+  try{
+    let data = req.body
+    
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
 
 
 
