@@ -392,7 +392,12 @@ exports.uploadPriceBook = async (req, res) => {
     //console.log(priceBookName);return false;
     // Find priceBookIds based on names
     const priceBookIds = await priceBookService.findByName(priceBookName);
-
+    if (priceBookIds.length == 0) {
+      return res.send({
+        code: constant.errorCode,
+        message: 'Product name is not exist. Please uploads the products and then try again',
+      });
+    }
     // Extract _id values from priceBookIds
     const allpriceBookIds = priceBookIds.map(obj => obj._id);
 
@@ -402,7 +407,7 @@ exports.uploadPriceBook = async (req, res) => {
 
       if (existingData.length > 0) {
         return res.send({
-          code: constant.successCode,
+          code: constant.errorCode,
           message: 'Uploaded file should be unique! Duplicasy found. Please check file and upload again',
         });
       }
