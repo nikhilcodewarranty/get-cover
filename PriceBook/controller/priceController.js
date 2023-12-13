@@ -541,9 +541,9 @@ const updatePriceBookCategory = async (catId, newData) => {
 
   const newValue = {
     $set: {
-      name: newData.name || existingCat.name,
-      description: newData.description || existingCat.description,
-      status: newData.status || existingCat.status
+      name: newData.name ? newData.name: existingCat.name,
+      description: newData.description ? newData.description : existingCat.description,
+      status: newData.status
     }
   };
   const criteria = { _id: { $in: catId } }
