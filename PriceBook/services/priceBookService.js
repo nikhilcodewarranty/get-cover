@@ -93,6 +93,7 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
+  
   //get price category by name service
   static async getPriceCatByName(name, projection) {
     try {

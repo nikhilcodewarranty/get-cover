@@ -107,9 +107,10 @@ exports.getUserById = async (req, res) => {
       result: singleUser
     })
   } catch (error) {
-    res
-      .status(userResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
   }
 };
 
@@ -229,7 +230,7 @@ exports.createSuperAdmin = async (req, res) => {
   }
 };
 
-//---------------------------create a new dealer from SA 
+//create a new dealer from SA 
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
@@ -379,7 +380,6 @@ exports.createDealer = async (req, res) => {
     });
   }
 };
-
 
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
@@ -607,7 +607,6 @@ exports.addRole = async (req, res) => {
 };
 
 // add new terms
-
 exports.createTerms = async (req, res) => {
   try {
     const monthTerms = generateMonthTerms(10); // You can specify the number of months as needed
@@ -629,6 +628,7 @@ exports.createTerms = async (req, res) => {
   }
 };
 
+//generate monthly terms
 const generateMonthTerms = (numberOfTerms) => {
   const monthTerms = [];
 
@@ -645,6 +645,7 @@ const generateMonthTerms = (numberOfTerms) => {
   return monthTerms;
 };
 
+//send reset password link to email
 exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
@@ -656,7 +657,8 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      const mailing = sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
+      const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
+
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
         res.send({
@@ -674,6 +676,7 @@ exports.sendLinkToEmail = async (req, res) => {
   }
 }
 
+//reset password with link
 exports.resetPassword = async (req, res) => {
   try {
     let data = req.body
