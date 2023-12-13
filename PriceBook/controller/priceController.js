@@ -329,7 +329,7 @@ const updatePriceBookStatus = async (priceId, newData) => {
       reinsuranceFee: newData.reinsuranceFee || existingPriceBook.reinsuranceFee,
       adminFee: newData.adminFee || existingPriceBook.adminFee,
       category: newData.category || existingPriceBook.category,
-      description: newData.description || existingPriceBook.status,
+      description: newData.description || existingPriceBook.description,
     }
   };
   const statusCreateria = { _id: { $in: [priceId] } }
