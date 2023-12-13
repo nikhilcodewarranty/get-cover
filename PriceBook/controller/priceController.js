@@ -421,22 +421,25 @@ exports.createPriceBookCat = async (req, res) => {
   try {
     // Ensure the user has the required role
     if (req.role !== 'Super Admin') {
-      return res.status(403).json({
+      res.send({
         code: constant.errorCode,
-        message: 'Only super admin is allowed to perform this action'
-      });
+        message: "Only super admin allow to do this action"
+      })
+      return;
     }
+
     const data = req.body;
     // Check if the category already exists
     const existingCategory = await priceBookService.getPriceCatByName({ name: data.name }, { isDeleted: 0, __v: 0 });
     if (existingCategory) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
-        message: 'Category name already exists'
-      });
+        message: "Category already exist"
+      })
+      return;
     }
-    let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false }
+   
+
     // Check Total Counts
     const count = await priceBookService.getTotalCount();
     const catData = {
@@ -444,17 +447,19 @@ exports.createPriceBookCat = async (req, res) => {
       description: data.description,
       unique_key: parseInt(count) + 1
     };
+
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
     if (!createdCategory) {
-      return res.status(500).json({
+      res.send({
         code: constant.errorCode,
         message: 'Unable to create the price category'
       });
+      return;
     }
 
     // Return success response
-    res.status(201).json({
+    res.send({
       code: constant.successCode,
       message: 'Created Successfully',
       data: createdCategory
@@ -462,7 +467,7 @@ exports.createPriceBookCat = async (req, res) => {
 
   } catch (err) {
     // Handle unexpected errors
-    res.status(500).json({
+    res.send({
       code: constant.errorCode,
       message: err.message
     });
@@ -479,8 +484,8 @@ exports.getPriceBookCat = async (req, res) => {
       })
       return;
     }
+
     let projection = { isDeleted: 0, __v: 0 }
-    // let query = { isDeleted: false }
     let query = {
       $and: [
         { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
@@ -576,8 +581,10 @@ const checkObjectId = async (Id) => {
     return false;
   }
 }
+
 // Function to check if the user is a Super Admin
 const isSuperAdmin = (role) => role === "Super Admin";
+
 // Exported function to update price book category
 exports.updatePriceBookCat = async (req, res) => {
   try {
@@ -725,11 +732,12 @@ exports.getPriceBookByCategory = async (req, res) => {
   }
 }
 
+//
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body
     let checkPriceBook = await priceBookService.getPriceBookById({ name: req.params.name }, {})
-    console.log('checkPriceBook==================',checkPriceBook);
+    console.log('checkPriceBook==================', checkPriceBook);
     if (!checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -738,7 +746,7 @@ exports.getCategoryByPriceBook = async (req, res) => {
       return;
     }
     let getCategoryDetail = await priceBookService.getPriceCatByName({ _id: checkPriceBook.category }, {})
-    console.log('getCategoryDetail=======================',getCategoryDetail)
+    console.log('getCategoryDetail=======================', getCategoryDetail)
     if (!getCategoryDetail) {
       res.send({
         code: constant.errorCode,

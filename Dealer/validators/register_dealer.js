@@ -9,9 +9,9 @@ const register_dealer_validation = Joi.object({
     email:Joi.string().email().required(),
     firstName:Joi.string().required(),
     lastName:Joi.string().required(),
-    phoneNumber:Joi.string().min(4).max(16).required(),
+    phoneNumber:Joi.number().min(4).max(16).required(),
     role:Joi.string().required(),
-    
+
 })
 
 module.exports = register_dealer_validation

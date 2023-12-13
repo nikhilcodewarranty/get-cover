@@ -473,6 +473,13 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    if(user.status==false){
+      res.send({
+        code:constant.errorCode,
+        message:"Account is not approved"
+      })
+      return;
+    }
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
@@ -632,7 +639,6 @@ const generateMonthTerms = (numberOfTerms) => {
 exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
-    console.log(data)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkEmail = await userService.findOneUser({ email: data.email })
     if (!checkEmail) {
