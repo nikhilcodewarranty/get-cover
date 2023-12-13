@@ -7,7 +7,7 @@ const validator = require('../config/validation');
 const dealerController = require("../controller/dealerController"); // dealer controller 
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const upload = multer({ dest: 'uploads/' });
-router.post("/register",dealerController.registerDealer)
+router.post("/register",validator('register_dealer'),dealerController.registerDealer)
 router.post("/uploadsDealerPriceBook",[verifyToken],upload.single('file'),dealerController.uploadPriceBook)
 
 //--------------- get api's endpoints ---------------------------//
