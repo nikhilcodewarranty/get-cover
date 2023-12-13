@@ -5,9 +5,9 @@ const priceController = require("../controller/priceController"); // price contr
 const {verifyToken} = require('../../middleware/auth') // authentication with jwt as middleware
 
 // price book api's
+router.post("/createPriceBook",[verifyToken],validator('create_price_validation'),priceController.createPriceBook); // create price book with defined price category ID
 router.get("/getPriceBookById/:priceBookId",[verifyToken],priceController.getPriceBookById); //get price book detail with ID
 router.post("/priceBooks",[verifyToken],priceController.getAllPriceBooks); //get price books api
-router.post("/createPriceBook",[verifyToken],validator('create_price_validation'),priceController.createPriceBook); // create price book with defined price category ID
 router.post("/searchPriceBook",[verifyToken],validator('search_price_book_validation'),priceController.searchPriceBook); // search price book with defined price category ID
 //router.put("/updatePriceBook/:priceId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBook); // update price book detail with ID
 router.put("/updatePriceBook/:priceId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBookById); // update price book detail with ID
