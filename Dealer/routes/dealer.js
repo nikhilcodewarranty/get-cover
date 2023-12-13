@@ -17,7 +17,7 @@ router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceB
 
 router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],validator('update_dealer_price_validation'),dealerController.statusUpdate); // update price book detail with ID
 
-
+router.post("/createDealerPriceBook",[verifyToken],validator('create_dealer_price_book_validation'),dealerController.createDealerPriceBook)
 
 
 module.exports = router;
