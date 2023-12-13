@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:3002",
+    "host": "15.207.221.207:3002",
     "basePath": "/api-v1",
     "schemes": [  
       "http",
@@ -488,6 +488,7 @@
           }
         }        
       },
+      
       "/dealer/dealerPriceBooks": {
         "get": {
           "security": [ { "Bearer": [] } ],
@@ -540,6 +541,70 @@
           }
         }
       }, 
+      "/price/getPriceBookByCategory/{categoryName}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book",
+          "parameters": [
+            {
+              "name": "categoryName",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleName",  
+              "description": "Name of the category"
+            }
+          ],  
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+
+      "/price/getCategoryByPriceBook/{name}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single Price Book",
+          "parameters": [
+            {
+              "name": "name",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleName",  
+              "description": "Name of the price book"
+            }
+          ],  
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      }, 
+      
      
       "/price/createPriceBook":{
         "post":{
