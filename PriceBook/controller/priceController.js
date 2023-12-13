@@ -323,7 +323,7 @@ const updatePriceBookStatus = async (priceId, newData) => {
 
   const newValue = {
     $set: {
-      status: newData.status || existingPriceBook.status,
+      status: newData.status,
       frontingFee: newData.frontingFee || existingPriceBook.frontingFee,
       reserveFutureFee: newData.reserveFutureFee || existingPriceBook.reserveFutureFee,
       reinsuranceFee: newData.reinsuranceFee || existingPriceBook.reinsuranceFee,
@@ -638,9 +638,6 @@ exports.updatePriceBookCat = async (req, res) => {
         message: updateCatResult.message
       });
     }
-
-
-
     return;
 
   } catch (err) {
