@@ -828,6 +828,52 @@
           }
         }
       },
+      "/dealer/createDealerPriceBook": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Create Dealer Price Book",
+          "parameters": [
+            {
+              "name": "Create Dealer Price Book",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "dealerId": {
+                    "type": "number"
+                  },
+                  "priceBook": {
+                    "type": "string"
+                  },
+                  "retailPrice": {
+                    "type": "number"
+                  },
+                  "status": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
       "/dealer/uploadsDealerPriceBook": {
         "post": {
           "security": [ { "Bearer": [] } ],

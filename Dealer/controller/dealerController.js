@@ -207,6 +207,14 @@ exports.registerDealer = async (req, res) => {
         message: 'Dealer name already exists',
       });
     }
+      // Check if the email already exists
+     const existingUser = await userService.findOneUser({ email: data.email });
+        if (existingUser) {
+          return res.status(400).json({
+            code: constant.errorCode,
+            message: 'Email already exists',
+          });
+        }
 
     // Extract necessary data for dealer creation
     const dealerMeta = {
@@ -227,14 +235,7 @@ exports.registerDealer = async (req, res) => {
       });
     }
 
-    // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: data.email });
-    if (existingUser) {
-      return res.status(400).json({
-        code: constant.errorCode,
-        message: 'Email already exists',
-      });
-    }
+
 
     // Create user metadata
     const userMetaData = {
