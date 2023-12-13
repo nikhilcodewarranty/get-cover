@@ -261,10 +261,11 @@ exports.registerDealer = async (req, res) => {
       return
     }
   } catch (err) {
-    return res.status(500).json({
+     res.send({
       code: constant.errorCode,
       message: err.message,
     });
+    return;
   }
 };
 
