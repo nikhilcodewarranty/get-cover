@@ -742,7 +742,7 @@ exports.getCategoryByPriceBook = async (req, res) => {
     if (!getCategoryDetail) {
       res.send({
         code: constant.errorCode,
-        message: err.message
+        message: "Category not found"
       })
       return;
     }
