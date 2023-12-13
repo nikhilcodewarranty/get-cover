@@ -398,13 +398,16 @@ exports.uploadPriceBook = async (req, res) => {
         message: 'Product name is not exist. Please uploads the products and then try again',
       });
     }
+
+    console.log("priceBookIds=========================",priceBookIds)
     // Extract _id values from priceBookIds
     const allpriceBookIds = priceBookIds.map(obj => obj._id);
+    console.log("allpriceBookIds=========================",allpriceBookIds)
 
     // Check for duplicates and return early if found
     if (allpriceBookIds.length > 0) {
       const existingData = await dealerPriceService.findByIds(allpriceBookIds);
-
+      console.log("priceBookIds=========================",existingData)
       if (existingData.length > 0) {
         return res.send({
           code: constant.errorCode,
@@ -420,6 +423,8 @@ exports.uploadPriceBook = async (req, res) => {
       brokerFee: obj.brokerFee,
       dealerId: req.body.dealerId
     }));
+
+    console.log("newArray=========================",newArray)
 
     // Upload the new data to the dealerPriceService
     const uploaded = await dealerPriceService.uploadPriceBook(newArray);
@@ -441,6 +446,38 @@ exports.uploadPriceBook = async (req, res) => {
     });
   }
 };
+
+exports.createDealerPriceBook = async(req,res)=>{
+  try{
+    let data = req.body
+    let checkPriceBook = await dealerPriceService.getDealerPriceById({priceBook:data.priceBook,dealerId:data.dealerId},{})
+    if(checkPriceBook){
+      res.send({
+        code:constant.errorCode,
+        message:"Dealer price book alreadt create with this price book"
+      })
+      return;
+    }
+    let createDealerPrice = await dealerPriceService.createDealerPrice(data)
+    if(!createDealerPrice){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to create the dealer price book"
+      })
+    }else{
+      res.send({
+        code:constant.successCode,
+        message:"Success",
+        result:createDealerPrice
+      })
+    }
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 
