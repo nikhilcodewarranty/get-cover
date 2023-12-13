@@ -15,12 +15,12 @@ const fs = require('fs');
 const csvParser = require('csv-parser');
 
 const checkObjectId = async (Id) => {
-    // Check if the potentialObjectId is a valid ObjectId
-if (mongoose.Types.ObjectId.isValid(Id)) {
-  return true;
-} else {
-  return false;
- }
+  // Check if the potentialObjectId is a valid ObjectId
+  if (mongoose.Types.ObjectId.isValid(Id)) {
+    return true;
+  } else {
+    return false;
+  }
 }
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
@@ -191,30 +191,34 @@ exports.registerDealer = async (req, res) => {
     const data = req.body;
 
     // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
+    // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+    const checkRole = await role.findOne({ 'role': { '$regex': data.role, '$options': 'i' } });
     if (!checkRole) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
-        message: 'Invalid role',
-      });
+        message: "Invalid role"
+      })
+      return;
     }
 
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
-        message: 'Dealer name already exists',
-      });
+        message: "Dealer already exist with this name"
+      })
+      return;
     }
-      // Check if the email already exists
-     const existingUser = await userService.findOneUser({ email: data.email });
-        if (existingUser) {
-          return res.status(400).json({
-            code: constant.errorCode,
-            message: 'Email already exists',
-          });
-        }
+    // Check if the email already exists
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer already exist with this email"
+      })
+      return;
+    }
 
     // Extract necessary data for dealer creation
     const dealerMeta = {
@@ -229,13 +233,12 @@ exports.registerDealer = async (req, res) => {
     // Register the dealer
     const createdDealer = await dealerService.registerDealer(dealerMeta);
     if (!createdDealer) {
-      return res.status(500).json({
+      res.send({
         code: constant.errorCode,
-        message: 'Unable to create dealer account',
-      });
+        message: "Unbale to create the dealer"
+      })
+      return;
     }
-
-
 
     // Create user metadata
     const userMetaData = {
@@ -250,11 +253,12 @@ exports.registerDealer = async (req, res) => {
     // Create the user
     const createdUser = await userService.createUser(userMetaData);
     if (createdUser) {
-      return res.status(201).json({
+       res.send({
         code: constant.successCode,
         message: 'Success',
         data: createdUser,
       });
+      return
     }
   } catch (err) {
     return res.status(500).json({
@@ -351,7 +355,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
       return;
     }
     let projection = { isDeleted: 0, __v: 0 }
-    let query = {isDeleted: false }
+    let query = { isDeleted: false }
     let getDealerPrice = await dealerPriceService.getAllDealerPrice(query, projection)
     if (!getDealerPrice) {
       res.send({
@@ -379,84 +383,84 @@ exports.uploadPriceBook = async (req, res) => {
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
-       const results = [];
-        let priceBookName = [];
-        let allpriceBookIds = [];
+    const results = [];
+    let priceBookName = [];
+    let allpriceBookIds = [];
     // Use async/await for cleaner CSV parsing
     require('fs')
       .createReadStream(req.file.path)
       .pipe(csvParser())
       .on('data', (data) => results.push(data))
-      .on('end', async () => { 
-    // Extract priceBook names from results
-    const priceBookName = results.map(obj => obj.priceBook);
-   
-    const foundProducts = await priceBookService.findByName(priceBookName);
-  
-    // Extract the names and ids of found products
-    const foundProductData = foundProducts.map(product => ({
-      _id: product._id,
-      name: product.name
-    }));
+      .on('end', async () => {
+        // Extract priceBook names from results
+        const priceBookName = results.map(obj => obj.priceBook);
 
-     const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
-    //  return;
-     if (missingProductNames.length > 0) {
-      return res.status(400).json({
-        code: constant.errorCode,
-        message: 'Some product names do not match.',
-        missingProductNames: missingProductNames
+        const foundProducts = await priceBookService.findByName(priceBookName);
+
+        // Extract the names and ids of found products
+        const foundProductData = foundProducts.map(product => ({
+          _id: product._id,
+          name: product.name
+        }));
+
+        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
+        //  return;
+        if (missingProductNames.length > 0) {
+          return res.status(400).json({
+            code: constant.errorCode,
+            message: 'Some product names do not match.',
+            missingProductNames: missingProductNames
+          });
+        }
+
+        if (foundProducts.length == 0) {
+          return res.send({
+            code: constant.errorCode,
+            message: 'Product name is not exist. Please uploads the products and then try again',
+          });
+        }
+        // Extract _id values from priceBookIds
+        const allpriceBookIds = foundProductData.map(obj => obj._id);
+        // Check for duplicates and return early if found
+        if (allpriceBookIds.length > 0) {
+          let query = {
+            $and: [
+              { 'priceBook': { $in: allpriceBookIds } },
+              { 'dealerId': req.body.dealerId }
+            ]
+          }
+          console.log(query);
+          const existingData = await dealerPriceService.findByIds(query);
+          if (existingData.length > 0) {
+            return res.send({
+              code: constant.errorCode,
+              message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
+            });
+          }
+        }
+
+        // Map CSV data to a new array with required structure
+        const newArray = results.map((obj) => ({
+          priceBook: '657028a5ea99c1493f53c9b6',
+          status: true,
+          brokerFee: obj.brokerFee,
+          dealerId: req.body.dealerId
+        }));
+
+
+        // Upload the new data to the dealerPriceService
+        const uploaded = await dealerPriceService.uploadPriceBook(newArray);
+
+        // Respond with success message and uploaded data
+        if (uploaded) {
+          return res.send({
+            code: constant.successCode,
+            message: 'Success',
+            data: uploaded
+          });
+        }
       });
-    }
-
-    if (foundProducts.length == 0) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Product name is not exist. Please uploads the products and then try again',
-      });
-    }
-    // Extract _id values from priceBookIds
-    const allpriceBookIds = foundProductData.map(obj => obj._id);
-    // Check for duplicates and return early if found
-    if (allpriceBookIds.length > 0) {
-      let query ={
-        $and:[
-          { 'priceBook': { $in: allpriceBookIds }},
-          {'dealerId':req.body.dealerId}
-        ]
-      }
-      console.log(query);
-      const existingData = await dealerPriceService.findByIds(query);
-      if (existingData.length > 0) {
-        return res.send({
-          code: constant.errorCode,
-          message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
-        });
-      }
-    }
-
-    // Map CSV data to a new array with required structure
-    const newArray = results.map((obj) => ({
-      priceBook: '657028a5ea99c1493f53c9b6',
-      status: true,
-      brokerFee: obj.brokerFee,
-      dealerId: req.body.dealerId
-    }));
-
-
-    // Upload the new data to the dealerPriceService
-    const uploaded = await dealerPriceService.uploadPriceBook(newArray);
-
-    // Respond with success message and uploaded data
-    if (uploaded) {
-      return res.send({
-        code: constant.successCode,
-        message: 'Success',
-        data: uploaded
-      });
-    }
-  });
-} catch (err) {
+  } catch (err) {
     // Handle errors and respond with an error message
     res.send({
       code: constant.errorCode,
@@ -465,34 +469,34 @@ exports.uploadPriceBook = async (req, res) => {
   }
 };
 
-exports.createDealerPriceBook = async(req,res)=>{
-  try{
+exports.createDealerPriceBook = async (req, res) => {
+  try {
     let data = req.body
-    let checkPriceBook = await dealerPriceService.getDealerPriceById({priceBook:data.priceBook,dealerId:data.dealerId},{})
-    if(checkPriceBook){
+    let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
+    if (checkPriceBook) {
       res.send({
-        code:constant.errorCode,
-        message:"Dealer price book alreadt create with this price book"
+        code: constant.errorCode,
+        message: "Dealer price book alreadt create with this price book"
       })
       return;
     }
     let createDealerPrice = await dealerPriceService.createDealerPrice(data)
-    if(!createDealerPrice){
+    if (!createDealerPrice) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to create the dealer price book"
+        code: constant.errorCode,
+        message: "Unable to create the dealer price book"
       })
-    }else{
+    } else {
       res.send({
-        code:constant.successCode,
-        message:"Success",
-        result:createDealerPrice
+        code: constant.successCode,
+        message: "Success",
+        result: createDealerPrice
       })
     }
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }

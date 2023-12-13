@@ -629,8 +629,6 @@ const generateMonthTerms = (numberOfTerms) => {
   return monthTerms;
 };
 
-
-
 exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
