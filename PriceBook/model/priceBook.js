@@ -14,6 +14,9 @@ const priceSchema = new mongoose.Schema({
   frontingFee: {
     type: Number,
   },
+  unique_key:{
+    type: Number,
+  },
   reserveFutureFee: {
     type: Number,
     default: ''

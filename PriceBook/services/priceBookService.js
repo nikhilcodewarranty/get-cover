@@ -23,6 +23,16 @@ module.exports = class priceBookService {
       const count = await priceCategory.countDocuments();
       return count;
     } catch (error) {
+      console.log(`Could not fetch price book category${error}`);
+    }
+  }
+
+
+  static async getPriceBookCount() {
+    try {
+      const count = await priceCategory.countDocuments();
+      return count;
+    } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }

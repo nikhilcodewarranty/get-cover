@@ -77,6 +77,8 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
+
+    const count = await priceBookService.getPriceBookCount();
     // price book data 
     let priceBookData = {
       name: data.name,
@@ -87,7 +89,8 @@ exports.createPriceBook = async (req, res, next) => {
       adminFee: data.adminFee,
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
-      status: data.status
+      status: data.status,
+      unique_key:parseInt(count)+1
     }
 
     let checkPriceBook = await priceBookService.getPriceBookById({ name: {'$regex':data.name} }, {})
