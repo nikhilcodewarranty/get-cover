@@ -153,6 +153,14 @@ exports.getPriceBookById = async (req, res, next) => {
 exports.updatePriceBook = async (req, res, next) => {
   try {
     let data = req.body
+    if (req.role !== 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
     let criteria = { _id: req.params.priceId }
     if (data.priceCatId) {
       let checkCat = await priceBookService.getPrice({ _id: data.priceCatId })
@@ -237,36 +245,40 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     // Check if the user is a Super Admin
     if (!isSuperAdmin(role)) {
-      return res.status(403).json({
+      res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
+      return;
     }
 
     // Check if the request body is empty
     if (Object.keys(body).length === 0) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: "Content cannot be empty"
       });
+      return;
     }
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceId);
     if (!isValidPriceId) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: "Invalid Price Book Id format"
       });
+      return;
     }
 
     // Check if the category is a valid ObjectId
     const isValidCategory = await checkObjectId(body.category);
     if (!isValidCategory) {
-      return res.status(400).json({
+      res.send({
         code: constant.errorCode,
         message: "Invalid Category Id format"
       });
+      return
     }
 
     // Update Price Book Status
@@ -276,10 +288,11 @@ exports.updatePriceBookById = async (req, res, next) => {
       // Update Dealer Price Book Status
       const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
 
-      return res.status(updateDealerResult.success ? 200 : 500).json({
+      res.send({
         code: updateDealerResult.success ? constant.successCode : constant.errorCode,
         message: updateDealerResult.message,
       });
+      return;
     }
 
     return res.status(500).json({
@@ -412,9 +425,7 @@ exports.searchPriceBook = async (req, res, next) => {
   };
 };
 
-
 //----------------- price categories api's --------------------------//
-
 
 // create price category api's
 exports.createPriceBookCat = async (req, res) => {
@@ -438,7 +449,7 @@ exports.createPriceBookCat = async (req, res) => {
       })
       return;
     }
-   
+
 
     // Check Total Counts
     const count = await priceBookService.getTotalCount();
