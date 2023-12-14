@@ -31,7 +31,7 @@ exports.getAllUsers = async (req, res) => {
       })
       return;
     };
-    const checkRole = await role.findOne({ role: { '$regex': req.params.role } });
+    const checkRole = await role.findOne({ role: { '$regex': req.params.role ,'$options': 'i'} });
     console.log('role+++++++++++++++++++++++++++++++++=', checkRole)
     let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
     console.log(query)
@@ -662,13 +662,13 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      if (checkEmail.status == false || isDeleted == true) {
-        res.send({
-          code: constant.errorCode,
-          message: "You account is approved yet or blocked by the admin"
-        })
-        return;
-      }
+      // if (checkEmail.status == false || isDeleted == true) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: "You account is approved yet or blocked by the admin"
+      //   })
+      //   return;
+      // }
       const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
 
       if (mailing) {

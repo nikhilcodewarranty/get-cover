@@ -13,6 +13,7 @@ const fs = require('fs');
 // Promisify fs.createReadStream for asynchronous file reading
 
 const csvParser = require('csv-parser');
+const { id } = require('../validators/register_dealer');
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
@@ -499,6 +500,21 @@ exports.uploadPriceBook = async (req, res) => {
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
+    let checkDealer = await dealerService.getDealerById(data.dealerId)
+    if(!checkDealer){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid driver"
+      })
+      return;
+    }
+    if(checkDealer.status == "Pending"){
+      res.send({
+        code:constant.errorCode,
+        message:"Account not approved yet"
+      })
+      return;
+    }
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
     if (checkPriceBook) {
       res.send({
