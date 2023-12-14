@@ -59,6 +59,7 @@
       },
       "/user/getAllTerms": {
         "get": {
+          "security": [ { "Bearer": [] } ],
           "tags": ["Users"],
           "summary": "Get all terms",
           "responses": {
@@ -778,7 +779,7 @@
                 "type": "object",
                 "properties": {
                   "dealerId": {
-                    "type": "number"
+                    "type": "string"
                   },
                   "priceBook": {
                     "type": "string"

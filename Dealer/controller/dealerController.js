@@ -407,7 +407,6 @@ exports.uploadPriceBook = async (req, res) => {
         const priceBookName = results.map(obj => obj.priceBook);
 
         const foundProducts = await priceBookService.findByName(priceBookName);
-
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
           priceBook: product._id,
