@@ -4,30 +4,26 @@ const priceCategory = require("../model/priceCategory");
 module.exports = class priceBookService {
 
   //get all price book 
-  static async getAllPriceBook(query, projection,limit,page) {
+  static async getAllPriceBook(query, projection, limit, page) {
     try {
-      
-      const allPriceBook = await priceBook.find(query, projection)
-      .populate({
-        path: 'category',
-        select: 'name status' // Specify the fields you want to retrieve from the 'category' collection
-      }).sort({'createdAt':-1}).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
+
+      const allPriceBook = await priceBook.find(query, projection).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }
 
-   //get all active price book 
-   static async getAllActivePriceBook(query, projection) {
+  //get all active price book 
+  static async getAllActivePriceBook(query, projection) {
     try {
-      
+
       const allPriceBook = await priceBook.find(query, projection)
-      .populate({
-        path: 'category',
-        select: 'name', // Specify the fields you want to retrieve from the 'category' collection
-        as:"data"
-      }).sort({'createdAt':-1});
+        .populate({
+          path: 'category',
+          select: 'name', // Specify the fields you want to retrieve from the 'category' collection
+          as: "data"
+        }).sort({ 'createdAt': -1 });
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
@@ -52,7 +48,7 @@ module.exports = class priceBookService {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-  
+
 
   //create new price book
   static async createPriceBook(data) {
@@ -118,7 +114,7 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
-  
+
   //get price category by name service
   static async getPriceCatByName(name, projection) {
     try {
@@ -128,7 +124,7 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
-  
+
   //create price category  service
   static async createPriceCat(data) {
     try {
@@ -142,7 +138,7 @@ module.exports = class priceBookService {
   //get price categories service
   static async getAllPriceCat(query, projection) {
     try {
-      const allPriceCategories = await priceCategory.find(query, projection).sort({"createdAt":-1});
+      const allPriceCategories = await priceCategory.find(query, projection).sort({ "createdAt": -1 });
       return allPriceCategories;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);
@@ -165,14 +161,14 @@ module.exports = class priceBookService {
 
   //get Dealer price  Books
 
-    // Find By Name
-    static async findByName(priceBooksName) {
-      try {
-        const response = await priceBook.find({ 'name': { $in: priceBooksName }}).select('_id name');
-        return response;
-      } catch (error) {
-        console.log(`Could not fetch price book name ${error}`);
-      }
+  // Find By Name
+  static async findByName(priceBooksName) {
+    try {
+      const response = await priceBook.find({ 'name': { $in: priceBooksName } }).select('_id name');
+      return response;
+    } catch (error) {
+      console.log(`Could not fetch price book name ${error}`);
     }
+  }
 
 };

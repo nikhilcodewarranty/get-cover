@@ -11,6 +11,7 @@ const mongoose = require('mongoose');
 //get all price books
 exports.getAllPriceBooks = async (req, res, next) => {
   try {
+    let data = req.body
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -21,13 +22,27 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
-    let query = {
-      $and: [
-        { isDeleted: false },
-        { 'name': { '$regex': searchName, '$options': 'i' } },
-        { 'category': { $in: catIdsArray } }
-      ]
-    };
+    let query;
+    if (data.status) {
+      query = {
+        $and: [
+          { isDeleted: false },
+          { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'status': data.status },
+          { 'category': { $in: catIdsArray } }
+        ]
+      };
+    } else {
+      query = {
+        $and: [
+          { isDeleted: false },
+          { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'category': { $in: catIdsArray } }
+        ]
+      };
+    }
+
+
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
@@ -38,7 +53,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-    const priceBooks = await priceBookService.getAllPriceBook(query, projection,limit,page);
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection, limit, page);
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -60,8 +75,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
 };
 
 //Get all actvie price book
-exports.getAllActivePriceBook = async(req,res)=>{
-  try{
+exports.getAllActivePriceBook = async (req, res) => {
+  try {
     let data = req.body
     if (req.role != "Super Admin") {
       res.send({
@@ -70,23 +85,23 @@ exports.getAllActivePriceBook = async(req,res)=>{
       })
       return;
     }
-    let getPriceBooks = await priceBookService.getAllActivePriceBook({status:true,isDeleted:false},{__v:0})
-    if(!getPriceBooks){
+    let getPriceBooks = await priceBookService.getAllActivePriceBook({ status: true, isDeleted: false }, { __v: 0 })
+    if (!getPriceBooks) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to find the price books"
+        code: constant.errorCode,
+        message: "Unable to find the price books"
       })
       return;
     }
     res.send({
-      code:constant.successCode,
-      message:"Success",
-      result:getPriceBooks
+      code: constant.successCode,
+      message: "Success",
+      result: getPriceBooks
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
@@ -123,10 +138,10 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
       status: data.status,
-      unique_key:parseInt(count)+1
+      unique_key: parseInt(count) + 1
     }
 
-    let checkPriceBook = await priceBookService.getPriceBookById({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, {})
+    let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, {})
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -478,7 +493,7 @@ exports.createPriceBookCat = async (req, res) => {
 
     const data = req.body;
     // Check if the category already exists
-    const existingCategory = await priceBookService.getPriceCatByName({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, { isDeleted: 0, __v: 0 });
+    const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingCategory) {
       res.send({
         code: constant.errorCode,
@@ -534,12 +549,23 @@ exports.getPriceBookCat = async (req, res) => {
     }
 
     let projection = { isDeleted: 0, __v: 0 }
-    let query = {
-      $and: [
-        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
-        { isDeleted: false }
-      ]
-    };
+    let query;
+    if (data.status) {
+      query = {
+        $and: [
+          { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
+          { 'status': data.status },
+          { isDeleted: false }
+        ]
+      }
+    } else {
+      query = {
+        $and: [
+          { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
+          { isDeleted: false }
+        ]
+      }
+    }
 
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
@@ -578,7 +604,7 @@ const updatePriceBookCategory = async (catId, newData) => {
 
   const newValue = {
     $set: {
-      name: newData.name ? newData.name: existingCat.name,
+      name: newData.name ? newData.name : existingCat.name,
       description: newData.description ? newData.description : existingCat.description,
       status: newData.status
     }
@@ -648,7 +674,7 @@ exports.updatePriceBookCat = async (req, res) => {
     // Check if the categoryId is a valid ObjectId
     const isValid = await checkObjectId(req.params.catId);
     if (!isValid) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid category format"
       });
