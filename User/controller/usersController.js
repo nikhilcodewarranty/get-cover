@@ -662,13 +662,13 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "Invalid email"
       })
     } else {
-      // if (checkEmail.status == false || isDeleted == true) {
-      //   res.send({
-      //     code: constant.errorCode,
-      //     message: "You account is approved yet or blocked by the admin"
-      //   })
-      //   return;
-      // }
+      if (checkEmail.status == false || isDeleted == true) {
+        res.send({
+          code: constant.errorCode,
+          message: "You account is approved yet or blocked by the admin"
+        })
+        return;
+      }
       const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
 
       if (mailing) {
