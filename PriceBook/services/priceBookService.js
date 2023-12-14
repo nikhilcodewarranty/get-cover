@@ -30,7 +30,7 @@ module.exports = class priceBookService {
 
   static async getPriceBookCount() {
     try {
-      const count = await priceCategory.countDocuments();
+      const count = await priceBook.find().countDocuments();
       return count;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
@@ -67,7 +67,6 @@ module.exports = class priceBookService {
     }
   }
 
-  
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
@@ -113,6 +112,7 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
+  
   //create price category  service
   static async createPriceCat(data) {
     try {
@@ -126,7 +126,7 @@ module.exports = class priceBookService {
   //get price categories service
   static async getAllPriceCat(query, projection) {
     try {
-      const allPriceCategories = await priceCategory.find(query, projection).sort({"createAt":-1});
+      const allPriceCategories = await priceCategory.find(query, projection).sort({"createdAt":-1});
       return allPriceCategories;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);
