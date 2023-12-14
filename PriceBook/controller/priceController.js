@@ -312,8 +312,12 @@ exports.updatePriceBookById = async (req, res, next) => {
       return;
     }
 
+    console.log(params)
+
+    console.log("Price Book id====================",params.priceBookId)
+
     // Check if the priceId is a valid ObjectId
-    const isValidPriceId = await checkObjectId(params.priceId);
+    const isValidPriceId = await checkObjectId(params.priceBookId);
     if (!isValidPriceId) {
       res.send({
         code: constant.errorCode,
@@ -332,24 +336,68 @@ exports.updatePriceBookById = async (req, res, next) => {
       return
     }
 
-    // Update Price Book Status
-    const updateResult = await updatePriceBookStatus(params.priceId, body);
+    //check Category exist with this ID
 
-    if (updateResult.success) {
-      // Update Dealer Price Book Status
-      const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
-
+    const isValid = await priceBookService.getPriceCatById({ _id: body.category }, {});
+    if (!isValid) {
       res.send({
-        code: updateResult.success ? constant.successCode : constant.errorCode,
-        message: updateResult.message,
+        code: constant.errorCode,
+        message: "Category is not exist with this ID"
       });
       return;
     }
 
-    // return res.status(500).json({
-    //   code: constant.errorCode,
-    //   message: updateResult.message,
-    // });
+
+    const criteria = { _id: params.priceBookId };
+    let projection = { isDeleted: 0, __v: 0 }
+    const existingPriceBook = await priceBookService.getPriceBookById(criteria, projection);  
+    if (!existingPriceBook) {
+      res.send({
+        code: constant.errorCode,
+        message: "Price Book is not exist with this id"
+      });
+      return;
+    }
+
+    const newValue = {
+      $set: {
+        status: body.status,
+        frontingFee: body.frontingFee || existingPriceBook.frontingFee,
+        reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
+        reinsuranceFee: body.reinsuranceFee || existingPriceBook.reinsuranceFee,
+        adminFee: body.adminFee || existingPriceBook.adminFee,
+        category: body.category || existingPriceBook.category,
+        description: body.description || existingPriceBook.description,
+      }
+    };
+    // Update Price Book Status
+   //const updateResult = await updatePriceBookStatus(params.priceId, body);
+
+   const updateResult = await priceBookService.updatePriceBook({ _id: params.priceBookId }, newValue, {new:true})
+    if (!updateResult) {
+      // Update Dealer Price Book Status
+     // const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
+      res.send({
+        code: constant.errorCode,
+        message:"Unable to update the price book",
+      });
+      return;
+    }
+
+    else{
+      //change dealer status if body status is false
+      if(body.status==false){
+        const newValue = { status: body.status };
+        const option = { new: true };
+        const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, {new:true});
+      }
+    }
+
+    res.send({
+      code: constant.successCode,
+      message:"Successfully Update",
+    });
+    return;
 
   } catch (error) {
     res.send({
@@ -589,17 +637,19 @@ exports.getPriceBookCat = async (req, res) => {
 }
 
 // Function to update price book category
-const updatePriceBookCategory = async (catId, newData) => {
+const updatePriceBookCategory = async (catId, newData, req, res) => {
 
   //const criteria = { _id: catId };
   let projection = { isDeleted: 0, __v: 0 }
+  console.log(catId)
   const existingCat = await priceBookService.getPriceCatById({ _id: catId }, projection);
-
+  console.log("existingCat-----------------", existingCat)
   if (!existingCat) {
-    return {
+    res.send({
       success: false,
       message: "Invalid category ID"
-    };
+    });
+    return;
   }
 
   const newValue = {
@@ -662,47 +712,81 @@ const isSuperAdmin = (role) => role === "Super Admin";
 // Exported function to update price book category
 exports.updatePriceBookCat = async (req, res) => {
   try {
-    const { body, params, role } = req;
-    if (!isSuperAdmin(role)) {
-      return res.send({
+    let data = req.body
+    if (!isSuperAdmin(req.role)) {
+      res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
+      return;
     }
+<<<<<<< HEAD
 
 
     // Check if the categoryId is a valid ObjectId
     const isValid = await checkObjectId(req.params.catId);
     if (!isValid) {
+=======
+    // Check if the priceId is a valid ObjectId
+    const isValidCatId = await checkObjectId(req.params.catId);
+    if (!isValidCatId) {
+>>>>>>> 335d4c5594d08758fd3601c681cd72bf46717479
       res.send({
         code: constant.errorCode,
-        message: "Invalid category format"
+        message: "Invalid Price Book Category Id format"
       });
       return;
     }
-    if (body.name == undefined && body.description == undefined) {
+    const isValid = await priceBookService.getPriceCatById({ _id: req.params.catId }, {});
+    if (!isValid) {
+      res.send({
+        code: constant.errorCode,
+        message: "Category is not exist with this ID"
+      });
+      return;
+    }
+
+    if (data.name == undefined && data.description == undefined) {
       res.send({
         code: constant.errorCode,
         message: "No data provided"
       })
       return
     }
+    const newValue = {
+      $set: {
+        name: data.name ? data.name : isValid.name,
+        description: data.description ? data.description : isValid.description,
+        status: data.status
+      }
+    };
 
-    const updateCatResult = await updatePriceBookCategory(params.catId, body);
-
-    if (updateCatResult.success) {
-      const updatePriceBookResult = await updatePriceBookByCategoryStatus(params.catId, body.status);
-      //  res.send({
-      //  code: updatePriceBookResult.success ? constant.successCode : constant.errorCode,
-      //   message: updatePriceBookResult.message
-      // });
+    const updateCatResult = await priceBookService.updatePriceCategory({ _id: req.params.catId }, newValue, {new:true});
+    if (!updateCatResult) {
       res.send({
-        code: constant.successCode,
-        message: updateCatResult.message
-      });
-    }
-    return;
+        code: constant.errorCode,
+        message: "Unable to update the price book category"
+      })
+    } 
+    else {  
+        //Update PriceBook if status is false
+        if(data.status==false){
+          let updatePriceBook = await priceBookService.updatePriceBook({category:updateCatResult._id},{status:data.status},{new:true})
+          let projection = { isDeleted: 0, __v: 0 }
+          const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
+          const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+          if (priceIdsToUpdate) {
+            dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+            const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, {status:data.status}, {new:true});
+          }
 
+      }
+  }
+res.send({
+  code: constant.successCode,
+  message: "Successfully updated",
+  result: updateCatResult
+})
   } catch (err) {
     res.send({
       code: constant.errorCode,

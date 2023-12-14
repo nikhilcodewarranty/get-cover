@@ -389,6 +389,30 @@
           }
         }
       },
+      "/price/getAllActivePriceBook": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all active price books",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        
+        }
+        
+      },
+      
       "/price/priceBooks": {
         "post": {
           "security": [ { "Bearer": [] } ],
@@ -403,6 +427,12 @@
                 "type": "object",
                 "properties": {
                   "category": {
+                    "type": "string"
+                  },
+                  "page": {
+                    "type": "string"
+                  },
+                  "limit": {
                     "type": "string"
                   }
                 }
@@ -851,14 +881,14 @@
           }
         }
       },
-      "/price/updatePriceBook/{priceId}": {
+      "/price/updatePriceBook/{priceBookId}": {
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Update Price Book",
           "parameters": [
             {
-              "name": "priceId",
+              "name": "priceBookId",
               "in": "path",
               "required": true,
               "type": "string",
@@ -1116,9 +1146,6 @@
             "type": "string"
           },       
           "email": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           },
           "firstName": {
@@ -1439,9 +1466,6 @@
             "type": "string"
           },       
           "email": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           },
           "firstName": {
