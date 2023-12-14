@@ -70,7 +70,7 @@ module.exports = class priceBookService {
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
-      const updatedResponse = await priceBook.updateMany(
+      const updatedResponse = await priceBook.findOneAndUpdate(
         criteria,
         newValue,
         option
@@ -136,7 +136,7 @@ module.exports = class priceBookService {
   // update price category
   static async updatePriceCategory(criteria, newValue, options) {
     try {
-      const updatedPriceCat = await priceCategory.updateMany(
+      const updatedPriceCat = await priceCategory.findOneAndUpdate(
         criteria,
         newValue,
         options
@@ -152,7 +152,7 @@ module.exports = class priceBookService {
     // Find By Name
     static async findByName(priceBooksName) {
       try {
-        const response = await priceBook.find({ 'name': { $in: priceBooksName }}).select('_id name');
+        const response = await priceBook.find({ 'name': { $in: {'$regex':new RegExp(`^${priceBooksName}$`, 'i')} }}).select('_id name');
         return response;
       } catch (error) {
         console.log(`Could not fetch price book name ${error}`);

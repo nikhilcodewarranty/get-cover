@@ -851,14 +851,14 @@
           }
         }
       },
-      "/price/updatePriceBook/{priceId}": {
+      "/price/updatePriceBook/{priceBookId}": {
         "put": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Update Price Book",
           "parameters": [
             {
-              "name": "priceId",
+              "name": "priceBookId",
               "in": "path",
               "required": true,
               "type": "string",
@@ -1116,9 +1116,6 @@
             "type": "string"
           },       
           "email": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           },
           "firstName": {
@@ -1439,9 +1436,6 @@
             "type": "string"
           },       
           "email": {
-            "type": "string"
-          },
-          "password": {
             "type": "string"
           },
           "firstName": {
