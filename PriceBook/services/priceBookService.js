@@ -7,7 +7,8 @@ module.exports = class priceBookService {
   static async getAllPriceBook(query, projection, limit, page) {
     try {
 
-      const allPriceBook = await priceBook.find(query, projection).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
+      const allPriceBook = await priceBook.find(query, projection).populate({path: 'category',select: 'name status', // Specify the fields you want to retrieve from the 'category' collection
+      }).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
