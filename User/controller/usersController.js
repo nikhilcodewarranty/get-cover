@@ -673,7 +673,7 @@ exports.sendLinkToEmail = async (req, res) => {
       if (checkEmail.status == false || isDeleted == true) {
         res.send({
           code: constant.errorCode,
-          message: "This is an unapproved account"
+          message: "This account is currently awaiting approval from the administrator"
         })
         return;
       }
