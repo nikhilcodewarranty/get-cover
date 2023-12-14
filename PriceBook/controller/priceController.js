@@ -588,6 +588,7 @@ exports.createPriceBookCat = async (req, res) => {
 // get all price category
 exports.getPriceBookCat = async (req, res) => {
   try {
+    let data = req.body
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
