@@ -67,7 +67,6 @@ module.exports = class priceBookService {
     }
   }
 
-  
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
@@ -113,6 +112,7 @@ module.exports = class priceBookService {
       console.log(`Price category not found. ${error}`);
     }
   }
+  
   //create price category  service
   static async createPriceCat(data) {
     try {
