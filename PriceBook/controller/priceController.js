@@ -18,7 +18,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
         { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
       ]
     };
-
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
@@ -37,7 +36,9 @@ exports.getAllPriceBooks = async (req, res, next) => {
       })
       return;
     }
-    const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    const priceBooks = await priceBookService.getAllPriceBook(query, projection,limit,page);
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -57,6 +58,38 @@ exports.getAllPriceBooks = async (req, res, next) => {
     })
   }
 };
+
+//Get all actvie price book
+exports.getAllActivePriceBook = async(req,res)=>{
+  try{
+    let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let getPriceBooks = await priceBookService.getAllActivePriceBook({status:true,isDeleted:false},{__v:0})
+    if(!getPriceBooks){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to find the price books"
+      })
+      return;
+    }
+    res.send({
+      code:constant.successCode,
+      message:"Success",
+      result:getPriceBooks
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 //create new price book
 exports.createPriceBook = async (req, res, next) => {

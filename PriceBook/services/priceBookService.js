@@ -4,8 +4,24 @@ const priceCategory = require("../model/priceCategory");
 module.exports = class priceBookService {
 
   //get all price book 
-  static async getAllPriceBook(query, projection) {
+  static async getAllPriceBook(query, projection,limit,page) {
     try {
+      
+      const allPriceBook = await priceBook.find(query, projection)
+      .populate({
+        path: 'category',
+        select: 'name status' // Specify the fields you want to retrieve from the 'category' collection
+      }).sort({'createdAt':-1}).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
+      return allPriceBook;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
+    }
+  }
+
+   //get all active price book 
+   static async getAllActivePriceBook(query, projection) {
+    try {
+      
       const allPriceBook = await priceBook.find(query, projection)
       .populate({
         path: 'category',
