@@ -161,25 +161,15 @@ module.exports = class priceBookService {
 
   //get Dealer price  Books
 
-<<<<<<< HEAD
   // Find By Name
   static async findByName(priceBooksName) {
     try {
-      const response = await priceBook.find({ 'name': { $in: priceBooksName } }).select('_id name');
+      const response = await priceBook.find({ 'name': { $in: { '$regex': new RegExp(`^${priceBooksName}$`, 'i') } } }).select('_id name');
       return response;
     } catch (error) {
       console.log(`Could not fetch price book name ${error}`);
-=======
-    // Find By Name
-    static async findByName(priceBooksName) {
-      try {
-        const response = await priceBook.find({ 'name': { $in: {'$regex':new RegExp(`^${priceBooksName}$`, 'i')} }}).select('_id name');
-        return response;
-      } catch (error) {
-        console.log(`Could not fetch price book name ${error}`);
-      }
->>>>>>> 335d4c5594d08758fd3601c681cd72bf46717479
     }
   }
+}
 
-};
+

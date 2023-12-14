@@ -720,17 +720,9 @@ exports.updatePriceBookCat = async (req, res) => {
       });
       return;
     }
-<<<<<<< HEAD
-
-
-    // Check if the categoryId is a valid ObjectId
-    const isValid = await checkObjectId(req.params.catId);
-    if (!isValid) {
-=======
     // Check if the priceId is a valid ObjectId
     const isValidCatId = await checkObjectId(req.params.catId);
     if (!isValidCatId) {
->>>>>>> 335d4c5594d08758fd3601c681cd72bf46717479
       res.send({
         code: constant.errorCode,
         message: "Invalid Price Book Category Id format"
