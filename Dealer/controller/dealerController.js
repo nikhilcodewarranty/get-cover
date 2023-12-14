@@ -516,7 +516,7 @@ exports.createDealerPriceBook = async (req, res) => {
     }
     let checkPriceBookMain = await priceBookService.getPriceBookById({_id:data.priceBook},{})
     if(!checkPriceBookMain){
-      re.send({
+      res.send({
         code:constant.errorCode,
         message:"Invalid price book ID"
       })
