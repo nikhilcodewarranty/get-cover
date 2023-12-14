@@ -514,6 +514,14 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
+    let checkPriceBookMain = await priceBookService.getPriceBookById({_id:data.priceBook},{})
+    if(!checkPriceBookMain){
+      re.send({
+        code:constant.errorCode,
+        message:"Invalid price book ID"
+      })
+      return;
+    }
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
     if (checkPriceBook) {
       res.send({
