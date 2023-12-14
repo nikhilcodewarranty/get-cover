@@ -193,7 +193,7 @@ exports.registerDealer = async (req, res) => {
 
     // Check if the specified role exists
     // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-    const checkRole = await role.findOne({ 'role': { '$regex': data.role, '$options': 'i' } });
+    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
     if (!checkRole) {
       res.send({
         code: constant.errorCode,
@@ -203,7 +203,7 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    const existingDealer = await dealerService.getDealerByName({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
@@ -212,7 +212,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: data.email });
+    const existingUser = await userService.findOneUser({email:{'$regex':new RegExp(`^${req.body.email}$`, 'i')}});
     if (existingUser) {
       res.send({
         code: constant.errorCode,
