@@ -145,6 +145,16 @@ module.exports = class priceBookService {
     }
   }
 
+  // /get active price categories service
+  static async getAllActivePriceCat(query, projection) {
+    try {
+      const allPriceCategories = await priceCategory.find(query, projection).sort({ "createdAt": -1 });
+      return allPriceCategories;
+    } catch (error) {
+      console.log(`Could not fetch price categories ${error}`);
+    }
+  }
+
   // update price category
   static async updatePriceCategory(criteria, newValue, options) {
     try {

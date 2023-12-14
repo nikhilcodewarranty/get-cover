@@ -636,6 +636,32 @@ exports.getPriceBookCat = async (req, res) => {
   }
 }
 
+exports.getActivePriceBookCategories = async(req,res)=>{
+  try{
+    let data = req.body
+    let query = {status:true}
+    let projection = {__v:0}
+    let getCategories = await priceBookService.getAllActivePriceCat(query,projection)
+    if(!getCategories){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to fetch the categories"
+      })
+    }else{
+      res.send({
+        code:constant.successCode,
+        message:"Success",
+        result:getCategories
+      })
+    }
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
 // Function to update price book category
 const updatePriceBookCategory = async (catId, newData, req, res) => {
 
