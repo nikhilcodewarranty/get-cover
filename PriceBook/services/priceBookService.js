@@ -30,7 +30,7 @@ module.exports = class priceBookService {
 
   static async getPriceBookCount() {
     try {
-      const count = await priceCategory.countDocuments();
+      const count = await priceBook.find().countDocuments();
       return count;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
