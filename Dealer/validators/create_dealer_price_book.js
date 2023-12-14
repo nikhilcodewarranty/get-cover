@@ -1,8 +1,8 @@
 const Joi = require('joi')
 
 const create_dealer_price_book_validation = Joi.object({
-    dealerId:Joi.string().hex().length(24),
-    priceBook:Joi.string().hex().length(24),
+    dealerId:Joi.string().trim().hex().length(24),
+    priceBook:Joi.string().trim().hex().length(24),
     retailPrice:Joi.number().required(),
     status:Joi.boolean().required()
 })
