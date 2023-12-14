@@ -244,7 +244,7 @@ exports.createDealer = async (req, res) => {
     }
 
     // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
+    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
     if (!checkRole) {
       res.send({
         code: constant.errorCode,
@@ -254,7 +254,7 @@ exports.createDealer = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({ name: {'$regex':data.name} }, { isDeleted: 0, __v: 0 });
+    const existingDealer = await dealerService.getDealerByName({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
         res.send({
           code: constant.errorCode,
@@ -408,7 +408,7 @@ exports.createServiceProvider = async (req, res) => {
     //const hashedPassword = await bcrypt.hash(data.password, 10);
 
     // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
+    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
     if (!checkRole) {
       return res.send({
         code: constant.errorCode,
@@ -591,6 +591,14 @@ exports.getAllTerms = async (req, res) => {
 // add new roles
 exports.addRole = async (req, res) => {
   try {
+    let checkRole = await userService.getRoleById({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}})
+    if(checkRole){
+      res.send({
+        code:constant.errorCode,
+        message:"Role already exist"
+      })
+      return;
+    }
     const createdUser = await userService.addRole(req.body);
     if (!createdUser) {
       res.send({
@@ -606,7 +614,7 @@ exports.addRole = async (req, res) => {
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: "Unable to create the dealer"
+      message: error.message
     })
   }
 };

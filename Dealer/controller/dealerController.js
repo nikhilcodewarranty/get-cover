@@ -503,7 +503,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if(!checkDealer){
       res.send({
         code:constant.errorCode,
-        message:"Invalid driver"
+        message:"Invalid dealer"
       })
       return;
     }
