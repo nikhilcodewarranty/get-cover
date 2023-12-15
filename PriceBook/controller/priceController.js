@@ -909,7 +909,7 @@ exports.getPriceBookByCategory = async (req, res) => {
   }
 }
 
-//
+// get category detail by price book
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body
@@ -946,3 +946,5 @@ exports.getCategoryByPriceBook = async (req, res) => {
     })
   }
 }
+
+
