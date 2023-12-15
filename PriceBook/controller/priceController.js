@@ -315,6 +315,9 @@ exports.updatePriceBookById = async (req, res, next) => {
       return;
     }
 
+    console.log(params)
+
+    console.log("Price Book id====================",params.priceBookId)
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceBookId);
@@ -787,7 +790,7 @@ exports.updatePriceBookCat = async (req, res) => {
     else {  
         //Update PriceBook if status is false
         if(data.status==false){
-          let updatePriceBook = await priceBookService.updatePriceBook({category:req.params.catId},{status:data.status},{new:true})
+          let updatePriceBook = await priceBookService.updatePriceBook({category:updateCatResult._id},{status:data.status},{new:true})
           let projection = { isDeleted: 0, __v: 0 }
           const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
           const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
@@ -906,7 +909,7 @@ exports.getPriceBookByCategory = async (req, res) => {
   }
 }
 
-// get category detail by price book
+//
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body
@@ -943,5 +946,3 @@ exports.getCategoryByPriceBook = async (req, res) => {
     })
   }
 }
-
-
