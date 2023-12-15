@@ -97,13 +97,11 @@ exports.getPendingDealers = async (req, res) => {
     let dealers = await dealerService.getAllDealers(query, projection);
     //-------------Get All Dealers Id's------------------------
 
-    console.log("dealers========================",dealers)
     const dealerIds = dealers.map(obj => obj._id);
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: dealerIds },isPrimary:true};
    
     let dealarUser = await userService.getDealersUser(query1,projection)
-    console.log("dealarUser========================",dealarUser)
 
     if (!dealers) {
       res.send({
