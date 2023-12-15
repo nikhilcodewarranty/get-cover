@@ -109,10 +109,40 @@ exports.registerServiceProvider = async (req, res) => {
   try {
     const data = req.body;
 
-    console.log('Service Provder---------------------',data);
-    
-    // Extracting necessary data for dealer creation
-    const providerMeta = {
+    // Check if the specified role exists
+    // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+    const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
+    if (!checkRole) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid role"
+      })
+      return;
+    }
+
+    // Check if the dealer already exists
+    const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    if (existingServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Servicer already exist with this name"
+      })
+      return;
+    }
+
+    console.log("Servicer Body===========================",data)
+    // Check if the email already exists
+    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Email is already exist"
+      })
+      return;
+    }
+
+    // Extract necessary data for dealer creation
+    const ServicerMeta = {
       name: data.name,
       street: data.street,
       city: data.city,
@@ -120,39 +150,17 @@ exports.registerServiceProvider = async (req, res) => {
       state: data.state,
       country: data.country,
     };
+       // Register the Servicer
+        const createMetaData = await providerService.registerServiceProvider(ServicerMeta);
+        if (!createMetaData) {
+           res.send({
+            code: constant.errorCode,
+            message: 'Unable to create Servicer account',
+          });
 
-    // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
-    console.log('Roles--------------------------',checkRole)
-    if (!checkRole) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Invalid role',
-      });
-    }
-
-    // Register the dealer
-    const createMetaData = await providerService.registerServiceProvider(providerMeta);
-    console.log('createMetaData--------------------------',createMetaData)
-    if (!createMetaData) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Unable to create Servicer account',
-      });
-    }
-
-    // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: data.email });
-    if (existingUser) {
-      return res.send({
-        code: constant.errorCode,
-        message: 'Email already exists',
-      });
-    }
-
-    // Hash the password before storing
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-
+          return;
+        }
+ 
     // Create user metadata
     const userMetaData = {
       email: data.email,
@@ -160,24 +168,25 @@ exports.registerServiceProvider = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      password: hashedPassword,
       accountId: createMetaData._id,
     };
 
     // Create the user
-    const createUser = await userService.createUser(userMetaData);
-    if (createUser) {
-      return res.send({
+    const createdUser = await userService.createUser(userMetaData);
+    if (createdUser) {
+      res.send({
         code: constant.successCode,
         message: 'Success',
-        data:createUser
+        data: createdUser,
       });
+      return
     }
   } catch (err) {
-    return res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message,
     });
+    return;
   }
 };
 exports.statusUpdate = async (req, res) => {

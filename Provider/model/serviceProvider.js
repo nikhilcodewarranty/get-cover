@@ -37,11 +37,7 @@ const serviceProviderSchema = new mongoose.Schema({
   isDeleted: {
     type: String,
     default: false
-  },
-  token: {
-    type: String,
-    default:''
-  },
+  }
 },{timestamps:true});
 
 module.exports = mongoose.model("serviceProvider", serviceProviderSchema);

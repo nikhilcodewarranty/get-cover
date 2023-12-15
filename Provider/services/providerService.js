@@ -78,5 +78,16 @@ module.exports = class providerService {
     }
   }
 
+
+    // Get servicer detail with Name
+    static async getServicerByName(query,projection) {
+      try {
+        const singleDealerResponse = await serviceProvider.findOne(query,projection);
+        return singleDealerResponse;
+      } catch (error) {
+        console.log(`Dealer not found. ${error}`);
+      }
+    }
+
   
 };
