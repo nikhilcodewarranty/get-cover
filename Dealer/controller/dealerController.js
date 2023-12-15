@@ -391,8 +391,24 @@ exports.getAllDealerPriceBooks = async (req, res) => {
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
+    }
+    //check Dealer Exist
+    let checkDealer = await dealerService.getDealerById(req.body.dealerId)
+    if(!checkDealer){
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer Not found"
+      })
+      return;
     }
     const results = [];
     let priceBookName = [];
@@ -403,10 +419,9 @@ exports.uploadPriceBook = async (req, res) => {
       .pipe(csvParser())
       .on('data', (data) => results.push(data))
       .on('end', async () => {
-        // Extract priceBook names from results
         const priceBookName = results.map(obj => obj.priceBook);
-
-        const foundProducts = await priceBookService.findByName(priceBookName);
+        const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
+        const foundProducts = await priceBookService.findByName(priceBookName1);
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
           priceBook: product._id,
@@ -415,21 +430,22 @@ exports.uploadPriceBook = async (req, res) => {
           status:true
         }));
 
-        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name === name));
-        //  return;
+
+        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));    
         if (missingProductNames.length > 0) {
-          return res.status(400).json({
+          res.send({
             code: constant.errorCode,
             message: 'Some product names do not match.',
             missingProductNames: missingProductNames
           });
+          return;
         }
-
         if (foundProducts.length == 0) {
-          return res.send({
+           res.send({
             code: constant.errorCode,
             message: 'Product name is not exist. Please uploads the products and then try again',
           });
+          return;
         }
         // Extract _id values from priceBookIds
         const allpriceBookIds = foundProductData.map(obj => obj.priceBook);
@@ -441,17 +457,16 @@ exports.uploadPriceBook = async (req, res) => {
               { 'dealerId': req.body.dealerId }
             ]
           }
+       
           const existingData = await dealerPriceService.findByIds(query);
-          if (existingData.length > 0) {
-             res.send({
-              code: constant.errorCode,
-              message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
-            });
-
-          }
+                if (existingData.length > 0) {
+                  res.send({
+                    code: constant.errorCode,
+                    message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
+                  });
+                return;
+              }
         }
-
-
         let newArray1 = results.map((obj) => ({
           priceBook: obj.priceBook,
           status: true,
@@ -462,29 +477,22 @@ exports.uploadPriceBook = async (req, res) => {
         // Merge brokerFee from newArray into foundProductData based on priceBook
       const mergedArray = foundProductData.map(foundProduct => ({
         ...foundProduct,
-        brokerFee: newArray1.find(item => item.priceBook === foundProduct.name)?.brokerFee || foundProduct.brokerFee
+        brokerFee: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.brokerFee || foundProduct.brokerFee
       }));
 
-// console.log(mergedArray);return false;
-   
-            // Map CSV data to a new array with required structure
-            // let newArray = results.map((obj) => ({
-            //   priceBook: '6579877f1f67a3830048125f',
-            //   status: true,
-            //   brokerFee: obj.brokerFee,
-            //   dealerId: req.body.dealerId
-            // }));
-       
+      
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
         // Respond with success message and uploaded data
         if (uploaded) {
-          return res.send({
+           res.send({
             code: constant.successCode,
             message: 'Success',
             data: uploaded
           });
+
+          return;
         }
       });
   } catch (err) {

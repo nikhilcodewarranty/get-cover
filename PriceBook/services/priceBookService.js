@@ -175,7 +175,8 @@ module.exports = class priceBookService {
   // Find By Name
   static async findByName(priceBooksName) {
     try {
-      const response = await priceBook.find({ 'name': { $in: { '$regex': new RegExp(`^${priceBooksName}$`, 'i') } } }).select('_id name');
+     // console.log("priceBook===================",priceBooksName)
+      const response = await priceBook.find({ 'name': { $in:priceBooksName } }).select('_id name');
       return response;
     } catch (error) {
       console.log(`Could not fetch price book name ${error}`);
