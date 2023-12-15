@@ -287,7 +287,7 @@
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-          "summary": "Get all Dealers",
+          "summary": "Get Approved Dealers",
           "responses": {
             "200": {
               "description": "Ok"
