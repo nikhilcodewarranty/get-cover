@@ -5,10 +5,12 @@ const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
+const dealer = require("../model/dealer");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
 const mongoose = require('mongoose');
 const fs = require('fs');
+const connection = require('../../db')
 
 // Promisify fs.createReadStream for asynchronous file reading
 
@@ -193,7 +195,7 @@ exports.registerDealer = async (req, res) => {
 
     // Check if the specified role exists
     // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
+    const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
       res.send({
         code: constant.errorCode,
@@ -203,7 +205,7 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, { isDeleted: 0, __v: 0 });
+    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
@@ -212,7 +214,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({email:{'$regex':new RegExp(`^${req.body.email}$`, 'i')}});
+    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
     if (existingUser) {
       res.send({
         code: constant.errorCode,
@@ -254,7 +256,7 @@ exports.registerDealer = async (req, res) => {
     // Create the user
     const createdUser = await userService.createUser(userMetaData);
     if (createdUser) {
-       res.send({
+      res.send({
         code: constant.successCode,
         message: 'Success',
         data: createdUser,
@@ -262,7 +264,7 @@ exports.registerDealer = async (req, res) => {
       return
     }
   } catch (err) {
-     res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -307,7 +309,7 @@ exports.statusUpdate = async (req, res) => {
     // Check if the priceBook is a valid ObjectId
     const isPriceBookValid = await checkObjectId(req.body.priceBook);
     if (!isPriceBookValid) {
-        res.send({
+      res.send({
         code: constant.errorCode,
         message: "Invalid Price Book ID"
       });
@@ -330,15 +332,15 @@ exports.statusUpdate = async (req, res) => {
     const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
 
     if (!updatedResult) {
-       res.send({
+      res.send({
         code: constant.errorCode,
         message: "Unable to update the dealer price status"
       });
 
       return;
-      
+
     }
-      res.send({
+    res.send({
       code: constant.successCode,
       message: "Updated Successfully",
       data: updatedResult
@@ -347,7 +349,7 @@ exports.statusUpdate = async (req, res) => {
     return
 
   } catch (err) {
-      res.send({
+    res.send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -427,7 +429,7 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: product._id,
           name: product.name,
           dealerId: req.body.dealerId,
-          status:true
+          status: true
         }));
 
 
@@ -466,7 +468,8 @@ exports.uploadPriceBook = async (req, res) => {
                   });
                 return;
               }
-        }
+     
+            }
         let newArray1 = results.map((obj) => ({
           priceBook: obj.priceBook,
           status: true,
@@ -480,6 +483,7 @@ exports.uploadPriceBook = async (req, res) => {
         retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice
       }));
       
+
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
@@ -507,25 +511,25 @@ exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
     let checkDealer = await dealerService.getDealerById(data.dealerId)
-    if(!checkDealer){
+    if (!checkDealer) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid dealer"
+        code: constant.errorCode,
+        message: "Invalid dealer"
       })
       return;
     }
-    if(checkDealer.status == "Pending"){
+    if (checkDealer.status == "Pending") {
       res.send({
-        code:constant.errorCode,
-        message:"Account not approved yet"
+        code: constant.errorCode,
+        message: "Account not approved yet"
       })
       return;
     }
-    let checkPriceBookMain = await priceBookService.getPriceBookById({_id:data.priceBook},{})
-    if(!checkPriceBookMain){
+    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+    if (!checkPriceBookMain) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid price book ID"
+        code: constant.errorCode,
+        message: "Invalid price book ID"
       })
       return;
     }
@@ -559,4 +563,102 @@ exports.createDealerPriceBook = async (req, res) => {
 }
 
 
+
+
+
+
+
+//-------------------------- under developement section ----------------------------//
+
+const MongoClient = require('mongodb').MongoClient;
+
+// Connection URLs for the two databases
+const url2 = `${process.env.DB_URL}User`;
+const url1 = `${process.env.DB_URL}Dealer`;
+
+// Common ID
+
+// Create MongoClient instances for each database
+const client2 = new MongoClient(url2, { useNewUrlParser: true, useUnifiedTopology: true });
+const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Connect to the servers
+// Promise.all([ client2.connect()])
+//   .then(() => {
+//     console.log('Connected to both databases');
+
+//     // Specify the databases
+//     const db2 = client2.db();
+
+//     // Specify the collections
+//     const collection2 = db2.collection('dealers');
+
+
+
+
+//       // Close the connections
+//       client2.close();
+//     });
+// })
+// .catch(err => {
+//   console.error('Error connecting to databases:', err);
+// });
+
+
+
+
+
+
+
+exports.getDealerRequest = async (req, res) => {
+  try {
+    let data = req.body
+    Promise.all([client1.connect(), client2.connect()])
+  .then(async() => {
+    console.log('Connected to both databases');
+
+    // Specify the databases
+    const db1 = client1.db();
+    const db2 = client2.db();
+
+    // Specify the collections
+    const collection1 = db1.collection('dealers');
+    const collection2 = db2.collection('users');
+    console.log(collection2)
+
+    // Perform a $lookup aggregation across databases
+    console.log('Perform a $lookup aggregation across databases')
+   let data1 = await dealer.aggregate([
+      {
+        $match: { _id: new mongoose.Types.ObjectId("6579815d97bf5c1bb11be1d9") } // Match documents with the common ID
+      },
+      {
+        $lookup: {
+          from: collection2.namespace ,
+          localField: '_id',
+          foreignField: 'accountId', // Replace with the actual common field in collection2
+          as: 'result'
+        }
+      }
+    ])
+
+      console.log('Result:__________-------------------------------------', data1);
+      res.send({
+        code:constant.errorCode,
+        message:data1
+      })
+      // Close the connections
+      client1.close();
+      client2.close();
+    // });
+  })
+  .catch(err => {
+    console.error('Error connecting to databases:', err);
+  });
+
+
+  } catch (err) {
+    console.log("Err in getDealerRequest : ", err);
+  }
+}
 

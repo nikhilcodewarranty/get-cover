@@ -19,8 +19,7 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   accountId: {
-    type: String,
-    default: ''
+    type: mongoose.Schema.Types.ObjectId, ref: "dealers",
   },
   resetPasswordCode:{
     type:String,
