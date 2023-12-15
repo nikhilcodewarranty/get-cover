@@ -44,6 +44,7 @@ exports.getAllDealers = async (req, res) => {
     const query1 = { accountId: { $in: dealerIds },isPrimary:true};
    
     let dealarUser = await userService.getDealersUser(query1,projection)
+    console.log("dealarUser=====================",dealarUser)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -57,14 +58,15 @@ exports.getAllDealers = async (req, res) => {
     let merged = [];
 
     for(let i=0; i<dealers.length; i++) {
-      merged.push({
-       ...dealers[i], 
-       ...(dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id)))}
-      );
+    const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
+        if (matchingUser && matchingUser.isPrimary) {
+          merged.push({
+              ...dealers[i],
+              ...matchingUser
+          });
+      }
     }
-
-    //console.log(merged);return false;
-    
+   
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -93,13 +95,16 @@ exports.getPendingDealers = async (req, res) => {
     let query = { isDeleted: false, status:"Pending" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
-
     //-------------Get All Dealers Id's------------------------
+
+    console.log("dealers========================",dealers)
     const dealerIds = dealers.map(obj => obj._id);
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: dealerIds },isPrimary:true};
    
     let dealarUser = await userService.getDealersUser(query1,projection)
+    console.log("dealarUser========================",dealarUser)
+
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -113,14 +118,15 @@ exports.getPendingDealers = async (req, res) => {
     let merged = [];
 
     for(let i=0; i<dealers.length; i++) {
-      merged.push({
-       ...dealers[i], 
-       ...(dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id)))}
-      );
+    const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
+        if (matchingUser && matchingUser.isPrimary) {
+          merged.push({
+              ...dealers[i],
+              ...matchingUser
+          });
+      }
     }
-
-    //console.log(merged);return false;
-    
+   
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -133,7 +139,6 @@ exports.getPendingDealers = async (req, res) => {
     })
   }
 };
-
 //create new dealer
 exports.createDealer = async (req, res) => {
   try {
