@@ -83,7 +83,7 @@ module.exports = class priceBookService {
   // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
-      const updatedResponse = await priceBook.findOneAndUpdate(
+      const updatedResponse = await priceBook.updateMany(
         criteria,
         newValue,
         option

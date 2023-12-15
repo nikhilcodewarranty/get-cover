@@ -312,9 +312,6 @@ exports.updatePriceBookById = async (req, res, next) => {
       return;
     }
 
-    console.log(params)
-
-    console.log("Price Book id====================",params.priceBookId)
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceBookId);
