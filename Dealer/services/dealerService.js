@@ -56,9 +56,9 @@ module.exports = class dealerService {
   }
 
   // Delete dealer by id
-  static async deleteDealer(criteria,newValue,option) {
+  static async deleteDealer(criteria) {
     try {
-      const deletedResponse = await dealer.findOneAndDelete(criteria,newValue,option);
+      const deletedResponse = await dealer.deleteOne(criteria);
       return deletedResponse;
     } catch (error) {
       console.log(`Could  not delete dealer ${error}`);
@@ -100,8 +100,19 @@ module.exports = class dealerService {
     }
   }
 
- 
+  static async isApprovedOrDisapproved(criteria, newValue, option) {
 
+    try {
+      const updatedResult = await dealer.findByIdAndUpdate(
+        criteria,
+        newValue,
+        option
+      );
+      return updatedResult;
+    } catch (error) {
+      console.log(error);
+    }
+  } 
   
 };
 

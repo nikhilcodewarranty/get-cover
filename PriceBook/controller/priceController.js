@@ -817,7 +817,7 @@ res.send({
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
-    let ID = { _id: req.params.name }
+    let ID = { _id: req.params.catId }
     let projection = { isDeleted: 0, __v: 0 }
     console.log(ID);
     console.log(projection);

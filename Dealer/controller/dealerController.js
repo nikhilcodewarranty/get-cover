@@ -37,7 +37,13 @@ exports.getAllDealers = async (req, res) => {
     }
     let query = { isDeleted: false }
     let projection = { __v: 0, isDeleted: 0 }
-    const dealers = await dealerService.getAllDealers(query, projection);
+    let dealers = await dealerService.getAllDealers(query, projection);
+    //-------------Get All Dealers Id's------------------------
+    const dealerIds = dealers.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: dealerIds },isPrimary:true};
+   
+    let dealarUser = await userService.getDealersUser(query1,projection)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -45,10 +51,24 @@ exports.getAllDealers = async (req, res) => {
       });
       return;
     };
+
+    dealers = dealers.map(dealer => dealer.toObject());
+    dealarUser = dealarUser.map(user => user.toObject());     
+    let merged = [];
+
+    for(let i=0; i<dealers.length; i++) {
+      merged.push({
+       ...dealers[i], 
+       ...(dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id)))}
+      );
+    }
+
+    //console.log(merged);return false;
+    
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: dealers
+      result: merged
     })
   } catch (err) {
     res.send({
@@ -604,12 +624,6 @@ const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopolog
 //   console.error('Error connecting to databases:', err);
 // });
 
-
-
-
-
-
-
 exports.getDealerRequest = async (req, res) => {
   try {
     let data = req.body
@@ -661,4 +675,59 @@ exports.getDealerRequest = async (req, res) => {
     console.log("Err in getDealerRequest : ", err);
   }
 }
+
+
+exports.isApprovedOrDisapproved = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    console.log(req.body)
+    console.log(req.params.dealerId)
+    const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId});
+    if (!singleDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer not found"
+      })
+      return;
+    }
+    //check status is in body
+    if (req.body.status==undefined) {
+      res.send({
+        code: constant.errorCode,
+        message: "Status is required"
+      })
+      return;
+    }
+    const approved = await dealerService.isApprovedOrDisapproved({ _id: req.params.dealerId},{status:req.body.status},{new:true});
+    if(!approved){
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to approve"
+      })
+      return;
+    }
+     //if status is rejected
+    if(req.body.status=='Rejected'){
+         const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId})
+         console.log("deleteDealer=============",deleteDealer)
+    }
+    res.send({
+      code: constant.successCode,
+      data:"Status Updated"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
 

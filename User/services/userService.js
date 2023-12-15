@@ -205,4 +205,26 @@ module.exports = class userService {
   }
 
 
+  static async createTerms(data) {
+    try {
+      const response = await terms.insertMany(data);
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //get role by id
+  static async getDealersUser(query, projection) {
+    try {
+      const response = await user.find(query, projection)
+      return response
+    } catch (err) {
+      console.log(err);
+
+    }
+  }
+  
+
+
 };

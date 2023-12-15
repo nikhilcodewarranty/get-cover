@@ -22,7 +22,7 @@ router.put('/updatePriceBookCategory/:catId',[verifyToken],validator("update_pri
 //router.put('/updateCategory/:catId',[verifyToken],validator("update_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
 router.post('/getPriceBookCategories',[verifyToken],priceController.getPriceBookCat) // get price book category api
 router.get('/getActivePriceBookCategories',[verifyToken],priceController.getActivePriceBookCategories) // get price book category api
-router.get('/getPriceBookCategoryById/:name',[verifyToken],priceController.getPriceBookCatById) // get price book by category
+router.get('/getPriceBookCategoryById/:catId',[verifyToken],priceController.getPriceBookCatById) // get price book by category
 router.get('/getCategoryByPriceBook/:name',[verifyToken],priceController.getCategoryByPriceBook) // get price book category by price book
 
 // Dealer Price Book api's

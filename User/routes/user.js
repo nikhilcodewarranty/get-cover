@@ -16,7 +16,6 @@ router.get("/dealers", [verifyToken],dealerController.getAllDealers); //get all 
 router.get("/servicer", [verifyToken],serviceController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms",[verifyToken],userController.getAllTerms); //get all dealers
 
-
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
 router.post("/createTerms", userController.createTerms); //to create the super admin credentials
@@ -26,6 +25,9 @@ router.post("/sendLinkToEmail" ,userController.sendLinkToEmail); //send password
 router.post("/resetPassword/:userId/:code" ,userController.resetPassword); //reset password 
 router.post("/dealerStatusUpdate",[verifyToken] ,dealerController.statusUpdate); //Update Status
 router.post("/servicerStatusUpdate",[verifyToken] ,serviceController.statusUpdate); //Update Status
+
+
+router.put("/isApprovedOrDisapproved/:dealerId",[verifyToken],dealerController.isApprovedOrDisapproved); 
 
 //create dealer api from super admin
 //router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
