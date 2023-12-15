@@ -33,7 +33,7 @@ module.exports = class priceBookService {
 
   static async getTotalCount() {
     try {
-      const count = await priceCategory.countDocuments();
+      const count = await priceCategory.find().sort({"createdAt":-1})
       return count;
     } catch (error) {
       console.log(`Could not fetch price book category${error}`);
@@ -43,7 +43,7 @@ module.exports = class priceBookService {
 
   static async getPriceBookCount() {
     try {
-      const count = await priceBook.find().countDocuments();
+      const count = await priceBook.find().sort({"createdAt":-1});
       return count;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);

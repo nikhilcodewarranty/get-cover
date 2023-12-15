@@ -138,8 +138,11 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
       status: data.status,
-      unique_key: parseInt(count) + 1
+      unique_key: Number(count[0].unique_key) + 1
     }
+
+    // console.log(priceBookData);
+    // return;
 
     let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, {})
     if (checkPriceBook) {
@@ -546,16 +549,13 @@ exports.createPriceBookCat = async (req, res) => {
       })
       return;
     }
-
-
     // Check Total Counts
     const count = await priceBookService.getTotalCount();
     const catData = {
       name: data.name,
       description: data.description,
-      unique_key: parseInt(count) + 1
+      unique_key: Number(count[0].unique_key) + 1
     };
-
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
     if (!createdCategory) {
