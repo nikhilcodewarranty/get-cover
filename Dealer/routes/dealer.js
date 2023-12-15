@@ -14,6 +14,7 @@ router.post("/uploadsDealerPriceBook",[verifyToken],upload.single('file'),dealer
 router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceBooks);
+router.get("/getDealerRequest",[verifyToken],dealerController.getDealerRequest);
 
 router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],validator('update_dealer_price_validation'),dealerController.statusUpdate); // update price book detail with ID
 

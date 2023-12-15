@@ -7,12 +7,12 @@ const dealerModel = require("../../Dealer/model/dealer");
 
 module.exports = class userService {
   // get all users
-  static async getAllUsers(query,projection) {
+  static async getAllUsers(query, projection) {
     try {
       const allUsers = await user.aggregate([
         {
-          $match:{
-            roleId:query.roleId
+          $match: {
+            roleId: query.roleId
           }
         },
         // Join with user_role table
@@ -88,8 +88,6 @@ module.exports = class userService {
     }
   };
 
-
-  
   // get user detail with id
   static async getUserById(userId, projection) {
     try {
@@ -131,17 +129,15 @@ module.exports = class userService {
     }
   };
 
-    //get all TERMS
-    static async getAllTerms(query, projection) {
-      try {
-        const allTerms = await terms.find(query, projection);
-        return allTerms;
-      } catch (error) {
-        console.log(`Could not find role ${error}`);
-      }
-    };
-
-  
+  //get all TERMS
+  static async getAllTerms(query, projection) {
+    try {
+      const allTerms = await terms.find(query, projection);
+      return allTerms;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  };
 
   //add role
   static async addRole(data) {
@@ -153,6 +149,7 @@ module.exports = class userService {
     }
   };
 
+  //create term
   static async createTerms(data) {
     try {
       const response = await terms.insertMany(data);
@@ -162,7 +159,7 @@ module.exports = class userService {
     }
   };
 
-
+  //get role by id
   static async getRoleById(query, projection) {
     try {
       const response = await role.findOne(query, projection)
@@ -173,9 +170,10 @@ module.exports = class userService {
     }
   }
 
+  //find user by email
   static async findByEmail(query) {
     try {
-      const response = await user.find({ 'email': { $in: query }}).select('-_id email');
+      const response = await user.find({ 'email': { $in: query } }).select('-_id email');
       return response;
       // const response = await user.aggregate([
       //   {
@@ -184,7 +182,7 @@ module.exports = class userService {
       //         { $match: { 'email': { $in: query } } },
       //         { $addFields: { exist: 1 } },
       //         { $project: { _id: 0, email: 1, exist: 1 } },
-              
+
       //       ],
       //       nonMatchingResults: [
       //         { $match: { 'email': { $nin: query } } },
@@ -206,5 +204,5 @@ module.exports = class userService {
     }
   }
 
-  
+
 };
