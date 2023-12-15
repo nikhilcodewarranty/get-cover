@@ -21,43 +21,6 @@ const mail = require("@sendgrid/mail");
 
 //----------------------- api's function ---------------//
 
-// get all users 
-exports.getAllUsers = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    };
-    const checkRole = await role.findOne({ role: { '$regex': req.params.role ,'$options': 'i'} });
-    console.log('role+++++++++++++++++++++++++++++++++=', checkRole)
-    let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
-    console.log(query)
-    let projection = { isDeleted: 0, __v: 0 }
-    const users = await userService.getAllUsers(query, projection);
-    if (!users) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      })
-      return
-    }
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: {
-        users: users
-      }
-    })
-  } catch (error) {
-    res
-      .status(constant.errorCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
 // create user 
 exports.createUser = async (req, res) => {
   try {
@@ -88,304 +51,6 @@ exports.createUser = async (req, res) => {
   };
 };
 
-//get user detail with ID
-exports.getUserById = async (req, res) => {
-  try {
-    let projection = { __v: 0, status: 0 }
-    let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
-    const singleUser = await userService.getUserById(userId, projection);
-    if (!singleUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the user detail"
-      })
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: singleUser
-    })
-  } catch (error) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
-
-// update user details with ID
-exports.updateUser = async (req, res) => {
-  try {
-    let criteria = { _id: req.params.userId };
-    let option = { new: true };
-    const updateUser = await userService.updateUser(criteria, req.body, option);
-    if (!updateUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update the user data"
-      });
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Updated Successfully",
-    });
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
-  };
-};
-
-//delete user api
-exports.deleteUser = async (req, res) => {
-  try {
-    let criteria = { _id: req.params.userId };
-    let newValue = {
-      $set: {
-        isDeleted: true
-      }
-    };
-    let option = { new: true }
-    const deleteUser = await userService.deleteUser(criteria, newValue, option);
-    if (!deleteUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to delete the user"
-      });
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Deleted Successfully"
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
-  }
-};
-
-// create super admin credentials
-exports.createSuperAdmin = async (req, res) => {
-  try {
-    let data = req.body
-    // Check if the user with the provided email already exists
-    const existingUser = await userService.findOneUser({ email: data.email });
-    if (existingUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Email already exist"
-      })
-      return;
-    }
-
-    // Check if the provided role is 'super'
-    const superRole = await role.findOne({ role: "Super Admin" });
-    if (!superRole) {
-      res.send({
-        code: constant.errorCode,
-        message: "Role not found"
-      })
-      return;
-    }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(data.password, 10);
-    let userData = {
-      firstName: data.firstName,
-      lastName: data.lastName,
-      email: data.email,
-      password: hashedPassword,
-      accountId: data.accountId,
-      phoneNumber: data.phoneNumber,
-      roleId: superRole._id, //Assign super role
-      isPrimary: data.isPrimary,
-      status: data.status,
-    }
-
-    // Create a new user with the provided data
-    const savedUser = await userService.createUser(userData);
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: savedUser._id, email: savedUser.email },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    //success response 
-    res.send({
-      code: constant.successCode,
-      message: "Account created successfully",
-      data: savedUser
-    })
-  } catch (error) {
-    res.send({
-      code: constant.errorCode,
-      message: error.message
-    });
-  }
-};
-
-//create a new dealer from SA 
-exports.createDealer = async (req, res) => {
-  try {
-    const data = req.body;
-    // Check if the user has Super Admin role
-    if (req.role !== "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only Super Admin is allowed to perform this action"
-      });
-      return;
-    }
-
-    // Check if the specified role exists
-    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
-    if (!checkRole) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid role"
-      });
-      return;
-    }
-
-    // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({name:{'$regex':new RegExp(`^${req.body.name}$`, 'i')}}, { isDeleted: 0, __v: 0 });
-    if (existingDealer) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Dealer name already exists',
-        });
-      return;
-    }
-    if (!req.body.isAccountCreate) {
-
-      //check Email is already exist
-      
-      const dealerPrimaryUserArray = data.dealerPrimary;
-      const primaryEmailValues = dealerPrimaryUserArray.map(value => value.email);
-
-      const primaryUserData = await userService.findByEmail(primaryEmailValues);
-      if (primaryUserData.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Email Already Exists',
-          data: primaryUserData
-        });
-        return;
-      }
-      accountCreationFlag = false;
-    }
-
-
-    // Primary Account Creation with status false
-    
-
-    if (accountCreationFlag) {
-      const dealerUserArray = data.dealers;
-      const emailValues = dealerUserArray.map(value => value.email);
-
-      const userData = await userService.findByEmail(emailValues);
-      if (userData.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Email Already Exists',
-          data: userData
-        });
-        return;
-      }
-
-      
-      const resultDealerData = await Promise.all(dealerUserArray.map(async (obj) => {
-        const hashedPassword = await bcrypt.hash(obj.password, 10);
-        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-      }));
-
-      const createUsers = await userService.insertManyUser(resultDealerData);
-      if (!createUsers) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save users"
-        });
-        return;
-      }
-
-      // Dealer Price Book Data
-      const dealerPriceArray = data.priceBook;
-      const resultPriceData = dealerPriceArray.map(obj => ({
-        'priceBook': obj.priceBook,
-        'dealerId': createMetaData._id,
-        'brokerFee': obj.brokerFee,
-        'retailPrice': obj.retailPrice
-      }));
-
-      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
-      if (!createPriceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save price book"
-        });
-        return;
-      }
-    }
-
-    // Create Dealer Meta Data
-    const dealerMeta = {
-      name: data.name,
-      street: data.street,
-      userAccount: req.body.customerAccountCreated,
-      city: data.city,
-      zip: data.zip,
-      state: data.state,
-      country: data.country,
-      createdBy: data.createdBy
-    };
-
-    // Create Dealer
-    const createMetaData = await dealerService.createDealer(dealerMeta);
-    if (!createMetaData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Something went wrong"
-      });
-      return;
-    }
-
-    const resultPrimaryDealerData = await Promise.all(dealerPrimaryUserArray.map(async (obj) => {
-      const hashedPassword = await bcrypt.hash(obj.password, 10);
-      return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-    }));
-    const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
-    if (!createUsers) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to save users"
-      });
-      return;
-    }
-
-    // If account Creation is true
-  
-
-    res.send({
-      code: constant.successCode,
-      message: 'Successfully Created',
-      data: createMetaData
-    });
-    return;
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
-    return;
-  }
-};
-
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
   try {
@@ -408,7 +73,7 @@ exports.createServiceProvider = async (req, res) => {
     //const hashedPassword = await bcrypt.hash(data.password, 10);
 
     // Check if the specified role exists
-    const checkRole = await role.findOne({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}});
+    const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
       return res.send({
         code: constant.errorCode,
@@ -475,6 +140,48 @@ exports.createServiceProvider = async (req, res) => {
   }
 };
 
+// add new terms /// only for backend use
+exports.createTerms = async (req, res) => {
+  try {
+    const monthTerms = generateMonthTerms(10); // You can specify the number of months as needed
+
+    console.log(monthTerms);
+
+    const createdTerms = await userService.createTerms(monthTerms);
+
+    res.send({
+      code: constant.successCode,
+      message: "Created Successfully",
+      data: createdTerms
+    });
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the terms"
+    });
+  }
+};
+
+//generate monthly terms /// only for backend use
+const generateMonthTerms = (numberOfTerms) => {
+  const monthTerms = [];
+
+  for (let i = 1; i <= numberOfTerms; i++) {
+    const months = i * 12;
+    const monthObject = {
+      terms: `${months} Month`,
+      status: true
+    };
+
+    monthTerms.push(monthObject);
+  }
+
+  return monthTerms;
+};
+
+
+//---------------------------------------------------- refined code ----------------------------------------//
+
 // Login route
 exports.login = async (req, res) => {
   try {
@@ -530,33 +237,153 @@ exports.login = async (req, res) => {
   }
 };
 
-// get all roles
-exports.getAllRoles = async (req, res) => {
+// create super admin credentials
+exports.createSuperAdmin = async (req, res) => {
   try {
-    let query = { isDeleted: false }
-    let projection = { __v: 0 }
-    const roles = await userService.getAllRoles(query, projection);
-    if (!users) {
+    let data = req.body
+    // Check if the user with the provided email already exists
+    const existingUser = await userService.findOneUser({ email: data.email });
+    if (existingUser) {
       res.send({
         code: constant.errorCode,
-        message: "Unable to fetch the roles "
-      });
+        message: "Email already exist"
+      })
       return;
-    };
-    //success response
+    }
+
+    // Check if the provided role is 'super'
+    const superRole = await role.findOne({ role: "Super Admin" });
+    if (!superRole) {
+      res.send({
+        code: constant.errorCode,
+        message: "Role not found"
+      })
+      return;
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(data.password, 10);
+    let userData = {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      email: data.email,
+      password: hashedPassword,
+      accountId: data.accountId,
+      phoneNumber: data.phoneNumber,
+      roleId: superRole._id, //Assign super role
+      isPrimary: data.isPrimary,
+      status: data.status,
+    }
+
+    // Create a new user with the provided data
+    const savedUser = await userService.createUser(userData);
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { userId: savedUser._id, email: savedUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    //success response 
     res.send({
       code: constant.successCode,
-      message: "Successful",
-      result: {
-        roles: roles
-      }
+      message: "Account created successfully",
+      data: savedUser
     })
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: "Unable to create the dealer"
+      message: error.message
+    });
+  }
+};
+
+// get all users 
+exports.getAllUsers = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    };
+    const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
+    console.log('role+++++++++++++++++++++++++++++++++=', checkRole)
+    let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
+    console.log(query)
+    let projection = { isDeleted: 0, __v: 0 }
+    const users = await userService.getAllUsers(query, projection);
+    if (!users) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: {
+        users: users
+      }
+    })
+  } catch (error) {
+    res
+      .status(constant.errorCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+//get user detail with ID
+exports.getUserById = async (req, res) => {
+  try {
+    let projection = { __v: 0, status: 0 }
+    let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
+    const singleUser = await userService.getUserById(userId, projection);
+    if (!singleUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the user detail"
+      })
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: singleUser
+    })
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
     })
   }
+};
+
+// update user details with ID
+exports.updateUser = async (req, res) => {
+  try {
+    let criteria = { _id: req.params.userId };
+    let option = { new: true };
+    const updateUser = await userService.updateUser(criteria, req.body, option);
+    if (!updateUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the user data"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully",
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
 };
 
 // get all roles
@@ -591,11 +418,11 @@ exports.getAllTerms = async (req, res) => {
 // add new roles
 exports.addRole = async (req, res) => {
   try {
-    let checkRole = await userService.getRoleById({role:{'$regex':new RegExp(`^${req.body.role}$`, 'i')}})
-    if(checkRole){
+    let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } })
+    if (checkRole) {
       res.send({
-        code:constant.errorCode,
-        message:"Role already exist"
+        code: constant.errorCode,
+        message: "Role already exist"
       })
       return;
     }
@@ -619,45 +446,6 @@ exports.addRole = async (req, res) => {
   }
 };
 
-// add new terms
-exports.createTerms = async (req, res) => {
-  try {
-    const monthTerms = generateMonthTerms(10); // You can specify the number of months as needed
-
-    console.log(monthTerms);
-
-    const createdTerms = await userService.createTerms(monthTerms);
-
-    res.send({
-      code: constant.successCode,
-      message: "Created Successfully",
-      data: createdTerms
-    });
-  } catch (error) {
-    res.send({
-      code: constant.errorCode,
-      message: "Unable to create the terms"
-    });
-  }
-};
-
-//generate monthly terms
-const generateMonthTerms = (numberOfTerms) => {
-  const monthTerms = [];
-
-  for (let i = 1; i <= numberOfTerms; i++) {
-    const months = i * 12;
-    const monthObject = {
-      terms: `${months} Month`,
-      status: true
-    };
-
-    monthTerms.push(monthObject);
-  }
-
-  return monthTerms;
-};
-
 //send reset password link to email
 exports.sendLinkToEmail = async (req, res) => {
   try {
@@ -667,7 +455,7 @@ exports.sendLinkToEmail = async (req, res) => {
     if (!checkEmail) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid email"
+        message: "User does not exist"
       })
     } else {
       if (checkEmail.status == false || isDeleted == true) {
@@ -739,3 +527,62 @@ exports.resetPassword = async (req, res) => {
     })
   }
 }
+
+//delete user api
+exports.deleteUser = async (req, res) => {
+  try {
+    let criteria = { _id: req.params.userId };
+    let newValue = {
+      $set: {
+        isDeleted: true
+      }
+    };
+    let option = { new: true }
+    const deleteUser = await userService.deleteUser(criteria, newValue, option);
+    if (!deleteUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to delete the user"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Deleted Successfully"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  }
+};
+
+// get all roles
+exports.getAllRoles = async (req, res) => {
+  try {
+    let query = { isDeleted: false }
+    let projection = { __v: 0 }
+    const roles = await userService.getAllRoles(query, projection);
+    if (!users) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the roles "
+      });
+      return;
+    };
+    //success response
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        roles: roles
+      }
+    })
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
