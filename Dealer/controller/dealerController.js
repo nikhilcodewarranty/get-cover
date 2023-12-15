@@ -35,9 +35,65 @@ exports.getAllDealers = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false }
+    let query = { isDeleted: false, status:"Approved" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
+    //-------------Get All Dealers Id's------------------------
+    const dealerIds = dealers.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: dealerIds },isPrimary:true};
+   
+    let dealarUser = await userService.getDealersUser(query1,projection)
+    if (!dealers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    dealers = dealers.map(dealer => dealer.toObject());
+    dealarUser = dealarUser.map(user => user.toObject());     
+    let merged = [];
+
+    for(let i=0; i<dealers.length; i++) {
+      merged.push({
+       ...dealers[i], 
+       ...(dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id)))}
+      );
+    }
+
+    //console.log(merged);return false;
+    
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: merged
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+
+//Get Pending Request dealers
+
+exports.getPendingDealers = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let query = { isDeleted: false, status:"Pending" }
+    let projection = { __v: 0, isDeleted: 0 }
+    let dealers = await dealerService.getAllDealers(query, projection);
+
     //-------------Get All Dealers Id's------------------------
     const dealerIds = dealers.map(obj => obj._id);
     // Get Dealer Primary Users from colection

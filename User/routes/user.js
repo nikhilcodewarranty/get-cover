@@ -13,6 +13,7 @@ router.get("/users/:role" ,[verifyToken],userController.getAllUsers); // get all
 router.get("/getUserById/:userId" ,[verifyToken],userController.getUserById); // get all users 
 router.get("/roles", [verifyToken],userController.getAllRoles); //get all roles
 router.get("/dealers", [verifyToken],dealerController.getAllDealers); //get all dealers
+router.get("/pendingDealers", [verifyToken],dealerController.getPendingDealers); //get all dealers
 router.get("/servicer", [verifyToken],serviceController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms",[verifyToken],userController.getAllTerms); //get all dealers
 
