@@ -667,7 +667,7 @@ exports.sendLinkToEmail = async (req, res) => {
     if (!checkEmail) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid email"
+        message: "User does not exist"
       })
     } else {
       if (checkEmail.status == false || isDeleted == true) {

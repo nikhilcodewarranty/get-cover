@@ -207,7 +207,7 @@ exports.registerDealer = async (req, res) => {
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer already exist with this name"
+        message: "Dealer already exist with this account name"
       })
       return;
     }
