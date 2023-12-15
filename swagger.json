@@ -325,6 +325,52 @@
           }
         }
       },
+      "/admin/isApprovedOrDisapproved/:dealerId":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Status Update",
+        
+           "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the dealer"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string"
+                  }         
+                  
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Update successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
       "/admin/dealerStatusUpdate":{
         "post":{
           "security": [ { "Bearer": [] } ],
