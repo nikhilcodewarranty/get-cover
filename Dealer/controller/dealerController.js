@@ -207,7 +207,7 @@ exports.registerDealer = async (req, res) => {
     if (existingDealer) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer already exist with this account name"
+        message: "Dealer already exist with this name"
       })
       return;
     }
@@ -435,7 +435,7 @@ exports.uploadPriceBook = async (req, res) => {
         if (missingProductNames.length > 0) {
           res.send({
             code: constant.errorCode,
-            message: 'Some product names do not match.',
+            message: 'The Product does not exist.',
             missingProductNames: missingProductNames
           });
           return;
@@ -443,7 +443,7 @@ exports.uploadPriceBook = async (req, res) => {
         if (foundProducts.length == 0) {
            res.send({
             code: constant.errorCode,
-            message: 'Product name is not exist. Please uploads the products and then try again',
+            message: 'The Product is already exist for this dealer',
           });
           return;
         }
@@ -470,16 +470,15 @@ exports.uploadPriceBook = async (req, res) => {
         let newArray1 = results.map((obj) => ({
           priceBook: obj.priceBook,
           status: true,
-          brokerFee: obj.brokerFee,
+          retailPrice: obj.retailPrice,
           dealerId: req.body.dealerId
         }));
 
         // Merge brokerFee from newArray into foundProductData based on priceBook
       const mergedArray = foundProductData.map(foundProduct => ({
         ...foundProduct,
-        brokerFee: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.brokerFee || foundProduct.brokerFee
+        retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice
       }));
-
       
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);

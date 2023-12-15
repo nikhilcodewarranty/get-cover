@@ -790,7 +790,7 @@ exports.updatePriceBookCat = async (req, res) => {
     else {  
         //Update PriceBook if status is false
         if(data.status==false){
-          let updatePriceBook = await priceBookService.updatePriceBook({category:updateCatResult._id},{status:data.status},{new:true})
+          let updatePriceBook = await priceBookService.updatePriceBook({category:req.params.catId},{status:data.status},{new:true})
           let projection = { isDeleted: 0, __v: 0 }
           const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
           const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);

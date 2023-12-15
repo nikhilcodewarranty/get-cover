@@ -28,7 +28,7 @@ router.post("/dealerStatusUpdate",[verifyToken] ,dealerController.statusUpdate);
 router.post("/servicerStatusUpdate",[verifyToken] ,serviceController.statusUpdate); //Update Status
 
 //create dealer api from super admin
-router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
+//router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
 
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken],validator("create_service_provider_validation") ,userController.createServiceProvider );
