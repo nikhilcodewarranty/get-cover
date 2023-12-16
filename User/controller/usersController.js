@@ -215,6 +215,7 @@ exports.createDealer = async (req, res) => {
     }
     //check request body contains duplicate emails
     const primaryUserData = data.dealerPrimary;
+    const dealerPriceArray = data.priceBook;
     const dealersUserData = data.dealers;
     const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
     const allUserData = [...dealersUserData, ...primaryUserData];
@@ -240,22 +241,20 @@ exports.createDealer = async (req, res) => {
     // check Price Book upload manually or by bulk upload
     let savePriceBookType = req.body.savePriceBookType
     if(savePriceBookType=='manually'){
-      //check price book  exist or not
-    const dealerPriceArray = data.priceBook;
-    const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
-    const priceBookCreateria = { priceBook: { $in: priceIdsToUpdate } }
-
-     let checkPriceBook = await priceBookService.getPriceBookById({ _id:dealerPriceArray[0].priceBook  }, {})
-     if (checkPriceBook) {
-       res.send({
-       code: constant.errorCode,
-        message: "Product already exist with this name"
-        })
-        return;
-    }
+          //check price book  exist or not
+            const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
+            const priceBookCreateria = { _id: { $in: priceBook } }
+            let checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria,{isDeleted:false})
+            if (!checkPriceBook) {
+              res.send({
+                code: constant.errorCode,
+                  message: "Product does not exist.Please check the product names"
+                })
+                return;
+            }
     
-    }
-    // Create Dealer Meta Data
+       }
+       // Create Dealer Meta Data
         const dealerMeta = {
           name: data.name,
           street: data.street,
@@ -292,6 +291,15 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
+
+
+      //save Price Books for this dealer
+      const resultPriceData = dealerPriceArray.map(obj => ({
+        'priceBook': obj.priceBook,
+        'dealerId': createMetaData._id,
+        'brokerFee': obj.brokerFee,
+        'retailPrice': obj.retailPrice
+      }));
        res.send({
         code: constant.successCode,
         message: 'Successfully Created',

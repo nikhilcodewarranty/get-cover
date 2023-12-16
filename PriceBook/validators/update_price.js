@@ -7,7 +7,7 @@ const update_price_validation = Joi.object({
     reinsuranceFee:Joi.number().optional().allow(),
     adminFee:Joi.number().optional().allow(),
     reserveFutureFee:Joi.number().optional().allow(),
-    category:Joi.string().trim().optional().allow(),
+    priceCatId:Joi.string().trim().optional().allow(),
     status: Joi.boolean().optional().allow()
 })
 

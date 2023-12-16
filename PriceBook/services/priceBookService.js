@@ -15,6 +15,10 @@ module.exports = class priceBookService {
     }
   }
 
+
+
+  
+
   //get all active price book 
   static async getAllActivePriceBook(query, projection) {
     try {
@@ -180,6 +184,16 @@ module.exports = class priceBookService {
       return response;
     } catch (error) {
       console.log(`Could not fetch price book name ${error}`);
+    }
+  }
+
+  static async getMultiplePriceBok(query, projection, limit, page) {
+    try {
+
+      const allPriceBook = await priceBook.find(query, projection)
+      return allPriceBook;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
     }
   }
 }
