@@ -215,11 +215,15 @@ exports.createDealer = async (req, res) => {
     }
     //check request body contains duplicate emails
     const primaryUserData = data.dealerPrimary;
-    const dealerPriceArray = data.priceBook;
-    const dealersUserData = data.dealers;
+    const dealerPriceArray = data.priceBook ? data.priceBook : [];
+    const dealersUserData = data.dealers ? data.dealers : [];
     const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
+
+    console.log("allEmails========================",allEmails)
     const allUserData = [...dealersUserData, ...primaryUserData];
     const uniqueEmails = new Set(allEmails);    
+
+    console.log("uniqueEmails====================",uniqueEmails);
      if(allEmails.length !== uniqueEmails.size){
         res.send({
           code: constant.errorCode,
@@ -245,15 +249,17 @@ exports.createDealer = async (req, res) => {
               const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
               const priceBookCreateria = { _id: { $in: priceBook } }
               let checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria,{isDeleted:false})
-              if (!checkPriceBook) {
+              console.log("checkPriceBook=================",checkPriceBook)
+              if (checkPriceBook.length==0) {
                 res.send({
                   code: constant.errorCode,
-                    message: "Product does not exist.Please check the product names"
+                  message: "Product does not exist.Please check the product"
                   })
-                  return;
-              }
-    
+                 return;
+              }    
        }
+      console.log("savePriceBookType====================",savePriceBookType);
+   // return false;
        // Create Dealer Meta Data
         const dealerMeta = {
           name: data.name,
@@ -300,6 +306,15 @@ exports.createDealer = async (req, res) => {
         'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
         'retailPrice': obj.retailPrice
       }));
+
+      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+      if (!createPriceBook) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to save price book"
+        });
+        return;
+      }
        res.send({
         code: constant.successCode,
         message: 'Successfully Created',
