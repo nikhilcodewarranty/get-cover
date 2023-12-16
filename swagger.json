@@ -346,7 +346,7 @@
           }
         }
       },
-      "/admin/isApprovedOrDisapproved/:dealerId":{
+      "/admin/rejectDealer/:dealerId":{
         "post":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],

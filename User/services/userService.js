@@ -112,7 +112,7 @@ module.exports = class userService {
   //delete user with ID
   static async deleteUser(criteria, newValue, option) {
     try {
-      const deletedResponse = await user.findOneAndUpdate(criteria, newValue, option);
+      const deletedResponse = await user.deleteOne(criteria, newValue, option);
       return deletedResponse;
     } catch (error) {
       console.log(`Could not delete user ${error}`);

@@ -179,7 +179,7 @@ const generateMonthTerms = (numberOfTerms) => {
   return monthTerms;
 };
 
-// create dealer 
+// create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
