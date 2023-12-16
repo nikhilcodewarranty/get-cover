@@ -736,7 +736,7 @@ exports.getDealerRequest = async (req, res) => {
 }
 
 
-exports.isDisapproved = async (req, res) => {
+exports.isApprovedOrDisapproved = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
       res.send({
