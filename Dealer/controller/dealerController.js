@@ -35,16 +35,16 @@ exports.getAllDealers = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, status:"Approved" }
+    let query = { isDeleted: false, status: "Approved" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
     //-------------Get All Dealers Id's------------------------
     const dealerIds = dealers.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: dealerIds },isPrimary:true};
-   
-    let dealarUser = await userService.getDealersUser(query1,projection)
-    console.log("dealarUser=====================",dealarUser)
+    const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    let dealarUser = await userService.getDealersUser(query1, projection)
+    console.log("dealarUser=====================", dealarUser)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -54,19 +54,19 @@ exports.getAllDealers = async (req, res) => {
     };
 
     dealers = dealers.map(dealer => dealer.toObject());
-    dealarUser = dealarUser.map(user => user.toObject());     
+    dealarUser = dealarUser.map(user => user.toObject());
     let merged = [];
 
-    for(let i=0; i<dealers.length; i++) {
-    const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
-        if (matchingUser && matchingUser.isPrimary) {
-          merged.push({
-              ...dealers[i],
-              ...matchingUser
-          });
+    for (let i = 0; i < dealers.length; i++) {
+      const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
+      if (matchingUser && matchingUser.isPrimary) {
+        merged.push({
+          ...dealers[i],
+          ...matchingUser
+        });
       }
     }
-   
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -92,16 +92,18 @@ exports.getPendingDealers = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, status:"Pending" }
+    let query = { isDeleted: false, status: "Pending" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
+    console.log('dealers+++++++++++++++++++=',dealers)
     //-------------Get All Dealers Id's------------------------
 
     const dealerIds = dealers.map(obj => obj._id);
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: dealerIds },isPrimary:true};
-   
-    let dealarUser = await userService.getDealersUser(query1,projection)
+    const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    let dealarUser = await userService.getDealersUser(query1, projection)
+    console.log('dealers+++++++++++++++++++=',dealerIds)
 
     if (!dealers) {
       res.send({
@@ -112,19 +114,19 @@ exports.getPendingDealers = async (req, res) => {
     };
 
     dealers = dealers.map(dealer => dealer.toObject());
-    dealarUser = dealarUser.map(user => user.toObject());     
+    dealarUser = dealarUser.map(user => user.toObject());
     let merged = [];
 
-    for(let i=0; i<dealers.length; i++) {
-    const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
-        if (matchingUser && matchingUser.isPrimary) {
-          merged.push({
-              ...dealers[i],
-              ...matchingUser
-          });
+    for (let i = 0; i < dealers.length; i++) {
+      const matchingUser = dealarUser.find((itmInner) => itmInner.accountId.equals(dealers[i]._id));
+      if (matchingUser && matchingUser.isPrimary) {
+        merged.push({
+          ...dealers[i],
+          ...matchingUser
+        });
       }
     }
-   
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -137,6 +139,7 @@ exports.getPendingDealers = async (req, res) => {
     })
   }
 };
+
 //create new dealer
 exports.createDealer = async (req, res) => {
   try {
@@ -484,7 +487,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     //check Dealer Exist
     let checkDealer = await dealerService.getDealerById(req.body.dealerId)
-    if(!checkDealer){
+    if (!checkDealer) {
       res.send({
         code: constant.errorCode,
         message: "Dealer Not found"
@@ -512,7 +515,7 @@ exports.uploadPriceBook = async (req, res) => {
         }));
 
 
-        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));    
+        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
           res.send({
             code: constant.errorCode,
@@ -522,7 +525,7 @@ exports.uploadPriceBook = async (req, res) => {
           return;
         }
         if (foundProducts.length == 0) {
-           res.send({
+          res.send({
             code: constant.errorCode,
             message: 'The Product is already exist for this dealer',
           });
@@ -538,17 +541,17 @@ exports.uploadPriceBook = async (req, res) => {
               { 'dealerId': req.body.dealerId }
             ]
           }
-       
+
           const existingData = await dealerPriceService.findByIds(query);
-                if (existingData.length > 0) {
-                  res.send({
-                    code: constant.errorCode,
-                    message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
-                  });
-                return;
-              }
-     
-            }
+          if (existingData.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
+            });
+            return;
+          }
+
+        }
         let newArray1 = results.map((obj) => ({
           priceBook: obj.priceBook,
           status: true,
@@ -557,18 +560,18 @@ exports.uploadPriceBook = async (req, res) => {
         }));
 
         // Merge brokerFee from newArray into foundProductData based on priceBook
-      const mergedArray = foundProductData.map(foundProduct => ({
-        ...foundProduct,
-        retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice
-      }));
-      
+        const mergedArray = foundProductData.map(foundProduct => ({
+          ...foundProduct,
+          retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice
+        }));
+
 
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
         // Respond with success message and uploaded data
         if (uploaded) {
-           res.send({
+          res.send({
             code: constant.successCode,
             message: 'Success',
             data: uploaded
@@ -641,6 +644,56 @@ exports.createDealerPriceBook = async (req, res) => {
   }
 }
 
+exports.approveOrRejectDealer = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
+    if (!singleDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer not found"
+      })
+      return;
+    }
+
+    //if status is rejected
+    if (req.body.status == 'Rejected') {
+      const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
+      res.send({
+        code: constant.successCode,
+        data: "Rejected Successful"
+      })
+      return;
+    }
+
+    // approve status updating
+    const approved = await dealerService.isApprovedOrDisapproved({ _id: req.params.dealerId }, { status: req.body.status }, { new: true });
+    if (!approved) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to approve"
+      })
+      return;
+    }
+
+    res.send({
+      code: constant.successCode,
+      data: "Status Updated"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 
@@ -683,51 +736,52 @@ const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopolog
 //   console.error('Error connecting to databases:', err);
 // });
 
+
 exports.getDealerRequest = async (req, res) => {
   try {
     let data = req.body
     Promise.all([client1.connect(), client2.connect()])
-  .then(async() => {
-    console.log('Connected to both databases');
+      .then(async () => {
+        console.log('Connected to both databases');
 
-    // Specify the databases
-    const db1 = client1.db();
-    const db2 = client2.db();
+        // Specify the databases
+        const db1 = client1.db();
+        const db2 = client2.db();
 
-    // Specify the collections
-    const collection1 = db1.collection('dealers');
-    const collection2 = db2.collection('users');
-    console.log(collection2)
+        // Specify the collections
+        const collection1 = db1.collection('dealers');
+        const collection2 = db2.collection('users');
+        console.log(collection2)
 
-    // Perform a $lookup aggregation across databases
-    console.log('Perform a $lookup aggregation across databases')
-   let data1 = await dealer.aggregate([
-      {
-        $match: { _id: new mongoose.Types.ObjectId("6579815d97bf5c1bb11be1d9") } // Match documents with the common ID
-      },
-      {
-        $lookup: {
-          from: collection2.namespace ,
-          localField: '_id',
-          foreignField: 'accountId', // Replace with the actual common field in collection2
-          as: 'result'
-        }
-      }
-    ])
+        // Perform a $lookup aggregation across databases
+        console.log('Perform a $lookup aggregation across databases')
+        let data1 = await dealer.aggregate([
+          {
+            $match: { _id: new mongoose.Types.ObjectId("6579815d97bf5c1bb11be1d9") } // Match documents with the common ID
+          },
+          {
+            $lookup: {
+              from: collection2.namespace,
+              localField: '_id',
+              foreignField: 'accountId', // Replace with the actual common field in collection2
+              as: 'result'
+            }
+          }
+        ])
 
-      console.log('Result:__________-------------------------------------', data1);
-      res.send({
-        code:constant.errorCode,
-        message:data1
+        console.log('Result:__________-------------------------------------', data1);
+        res.send({
+          code: constant.errorCode,
+          message: data1
+        })
+        // Close the connections
+        client1.close();
+        client2.close();
+        // });
       })
-      // Close the connections
-      client1.close();
-      client2.close();
-    // });
-  })
-  .catch(err => {
-    console.error('Error connecting to databases:', err);
-  });
+      .catch(err => {
+        console.error('Error connecting to databases:', err);
+      });
 
 
   } catch (err) {
@@ -735,58 +789,6 @@ exports.getDealerRequest = async (req, res) => {
   }
 }
 
-
-exports.isApprovedOrDisapproved = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    console.log(req.body)
-    console.log(req.params.dealerId)
-    const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId});
-    if (!singleDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer not found"
-      })
-      return;
-    }
-    //check status is in body
-    if (req.body.status==undefined) {
-      res.send({
-        code: constant.errorCode,
-        message: "Status is required"
-      })
-      return;
-    }
-    const approved = await dealerService.isApprovedOrDisapproved({ _id: req.params.dealerId},{status:req.body.status},{new:true});
-    if(!approved){
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to approve"
-      })
-      return;
-    }
-     //if status is rejected
-    if(req.body.status=='Rejected'){
-         const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId})
-         console.log("deleteDealer=============",deleteDealer)
-    }
-    res.send({
-      code: constant.successCode,
-      data:"Status Updated"
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
 
 
 
