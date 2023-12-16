@@ -736,7 +736,7 @@ exports.getDealerRequest = async (req, res) => {
 }
 
 
-exports.isApprovedOrDisapproved = async (req, res) => {
+exports.isDisapproved = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
       res.send({
@@ -745,8 +745,6 @@ exports.isApprovedOrDisapproved = async (req, res) => {
       })
       return;
     }
-    console.log(req.body)
-    console.log(req.params.dealerId)
     const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId});
     if (!singleDealer) {
       res.send({
