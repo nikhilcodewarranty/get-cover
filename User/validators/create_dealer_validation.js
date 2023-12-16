@@ -18,7 +18,6 @@ const create_dealer_validation = Joi.object({
 
     priceBook: Joi.array().items(Joi.object().keys({
         priceBook: Joi.string().trim().required(),
-        brokerFee: Joi.number().required(),
         retailPrice: Joi.number().required(),
     }).unknown(true)).unique((a, b) => a.priceBook === b.priceBook).message("Each dealer's price must be unique."),
 

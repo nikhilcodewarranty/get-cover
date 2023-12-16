@@ -11,6 +11,7 @@ const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
+const priceBookService = require('../../PriceBook/services/priceBookService')
 const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
 const role = require("../model/role");
@@ -203,7 +204,6 @@ exports.createDealer = async (req, res) => {
       });
       return
     }
-
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
@@ -213,53 +213,77 @@ exports.createDealer = async (req, res) => {
       });
       return
     }
-    // Check email existence if the dealer does not want to create an account
-    if (!req.body.isAccountCreate) {
-      const primaryUserData = data.dealerPrimary;
-      const emailValues = primaryUserData.map(value => value.email);
-      const emailData = await userService.findByEmail(emailValues);
-
-      if (emailData.length > 0) {
-         res.send({
+    //check request body contains duplicate emails
+    const primaryUserData = data.dealerPrimary;
+    const dealersUserData = data.dealers;
+    const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
+    const allUserData = [...dealersUserData, ...primaryUserData];
+    const uniqueEmails = new Set(allEmails);    
+     if(allEmails.length !== uniqueEmails.size){
+        res.send({
           code: constant.errorCode,
-          message: 'Email Already Exists',
+          message: 'Multiple user cannot have same emails',
+        });
+        return
+     }
+  // Check email exist
+   // const emailValues = primaryUserData.map(value => value.email);
+    const emailData = await userService.findByEmail(allEmails);
+    if (emailData.length > 0) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Email Already Exist',
           data: emailData
         });
         return;
-      }
+    }
+    // check Price Book upload manually or by bulk upload
+    let savePriceBookType = req.body.savePriceBookType
+    if(savePriceBookType=='manually'){
+      //check price book  exist or not
+    const dealerPriceArray = data.priceBook;
+    const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
+    const priceBookCreateria = { priceBook: { $in: priceIdsToUpdate } }
 
-      // Create Dealer Meta Data
-      const dealerMeta = {
-        name: data.name,
-        street: data.street,
-        userAccount: req.body.customerAccountCreated,
-        city: data.city,
-        zip: data.zip,
-        state: data.state,
-        country: data.country,
-        createdBy: data.createdBy
-      };
-
-      // Create Dealer
-      const createMetaData = await dealerService.createDealer(dealerMeta);
-
-      if (!createMetaData) {
-         res.send({
-          code: constant.errorCode,
-          message: "Something went wrong"
-        });
+     let checkPriceBook = await priceBookService.getPriceBookById({ _id:dealerPriceArray[0].priceBook  }, {})
+     if (checkPriceBook) {
+       res.send({
+       code: constant.errorCode,
+        message: "Product already exist with this name"
+        })
         return;
+    }
+    
+    }
+    // Create Dealer Meta Data
+        const dealerMeta = {
+          name: data.name,
+          street: data.street,
+          userAccount: req.body.customerAccountCreated,
+          city: data.city,
+          zip: data.zip,
+          state: data.state,
+          country: data.country,
+          createdBy: data.createdBy
+        };    
+      // Create Dealer
+      const createMetaData = await dealerService.createDealer(dealerMeta);    
+      if (!createMetaData) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to create dealer"
+          });
+          return;
       }
-
       // Create User for primary dealer
-      const resultPrimaryDealerData = primaryUserData.map(obj => ({
+      const allUsersData = allUserData.map(obj => ({
         ...obj,
         roleId: checkRole._id,
         accountId: createMetaData._id,
-        status: true
+        status: req.body.isAccountCreate ? obj.status : false
       }));
 
-      const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
+      const createUsers = await userService.insertManyUser(allUsersData);
 
       if (!createUsers) {
          res.send({
@@ -273,53 +297,6 @@ exports.createDealer = async (req, res) => {
         message: 'Successfully Created',
         data: createMetaData
       });
-      return
-    }
-   // Check email existence if the dealer want to create an account
-   else{
-      let customerAccountCreated = req.body.customerAccountCreated
-      const primaryUserData = data.dealerPrimary;//check again primary email in the table exist or not
-      const emailValues = primaryUserData.map(value => value.email);
-      const emailData = await userService.findByEmail(emailValues);
-      if (emailData.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Email Already Exists',
-          data: userData
-        });
-        return;
-      }
-      if(customerAccountCreated){
-        const dealerUserArray = data.dealers;  // if customer want to create account
-        const emailValues = dealerUserArray.map(value => value.email);
-        const userData = await userService.findByEmail(emailValues);
-          if (userData.length > 0) {
-            res.send({
-              code: constant.errorCode,
-              message: 'Email Already Exists',
-              data: userData
-            });
-            return;
-          }              
-      //check price book type if it is save manually or by bulk upload
-        let savePriceBookType = req.body.savePriceBookType
-        if(savePriceBookType=='manually'){
-            //check price book  exist or not
-          const dealerPriceArray = data.priceBook;
-         let checkPriceBook = await priceBookService.getPriceBookById({ _id:dealerPriceArray[0].priceBook  }, {})
-         if (checkPriceBook) {
-           res.send({
-           code: constant.errorCode,
-            message: "Product already exist with this name"
-            })
-            return;
-            }
-        
-        }
-              
-    
-          }
-    }
 
   } catch (err) {
     return res.send({
