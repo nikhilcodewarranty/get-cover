@@ -242,16 +242,16 @@ exports.createDealer = async (req, res) => {
     let savePriceBookType = req.body.savePriceBookType
     if(savePriceBookType=='manually'){
           //check price book  exist or not
-            const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
-            const priceBookCreateria = { _id: { $in: priceBook } }
-            let checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria,{isDeleted:false})
-            if (!checkPriceBook) {
-              res.send({
-                code: constant.errorCode,
-                  message: "Product does not exist.Please check the product names"
-                })
-                return;
-            }
+              const priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
+              const priceBookCreateria = { _id: { $in: priceBook } }
+              let checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria,{isDeleted:false})
+              if (!checkPriceBook) {
+                res.send({
+                  code: constant.errorCode,
+                    message: "Product does not exist.Please check the product names"
+                  })
+                  return;
+              }
     
        }
        // Create Dealer Meta Data
@@ -297,7 +297,7 @@ exports.createDealer = async (req, res) => {
       const resultPriceData = dealerPriceArray.map(obj => ({
         'priceBook': obj.priceBook,
         'dealerId': createMetaData._id,
-        'brokerFee': obj.brokerFee,
+        'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
         'retailPrice': obj.retailPrice
       }));
        res.send({
