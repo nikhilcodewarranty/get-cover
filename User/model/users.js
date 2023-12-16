@@ -29,6 +29,10 @@ const userSchema = new mongoose.Schema({
     type:Boolean,
     default:false
   },
+  position:{
+    type:String,
+    default:''
+  },
   phoneNumber: {
     type: String,
     default: ''

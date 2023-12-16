@@ -3,7 +3,6 @@ const Joi = require('joi')
 const create_dealer_validation = Joi.object({
     dealers: Joi.array().items(Joi.object().keys({
         email: Joi.string().trim().email().required(),
-        password: Joi.string().trim().optional().allow(),
         firstName: Joi.string().trim().required(),
         lastName: Joi.string().trim().required(),
         phoneNumber: Joi.number().required(),
@@ -11,7 +10,6 @@ const create_dealer_validation = Joi.object({
     }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique.").optional(),
     dealerPrimary: Joi.array().items(Joi.object().keys({
         email: Joi.string().trim().email().required(),
-        password: Joi.string().trim().optional().allow(),
         firstName: Joi.string().trim().required(),
         lastName: Joi.string().trim().required(),
         phoneNumber: Joi.number().required(),
@@ -20,7 +18,8 @@ const create_dealer_validation = Joi.object({
 
     priceBook: Joi.array().items(Joi.object().keys({
         priceBook: Joi.string().trim().required(),
-        brokerFee: Joi.number().required()
+        brokerFee: Joi.number().required(),
+        retailPrice: Joi.number().trim().required(),
     }).unknown(true)).unique((a, b) => a.priceBook === b.priceBook).message("Each dealer's price must be unique."),
 
 
@@ -33,6 +32,7 @@ const create_dealer_validation = Joi.object({
     createdBy: Joi.string().trim().optional(),
     role: Joi.string().trim().required(),
     isAccountCreate: Joi.boolean().required(),
+    savePriceBookType:Joi.string().trim().required(),
     customerAccountCreated: Joi.boolean().required(),
 
 });

@@ -180,67 +180,108 @@ const generateMonthTerms = (numberOfTerms) => {
 };
 
 // create dealer by super admin
+
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
-    res.send({
-      code: constant.errorCode,
-      message: data
-    });
+
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Only Super Admin is allowed to perform this action"
       });
-      return;
+      return
     }
 
     // Check if the specified role exists
-    const checkRole = await role.findOne({ role: data.role });
+    const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
     if (!checkRole) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid role"
       });
-      return;
+      return
     }
 
     // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
+    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: 'Dealer name already exists',
       });
-      return;
+      return
     }
-
-    let accountCreationFlag = req.body.customerAccountCreated;
-
-    // Primary Account Creation with status false
+    // Check email existence if the dealer does not want to create an account
     if (!req.body.isAccountCreate) {
-      const dealerPrimaryUserArray = data.dealerPrimary;
-      const primaryEmailValues = dealerPrimaryUserArray.map(value => value.email);
+      const primaryUserData = data.dealerPrimary;
+      const emailValues = primaryUserData.map(value => value.email);
+      const emailData = await userService.findByEmail(emailValues);
 
-      const primaryUserData = await userService.findByEmail(primaryEmailValues);
-      if (primaryUserData.length > 0) {
-        res.send({
+      if (emailData.length > 0) {
+         res.send({
           code: constant.errorCode,
           message: 'Email Already Exists',
-          data: primaryUserData
+          data: emailData
         });
         return;
       }
-      accountCreationFlag = false;
+
+      // Create Dealer Meta Data
+      const dealerMeta = {
+        name: data.name,
+        street: data.street,
+        userAccount: req.body.customerAccountCreated,
+        city: data.city,
+        zip: data.zip,
+        state: data.state,
+        country: data.country,
+        createdBy: data.createdBy
+      };
+
+      // Create Dealer
+      const createMetaData = await dealerService.createDealer(dealerMeta);
+
+      if (!createMetaData) {
+         res.send({
+          code: constant.errorCode,
+          message: "Something went wrong"
+        });
+        return;
+      }
+
+      // Create User for primary dealer
+      const resultPrimaryDealerData = primaryUserData.map(obj => ({
+        ...obj,
+        roleId: checkRole._id,
+        accountId: createMetaData._id,
+        status: true
+      }));
+
+      const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
+
+      if (!createUsers) {
+         res.send({
+          code: constant.errorCode,
+          message: "Unable to save users"
+        });
+        return;
+      }
+       res.send({
+        code: constant.successCode,
+        message: 'Successfully Created',
+        data: createMetaData
+      });
+      return
     }
-
-    if (accountCreationFlag) {
-      const dealerUserArray = data.dealers;
-      const emailValues = dealerUserArray.map(value => value.email);
-
-      const userData = await userService.findByEmail(emailValues);
-      if (userData.length > 0) {
+   // Check email existence if the dealer want to create an account
+   else{
+      let customerAccountCreated = req.body.customerAccountCreated
+      const primaryUserData = data.dealerPrimary;//check again primary email in the table exist or not
+      const emailValues = primaryUserData.map(value => value.email);
+      const emailData = await userService.findByEmail(emailValues);
+      if (emailData.length > 0) {
         res.send({
           code: constant.errorCode,
           message: 'Email Already Exists',
@@ -248,93 +289,52 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
-      
-      const resultDealerData = await Promise.all(dealerUserArray.map(async (obj) => {
-        const hashedPassword = await bcrypt.hash(obj.password, 10);
-        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-      }));
-
-      const createUsers = await userService.insertManyUser(resultDealerData);
-      if (!createUsers) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save users"
-        });
-        return;
-      }
-
-      // Dealer Price Book Data
-      const dealerPriceArray = data.priceBook;
-      const resultPriceData = dealerPriceArray.map(obj => ({
-        'priceBook': obj.priceBook,
-        'dealerId': createMetaData._id,
-        'brokerFee': obj.brokerFee,
-        'retailPrice': obj.retailPrice
-      }));
-
-      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
-      if (!createPriceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save price book"
-        });
-        return;
-      }
+      if(customerAccountCreated){
+        const dealerUserArray = data.dealers;  // if customer want to create account
+        const emailValues = dealerUserArray.map(value => value.email);
+        const userData = await userService.findByEmail(emailValues);
+          if (userData.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'Email Already Exists',
+              data: userData
+            });
+            return;
+          }              
+      //check price book type if it is save manually or by bulk upload
+        let savePriceBookType = req.body.savePriceBookType
+        if(savePriceBookType=='manually'){
+            //check price book  exist or not
+          const dealerPriceArray = data.priceBook;
+         let checkPriceBook = await priceBookService.getPriceBookById({ _id:dealerPriceArray[0].priceBook  }, {})
+         if (checkPriceBook) {
+           res.send({
+           code: constant.errorCode,
+            message: "Product already exist with this name"
+            })
+            return;
+            }
+        
+        }
+              
+    
+          }
     }
 
-    // Create Dealer Meta Data
-    const dealerMeta = {
-      name: data.name,
-      street: data.street,
-      userAccount: req.body.customerAccountCreated,
-      city: data.city,
-      zip: data.zip,
-      state: data.state,
-      country: data.country,
-      createdBy: data.createdBy
-    };
-
-    // Create Dealer
-    const createMetaData = await dealerService.createDealer(dealerMeta);
-    if (!createMetaData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Something went wrong"
-      });
-      return;
-    }
-
-    const resultPrimaryDealerData = await Promise.all(dealerPrimaryUserArray.map(async (obj) => {
-      const hashedPassword = await bcrypt.hash(obj.password, 10);
-      return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
-    }));
-    const createUsers = await userService.insertManyUser(resultPrimaryDealerData);
-    if (!createUsers) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to save users"
-      });
-      return;
-    }
-
-    // If account Creation is true
-  
-
-    res.send({
-      code: constant.successCode,
-      message: 'Successfully Created',
-      data: createMetaData
-    });
-    return;
   } catch (err) {
-     res.send({
+    return res.send({
       code: constant.errorCode,
       message: err.message
     });
-    return;
   }
 };
+
+
+
+//save Dealer Meta Data
+
+
+
 
 //---------------------------------------------------- refined code ----------------------------------------//
 
