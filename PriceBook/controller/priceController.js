@@ -330,7 +330,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
 
     // Check if the category is a valid ObjectId
-    const isValidCategory = await checkObjectId(body.category);
+    const isValidCategory = await checkObjectId(body.priceCatId);
     if (!isValidCategory) {
       res.send({
         code: constant.errorCode,
