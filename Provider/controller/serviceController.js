@@ -126,7 +126,7 @@ exports.registerServiceProvider = async (req, res) => {
     if (existingServicer) {
       res.send({
         code: constant.errorCode,
-        message: "Servicer already exist with this name"
+        message: "You have registered already with this name! Waiting for the approval"
       })
       return;
     }
@@ -136,7 +136,7 @@ exports.registerServiceProvider = async (req, res) => {
     if (existingUser) {
       res.send({
         code: constant.errorCode,
-        message: "Email is already exist"
+        message: "You have registered already with this email! Waiting for the approval"
       })
       return;
     }
@@ -173,17 +173,13 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createdUser = await userService.createUser(userMetaData);
-    if (createdUser) {
+    if (!createdUser) {
       res.send({
-        code: constant.successCode,
-        message: 'Success',
-        data: createdUser,
+        code: constant.errorCode,
+        message: 'Unable to create servicer user',
       });
       return
     }
-
-
-
  //Send Notification to dealer 
 
  const notificationData = {
@@ -197,6 +193,11 @@ exports.registerServiceProvider = async (req, res) => {
     if(createNotification){
       const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, resetPasswordCode, data.email))
     }
+
+    res.send({
+      code: constant.successCode,
+      data: createMetaData,
+    });
   } catch (err) {
     res.send({
       code: constant.errorCode,

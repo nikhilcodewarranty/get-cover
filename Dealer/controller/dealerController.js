@@ -302,7 +302,7 @@ exports.registerDealer = async (req, res) => {
  if (existingUser) {
  res.send({
  code: constant.errorCode,
- message: "Dealer already exist with this email"
+ message: "You have registered already with this email! Waiting for the approval"
  })
  return;
  }
@@ -340,6 +340,13 @@ exports.registerDealer = async (req, res) => {
  // Create the user
  const createdUser = await userService.createUser(userMetaData);
 
+ if (!createdUser) {
+  res.send({
+  code: constant.errorCode,
+  message: 'Unable to create dealer user',
+  });
+  return
+  }
  //Send Notification to dealer 
 
  const notificationData = {
@@ -348,6 +355,7 @@ exports.registerDealer = async (req, res) => {
   userId:createdDealer._id,
   };
  
+
   // Create the user
   const createNotification = await userService.createNotification(notificationData);
 
@@ -356,15 +364,12 @@ exports.registerDealer = async (req, res) => {
     const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, data.email))
 
   }
+  res.send({
+  code: constant.successCode,
+  data: createdDealer,
+  });
+  return
 
- if (createdUser) {
- res.send({
- code: constant.successCode,
- message: 'Success',
- data: createdUser,
- });
- return
- }
  } catch (err) {
  res.send({
  code: constant.errorCode,
