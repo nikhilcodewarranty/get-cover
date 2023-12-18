@@ -674,8 +674,11 @@ if(!deleteUser){
         })
       return;
   }
+
+  console.log("deleteUser=======================",deleteUser)
  //Delete the dealer
   const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
+  console.log("deleteDealer=======================",deleteDealer)
   if(!deleteDealer){
     res.send({
       code: constant.errorCode,
