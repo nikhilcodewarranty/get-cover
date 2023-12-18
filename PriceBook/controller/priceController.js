@@ -369,7 +369,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
         reinsuranceFee: body.reinsuranceFee || existingPriceBook.reinsuranceFee,
         adminFee: body.adminFee || existingPriceBook.adminFee,
-        category: body.category || existingPriceBook.category,
+        category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
       }
     };
