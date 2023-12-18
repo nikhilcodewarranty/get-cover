@@ -411,7 +411,7 @@
         }
       },
       "/admin/rejectDealer/:dealerId":{
-        "post":{
+        "put":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
            "summary": "Status Update",

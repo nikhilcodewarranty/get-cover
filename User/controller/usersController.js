@@ -221,11 +221,9 @@ exports.createDealer = async (req, res) => {
     const dealersUserData = data.dealers ? data.dealers : [];
     const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
 
-    console.log("allEmails========================", allEmails)
     const allUserData = [...dealersUserData, ...primaryUserData];
     const uniqueEmails = new Set(allEmails);
 
-    console.log("uniqueEmails====================", uniqueEmails);
     if (allEmails.length !== uniqueEmails.size) {
       res.send({
         code: constant.errorCode,
