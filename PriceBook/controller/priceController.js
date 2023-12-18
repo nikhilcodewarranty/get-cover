@@ -341,7 +341,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     //check Category exist with this ID
 
-    const isValid = await priceBookService.getPriceCatById({ _id: body.category }, {});
+    const isValid = await priceBookService.getPriceCatById({ _id: body.priceCatId }, {});
     if (!isValid) {
       res.send({
         code: constant.errorCode,

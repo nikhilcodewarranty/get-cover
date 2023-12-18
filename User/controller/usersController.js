@@ -414,7 +414,7 @@ exports.login = async (req, res) => {
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
-        message: "Account is not approved"
+        message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
       })
       return;
     }
