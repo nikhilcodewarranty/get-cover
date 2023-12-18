@@ -8,6 +8,7 @@ const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
+const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const connection = require('../../db')
@@ -352,6 +353,8 @@ exports.registerDealer = async (req, res) => {
 
   if(createNotification){
     // Send Email code here
+    const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, data.email))
+
   }
 
  if (createdUser) {

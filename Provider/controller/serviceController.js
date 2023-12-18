@@ -4,6 +4,7 @@ const providerService = require("../services/providerService");
 const role = require("../../User/model/role");
 const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
+const emailConstant = require('../../config/emailConstant');
 const bcrypt = require("bcrypt");
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
@@ -193,6 +194,9 @@ exports.registerServiceProvider = async (req, res) => {
  
   // Create the user
   const createNotification = await userService.createNotification(notificationData);
+    if(createNotification){
+      const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, resetPasswordCode, data.email))
+    }
   } catch (err) {
     res.send({
       code: constant.errorCode,
