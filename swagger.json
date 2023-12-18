@@ -1397,10 +1397,10 @@
                 "priceBook": {
                   "type": "string"
                 },
-                "dealerId": {
-                  "type": "string"
-                },
                 "retailPrice": {
+                  "type": "number"
+                },
+                "wholePrice": {
                   "type": "number"
                 }
                 
