@@ -215,8 +215,7 @@ exports.createDealer = async (req, res) => {
         message: "Dealer Not found"
         });
         }
-
-        const primaryUserData = data.dealerPrimary;
+        const primaryUserData = data.dealerPrimary?data.dealerPrimary:[];
         let priceBook = [];
         let checkPriceBook = [];
         const dealerPriceArray = data.priceBook ? data.priceBook : [];
@@ -224,14 +223,23 @@ exports.createDealer = async (req, res) => {
         const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
     
         const allUserData = [...dealersUserData, ...primaryUserData];
-        const uniqueEmails = new Set(allEmails);
-    
+        const uniqueEmails = new Set(allEmails);    
         if (allEmails.length !== uniqueEmails.size) {
           res.send({
             code: constant.errorCode,
             message: 'Multiple user cannot have same emails',
           });
           return
+        }
+
+        const emailData = await userService.findByEmail(allEmails);
+        if (emailData.length > 0) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Email Already Exist',
+            data: emailData
+          });
+          return;
         }
     }
 

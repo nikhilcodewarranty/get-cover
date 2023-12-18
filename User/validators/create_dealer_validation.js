@@ -28,6 +28,7 @@ const create_dealer_validation = Joi.object({
     zip: Joi.number().required(),
     state: Joi.string().trim().required(),
     country: Joi.string().trim().required(),
+    flag: Joi.string().trim().required(),
     createdBy: Joi.string().trim().optional(),
     role: Joi.string().trim().required(),
     isAccountCreate: Joi.boolean().required(),
