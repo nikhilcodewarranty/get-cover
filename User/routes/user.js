@@ -29,6 +29,7 @@ router.post("/servicerStatusUpdate", [verifyToken], serviceController.statusUpda
 
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
+router.post("/approveDealer", [verifyToken], validator("approve_reject_dealer_validation"), userController.createDealer);
 
 //create dealer api from super admin
 router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
