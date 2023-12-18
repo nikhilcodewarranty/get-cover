@@ -248,8 +248,13 @@ exports.createDealer = async (req, res) => {
         //check price book  exist or not
         priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
         const priceBookCreateria = { _id: { $in: priceBook } }
-        checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
-        console.log("checkPriceBook=================", checkPriceBook)
+        let query = {
+          $and: [
+            { '_id': { $in: priceBook } },
+            { 'dealerId': data.dealerId }
+          ]
+        }
+        checkPriceBook = await priceBookService.getMultiplePriceBok(query, { isDeleted: false })
         if (checkPriceBook.length == 0) {
           res.send({
             code: constant.errorCode,

@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@sendgrid/mail": "^8.1.0",
     "bcrypt": "^5.1.1",
     "convert-excel-to-json": "^1.7.0",
     "csv-parser": "^3.0.0",

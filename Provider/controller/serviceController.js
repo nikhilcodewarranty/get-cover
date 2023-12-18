@@ -5,6 +5,8 @@ const role = require("../../User/model/role");
 const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
 const bcrypt = require("bcrypt");
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
