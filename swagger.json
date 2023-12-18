@@ -1380,36 +1380,6 @@
           "isAccountCreate":{
             "type": "boolean"
           },
-          "dealerPrimary": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "email": {
-                  "type": "string"
-                },
-                "firstName": {
-                  "type": "string"
-                },
-                "lastName": {
-                  "type": "string"
-                },
-                "phoneNumber": {
-                  "type": "number"
-                },
-                "isPrimary": {
-                  "type": "boolean"
-                },
-                "position": {
-                  "type": "string"
-                },
-                "status": {
-                  "type": "boolean"
-                }
-              },
-              "required": ["email", "password", "firstName", "lastName"]
-            }
-          },
           "customerAccountCreated":{
             "type": "boolean"
           },
