@@ -654,7 +654,7 @@ exports.rejectDealer = async (req, res) => {
         return;
         }
 
-        console.log(req.params.dealerId);
+        console.log(req.params);
 
         const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
 
