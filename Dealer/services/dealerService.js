@@ -26,7 +26,7 @@ module.exports = class dealerService {
   // Get dealer detail with ID
   static async getDealerById(dealerId) {
     try {
-      const singleDealerResponse = await dealer.findOne( dealerId);
+      const singleDealerResponse = await dealer.findOne(dealerId);
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
