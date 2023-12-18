@@ -130,7 +130,6 @@ exports.registerServiceProvider = async (req, res) => {
       return;
     }
 
-    console.log("Servicer Body===========================",data)
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
     if (existingUser) {
@@ -181,6 +180,19 @@ exports.registerServiceProvider = async (req, res) => {
       });
       return
     }
+
+
+
+ //Send Notification to dealer 
+
+ const notificationData = {
+  title: "New Servicer Registration",
+  description: "The new servicer is waiting for approval",
+  userId:createMetaData._id,
+  };
+ 
+  // Create the user
+  const createNotification = await userService.createNotification(notificationData);
   } catch (err) {
     res.send({
       code: constant.errorCode,

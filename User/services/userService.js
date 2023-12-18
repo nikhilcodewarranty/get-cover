@@ -1,5 +1,6 @@
 const user = require("../model/users");
 const role = require("../model/role");
+const notification = require("../model/notification");
 const terms = require("../model/terms");
 const dealerModel = require("../../Dealer/model/dealer");
 
@@ -77,6 +78,9 @@ module.exports = class userService {
       console.log(error);
     }
   };
+
+
+
 
   static async insertManyUser(data) {
     console.log(data)
@@ -225,6 +229,16 @@ module.exports = class userService {
     }
   }
   
+
+    //create user 
+    static async createNotification(data) {
+      try {
+        const response = await new notification(data).save();
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
 
 };

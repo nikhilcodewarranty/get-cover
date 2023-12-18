@@ -290,11 +290,11 @@ exports.registerDealer = async (req, res) => {
  // Check if the dealer already exists
  const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
  if (existingDealer) {
- res.send({
- code: constant.errorCode,
- message: "Dealer already exist with this name"
- })
- return;
+  res.send({
+  code: constant.errorCode,
+  message: "You have registered already with this name! Waiting for the approval"
+  })
+   return;
  }
  // Check if the email already exists
  const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
@@ -338,6 +338,22 @@ exports.registerDealer = async (req, res) => {
 
  // Create the user
  const createdUser = await userService.createUser(userMetaData);
+
+ //Send Notification to dealer 
+
+ const notificationData = {
+  title: "New Dealer Registration",
+  description: "The new dealer is waiting for approval",
+  userId:createdDealer._id,
+  };
+ 
+  // Create the user
+  const createNotification = await userService.createNotification(notificationData);
+
+  if(createNotification){
+    // Send Email code here
+  }
+
  if (createdUser) {
  res.send({
  code: constant.successCode,

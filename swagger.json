@@ -455,6 +455,39 @@
           }
         }
       },
+      "/admin/approveDealer/":{
+        "post":{
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+           "summary": "Approve Dealer",
+        
+           "parameters": [
+            {
+              "required": true,
+              "name": "Create Dealer",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/approveDealerBody"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User created successfully"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
       "/admin/dealerStatusUpdate":{
         "post":{
           "security": [ { "Bearer": [] } ],
@@ -1415,6 +1448,78 @@
          
         }
       },
+      "approveDealerBody":{
+        "properties": {        
+          "dealerId": {
+            "type": "string"
+          },
+          "flag": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },        
+          "isAccountCreate":{
+            "type": "boolean"
+          },
+          "dealers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "lastName": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "number"
+                },
+                "isPrimary": {
+                  "type": "boolean"
+                },
+                "position": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          },
+          "savePriceBookType":{
+            "type": "string"
+          },
+          "priceBook": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "priceBook": {
+                  "type": "string"
+                },
+                "retailPrice": {
+                  "type": "number"
+                },
+                "wholePrice": {
+                  "type": "number"
+                }
+                
+              },
+
+              "required": ["email", "password", "firstName", "lastName"]
+            }
+          }
+               
+         
+        }
+      },
+      
       "servicerBody":{
         "properties": {        
           "name": {
