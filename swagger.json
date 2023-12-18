@@ -1489,10 +1489,17 @@
           },
           "role": {
             "type": "string"
-          },        
+          },    
+          "createdBy": {
+            "type": "string"
+          },      
           "isAccountCreate":{
             "type": "boolean"
           },
+          "customerAccountCreated":{
+            "type": "boolean"
+          },
+
           "dealers": {
             "type": "array",
             "items": {
