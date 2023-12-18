@@ -410,12 +410,11 @@
           }
         }
       },
-      "/admin/rejectDealer/:dealerId":{
+      "/admin/rejectDealer/{dealerId}":{
         "put":{
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
-           "summary": "Status Update",
-        
+           "summary": "Status Update",        
            "parameters": [
             {
               "name": "dealerId",
