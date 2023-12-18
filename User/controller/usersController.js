@@ -204,7 +204,39 @@ exports.createDealer = async (req, res) => {
       });
       return
     }
-    // Check if the dealer already exists
+
+    //If flag is approved
+
+    if(data.flag=='approved'){
+      const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
+      if (!singleDealer) {
+        res.send({
+        code: constant.errorCode,
+        message: "Dealer Not found"
+        });
+        }
+
+        const primaryUserData = data.dealerPrimary;
+        let priceBook = [];
+        let checkPriceBook = [];
+        const dealerPriceArray = data.priceBook ? data.priceBook : [];
+        const dealersUserData = data.dealers ? data.dealers : [];
+        const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
+    
+        const allUserData = [...dealersUserData, ...primaryUserData];
+        const uniqueEmails = new Set(allEmails);
+    
+        if (allEmails.length !== uniqueEmails.size) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Multiple user cannot have same emails',
+          });
+          return
+        }
+    }
+
+    else{
+         // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
       res.send({
@@ -346,6 +378,9 @@ exports.createDealer = async (req, res) => {
       message: 'Successfully Created',
       data: createMetaData
     });
+    }
+
+   
 
   } catch (err) {
     return res.send({
