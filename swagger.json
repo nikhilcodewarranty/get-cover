@@ -423,7 +423,7 @@
               "required": true,
               "type": "string",
               "default": "exampleId",  
-              "description": "ID of the dealer"
+              "description": "ID of the Dealer"
             },
             {
               "name": "body",
