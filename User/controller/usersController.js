@@ -248,9 +248,7 @@ exports.createDealer = async (req, res) => {
     let savePriceBookType = req.body.savePriceBookType
     if (savePriceBookType == 'manually') {
       //check price book  exist or not
-      console.log("dealerPriceArray===================", dealerPriceArray)
       priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
-      console.log("priceBook=================", priceBook)
       const priceBookCreateria = { _id: { $in: priceBook } }
       checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
       console.log("checkPriceBook=================", checkPriceBook)
