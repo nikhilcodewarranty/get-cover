@@ -191,7 +191,7 @@ exports.registerServiceProvider = async (req, res) => {
   // Create the user
   const createNotification = await userService.createNotification(notificationData);
     if(createNotification){
-      const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, resetPasswordCode, data.email))
+      const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, 'resetPasswordCode', data.email))
     }
 
     res.send({
