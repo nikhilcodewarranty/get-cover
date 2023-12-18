@@ -219,7 +219,7 @@ exports.createDealer = async (req, res) => {
       const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
       let priceBook = [];
       let checkPriceBook = [];
-      const dealerPriceArray = data.priceBook ? data.priceBook : [];
+      let dealerPriceArray = data.priceBook ? data.priceBook : [];
       const dealersUserData = data.dealers ? data.dealers : [];
       const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
 
@@ -248,13 +248,7 @@ exports.createDealer = async (req, res) => {
         //check price book  exist or not
         priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
         const priceBookCreateria = { _id: { $in: priceBook } }
-        let query = {
-          $and: [
-            { '_id': { $in: priceBook } },
-            { 'dealerId': data.dealerId }
-          ]
-        }
-        checkPriceBook = await priceBookService.getMultiplePriceBok(query, { isDeleted: false })
+        checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
         if (checkPriceBook.length == 0) {
           res.send({
             code: constant.errorCode,
@@ -262,23 +256,42 @@ exports.createDealer = async (req, res) => {
           })
           return;
         }
+        const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
+        if (missingProductNames.length > 0) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Some products is not created. Please check the product',
+            missingProductNames: missingProductNames
+          });
+          return;
+        }
+
+        // check product is already for this dealer
+
+        if (priceBook.length > 0) {
+          let query = {
+            $and: [
+              { 'priceBook': { $in: priceBook } },
+              { 'dealerId': data.dealerId }
+            ]
+          }
+
+          const existingData = await dealerPriceService.findByIds(query);
+          if (existingData.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
+            });
+            return;
+          }
+
+        }
       }
-
-      const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
-      if (missingProductNames.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Some products is not created. Please check the product',
-          missingProductNames: missingProductNames
-        });
-        return;
-      }
-
-
       const allUsersData = allUserData.map(obj => ({
         ...obj,
         roleId: checkRole._id,
         accountId: data.dealerId,
+        isPrimary: false,
         status: req.body.isAccountCreate ? obj.status : false
       }));
 
@@ -385,18 +398,38 @@ exports.createDealer = async (req, res) => {
           })
           return;
         }
+        const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
+        if (missingProductNames.length > 0) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Some products is not created. Please check the product',
+            missingProductNames: missingProductNames
+          });
+          return;
+        }
+
+        // check product is already for this dealer
+
+        if (priceBook.length > 0) {
+          let query = {
+            $and: [
+              { 'priceBook': { $in: priceBook } },
+              { 'dealerId': data.dealerId }
+            ]
+          }
+
+          const existingData = await dealerPriceService.findByIds(query);
+          if (existingData.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
+            });
+            return;
+          }
+
+        }
       }
 
-
-      const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
-      if (missingProductNames.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Some products is not created. Please check the product',
-          missingProductNames: missingProductNames
-        });
-        return;
-      }
       // return false;
       // Create Dealer Meta Data
       const dealerMeta = {
@@ -609,7 +642,6 @@ exports.getAllUsers = async (req, res) => {
       return;
     };
     const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
-    console.log('role+++++++++++++++++++++++++++++++++=', checkRole)
     let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
     console.log(query)
     let projection = { isDeleted: 0, __v: 0 }
@@ -924,5 +956,30 @@ exports.getAllNotifications = async (req, res) => {
     })
   }
 };
+exports.checkEmail = async (req, res) => {
+  try {
+      // Check if the email already exists
+      const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
+      if (existingUser) {
+        res.send({
+          code: constant.errorCode,
+          message: "Email is already exist!"
+        })
+        return;
+      }
+
+      res.send({
+        code: constant.successCode,
+        message: "Success"
+      })
+        
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+
 
 

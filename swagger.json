@@ -980,6 +980,45 @@
           }
         }
       },
+      "/user/checkEmail": {
+        "post": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Check email",
+          "parameters": [
+            {
+              "name": "Create Dealer Price Book",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {                
+                  "email": {
+                    "type": "string"
+                  }               
+             
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
+      
       "/dealer/createDealerPriceBook": {
         "post": {
           "security": [ { "Bearer": [] } ],
