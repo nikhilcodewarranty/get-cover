@@ -882,3 +882,34 @@ exports.getAllRoles = async (req, res) => {
     })
   }
 };
+
+// get all notifications
+exports.getAllNotifications = async (req, res) => {
+  try {
+    let query = { isDeleted: false,status:false }
+    let projection = { __v: 0 }
+    const notification = await userService.getAllNotifications(query, projection);
+    if (!users) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the notifications "
+      });
+      return;
+    };
+    //success response
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        notification: notification
+      }
+    })
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+
+

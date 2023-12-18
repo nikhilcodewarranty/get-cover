@@ -133,6 +133,7 @@ module.exports = class userService {
     }
   };
 
+
   //get all TERMS
   static async getAllTerms(query, projection) {
     try {
@@ -228,9 +229,7 @@ module.exports = class userService {
 
     }
   }
-  
-
-    //create user 
+      //create user 
     static async createNotification(data) {
       try {
         const response = await new notification(data).save();
@@ -239,6 +238,18 @@ module.exports = class userService {
         console.log(error);
       }
     };
+
+      //get all roles
+  static async getAllNotifications(query, projection) {
+    try {
+      const roles = await notification.find(query, projection).sort({ "createdAt": -1 });
+      return roles;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  };
+
+  
 
 
 };

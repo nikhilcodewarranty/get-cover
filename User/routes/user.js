@@ -16,6 +16,7 @@ router.get("/dealers", [verifyToken], dealerController.getAllDealers); //get all
 router.get("/pendingDealers", [verifyToken], dealerController.getPendingDealers); //get all dealers
 router.get("/servicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
+router.get("/getAllNotifications", [verifyToken], userController.getAllNotifications); //get all dealers
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials

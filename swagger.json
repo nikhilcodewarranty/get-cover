@@ -216,9 +216,31 @@
             }
           }
         
-        }
-        
+        }        
       },
+      "/user/getAllNotifications": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Roles"],
+          "summary": "All Notifications",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        
+        }        
+      },
+      
       "/user/addRole":{
         "post":{
           "security": [ { "Bearer": [] } ],
