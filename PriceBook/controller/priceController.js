@@ -29,7 +29,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'status': data.status },
-          { 'category': { $in: catIdsArray } }
+          { 'category': req.body.categoryId }
         ]
       };
     } else {
@@ -37,7 +37,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } }
+          { 'category': req.body.categoryId }
         ]
       };
     }
@@ -138,7 +138,7 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
       status: data.status,
-      unique_key: Number(count[0]? count[0].unique_key : 0) + 1
+      unique_key: Number(count[0].unique_key) + 1
     }
 
     // console.log(priceBookData);
@@ -317,7 +317,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     console.log(params)
 
-    console.log("Price Book id====================",params.priceBookId)
+    console.log("Price Book id====================", params.priceBookId)
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceBookId);
@@ -330,7 +330,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
 
     // Check if the category is a valid ObjectId
-    const isValidCategory = await checkObjectId(body.priceCatId);
+    const isValidCategory = await checkObjectId(body.category);
     if (!isValidCategory) {
       res.send({
         code: constant.errorCode,
@@ -341,7 +341,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     //check Category exist with this ID
 
-    const isValid = await priceBookService.getPriceCatById({ _id: body.priceCatId }, {});
+    const isValid = await priceBookService.getPriceCatById({ _id: body.category }, {});
     if (!isValid) {
       res.send({
         code: constant.errorCode,
@@ -353,7 +353,7 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     const criteria = { _id: params.priceBookId };
     let projection = { isDeleted: 0, __v: 0 }
-    const existingPriceBook = await priceBookService.getPriceBookById(criteria, projection);  
+    const existingPriceBook = await priceBookService.getPriceBookById(criteria, projection);
     if (!existingPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -369,36 +369,36 @@ exports.updatePriceBookById = async (req, res, next) => {
         reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
         reinsuranceFee: body.reinsuranceFee || existingPriceBook.reinsuranceFee,
         adminFee: body.adminFee || existingPriceBook.adminFee,
-        category: body.priceCatId || existingPriceBook.category,
+        category: body.category || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
       }
     };
     // Update Price Book Status
-   //const updateResult = await updatePriceBookStatus(params.priceId, body);
+    //const updateResult = await updatePriceBookStatus(params.priceId, body);
 
-   const updateResult = await priceBookService.updatePriceBook({ _id: params.priceBookId }, newValue, {new:true})
+    const updateResult = await priceBookService.updatePriceBook({ _id: params.priceBookId }, newValue, { new: true })
     if (!updateResult) {
       // Update Dealer Price Book Status
-     // const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
+      // const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
       res.send({
         code: constant.errorCode,
-        message:"Unable to update the price book",
+        message: "Unable to update the price book",
       });
       return;
     }
 
-    else{
+    else {
       //change dealer status if body status is false
-      if(body.status==false){
+      if (body.status == false) {
         const newValue = { status: body.status };
         const option = { new: true };
-        const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, {new:true});
+        const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
 
     res.send({
       code: constant.successCode,
-      message:"Successfully Update",
+      message: "Successfully Update",
     });
     return;
 
@@ -557,7 +557,7 @@ exports.createPriceBookCat = async (req, res) => {
     const catData = {
       name: data.name,
       description: data.description,
-      unique_key: Number(count[0] ? count[0].unique_key : 0) + 1
+      unique_key: Number(count[0].unique_key) + 1
     };
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
@@ -637,28 +637,28 @@ exports.getPriceBookCat = async (req, res) => {
   }
 }
 
-exports.getActivePriceBookCategories = async(req,res)=>{
-  try{
+exports.getActivePriceBookCategories = async (req, res) => {
+  try {
     let data = req.body
-    let query = {status:true}
-    let projection = {__v:0}
-    let getCategories = await priceBookService.getAllActivePriceCat(query,projection)
-    if(!getCategories){
+    let query = { status: true }
+    let projection = { __v: 0 }
+    let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
+    if (!getCategories) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to fetch the categories"
+        code: constant.errorCode,
+        message: "Unable to fetch the categories"
       })
-    }else{
+    } else {
       res.send({
-        code:constant.successCode,
-        message:"Success",
-        result:getCategories
+        code: constant.successCode,
+        message: "Success",
+        result: getCategories
       })
     }
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
@@ -780,32 +780,32 @@ exports.updatePriceBookCat = async (req, res) => {
       }
     };
 
-    const updateCatResult = await priceBookService.updatePriceCategory({ _id: req.params.catId }, newValue, {new:true});
+    const updateCatResult = await priceBookService.updatePriceCategory({ _id: req.params.catId }, newValue, { new: true });
     if (!updateCatResult) {
       res.send({
         code: constant.errorCode,
         message: "Unable to update the price book category"
       })
-    } 
-    else {  
-        //Update PriceBook if status is false
-        if(data.status==false){
-          let updatePriceBook = await priceBookService.updatePriceBook({category:updateCatResult._id},{status:data.status},{new:true})
-          let projection = { isDeleted: 0, __v: 0 }
-          const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
-          const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
-          if (priceIdsToUpdate) {
-            dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
-            const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, {status:data.status}, {new:true});
-          }
+    }
+    else {
+      //Update PriceBook if status is false
+      if (data.status == false) {
+        let updatePriceBook = await priceBookService.updatePriceBook({ category: updateCatResult._id }, { status: data.status }, { new: true })
+        let projection = { isDeleted: 0, __v: 0 }
+        const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
+        const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
+        if (priceIdsToUpdate) {
+          dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
+          const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, { status: data.status }, { new: true });
+        }
 
       }
-  }
-res.send({
-  code: constant.successCode,
-  message: "Successfully updated",
-  result: updateCatResult
-})
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Successfully updated",
+      result: updateCatResult
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,
