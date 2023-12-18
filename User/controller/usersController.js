@@ -286,7 +286,25 @@ exports.createDealer = async (req, res) => {
           }
 
         }
+
+        //save Price Books for this dealer
+        const resultPriceData = dealerPriceArray.map(obj => ({
+          'priceBook': obj.priceBook,
+          'dealerId': data.dealerId,
+          'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
+          'retailPrice': obj.retailPrice
+        }));
+
+        const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+        if (!createPriceBook) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to save price book"
+          });
+          return;
+        }
       }
+
       const allUsersData = allUserData.map(obj => ({
         ...obj,
         roleId: checkRole._id,
@@ -304,24 +322,6 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
-      //save Price Books for this dealer
-      const resultPriceData = dealerPriceArray.map(obj => ({
-        'priceBook': obj.priceBook,
-        'dealerId': data.dealerId,
-        'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
-        'retailPrice': obj.retailPrice
-      }));
-
-      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
-      if (!createPriceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save price book"
-        });
-        return;
-      }
-
       let dealerQuery = { _id: data.dealerId }
       let newValues = {
         $set: {
@@ -958,21 +958,21 @@ exports.getAllNotifications = async (req, res) => {
 };
 exports.checkEmail = async (req, res) => {
   try {
-      // Check if the email already exists
-      const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
-      if (existingUser) {
-        res.send({
-          code: constant.errorCode,
-          message: "Email is already exist!"
-        })
-        return;
-      }
-
+    // Check if the email already exists
+    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
+    if (existingUser) {
       res.send({
-        code: constant.successCode,
-        message: "Success"
+        code: constant.errorCode,
+        message: "Email is already exist!"
       })
-        
+      return;
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success"
+    })
+
   } catch (error) {
     res.send({
       code: constant.errorCode,
