@@ -242,7 +242,6 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
       let savePriceBookType = req.body.savePriceBookType
       if (savePriceBookType == 'manually') {
         //check price book  exist or not
@@ -303,40 +302,40 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
-      }
 
-      const allUsersData = allUserData.map(obj => ({
-        ...obj,
-        roleId: checkRole._id,
-        accountId: data.dealerId,
-        isPrimary: false,
-        status: req.body.isAccountCreate ? obj.status : false
-      }));
+        const allUsersData = allUserData.map((obj,index) => ({
+          ...obj,
+          roleId: checkRole._id,
+          accountId: data.dealerId,
+          isPrimary: index === 0 ? true :false ,
+          status: req.body.isAccountCreate ? obj.status : false
+        }));
 
-      const createUsers = await userService.insertManyUser(allUsersData);
+        const createUsers = await userService.insertManyUser(allUsersData);
 
-      if (!createUsers) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save users"
-        });
-        return;
-      }
-      let dealerQuery = { _id: data.dealerId }
-      let newValues = {
-        $set: {
-          status: "Approved",
+        if (!createUsers) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to save users"
+          });
+          return;
+        }
+
+        let dealerQuery = { _id: data.dealerId }
+        let newValues = {
+          $set: {
+            status: "Approved",
+          }
+        }
+        let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+        if (!dealerStatus) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to approve dealer status"
+          });
+          return;
         }
       }
-      let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-      if (!dealerStatus) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to approve dealer status"
-        });
-        return;
-      }
-
       res.send({
         code: constant.successCode,
         message: "Status Approved"
@@ -407,27 +406,7 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
-
         // check product is already for this dealer
-
-        if (priceBook.length > 0) {
-          let query = {
-            $and: [
-              { 'priceBook': { $in: priceBook } },
-              { 'dealerId': data.dealerId }
-            ]
-          }
-
-          const existingData = await dealerPriceService.findByIds(query);
-          if (existingData.length > 0) {
-            res.send({
-              code: constant.errorCode,
-              message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
-            });
-            return;
-          }
-
-        }
       }
 
       // return false;
@@ -452,10 +431,11 @@ exports.createDealer = async (req, res) => {
         return;
       }
       // Create User for primary dealer
-      const allUsersData = allUserData.map(obj => ({
+      const allUsersData = allUserData.map((obj, index) => ({
         ...obj,
         roleId: checkRole._id,
         accountId: createMetaData._id,
+        isPrimary: index === 0 ? true :false ,
         status: req.body.isAccountCreate ? obj.status : false
       }));
 
