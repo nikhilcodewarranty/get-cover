@@ -178,30 +178,55 @@ exports.createDealer = async (req, res) => {
 exports.getDealerById = async (req, res) => {
   try {
     //fetching data from user table
-    let data = req.body
-    let getUser = await USER.findOne({ _id: req.userId })
-    if (!getUser) {
+    if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
-        message: "Invalid token ID"
+        message: "Only super admin allow to do this action"
       })
       return;
     }
-    const singleDealer = await dealerService.getDealerById({ _id: getUser.accountId });
-    let result = getUser.toObject()
-    result.metaData = singleDealer
-    if (!singleDealer) {
+    const dealers = await dealerService.getDealerById({_id: req.params.dealerId });
+
+    //result.metaData = singleDealer
+    if (!dealers) {
       res.send({
         code: constant.errorCode,
         message: "No data found"
       });
-    } else {
+      return
+    } 
+    const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
+
+    let dealarUser = await userService.getDealersUser(query1,{isDeleted:false} ) 
+
+
+    if (!dealarUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "No any user of this dealer"
+      });
+      return
+    } 
+
+    const result_Array = dealarUser.map(item1 => {
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+   
+       if (matchingItem) {
+         return {
+           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+           dealerData: matchingItem.toObject()
+         };
+       } else {
+         return dealerData.toObject();
+       }
+     });
+
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: result
+        result: result_Array,
       })
-    };
+  
   } catch (err) {
     res.send({
       code: constant.errorCode,
