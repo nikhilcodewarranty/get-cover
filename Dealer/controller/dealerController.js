@@ -677,8 +677,6 @@ exports.rejectDealer = async (req, res) => {
       })
       return;
     }
-
-
     const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
 
     if (!singleDealer) {
@@ -701,10 +699,8 @@ exports.rejectDealer = async (req, res) => {
         return;
       }
 
-      console.log("deleteUser=======================", deleteUser)
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
-      console.log("deleteDealer=======================", deleteDealer)
       if (!deleteDealer) {
         res.send({
           code: constant.errorCode,
