@@ -29,7 +29,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'status': data.status },
-          { 'category': {$in:catIdsArray} }
+          { 'category': req.body.categoryId }
         ]
       };
     } else {
@@ -37,7 +37,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': {$in:catIdsArray} }
+          { 'category': req.body.categoryId }
         ]
       };
     }
