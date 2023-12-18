@@ -1301,6 +1301,9 @@
           "street": {
             "type": "string"
           },
+          "flag": {
+            "type": "string"
+          },
           "city": {
             "type": "string"
           },
