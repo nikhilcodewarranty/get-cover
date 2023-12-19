@@ -14,12 +14,13 @@ const fs = require('fs');
 const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
+
+const multer = require('multer');
+const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
-
-
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -28,6 +29,7 @@ const checkObjectId = async (Id) => {
     return false;
   }
 }
+
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
   try {
@@ -63,21 +65,21 @@ exports.getAllDealers = async (req, res) => {
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-   
-       if (matchingItem) {
-         return {
-           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-           dealerData: matchingItem.toObject()
-         };
-       } else {
-         return dealerData.toObject();
-       }
-     });
- 
-     res.send({
-       code: constant.successCode,
-       data: result_Array
-     });
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: result_Array
+    });
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -118,8 +120,8 @@ exports.getPendingDealers = async (req, res) => {
     };
 
     const result_Array = dealarUser.map(item1 => {
-     const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-  
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -185,7 +187,7 @@ exports.getDealerById = async (req, res) => {
       })
       return;
     }
-    const dealers = await dealerService.getSingleDealerById({_id: req.params.dealerId });
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
 
     //result.metaData = singleDealer
     if (!dealers) {
@@ -194,10 +196,10 @@ exports.getDealerById = async (req, res) => {
         message: "No data found"
       });
       return
-    } 
+    }
     const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
 
-    let dealarUser = await userService.getDealersUser(query1,{isDeleted:false} ) 
+    let dealarUser = await userService.getDealersUser(query1, { isDeleted: false })
 
 
     if (!dealarUser) {
@@ -206,27 +208,27 @@ exports.getDealerById = async (req, res) => {
         message: "No any user of this dealer"
       });
       return
-    } 
+    }
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-   
-       if (matchingItem) {
-         return {
-           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-           dealerData: matchingItem.toObject()
-         };
-       } else {
-         return dealerData.toObject();
-       }
-     });
 
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: result_Array,
-      })
-  
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: result_Array,
+    })
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -334,7 +336,7 @@ exports.registerDealer = async (req, res) => {
 
     const count = await dealerService.getPriceBookCount();
 
-   // console.log(count);return false;
+    // console.log(count);return false;
     // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
@@ -391,7 +393,7 @@ exports.registerDealer = async (req, res) => {
     if (createNotification) {
       let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      let mailing =  await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      let mailing = await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
       //const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
 
     }
@@ -539,12 +541,15 @@ exports.uploadPriceBook = async (req, res) => {
       return;
     }
     if (!req.file) {
-      return res.status(400).send('No file uploaded.');
+      res.send({
+        code: constant.errorCode,
+        message: "No file uploaded"
+      })
+      return;
     }
-
     //check Dealer Exist
-    let checkDealer = await dealerService.getSingleDealerById({_id:req.body.dealerId},{isDeleted:false})
-    if (checkDealer.length==0) {
+    let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
+    if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
         message: "Dealer Not found"
@@ -564,9 +569,9 @@ exports.uploadPriceBook = async (req, res) => {
         const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
         const foundProducts = await priceBookService.findByName(priceBookName1);
 
-        console.log("foundProducts======================",foundProducts);
-        
-        if(foundProducts==undefined){
+        console.log("foundProducts======================", foundProducts);
+
+        if (foundProducts == undefined) {
           res.send({
             code: constant.errorCode,
             message: 'The selected product does not match with your product catalog. Please double-check and try again.',

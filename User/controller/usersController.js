@@ -350,6 +350,11 @@ exports.createDealer = async (req, res) => {
           })
         }
       }
+
+      //By Upload 
+      else{
+        
+      }
       res.send({
         code: constant.successCode,
         message: "Status Approved"
@@ -399,6 +404,16 @@ exports.createDealer = async (req, res) => {
       }
       // check Price Book upload manually or by bulk upload
       let savePriceBookType = req.body.savePriceBookType
+      const dealerMeta = {
+        name: data.name,
+        street: data.street,
+        userAccount: req.body.customerAccountCreated,
+        city: data.city,
+        zip: data.zip,
+        state: data.state,
+        country: data.country,
+        createdBy: data.createdBy
+      };
       if (savePriceBookType == 'manually') {
         //check price book  exist or not
         priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
@@ -425,16 +440,7 @@ exports.createDealer = async (req, res) => {
 
       // return false;
       // Create Dealer Meta Data
-      const dealerMeta = {
-        name: data.name,
-        street: data.street,
-        userAccount: req.body.customerAccountCreated,
-        city: data.city,
-        zip: data.zip,
-        state: data.state,
-        country: data.country,
-        createdBy: data.createdBy
-      };
+ 
       // Create Dealer
       const createMetaData = await dealerService.createDealer(dealerMeta);
       if (!createMetaData) {
@@ -462,8 +468,6 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
-
       //save Price Books for this dealer
       const resultPriceData = dealerPriceArray.map(obj => ({
         'priceBook': obj.priceBook,
