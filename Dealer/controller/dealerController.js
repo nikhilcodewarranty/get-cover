@@ -643,7 +643,7 @@ exports.uploadPriceBook = async (req, res) => {
 
         console.log("mergedArray======================",mergedArray)
 
-        return false;
+    
 
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
