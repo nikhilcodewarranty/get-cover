@@ -341,7 +341,7 @@ exports.registerDealer = async (req, res) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
-      unique_key: Number(count[0].unique_key) + 1
+      unique_key: Number(count[0].unique_key) + 1 
     };
 
     // Register the dealer
