@@ -332,6 +332,9 @@ exports.registerDealer = async (req, res) => {
       return;
     }
 
+    const count = await dealerService.getPriceBookCount();
+
+   // console.log(count);return false;
     // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
@@ -340,6 +343,7 @@ exports.registerDealer = async (req, res) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
+      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     };
 
     // Register the dealer
@@ -385,8 +389,10 @@ exports.registerDealer = async (req, res) => {
     const createNotification = await userService.createNotification(notificationData);
 
     if (createNotification) {
+      let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
+      let mailing =  await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      //const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
 
     }
     res.send({

@@ -22,6 +22,9 @@ const dealarSchema = new mongoose.Schema({
     type: Number,
     default:''
   },
+  unique_key:{
+    type: Number,
+  },
   state: {
     type: String,
     default:''
