@@ -138,7 +138,7 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       category: checkCat._id,
       status: data.status,
-      unique_key: Number(count[0].unique_key) + 1
+      unique_key: Number(count[0].unique_key ? count[0].unique_key : 0) + 1
     }
 
     // console.log(priceBookData);
@@ -557,7 +557,7 @@ exports.createPriceBookCat = async (req, res) => {
     const catData = {
       name: data.name,
       description: data.description,
-      unique_key: Number(count[0].unique_key) + 1
+      unique_key: Number(count[0].unique_key ? count[0].unique_key : 0) + 1
     };
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
