@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js",
+    "build": "for dir in Dealer PriceBook User Contract Customer Order Provider; do cd $dir && npm install && cd ..; done"
   },
   "author": "",
   "license": "ISC",
