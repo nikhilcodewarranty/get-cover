@@ -922,6 +922,7 @@ exports.getAllNotifications = async (req, res) => {
     const accountIds = allNotification.map(value => value.userId);
     const query1 = { accountId: { $in: accountIds }, isPrimary: true };
 
+
     let dealerData = [];
 
     let usersMeta = await userService.getDealersUser(query1, projection)
@@ -931,7 +932,7 @@ exports.getAllNotifications = async (req, res) => {
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject()
+          notificationData: matchingItem.toObject()
         };
       } else {
         return dealerData.toObject();
