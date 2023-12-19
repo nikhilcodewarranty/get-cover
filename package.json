@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "node index.js",
-    "allInstall": "for dir in Dealer PriceBook User Contract Customer Order Provider; do cd $dir && npm install && cd ..; done"
+    "mainInstall": "for dir in Dealer PriceBook User Contract Customer Order Provider; do cd $dir && npm install && cd ..; done",
+    "allInstall": "npm install && npm run mainInstall"
   },
   "author": "",
   "license": "ISC",
