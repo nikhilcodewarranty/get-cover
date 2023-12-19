@@ -583,8 +583,12 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: product._id,
           name: product.name,
           dealerId: req.body.dealerId,
-          status: true
+          status: true,
+          wholePrice:Number(product.frontingFee) + Number(product.reserveFutureFee) +Number(product.reinsuranceFee) + Number(product.adminFee)
         }));
+
+
+        console.log("foundProductData===============",foundProductData)
 
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
