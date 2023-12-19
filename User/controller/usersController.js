@@ -352,8 +352,8 @@ exports.createDealer = async (req, res) => {
       }
 
       //By Upload 
-      else{
-        
+      else {
+
       }
       res.send({
         code: constant.successCode,
@@ -440,7 +440,7 @@ exports.createDealer = async (req, res) => {
 
       // return false;
       // Create Dealer Meta Data
- 
+
       // Create Dealer
       const createMetaData = await dealerService.createDealer(dealerMeta);
       if (!createMetaData) {
@@ -932,7 +932,7 @@ exports.getAllNotifications = async (req, res) => {
     let usersMeta = await userService.getDealersUser(query1, projection)
 
     const result_Array = usersMeta.map(item1 => {
-      const matchingItem = allNotification.find(item2 => item2.userId.toString()== item1.accountId);
+      const matchingItem = allNotification.find(item2 => item2.userId.toString() == item1.accountId);
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -942,33 +942,10 @@ exports.getAllNotifications = async (req, res) => {
         return dealerData.toObject();
       }
     });
-    let criteria = { status: false };
-    let newValue = {
-      $set: {
-        status: true
-      }
-    };
-    //Update Notification
-    const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
-    if (!updateNotification) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update the notifications "
-      });
-      return;
-    };
-    //success response
-    res.send({
-      code: constant.successCode,
-      message: "Successful",
-      result: {
-        notification: result_Array
-      }
-    });
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message:error.message
+      message: error.message
     })
   }
 };
@@ -996,6 +973,38 @@ exports.checkEmail = async (req, res) => {
     })
   }
 };
+
+exports.notificationStatusUpdate = async (req, res) => {
+  try {
+    let criteria = { status: false };
+    let newValue = {
+      $set: {
+        status: true
+      }
+    };
+    //Update Notification
+    const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
+    if (!updateNotification) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the notifications "
+      });
+      return;
+    };
+    //success response
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+    });
+
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+
 
 
 
