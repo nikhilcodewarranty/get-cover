@@ -110,7 +110,7 @@
           }
         }
       },
-      "/user/getDealerById/{dealerId}": {
+      "/dealer/getDealerById/{dealerId}": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
