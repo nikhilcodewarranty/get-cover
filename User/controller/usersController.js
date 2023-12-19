@@ -305,11 +305,11 @@ exports.createDealer = async (req, res) => {
           return;
         }
 
-        const allUsersData = allUserData.map((obj,index) => ({
+        const allUsersData = allUserData.map((obj, index) => ({
           ...obj,
           roleId: checkRole._id,
           accountId: data.dealerId,
-          isPrimary: index === 0 ? true :false ,
+          isPrimary: index === 0 ? true : false,
           status: req.body.isAccountCreate ? obj.status : false
         }));
 
@@ -449,7 +449,7 @@ exports.createDealer = async (req, res) => {
         ...obj,
         roleId: checkRole._id,
         accountId: createMetaData._id,
-        isPrimary: index === 0 ? true :false ,
+        isPrimary: index === 0 ? true : false,
         status: req.body.isAccountCreate ? obj.status : false
       }));
 
@@ -916,21 +916,33 @@ exports.getAllRoles = async (req, res) => {
 // get all notifications
 exports.getAllNotifications = async (req, res) => {
   try {
-    let dealerQuery = { isDeleted: false,title:'New Dealer Registration'}
-    let servicerQuery = { isDeleted: false,title:'New Servicer Registration'}
+    let Query = { isDeleted: false }
     let projection = { __v: 0 }
-    const dealerNotification = await userService.getAllNotifications(dealerQuery, projection);
-    const servicerNotification = await userService.getAllNotifications(servicerQuery, projection);
-    const mergedNotifications = [...dealerNotification, ...servicerNotification];
+    const allNotification = await userService.getAllNotifications(Query, projection);
+    const accountIds = allNotification.map(value => value.userId);
+    const query1 = { accountId: { $in: accountIds }, isPrimary: true };
+
+    let dealerData = [];
+
+    let usersMeta = await userService.getDealersUser(query1, projection)
+
+    const result_Array = usersMeta.map(item1 => {
+      const matchingItem = allNotification.find(item2 => item2.userId.toString()== item1.accountId);
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
     let criteria = { status: false };
     let newValue = {
       $set: {
         status: true
       }
     };
-
-
-
     //Update Notification
     const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
     if (!updateNotification) {
@@ -945,13 +957,13 @@ exports.getAllNotifications = async (req, res) => {
       code: constant.successCode,
       message: "Successful",
       result: {
-        notification: mergedNotifications
+        notification: result_Array
       }
-    })
+    });
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: "Unable to create the dealer"
+      message:error.message
     })
   }
 };
