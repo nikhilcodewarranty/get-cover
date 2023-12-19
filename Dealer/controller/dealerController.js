@@ -583,8 +583,11 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: product._id,
           name: product.name,
           dealerId: req.body.dealerId,
-          status: true
+          status: true,
+          wholePrice:Number(product.frontingFee) + Number(product.reserveFutureFee) +Number(product.reinsuranceFee) + Number(product.adminFee)
         }));
+
+
 
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
@@ -633,9 +636,14 @@ exports.uploadPriceBook = async (req, res) => {
         // Merge brokerFee from newArray into foundProductData based on priceBook
         const mergedArray = foundProductData.map(foundProduct => ({
           ...foundProduct,
-          retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice
+          retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice,
+          brokerFee: (newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice
+
         }));
 
+        console.log("mergedArray======================",mergedArray)
+
+        return false;
 
         // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
