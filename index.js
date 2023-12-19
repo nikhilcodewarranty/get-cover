@@ -28,7 +28,6 @@ app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swagge
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
 
 app.use(cors())
 const httpServer = http.createServer(app) 

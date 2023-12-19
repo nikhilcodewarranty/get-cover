@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "start": "node index.js",
-    "build": "for dir in Dealer PriceBook User Contract Customer Order Provider; do cd $dir && npm install && cd ..; done"
+    "allInstall": "for dir in Dealer PriceBook User Contract Customer Order Provider; do cd $dir && npm install && cd ..; done"
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +16,6 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "http-errors": "^2.0.0",
-    "jade": "^1.11.0",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.3.0",
