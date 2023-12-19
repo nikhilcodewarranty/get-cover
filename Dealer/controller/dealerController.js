@@ -536,11 +536,9 @@ exports.uploadPriceBook = async (req, res) => {
       return res.status(400).send('No file uploaded.');
     }
 
-    console.log(req.body);
     //check Dealer Exist
     let checkDealer = await dealerService.getSingleDealerById({_id:req.body.dealerId},{isDeleted:false})
-    //console.log("checkDealer========================",checkDealer);return false;
-    if (!checkDealer) {
+    if (checkDealer.length==0) {
       res.send({
         code: constant.errorCode,
         message: "Dealer Not found"
