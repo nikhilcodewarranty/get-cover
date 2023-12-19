@@ -926,7 +926,6 @@ exports.getAllNotifications = async (req, res) => {
     const accountIds = allNotification.map(value => value.userId);
     const query1 = { accountId: { $in: accountIds }, isPrimary: true };
 
-
     let dealerData = [];
 
     let usersMeta = await userService.getDealersUser(query1, projection)
@@ -942,6 +941,16 @@ exports.getAllNotifications = async (req, res) => {
         return dealerData.toObject();
       }
     });
+
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      result: {
+        notification: result_Array
+      }
+    });
+
+    return;
   } catch (error) {
     res.send({
       code: constant.errorCode,

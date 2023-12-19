@@ -222,7 +222,7 @@ module.exports = class userService {
   //get role by id
   static async getDealersUser(query, projection) {
     try {
-      const response = await user.find(query, projection)
+      const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response
     } catch (err) {
       console.log(err);
