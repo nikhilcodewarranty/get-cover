@@ -389,8 +389,10 @@ exports.registerDealer = async (req, res) => {
     const createNotification = await userService.createNotification(notificationData);
 
     if (createNotification) {
+      let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
+      let mailing =  await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      //const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
 
     }
     res.send({
