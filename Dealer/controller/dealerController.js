@@ -641,11 +641,7 @@ exports.uploadPriceBook = async (req, res) => {
 
         }));
 
-        console.log("mergedArray======================",mergedArray)
-
-    
-
-        // Upload the new data to the dealerPriceService
+       // Upload the new data to the dealerPriceService
         const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
 
         // Respond with success message and uploaded data
