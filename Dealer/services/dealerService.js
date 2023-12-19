@@ -26,12 +26,22 @@ module.exports = class dealerService {
   // Get dealer detail with ID
   static async getDealerById(dealerId,projection) {
     try {
+      const singleDealerResponse = await dealer.findOne(dealerId,projection);
+      return singleDealerResponse;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+  }
+  static async getSingleDealerById(dealerId,projection) {
+    try {
       const singleDealerResponse = await dealer.find(dealerId,projection);
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
     }
   }
+
+  
 
   // Get dealer detail with Name
   static async getDealerByName(query,projection) {

@@ -335,6 +335,18 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
+
+        let resetPasswordCode = randtoken.generate(4, '123456789')
+        const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
+
+        if (mailing) {
+          let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+          res.send({
+            code: constant.successCode,
+            message: "Email has been sent",
+            codes: resetPasswordCode
+          })
+        }
       }
       res.send({
         code: constant.successCode,

@@ -185,7 +185,7 @@ exports.getDealerById = async (req, res) => {
       })
       return;
     }
-    const dealers = await dealerService.getDealerById({_id: req.params.dealerId });
+    const dealers = await dealerService.getSingleDealerById({_id: req.params.dealerId });
 
     //result.metaData = singleDealer
     if (!dealers) {
