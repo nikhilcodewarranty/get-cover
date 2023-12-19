@@ -110,6 +110,37 @@
           }
         }
       },
+      "/user/getDealerById/{dealerId}": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get Single dealer",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the User"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
       "/user/resetPassword/{userId}/{code}": {
         "post": {
           "tags": ["Users"],
