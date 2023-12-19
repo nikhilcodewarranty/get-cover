@@ -249,6 +249,16 @@ module.exports = class userService {
     }
   };
 
+  static async getCountNotification() {
+    try {
+      const roles = await notification.countDocuments({ isDeleted: false, status:false })
+      return roles;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  };
+
+  
 
   static async updateNotification(criteria, newValue, option) {
     try {

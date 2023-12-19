@@ -1013,6 +1013,25 @@ exports.notificationStatusUpdate = async (req, res) => {
     })
   }
 };
+exports.getCountNotification = async (req, res) => {
+  try {
+    const allNotification = await userService.getCountNotification();
+
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+     count:allNotification
+    });
+
+    return;
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: error.message
+    })
+  }
+};
+
 
 
 

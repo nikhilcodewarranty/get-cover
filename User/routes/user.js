@@ -17,6 +17,7 @@ router.get("/pendingDealers", [verifyToken], dealerController.getPendingDealers)
 router.get("/servicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
 router.get("/getAllNotifications", [verifyToken], userController.getAllNotifications); //get all dealers
+router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
 router.get("/notificationStatusUpdate", [verifyToken], userController.notificationStatusUpdate); //get all dealers
 
 //-------------------- get api's endpoints--------------------------//
