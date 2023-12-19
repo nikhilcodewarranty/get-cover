@@ -41,6 +41,13 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('./uploads/'))
 
+app.get('/download/:filename', (req, res) => {
+  const filePath = __dirname + '/uploads/' + "1702980610722.csv";
+
+  res.setHeader('Content-Disposition', 'attachment; filename=' + "1702980610722.csv");
+  res.download(filePath, "1702980610722.csv");
+});
+
 //common routing for server
 app.use("/api-v1/user", userRoutes);
 app.use("/api-v1/admin", userRoutes);
