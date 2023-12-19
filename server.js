@@ -42,10 +42,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('./uploads/'))
 
 app.get('/download/:filename', (req, res) => {
-  const filePath = __dirname + '/uploads/' + "1702980610722.csv";
+  const filePath = __dirname + '/uploads/' + process.env.DUMMY_CSV_FILE;
 
-  res.setHeader('Content-Disposition', 'attachment; filename=' + "1702980610722.csv");
-  res.download(filePath, "1702980610722.csv");
+  res.setHeader('Content-Disposition', 'attachment; filename=' + process.env.DUMMY_CSV_FILE);
+  res.download(filePath, process.env.DUMMY_CSV_FILE);
 });
 
 //common routing for server
