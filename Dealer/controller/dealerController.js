@@ -332,6 +332,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
 
+    const count = await dealerService.getPriceBookCount();
     // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
@@ -340,6 +341,7 @@ exports.registerDealer = async (req, res) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
+      unique_key: Number(count[0].unique_key) + 1
     };
 
     // Register the dealer

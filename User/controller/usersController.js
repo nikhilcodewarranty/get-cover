@@ -208,7 +208,9 @@ exports.createDealer = async (req, res) => {
     //If flag is approved
 
     if (data.flag == 'approved') {
-      const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
+      const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+
+      //console.log("singleDealer==========================",singleDealer);return false;
       if (!singleDealer) {
         res.send({
           code: constant.errorCode,
