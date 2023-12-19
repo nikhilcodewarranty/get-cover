@@ -535,8 +535,11 @@ exports.uploadPriceBook = async (req, res) => {
     if (!req.file) {
       return res.status(400).send('No file uploaded.');
     }
+
+    console.log(req.body);
     //check Dealer Exist
-    let checkDealer = await dealerService.getDealerById(req.body.dealerId)
+    let checkDealer = await dealerService.getSingleDealerById({_id:req.body.dealerId},{isDeleted:false})
+    //console.log("checkDealer========================",checkDealer);return false;
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -556,6 +559,15 @@ exports.uploadPriceBook = async (req, res) => {
         const priceBookName = results.map(obj => obj.priceBook);
         const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
         const foundProducts = await priceBookService.findByName(priceBookName1);
+
+        if(foundProducts==undefined){
+          res.send({
+            code: constant.errorCode,
+            message: 'The selected product does not match with your product catalog. Please double-check and try again.',
+          });
+          return;
+        }
+
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
           priceBook: product._id,
@@ -569,7 +581,7 @@ exports.uploadPriceBook = async (req, res) => {
         if (missingProductNames.length > 0) {
           res.send({
             code: constant.errorCode,
-            message: 'The Product does not exist.',
+            message: 'Some products does not exist. Please check!',
             missingProductNames: missingProductNames
           });
           return;
@@ -600,13 +612,12 @@ exports.uploadPriceBook = async (req, res) => {
             });
             return;
           }
-
         }
         let newArray1 = results.map((obj) => ({
           priceBook: obj.priceBook,
           status: true,
           retailPrice: obj.retailPrice,
-          dealerId: req.body.dealerId
+          dealerId: req.body.dealerId,
         }));
 
         // Merge brokerFee from newArray into foundProductData based on priceBook
