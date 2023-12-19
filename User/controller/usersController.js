@@ -914,15 +914,20 @@ exports.getAllRoles = async (req, res) => {
 // get all notifications
 exports.getAllNotifications = async (req, res) => {
   try {
-    let query = { isDeleted: false }
+    let dealerQuery = { isDeleted: false,title:'New Dealer Registration'}
+    let servicerQuery = { isDeleted: false,title:'New Servicer Registration'}
     let projection = { __v: 0 }
-    const notification = await userService.getAllNotifications(query, projection);
+    const dealerNotification = await userService.getAllNotifications(dealerQuery, projection);
+    const servicerNotification = await userService.getAllNotifications(servicerQuery, projection);
+    const mergedNotifications = [...dealerNotification, ...servicerNotification];
     let criteria = { status: false };
     let newValue = {
       $set: {
         status: true
       }
     };
+
+
 
     //Update Notification
     const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
@@ -938,7 +943,7 @@ exports.getAllNotifications = async (req, res) => {
       code: constant.successCode,
       message: "Successful",
       result: {
-        notification: notification
+        notification: mergedNotifications
       }
     })
   } catch (error) {
