@@ -963,11 +963,22 @@ exports.getAllNotifications = async (req, res) => {
       }
     });
 
+    const sortedResultArray = result_Array.sort((a, b) => {
+      const createdAtA = new Date(a.notificationData.createdAt);
+      const createdAtB = new Date(b.notificationData.createdAt);
+    
+      return createdAtB - createdAtA;
+    });
+    
+    console.log(sortedResultArray);
+
+
+
     res.send({
       code: constant.successCode,
       message: "Successful",
       result: {
-        notification: result_Array
+        notification: sortedResultArray
       }
     });
 
