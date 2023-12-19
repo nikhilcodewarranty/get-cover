@@ -944,8 +944,8 @@ exports.getAllNotifications = async (req, res) => {
     let servicerMeta = await providerService.getAllServiceProvider(query2, projection)
     dealerData = [...dealerMeta, ...servicerMeta];
 
-    console.log("dealerData============================",dealerData)
-    console.log("allNotification============================",allNotification);
+    // console.log("dealerData============================",dealerData)
+    // console.log("allNotification============================",allNotification);
 
   //  return false;
 
