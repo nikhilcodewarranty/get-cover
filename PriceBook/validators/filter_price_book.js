@@ -7,4 +7,4 @@ const filer_price_book = Joi.object({
     
 })
 
-module.exports = filer_price_book
+module.exports = filer_price_book  
