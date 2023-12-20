@@ -143,6 +143,7 @@ exports.registerServiceProvider = async (req, res) => {
       return;
     }
 
+    const count = await providerService.getServicerCount();
     // Extract necessary data for dealer creation
     const ServicerMeta = {
       name: data.name,
@@ -151,6 +152,7 @@ exports.registerServiceProvider = async (req, res) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
+      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     };
        // Register the Servicer
         const createMetaData = await providerService.registerServiceProvider(ServicerMeta);

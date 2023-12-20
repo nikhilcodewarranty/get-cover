@@ -12,7 +12,7 @@ module.exports = class dealerService {
     }
   }
 
-  static async getPriceBookCount() {
+  static async getDealerCount() {
     try {
       const count = await dealer.find().sort({"unique_key":-1});
       return count;

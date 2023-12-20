@@ -10,6 +10,17 @@ module.exports = class providerService {
     }
   }
 
+
+  static async getServicerCount() {
+    try {
+      const count = await serviceProvider.find().sort({"unique_key":-1});
+      return count;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
+    }
+  }
+  
+
   static async createServiceProvider(data) {
     try {
       const response = await new serviceProvider(data).save();

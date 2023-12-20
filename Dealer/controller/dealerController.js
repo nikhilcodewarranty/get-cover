@@ -335,7 +335,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
 
-    const count = await dealerService.getPriceBookCount();
+    const count = await dealerService.getDealerCount();
 
     //console.log("count=======================",count);return false;
 
