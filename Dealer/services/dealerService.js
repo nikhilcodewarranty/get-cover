@@ -5,7 +5,7 @@ module.exports = class dealerService {
   // Get all dealers
   static async getAllDealers(query,projection) {
     try {
-      const AllDealers = await dealer.find(query,projection).sort({"createdAt":-1});
+      const AllDealers = await dealer.find(query,projection).sort({"unique_key":1});
       return AllDealers;
     } catch (error) {
       console.log(`Could not fetch dealers ${error}`);
@@ -14,7 +14,7 @@ module.exports = class dealerService {
 
   static async getPriceBookCount() {
     try {
-      const count = await dealer.find().sort({"createdAt":-1});
+      const count = await dealer.find().sort({"unique_key":-1});
       return count;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);

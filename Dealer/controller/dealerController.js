@@ -337,6 +337,8 @@ exports.registerDealer = async (req, res) => {
 
     const count = await dealerService.getPriceBookCount();
 
+    //console.log("count=======================",count);return false;
+
     // console.log(count);return false;
     // Extract necessary data for dealer creation
     const dealerMeta = {
