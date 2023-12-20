@@ -13,6 +13,7 @@ router.post("/searchPriceBook",[verifyToken],validator('search_price_book_valida
 //router.put("/updatePriceBook/:priceId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBook); // update price book detail with ID
 router.put("/updatePriceBook/:priceBookId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBookById); // update price book detail with ID
 router.get("/getPriceBookByCategory/:categoryName",[verifyToken],priceController.getPriceBookByCategory); // update price book detail with ID
+router.get("/getPriceBookByCategoryId/:categoryId",[verifyToken],priceController.getPriceBookByCategoryId); // update price book detail with ID
 
 
 // price categories api's

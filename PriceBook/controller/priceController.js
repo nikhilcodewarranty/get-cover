@@ -927,6 +927,45 @@ exports.getPriceBookByCategory = async (req, res) => {
   }
 }
 
+exports.getPriceBookByCategoryId = async (req, res) => {
+  try {
+    let data = req.body
+
+    let catQuery = { _id: req.params.categoryId }
+    let catProjection = { __v: 0 }
+    // check the request is having category id or not
+    let checkCategory = await priceBookService.getPriceCatByName(catQuery, catProjection)
+    if (!checkCategory) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid category"
+      })
+      return;
+    }
+    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: req.params.categoryId }, { __v: 0 })
+    if (!fetchPriceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the price books"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: 'Data fetched successfully',
+      result: {
+        priceBooks: fetchPriceBooks
+      }
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
