@@ -29,7 +29,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'status': data.status },
-          { 'category':{$in:catIdsArray} }
+          { 'category': { $in: catIdsArray } }
         ]
       };
     } else {
@@ -37,7 +37,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category':{$in:catIdsArray} }
+          { 'category': { $in: catIdsArray } }
         ]
       };
     }
@@ -554,7 +554,7 @@ exports.createPriceBookCat = async (req, res) => {
     }
     // Check Total Counts
     const count = await priceBookService.getTotalCount();
-   // console.log(count);return false;
+    // console.log(count);return false;
     const catData = {
       name: data.name,
       description: data.description,
@@ -617,7 +617,7 @@ exports.getPriceBookCat = async (req, res) => {
         ]
       }
     }
-    console.log('kkkkk',query)
+    console.log('kkkkk', query)
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
       res.send({
@@ -642,13 +642,23 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    let getPriceBook = await priceBookService.getPriceBookById({_id:req.query.priceBookId},{})
-    let query = { 
-      $or:[
-        {status: true },
-        {_id:getPriceBook.category._id}
-      ]
+    let getPriceBook = await priceBookService.getPriceBookById({ _id: req.query.priceBookId }, {})
+    let query;
+    if (getPriceBook) {
+      query = {
+        $or: [
+          { status: true },
+          { _id: getPriceBook ? getPriceBook.category._id : "" }
+        ]
+      }
+    }else{
+      query = {
+        $or: [
+          { status: true },
+        ]
+      }
     }
+    console.log(query)
     let projection = { __v: 0 }
     let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
     if (!getCategories) {
