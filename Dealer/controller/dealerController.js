@@ -145,6 +145,9 @@ exports.getPendingDealers = async (req, res) => {
   }
 };
 
+
+
+
 //create new dealer
 exports.createDealer = async (req, res) => {
   try {

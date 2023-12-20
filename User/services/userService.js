@@ -229,6 +229,17 @@ module.exports = class userService {
 
     }
   }
+
+  static async getServicerUser(query, projection) {
+    try {
+      const response = await user.find(query, projection).sort({ "createdAt": -1 });
+      return response
+    } catch (err) {
+      console.log(err);
+
+    }
+  }
+  getServicerUser
       //create user 
     static async createNotification(data) {
       try {

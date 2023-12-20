@@ -17,9 +17,11 @@ exports.getAllServiceProviders = async (req, res, next) => {
       })
       return;
     }
-    let query = { isDeleted: false }
+    let query = { isDeleted: false, status: "Approved" }
     let projection = { __v: 0, isDeleted: 0 }
     const serviceProviders = await providerService.getAllServiceProvider(query, projection);
+
+    console.log("serviceProviders==============================",serviceProviders)
     if (!serviceProviders) {
       res.send({
         code: constant.errorCode,
@@ -27,11 +29,38 @@ exports.getAllServiceProviders = async (req, res, next) => {
       });
       return;
     }
+
+    const servicerIds = serviceProviders.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getServicerUser(query1, projection)
+
+    if (!servicerUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
     res.send({
       code: constant.successCode,
-      message: "Success",
-      result: serviceProviders
-    })
+      data: result_Array
+    });
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -40,6 +69,63 @@ exports.getAllServiceProviders = async (req, res, next) => {
   }
 };
 
+// get all dealers 
+
+
+//Get Pending Request Servicer
+
+exports.getPendingServicer = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let query = { isDeleted: false, status: "Pending" }
+    let projection = { __v: 0, isDeleted: 0 }
+    let servicer = await providerService.getAllServiceProvider(query, projection);
+    //-------------Get All servicer Id's------------------------
+
+    const servicerIds = servicer.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getServicerUser(query1, projection)
+
+    if (!servicerUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: result_Array
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
 
 //-------------------------Created By Super Admin
 exports.createServiceProvider = async (req, res, next) => {
@@ -154,19 +240,19 @@ exports.registerServiceProvider = async (req, res) => {
       country: data.country,
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     };
-       // Register the Servicer
-        const createMetaData = await providerService.registerServiceProvider(ServicerMeta);
-        if (!createMetaData) {
-           res.send({
-            code: constant.errorCode,
-            message: 'Unable to create Servicer account',
-          });
+    // Register the Servicer
+    const createMetaData = await providerService.registerServiceProvider(ServicerMeta);
+    if (!createMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to create Servicer account',
+      });
 
-          return;
-        }
- 
+      return;
+    }
+
     // Create user metadata
-    const userMetaData = { 
+    const userMetaData = {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
@@ -184,20 +270,20 @@ exports.registerServiceProvider = async (req, res) => {
       });
       return
     }
- //Send Notification to dealer 
+    //Send Notification to dealer 
 
- const notificationData = {
-  title: "New Servicer Registration",
-  description: data.name+" "+"has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
-  userId:createMetaData._id,
-  };
- 
-  // Create the user
-  const createNotification = await userService.createNotification(notificationData);
-    if(createNotification){
+    const notificationData = {
+      title: "New Servicer Registration",
+      description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+      userId: createMetaData._id,
+    };
+
+    // Create the user
+    const createNotification = await userService.createNotification(notificationData);
+    if (createNotification) {
       let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      let mailing =  await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      let mailing = await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
     }
 
     res.send({
@@ -221,14 +307,14 @@ exports.statusUpdate = async (req, res) => {
     return;
   }
   let data = req.body;
-    let criteria = { _id: req.body.servicerId };
-    let newValue = {
-      $set: {
-        status:req.body.status
-      }
-    };
-    let option = { new: true };
-   try {
+  let criteria = { _id: req.body.servicerId };
+  let newValue = {
+    $set: {
+      status: req.body.status
+    }
+  };
+  let option = { new: true };
+  try {
     const updatedResult = await providerService.statusUpdate(criteria, newValue, option)
     if (!updatedResult) {
       res.send({
@@ -240,10 +326,10 @@ exports.statusUpdate = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      data:updatedResult
+      data: updatedResult
     })
-    }
-    catch (err) {
+  }
+  catch (err) {
     return res.send({
       code: constant.errorCode,
       message: err.message,

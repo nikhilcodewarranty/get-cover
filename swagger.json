@@ -435,7 +435,7 @@
           }
         }
       },
-      "/admin/dealers": {
+      "/admin/approveDealers": {
         "get": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
@@ -477,6 +477,49 @@
           }
         }
       },
+      "/admin/pendingServicer": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Pending Servicer",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      "/admin/approveServicer": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get all Approved Servicer",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+      
       "/admin/servicer": {
         "get": {
           "security": [ { "Bearer": [] } ],
