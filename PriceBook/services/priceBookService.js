@@ -154,7 +154,7 @@ module.exports = class priceBookService {
   // /get active price categories service
   static async getAllActivePriceCat(query, projection) {
     try {
-      const allPriceCategories = await priceCategory.find(query, projection).sort({ "createdAt": -1 });
+      const allPriceCategories = await priceCategory.find(query, projection).sort({ status:1});
       return allPriceCategories;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);

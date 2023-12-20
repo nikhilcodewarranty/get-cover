@@ -184,116 +184,146 @@ const generateMonthTerms = (numberOfTerms) => {
   return monthTerms;
 };
 
-// create dealer by super admin
 
-exports.createDealer = async (req, res) => {
-  try {
-    const data = req.body;
-    // Check if the user has Super Admin role
-    if (req.role !== "Super Admin") {
+// validate dealer by super admin
+
+exports.validateData = async (req, res) => {
+  const data = req.body;
+  // Check if the user has Super Admin role
+  if (req.role !== "Super Admin") {
+    res.send({
+      code: constant.errorCode,
+      message: "Only Super Admin is allowed to perform this action"
+    });
+    return
+  }
+
+  // Check if the specified role exists
+  const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
+  if (!checkRole) {
+    res.send({
+      code: constant.errorCode,
+      message: "Invalid role"
+    });
+    return;
+  }
+
+  let priceBook = [];
+  const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
+  const dealersUserData = data.dealers ? data.dealers : [];
+  const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
+  let checkPriceBook = [];
+
+  let dealerPriceArray = data.priceBook ? data.priceBook : [];
+  const uniqueEmails = new Set(allEmails);
+
+
+  if (allEmails.length !== uniqueEmails.size) {
+    res.send({
+      code: constant.errorCode,
+      message: 'Multiple user cannot have same emails',
+    });
+    return
+  }
+
+
+  const emailData = await userService.findByEmail(allEmails);
+  if (emailData.length > 0) {
+    res.send({
+      code: constant.errorCode,
+      message: 'Email Already Exist',
+      data: emailData
+    });
+    return;
+  }
+
+  let savePriceBookType = req.body.savePriceBookType
+
+  if (savePriceBookType == 'manually') {
+    //check price book  exist or not
+    priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
+    const priceBookCreateria = { _id: { $in: priceBook } }
+    checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+    if (checkPriceBook.length == 0) {
       res.send({
         code: constant.errorCode,
-        message: "Only Super Admin is allowed to perform this action"
-      });
-      return
+        message: "Product does not exist.Please check the product"
+      })
+      return;
     }
 
-    // Check if the specified role exists
-    const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
-    if (!checkRole) {
+    const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
+    if (missingProductNames.length > 0) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid role"
+        message: 'Some products is not created. Please check the product',
+        missingProductNames: missingProductNames
       });
       return;
     }
 
-    //If flag is approved
+  }
+  if (data.flag == 'approved') {
+    const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+    if (!singleDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer Not found"
+      });
+      return;
+    }
 
+    if (priceBook.length > 0) {
+      let query = {
+        $and: [
+          { 'priceBook': { $in: priceBook } },
+          { 'dealerId': data.dealerId }
+        ]
+      }
+
+      const existingData = await dealerPriceService.findByIds(query);
+      if (existingData.length > 0) {
+        res.send({
+          code: constant.errorCode,
+          message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
+        });
+        return;
+      }
+
+    }
+
+
+  }
+
+  else {
+    // Check if the dealer already exists
+    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+    if (existingDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Dealer name already exists',
+      });
+      return
+    }
+  }
+}
+
+
+// create dealer by super admin
+exports.createDealer = async (req, res) => {
+  try {
+    const data = req.body;
+    let priceBook = [];
+    let checkPriceBook = [];
+    const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
+    const dealersUserData = data.dealers ? data.dealers : [];
+    let savePriceBookType = req.body.savePriceBookType
+    let dealerPriceArray = data.priceBook ? data.priceBook : [];
+    const allUserData = [...dealersUserData, ...primaryUserData];
+    //If flag is approved
     if (data.flag == 'approved') {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
-
-      //console.log("singleDealer==========================",singleDealer);return false;
-      if (!singleDealer) {
-        res.send({
-          code: constant.errorCode,
-          message: "Dealer Not found"
-        });
-        return;
-      }
-      const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
-      let priceBook = [];
-      let checkPriceBook = [];
-      let dealerPriceArray = data.priceBook ? data.priceBook : [];
-      const dealersUserData = data.dealers ? data.dealers : [];
-      const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
-
-      const allUserData = [...dealersUserData, ...primaryUserData];
-      const uniqueEmails = new Set(allEmails);
-
-      
-      if (allEmails.length !== uniqueEmails.size) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Multiple user cannot have same emails',
-        });
-        return
-      }
-
-      const emailData = await userService.findByEmail(allEmails);
-      if (emailData.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Email Already Exist',
-          data: emailData
-        });
-        return;
-      }
-      let savePriceBookType = req.body.savePriceBookType
       if (savePriceBookType == 'manually') {
-        //check price book  exist or not
-        priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
-        const priceBookCreateria = { _id: { $in: priceBook } }
-        checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
-        if (checkPriceBook.length == 0) {
-          res.send({
-            code: constant.errorCode,
-            message: "Product does not exist.Please check the product"
-          })
-          return;
-        }
-        const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
-        if (missingProductNames.length > 0) {
-          res.send({
-            code: constant.errorCode,
-            message: 'Some products is not created. Please check the product',
-            missingProductNames: missingProductNames
-          });
-          return;
-        }
-
-        // check product is already for this dealer
-
-        if (priceBook.length > 0) {
-          let query = {
-            $and: [
-              { 'priceBook': { $in: priceBook } },
-              { 'dealerId': data.dealerId }
-            ]
-          }
-
-          const existingData = await dealerPriceService.findByIds(query);
-          if (existingData.length > 0) {
-            res.send({
-              code: constant.errorCode,
-              message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
-            });
-            return;
-          }
-
-        }
-
-        //save Price Books for this dealer
         const resultPriceData = dealerPriceArray.map(obj => ({
           'priceBook': obj.priceBook,
           'dealerId': data.dealerId,
@@ -364,48 +394,10 @@ exports.createDealer = async (req, res) => {
     }
 
     else {
-      // Check if the dealer already exists
-      const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
-      if (existingDealer) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Dealer name already exists',
-        });
-        return
-      }
-      //check request body contains duplicate emails
-      const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
-      let priceBook = [];
-      let checkPriceBook = [];
-      const dealerPriceArray = data.priceBook ? data.priceBook : [];
-      const dealersUserData = data.dealers ? data.dealers : [];
-      const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
-
       const allUserData = [...dealersUserData, ...primaryUserData];
-      const uniqueEmails = new Set(allEmails);
-
-      console.log("allUserData========================",allUserData);
-
-      if (allEmails.length !== uniqueEmails.size) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Multiple user cannot have same emails',
-        });
-        return
-      }
       // Check email exist
-      // const emailValues = primaryUserData.map(value => value.email);
-      const emailData = await userService.findByEmail(allEmails);
-      if (emailData.length > 0) {
-        res.send({
-          code: constant.errorCode,
-          message: 'Email Already Exist',
-          data: emailData
-        });
-        return;
-      }
       // check Price Book upload manually or by bulk upload
-      let savePriceBookType = req.body.savePriceBookType
+
       const dealerMeta = {
         name: data.name,
         street: data.street,
@@ -505,14 +497,7 @@ exports.createDealer = async (req, res) => {
     });
   }
 };
-
-
-
 //save Dealer Meta Data
-
-
-
-
 //---------------------------------------------------- refined code ----------------------------------------//
 
 // Login route
@@ -922,16 +907,16 @@ exports.getAllRoles = async (req, res) => {
 // get all notifications
 exports.getAllNotifications = async (req, res) => {
   try {
-    let Query = { isDeleted: false ,title:'New Dealer Registration'}
-    let Query1 = { isDeleted: false ,title:'New Servicer Registration'}
+    let Query = { isDeleted: false, title: 'New Dealer Registration' }
+    let Query1 = { isDeleted: false, title: 'New Servicer Registration' }
     let projection = { __v: 0 }
     const dealerNotification = await userService.getAllNotifications(Query, projection);
     const servicerNotification = await userService.getAllNotifications(Query1, projection);
     const dealerIds = dealerNotification.map(value => value.userId);
     const servicerIds = servicerNotification.map(value => value.userId);
-   // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
-    const query1 = { _id: { $in: dealerIds }};
-    const query2 = { _id: { $in: servicerIds }};
+    // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
+    const query1 = { _id: { $in: dealerIds } };
+    const query2 = { _id: { $in: servicerIds } };
 
     let dealerData = [];
     let allNotification = [];
@@ -945,7 +930,7 @@ exports.getAllNotifications = async (req, res) => {
     // console.log("dealerData============================",dealerData)
     // console.log("allNotification============================",allNotification);
 
-  //  return false;
+    //  return false;
 
     //console.log(dealerData);return false;
 
@@ -964,10 +949,10 @@ exports.getAllNotifications = async (req, res) => {
     const sortedResultArray = result_Array.sort((a, b) => {
       const createdAtA = new Date(a.notificationData.createdAt);
       const createdAtB = new Date(b.notificationData.createdAt);
-    
+
       return createdAtB - createdAtA;
     });
-    
+
     console.log(sortedResultArray);
 
 

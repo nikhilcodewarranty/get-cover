@@ -13,6 +13,9 @@ const serviceProviderSchema = new mongoose.Schema({
     type: String,
     default:''
   },
+  unique_key:{
+    type: Number,
+  },
   userAccount:{
     type:Boolean,
     default:false
