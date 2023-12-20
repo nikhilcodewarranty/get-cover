@@ -236,6 +236,7 @@ exports.validateData = async (req, res) => {
   }
 
   let savePriceBookType = req.body.savePriceBookType
+
   if (savePriceBookType == 'manually') {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
@@ -260,8 +261,8 @@ exports.validateData = async (req, res) => {
     }
 
   }
-  if (data.flag == 'approved') {
-    const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+  if (data.dealerId != '') {
+    const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
     if (!singleDealer) {
       res.send({
         code: constant.errorCode,
@@ -270,6 +271,20 @@ exports.validateData = async (req, res) => {
       return;
     }
 
+    //check new name is not exist in the database
+
+    if (singleDealer.name != data.name) {
+      const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+      if (existingDealer) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Dealer name already exists',
+        });
+        return
+      }
+    }
+
+    //check product is already exist for dealer this
     if (priceBook.length > 0) {
       let query = {
         $and: [
@@ -289,7 +304,6 @@ exports.validateData = async (req, res) => {
 
     }
 
-
   }
 
   else {
@@ -303,6 +317,10 @@ exports.validateData = async (req, res) => {
       return
     }
   }
+  res.send({
+    code: constant.successCode,
+    message: 'Success',
+  });
 }
 
 
@@ -310,15 +328,15 @@ exports.validateData = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
-    let priceBook = [];
-    let checkPriceBook = [];
+    // Check if the specified role exists
+    const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
     const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
     const dealersUserData = data.dealers ? data.dealers : [];
     let savePriceBookType = req.body.savePriceBookType
     let dealerPriceArray = data.priceBook ? data.priceBook : [];
     const allUserData = [...dealersUserData, ...primaryUserData];
     //If flag is approved
-    if (data.flag == 'approved') {
+    if (data.dealerId != '') {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'manually') {
         const resultPriceData = dealerPriceArray.map(obj => ({
@@ -390,10 +408,6 @@ exports.createDealer = async (req, res) => {
     }
 
     else {
-      const allUserData = [...dealersUserData, ...primaryUserData];
-      // Check email exist
-      // check Price Book upload manually or by bulk upload
-
       const dealerMeta = {
         name: data.name,
         street: data.street,
@@ -404,34 +418,7 @@ exports.createDealer = async (req, res) => {
         country: data.country,
         createdBy: data.createdBy
       };
-      if (savePriceBookType == 'manually') {
-        //check price book  exist or not
-        priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
-        const priceBookCreateria = { _id: { $in: priceBook } }
-        checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
-        if (checkPriceBook.length == 0) {
-          res.send({
-            code: constant.errorCode,
-            message: "Product does not exist.Please check the product"
-          })
-          return;
-        }
-        const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
-        if (missingProductNames.length > 0) {
-          res.send({
-            code: constant.errorCode,
-            message: 'Some products is not created. Please check the product',
-            missingProductNames: missingProductNames
-          });
-          return;
-        }
-        // check product is already for this dealer
-      }
-
-      // return false;
       // Create Dealer Meta Data
-
-      // Create Dealer
       const createMetaData = await dealerService.createDealer(dealerMeta);
       if (!createMetaData) {
         res.send({
@@ -474,7 +461,6 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
       //Approve status 
 
       res.send({
@@ -483,9 +469,6 @@ exports.createDealer = async (req, res) => {
         data: createMetaData
       });
     }
-
-
-
   } catch (err) {
     return res.send({
       code: constant.errorCode,
