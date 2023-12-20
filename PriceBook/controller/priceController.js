@@ -601,7 +601,7 @@ exports.getPriceBookCat = async (req, res) => {
     let projection = { isDeleted: 0, __v: 0 }
     let query;
     console.log(data.status)
-    if (data.status!=undefined) {
+    if (data.status) {
       query = {
         $and: [
           { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
