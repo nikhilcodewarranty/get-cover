@@ -186,7 +186,7 @@ exports.registerServiceProvider = async (req, res) => {
 
  const notificationData = {
   title: "New Servicer Registration",
-  description: "The new servicer is waiting for approval",
+  description: data.name+"has finished registering as a new service provider. For the onboarding process to proceed more quickly, kindly review and give your approval.",
   userId:createMetaData._id,
   };
  
