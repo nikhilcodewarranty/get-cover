@@ -188,7 +188,7 @@ const generateMonthTerms = (numberOfTerms) => {
 
 exports.createDealer = async (req, res) => {
   try {
-    const data = req.file;
+    const data = req.body;
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
       res.send({
@@ -197,8 +197,6 @@ exports.createDealer = async (req, res) => {
       });
       return
     }
-
-    console.log(req.body);
 
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -355,13 +353,6 @@ exports.createDealer = async (req, res) => {
           })
         }
       }
-
-      else {
-        console.log("asdasdasdasdsa");
-        
-      }
-
-
       res.send({
         code: constant.successCode,
         message: "Status Approved"
@@ -927,16 +918,16 @@ exports.getAllRoles = async (req, res) => {
 // get all notifications
 exports.getAllNotifications = async (req, res) => {
   try {
-    let Query = { isDeleted: false, title: 'New Dealer Registration' }
-    let Query1 = { isDeleted: false, title: 'New Servicer Registration' }
+    let Query = { isDeleted: false ,title:'New Dealer Registration'}
+    let Query1 = { isDeleted: false ,title:'New Servicer Registration'}
     let projection = { __v: 0 }
     const dealerNotification = await userService.getAllNotifications(Query, projection);
     const servicerNotification = await userService.getAllNotifications(Query1, projection);
     const dealerIds = dealerNotification.map(value => value.userId);
     const servicerIds = servicerNotification.map(value => value.userId);
-    // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
-    const query1 = { _id: { $in: dealerIds } };
-    const query2 = { _id: { $in: servicerIds } };
+   // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
+    const query1 = { _id: { $in: dealerIds }};
+    const query2 = { _id: { $in: servicerIds }};
 
     let dealerData = [];
     let allNotification = [];
@@ -946,6 +937,13 @@ exports.getAllNotifications = async (req, res) => {
     let dealerMeta = await dealerService.getAllDealers(query1, projection)
     let servicerMeta = await providerService.getAllServiceProvider(query2, projection)
     dealerData = [...dealerMeta, ...servicerMeta];
+
+    // console.log("dealerData============================",dealerData)
+    // console.log("allNotification============================",allNotification);
+
+  //  return false;
+
+    //console.log(dealerData);return false;
 
     const result_Array = dealerData.map(item1 => {
       const matchingItem = allNotification.find(item2 => item2.userId.toString() == item1._id.toString());
@@ -958,12 +956,18 @@ exports.getAllNotifications = async (req, res) => {
         return dealerData.toObject();
       }
     });
+
     const sortedResultArray = result_Array.sort((a, b) => {
       const createdAtA = new Date(a.notificationData.createdAt);
       const createdAtB = new Date(b.notificationData.createdAt);
-
+    
       return createdAtB - createdAtA;
     });
+    
+    console.log(sortedResultArray);
+
+
+
     res.send({
       code: constant.successCode,
       message: "Successful",

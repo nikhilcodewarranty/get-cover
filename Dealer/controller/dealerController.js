@@ -8,6 +8,7 @@ const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
+
 const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -584,10 +585,6 @@ exports.uploadPriceBook = async (req, res) => {
           status: true,
           wholePrice:Number(product.frontingFee) + Number(product.reserveFutureFee) +Number(product.reinsuranceFee) + Number(product.adminFee)
         }));
-
-
-
-
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
           res.send({
