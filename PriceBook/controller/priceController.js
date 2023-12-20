@@ -315,9 +315,6 @@ exports.updatePriceBookById = async (req, res, next) => {
       return;
     }
 
-    console.log(params)
-
-    console.log("Price Book id====================", params.priceBookId)
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceBookId);
@@ -442,25 +439,6 @@ const updatePriceBookStatus = async (priceId, newData) => {
     success: !!updatedCat,
     message: updatedCat ? "Successfully updated" : "Unable to update the data",
   };
-};
-
-// Function to update Dealer Price Book based on category status
-const updateDealerPriceStatus = async (priceId, categoryStatus) => {
-  if (!categoryStatus) {
-    const criteria = { priceBook: { $in: [priceId] } }
-    const newValue = { status: categoryStatus };
-    const option = { new: true };
-    const updatedPriceBook = await dealerPriceService.updateDealerPrice(criteria, newValue, option);
-    return {
-      success: !!updatedPriceBook,
-      message: updatedPriceBook ? "Successfully updated" : "Unable to update the data"
-    };
-  }
-  return {
-    message: "Successfully updated"
-  };
-
-
 };
 
 
@@ -681,66 +659,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
   }
 }
 
-// Function to update price book category
-const updatePriceBookCategory = async (catId, newData, req, res) => {
-
-  //const criteria = { _id: catId };
-  let projection = { isDeleted: 0, __v: 0 }
-  console.log(catId)
-  const existingCat = await priceBookService.getPriceCatById({ _id: catId }, projection);
-  console.log("existingCat-----------------", existingCat)
-  if (!existingCat) {
-    res.send({
-      success: false,
-      message: "Invalid category ID"
-    });
-    return;
-  }
-
-  const newValue = {
-    $set: {
-      name: newData.name ? newData.name : existingCat.name,
-      description: newData.description ? newData.description : existingCat.description,
-      status: newData.status
-    }
-  };
-  const criteria = { _id: { $in: catId } }
-  const option = { new: true };
-  const updatedCat = await priceBookService.updatePriceCategory(criteria, newValue, option);
-
-  return {
-    success: !!updatedCat,
-    message: updatedCat ? "Successfully updated" : "Unable to update the data"
-  };
-};
-
-// Function to update Price Book based on category status
-const updatePriceBookByCategoryStatus = async (catId, categoryStatus) => {
-  //const criteria = { category: catId };
-  if (!categoryStatus) {
-    const criteria = { category: { $in: [catId] } }
-    const newValue = { status: categoryStatus };
-    const option = { new: true };
-    const updatedPriceBook = await priceBookService.updatePriceBook(criteria, newValue, option);
-    /**---------------------------Get and update Dealer Price Book Status---------------------------- */
-    let projection = { isDeleted: 0, __v: 0 }
-    const allPriceBookIds = await priceBookService.getAllPriceIds({ category: catId }, projection);
-    const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
-    if (priceIdsToUpdate) {
-      dealerCreateria = { priceBook: { $in: priceIdsToUpdate } }
-      const updatedPriceBook1 = await dealerPriceService.updateDealerPrice(dealerCreateria, newValue, option);
-      return {
-        success: !!updatedPriceBook1,
-        message: updatedPriceBook1 ? "Successfully updated" : "Unable to update the data"
-      };
-    }
-  }
-
-  return {
-    message: "Successfully updated"
-  };
-
-};
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
