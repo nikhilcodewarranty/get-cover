@@ -273,7 +273,13 @@ exports.validateData = async (req, res) => {
 
     //check new name is not exist in the database
 
-    if (singleDealer.name != data.name) {
+    const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
+    const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+
+    // console.log("cleanStr1=====================",cleanStr1)
+    // console.log("cleanStr2=====================",cleanStr2)
+
+    if (cleanStr1 !== cleanStr2) {
       const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
       if (existingDealer) {
         res.send({
@@ -340,10 +346,11 @@ exports.createDealer = async (req, res) => {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'manually') {
         const resultPriceData = dealerPriceArray.map(obj => ({
-          'priceBook': obj.priceBook,
+          'priceBook': obj.priceBookId,
           'dealerId': data.dealerId,
-          'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
-          'retailPrice': obj.retailPrice
+          'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
+          'retailPrice': obj.retailPrice,
+          "status":obj.status
         }));
 
         const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
@@ -447,10 +454,11 @@ exports.createDealer = async (req, res) => {
       }
       //save Price Books for this dealer
       const resultPriceData = dealerPriceArray.map(obj => ({
-        'priceBook': obj.priceBook,
-        'dealerId': createMetaData._id,
-        'brokerFee': Number(obj.retailPrice) - Number(obj.wholePrice),
-        'retailPrice': obj.retailPrice
+        'priceBook': obj.priceBookId,
+        'dealerId': data.dealerId,
+        'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
+        'retailPrice': obj.retailPrice,
+        "status":obj.status
       }));
 
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
