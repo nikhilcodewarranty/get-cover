@@ -225,8 +225,6 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-
-
   const emailData = await userService.findByEmail(allEmails);
   if (emailData.length > 0) {
     res.send({
@@ -238,7 +236,6 @@ exports.validateData = async (req, res) => {
   }
 
   let savePriceBookType = req.body.savePriceBookType
-
   if (savePriceBookType == 'manually') {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
@@ -339,7 +336,6 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
-
         const allUsersData = allUserData.map((obj, index) => ({
           ...obj,
           roleId: checkRole._id,

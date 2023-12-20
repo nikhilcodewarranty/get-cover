@@ -642,11 +642,11 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    console.log('check------------------',req.query)
+    let getPriceBook = await priceBookService.getPriceBookById({_id:req.query.priceBookId},{})
     let query = { 
       $or:[
         {status: true },
-        {_id:req.query.categoryId}
+        {_id:getPriceBook.category._id}
       ]
     }
     let projection = { __v: 0 }
