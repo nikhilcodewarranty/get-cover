@@ -600,7 +600,8 @@ exports.getPriceBookCat = async (req, res) => {
 
     let projection = { isDeleted: 0, __v: 0 }
     let query;
-    if (data.status) {
+    console.log(data.status)
+    if (data.status.toString()) {
       query = {
         $and: [
           { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
@@ -616,7 +617,7 @@ exports.getPriceBookCat = async (req, res) => {
         ]
       }
     }
-
+    console.log('kkkkk',query)
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
       res.send({
