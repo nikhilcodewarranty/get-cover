@@ -32,7 +32,7 @@ router.post("/servicerStatusUpdate", [verifyToken], serviceController.statusUpda
 
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
-router.post("/approveDealer", [verifyToken], validator("approve_dealer_validation"), userController.createDealer);
+router.post("/approveDealer", [verifyToken], userController.createDealer);
 router.post("/checkEmail", [verifyToken],validator("email_validation"), userController.checkEmail);
 
 

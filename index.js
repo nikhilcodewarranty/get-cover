@@ -4,6 +4,7 @@ var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
+var bodyParser = require("body-parser");
 const http = require('http')
 const createHttpError = require('http-errors')
 var createError = require('http-errors');
@@ -24,10 +25,14 @@ const priceRoutes = require("./PriceBook/routes/price");
 
 var app = express();
 
+
+
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
 app.set('views', path.join(__dirname, 'views'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors())
 const httpServer = http.createServer(app) 

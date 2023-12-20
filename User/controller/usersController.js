@@ -188,7 +188,7 @@ const generateMonthTerms = (numberOfTerms) => {
 
 exports.createDealer = async (req, res) => {
   try {
-    const data = req.body;
+    const data = req.file;
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
       res.send({
@@ -197,6 +197,8 @@ exports.createDealer = async (req, res) => {
       });
       return
     }
+
+    console.log(req.body);
 
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -356,6 +358,7 @@ exports.createDealer = async (req, res) => {
 
       else {
         console.log("asdasdasdasdsa");
+        
       }
 
 
