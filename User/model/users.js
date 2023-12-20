@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
   accountId: {
     type: String,
   },
-  resetPasswordCode:{
+  resetPasswordCode:{ 
     type:String,
     default:null
   },
