@@ -20,7 +20,7 @@ router.post('/createPriceBookCategory',[verifyToken],validator("create_price_cat
 router.post('/searchPriceBookCategories',[verifyToken],validator("search_price_cat_validation"),priceController.searchPriceBookCategories) // search price book category with  name
 router.put('/updatePriceBookCategory/:catId',[verifyToken],validator("update_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
 //router.put('/updateCategory/:catId',[verifyToken],validator("update_price_cat_validation"),priceController.updatePriceBookCat) //update price book category with ID
-router.post('/getPriceBookCategories',[verifyToken],priceController.getPriceBookCat) // get price book category api
+router.post('/getPriceBookCategories',[verifyToken],validator("filter_price_cat"),priceController.getPriceBookCat) // get price book category api
 router.get('/getActivePriceBookCategories',[verifyToken],priceController.getActivePriceBookCategories) // get price book category api
 router.get('/getPriceBookCategoryById/:catId',[verifyToken],priceController.getPriceBookCatById) // get price book by category
 router.get('/getCategoryByPriceBook/:name',[verifyToken],priceController.getCategoryByPriceBook) // get price book category by price book
