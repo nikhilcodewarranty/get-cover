@@ -231,7 +231,7 @@ exports.createDealer = async (req, res) => {
       const allUserData = [...dealersUserData, ...primaryUserData];
       const uniqueEmails = new Set(allEmails);
 
-      console.log("allUserData========================",allUserData);
+      
       if (allEmails.length !== uniqueEmails.size) {
         res.send({
           code: constant.errorCode,
