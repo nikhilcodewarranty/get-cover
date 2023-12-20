@@ -164,7 +164,7 @@ exports.registerServiceProvider = async (req, res) => {
         }
  
     // Create user metadata
-    const userMetaData = {
+    const userMetaData = { 
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
