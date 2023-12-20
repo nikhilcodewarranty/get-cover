@@ -568,8 +568,6 @@ exports.uploadPriceBook = async (req, res) => {
         const priceBookName = results.map(obj => obj.priceBook);
         const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
         const foundProducts = await priceBookService.findByName(priceBookName1);
-
-
         if (foundProducts == undefined) {
           res.send({
             code: constant.errorCode,
@@ -602,7 +600,7 @@ exports.uploadPriceBook = async (req, res) => {
         if (foundProducts.length == 0) {
           res.send({
             code: constant.errorCode,
-            message: 'The Product is already exist for this dealer',
+            message: 'The Products is not created yet. Please check catalog!',
           });
           return;
         }
