@@ -222,7 +222,7 @@ module.exports = class userService {
   //get role by id
   static async getDealersUser(query, projection) {
     try {
-      const response = await user.find(query, projection)
+      const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response
     } catch (err) {
       console.log(err);
@@ -249,6 +249,16 @@ module.exports = class userService {
     }
   };
 
+  static async getCountNotification() {
+    try {
+      const roles = await notification.countDocuments({ isDeleted: false, status:false })
+      return roles;
+    } catch (error) {
+      console.log(`Could not find role ${error}`);
+    }
+  };
+
+  
 
   static async updateNotification(criteria, newValue, option) {
     try {

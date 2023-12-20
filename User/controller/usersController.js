@@ -18,8 +18,12 @@ const role = require("../model/role");
 const constant = require('../../config/constant');
 const emailConstant = require('../../config/emailConstant');
 const mail = require("@sendgrid/mail");
+const fs = require('fs');
+const multer = require('multer');
+const path = require('path');
+// Promisify fs.createReadStream for asynchronous file reading
 
-
+const csvParser = require('csv-parser');
 //----------------------- api's function ---------------//
 
 // create user 
@@ -185,7 +189,6 @@ const generateMonthTerms = (numberOfTerms) => {
 exports.createDealer = async (req, res) => {
   try {
     const data = req.body;
-
     // Check if the user has Super Admin role
     if (req.role !== "Super Admin") {
       res.send({
@@ -351,10 +354,11 @@ exports.createDealer = async (req, res) => {
         }
       }
 
-      //By Upload 
-      else{
-        
+      else {
+        console.log("asdasdasdasdsa");
       }
+
+
       res.send({
         code: constant.successCode,
         message: "Status Approved"
@@ -440,7 +444,7 @@ exports.createDealer = async (req, res) => {
 
       // return false;
       // Create Dealer Meta Data
- 
+
       // Create Dealer
       const createMetaData = await dealerService.createDealer(dealerMeta);
       if (!createMetaData) {
@@ -920,19 +924,35 @@ exports.getAllRoles = async (req, res) => {
 // get all notifications
 exports.getAllNotifications = async (req, res) => {
   try {
-    let Query = { isDeleted: false }
+    let Query = { isDeleted: false ,title:'New Dealer Registration'}
+    let Query1 = { isDeleted: false ,title:'New Servicer Registration'}
     let projection = { __v: 0 }
-    const allNotification = await userService.getAllNotifications(Query, projection);
-    const accountIds = allNotification.map(value => value.userId);
-    const query1 = { accountId: { $in: accountIds }, isPrimary: true };
-
+    const dealerNotification = await userService.getAllNotifications(Query, projection);
+    const servicerNotification = await userService.getAllNotifications(Query1, projection);
+    const dealerIds = dealerNotification.map(value => value.userId);
+    const servicerIds = servicerNotification.map(value => value.userId);
+   // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
+    const query1 = { _id: { $in: dealerIds }};
+    const query2 = { _id: { $in: servicerIds }};
 
     let dealerData = [];
+    let allNotification = [];
 
-    let usersMeta = await userService.getDealersUser(query1, projection)
+    allNotification = [...dealerNotification, ...servicerNotification];
 
-    const result_Array = usersMeta.map(item1 => {
-      const matchingItem = allNotification.find(item2 => item2.userId.toString()== item1.accountId);
+    let dealerMeta = await dealerService.getAllDealers(query1, projection)
+    let servicerMeta = await providerService.getAllServiceProvider(query2, projection)
+    dealerData = [...dealerMeta, ...servicerMeta];
+
+    // console.log("dealerData============================",dealerData)
+    // console.log("allNotification============================",allNotification);
+
+  //  return false;
+
+    //console.log(dealerData);return false;
+
+    const result_Array = dealerData.map(item1 => {
+      const matchingItem = allNotification.find(item2 => item2.userId.toString() == item1._id.toString());
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -942,33 +962,31 @@ exports.getAllNotifications = async (req, res) => {
         return dealerData.toObject();
       }
     });
-    let criteria = { status: false };
-    let newValue = {
-      $set: {
-        status: true
-      }
-    };
-    //Update Notification
-    const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
-    if (!updateNotification) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update the notifications "
-      });
-      return;
-    };
-    //success response
+
+    const sortedResultArray = result_Array.sort((a, b) => {
+      const createdAtA = new Date(a.notificationData.createdAt);
+      const createdAtB = new Date(b.notificationData.createdAt);
+    
+      return createdAtB - createdAtA;
+    });
+    
+    console.log(sortedResultArray);
+
+
+
     res.send({
       code: constant.successCode,
       message: "Successful",
       result: {
-        notification: result_Array
+        notification: sortedResultArray
       }
     });
+
+    return;
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message:error.message
+      message: error.message
     })
   }
 };
@@ -996,6 +1014,57 @@ exports.checkEmail = async (req, res) => {
     })
   }
 };
+
+exports.notificationStatusUpdate = async (req, res) => {
+  try {
+    let criteria = { status: false };
+    let newValue = {
+      $set: {
+        status: true
+      }
+    };
+    //Update Notification
+    const updateNotification = await userService.updateNotification(criteria, newValue, { new: true });
+    if (!updateNotification) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the notifications "
+      });
+      return;
+    };
+    //success response
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+    });
+
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: "Unable to create the dealer"
+    })
+  }
+};
+exports.getCountNotification = async (req, res) => {
+  try {
+    const allNotification = await userService.getCountNotification();
+
+    res.send({
+      code: constant.successCode,
+      message: "Successful",
+      count: allNotification
+    });
+
+    return;
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: error.message
+    })
+  }
+};
+
+
 
 
 
