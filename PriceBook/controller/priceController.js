@@ -865,7 +865,11 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       })
       return;
     }
-    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: req.params.categoryId }, { __v: 0 })
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: new mongoose.Types.ObjectId(req.params.categoryId) }, { __v: 0 },limit,page)
+    // console.log("fetchPriceBooks=======================",fetchPriceBooks)
+    // return;
     res.send({
       code: constant.successCode,
       message: 'Data fetched successfully',
