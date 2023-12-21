@@ -342,8 +342,8 @@ exports.createDealer = async (req, res) => {
     let dealerPriceArray = data.priceBook ? data.priceBook : [];
     const allUserData = [...dealersUserData, ...primaryUserData];
     //If flag is approved
-    if (data.dealerId != '') {
-      const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+    if (data.dealerId!=undefined) {
+        const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'manually') {
         const resultPriceData = dealerPriceArray.map(obj => ({
           'priceBook': obj.priceBookId,
