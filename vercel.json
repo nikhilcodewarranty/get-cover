@@ -6,6 +6,7 @@
         "use": "@vercel/node"
       }
     ],
+    "installCommand": "npm allInstall",
     "routes": [
       {
         "src": "/(.*)",
