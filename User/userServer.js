@@ -26,8 +26,8 @@ app.use((request, response, next) => {
 });
 
 app.use("/api-v1", userRoutes);
-app.set("views", path.join(__dirname, "views"))
-app.set("view engine", "pug")
+// app.set("views", path.join(__dirname, "views"))
+// app.set("view engine", "pug")
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
