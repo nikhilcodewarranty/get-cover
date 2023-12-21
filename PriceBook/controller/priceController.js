@@ -870,7 +870,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       code: constant.successCode,
       message: 'Data fetched successfully',
       result: {
-        priceBooks: fetchPriceBooks
+        priceBooks: fetchPriceBooks ? fetchPriceBooks:[]
       }
     })
   } catch (err) {
