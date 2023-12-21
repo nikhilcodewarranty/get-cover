@@ -21,6 +21,9 @@ module.exports = class priceBookService {
             foreignField: "_id",
             as: "category"
           }
+        },
+        {
+          $unwind:'$category'
         }
       
       ]).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
