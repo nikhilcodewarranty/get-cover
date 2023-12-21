@@ -621,8 +621,8 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    let ID = req.params.priceBookId ==undefined ? "61c8c7d38e67bb7c7f7eeeee": req.query.priceBookId
-     
+    let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee": req.query.priceBookId
+    console.log(ID,req.query.priceBookId)
     let query1 = { _id: new mongoose.Types.ObjectId(ID)}
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
@@ -866,13 +866,6 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       return;
     }
     let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: req.params.categoryId }, { __v: 0 })
-    if (!fetchPriceBooks) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the price books"
-      })
-      return;
-    }
     res.send({
       code: constant.successCode,
       message: 'Data fetched successfully',
