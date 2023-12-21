@@ -5,7 +5,6 @@ module.exports = class dealerPriceService {
   static async getAllDealerPrice() {
     try {
       const AllDealerPrice = await dealerPrice.aggregate([
-           // Join with user_role table
         {
           $lookup: {
             from: "pricebooks",
