@@ -8,10 +8,28 @@ module.exports = class dealerPriceService {
            // Join with user_role table
         {
           $lookup: {
-            from: "priceBooks",
+            from: "pricebooks",
             localField: "priceBook",
             foreignField: "_id",
-            as: "priceBooks"
+            as: "priceBooks",
+            pipeline:[
+              {
+                $lookup: {
+                  from: "pricecategories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category"
+                }
+              }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "dealerId",
+            foreignField: "_id",
+            as: "dealer"
           }
         },
         // { $unwind: "$priceBooks" },
