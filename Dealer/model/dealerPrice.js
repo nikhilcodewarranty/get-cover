@@ -4,11 +4,11 @@ const connection = require('../../db')
 const dealerBookSchema = new mongoose.Schema({
   priceBook: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "priceBook",
+    ref: "priceBooks",
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "dealer",
+    ref: "dealers",
   },
   status: {
     type: Boolean,

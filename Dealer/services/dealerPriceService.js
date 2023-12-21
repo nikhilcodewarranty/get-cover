@@ -4,7 +4,25 @@ module.exports = class dealerPriceService {
   // get all dealer prices 
   static async getAllDealerPrice() {
     try {
-      const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      const AllDealerPrice = await dealerPrice.aggregate([
+           // Join with user_role table
+        {
+          $lookup: {
+            from: "priceBooks",
+            localField: "priceBook",
+            foreignField: "_id",
+            as: "priceBooks"
+          }
+        },
+        // { $unwind: "$priceBooks" },
+        // {
+        //   $project: {
+        //     name: "$priceBooks.name",
+        //     description: "$priceBooks.description",
+        //   }
+        // }
+      ]).sort({ "createdAt": -1 });
+     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
