@@ -239,8 +239,9 @@ exports.validateData = async (req, res) => {
 
   if (savePriceBookType == 'manually') {
     //check price book  exist or not
-    priceBook = dealerPriceArray.map((dealer) => dealer.priceBook);
+    priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
+    console.log("priceBookCreateria=======================", priceBookCreateria)
     checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
       res.send({
@@ -342,17 +343,31 @@ exports.createDealer = async (req, res) => {
     let dealerPriceArray = data.priceBook ? data.priceBook : [];
     const allUserData = [...dealersUserData, ...primaryUserData];
     //If flag is approved
-    if (data.dealerId!=undefined) {
-        const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+    if (data.dealerId != undefined) {
+      const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'manually') {
         const resultPriceData = dealerPriceArray.map(obj => ({
           'priceBook': obj.priceBookId,
           'dealerId': data.dealerId,
           'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
           'retailPrice': obj.retailPrice,
-          "status":obj.status
+          "status": obj.status
         }));
+        //Primary information edit
 
+        let userQuery = { accountId: data.dealerId, isPrimary: true }
+        let newValues1 = {
+          $set: {
+            email: allUserData[0].email,
+            firstName: allUserData[0].firstName,
+            lastName: allUserData[0].lastName,
+            phoneNumber: allUserData[0].phoneNumber,
+            position: allUserData[0].position,
+            status: allUserData[0].status,
+          }
+        }
+
+        let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
         const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
         if (!createPriceBook) {
           res.send({
@@ -361,13 +376,18 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
-        const allUsersData = allUserData.map((obj, index) => ({
+        let allUsersData = allUserData.map((obj, index) => ({
           ...obj,
           roleId: checkRole._id,
           accountId: data.dealerId,
           isPrimary: index === 0 ? true : false,
           status: req.body.isAccountCreate ? obj.status : false
         }));
+
+        if (allUsersData.length > 1){
+            allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+        }         
+
 
         const createUsers = await userService.insertManyUser(allUsersData);
 
@@ -401,16 +421,10 @@ exports.createDealer = async (req, res) => {
           let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
           res.send({
             code: constant.successCode,
-            message: "Email has been sent",
-            codes: resetPasswordCode
+            message: "Status Approved! Email has been sent",
           })
         }
       }
-      res.send({
-        code: constant.successCode,
-        message: "Status Approved"
-      });
-
       return;
     }
 
@@ -458,7 +472,7 @@ exports.createDealer = async (req, res) => {
         'dealerId': data.dealerId,
         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
         'retailPrice': obj.retailPrice,
-        "status":obj.status
+        "status": obj.status
       }));
 
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
