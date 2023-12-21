@@ -41,12 +41,27 @@ module.exports = class priceBookService {
   static async getAllActivePriceBook(query, projection) {
     try {
 
-      const allPriceBook = await priceBook.find(query, projection)
-        .populate({
-          path: 'category',
-          select: 'name', // Specify the fields you want to retrieve from the 'category' collection
-          as: "data"
-        }).sort({ 'createdAt': -1 });
+
+      console.log("query========================",query);
+
+      const allPriceBook = await priceBook.aggregate([
+        {
+          $match: query
+        },
+        // Join with user_role table
+        {
+          $lookup: {
+            from: "pricecategories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category"
+          }
+        },
+        {
+          $unwind:'$category'
+        }
+      
+      ]).sort({ 'createdAt': -1 });
       return allPriceBook;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
