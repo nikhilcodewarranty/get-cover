@@ -101,8 +101,25 @@ module.exports = class priceBookService {
   // get price book by ids
   static async getPriceBookById(query, projection) {
     try {
-      const singlePriceBookResponse = await priceBook.findOne(query, projection).populate({path: 'category',select: 'name status', // Specify the fields you want to retrieve from the 'category' collection
-    }).sort({ 'createdAt': -1 });
+      console.log(query)
+      const singlePriceBookResponse = await priceBook.aggregate([
+        {
+          $match: query
+        },
+        // Join with user_role table
+        {
+          $lookup: {
+            from: "pricecategories",
+            localField: "category",
+            foreignField: "_id",
+            as: "category"
+          }
+        },
+        {
+          $unwind:'$category'
+        }
+      
+      ]).sort({ 'createdAt': -1 });
       return singlePriceBookResponse;
     } catch (error) {
       console.log(`Price book not found. ${error}`);
