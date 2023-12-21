@@ -621,13 +621,14 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    let getPriceBook = await priceBookService.getPriceBookById({ _id: req.query.priceBookId }, {})
+    let query1 = { _id: new mongoose.Types.ObjectId(req.query.priceBookId) }
+    let getPriceBook = await priceBookService.getPriceBookById(query1, {})
     let query;
     if (getPriceBook) {
       query = {
         $or: [
           { status: true },
-          { _id: getPriceBook ? getPriceBook.category._id : "" }
+          { _id: getPriceBook ? getPriceBook[0].category._id : "" }
         ]
       }
     }else{
@@ -637,9 +638,9 @@ exports.getActivePriceBookCategories = async (req, res) => {
         ]
       }
     }
-    console.log(query)
     let projection = { __v: 0 }
     let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
+ 
     if (!getCategories) {
       res.send({
         code: constant.errorCode,
@@ -649,7 +650,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: getCategories
+        result: getCategories[0]
       })
     }
   } catch (err) {
