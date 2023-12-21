@@ -42,6 +42,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       };
     }
 
+    console.log(query)
 
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
