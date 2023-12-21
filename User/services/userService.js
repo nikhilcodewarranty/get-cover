@@ -179,7 +179,26 @@ module.exports = class userService {
   //find user by email
   static async findByEmail(query) {
     try {
-     const response = await user.find({ 'email': { $in: query } }).select('-_id email');
+    // const response = await user.find({ 'email': { $in: query } }).select('-_id email');
+    const response = await user.aggregate([
+      {
+        $match: {
+          email: { $in: query }
+        }
+      },
+      {
+        $addFields: {
+          flag: true
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          email: 1,
+          flag: 1
+        }
+      }
+    ]);   
  
       return response;
       // const response = await user.aggregate([
