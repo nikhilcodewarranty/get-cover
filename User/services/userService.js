@@ -3,6 +3,7 @@ const role = require("../model/role");
 const notification = require("../model/notification");
 const terms = require("../model/terms");
 const dealerModel = require("../../Dealer/model/dealer");
+const { userConnection } = require("../../db");
 
 //-------------------------- user's services ------------------------------//
 
@@ -178,7 +179,8 @@ module.exports = class userService {
   //find user by email
   static async findByEmail(query) {
     try {
-      const response = await user.find({ 'email': { $in: query } }).select('-_id email');
+     const response = await user.find({ 'email': { $in: query } }).select('-_id email');
+ 
       return response;
       // const response = await user.aggregate([
       //   {

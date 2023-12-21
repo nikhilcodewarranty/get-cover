@@ -8,7 +8,7 @@ const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
 const constant = require('../../config/constant')
 const bcrypt = require("bcrypt");
-
+const XLSX = require("xlsx");
 const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
 const fs = require('fs');
@@ -388,7 +388,7 @@ exports.registerDealer = async (req, res) => {
 
     const notificationData = {
       title: "New Dealer Registration",
-      description: data.name+" "+"has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+      description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
     };
 
@@ -555,7 +555,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     //check Dealer Exist
     let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
-   
+
     if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
@@ -566,99 +566,120 @@ exports.uploadPriceBook = async (req, res) => {
     const results = [];
     let priceBookName = [];
     let allpriceBookIds = [];
-    // Use async/await for cleaner CSV parsing
-    require('fs')
-      .createReadStream(req.file.path)
-      .pipe(csvParser())
-      .on('data', (data) => results.push(data))
-      .on('end', async () => {
-        const priceBookName = results.map(obj => obj.priceBook);
-        const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
-        const foundProducts = await priceBookService.findByName(priceBookName1);
-        if (foundProducts == undefined) {
-          res.send({
-            code: constant.errorCode,
-            message: 'The selected product does not match with your product catalog. Please double-check and try again.',
-          });
-          return;
-        }
-
-
-        const count = await dealerPriceService.getDealerPriceCount();
-
-        // Extract the names and ids of found products
-        const foundProductData = foundProducts.map(product => ({
-          priceBook: product._id,
-          name: product.name,
-          dealerId: req.body.dealerId,
-          status: true,
-          wholePrice:Number(product.frontingFee) + Number(product.reserveFutureFee) +Number(product.reinsuranceFee) + Number(product.adminFee)
-        }));
-        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
-        if (missingProductNames.length > 0) {
-          res.send({
-            code: constant.errorCode,
-            message: 'Some products does not exist. Please check!',
-            missingProductNames: missingProductNames
-          });
-          return;
-        }
-        if (foundProducts.length == 0) {
-          res.send({
-            code: constant.errorCode,
-            message: 'The Products is not created yet. Please check catalog!',
-          });
-          return;
-        }
-        // Extract _id values from priceBookIds
-        const allpriceBookIds = foundProductData.map(obj => obj.priceBook);
-        // Check for duplicates and return early if found
-        if (allpriceBookIds.length > 0) {
-          let query = {
-            $and: [
-              { 'priceBook': { $in: allpriceBookIds } },
-              { 'dealerId': req.body.dealerId }
-            ]
-          }
-
-          const existingData = await dealerPriceService.findByIds(query);
-          if (existingData.length > 0) {
-            res.send({
-              code: constant.errorCode,
-              message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
-            });
-            return;
-          }
-        }
-        let newArray1 = results.map((obj) => ({
+    const wb = XLSX.readFile(req.file.path);
+    const sheets = wb.SheetNames;
+    if (sheets.length > 0) {
+      const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      let results = data
+        .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
+        .map(obj => ({
           priceBook: obj.priceBook,
-          status: true,
           retailPrice: obj.retailPrice,
-          dealerId: req.body.dealerId,
         }));
 
-        // Merge brokerFee from newArray into foundProductData based on priceBook
-        const mergedArray = foundProductData.map(foundProduct => ({
-          ...foundProduct,
-          retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice,
-          brokerFee: (newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice,
-          unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-        }));
+      const priceBookName = results.map(obj => obj.priceBook);
+      const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
+      const foundProducts = await priceBookService.findByName(priceBookName1);
 
-       // Upload the new data to the dealerPriceService
-        const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
+      if (foundProducts.length == 0) {
+        res.send({
+          code: constant.errorCode,
+          message: 'The Products is not created yet. Please check catalog!',
+        });
+        return;
+      }
 
-        // Respond with success message and uploaded data
-        if (uploaded) {
+      // if (foundProducts == undefined ) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: 'The selected product does not match with your product catalog. Please double-check and try again.',
+      //   });
+      //   return;
+      // }
+
+      //    console.log("foundProducts=============",foundProducts);return false;
+
+
+      const count = await dealerPriceService.getDealerPriceCount();
+
+      // Extract the names and ids of found products
+      const foundProductData = foundProducts.map(product => ({
+        priceBook: product._id,
+        name: product.name,
+        dealerId: req.body.dealerId,
+        status: true,
+        wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+      }));
+
+      const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
+      if (missingProductNames.length > 0) {
+        //email to be sent in this case
+        // res.send({
+        //   code: constant.errorCode,
+        //   message: 'Some products does not exist. Please check!',
+        //   missingProductNames: missingProductNames
+        // });
+        // return;
+      }
+
+
+      // Extract _id values from priceBookIds
+      const allpriceBookIds = foundProductData.map(obj => obj.priceBook);
+      // Check for duplicates and return early if found
+      if (allpriceBookIds.length > 0) {
+        let query = {
+          $and: [
+            { 'priceBook': { $in: allpriceBookIds } },
+            { 'dealerId': req.body.dealerId }
+          ]
+        }
+
+        const existingData = await dealerPriceService.findByIds(query);
+        if (existingData.length > 0) {
           res.send({
-            code: constant.successCode,
-            message: 'Success',
-            data: uploaded
+            code: constant.errorCode,
+            message: 'Uploaded file should be unique for this dealer! Duplicasy found. Please check file and upload again',
           });
-
           return;
         }
-      });
+      }
+
+      let newArray1 = results.map((obj) => ({
+        priceBook: obj.priceBook,
+        status: true,
+        retailPrice: obj.retailPrice,
+        dealerId: req.body.dealerId,
+      }));
+
+      // Merge brokerFee from newArray into foundProductData based on priceBook
+      const mergedArray = foundProductData.map(foundProduct => ({
+        ...foundProduct,
+        retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice,
+        brokerFee: (newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice,
+        unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+      }));
+
+
+      // Upload the new data to the dealerPriceService
+      const uploaded = await dealerPriceService.uploadPriceBook(mergedArray);
+
+      // Respond with success message and uploaded data
+      if (uploaded) {
+        res.send({
+          code: constant.successCode,
+          message: 'Success',
+          data: uploaded
+        });
+
+        return;
+      }
+
+
+
+
+    }
+
+
   } catch (err) {
     // Handle errors and respond with an error message
     res.send({
