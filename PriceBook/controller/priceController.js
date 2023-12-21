@@ -347,7 +347,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-
+ 
 
     const criteria = { _id: new mongoose.Types.ObjectId(params.priceBookId) };
     let projection = { isDeleted: 0, __v: 0 }
