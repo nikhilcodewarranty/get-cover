@@ -29,7 +29,7 @@ const priceSchema = new mongoose.Schema({
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "priceCategory",
+    ref: "pricecategories",
   },
   userId:{
     type: mongoose.Schema.Types.ObjectId,
