@@ -555,6 +555,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     //check Dealer Exist
     let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
+   
     if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
@@ -581,6 +582,9 @@ exports.uploadPriceBook = async (req, res) => {
           });
           return;
         }
+
+
+        const count = await dealerPriceService.getDealerPriceCount();
 
         // Extract the names and ids of found products
         const foundProductData = foundProducts.map(product => ({
@@ -637,8 +641,8 @@ exports.uploadPriceBook = async (req, res) => {
         const mergedArray = foundProductData.map(foundProduct => ({
           ...foundProduct,
           retailPrice: newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice,
-          brokerFee: (newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice
-
+          brokerFee: (newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase())?.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice,
+          unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
         }));
 
        // Upload the new data to the dealerPriceService

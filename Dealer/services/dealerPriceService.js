@@ -46,6 +46,16 @@ module.exports = class dealerPriceService {
     }
   }
 
+  static async getDealerPriceCount() {
+    try {
+      const count = await dealerPrice.find().sort({"unique_key":-1});
+      return count;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
+    }
+  }
+
+  
   // create new dealer price 
   static async createDealerPrice(data) {
     try {

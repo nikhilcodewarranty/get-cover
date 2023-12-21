@@ -26,5 +26,8 @@ const dealerBookSchema = new mongoose.Schema({
     type: Number,
     default:0
   },
+  unique_key: {
+    type: Number,
+  },
 },{timestamps:true});
 module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);
