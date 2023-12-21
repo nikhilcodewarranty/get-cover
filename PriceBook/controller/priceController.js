@@ -622,9 +622,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
     let getPriceBook = await priceBookService.getPriceBookById({ _id: req.query.priceBookId }, {})
-
-    console.log("getPriceBook==========================",getPriceBook);
-    return
     let query;
     if (getPriceBook) {
       query = {
