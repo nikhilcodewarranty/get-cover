@@ -653,7 +653,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: getCategories[0]
+        result: getCategories
       })
     }
   } catch (err) {
