@@ -194,7 +194,7 @@ exports.getPriceBookById = async (req, res, next) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: singlePriceBook
+      result: singlePriceBook[0]
     })
   } catch (err) {
     res.send({
