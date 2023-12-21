@@ -621,10 +621,13 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    let query1 = { _id: new mongoose.Types.ObjectId(req.query.priceBookId) }
+    let ID = req.params.priceBookId ==undefined ? "61c8c7d38e67bb7c7f7eeeee": req.query.priceBookId
+     
+    let query1 = { _id: new mongoose.Types.ObjectId(ID)}
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
+
     let query;
-    if (getPriceBook) {
+    if (getPriceBook[0]) {
       query = {
         $or: [
           { status: true },
