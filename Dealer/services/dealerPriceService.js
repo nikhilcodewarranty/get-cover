@@ -31,13 +31,6 @@ module.exports = class dealerPriceService {
             as: "dealer"
           }
         },
-        // { $unwind: "$priceBooks" },
-        // {
-        //   $project: {
-        //     name: "$priceBooks.name",
-        //     description: "$priceBooks.description",
-        //   }
-        // }
       ]).sort({ "createdAt": -1 });
      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
@@ -131,7 +124,21 @@ module.exports = class dealerPriceService {
  // Find By Multiple Ids
  static async findByIds(query) {
   try {
-    const response = await dealerPrice.find(query).select('_id');
+    // return;
+    const response = await dealerPrice.aggregate([
+      {
+        $match:query
+      },
+      {
+        $lookup: {
+          from: "pricebooks",
+          localField: "priceBook",
+          foreignField: "_id",
+          as: "priceBooks",
+        }
+      },
+    ])
+  
     return response;
   } catch (error) {
     console.log(`Could not delete dealer price ${error}`);

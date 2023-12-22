@@ -25,5 +25,38 @@ module.exports = {
           // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
           templateId: templateID,
         };
+      },
+
+
+      sendMissingProduct: (toEmail,missingProductNames,sub) => {
+        const htmlContent = `
+          <p>Please check the following missing products:</p>
+          <ul>
+            ${missingProductNames.map(product => `<li>${product}</li>`).join('')}
+          </ul>
+        `;
+        return {
+          to: toEmail,
+          from: 'anil@codenomad.net',      
+           subject: sub,
+           text: 'Please check missing Products',
+           html: htmlContent,          
+        };
+      },
+
+      sendAlreadyProduct: (toEmail,alreadyProducts,sub) => {
+        const htmlContent = `
+          <p>Please check the following missing products:</p>
+          <ul>
+            ${alreadyProducts.map(product => `<li>${product.name}</li>`).join('')}
+          </ul>
+        `;
+        return {
+          to: toEmail,
+          from: 'anil@codenomad.net',      
+           subject: sub,
+           text: 'Please check missing Products',
+           html: htmlContent,          
+        };
       }
 }

@@ -7,7 +7,6 @@ module.exports = class priceBookService {
   static async getAllPriceBook(query, projection, limit, page) {
     try {
 
-      console.log("query============================",query);
 
       const allPriceBook = await priceBook.aggregate([
         {

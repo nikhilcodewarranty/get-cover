@@ -22,7 +22,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     let projection = { __v: 0, isDeleted: 0 }
     const serviceProviders = await providerService.getAllServiceProvider(query, projection);
 
-    console.log("serviceProviders==============================",serviceProviders)
+    //console.log("serviceProviders==============================",serviceProviders)
     if (!serviceProviders) {
       res.send({
         code: constant.errorCode,
