@@ -17,14 +17,14 @@ const create_dealer_validation = Joi.object({
 
 
     name: Joi.string().trim().required(),
-    street: Joi.string().trim().required(),
+    street: Joi.string().trim().required(), 
     city: Joi.string().trim().required(),
     email: Joi.string().trim().required(),
     firstName: Joi.string().trim().required(),
     lastName: Joi.string().trim().required(),
     zip: Joi.number().required(),
     phoneNumber: Joi.number().required(),
-    position: Joi.number().allow('').allow(null).optioanl(),
+    position: Joi.number().allow('').allow(null).optional(),
     state: Joi.string().trim().required(),
     country: Joi.string().trim().required(),
     createdBy: Joi.string().trim().optional(),
