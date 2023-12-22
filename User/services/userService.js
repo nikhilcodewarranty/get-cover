@@ -63,6 +63,7 @@ module.exports = class userService {
   //find user for unique checks
   static async findOneUser(query) {
     try {
+      console.log(query)
       const loggedInUser = await user.findOne(query);
       return loggedInUser;
     } catch (error) {
