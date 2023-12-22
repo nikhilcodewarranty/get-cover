@@ -482,6 +482,7 @@ exports.createDealer = async (req, res) => {
         zip: data.zip,
         state: data.state,
         country: data.country,
+        status: 'Approved',
         createdBy: data.createdBy,
         unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
       };
