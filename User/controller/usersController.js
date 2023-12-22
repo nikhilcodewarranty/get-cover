@@ -371,6 +371,8 @@ exports.createDealer = async (req, res) => {
     let savePriceBookType = req.body.savePriceBookType
     let dealerPriceArray = data.priceBook ? data.priceBook : [];
     const allUserData = [...dealersUserData, ...primaryUserData];
+    // console.log("data===================",data);
+    //   return
     //If flag is approved
     if (data.dealerId != undefined) {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
@@ -497,8 +499,11 @@ exports.createDealer = async (req, res) => {
         roleId: checkRole._id,
         accountId: createMetaData._id,
         isPrimary: index === 0 ? true : false,
-        status: req.body.isAccountCreate ? obj.status : false
+        status: req.body.isAccountCreate ? obj.status : false,        
       }));
+
+      console.log("allUsersData==========================",allUsersData);
+      
 
       const createUsers = await userService.insertManyUser(allUsersData);
 
