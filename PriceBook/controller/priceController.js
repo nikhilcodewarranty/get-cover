@@ -146,14 +146,15 @@ exports.createPriceBook = async (req, res, next) => {
     // return;
 
     let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, {})
-    if (checkPriceBook) {
+   
+    if (checkPriceBook.length>0) {
       res.send({
         code: constant.errorCode,
         message: "Product already exist with this name"
       })
       return;
     }
-
+    //console.log("checkPriceBook=====================",checkPriceBook);return;
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
     if (!savePriceBook) {
       res.send({
