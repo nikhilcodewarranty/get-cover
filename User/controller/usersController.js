@@ -254,15 +254,15 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-  const emailData = await userService.findByEmail(allEmails);
-  if (emailData.length > 0) {
-    res.send({
-      code: constant.errorCode,
-      message: 'Email Already Exist',
-      data: emailData
-    });
-    return;
-  }
+  // const emailData = await userService.findByEmail(allEmails);
+  // if (emailData.length > 0) {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: 'Email Already Exist',
+  //     data: emailData
+  //   });
+  //   return;
+  // }
 
   let savePriceBookType = req.body.savePriceBookType
 
