@@ -983,7 +983,7 @@ exports.checkEmail = async (req, res) => {
 
     const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') },accountId: req.body.dealerId });
     console.log(existingUser);
-    if (existingUser && existingUser.status=='Pending') {
+    if (existingUser && existingUser.approvedStatus=='Pending') {
       res.send({
         code: constant.errorCode,
         message: "Email is already exist!",
