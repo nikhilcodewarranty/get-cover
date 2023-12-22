@@ -374,7 +374,7 @@ exports.createDealer = async (req, res) => {
     // console.log("data===================",data);
     //   return
     //If flag is approved
-    if (data.dealerId != undefined) {
+    if (data.dealerId != 'null') {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
@@ -500,7 +500,8 @@ exports.createDealer = async (req, res) => {
         roleId: checkRole._id,
         accountId: createMetaData._id,
         isPrimary: index === 0 ? true : false,
-        status: req.body.isAccountCreate ? obj.status : false,        
+        status: req.body.isAccountCreate ? obj.status : false,   
+        approvedStatus:'Approved'     
       }));
 
       console.log("allUsersData==========================",allUsersData);
@@ -524,6 +525,7 @@ exports.createDealer = async (req, res) => {
         "status": obj.status
       }));
 
+      console.log("resultPriceData==========================",resultPriceData);
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
       if (!createPriceBook) {
         res.send({
@@ -532,6 +534,8 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
+
+      console.log("resultPriceData==========================",resultPriceData);
       //Approve status 
 
       res.send({
