@@ -23,7 +23,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query;
-    if (data.status) {
+    console.log(data.status)
+    if ((data.status || !data.status) & data.status!=undefined) {
       query = {
         $and: [
           { isDeleted: false },
