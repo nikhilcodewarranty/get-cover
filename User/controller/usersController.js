@@ -167,6 +167,35 @@ exports.createTerms = async (req, res) => {
   }
 };
 
+
+exports.tryUpload = async (req, res) => {
+  try {
+    // Check if a file is uploaded
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    if (!req.file) {
+      res.send({
+        code: constant.errorCode,
+        message: "No file uploaded"
+      })
+      return;
+    }
+  } catch (err) {
+    // Handle errors and respond with an error message
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  }
+};
+
+
+
 //generate monthly terms /// only for backend use
 const generateMonthTerms = (numberOfTerms) => {
   const monthTerms = [];
