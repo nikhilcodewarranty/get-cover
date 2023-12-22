@@ -519,7 +519,7 @@ exports.createDealer = async (req, res) => {
       //save Price Books for this dealer
       const resultPriceData = dealerPriceArray.map(obj => ({
         'priceBook': obj.priceBookId,
-        'dealerId': data.dealerId,
+        'dealerId': createMetaData._id,
         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
         'retailPrice': obj.retailPrice,
         "status": obj.status
