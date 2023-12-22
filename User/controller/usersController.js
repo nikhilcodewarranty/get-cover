@@ -376,7 +376,7 @@ exports.createDealer = async (req, res) => {
     //If flag is approved
     if (data.dealerId != undefined) {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
-      if (savePriceBookType == 'manually') {
+      if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
           'priceBook': obj.priceBookId,
           'dealerId': data.dealerId,
@@ -387,6 +387,7 @@ exports.createDealer = async (req, res) => {
         //Primary information edit
 
         let userQuery = { accountId: { $in: [data.dealerId] } ,isPrimary: true}
+        console.log("userQuery========================",userQuery)
        
         let newValues1 = {
           $set: {
@@ -449,12 +450,15 @@ exports.createDealer = async (req, res) => {
 
         //Update all users status
         let statusUpdateCreateria =  { accountId: { $in: [data.dealerId] }}
+        console.log("statusUpdateCreateria========================",statusUpdateCreateria)
         let updateData = {
           $set: {
             approvedStatus:'Approved'
           }
         }
         let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+        console.log("updateUserStatus========================",updateUserStatus)
       //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
         let resetPasswordCode = randtoken.generate(4, '123456789')
         const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
