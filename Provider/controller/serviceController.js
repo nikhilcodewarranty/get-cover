@@ -109,7 +109,7 @@ exports.getPendingServicer = async (req, res) => {
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject()
+          servicerData: matchingItem.toObject()
         };
       } else {
         return dealerData.toObject();
