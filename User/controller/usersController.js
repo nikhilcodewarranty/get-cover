@@ -270,7 +270,7 @@ exports.validateData = async (req, res) => {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
-   // console.log("priceBookCreateria=======================", priceBookCreateria)
+    // console.log("priceBookCreateria=======================", priceBookCreateria)
     checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
       res.send({
@@ -291,7 +291,7 @@ exports.validateData = async (req, res) => {
     }
 
   }
-  if (data.dealerId != 'null') {
+  if (data.dealerId != 'null' || data.dealerId != undefined) {
     const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
     if (!singleDealer) {
       res.send({
@@ -306,8 +306,6 @@ exports.validateData = async (req, res) => {
     const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
     const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
 
-    // console.log("cleanStr1=====================",cleanStr1)
-    // console.log("cleanStr2=====================",cleanStr2)
 
     if (cleanStr1 !== cleanStr2) {
       const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
@@ -374,7 +372,7 @@ exports.createDealer = async (req, res) => {
     // console.log("data===================",data);
     //   return
     //If flag is approved
-    if (data.dealerId != 'null') {
+    if (data.dealerId != 'null' || data.dealerId != undefined) {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
@@ -386,8 +384,8 @@ exports.createDealer = async (req, res) => {
         }));
         //Primary information edit
 
-        let userQuery = { accountId: { $in: [data.dealerId] } ,isPrimary: true}
-       
+        let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+
         let newValues1 = {
           $set: {
             email: allUserData[0].email,
@@ -448,15 +446,15 @@ exports.createDealer = async (req, res) => {
 
 
         //Update all users status
-        let statusUpdateCreateria =  { accountId: { $in: [data.dealerId] }}
+        let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
         let updateData = {
           $set: {
-            approvedStatus:'Approved'
+            approvedStatus: 'Approved'
           }
         }
         let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-      //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+        //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
         let resetPasswordCode = randtoken.generate(4, '123456789')
         const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
 
@@ -501,12 +499,10 @@ exports.createDealer = async (req, res) => {
         roleId: checkRole._id,
         accountId: createMetaData._id,
         isPrimary: index === 0 ? true : false,
-        status: req.body.isAccountCreate ? obj.status : false,   
-        approvedStatus:'Approved'     
+        status: req.body.isAccountCreate ? obj.status : false,
+        approvedStatus: 'Approved'
       }));
 
-      console.log("allUsersData==========================",allUsersData);
-      
 
       const createUsers = await userService.insertManyUser(allUsersData);
 
@@ -526,7 +522,6 @@ exports.createDealer = async (req, res) => {
         "status": obj.status
       }));
 
-      console.log("resultPriceData==========================",resultPriceData);
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
       if (!createPriceBook) {
         res.send({
@@ -536,7 +531,6 @@ exports.createDealer = async (req, res) => {
         return;
       }
 
-      console.log("resultPriceData==========================",resultPriceData);
       //Approve status 
 
       res.send({
@@ -1059,8 +1053,8 @@ exports.getAllNotifications = async (req, res) => {
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ 'email': req.body.email});
-   // console.log(existingUser)
+    const existingUser = await userService.findOneUser({ 'email': req.body.email });
+    // console.log(existingUser)
     if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
         code: constant.errorCode,
