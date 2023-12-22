@@ -384,9 +384,9 @@ exports.createDealer = async (req, res) => {
           status: req.body.isAccountCreate ? obj.status : false
         }));
 
-        if (allUsersData.length > 1){
-            allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-        }         
+        if (allUsersData.length > 1) {
+          allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+        }
 
 
         const createUsers = await userService.insertManyUser(allUsersData);
@@ -430,7 +430,7 @@ exports.createDealer = async (req, res) => {
 
     else {
       const count = await dealerService.getDealerCount();
-  
+
       const dealerMeta = {
         name: data.name,
         street: data.street,
@@ -879,6 +879,34 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+exports.uploadPriceBook = async (req, res) => {
+  try {
+    // Check if a file is uploaded
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    if (!req.file) {
+      res.send({
+        code: constant.errorCode,
+        message: "No file uploaded"
+      })
+      return;
+    }
+    //check Dealer Exist
+  } catch (err) {
+    // Handle errors and respond with an error message
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  }
+};
+
+
 // get all roles
 exports.getAllRoles = async (req, res) => {
   try {
@@ -982,11 +1010,11 @@ exports.checkEmail = async (req, res) => {
     // Check if the email already exists
 
     const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
-    if (existingUser && existingUser.approvedStatus=='Approved') {
+    if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
         code: constant.errorCode,
         message: "Email is already exist!",
-        
+
       })
       return;
     }
@@ -994,7 +1022,7 @@ exports.checkEmail = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      status:'Pending'
+      status: 'Pending'
     })
 
   } catch (error) {

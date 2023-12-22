@@ -6,7 +6,7 @@ const dealerController = require("../../Dealer/controller/dealerController");// 
 const serviceController = require("../../Provider/controller/serviceController");// user controller
 const { verifyToken } = require('../../middleware/auth');  // authentication with jwt as middleware
 const validator = require('../config/validation');
-
+const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 
 //-------------------- get api's endpoints--------------------------//
 router.get("/users/:role", [verifyToken], userController.getAllUsers); // get all users 
@@ -31,6 +31,7 @@ router.post("/sendLinkToEmail", userController.sendLinkToEmail); //send password
 router.post("/resetPassword/:userId/:code", userController.resetPassword); //reset password 
 router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); //Update Status
 router.post("/servicerStatusUpdate", [verifyToken], serviceController.statusUpdate); //Update Status
+router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
 
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
