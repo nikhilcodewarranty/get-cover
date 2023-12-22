@@ -980,11 +980,14 @@ exports.getAllNotifications = async (req, res) => {
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
-    if (existingUser && existingUser.email!=req.body.email) {
+
+    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') },accountId: req.body.dealerId });
+    console.log(existingUser);
+    if (existingUser && existingUser.status=='Pending') {
       res.send({
         code: constant.errorCode,
-        message: "Email is already exist!"
+        message: "Email is already exist!",
+        status:'Pending'
       })
       return;
     }
