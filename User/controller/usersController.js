@@ -266,11 +266,11 @@ exports.validateData = async (req, res) => {
 
   let savePriceBookType = req.body.savePriceBookType
 
-  if (savePriceBookType == 'manually') {
+  if (savePriceBookType == 'yes') {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
-    console.log("priceBookCreateria=======================", priceBookCreateria)
+   // console.log("priceBookCreateria=======================", priceBookCreateria)
     checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
       res.send({
