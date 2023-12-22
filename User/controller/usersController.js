@@ -384,7 +384,8 @@ exports.createDealer = async (req, res) => {
         }));
         //Primary information edit
 
-        let userQuery = { accountId: data.dealerId, isPrimary: true }
+        let userQuery = { accountId: { $in: [data.dealerId] } ,isPrimary: true}
+       
         let newValues1 = {
           $set: {
             email: allUserData[0].email,
@@ -442,6 +443,16 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
+
+
+        //Update all users status
+        let statusUpdateCreateria =  { accountId: { $in: [data.dealerId] }}
+        let updateData = {
+          $set: {
+            approvedStatus:'Approved'
+          }
+        }
+        let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
       //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
         let resetPasswordCode = randtoken.generate(4, '123456789')
         const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))

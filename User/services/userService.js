@@ -107,7 +107,7 @@ module.exports = class userService {
   //update user details with ID
   static async updateUser(criteria, data, option) {
     try {
-      const updatedResponse = await user.findOneAndUpdate(criteria, data, option);
+      const updatedResponse = await user.updateMany(criteria, data, option);
 
       return updatedResponse;
     } catch (error) {
