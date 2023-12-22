@@ -387,7 +387,6 @@ exports.createDealer = async (req, res) => {
         //Primary information edit
 
         let userQuery = { accountId: { $in: [data.dealerId] } ,isPrimary: true}
-        console.log("userQuery========================",userQuery)
        
         let newValues1 = {
           $set: {
@@ -450,7 +449,6 @@ exports.createDealer = async (req, res) => {
 
         //Update all users status
         let statusUpdateCreateria =  { accountId: { $in: [data.dealerId] }}
-        console.log("statusUpdateCreateria========================",statusUpdateCreateria)
         let updateData = {
           $set: {
             approvedStatus:'Approved'
@@ -458,7 +456,6 @@ exports.createDealer = async (req, res) => {
         }
         let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-        console.log("updateUserStatus========================",updateUserStatus)
       //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
         let resetPasswordCode = randtoken.generate(4, '123456789')
         const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
