@@ -442,7 +442,7 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
-
+      //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
         let resetPasswordCode = randtoken.generate(4, '123456789')
         const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
 
