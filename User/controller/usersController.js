@@ -1077,7 +1077,14 @@ exports.checkEmail = async (req, res) => {
 
 exports.notificationStatusUpdate = async (req, res) => {
   try {
-    let criteria = { status: false };
+    let flag = req.params.flag;
+    let cretria = flag == 'dealer' ? 'New Dealer Registration' : 'New Servicer Registration';
+    if (cretria != '') {
+       criteria = { status: false, title: cretria };
+    }
+    else {
+       criteria = { status: false };
+    }
     let newValue = {
       $set: {
         status: true
