@@ -450,7 +450,6 @@ exports.createDealer = async (req, res) => {
 
         if (mailing) {
           let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-          console.log("updateStatus========================",updateStatus)
           res.send({
             code: constant.successCode,
             message: "Status Approved! Email has been sent",

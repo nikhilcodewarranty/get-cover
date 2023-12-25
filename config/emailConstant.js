@@ -1,7 +1,7 @@
 module.exports = {
     msg: (ID,resetCode,toEmail) => {
         return {
-          to: "anil@codenomad.net",
+          to: toEmail,
           from: 'anil@codenomad.net',
           subject: `Reset password email from get cover`,
           // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
