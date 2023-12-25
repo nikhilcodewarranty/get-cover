@@ -25,7 +25,6 @@ module.exports = class dealerService {
   // Create new dealer
   static async createDealer(data) {
     try {
-      console.log('data meta---------', data)
       const response = await new dealer(data).save();
       return response;
     } catch (error) {

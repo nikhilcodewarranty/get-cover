@@ -523,10 +523,10 @@ exports.createDealer = async (req, res) => {
       //Approve status 
 
       let resetPasswordCode = randtoken.generate(4, '123456789')
-      const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, resetPasswordCode, allUserData[0].email))
+      const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, allUserData[0].email))
 
       if (mailing) {
-        let updateStatus = await userService.updateUser({ _id: createMetaData._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+        let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
         res.send({
           code: constant.successCode,
           message: 'Successfully Created',
