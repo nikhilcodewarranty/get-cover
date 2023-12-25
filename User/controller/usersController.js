@@ -369,10 +369,7 @@ exports.createDealer = async (req, res) => {
     let savePriceBookType = req.body.savePriceBookType
     let dealerPriceArray = data.priceBook ? data.priceBook : [];
     const allUserData = [...dealersUserData, ...primaryUserData];
-    // console.log("data===================",data);
-    //   return
-    //If flag is approved
-    if (data.dealerId != 'null' || data.dealerId != undefined) {
+    if (data.dealerId != 'null' && data.dealerId != undefined) {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
@@ -453,6 +450,7 @@ exports.createDealer = async (req, res) => {
 
         if (mailing) {
           let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+          console.log("updateStatus========================",updateStatus)
           res.send({
             code: constant.successCode,
             message: "Status Approved! Email has been sent",
@@ -464,7 +462,6 @@ exports.createDealer = async (req, res) => {
 
     else {
       const count = await dealerService.getDealerCount();
-
       const dealerMeta = {
         name: data.name,
         street: data.street,
