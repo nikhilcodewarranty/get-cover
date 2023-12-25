@@ -39,6 +39,46 @@ module.exports = class dealerPriceService {
     }
   }
 
+  static async getDealerPriceBookById(query,projection) {
+    try {
+      const SingleDealerPrice = await dealerPrice.aggregate([
+        {
+          $match:query
+        },
+        {
+          $lookup: {
+            from: "pricebooks",
+            localField: "priceBook",
+            foreignField: "_id",
+            as: "priceBooks",
+            pipeline:[
+              {
+                $lookup: {
+                  from: "pricecategories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category"
+                }
+              }
+            ]
+          }
+        },
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "dealerId",
+            foreignField: "_id",
+            as: "dealer"
+          }
+        },
+      ]).sort({ "createdAt": -1 });
+     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      return SingleDealerPrice;
+    } catch (error) {
+      console.log(`Could not fetch dealer price ${error}`);
+    }
+  }
+
   static async getDealerPriceCount() {
     try {
       const count = await dealerPrice.find().sort({"unique_key":-1});
