@@ -412,10 +412,9 @@ exports.createDealer = async (req, res) => {
           accountId: data.dealerId,
           isPrimary: index === 0 ? true : false,
           status: req.body.isAccountCreate ? obj.status : false
-        }));        
+        }));
         if (allUsersData.length > 1) {
           allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-          console.log("allUsersData========================",allUsersData);
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.send({
@@ -440,8 +439,6 @@ exports.createDealer = async (req, res) => {
           return;
         }
 
-
-        //Update all users status
         let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
         let updateData = {
           $set: {
@@ -494,12 +491,11 @@ exports.createDealer = async (req, res) => {
         ...obj,
         roleId: checkRole._id,
         accountId: createMetaData._id,
+        position: allUserData[0].position,
         isPrimary: index === 0 ? true : false,
         status: req.body.isAccountCreate ? obj.status : false,
         approvedStatus: 'Approved'
       }));
-
-
       const createUsers = await userService.insertManyUser(allUsersData);
 
       if (!createUsers) {
@@ -527,13 +523,22 @@ exports.createDealer = async (req, res) => {
         return;
       }
 
+
       //Approve status 
 
-      res.send({
-        code: constant.successCode,
-        message: 'Successfully Created',
-        data: createMetaData
-      });
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      const mailing = await sgMail.send(emailConstant.msg(createMetaData._id, resetPasswordCode, allUserData[0].email))
+
+      if (mailing) {
+        let updateStatus = await userService.updateUser({ _id: createMetaData._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+        res.send({
+          code: constant.successCode,
+          message: 'Successfully Created',
+          data: createMetaData
+        });
+      }
+
+
     }
   } catch (err) {
     return res.send({
