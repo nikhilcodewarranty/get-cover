@@ -5,7 +5,13 @@ const create_dealer_price_book_validation = Joi.object({
     priceBook:Joi.string().trim().hex().length(24),
     retailPrice:Joi.number().required(),
     status:Joi.boolean().required(),
-    brokerFee:Joi.number().required()
+    brokerFee:Joi.number().required(),
+    wholesalePrice:Joi.number().optional(),
+    term:Joi.string().optional(),
+    categoryId:Joi.string().optional(),
+    brokerFee:Joi.number().required(),
+    description:Joi.string().optional(),
+    
 })
 
 
