@@ -417,15 +417,14 @@ exports.createDealer = async (req, res) => {
           allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
           console.log("allUsersData========================",allUsersData);
           const createUsers = await userService.insertManyUser(allUsersData);
+          if (!createUsers) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to save users"
+            });
+            return;
+          }
         }
-        if (!createUsers) {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to save users"
-          });
-          return;
-        }
-
         let dealerQuery = { _id: data.dealerId }
         let newValues = {
           $set: {
