@@ -74,6 +74,11 @@ module.exports = class dealerPriceService {
             as: "dealer"
           }
         },
+        {
+          $unwind:'$dealer'
+        },
+   
+     
       ]).sort({ "createdAt": -1 });
      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return SingleDealerPrice;
