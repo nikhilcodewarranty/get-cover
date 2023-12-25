@@ -603,7 +603,7 @@ exports.uploadPriceBook = async (req, res) => {
       const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
       if (missingProductNames.length > 0) {
         //email to be sent in this case
-        const mailing = await sgMail.send(emailConstant.sendMissingProduct('anjali@codenomad.net', missingProductNames, "Missing Products"))
+        const mailing = await sgMail.send(emailConstant.sendMissingProduct('amit@codenomad.net', missingProductNames, "Missing Products"))
         if (mailing) {
           //console.log("Mail has been sent");
         }
@@ -611,6 +611,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
       // Extract _id values from priceBookIds
       const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
+
       // Check for duplicates and return early if found
       if (allpriceBookIds.length > 0) {
         let query = {
@@ -619,31 +620,25 @@ exports.uploadPriceBook = async (req, res) => {
             { 'dealerId': new mongoose.Types.ObjectId(req.body.dealerId) }
           ]
         }
-        let existingData = await dealerPriceService.findByIds(query);
 
+       
+        let existingData = await dealerPriceService.findByIds(query);
         if (existingData.length > 0) {
-          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('anjali@codenomad.net', existingData[0].priceBooks, "Already Upload Products"))
+          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
           if (mailing) {
            // console.log("Mail has been sent");
           }
            allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
            newArray1 = results
-          .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.includes(obj.priceBook)))
+          .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
           .map(obj => ({
             priceBook: obj.priceBook,
             status: true,
             retailPrice: obj.retailPrice,
             dealerId: req.body.dealerId,
           }));
-
-          // console.log("newArray1=====================",newArray1);
-          // return;
         }
       }
-
-      //  console.log("newArray1=====================",newArray1);
-      //     return;
-
      
       // Merge brokerFee from newArray into foundProductData based on priceBook
       const mergedArray = foundProductData.map(foundProduct => {
@@ -658,7 +653,11 @@ exports.uploadPriceBook = async (req, res) => {
           };
         } 
       });
+
+      //console.log("mergedArray=====================",newArray1);
       const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+      // console.log("mergedArrayWithoutUndefined=====================",mergedArrayWithoutUndefined);
+      // return;
       // Upload the new data to the dealerPriceService
       const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);  
 
