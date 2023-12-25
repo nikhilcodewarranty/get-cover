@@ -414,14 +414,14 @@ exports.createDealer = async (req, res) => {
           status: req.body.isAccountCreate ? obj.status : false
         }));
 
-        console.log("allUsersData========================",allUsersData);return;
+      
         
 
         if (allUsersData.length > 1) {
           allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
         }
 
-
+        console.log("allUsersData========================",allUsersData);
         const createUsers = await userService.insertManyUser(allUsersData);
 
         if (!createUsers) {
