@@ -61,7 +61,10 @@ module.exports = class dealerPriceService {
                 }
               }
             ]
-          }
+          },
+        },
+        {
+          $unwind:'$priceBooks'
         },
         {
           $lookup: {
