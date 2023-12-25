@@ -364,6 +364,8 @@ exports.createDealer = async (req, res) => {
     const data = req.body;
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
+    const count = await dealerPriceService.getDealerPriceCount();
+
     const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
     const dealersUserData = data.dealers ? data.dealers : [];
     let savePriceBookType = req.body.savePriceBookType
@@ -373,11 +375,14 @@ exports.createDealer = async (req, res) => {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
+     
           'priceBook': obj.priceBookId,
           'dealerId': data.dealerId,
           'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
           'retailPrice': obj.retailPrice,
-          "status": obj.status
+          "status": obj.status,
+          'wholesalePrice':obj.wholesalePrice,
+           'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
         }));
         //Primary information edit
 
@@ -507,7 +512,9 @@ exports.createDealer = async (req, res) => {
         'dealerId': createMetaData._id,
         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
         'retailPrice': obj.retailPrice,
-        "status": obj.status
+        'wholesalePrice':obj.wholesalePrice,
+        "status": obj.status,
+        'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
       }));
 
       const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);

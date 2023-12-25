@@ -731,6 +731,8 @@ exports.uploadPriceBook = async (req, res) => {
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
+    const count = await dealerPriceService.getDealerPriceCount();
+    data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     let checkDealer = await dealerService.getDealerById(data.dealerId)
     if (!checkDealer) {
       res.send({
