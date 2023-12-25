@@ -412,18 +412,12 @@ exports.createDealer = async (req, res) => {
           accountId: data.dealerId,
           isPrimary: index === 0 ? true : false,
           status: req.body.isAccountCreate ? obj.status : false
-        }));
-
-      
-        
-
+        }));        
         if (allUsersData.length > 1) {
           allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+          console.log("allUsersData========================",allUsersData);
+          const createUsers = await userService.insertManyUser(allUsersData);
         }
-
-        console.log("allUsersData========================",allUsersData);
-        const createUsers = await userService.insertManyUser(allUsersData);
-
         if (!createUsers) {
           res.send({
             code: constant.errorCode,
