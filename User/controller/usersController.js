@@ -679,16 +679,20 @@ exports.createDealer = async (req, res) => {
               else {
                 newArray1 = results
                 .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                .map(obj => ({
-                  priceBook: obj._id,
-                  status: true,
-                  retailPrice: obj.retailPrice,
-                  wholesalePrice:obj1.wholePrice,
-                  dealerId: req.body.dealerId,
-                }));
+                .map(obj => {
+                  const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
+              
+                  return {
+                    priceBook: obj.priceBook,
+                    status: true,
+                    dealerId: req.body.dealerId,
+                    retailPrice:obj.retailPrice,
+                    wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
+                  };
+                });;
 
                 console.log("newArray1====================",newArray1);
-                return;
+                
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
