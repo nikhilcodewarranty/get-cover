@@ -36,7 +36,8 @@ app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swagge
 app.use('/user', createProxyMiddleware({ target: 'http://localhost:8080/', changeOrigin: true, pathRewrite: { '^/user': '/' }}));
 app.use('/dealer', createProxyMiddleware({ target: 'http://localhost:8082/', changeOrigin: true, pathRewrite: { '^/dealer': '/' }}));
 app.use('/price', createProxyMiddleware({ target: 'http://localhost:8083/', changeOrigin: true, pathRewrite: { '^/price': '/' }}));
-app.use('/servicer', createProxyMiddleware({ target: 'http://localhost:8084/', changeOrigin: true, pathRewrite: { '^/provider': '/' }}));
+app.use('/servicer', createProxyMiddleware({ target: 'http://localhost:8084/', changeOrigin: true, pathRewrite: { '^/servicer': '/' }}));
+app.use('/customer', createProxyMiddleware({ target: 'http://localhost:8085/', changeOrigin: true, pathRewrite: { '^/customer': '/' }}));
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
