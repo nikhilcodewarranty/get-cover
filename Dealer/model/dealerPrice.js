@@ -35,6 +35,7 @@ const dealerBookSchema = new mongoose.Schema({
   },
   wholesalePrice:{
     type: Number,
+    default: 0
   }
 },{timestamps:true});
 module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);
