@@ -919,6 +919,8 @@ exports.createDealer = async (req, res) => {
             const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
             const foundProducts = await priceBookService.findByName(priceBookName1);
 
+
+            console.log("resultsArray===============================",results)
             if (foundProducts.length == 0) {
               res.send({
                 code: constant.errorCode,
@@ -976,6 +978,8 @@ exports.createDealer = async (req, res) => {
                   }));
               }
             }
+
+            
 
             // Merge brokerFee from newArray into foundProductData based on priceBook
 
