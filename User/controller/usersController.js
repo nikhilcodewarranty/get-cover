@@ -918,9 +918,6 @@ exports.createDealer = async (req, res) => {
             priceBookName = results.map(obj => obj.priceBook);
             const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
             const foundProducts = await priceBookService.findByName(priceBookName1);
-
-
-            console.log("resultsArray===============================", results)
             if (foundProducts.length == 0) {
               res.send({
                 code: constant.errorCode,
@@ -968,7 +965,6 @@ exports.createDealer = async (req, res) => {
                   // console.log("Mail has been sent");
                 }
                 allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
-                console.log("allPriceBooks============================", allPriceBooks)
                 newArray1 = results
                   .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map(obj => ({
@@ -977,12 +973,6 @@ exports.createDealer = async (req, res) => {
                     retailPrice: obj.retailPrice,
                     dealerId: createMetaData._id,
                   }));
-
-
-                // Merge brokerFee from newArray into foundProductData based on priceBook
-
-                console.log("newArray1============================", newArray1)
-                console.log("foundProductData============================", foundProductData)
 
                 const mergedArray = foundProductData.map(foundProduct => {
                   const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
@@ -1012,6 +1002,19 @@ exports.createDealer = async (req, res) => {
 
 
                 }
+              }
+
+              else {
+                const foundProductData1 = foundProducts.map(product => ({
+                  priceBook: product._id,
+                  name: product.name,
+                  dealerId: createMetaData._id,
+                  status: true,
+                  retailPrice:1234,
+                  unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
+                  wholesalePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+                }));
+                const uploaded = await dealerPriceService.uploadPriceBook(foundProductData1);
               }
             }
             let allUsersData = allUserData.map((obj, index) => ({
