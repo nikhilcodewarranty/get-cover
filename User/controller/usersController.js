@@ -976,6 +976,7 @@ exports.createDealer = async (req, res) => {
 
 
               let existingData = await dealerPriceService.findByIds(query);
+              console.log("existingData======================", existingData);
               if (existingData.length > 0) {
                 const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
                 if (mailing) {
@@ -1022,12 +1023,13 @@ exports.createDealer = async (req, res) => {
               }
 
               else {
+                console.log("existingData3fsdsdffsdsdf===============",existingData)
                 newArray1 = results
                   .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map((obj, index) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
                     const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
-                                        // Print the value of updatedCount
+                    // Print the value of updatedCount
                     console.log('updatedCount:', updatedCount);
                     return {
                       priceBook: matchingProduct.priceBook,
@@ -1040,8 +1042,8 @@ exports.createDealer = async (req, res) => {
                   });
 
 
-                  console.log("newArray1======================",newArray1);
-                  return;
+                console.log("newArray1======================", newArray1);
+                return;
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
 
