@@ -681,9 +681,11 @@ exports.createDealer = async (req, res) => {
                 .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                 .map(obj => {
                   const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
-              
+                  console.log('matchingProduct:', matchingProduct);
+
+
                   return {
-                    priceBook:  matchingProduct._id ,
+                    priceBook:  matchingProduct.priceBook ,
                     status: true,
                     dealerId: req.body.dealerId,
                     retailPrice:obj.retailPrice,
@@ -733,6 +735,7 @@ exports.createDealer = async (req, res) => {
                 status: "Approved",
               }
             }
+            console.log("dealerQuery========================",dealerQuery);
             let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             if (!dealerStatus) {
               res.send({
@@ -742,7 +745,10 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
+            console.log("dealerStatus========================",dealerStatus);
+
             let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
+            console.log("statusUpdateCreateria========================",statusUpdateCreateria);
             let updateData = {
               $set: {
                 approvedStatus: 'Approved'
@@ -750,7 +756,9 @@ exports.createDealer = async (req, res) => {
             }
             let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-            //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+            console.log("singleDealerUser========================",singleDealerUser);
+
+            //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
             const mailing = await sgMail.send(emailConstant.msg(singleDealerUser._id, resetPasswordCode, singleDealerUser.email))
 
