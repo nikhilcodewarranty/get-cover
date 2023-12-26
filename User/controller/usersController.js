@@ -373,6 +373,7 @@ exports.createDealer = async (req, res) => {
     const allUserData = [...dealersUserData, ...primaryUserData];
     if (data.dealerId != 'null' && data.dealerId != undefined) {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+      console.log("singleDealer====================",singleDealer)
       if (savePriceBookType == 'yes') {
         const resultPriceData = dealerPriceArray.map(obj => ({
      
@@ -389,7 +390,7 @@ exports.createDealer = async (req, res) => {
         console.log("allUserData====================",allUserData);
 
         let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
-
+        console.log("userQuery====================",userQuery)
         let newValues1 = {
           $set: {
             email: allUserData[0].email,
@@ -402,6 +403,7 @@ exports.createDealer = async (req, res) => {
         }
 
         let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
+        console.log("updateStatus====================",updateStatus)
         const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
         if (!createPriceBook) {
           res.send({
