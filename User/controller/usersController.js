@@ -443,9 +443,7 @@ exports.createDealer = async (req, res) => {
               return
             }
           }
-
           //check product is already exist for dealer this
-
           priceBookIds = dealerPriceArray.map((dealer) => new mongoose.Types.ObjectId(dealer.priceBookId));
           if (priceBook.length > 0) {
             let query = {
@@ -680,6 +678,20 @@ exports.createDealer = async (req, res) => {
                   });
 
                 }
+              }
+
+              else {
+                newArray1 = results
+                .filter(obj => foundProducts.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                .map(obj => ({
+                  priceBook: obj.priceBook,
+                  status: true,
+                  retailPrice: obj.retailPrice,
+                  dealerId: createMetaData._id,
+                }));
+
+                console.log("newArray1====================",newArray1);
+                const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
             let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
