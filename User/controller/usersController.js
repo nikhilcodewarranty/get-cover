@@ -679,7 +679,7 @@ exports.createDealer = async (req, res) => {
                   .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map((obj, index) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
-                    const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
+                    const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
                     // Print the value of updatedCount
                     console.log('updatedCount:', updatedCount);
                     return {
