@@ -683,13 +683,13 @@ exports.createDealer = async (req, res) => {
                   const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
               
                   return {
-                    priceBook: obj.priceBook,
+                    priceBook:  matchingProduct._id ,
                     status: true,
                     dealerId: req.body.dealerId,
                     retailPrice:obj.retailPrice,
                     wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
                   };
-                });;
+                });
 
                 console.log("newArray1====================",newArray1);
                 
