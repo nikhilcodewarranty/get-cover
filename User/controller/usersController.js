@@ -394,9 +394,9 @@ exports.createDealer = async (req, res) => {
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
-        const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
-        const singleDealer1 = await dealerService.getDealerById({ _id: data.dealerId });
-        if (!singleDealer1) {
+        const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
+        const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
+        if (!singleDealer) {
           res.send({
             code: constant.errorCode,
             message: "Dealer Not found"
@@ -426,7 +426,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
 
-          console.log("singleDealer=========================",singleDealer);
+          console.log("singleDealer=========================", singleDealer);
           //check new name is not exist in the database
 
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
@@ -541,9 +541,9 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
-          const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
+          const mailing = await sgMail.send(emailConstant.msg(singleDealerUser._id, resetPasswordCode, singleDealerUser.email))
           if (mailing) {
-            let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
               code: constant.successCode,
               message: "Status Approved! Email has been sent",
@@ -738,10 +738,10 @@ exports.createDealer = async (req, res) => {
 
             //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
-            const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
+            const mailing = await sgMail.send(emailConstant.msg(singleDealerUser._id, resetPasswordCode, singleDealerUser.email))
 
             if (mailing) {
-              let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               res.send({
                 code: constant.successCode,
                 message: 'Successfully Created',
@@ -1020,7 +1020,7 @@ exports.createDealer = async (req, res) => {
                   name: product.name,
                   dealerId: createMetaData._id,
                   status: true,
-                  retailPrice:1234,
+                  retailPrice: 1234,
                   unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
                   wholesalePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
                 }));
