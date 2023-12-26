@@ -13,6 +13,8 @@ const createHttpError = require('http-errors')
 const { databaseConnect } = require("./db");
 const userRoutes = require("./routes/user");
 
+console.log('user server++++++++++++++++++')
+
 var app = express();
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));

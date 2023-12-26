@@ -30,6 +30,7 @@ const dealerConnection = makeNewConnection(`${process.env.DB_URL}Dealer`); // de
 const serviceConnection = makeNewConnection(`${process.env.DB_URL}ServiceProvider`); //service provider database
 const orderConnection = makeNewConnection(`${process.env.DB_URL}Order`); // order database
 const claimConnection = makeNewConnection(`${process.env.DB_URL}Claim`); // claim database 
+const CustomerConnection = makeNewConnection(`${process.env.DB_URL}Customer`); // claim database 
 
 module.exports = {
     userConnection,
@@ -37,4 +38,5 @@ module.exports = {
     serviceConnection,
     orderConnection,
     claimConnection,
+    CustomerConnection
 };
