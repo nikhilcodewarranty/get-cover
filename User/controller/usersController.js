@@ -1027,8 +1027,7 @@ exports.createDealer = async (req, res) => {
                   .map((obj, index) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
                     const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
-
-                    // Print the value of updatedCount
+                                        // Print the value of updatedCount
                     console.log('updatedCount:', updatedCount);
                     return {
                       priceBook: matchingProduct.priceBook,
@@ -1040,6 +1039,9 @@ exports.createDealer = async (req, res) => {
                     };
                   });
 
+
+                  console.log("newArray1======================",newArray1);
+                  return;
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
 
