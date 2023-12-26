@@ -692,8 +692,7 @@ exports.createDealer = async (req, res) => {
                     };
                   });
 
-                  console.log("newArray1==========================",newArray1);
-             
+                  console.log('updatedCount:', newArray1);
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
