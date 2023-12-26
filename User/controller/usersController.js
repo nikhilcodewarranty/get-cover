@@ -662,7 +662,7 @@ exports.createDealer = async (req, res) => {
                   retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                   brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
                   unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
-                  wholesalePrice:foundProduct.wholePrice
+                  wholesalePrice: foundProduct.wholePrice
                 };
               }
             });
@@ -818,7 +818,7 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: checkRole._id,
             accountId: createMetaData._id,
-            position: obj.position?obj.position:'',
+            position: obj.position ? obj.position : '',
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? obj.status : false,
             approvedStatus: 'Approved'
@@ -833,7 +833,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //save Price Books for this dealer
-           count = await dealerPriceService.getDealerPriceCount();
+          count = await dealerPriceService.getDealerPriceCount();
           const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': createMetaData._id,
@@ -927,7 +927,7 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
-            count = await dealerPriceService.getDealerPriceCount();
+            let count1 = await dealerPriceService.getDealerPriceCount();
 
             // Extract the names and ids of found products
             const foundProductData = foundProducts.map(product => ({
@@ -986,8 +986,8 @@ exports.createDealer = async (req, res) => {
                   ...foundProduct,
                   retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                   brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                  unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
-                  wholesalePrice:foundProduct.wholePrice
+                  unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
+                  wholesalePrice: foundProduct.wholePrice
                 };
               }
             });
