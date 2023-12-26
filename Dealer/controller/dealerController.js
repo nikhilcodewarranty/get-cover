@@ -635,7 +635,7 @@ exports.uploadPriceBook = async (req, res) => {
       const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
       if (missingProductNames.length > 0) {
         //email to be sent in this case
-        const mailing = await sgMail.send(emailConstant.sendMissingProduct('amit@codenomad.net', missingProductNames, "Missing Products"))
+        const mailing = await sgMail.send(emailConstant.sendMissingProduct('nikhil@codenomad.net', missingProductNames, "Missing Products"))
         if (mailing) {
           //console.log("Mail has been sent");
         }
@@ -656,7 +656,7 @@ exports.uploadPriceBook = async (req, res) => {
        
         let existingData = await dealerPriceService.findByIds(query);
         if (existingData.length > 0) {
-          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
+          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('nikhil@codenomad.net', existingData, "Already Upload Products"))
           if (mailing) {
            // console.log("Mail has been sent");
           }
