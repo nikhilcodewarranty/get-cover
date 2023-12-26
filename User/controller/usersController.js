@@ -1026,12 +1026,12 @@ exports.createDealer = async (req, res) => {
                   .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map((obj, index) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
-                    const uniqueKey = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
+                     count1 = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
                     return {
                       priceBook: matchingProduct.priceBook,
                       status: true,
                       dealerId: req.body.dealerId,
-                      unique_key: uniqueKey,
+                      unique_key: count1,
                       retailPrice: obj.retailPrice,
                       wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
                     };
