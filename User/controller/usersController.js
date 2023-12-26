@@ -11,6 +11,7 @@ const userResourceResponse = require("../utils/constant");
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
+const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
 const priceBookService = require('../../PriceBook/services/priceBookService')
 const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
@@ -361,63 +362,469 @@ exports.validateData = async (req, res) => {
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
-    const data = req.body;
-    // Check if the specified role exists
-    const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
-    const count = await dealerPriceService.getDealerPriceCount();
+    uploadMiddleware.singleFileUpload(req, res, async () => {
+      const data = req.body;
+      // Check if the specified role exists
+      const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
+      if (!checkRole) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid role"
+        });
+        return;
+      }
 
-    const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
-    const dealersUserData = data.dealers ? data.dealers : [];
-    let savePriceBookType = req.body.savePriceBookType
-    let dealerPriceArray = data.priceBook ? data.priceBook : [];
-    const allUserData = [...dealersUserData, ...primaryUserData];
-    if (data.dealerId != 'null' && data.dealerId != undefined) {
-      const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
-      if (savePriceBookType == 'yes') {
-        const resultPriceData = dealerPriceArray.map((obj, index) => ({
-     
-          'priceBook': obj.priceBookId,
-          'dealerId': data.dealerId,
-          'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
-          'retailPrice': obj.retailPrice,
-          "status": obj.status,
-          'wholesalePrice':obj.wholesalePrice,
-           'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
-        }));
-        //Primary information edit
+      let priceBook = [];
+      let priceBookIds = [];
+      const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
+      const dealersUserData = data.dealers ? data.dealers : [];
+      const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
+      let checkPriceBook = [];
+      let dealerPriceArray = data.priceBook ? data.priceBook : [];
+      const uniqueEmails = new Set(allEmails);
+      if (allEmails.length !== uniqueEmails.size) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Multiple user cannot have same emails',
+        });
+        return
+      }
+      const count = await dealerPriceService.getDealerPriceCount();
 
-
-        let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
-        let newValues1 = {
-          $set: {
-            email: allUserData[0].email,
-            firstName: allUserData[0].firstName,
-            lastName: allUserData[0].lastName,
-            phoneNumber: allUserData[0].phoneNumber,
-            position: allUserData[0].position,
-            status: allUserData[0].status,
-          }
-        }
-
-        let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
-        const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
-        if (!createPriceBook) {
+      let savePriceBookType = req.body.savePriceBookType
+      const allUserData = [...dealersUserData, ...primaryUserData];
+      if (data.dealerId != 'null' && data.dealerId != undefined) {
+        const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
+        const singleDealer1 = await dealerService.getDealerById({ _id: data.dealerId });
+        if (!singleDealer1) {
           res.send({
             code: constant.errorCode,
-            message: "Unable to save price book"
+            message: "Dealer Not found"
           });
           return;
         }
-        let allUsersData = allUserData.map((obj, index) => ({
-          ...obj,
-          roleId: checkRole._id,
-          accountId: data.dealerId,
-          isPrimary: index === 0 ? true : false,
-          status: req.body.isAccountCreate ? obj.status : false
-        }));
-        if (allUsersData.length > 1) {
-          allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+        if (savePriceBookType == 'yes') {
+          priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
+          const priceBookCreateria = { _id: { $in: priceBook } }
+          // console.log("priceBookCreateria=======================", priceBookCreateria)
+          checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+          if (checkPriceBook.length == 0) {
+            res.send({
+              code: constant.errorCode,
+              message: "Product does not exist.Please check the product"
+            })
+            return;
+          }
+
+          const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
+          if (missingProductNames.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'Some products is not created. Please check the product',
+              missingProductNames: missingProductNames
+            });
+            return;
+          }
+          //check new name is not exist in the database
+
+          const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
+          const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+
+
+          if (cleanStr1 !== cleanStr2) {
+            const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+            if (existingDealer) {
+              res.send({
+                code: constant.errorCode,
+                message: 'Dealer name already exists',
+              });
+              return
+            }
+          }
+
+          //check product is already exist for dealer this
+
+          priceBookIds = dealerPriceArray.map((dealer) => new mongoose.Types.ObjectId(dealer.priceBookId));
+          if (priceBook.length > 0) {
+            let query = {
+              $and: [
+                { 'priceBook': { $in: priceBookIds } },
+                { 'dealerId': new mongoose.Types.ObjectId(data.dealerId) }
+              ]
+            }
+
+            const existingData = await dealerPriceService.findByIds(query);
+            if (existingData.length > 0) {
+              res.send({
+                code: constant.errorCode,
+                message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
+              });
+              return;
+            }
+
+          }
+          const resultPriceData = dealerPriceArray.map(obj => ({
+            'priceBook': obj.priceBookId,
+            'dealerId': data.dealerId,
+            'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
+            'retailPrice': obj.retailPrice,
+            "status": obj.status,
+            'wholesalePrice': obj.wholesalePrice,
+            'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
+          }));
+          //Primary information edit
+
+          let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+
+          let newValues1 = {
+            $set: {
+              email: allUserData[0].email,
+              firstName: allUserData[0].firstName,
+              lastName: allUserData[0].lastName,
+              phoneNumber: allUserData[0].phoneNumber,
+              position: allUserData[0].position,
+              status: allUserData[0].status,
+            }
+          }
+
+          let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
+          const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+          if (!createPriceBook) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to save price book"
+            });
+            return;
+          }
+          let allUsersData = allUserData.map((obj, index) => ({
+            ...obj,
+            roleId: checkRole._id,
+            accountId: data.dealerId,
+            isPrimary: index === 0 ? true : false,
+            status: req.body.isAccountCreate ? obj.status : false
+          }));
+          if (allUsersData.length > 1) {
+            allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+            const createUsers = await userService.insertManyUser(allUsersData);
+            if (!createUsers) {
+              res.send({
+                code: constant.errorCode,
+                message: "Unable to save users"
+              });
+              return;
+            }
+          }
+          let dealerQuery = { _id: data.dealerId }
+          let newValues = {
+            $set: {
+              status: "Approved",
+            }
+          }
+          let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          if (!dealerStatus) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to approve dealer status"
+            });
+            return;
+          }
+
+          let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
+          let updateData = {
+            $set: {
+              approvedStatus: 'Approved'
+            }
+          }
+          let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+          //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          let resetPasswordCode = randtoken.generate(4, '123456789')
+          const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
+          if (mailing) {
+            let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            res.send({
+              code: constant.successCode,
+              message: "Status Approved! Email has been sent",
+            })
+          }
+        } else if (savePriceBookType == 'no') {
+          if (!req.file) {
+            res.send({
+              code: constant.errorCode,
+              message: "No file uploaded"
+            })
+            return;
+          }
+
+          const results = [];
+          let priceBookName = [];
+          let allpriceBookIds = [];
+          let newArray1;
+          let allPriceBooks;
+          const wb = XLSX.readFile(req.file.path);
+          const sheets = wb.SheetNames;
+          if (sheets.length > 0) {
+            const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            let results = data
+              .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
+              .map(obj => ({
+                priceBook: obj.priceBook,
+                retailPrice: obj.retailPrice,
+              }));
+
+            priceBookName = results.map(obj => obj.priceBook);
+            const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
+            const foundProducts = await priceBookService.findByName(priceBookName1);
+
+            if (foundProducts.length == 0) {
+              res.send({
+                code: constant.errorCode,
+                message: 'The Products is not created yet. Please check catalog!',
+              });
+              return;
+            }
+
+            const count = await dealerPriceService.getDealerPriceCount();
+
+            // Extract the names and ids of found products
+            const foundProductData = foundProducts.map(product => ({
+              priceBook: product._id,
+              name: product.name,
+              dealerId: req.body.dealerId,
+              status: true,
+              wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+            }));
+            const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
+            if (missingProductNames.length > 0) {
+              //email to be sent in this case
+              const mailing = await sgMail.send(emailConstant.sendMissingProduct('nikhil@codenomad.net', missingProductNames, "Missing Products"))
+              if (mailing) {
+                //console.log("Mail has been sent");
+              }
+
+            }
+            // Extract _id values from priceBookIds
+            const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
+
+            // Check for duplicates and return early if found
+            if (allpriceBookIds.length > 0) {
+              let query = {
+                $and: [
+                  { 'priceBook': { $in: allpriceBookIds } },
+                  { 'dealerId': new mongoose.Types.ObjectId(req.body.dealerId) }
+                ]
+              }
+
+
+              let existingData = await dealerPriceService.findByIds(query);
+              if (existingData.length > 0) {
+                const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('nikhil@codenomad.net', existingData, "Already Upload Products"))
+                if (mailing) {
+                  // console.log("Mail has been sent");
+                }
+
+                //check new name is not exist in the database
+
+                const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
+                const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+
+
+                if (cleanStr1 !== cleanStr2) {
+                  const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+                  if (existingDealer) {
+                    res.send({
+                      code: constant.errorCode,
+                      message: 'Dealer name already exists',
+                    });
+                    return
+                  }
+                }
+
+                allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+                newArray1 = results
+                  .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                  .map(obj => ({
+                    priceBook: obj.priceBook,
+                    status: true,
+                    retailPrice: obj.retailPrice,
+                    dealerId: req.body.dealerId,
+                  }));
+              }
+            }
+
+            // Merge brokerFee from newArray into foundProductData based on priceBook
+            const mergedArray = foundProductData.map(foundProduct => {
+              const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
+
+              if (matchingItem) {
+                return {
+                  ...foundProduct,
+                  retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
+                  brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
+                  unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
+                  wholesalePrice:foundProduct.wholePrice
+                };
+              }
+            });
+
+
+            const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+            const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+
+            // Respond with success message and uploaded data
+            if (uploaded) {
+              res.send({
+                code: constant.successCode,
+                message: 'Success',
+                data: uploaded
+              });
+
+            }
+            let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+
+            let newValues1 = {
+              $set: {
+                email: allUserData[0].email,
+                firstName: allUserData[0].firstName,
+                lastName: allUserData[0].lastName,
+                phoneNumber: allUserData[0].phoneNumber,
+                position: allUserData[0].position,
+                status: allUserData[0].status,
+              }
+            }
+            let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
+            let allUsersData = allUserData.map((obj, index) => ({
+              ...obj,
+              roleId: checkRole._id,
+              accountId: data.dealerId,
+              isPrimary: index === 0 ? true : false,
+              status: req.body.isAccountCreate ? obj.status : false
+            }));
+            if (allUsersData.length > 1) {
+              allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+              const createUsers = await userService.insertManyUser(allUsersData);
+              if (!createUsers) {
+                res.send({
+                  code: constant.errorCode,
+                  message: "Unable to save users"
+                });
+                return;
+              }
+            }
+            let dealerQuery = { _id: data.dealerId }
+            let newValues = {
+              $set: {
+                status: "Approved",
+              }
+            }
+            let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+            if (!dealerStatus) {
+              res.send({
+                code: constant.errorCode,
+                message: "Unable to approve dealer status"
+              });
+              return;
+            }
+
+            let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
+            let updateData = {
+              $set: {
+                approvedStatus: 'Approved'
+              }
+            }
+            let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+            //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
+
+            if (mailing) {
+              let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              res.send({
+                code: constant.successCode,
+                message: "Status Approved! Email has been sent",
+              })
+            }
+
+            else {
+              res.send({
+                code: constant.errorCode,
+                message: 'Failed ! Please check email.',
+              });
+
+              return;
+            }
+          }
+        }
+
+        return;
+      }
+      else {
+        const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+        if (existingDealer) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Dealer name already exists',
+          });
+          return
+        }
+        if (savePriceBookType == 'yes') {
+          priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
+          const priceBookCreateria = { _id: { $in: priceBook } }
+          checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+          if (checkPriceBook.length == 0) {
+            res.send({
+              code: constant.errorCode,
+              message: "Product does not exist.Please check the product"
+            })
+            return;
+          }
+
+          const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
+          if (missingProductNames.length > 0) {
+            res.send({
+              code: constant.errorCode,
+              message: 'Some products is not created. Please check the product',
+              missingProductNames: missingProductNames
+            });
+            return;
+          }
+
+
+          const count = await dealerService.getDealerCount();
+          const dealerMeta = {
+            name: data.name,
+            street: data.street,
+            userAccount: req.body.customerAccountCreated,
+            city: data.city,
+            zip: data.zip,
+            state: data.state,
+            country: data.country,
+            status: 'Approved',
+            createdBy: data.createdBy,
+            unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+          };
+          // Create Dealer Meta Data
+          const createMetaData = await dealerService.createDealer(dealerMeta);
+          if (!createMetaData) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to create dealer"
+            });
+            return;
+          }
+          // Create User for primary dealer
+          const allUsersData = allUserData.map((obj, index) => ({
+            ...obj,
+            roleId: checkRole._id,
+            accountId: createMetaData._id,
+            position: obj.position?obj.position:'',
+            isPrimary: index === 0 ? true : false,
+            status: req.body.isAccountCreate ? obj.status : false,
+            approvedStatus: 'Approved'
+          }));
           const createUsers = await userService.insertManyUser(allUsersData);
+
           if (!createUsers) {
             res.send({
               code: constant.errorCode,
@@ -425,125 +832,245 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
-        }
-        let dealerQuery = { _id: data.dealerId }
-        let newValues = {
-          $set: {
-            status: "Approved",
+          //save Price Books for this dealer
+           count = await dealerPriceService.getDealerPriceCount();
+          const resultPriceData = dealerPriceArray.map(obj => ({
+            'priceBook': obj.priceBookId,
+            'dealerId': createMetaData._id,
+            'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
+            'retailPrice': obj.retailPrice,
+            'wholesalePrice': obj.wholesalePrice,
+            "status": obj.status,
+            'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
+          }));
+
+          const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+          if (!createPriceBook) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to save price book"
+            });
+            return;
+          }
+          //Approve status 
+
+          let resetPasswordCode = randtoken.generate(4, '123456789')
+          const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
+
+          if (mailing) {
+            let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            res.send({
+              code: constant.successCode,
+              message: 'Successfully Created',
+              data: createMetaData
+            });
           }
         }
-        let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-        if (!dealerStatus) {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to approve dealer status"
-          });
-          return;
-        }
 
-        let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
-        let updateData = {
-          $set: {
-            approvedStatus: 'Approved'
+        else if (savePriceBookType == 'no') {
+          if (!req.file) {
+            res.send({
+              code: constant.errorCode,
+              message: "No file uploaded"
+            })
+            return;
+          }
+
+          const count = await dealerService.getDealerCount();
+          const dealerMeta = {
+            name: data.name,
+            street: data.street,
+            userAccount: req.body.customerAccountCreated,
+            city: data.city,
+            zip: data.zip,
+            state: data.state,
+            country: data.country,
+            status: 'Approved',
+            createdBy: data.createdBy,
+            unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+          };
+          // Create Dealer Meta Data
+          const createMetaData = await dealerService.createDealer(dealerMeta);
+          if (!createMetaData) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to create dealer"
+            });
+            return;
+          }
+
+          const results = [];
+          let priceBookName = [];
+          let allpriceBookIds = [];
+          let newArray1;
+          let allPriceBooks;
+          const wb = XLSX.readFile(req.file.path);
+          const sheets = wb.SheetNames;
+          if (sheets.length > 0) {
+            const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            let results = data
+              .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
+              .map(obj => ({
+                priceBook: obj.priceBook,
+                retailPrice: obj.retailPrice,
+              }));
+
+            priceBookName = results.map(obj => obj.priceBook);
+            const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
+            const foundProducts = await priceBookService.findByName(priceBookName1);
+
+            if (foundProducts.length == 0) {
+              res.send({
+                code: constant.errorCode,
+                message: 'The Products is not created yet. Please check catalog!',
+              });
+              return;
+            }
+
+            count = await dealerPriceService.getDealerPriceCount();
+
+            // Extract the names and ids of found products
+            const foundProductData = foundProducts.map(product => ({
+              priceBook: product._id,
+              name: product.name,
+              dealerId: createMetaData._id,
+              status: true,
+              wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+            }));
+            const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
+            if (missingProductNames.length > 0) {
+              //email to be sent in this case
+              const mailing = await sgMail.send(emailConstant.sendMissingProduct('nikhil@codenomad.net', missingProductNames, "Missing Products"))
+              if (mailing) {
+                //console.log("Mail has been sent");
+              }
+
+            }
+            // Extract _id values from priceBookIds
+            const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
+
+            // Check for duplicates and return early if found
+            if (allpriceBookIds.length > 0) {
+              let query = {
+                $and: [
+                  { 'priceBook': { $in: allpriceBookIds } },
+                  { 'dealerId': new mongoose.Types.ObjectId(createMetaData._id) }
+                ]
+              }
+
+
+              let existingData = await dealerPriceService.findByIds(query);
+              if (existingData.length > 0) {
+                const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('nikhil@codenomad.net', existingData, "Already Upload Products"))
+                if (mailing) {
+                  // console.log("Mail has been sent");
+                }
+                allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+                newArray1 = results
+                  .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                  .map(obj => ({
+                    priceBook: obj.priceBook,
+                    status: true,
+                    retailPrice: obj.retailPrice,
+                    dealerId: createMetaData._id,
+                  }));
+              }
+            }
+
+            // Merge brokerFee from newArray into foundProductData based on priceBook
+            const mergedArray = foundProductData.map(foundProduct => {
+              const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
+
+              if (matchingItem) {
+                return {
+                  ...foundProduct,
+                  retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
+                  brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
+                  unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
+                  wholesalePrice:foundProduct.wholePrice
+                };
+              }
+            });
+
+
+            const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+            const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+
+            // Respond with success message and uploaded data
+            if (uploaded) {
+              res.send({
+                code: constant.successCode,
+                message: 'Success',
+                data: uploaded
+              });
+
+
+            }
+            let allUsersData = allUserData.map((obj, index) => ({
+              ...obj,
+              roleId: checkRole._id,
+              accountId: createMetaData._id,
+              isPrimary: index === 0 ? true : false,
+              status: req.body.isAccountCreate ? obj.status : false
+            }));
+            const createUsers = await userService.insertManyUser(allUsersData);
+            if (!createUsers) {
+              res.send({
+                code: constant.errorCode,
+                message: "Unable to save users"
+              });
+              return;
+            }
+            let dealerQuery = { _id: createMetaData._id }
+            let newValues = {
+              $set: {
+                status: "Approved",
+              }
+            }
+            let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+            if (!dealerStatus) {
+              res.send({
+                code: constant.errorCode,
+                message: "Unable to approve dealer status"
+              });
+              return;
+            }
+
+            let statusUpdateCreateria = { accountId: { $in: [createMetaData._id] } }
+            let updateData = {
+              $set: {
+                approvedStatus: 'Approved'
+              }
+            }
+            let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+            //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
+
+            if (mailing) {
+              let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              res.send({
+                code: constant.successCode,
+                message: "Status Approved! Email has been sent",
+              })
+            }
+
+            else {
+              res.send({
+                code: constant.errorCode,
+                message: 'Failed ! Please check email.',
+              });
+
+              return;
+            }
           }
         }
-        let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-        //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-        let resetPasswordCode = randtoken.generate(4, '123456789')
-        const mailing = await sgMail.send(emailConstant.msg(singleDealer._id, resetPasswordCode, singleDealer.email))
 
-        if (mailing) {
-          let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-          res.send({
-            code: constant.successCode,
-            message: "Status Approved! Email has been sent",
-          })
-        }
       }
 
-      return;
-    }
-
-    else {
-      const count1 = await dealerService.getDealerCount();
-      const dealerMeta = {
-        name: data.name,
-        street: data.street,
-        userAccount: req.body.customerAccountCreated,
-        city: data.city,
-        zip: data.zip,
-        state: data.state,
-        country: data.country,
-        status: 'Approved',
-        createdBy: data.createdBy,
-        unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1
-      };
-      // Create Dealer Meta Data
-      const createMetaData = await dealerService.createDealer(dealerMeta);
-      if (!createMetaData) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to create dealer"
-        });
-        return;
-      }
-      // Create User for primary dealer
-      const allUsersData = allUserData.map((obj, index) => ({
-        ...obj,
-        roleId: checkRole._id,
-        accountId: createMetaData._id,
-        position: allUserData[0].position,
-        isPrimary: index === 0 ? true : false,
-        status: req.body.isAccountCreate ? obj.status : false,
-        approvedStatus: 'Approved'
-      }));
-      const createUsers = await userService.insertManyUser(allUsersData);
-
-      if (!createUsers) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save users"
-        });
-        return;
-      }
-      //save Price Books for this dealer
-      const resultPriceData = dealerPriceArray.map((obj, index) => ({
-        'priceBook': obj.priceBookId,
-        'dealerId': createMetaData._id,
-        'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
-        'retailPrice': obj.retailPrice,
-        'wholesalePrice':obj.wholesalePrice,
-        "status": obj.status,
-        'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
-      }));
-
-      const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
-      if (!createPriceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to save price book"
-        });
-        return;
-      }
-
-
-      //Approve status 
-
-      let resetPasswordCode = randtoken.generate(4, '123456789')
-      const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, allUserData[0].email))
-
-      if (mailing) {
-        let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-        res.send({
-          code: constant.successCode,
-          message: 'Successfully Created',
-          data: createMetaData
-        });
-      }
-
-
-    }
+    })
   } catch (err) {
     return res.send({
       code: constant.errorCode,
@@ -829,7 +1356,7 @@ exports.sendLinkToEmail = async (req, res) => {
         message: "User does not exist"
       })
     } else {
-      if (checkEmail.status == false || isDeleted == true) {
+      if (checkEmail.status == false || checkEmail.isDeleted == true) {
         res.send({
           code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
@@ -1088,10 +1615,10 @@ exports.notificationStatusUpdate = async (req, res) => {
     let flag = req.params.flag;
     let cretria = flag == 'dealer' ? 'New Dealer Registration' : 'New Servicer Registration';
     if (cretria != '') {
-       criteria = { status: false, title: cretria };
+      criteria = { status: false, title: cretria };
     }
     else {
-       criteria = { status: false };
+      criteria = { status: false };
     }
     let newValue = {
       $set: {

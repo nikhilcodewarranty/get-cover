@@ -14,5 +14,5 @@ const storage = multer.diskStorage({
 const uploadStorage = multer({ storage: storage });
 
 module.exports = {
-  singleFileUpload: uploadStorage.single('priceFile'),
+  singleFileUpload: uploadStorage.single('file'),
 };
