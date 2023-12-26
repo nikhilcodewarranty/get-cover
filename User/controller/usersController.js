@@ -968,6 +968,7 @@ exports.createDealer = async (req, res) => {
                   // console.log("Mail has been sent");
                 }
                 allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+                console.log("allPriceBooks============================",allPriceBooks)
                 newArray1 = results
                   .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map(obj => ({
@@ -979,7 +980,7 @@ exports.createDealer = async (req, res) => {
               }
             }
 
-            
+
 
             // Merge brokerFee from newArray into foundProductData based on priceBook
 
