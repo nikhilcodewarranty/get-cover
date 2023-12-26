@@ -386,6 +386,8 @@ exports.createDealer = async (req, res) => {
         }));
         //Primary information edit
 
+        console.log("allUserData====================",allUserData);
+
         let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
 
         let newValues1 = {
