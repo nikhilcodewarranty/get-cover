@@ -688,17 +688,16 @@ exports.createDealer = async (req, res) => {
                     priceBook:  matchingProduct.priceBook ,
                     status: true,
                     dealerId: req.body.dealerId,
+                    unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
                     retailPrice:obj.retailPrice,
                     wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
                   };
                 });
-
-                console.log("newArray1====================",newArray1);
-                
+       
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
-            let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+            let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
 
             let newValues1 = {
               $set: {
@@ -714,7 +713,7 @@ exports.createDealer = async (req, res) => {
             let allUsersData = allUserData.map((obj, index) => ({
               ...obj,
               roleId: checkRole._id,
-              accountId: data.dealerId,
+              accountId: req.body.dealerId,
               isPrimary: index === 0 ? true : false,
               status: req.body.isAccountCreate ? obj.status : false
             }));
@@ -729,13 +728,12 @@ exports.createDealer = async (req, res) => {
                 return;
               }
             }
-            let dealerQuery = { _id: data.dealerId }
+            let dealerQuery = { _id: req.body.dealerId }
             let newValues = {
               $set: {
                 status: "Approved",
               }
             }
-            console.log("dealerQuery========================",dealerQuery);
             let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             if (!dealerStatus) {
               res.send({
@@ -745,10 +743,8 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
-            console.log("dealerStatus========================",dealerStatus);
 
-            let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
-            console.log("statusUpdateCreateria========================",statusUpdateCreateria);
+            let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
             let updateData = {
               $set: {
                 approvedStatus: 'Approved'
@@ -756,7 +752,6 @@ exports.createDealer = async (req, res) => {
             }
             let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-            console.log("singleDealerUser========================",singleDealerUser);
 
             //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
