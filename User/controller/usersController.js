@@ -375,7 +375,7 @@ exports.createDealer = async (req, res) => {
       const singleDealer = await userService.findOneUser({ accountId: data.dealerId });
       console.log("singleDealer====================",singleDealer)
       if (savePriceBookType == 'yes') {
-        const resultPriceData = dealerPriceArray.map(obj => ({
+        const resultPriceData = dealerPriceArray.map((obj, index) => ({
      
           'priceBook': obj.priceBookId,
           'dealerId': data.dealerId,
@@ -512,7 +512,7 @@ exports.createDealer = async (req, res) => {
         return;
       }
       //save Price Books for this dealer
-      const resultPriceData = dealerPriceArray.map(obj => ({
+      const resultPriceData = dealerPriceArray.map((obj, index) => ({
         'priceBook': obj.priceBookId,
         'dealerId': createMetaData._id,
         'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
