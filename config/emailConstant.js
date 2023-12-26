@@ -46,11 +46,14 @@ module.exports = {
 
       sendAlreadyProduct: (toEmail,alreadyProducts,sub) => {
         const htmlContent = `
-          <p>Please check the following missing products:</p>
-          <ul>
-            ${alreadyProducts.map(product => `<li>${product.name}</li>`).join('')}
-          </ul>
-        `;
+        <p>Please check the following already products:</p>
+        <ul>
+          ${alreadyProducts.map(product => {
+            const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
+            return `<li><ul>${priceBooksList}</ul></li>`; 
+          }).join('')}
+        </ul>
+      `;
         return {
           to: toEmail,
           from: 'anil@codenomad.net',      

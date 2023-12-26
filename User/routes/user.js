@@ -37,11 +37,11 @@ router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userC
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
 router.post("/checkEmail", [verifyToken],validator("email_validation"), userController.checkEmail);
-router.post("/validateData", [verifyToken],validator("create_dealer_validation"), userController.validateData);
+router.post("/validateData", [verifyToken], userController.validateData);
 
 
 //create dealer api from super admin
-router.post("/createDealer",[verifyToken],validator("create_dealer_validation"), userController.createDealer); 
+router.post("/createDealer",[verifyToken], userController.createDealer); 
 
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);

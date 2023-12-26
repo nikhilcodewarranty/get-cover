@@ -18,6 +18,10 @@ const dealerBookSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  description: {
+    type: String,
+    default: ''
+  },
   isDeleted:{
     type:Boolean,
     default:false
@@ -29,6 +33,10 @@ const dealerBookSchema = new mongoose.Schema({
   unique_key: {
     type: Number,
   },
+  wholesalePrice:{
+    type: Number,
+    default: 0
+  }
 },{timestamps:true});
 module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);
 

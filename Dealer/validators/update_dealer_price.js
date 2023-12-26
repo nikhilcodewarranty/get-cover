@@ -1,10 +1,19 @@
 const Joi = require('joi')
 
 const update_dealer_price_validation = Joi.object({
-    brokerFee:Joi.number().optional().allow(),
-    status:Joi.boolean().optional().allow(),
-    retailPrice:Joi.number().optional().allow(),
-    priceBook:Joi.string().trim().optional().allow(),
+    dealerId:Joi.string().trim().hex().length(24),
+    priceBook:Joi.string().trim().hex().length(24),
+    retailPrice:Joi.number().required(),
+    status:Joi.boolean().required(),
+    brokerFee:Joi.number().required(),
+    wholesalePrice:Joi.number().optional(),
+    term:Joi.string().optional(),
+    categoryId:Joi.string().optional(),
+    description:Joi.string().optional(),
+    // brokerFee:Joi.number().optional().allow(),
+    // status:Joi.boolean().optional().allow(),
+    // retailPrice:Joi.number().optional().allow(),
+    // priceBook:Joi.string().trim().optional().allow(),
 })
 
 module.exports = update_dealer_price_validation

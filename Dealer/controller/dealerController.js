@@ -535,6 +535,38 @@ exports.getAllDealerPriceBooks = async (req, res) => {
   }
 }
 
+
+exports.getDealerPriceBookById = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId)  }
+    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+    if (!getDealerPrice) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -603,7 +635,7 @@ exports.uploadPriceBook = async (req, res) => {
       const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
       if (missingProductNames.length > 0) {
         //email to be sent in this case
-        const mailing = await sgMail.send(emailConstant.sendMissingProduct('anjali@codenomad.net', missingProductNames, "Missing Products"))
+        const mailing = await sgMail.send(emailConstant.sendMissingProduct('nikhil@codenomad.net', missingProductNames, "Missing Products"))
         if (mailing) {
           //console.log("Mail has been sent");
         }
@@ -611,6 +643,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
       // Extract _id values from priceBookIds
       const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
+
       // Check for duplicates and return early if found
       if (allpriceBookIds.length > 0) {
         let query = {
@@ -619,31 +652,25 @@ exports.uploadPriceBook = async (req, res) => {
             { 'dealerId': new mongoose.Types.ObjectId(req.body.dealerId) }
           ]
         }
-        let existingData = await dealerPriceService.findByIds(query);
 
+       
+        let existingData = await dealerPriceService.findByIds(query);
         if (existingData.length > 0) {
-          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('anjali@codenomad.net', existingData[0].priceBooks, "Already Upload Products"))
+          const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('nikhil@codenomad.net', existingData, "Already Upload Products"))
           if (mailing) {
            // console.log("Mail has been sent");
           }
            allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
            newArray1 = results
-          .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.includes(obj.priceBook)))
+          .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
           .map(obj => ({
             priceBook: obj.priceBook,
             status: true,
             retailPrice: obj.retailPrice,
             dealerId: req.body.dealerId,
           }));
-
-          // console.log("newArray1=====================",newArray1);
-          // return;
         }
       }
-
-      //  console.log("newArray1=====================",newArray1);
-      //     return;
-
      
       // Merge brokerFee from newArray into foundProductData based on priceBook
       const mergedArray = foundProductData.map(foundProduct => {
@@ -658,7 +685,11 @@ exports.uploadPriceBook = async (req, res) => {
           };
         } 
       });
+
+      //console.log("mergedArray=====================",newArray1);
       const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+      // console.log("mergedArrayWithoutUndefined=====================",mergedArrayWithoutUndefined);
+      // return;
       // Upload the new data to the dealerPriceService
       const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);  
 
@@ -700,6 +731,8 @@ exports.uploadPriceBook = async (req, res) => {
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
+    const count = await dealerPriceService.getDealerPriceCount();
+    data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     let checkDealer = await dealerService.getDealerById(data.dealerId)
     if (!checkDealer) {
       res.send({
