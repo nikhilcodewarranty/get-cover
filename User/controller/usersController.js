@@ -791,7 +791,7 @@ exports.createDealer = async (req, res) => {
           }
 
 
-          const count = await dealerService.getDealerCount();
+          let count = await dealerService.getDealerCount();
           const dealerMeta = {
             name: data.name,
             street: data.street,
