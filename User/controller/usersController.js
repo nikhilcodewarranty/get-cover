@@ -389,7 +389,7 @@ exports.createDealer = async (req, res) => {
         });
         return
       }
-      const count = await dealerPriceService.getDealerPriceCount();
+      let count = await dealerPriceService.getDealerPriceCount();
 
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
@@ -584,7 +584,7 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
-            const count = await dealerPriceService.getDealerPriceCount();
+            let count = await dealerPriceService.getDealerPriceCount();
 
             // Extract the names and ids of found products
             const foundProductData = foundProducts.map(product => ({
@@ -834,7 +834,7 @@ exports.createDealer = async (req, res) => {
           }
           //save Price Books for this dealer
            count = await dealerPriceService.getDealerPriceCount();
-          const resultPriceData = dealerPriceArray.map(obj => ({
+          const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': createMetaData._id,
             'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
