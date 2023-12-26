@@ -678,22 +678,20 @@ exports.createDealer = async (req, res) => {
 
               else {
                 newArray1 = results
-                .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                .map(obj => {
-                  const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
-                  console.log('matchingProduct:', matchingProduct);
+                  .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                  .map(obj => {
+                    const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
+                    const uniqueKey = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1;
+                    return {
+                      priceBook: matchingProduct.priceBook,
+                      status: true,
+                      dealerId: req.body.dealerId,
+                      unique_key: uniqueKey,
+                      retailPrice: obj.retailPrice,
+                      wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
+                    };
+                  });
 
-
-                  return {
-                    priceBook:  matchingProduct.priceBook ,
-                    status: true,
-                    dealerId: req.body.dealerId,
-                    unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
-                    retailPrice:obj.retailPrice,
-                    wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
-                  };
-                });
-       
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
@@ -1025,24 +1023,23 @@ exports.createDealer = async (req, res) => {
 
               else {
                 newArray1 = results
-                  .filter(obj => foundProducts.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                  .map(obj => ({
-                    priceBook: obj.priceBook,
-                    status: true,
-                    retailPrice: obj.retailPrice,
-                    dealerId: createMetaData._id,
-                  }));
-                const foundProductData1 = foundProducts.map(product => ({
-                  priceBook: product._id,
-                  name: product.name,
-                  dealerId: createMetaData._id,
-                  status: true,
-                  retailPrice: 1234,
-                  unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
-                  wholesalePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
-                }));
-                const uploaded = await dealerPriceService.uploadPriceBook(foundProductData1);
+                  .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                  .map(obj => {
+                    const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
+                    const uniqueKey = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1;
+                    return {
+                      priceBook: matchingProduct.priceBook,
+                      status: true,
+                      dealerId: req.body.dealerId,
+                      unique_key: uniqueKey,
+                      retailPrice: obj.retailPrice,
+                      wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
+                    };
+                  });
+
+                const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
+
             }
             let allUsersData = allUserData.map((obj, index) => ({
               ...obj,
