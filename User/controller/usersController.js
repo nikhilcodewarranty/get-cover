@@ -978,6 +978,9 @@ exports.createDealer = async (req, res) => {
             }
 
             // Merge brokerFee from newArray into foundProductData based on priceBook
+
+            console.log("newArray1============================",newArray1)
+            console.log("foundProductData============================",foundProductData)
             const mergedArray = foundProductData.map(foundProduct => {
               const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
