@@ -1005,6 +1005,14 @@ exports.createDealer = async (req, res) => {
               }
 
               else {
+                newArray1 = results
+                  .filter(obj => foundProducts.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+                  .map(obj => ({
+                    priceBook: obj.priceBook,
+                    status: true,
+                    retailPrice: obj.retailPrice,
+                    dealerId: createMetaData._id,
+                  }));
                 const foundProductData1 = foundProducts.map(product => ({
                   priceBook: product._id,
                   name: product.name,
