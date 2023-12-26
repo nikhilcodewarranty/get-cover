@@ -291,7 +291,7 @@ exports.validateData = async (req, res) => {
     }
 
   }
-  if (data.dealerId != 'null' || data.dealerId != undefined) {
+  if (data.dealerId != 'null' && data.dealerId != undefined) {
     const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
     if (!singleDealer) {
       res.send({
