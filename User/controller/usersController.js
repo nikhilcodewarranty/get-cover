@@ -687,7 +687,7 @@ exports.createDealer = async (req, res) => {
                   priceBook: obj.priceBook,
                   status: true,
                   retailPrice: obj.retailPrice,
-                  dealerId: createMetaData._id,
+                  dealerId: req.body.dealerId,
                 }));
 
                 console.log("newArray1====================",newArray1);
