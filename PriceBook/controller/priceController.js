@@ -714,6 +714,14 @@ exports.updatePriceBookCat = async (req, res) => {
         message: "No data provided"
       })
       return
+    }    // Check if the category already exists
+    const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    if (existingCategory) {
+      res.send({
+        code: constant.errorCode,
+        message: "Category already exist"
+      })
+      return;
     }
     const newValue = {
       $set: {
