@@ -649,36 +649,36 @@ exports.createDealer = async (req, res) => {
                     retailPrice: obj.retailPrice,
                     dealerId: req.body.dealerId,
                   }));
+
+
+                // Merge brokerFee from newArray into foundProductData based on priceBook
+                const mergedArray = foundProductData.map(foundProduct => {
+                  const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
+
+                  if (matchingItem) {
+                    return {
+                      ...foundProduct,
+                      retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
+                      brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
+                      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
+                      wholesalePrice: foundProduct.wholePrice
+                    };
+                  }
+                });
+
+                const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+                const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+
+                // Respond with success message and uploaded data
+                if (uploaded) {
+                  res.send({
+                    code: constant.successCode,
+                    message: 'Success',
+                    data: uploaded
+                  });
+
+                }
               }
-            }
-
-            // Merge brokerFee from newArray into foundProductData based on priceBook
-            const mergedArray = foundProductData.map(foundProduct => {
-              const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
-
-              if (matchingItem) {
-                return {
-                  ...foundProduct,
-                  retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
-                  brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                  unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
-                  wholesalePrice: foundProduct.wholePrice
-                };
-              }
-            });
-
-
-            const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-            const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-
-            // Respond with success message and uploaded data
-            if (uploaded) {
-              res.send({
-                code: constant.successCode,
-                message: 'Success',
-                data: uploaded
-              });
-
             }
             let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
 
@@ -742,8 +742,8 @@ exports.createDealer = async (req, res) => {
               let updateStatus = await userService.updateUser({ _id: singleDealer._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               res.send({
                 code: constant.successCode,
-                message: "Status Approved! Email has been sent",
-              })
+                message: 'Successfully Created',
+              });
             }
 
             else {
@@ -1060,8 +1060,9 @@ exports.createDealer = async (req, res) => {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               res.send({
                 code: constant.successCode,
-                message: "Status Approved! Email has been sent",
-              })
+                message: 'Successfully Created',
+                data: createMetaData
+              });
             }
 
             else {
