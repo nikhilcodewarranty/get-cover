@@ -425,6 +425,8 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+
+          console.log("singleDealer=========================",singleDealer);
           //check new name is not exist in the database
 
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
