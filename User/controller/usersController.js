@@ -1024,9 +1024,9 @@ exports.createDealer = async (req, res) => {
               else {
                 newArray1 = results
                   .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                  .map(obj => {
+                  .map((obj, index) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
-                    const uniqueKey = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1;
+                    const uniqueKey = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
                     return {
                       priceBook: matchingProduct.priceBook,
                       status: true,
