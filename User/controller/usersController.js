@@ -679,8 +679,8 @@ exports.createDealer = async (req, res) => {
               else {
                 newArray1 = results
                 .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                .map(obj1 => ({
-                  priceBook: obj1._id,
+                .map(obj => ({
+                  priceBook: obj._id,
                   status: true,
                   retailPrice: obj.retailPrice,
                   wholesalePrice:obj1.wholePrice,
