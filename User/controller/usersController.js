@@ -459,13 +459,13 @@ exports.createDealer = async (req, res) => {
             }
 
           }
-          const resultPriceData = dealerPriceArray.map(obj => ({
+          const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': data.dealerId,
             'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
-            'retailPrice': obj.retailPrice,
+            'retailPrice': (obj.retailPrice).toFixed(2),
             "status": obj.status,
-            'wholesalePrice': obj.wholesalePrice,
+            'wholesalePrice': (obj.wholesalePrice).toFixed(2),
             'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
           }));
           //Primary information edit
@@ -543,7 +543,8 @@ exports.createDealer = async (req, res) => {
               message: "Status Approved! Email has been sent",
             })
           }
-        } else if (savePriceBookType == 'no') {
+        }
+        else if (savePriceBookType == 'no') {
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -580,13 +581,13 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
-           // Extract the names and ids of found products
+            // Extract the names and ids of found products
             const foundProductData = foundProducts.map(product => ({
               priceBook: product._id,
               name: product.name,
               dealerId: req.body.dealerId,
               status: true,
-              wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+              wholePrice: (Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)).toFixed(2)
             }));
             const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
             if (missingProductNames.length > 0) {
@@ -620,11 +621,11 @@ exports.createDealer = async (req, res) => {
                 //check new name is not exist in the database
 
                 const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
-                const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+                const cleanStr2 = req.body.name.replace(/\s/g, '').toLowerCase();
 
 
                 if (cleanStr1 !== cleanStr2) {
-                  const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+                  const existingDealer = await dealerService.getDealerByName({ name: { '$regex': req.body.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
                   if (existingDealer) {
                     res.send({
                       code: constant.errorCode,
@@ -635,6 +636,8 @@ exports.createDealer = async (req, res) => {
                 }
 
                 allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+
+
                 newArray1 = results
                   .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map(obj => ({
@@ -681,7 +684,6 @@ exports.createDealer = async (req, res) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
                     const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
                     // Print the value of updatedCount
-                    console.log('updatedCount:', updatedCount);
                     return {
                       priceBook: matchingProduct.priceBook,
                       status: true,
@@ -692,7 +694,6 @@ exports.createDealer = async (req, res) => {
                     };
                   });
 
-                  console.log('updatedCount:', newArray1);
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
@@ -855,9 +856,9 @@ exports.createDealer = async (req, res) => {
           const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': createMetaData._id,
-            'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
+            'brokerFee': (Number(obj.retailPrice) - Number(obj.wholesalePrice)).toFixed(2),
             'retailPrice': obj.retailPrice,
-            'wholesalePrice': obj.wholesalePrice,
+            'wholesalePrice': (obj.wholesalePrice).toFixed(2),
             "status": obj.status,
             'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
           }));
@@ -894,7 +895,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
 
-          const count = await dealerService.getDealerCount();
+          let count = await dealerService.getDealerCount();
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -981,6 +982,8 @@ exports.createDealer = async (req, res) => {
                   // console.log("Mail has been sent");
                 }
                 allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+
+
                 newArray1 = results
                   .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
                   .map(obj => ({
@@ -1027,7 +1030,6 @@ exports.createDealer = async (req, res) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
                     const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
                     // Print the value of updatedCount
-                    console.log('updatedCount:', updatedCount);
                     return {
                       priceBook: matchingProduct.priceBook,
                       status: true,
@@ -1039,7 +1041,7 @@ exports.createDealer = async (req, res) => {
                   });
 
 
-             
+
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
 
