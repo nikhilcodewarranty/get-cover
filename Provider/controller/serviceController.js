@@ -221,7 +221,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
+    const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       res.send({
         code: constant.errorCode,

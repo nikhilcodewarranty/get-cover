@@ -376,7 +376,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: req.body.email});
+    const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       res.send({
         code: constant.errorCode,
@@ -437,7 +437,7 @@ exports.registerDealer = async (req, res) => {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
-      flag:'dealer'
+      flag: 'dealer'
     };
 
 
@@ -495,7 +495,7 @@ exports.statusUpdate = async (req, res) => {
     if (!existingDealerPriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer Price Book ID not found"
+        message: "Dealer Price Book not found"
       });
       return;
     }
@@ -779,11 +779,8 @@ exports.uploadPriceBook = async (req, res) => {
         }
       });
 
-      //console.log("mergedArray=====================",newArray1);
       const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-      // console.log("mergedArrayWithoutUndefined=====================",mergedArrayWithoutUndefined);
-      // return;
-      // Upload the new data to the dealerPriceService
+
       const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
       // Respond with success message and uploaded data
@@ -853,7 +850,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer price book already create with this price book"
+        message: "Dealer price book already created with this product name"
       })
       return;
     }

@@ -647,7 +647,7 @@ exports.createDealer = async (req, res) => {
 
 
                 // Merge brokerFee from newArray into foundProductData based on priceBook
-                const mergedArray = foundProductData.map(foundProduct => {
+                const mergedArray = foundProductData.map((foundProduct, index) => {
                   const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                   if (matchingItem) {
@@ -655,7 +655,7 @@ exports.createDealer = async (req, res) => {
                       ...foundProduct,
                       retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                       brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
+                      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
                       wholesalePrice: foundProduct.wholePrice
                     };
                   }
@@ -989,7 +989,7 @@ exports.createDealer = async (req, res) => {
                     dealerId: createMetaData._id,
                   }));
 
-                const mergedArray = foundProductData.map(foundProduct => {
+                const mergedArray = foundProductData.map((foundProduct, index) => {
                   const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                   if (matchingItem) {
@@ -997,7 +997,7 @@ exports.createDealer = async (req, res) => {
                       ...foundProduct,
                       retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                       brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                      unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
+                      unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1,
                       wholesalePrice: foundProduct.wholePrice
                     };
                   }
