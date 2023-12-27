@@ -1,5 +1,6 @@
 const dealer = require("../model/dealer");
 const dealerPrice = require("../model/dealerPrice");
+const users = require("../../User/model/users");
 
 module.exports = class dealerService {
   // Get all dealers
@@ -50,6 +51,16 @@ module.exports = class dealerService {
     }
   }
 
+  static async getUserByDealerId(query) {
+    try {
+      const singleDealerResponse = await users.find(query);
+      return singleDealerResponse;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+  }
+
+  
   
 
   // Get dealer detail with Name

@@ -239,6 +239,54 @@ exports.getDealerById = async (req, res) => {
     });
   };
 };
+//get dealer detail by ID
+exports.getUserByDealerId = async (req, res) => {
+  try {
+    //fetching data from user table
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
+
+    //result.metaData = singleDealer
+    if (!dealers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer not found"
+      });
+      return
+    }
+    const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
+
+    //result.metaData = singleDealer
+    if (!users) {
+      res.send({
+        code: constant.errorCode,
+        message: "No data found"
+      });
+      return
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: users,
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
+};
+
+
 
 //update dealer detail with ID
 exports.updateDealer = async (req, res) => {
@@ -328,7 +376,7 @@ exports.registerDealer = async (req, res) => {
       return;
     }
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ email: { '$regex': new RegExp(`^${req.body.email}$`, 'i') } });
+    const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       res.send({
         code: constant.errorCode,
@@ -389,6 +437,7 @@ exports.registerDealer = async (req, res) => {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
+      flag: 'dealer'
     };
 
 
@@ -446,7 +495,7 @@ exports.statusUpdate = async (req, res) => {
     if (!existingDealerPriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer Price Book ID not found"
+        message: "Dealer Price Book not found"
       });
       return;
     }
@@ -546,7 +595,7 @@ exports.getDealerPriceBookById = async (req, res) => {
       return;
     }
     let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId)  }
+    let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
     let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
     if (!getDealerPrice) {
       res.send({
@@ -567,6 +616,50 @@ exports.getDealerPriceBookById = async (req, res) => {
     })
   }
 }
+
+//Get Dealer Price Books
+exports.getDealerPriceBookByDealerId = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let checkDealer = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { isDeleted: false })
+
+    if (checkDealer.length == 0) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer Not found"
+      })
+      return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.params.dealerId) }
+    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+    if (!getDealerPrice) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -653,29 +746,29 @@ exports.uploadPriceBook = async (req, res) => {
           ]
         }
 
-       
+
         let existingData = await dealerPriceService.findByIds(query);
         if (existingData.length > 0) {
           const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('nikhil@codenomad.net', existingData, "Already Upload Products"))
           if (mailing) {
-           // console.log("Mail has been sent");
+            // console.log("Mail has been sent");
           }
-           allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
-           newArray1 = results
-          .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-          .map(obj => ({
-            priceBook: obj.priceBook,
-            status: true,
-            retailPrice: obj.retailPrice,
-            dealerId: req.body.dealerId,
-          }));
+          allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
+          newArray1 = results
+            .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+            .map(obj => ({
+              priceBook: obj.priceBook,
+              status: true,
+              retailPrice: obj.retailPrice,
+              dealerId: req.body.dealerId,
+            }));
         }
       }
-     
+
       // Merge brokerFee from newArray into foundProductData based on priceBook
       const mergedArray = foundProductData.map(foundProduct => {
         const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
-      
+
         if (matchingItem) {
           return {
             ...foundProduct,
@@ -683,15 +776,12 @@ exports.uploadPriceBook = async (req, res) => {
             brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
-        } 
+        }
       });
 
-      //console.log("mergedArray=====================",newArray1);
       const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-      // console.log("mergedArrayWithoutUndefined=====================",mergedArrayWithoutUndefined);
-      // return;
-      // Upload the new data to the dealerPriceService
-      const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);  
+
+      const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
       // Respond with success message and uploaded data
       if (uploaded) {
@@ -760,7 +850,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer price book already create with this price book"
+        message: "Dealer price book already created with this product name"
       })
       return;
     }

@@ -17,6 +17,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  flag: {
+    type: String,
+    default: ''
+  },
   isDeleted: {
     type: String,
     default: false

@@ -459,7 +459,7 @@ exports.createDealer = async (req, res) => {
             }
 
           }
-          const resultPriceData = dealerPriceArray.map(obj => ({
+          const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': data.dealerId,
             'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
@@ -540,10 +540,11 @@ exports.createDealer = async (req, res) => {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
               code: constant.successCode,
-              message: "Status Approved! Email has been sent",
-            })
+              message: 'Successfully Created',
+            });
           }
-        } else if (savePriceBookType == 'no') {
+        }
+        else if (savePriceBookType == 'no') {
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -580,7 +581,7 @@ exports.createDealer = async (req, res) => {
               return;
             }
 
-           // Extract the names and ids of found products
+            // Extract the names and ids of found products
             const foundProductData = foundProducts.map(product => ({
               priceBook: product._id,
               name: product.name,
@@ -646,7 +647,7 @@ exports.createDealer = async (req, res) => {
 
 
                 // Merge brokerFee from newArray into foundProductData based on priceBook
-                const mergedArray = foundProductData.map(foundProduct => {
+                const mergedArray = foundProductData.map((foundProduct, index) => {
                   const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                   if (matchingItem) {
@@ -654,7 +655,7 @@ exports.createDealer = async (req, res) => {
                       ...foundProduct,
                       retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                       brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
+                      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
                       wholesalePrice: foundProduct.wholePrice
                     };
                   }
@@ -681,7 +682,6 @@ exports.createDealer = async (req, res) => {
                     const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase()));
                     const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
                     // Print the value of updatedCount
-                    console.log('updatedCount:', updatedCount);
                     return {
                       priceBook: matchingProduct.priceBook,
                       status: true,
@@ -692,7 +692,6 @@ exports.createDealer = async (req, res) => {
                     };
                   });
 
-                  console.log('updatedCount:', newArray1);
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
             }
@@ -990,7 +989,7 @@ exports.createDealer = async (req, res) => {
                     dealerId: createMetaData._id,
                   }));
 
-                const mergedArray = foundProductData.map(foundProduct => {
+                const mergedArray = foundProductData.map((foundProduct, index) => {
                   const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                   if (matchingItem) {
@@ -998,7 +997,7 @@ exports.createDealer = async (req, res) => {
                       ...foundProduct,
                       retailPrice: matchingItem.retailPrice || foundProduct.retailPrice,
                       brokerFee: ((matchingItem.retailPrice || foundProduct.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                      unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
+                      unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1,
                       wholesalePrice: foundProduct.wholePrice
                     };
                   }
@@ -1039,7 +1038,7 @@ exports.createDealer = async (req, res) => {
                   });
 
 
-             
+
                 const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
               }
 
@@ -1654,7 +1653,7 @@ exports.notificationStatusUpdate = async (req, res) => {
     let flag = req.params.flag;
     let cretria = flag == 'dealer' ? 'New Dealer Registration' : 'New Servicer Registration';
     if (cretria != '') {
-      criteria = { status: false, title: cretria };
+      criteria = { status: false, flag: flag };
     }
     else {
       criteria = { status: false };
