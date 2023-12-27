@@ -1,9 +1,9 @@
 const customer = require("../model/customer");
 
 module.exports = class customerService {
-  static async getAllCustomers() {
+  static async getAllCustomers(query,projection) {
     try {
-      const allCustomers = await customer.find();
+      const allCustomers = await customer.find(query,projection);
       return allCustomers;
     } catch (error) {
       console.log(`Could not fetch customer ${error}`);
@@ -16,6 +16,17 @@ module.exports = class customerService {
       return response;
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  static async getCustomerByName(accountName) {
+    try {
+      const singleCustomerResponse = await customer.findOne({
+        userName: accountName,
+      });
+      return singleCustomerResponse;
+    } catch (error) {
+      console.log(`Customer not found. ${error}`);
     }
   }
 

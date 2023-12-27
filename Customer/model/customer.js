@@ -2,61 +2,64 @@ const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   username: {
     type: String,
-    // required: true,
+    default:''
   },
   email: {
     type: String,
-    // required: true,
+    default:''
   },
   phone: {
     type: String,
-    // required: true,
+    default:''
   },
   firstName: {
     type: String,
-    // required: true,
+    default:''
   },
   lastName: {
     type: String,
-    // required: true,
+    default:''
   },
   password: {
     type: String,
-    // required: true,
+    default:''
   },
   street: {
     type: String,
-    // required: true,
+    default:''
   },
   city: {
     type: String,
-    // required: true,
+    default:''
   },
   zip: {
     type: String,
-    // required: true,
+    default:''
   },
   state: {
     type: String,
-    // required: true,
+    default:''
   },
   country: {
     type: String,
-    // required: true,
+    default:''
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "dealer",
-    // required: true,
+    ref: "dealers",
   },
-  serviceProvider: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "serviceProvider",
-    // required: true,
-  },
-  status:{
-    type:Boolean,
+  // dealerId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "dealers",
+  // },
+  status: {
+    type: Boolean,
     default:true
+  },
+  accountStatus:{
+    type:String,
+    enum: ["Pending", "Approved", "Rejected"],
+    default:"Pending"
   },
   isDeleted:{
     type:Boolean,
@@ -64,7 +67,7 @@ const customerSchema = new mongoose.Schema({
   },
   token: {
     type: String,
-    // required: true,
+    default:''
   },
 },{timestamps:true});
 
