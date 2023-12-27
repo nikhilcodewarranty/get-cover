@@ -437,6 +437,7 @@ exports.registerDealer = async (req, res) => {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
+      flag:'dealer'
     };
 
 

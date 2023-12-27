@@ -277,6 +277,7 @@ exports.registerServiceProvider = async (req, res) => {
       title: "New Servicer Registration",
       description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createMetaData._id,
+      flag:'servicer'
     };
 
     // Create the user
