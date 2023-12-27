@@ -24,7 +24,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name : ''
     let query;
     console.log(data.status)
-    if ((data.status || !data.status) & data.status!=undefined) {
+    if ((data.status || !data.status) & data.status != undefined) {
       query = {
         $and: [
           { isDeleted: false },
@@ -147,13 +147,13 @@ exports.createPriceBook = async (req, res, next) => {
     // return;
 
     let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, {})
-   
-    if (checkPriceBook.length>0) {
+
+    if (checkPriceBook.length > 0) {
       res.send({
         code: constant.errorCode,
         message: "Product already exist with this name"
       })
-      return; 
+      return;
     }
     //console.log("checkPriceBook=====================",checkPriceBook);return;
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
@@ -349,7 +349,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
- 
+
 
     const criteria = { _id: new mongoose.Types.ObjectId(params.priceBookId) };
     let projection = { isDeleted: 0, __v: 0 }
@@ -623,9 +623,9 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
-    let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee": req.query.priceBookId
-    console.log(ID,req.query.priceBookId)
-    let query1 = { _id: new mongoose.Types.ObjectId(ID)}
+    let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
+    console.log(ID, req.query.priceBookId)
+    let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
     let query;
@@ -636,7 +636,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
           { _id: getPriceBook ? getPriceBook[0].category._id : "" }
         ]
       }
-    }else{
+    } else {
       query = {
         $or: [
           { status: true },
@@ -645,7 +645,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
     }
     let projection = { __v: 0 }
     let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
- 
+
     if (!getCategories) {
       res.send({
         code: constant.errorCode,
@@ -714,15 +714,19 @@ exports.updatePriceBookCat = async (req, res) => {
         message: "No data provided"
       })
       return
-    }    // Check if the category already exists
-    const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
-    if (existingCategory) {
-      res.send({
-        code: constant.errorCode,
-        message: "Category already exist"
-      })
-      return;
     }
+    // Check if the category already exists
+    if (isValid.name.toLowerCase()!= req.body.name.toLowerCase()) {
+      const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+      if (existingCategory) {
+        res.send({
+          code: constant.errorCode,
+          message: "Category already exist"
+        })
+        return;
+      }
+    }
+
     const newValue = {
       $set: {
         name: data.name ? data.name : isValid.name,
@@ -877,14 +881,14 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: new mongoose.Types.ObjectId(req.params.categoryId) }, { __v: 0 },limit,page)
+    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: new mongoose.Types.ObjectId(req.params.categoryId) }, { __v: 0 }, limit, page)
     // console.log("fetchPriceBooks=======================",fetchPriceBooks)
     // return;
     res.send({
       code: constant.successCode,
       message: 'Data fetched successfully',
       result: {
-        priceBooks: fetchPriceBooks ? fetchPriceBooks:[]
+        priceBooks: fetchPriceBooks ? fetchPriceBooks : []
       }
     })
   } catch (err) {
