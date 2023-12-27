@@ -459,7 +459,7 @@ exports.createDealer = async (req, res) => {
             }
 
           }
-          const resultPriceData = dealerPriceArray.map((obj,index) => ({
+          const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': data.dealerId,
             'brokerFee': Number(obj.retailPrice) - Number(obj.wholesalePrice),
@@ -540,10 +540,11 @@ exports.createDealer = async (req, res) => {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
               code: constant.successCode,
-              message: "Status Approved! Email has been sent",
-            })
+              message: 'Successfully Created',
+            });
           }
-        } else if (savePriceBookType == 'no') {
+        }
+        else if (savePriceBookType == 'no') {
           if (!req.file) {
             res.send({
               code: constant.errorCode,
