@@ -61,5 +61,18 @@ module.exports = {
            text: 'Please check missing Products',
            html: htmlContent,          
         };
+      },
+      sendNullMessage: (toEmail) => {
+        const htmlContent = `
+        <p>The The Products is not created yet. Please check catalog!:</p>
+      `;
+        return {
+          to: toEmail,
+          from: 'anil@codenomad.net',      
+           subject: sub,
+           text: '',
+           html: htmlContent,          
+        };
       }
+
 }

@@ -139,7 +139,7 @@ module.exports = class userService {
   //get all TERMS
   static async getAllTerms(query, projection) {
     try {
-      const allTerms = await terms.find(query, projection);
+      const allTerms = await terms.find(query, projection).sort({ "terms": 1 });
       return allTerms;
     } catch (error) {
       console.log(`Could not find role ${error}`);

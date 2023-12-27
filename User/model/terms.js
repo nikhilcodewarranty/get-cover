@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const connection = require('../../db')
 const termSchema = new mongoose.Schema({
   terms: {
-    type: String,
+    type: Number,
     default:''
   },
   status: {

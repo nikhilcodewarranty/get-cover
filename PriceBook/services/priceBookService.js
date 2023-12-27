@@ -232,7 +232,7 @@ module.exports = class priceBookService {
       const response = await priceBook.find({ 'name': { $in: priceBooksName } });
       return response;
     } catch (error) {
-      console.log(`Could not fetch price book name ${error}`);
+      console.log(`Could not fetch price book ${error}`);
     }
   }
 
