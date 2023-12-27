@@ -302,6 +302,18 @@ module.exports = class userService {
     }
   }
 
+  static async findUserforCustomer(query){
+    try {
+      const fetchUser = await user.aggregate([
+        {
+          $match:query
+        }
+      ]);     
+      return fetchUser;
+    } catch (error) {
+      console.log(`Could not update dealer book ${error}`);
+    }
+  }
   
   
 

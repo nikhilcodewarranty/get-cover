@@ -1,32 +1,123 @@
 const { Customer } = require("../model/customer");
 const customerResourceResponse = require("../utils/constant");
 const customerService = require("../services/customerService");
+let dealerService = require('../../Dealer/services/dealerService')
+let userService = require('../../User/services/userService')
+const constant = require("../../config/constant");
+const { default: mongoose } = require("mongoose");
 
-exports.getAllCustomers = async (req, res, next) => {
-  try {
-    const customers = await customerService.getAllCustomers();
-    if (!customers) {
-      res.status(404).json("There are no customer published yet!");
-    }
-    res.json(customers);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
+
 
 exports.createCustomer = async (req, res, next) => {
   try {
-    const createdCustomer = await customerService.createCustomer(req.body);
-    if (!createdCustomer) {
-      res.status(404).json("There are no customer created yet!");
+    let data = req.body;
+
+    //check dealer ID
+    let checkDealer = await dealerService.getDealerByName({ name: data.dealerName }, {});
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer"
+      })
+      return;
+    };
+
+    // check customer acccount name 
+    let checkAccountName = await customerService.getCustomerByName(data.accountName);
+    if (checkAccountName) {
+      res.send({
+        code: constant.errorCode,
+        message: "Customer already exist with this account name"
+      })
+      return;
+    };
+
+    let customerObject = {
+      username: data.accountName,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      status: data.status,
+      accountStatus: "Approved",
     }
-    res.json(createdCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+
+    let teamMembers = data.members
+    // let emailsToCheck = members.map(member => member.email);
+    // let queryEmails = { email: { $in: emailsToCheck } };
+    // let checkEmails = await customerService.getAllCustomers(queryEmails,{});
+    // if(checkEmails.length > 0){
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:"Some email ids already exist"
+    //   })
+    // }
+
+    const createdCustomer = await customerService.createCustomer(customerObject);
+    if (!createdCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the customer"
+      })
+      return;
+    };
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id }));
+    // create members account 
+    let saveMembers = await userService.insertManyUser(teamMembers)
+    res.send({
+      code: constant.successCode,
+      message: "Customer created successfully",
+      result: data
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+exports.getAllCustomers = async (req, res, next) => {
+  try {
+    let query = { isDeleted: false }
+    let projection = { __v: 0 }
+    const customers = await customerService.getAllCustomers(query, projection);
+    if (!customers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customer"
+      });
+      return;
+    };
+    let queryUser = { accountId: { $in: customers.map(item => item._id.toString()) } }
+
+    console.log(queryUser)
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    const enrichedResultMap = new Map(getPrimaryUser.map(item => [item._id.toString(), item]));
+
+    // Merge the data into the original array
+    const mergedArray = customers.map(item => ({
+      ...item,
+      additionalData: enrichedResultMap.get(item._id.toString()) || {}
+    }));
+
+    console.log(mergedArray);
+
+
+
+    console.log(getPrimaryUser)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: mergedArray
+    })
+  } catch (err) {
+    res.send({
+      code: constant.successCode,
+      message: err.message,
+    })
   }
 };
 
