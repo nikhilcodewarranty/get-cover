@@ -681,7 +681,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     let csvName = req.file.filename
     const csvWriter = createCsvWriter({
-      path: './uploads/resultFile/' + csvName ,
+      path: './uploads/resultFile/' + csvName,
       header: [
         { id: 'priceBook', title: 'Price Book' },
         { id: 'status', title: 'Status' },
@@ -840,7 +840,7 @@ exports.uploadPriceBook = async (req, res) => {
         }
       }
       // Write the data to the CSV file
-      const res = await csvWriter.writeRecords(csvStatus);
+      const res12 = await csvWriter.writeRecords(csvStatus);
 
 
       // Construct the base URL link
@@ -854,11 +854,14 @@ exports.uploadPriceBook = async (req, res) => {
 
       // Send email with the CSV file link
       const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
-      console.log('Email sent successfully');
-      res.send({
-        code: constant.successCode,
-        data: upload
-      });
+      if (mailing) {
+        console.log('Email sent successfully');
+        res.send({
+          code: constant.successCode,
+          data: upload
+        });
+      }
+
 
     }
 
