@@ -795,7 +795,7 @@ exports.createDealer = async (req, res) => {
               const complete_url = `${base_url_link}/${csvName1}`;
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', complete_url));
 
               res.send({
                 code: constant.successCode,
@@ -1024,7 +1024,7 @@ exports.createDealer = async (req, res) => {
                 }
                 let existingData = await dealerPriceService.findByIds(query);
                 if (existingData.length > 0) {
-                  const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
+                  //const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
                   if (mailing) {
                     // console.log("Mail has been sent");
                   }
@@ -1146,7 +1146,7 @@ exports.createDealer = async (req, res) => {
               const complete_url = `${base_url_link}/${csvName1}`;
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', complete_url));
 
               res.send({
                 code: constant.successCode,
