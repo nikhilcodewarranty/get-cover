@@ -6,7 +6,7 @@ const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+sgMail.setApiKey('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 ');
 const bcrypt = require("bcrypt");
 
 exports.getAllServiceProviders = async (req, res, next) => {
@@ -132,7 +132,7 @@ exports.getPendingServicer = async (req, res) => {
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
-    
+
     let servicerObject = {
       username: data.accountName,
       street: data.street,
@@ -321,7 +321,7 @@ exports.registerServiceProvider = async (req, res) => {
     if (createNotification) {
       let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      let mailing = await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(templateID, data.email))
     }
 
     res.send({
