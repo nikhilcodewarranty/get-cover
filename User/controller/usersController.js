@@ -1146,7 +1146,7 @@ exports.createDealer = async (req, res) => {
               const complete_url = `${base_url_link}/${csvName1}`;
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
 
               res.send({
                 code: constant.successCode,
