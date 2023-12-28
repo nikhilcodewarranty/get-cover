@@ -852,11 +852,7 @@ exports.uploadPriceBook = async (req, res) => {
       const complete_url = `${base_url_link}/${csvName1}`;
 
       // Send email with the CSV file link
-<<<<<<< HEAD
       const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
-=======
-      const mailing = await sgMail.send(emailConstant.sendLink('nikhil@codenomad.net', complete_url));
->>>>>>> d6dd214d548570fb9ca8db02290f76f015f605db
       if (mailing) {
         console.log('Email sent successfully');
         res.send({
