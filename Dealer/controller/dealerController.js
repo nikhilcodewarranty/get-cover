@@ -681,7 +681,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     let csvName = req.file.filename
     const csvWriter = createCsvWriter({
-      path: './uploads/resultFile/' + csvName + '.csv',
+      path: './uploads/resultFile/' + csvName ,
       header: [
         { id: 'priceBook', title: 'Price Book' },
         { id: 'status', title: 'Status' },
