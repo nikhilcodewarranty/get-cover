@@ -778,7 +778,7 @@ exports.createDealer = async (req, res) => {
 
             //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
-            const mailing = await sgMail.send(emailConstant.msg(singleDealerUser._id, resetPasswordCode, singleDealerUser.email))
+            const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email))
 
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -913,7 +913,7 @@ exports.createDealer = async (req, res) => {
           //Approve status 
 
           let resetPasswordCode = randtoken.generate(4, '123456789')
-          const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
+          const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email))
 
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
