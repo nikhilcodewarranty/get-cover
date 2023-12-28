@@ -1,9 +1,9 @@
 const serviceProvider = require("../model/serviceProvider");
 
 module.exports = class providerService {
-  static async getAllServiceProvider(query,projection) {
+  static async getAllServiceProvider(query, projection) {
     try {
-      const allServiceProvider = await serviceProvider.find(query,projection).sort({"createdAt":-1});
+      const allServiceProvider = await serviceProvider.find(query, projection).sort({ "createdAt": -1 });
       return allServiceProvider;
     } catch (error) {
       console.log(`Could not fetch service provider ${error}`);
@@ -13,13 +13,13 @@ module.exports = class providerService {
 
   static async getServicerCount() {
     try {
-      const count = await serviceProvider.find().sort({"unique_key":-1});
+      const count = await serviceProvider.find().sort({ "unique_key": -1 });
       return count;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-  
+
 
   static async createServiceProvider(data) {
     try {
@@ -29,6 +29,7 @@ module.exports = class providerService {
       console.log(error);
     }
   }
+
   static async getServiceProviderById(serviceProviderId) {
     try {
       const singleServiceProviderResponse = await serviceProvider.findById({
@@ -90,15 +91,15 @@ module.exports = class providerService {
   }
 
 
-    // Get servicer detail with Name
-    static async getServicerByName(query,projection) {
-      try {
-        const singleDealerResponse = await serviceProvider.findOne(query,projection);
-        return singleDealerResponse;
-      } catch (error) {
-        console.log(`Dealer not found. ${error}`);
-      }
+  // Get servicer detail with Name
+  static async getServicerByName(query, projection) {
+    try {
+      const singleDealerResponse = await serviceProvider.findOne(query, projection);
+      return singleDealerResponse;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
     }
+  }
 
-  
+
 };

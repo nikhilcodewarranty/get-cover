@@ -131,17 +131,53 @@ exports.getPendingServicer = async (req, res) => {
 //-------------------------Created By Super Admin
 exports.createServiceProvider = async (req, res, next) => {
   try {
-    const createdServiceProvider = await providerService.createServiceProvider(
-      req.body
-    );
-    if (!createdServiceProvider) {
-      res.status(404).json("There are no service provider created yet!");
+    let data = req.body
+    
+    let servicerObject = {
+      username: data.accountName,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      status: data.status,
+      accountStatus: "Approved",
     }
-    res.json(createdServiceProvider);
+
+    let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
+    if (checkAccountName) {
+      res.send({
+        code: constant.errorCode,
+        message: "Servicer already exist with this account name"
+      })
+      return;
+    };
+
+    let teamMembers = data.members
+
+    const createServiceProvider = await providerService.createServiceProvider(servicerObject);
+    if (!createServiceProvider) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the servicer"
+      })
+      return;
+    };
+
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id }));
+
+    let saveMembers = await userService.insertManyUser(teamMembers)
+    res.send({
+      code: constant.successCode,
+      message: "Customer created successfully",
+      result: data
+    })
+
   } catch (error) {
-    res
-      .status(serviceResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -277,7 +313,7 @@ exports.registerServiceProvider = async (req, res) => {
       title: "New Servicer Registration",
       description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createMetaData._id,
-      flag:'servicer'
+      flag: 'servicer'
     };
 
     // Create the user
