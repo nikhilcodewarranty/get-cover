@@ -27,15 +27,7 @@ const path = require('path');
 
 const csvParser = require('csv-parser');
 
-const csvWriter = createCsvWriter({
-  path: './config/' + Date.now() + '.csv',
-  header: [
-    { id: 'priceBook', title: 'Price Book' },
-    { id: 'status', title: 'Status' },
-    { id: 'reason', title: 'Reason' },
-    // Add more headers as needed
-  ],
-});
+
 //----------------------- api's function ---------------//
 
 // create user 
@@ -373,6 +365,16 @@ exports.validateData = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     uploadMiddleware.singleFileUpload(req, res, async () => {
+      let csvName = req.file.filename
+    const csvWriter = createCsvWriter({
+      path: './uploads/resultFile/' + csvName,
+      header: [
+        { id: 'priceBook', title: 'Price Book' },
+        { id: 'status', title: 'Status' },
+        { id: 'reason', title: 'Reason' },
+        // Add more headers as needed
+      ],
+    });
       const data = req.body;
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -779,13 +781,20 @@ exports.createDealer = async (req, res) => {
 
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-              csvWriter.writeRecords(csvStatus)
-                .then(() => {
-                  console.log('CSV file written successfully');
+              const res12 = await csvWriter.writeRecords(csvStatus);
 
-                  // Send email with the last converted CSV file as an attachment
-                  // sendEmail('recipient-email@example.com', 'output.csv');
-                })
+
+              // Construct the base URL link
+              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+        
+              // Get the CSV name from the csvWriter path
+              const csvName1 = csvName;
+        
+              // Construct the complete URL
+              const complete_url = `${base_url_link}/${csvName1}`;
+        
+              // Send email with the CSV file link
+              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
 
                 res.send({
                   code: constant.successCode,
@@ -1111,14 +1120,20 @@ exports.createDealer = async (req, res) => {
             const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-              csvWriter.writeRecords(csvStatus)
-                .then(() => {
-                  console.log('CSV file written successfully');
+              const res12 = await csvWriter.writeRecords(csvStatus);
 
-                  // Send email with the last converted CSV file as an attachment
-                  // sendEmail('recipient-email@example.com', 'output.csv');
-                })
-                .catch((err) => console.error(err));
+
+              // Construct the base URL link
+              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+        
+              // Get the CSV name from the csvWriter path
+              const csvName1 = csvName;
+        
+              // Construct the complete URL
+              const complete_url = `${base_url_link}/${csvName1}`;
+        
+              // Send email with the CSV file link
+              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
             
               res.send({
                 code: constant.successCode,
