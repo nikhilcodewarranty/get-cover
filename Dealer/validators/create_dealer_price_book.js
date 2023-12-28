@@ -10,7 +10,7 @@ const create_dealer_price_book_validation = Joi.object({
     term:Joi.string().optional(),
     categoryId:Joi.string().optional(),
     brokerFee:Joi.number().required(),
-    description:Joi.string().optional(),
+    description:Joi.string().allow('').optional(),
     
 })
 
