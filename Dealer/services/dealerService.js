@@ -83,6 +83,18 @@ module.exports = class dealerService {
     }
   }
 
+  static async updateDealerStatus(criteria,newValue,option) {
+    try {
+      const updatedResponse = await dealer.findOneAndUpdate(criteria,newValue,option);
+      return updatedResponse;
+    } catch (error) {
+      console.log(`Could not update dealer ${error}`);
+    }
+  }
+
+
+  
+
   // Delete dealer by id
   static async deleteDealer(criteria) {
     try {

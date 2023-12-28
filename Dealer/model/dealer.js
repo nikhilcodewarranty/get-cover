@@ -46,6 +46,10 @@ const dealarSchema = new mongoose.Schema({
     enum: ["Pending", "Approved", "Rejected"],
     default:"Pending"
   },
+  accountStatus: {
+    type:Boolean,
+    default:false
+  },
   isDeleted: {
     type: String,
     default: false

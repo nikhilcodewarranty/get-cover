@@ -585,6 +585,64 @@ exports.getAllDealerPriceBooks = async (req, res) => {
   }
 }
 
+exports.changeDealerStatus = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
+
+    if (!singleDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer not found"
+      })
+      return;
+    }
+
+    let dealerUserCreateria = { accountId: req.params.dealerId };
+    let newValue = {
+      $set: {
+        status: req.body.status
+      }
+    };
+    let option = { new: true };
+    const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+    if (changeDealerUser) {
+      newValue = {
+        $set: {
+          accountStatus: req.body.status
+        }
+      };
+      const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
+      if (changedDealerStatus) {
+        res.send({
+          code: constant.successCode,
+          message: 'Updated Successfully!',
+          data: changedDealerStatus
+        })
+      }
+      else {
+        res.send({
+          code: constant.errorCode,
+          message: 'Unable to update dealer status!',
+        })
+      }
+    };
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 exports.getDealerPriceBookById = async (req, res) => {
   try {
