@@ -1,3 +1,4 @@
+require('dotenv').config()
 const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
@@ -16,7 +17,7 @@ const fs = require('fs');
 const json2csv = require('json-2-csv').json2csv;
 const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
 const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
@@ -356,7 +357,6 @@ exports.deleteDealer = async (req, res) => {
 exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
-
     // Check if the specified role exists
     // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
@@ -447,9 +447,8 @@ exports.registerDealer = async (req, res) => {
     const createNotification = await userService.createNotification(notificationData);
 
     if (createNotification) {
-      let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      let mailing = await sgMail.send(emailConstant.msgWelcome(templateID, data.email))
+      let mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
       //const mailing = await sgMail.send(emailConstant.msg(createdDealer._id, 'resetPasswordCode', data.email))
 
     }
@@ -461,7 +460,7 @@ exports.registerDealer = async (req, res) => {
 
   } catch (err) {
     res.send({
-      code: constant.errorCode,
+      code: "2000",
       message: err.message,
     });
     return;
@@ -699,7 +698,7 @@ exports.uploadPriceBook = async (req, res) => {
     if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer Not found" 
+        message: "Dealer Not found"
       })
       return;
     }
@@ -853,7 +852,7 @@ exports.uploadPriceBook = async (req, res) => {
       const complete_url = `${base_url_link}/${csvName1}`;
 
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
       if (mailing) {
         console.log('Email sent successfully');
         res.send({

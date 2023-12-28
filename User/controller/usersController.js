@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+sgMail.setApiKey('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 ');
 const XLSX = require("xlsx");
 const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -795,7 +795,7 @@ exports.createDealer = async (req, res) => {
               const complete_url = `${base_url_link}/${csvName1}`;
         
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
 
                 res.send({
                   code: constant.successCode,
@@ -1461,7 +1461,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      const mailing = await sgMail.send(emailConstant.msg(checkEmail._id, resetPasswordCode, checkEmail.email))
+      const mailing = await sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email))
 
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
