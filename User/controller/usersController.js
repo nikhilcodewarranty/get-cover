@@ -539,7 +539,7 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
-          const mailing = await sgMail.send(emailConstant.msg(singleDealerUser._id, resetPasswordCode, singleDealerUser.email))
+          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email))
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
@@ -1130,7 +1130,7 @@ exports.createDealer = async (req, res) => {
 
             //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
-            const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
+            const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email))
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               const res12 = await csvWriter.writeRecords(csvStatus);
