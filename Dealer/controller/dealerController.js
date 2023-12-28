@@ -603,38 +603,51 @@ exports.changeDealerStatus = async (req, res) => {
       })
       return;
     }
-
-    let dealerUserCreateria = { accountId: req.params.dealerId };
-    let newValue = {
-      $set: {
-        status: req.body.status
-      }
-    };
-    let option = { new: true };
-    const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
-    if (changeDealerUser) {
-      newValue = {
+  //Update Dealer User Status
+    if (!req.body.status) {
+      let dealerUserCreateria = { accountId: req.params.dealerId };
+      let newValue = {
         $set: {
-          accountStatus: req.body.status
+          status: req.body.status
         }
       };
-      const changedDealerStatus = await dealerService.updateDealer({ _id: req.params.dealerId }, newValue, option);
-      if (changedDealerStatus) {
-        res.send({
-          code: constant.successCode,
-          message: 'Updated Successfully!',
-          data: changedDealerStatus
-        })
-      }
-      else {
-        res.send({
-          code: constant.errorCode,
-          message: 'Unable to update dealer status!',
-        })
+      let option = { new: true };
+      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+
+    }
+
+    else {
+      let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
+      let newValue = {
+        $set: {
+          status: req.body.status
+        }
+      };
+      let option = { new: true };
+      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+    }
+
+    option = { new: true };
+    //Update Dealer Status
+    newValue = {
+      $set: {
+        accountStatus: req.body.status
       }
     };
-
-
+    const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
+    if (changedDealerStatus) {
+      res.send({
+        code: constant.successCode,
+        message: 'Updated Successfully!',
+        data: changedDealerStatus
+      })
+    }
+    else {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to update dealer status!',
+      })
+    }
   } catch (err) {
     res.send({
       code: constant.errorCode,

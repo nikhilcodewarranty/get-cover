@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "localhost:3002",
+    "host": "15.207.221.207:3002",
     "basePath": "/api-v1",
     "schemes": [  
       "http",
@@ -724,11 +724,17 @@
         
            "parameters": [
             {
-              "required": true,
-              "name": "Create Dealer",
+              "name": "body",
               "in": "body",
+              "required": true,
               "schema": {
-                "$ref": "#/definitions/updateBody"
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "boolean"
+                  }         
+                  
+                }
               }
             }
           ],
@@ -1186,6 +1192,52 @@
           }
         }
       },
+      "/dealer/changeDealerStatus/{dealerId}": {
+        "put": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Change Status",
+          "parameters": [
+            {
+              "name": "dealerId",
+              "in": "path",
+              "required": true,
+              "type": "string",
+              "default": "exampleId",  
+              "description": "ID of the Dealer"
+            },
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {                             
+                  "status": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
+
+      
         
       
       "/dealer/createDealerPriceBook": {
