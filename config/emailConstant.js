@@ -16,6 +16,22 @@ module.exports = {
           },
         };
       },
+      sendLink: (toEmail,link) => {
+        return {
+          to: toEmail,
+          from: 'anil@codenomad.net',
+          subject: `CSV link`,
+           text: `CSV Link:- ${link}`,
+          //templateId: "d-ddd46f310f9d4014b95971a3c8664bb6",
+          // dynamic_template_data: {
+          //   resetCode:link
+          // },
+          mailSettings: {
+            // Set the subject for the email
+            subject: 'CSV link',
+          },
+        };
+      },
 
       msgWelcome: (templateID,toEmail) => {
         return {

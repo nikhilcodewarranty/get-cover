@@ -786,10 +786,12 @@ exports.createDealer = async (req, res) => {
                   // Send email with the last converted CSV file as an attachment
                   // sendEmail('recipient-email@example.com', 'output.csv');
                 })
-              res.send({
-                code: constant.successCode,
-                message: 'Successfully Created',
-              });
+
+                res.send({
+                  code: constant.successCode,
+                  message: 'Successfully Created',
+                });
+           
             }
 
             else {
@@ -1108,6 +1110,7 @@ exports.createDealer = async (req, res) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
             if (mailing) {
+              let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               csvWriter.writeRecords(csvStatus)
                 .then(() => {
                   console.log('CSV file written successfully');
@@ -1116,7 +1119,7 @@ exports.createDealer = async (req, res) => {
                   // sendEmail('recipient-email@example.com', 'output.csv');
                 })
                 .catch((err) => console.error(err));
-              let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            
               res.send({
                 code: constant.successCode,
                 message: 'Successfully Created',
