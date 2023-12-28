@@ -576,8 +576,8 @@ exports.createDealer = async (req, res) => {
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           if (sheets.length > 0) {
-            const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            let results = data
+            const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            let results = data1
               .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
               .map(obj => ({
                 priceBook: obj.priceBook,
@@ -977,8 +977,8 @@ exports.createDealer = async (req, res) => {
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           if (sheets.length > 0) {
-            const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            let results = data
+            const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            let results = data1
               .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
               .map(obj => ({
                 priceBook: obj.priceBook,
