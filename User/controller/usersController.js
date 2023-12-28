@@ -669,7 +669,7 @@ exports.createDealer = async (req, res) => {
                       let csvAlreadyData = {
                         'priceBook': priceBooksList,
                         'status': 'Failed',
-                        'reason': 'The product is already in the catalog',
+                        'reason': 'This product is already in the dealer product catalog',
                       };
                       csvStatus.push(csvAlreadyData);
                     });
