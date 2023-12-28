@@ -365,16 +365,7 @@ exports.validateData = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     uploadMiddleware.singleFileUpload(req, res, async () => {
-      let csvName = req.file.filename
-    const csvWriter = createCsvWriter({
-      path: './uploads/resultFile/' + csvName,
-      header: [
-        { id: 'priceBook', title: 'Price Book' },
-        { id: 'status', title: 'Status' },
-        { id: 'reason', title: 'Reason' },
-        // Add more headers as needed
-      ],
-    });
+
       const data = req.body;
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -558,6 +549,16 @@ exports.createDealer = async (req, res) => {
           }
         }
         else if (savePriceBookType == 'no') {
+          let csvName = req.file.filename
+          const csvWriter = createCsvWriter({
+            path: './uploads/resultFile/' + csvName,
+            header: [
+              { id: 'priceBook', title: 'Price Book' },
+              { id: 'status', title: 'Status' },
+              { id: 'reason', title: 'Reason' },
+              // Add more headers as needed
+            ],
+          });
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -925,6 +926,7 @@ exports.createDealer = async (req, res) => {
         }
 
         else if (savePriceBookType == 'no') {
+
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -932,6 +934,17 @@ exports.createDealer = async (req, res) => {
             })
             return;
           }
+
+          let csvName = req.file.filename
+          const csvWriter = createCsvWriter({
+            path: './uploads/resultFile/' + csvName,
+            header: [
+              { id: 'priceBook', title: 'Price Book' },
+              { id: 'status', title: 'Status' },
+              { id: 'reason', title: 'Reason' },
+              // Add more headers as needed
+            ],
+          });
 
           const count = await dealerService.getDealerCount();
           const dealerMeta = {
