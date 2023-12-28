@@ -679,9 +679,9 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-
+    let csvName = req.file.filename
     const csvWriter = createCsvWriter({
-      path: './config/' + Date.now() + '.csv',
+      path: './uploads/resultFile/' + csvName,
       header: [
         { id: 'priceBook', title: 'Price Book' },
         { id: 'status', title: 'Status' },
@@ -699,7 +699,7 @@ exports.uploadPriceBook = async (req, res) => {
     if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
-        message: "Dealer Not found"
+        message: "Dealer Not found" 
       })
       return;
     }
@@ -839,18 +839,29 @@ exports.uploadPriceBook = async (req, res) => {
           })
         }
       }
-      csvWriter.writeRecords(csvStatus)
-        .then(() => {
-          console.log('CSV file written successfully');
+      // Write the data to the CSV file
+      const res12 = await csvWriter.writeRecords(csvStatus);
 
-          // Send email with the last converted CSV file as an attachment
-          // sendEmail('recipient-email@example.com', 'output.csv');
-        })
-        .catch((err) => console.error(err));
-      res.send({
-        code: constant.successCode,
-        data: upload
-      });
+
+      // Construct the base URL link
+      const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+
+      // Get the CSV name from the csvWriter path
+      const csvName1 = csvName;
+
+      // Construct the complete URL
+      const complete_url = `${base_url_link}/${csvName1}`;
+
+      // Send email with the CSV file link
+      const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+      if (mailing) {
+        console.log('Email sent successfully');
+        res.send({
+          code: constant.successCode,
+          data: upload
+        });
+      }
+
 
     }
 

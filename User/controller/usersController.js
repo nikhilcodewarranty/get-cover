@@ -27,15 +27,7 @@ const path = require('path');
 
 const csvParser = require('csv-parser');
 
-const csvWriter = createCsvWriter({
-  path: './config/' + Date.now() + '.csv',
-  header: [
-    { id: 'priceBook', title: 'Price Book' },
-    { id: 'status', title: 'Status' },
-    { id: 'reason', title: 'Reason' },
-    // Add more headers as needed
-  ],
-});
+
 //----------------------- api's function ---------------//
 
 // create user 
@@ -373,6 +365,7 @@ exports.validateData = async (req, res) => {
 exports.createDealer = async (req, res) => {
   try {
     uploadMiddleware.singleFileUpload(req, res, async () => {
+
       const data = req.body;
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -556,6 +549,16 @@ exports.createDealer = async (req, res) => {
           }
         }
         else if (savePriceBookType == 'no') {
+          let csvName = req.file.filename
+          const csvWriter = createCsvWriter({
+            path: './uploads/resultFile/' + csvName,
+            header: [
+              { id: 'priceBook', title: 'Price Book' },
+              { id: 'status', title: 'Status' },
+              { id: 'reason', title: 'Reason' },
+              // Add more headers as needed
+            ],
+          });
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -655,7 +658,7 @@ exports.createDealer = async (req, res) => {
                         wholesalePrice: foundProduct.wholePrice
                       };
                     }
-                  });
+                  }); 
 
                   const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
                   const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
@@ -666,7 +669,7 @@ exports.createDealer = async (req, res) => {
                       let csvAlreadyData = {
                         'priceBook': priceBooksList,
                         'status': 'Failed',
-                        'reason': 'The product is already in the catalog',
+                        'reason': 'This product is already in the dealer product catalog',
                       };
                       csvStatus.push(csvAlreadyData);
                     });
@@ -779,17 +782,26 @@ exports.createDealer = async (req, res) => {
 
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-              csvWriter.writeRecords(csvStatus)
-                .then(() => {
-                  console.log('CSV file written successfully');
+              const res12 = await csvWriter.writeRecords(csvStatus);
 
-                  // Send email with the last converted CSV file as an attachment
-                  // sendEmail('recipient-email@example.com', 'output.csv');
-                })
-              res.send({
-                code: constant.successCode,
-                message: 'Successfully Created',
-              });
+
+              // Construct the base URL link
+              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+        
+              // Get the CSV name from the csvWriter path
+              const csvName1 = csvName;
+        
+              // Construct the complete URL
+              const complete_url = `${base_url_link}/${csvName1}`;
+        
+              // Send email with the CSV file link
+              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+
+                res.send({
+                  code: constant.successCode,
+                  message: 'Successfully Created',
+                });
+           
             }
 
             else {
@@ -914,6 +926,7 @@ exports.createDealer = async (req, res) => {
         }
 
         else if (savePriceBookType == 'no') {
+
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -921,6 +934,17 @@ exports.createDealer = async (req, res) => {
             })
             return;
           }
+
+          let csvName = req.file.filename
+          const csvWriter = createCsvWriter({
+            path: './uploads/resultFile/' + csvName,
+            header: [
+              { id: 'priceBook', title: 'Price Book' },
+              { id: 'status', title: 'Status' },
+              { id: 'reason', title: 'Reason' },
+              // Add more headers as needed
+            ],
+          });
 
           const count = await dealerService.getDealerCount();
           const dealerMeta = {
@@ -1108,15 +1132,22 @@ exports.createDealer = async (req, res) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             const mailing = await sgMail.send(emailConstant.msg(createUsers[0]._id, resetPasswordCode, createUsers[0].email))
             if (mailing) {
-              csvWriter.writeRecords(csvStatus)
-                .then(() => {
-                  console.log('CSV file written successfully');
-
-                  // Send email with the last converted CSV file as an attachment
-                  // sendEmail('recipient-email@example.com', 'output.csv');
-                })
-                .catch((err) => console.error(err));
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              const res12 = await csvWriter.writeRecords(csvStatus);
+
+
+              // Construct the base URL link
+              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+        
+              // Get the CSV name from the csvWriter path
+              const csvName1 = csvName;
+        
+              // Construct the complete URL
+              const complete_url = `${base_url_link}/${csvName1}`;
+        
+              // Send email with the CSV file link
+              const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
+            
               res.send({
                 code: constant.successCode,
                 message: 'Successfully Created',
@@ -1149,7 +1180,7 @@ exports.createDealer = async (req, res) => {
 //---------------------------------------------------- refined code ----------------------------------------//
 
 // Login route
-exports.login = async (req, res) => {
+exports.login = async (req, res) => { 
   try {
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
@@ -1629,7 +1660,7 @@ exports.getAllNotifications = async (req, res) => {
       return createdAtB - createdAtA;
     });
 
-    console.log(sortedResultArray);
+   // console.log(sortedResultArray);
 
 
 
