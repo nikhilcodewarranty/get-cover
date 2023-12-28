@@ -549,6 +549,14 @@ exports.createDealer = async (req, res) => {
           }
         }
         else if (savePriceBookType == 'no') {
+          if (!req.file) {
+            res.send({
+              code: constant.errorCode,
+              message: "No file uploaded"
+            })
+            return;
+          }
+
           let csvName = req.file.filename
           const csvWriter = createCsvWriter({
             path: './uploads/resultFile/' + csvName,
@@ -559,13 +567,6 @@ exports.createDealer = async (req, res) => {
               // Add more headers as needed
             ],
           });
-          if (!req.file) {
-            res.send({
-              code: constant.errorCode,
-              message: "No file uploaded"
-            })
-            return;
-          }
 
           const results = [];
           let priceBookName = [];
@@ -658,11 +659,10 @@ exports.createDealer = async (req, res) => {
                         wholesalePrice: foundProduct.wholePrice
                       };
                     }
-                  }); 
+                  });
 
                   const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
                   const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-
                   if (uploaded) {
                     existingData.forEach(product => {
                       const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
@@ -787,21 +787,21 @@ exports.createDealer = async (req, res) => {
 
               // Construct the base URL link
               const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
-        
+
               // Get the CSV name from the csvWriter path
               const csvName1 = csvName;
-        
+
               // Construct the complete URL
               const complete_url = `${base_url_link}/${csvName1}`;
-        
+
               // Send email with the CSV file link
               const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
 
-                res.send({
-                  code: constant.successCode,
-                  message: 'Successfully Created',
-                });
-           
+              res.send({
+                code: constant.successCode,
+                message: 'Successfully Created',
+              });
+
             }
 
             else {
@@ -1138,16 +1138,16 @@ exports.createDealer = async (req, res) => {
 
               // Construct the base URL link
               const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
-        
+
               // Get the CSV name from the csvWriter path
               const csvName1 = csvName;
-        
+
               // Construct the complete URL
               const complete_url = `${base_url_link}/${csvName1}`;
-        
+
               // Send email with the CSV file link
               const mailing = await sgMail.send(emailConstant.sendLink('amit@codenomad.net', complete_url));
-            
+
               res.send({
                 code: constant.successCode,
                 message: 'Successfully Created',
@@ -1180,7 +1180,7 @@ exports.createDealer = async (req, res) => {
 //---------------------------------------------------- refined code ----------------------------------------//
 
 // Login route
-exports.login = async (req, res) => { 
+exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
@@ -1660,7 +1660,7 @@ exports.getAllNotifications = async (req, res) => {
       return createdAtB - createdAtA;
     });
 
-   // console.log(sortedResultArray);
+    // console.log(sortedResultArray);
 
 
 
