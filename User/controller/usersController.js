@@ -1152,7 +1152,7 @@ exports.createDealer = async (req, res) => {
 //---------------------------------------------------- refined code ----------------------------------------//
 
 // Login route
-exports.login = async (req, res) => {
+exports.login = async (req, res) => { 
   try {
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email });
