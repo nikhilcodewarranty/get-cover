@@ -681,7 +681,7 @@ exports.uploadPriceBook = async (req, res) => {
     }
     let csvName = req.file.filename
     const csvWriter = createCsvWriter({
-      path: './config/' + csvName + '.csv',
+      path: './uploads/resultFile/' + csvName + '.csv',
       header: [
         { id: 'priceBook', title: 'Price Book' },
         { id: 'status', title: 'Status' },
@@ -844,7 +844,7 @@ exports.uploadPriceBook = async (req, res) => {
 
 
       // Construct the base URL link
-      const base_url_link = 'http://15.207.221.207/config';
+      const base_url_link = 'http://15.207.221.207/uploads/resultFile';
 
       // Get the CSV name from the csvWriter path
       const csvName1 = csvName;
