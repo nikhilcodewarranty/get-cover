@@ -1660,7 +1660,7 @@ exports.getAllNotifications = async (req, res) => {
       return createdAtB - createdAtA;
     });
 
-    console.log(sortedResultArray);
+   // console.log(sortedResultArray);
 
 
 
