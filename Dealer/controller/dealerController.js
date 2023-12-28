@@ -618,7 +618,7 @@ exports.changeDealerStatus = async (req, res) => {
           accountStatus: req.body.status
         }
       };
-      const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
+      const changedDealerStatus = await dealerService.updateDealer({ _id: req.params.dealerId }, newValue, option);
       if (changedDealerStatus) {
         res.send({
           code: constant.successCode,
