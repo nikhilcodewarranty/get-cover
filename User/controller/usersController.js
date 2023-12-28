@@ -658,7 +658,7 @@ exports.createDealer = async (req, res) => {
                         wholesalePrice: foundProduct.wholePrice
                       };
                     }
-                  });
+                  }); 
 
                   const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
                   const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
