@@ -7,6 +7,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 router.post("/createServiceProvider",validator('create_servicer_validation'),[verifyToken],serviceController.createServiceProvider)
 router.post("/register", serviceController.registerServiceProvider)
 router.get("/serviceProvider", serviceController.getAllServiceProviders);
+router.get("/servicers/:status", [verifyToken], serviceController.getPendingServicer); //get all dealers
 
 router.get("/serviceProvider/create-serviceProvider", serviceController.createServiceProvider);
 
