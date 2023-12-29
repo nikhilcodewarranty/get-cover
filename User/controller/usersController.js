@@ -841,8 +841,18 @@ exports.createDealer = async (req, res) => {
               // Construct the complete URL
               const complete_url = `${base_url_link}/${csvName1}`;
 
+
+              let entriesData = {
+                userName: checkDealer[0].name,
+                totalEntries: Number(unique.length),
+                SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+                failedEntries: Number(csvStatus.length),
+                routeLink: complete_url
+              }
+
+
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -1222,8 +1232,17 @@ exports.createDealer = async (req, res) => {
               // Construct the complete URL
               const complete_url = `${base_url_link}/${csvName1}`;
 
+
+              let entriesData = {
+                userName: checkDealer[0].name,
+                totalEntries: Number(unique.length),
+                SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+                failedEntries: Number(csvStatus.length),
+                routeLink: complete_url
+              }
+
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', complete_url));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,

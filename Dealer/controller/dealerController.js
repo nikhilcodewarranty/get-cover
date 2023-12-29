@@ -1014,9 +1014,6 @@ exports.uploadPriceBook = async (req, res) => {
         routeLink:complete_url
       }
 
-      // console.log("entriesData=======================",entriesData);
-      // return
-
       // Send email with the CSV file link
       const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
       if (mailing) {
