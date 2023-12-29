@@ -43,13 +43,55 @@ exports.getAllDealers = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, status: "Approved" }
+    let dealerFilter = {
+      $and: [
+        { isDeleted: false },
+        { status: "Approved" },
+        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+      ]
+
+    };
+
+    //let query = { isDeleted: false, status: "Approved" }
     let projection = { __v: 0, isDeleted: 0 }
-    let dealers = await dealerService.getAllDealers(query, projection);
-    //-------------Get All Dealers Id's------------------------
+    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     const dealerIds = dealers.map(obj => obj._id);
+    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    if (req.body.email && req.body.phoneNumber) {
+      query1 = {
+        ...query1,
+        $and: [
+          { email: req.body.email },
+          { phoneNumber: req.body.phoneNumber }
+        ]
+      };
+    } else {
+      // If only one of them is provided, use $or
+      const orConditions = [];
+    
+      if (req.body.email !== undefined && req.body.email!='' ) {
+        orConditions.push({ email: req.body.email });
+      }
+    
+      if (req.body.phoneNumber !== undefined && req.body.phoneNumber!='') {
+        orConditions.push({ phoneNumber: req.body.phoneNumber });
+      }
+    
+      if (orConditions.length > 0) {
+        query1 = {
+          ...query1,
+          $or: orConditions
+        };
+      }
+    
+    }
+
+   //-------------Get All Dealers Id's------------------------
+
     // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+    //const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+    //User Query Filter
 
     let dealarUser = await userService.getDealersUser(query1, projection)
     if (!dealers) {
@@ -59,11 +101,6 @@ exports.getAllDealers = async (req, res) => {
       });
       return;
     };
-    // console.log("dealers=======================",dealers);
-
-    // console.log("dealarUser=======================",dealarUser)
-
-
     // return false;
 
     const result_Array = dealarUser.map(item1 => {
@@ -603,7 +640,7 @@ exports.changeDealerStatus = async (req, res) => {
       })
       return;
     }
-  //Update Dealer User Status
+    //Update Dealer User Status
     if (!req.body.status) {
       let dealerUserCreateria = { accountId: req.params.dealerId };
       let newValue = {
@@ -787,7 +824,19 @@ exports.uploadPriceBook = async (req, res) => {
     let upload
     const wb = XLSX.readFile(req.file.path);
     const sheets = wb.SheetNames;
+    console.log(sheets);
     const ws = wb.Sheets[sheets[0]];
+    console.log("ws==================",ws);
+    const headers = [];
+    for (let cell in ws) {
+      if ((cell[0] === 'A' || cell[0] === 'B') && cell[1] === '1') {
+        headers.push(ws[cell].v);
+      } else {
+        // Assuming headers are in the first row, break when you reach the second row
+        break;
+      }
+    }   
+   
     if (sheets.length > 0) {
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
       let results = data
@@ -796,6 +845,12 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: obj.priceBook,
           retailPrice: obj.retailPrice,
         }));
+
+        let original_csv_array = ['priceBook','retailPrice'];
+
+        if(original_csv_array.length!=headers.length){
+          
+        }
 
       priceBookName = results.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));

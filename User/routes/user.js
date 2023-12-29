@@ -12,7 +12,7 @@ const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 router.get("/users/:role", [verifyToken], userController.getAllUsers); // get all users 
 router.get("/getUserById/:userId", [verifyToken], userController.getUserById); // get all users 
 router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
-router.get("/approveDealers", [verifyToken], dealerController.getAllDealers); //get all dealers
+router.post("/approveDealers", [verifyToken], validator("filter_dealer"),dealerController.getAllDealers); //get all dealers
 router.get("/approveServicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers
 router.get("/pendingDealers", [verifyToken], dealerController.getPendingDealers); //get all dealers
 router.get("/pendingServicer", [verifyToken], serviceController.getPendingServicer); //get all dealers

@@ -6,7 +6,7 @@
         "name": "GetCover"
       }
     },
-    "host": "15.207.221.207:3002",
+    "host": "localhost:3002",
     "basePath": "/api-v1",
     "schemes": [  
       "http",
@@ -533,10 +533,31 @@
         }
       },
       "/admin/approveDealers": {
-        "get": {
+        "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
           "summary": "Get Approved Dealers",
+          "parameters": [     
+            {
+              "name": "body",
+              "in": "body",
+              "required": true,
+              "schema": {
+                "type": "object",
+                "properties": {              
+                  "name": {
+                    "type": "string"
+                  },         
+                  "email": {
+                    "type": "string"
+                  },
+                  "phoneNumber": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          ],
           "responses": {
             "200": {
               "description": "Ok"

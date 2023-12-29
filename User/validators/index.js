@@ -7,7 +7,7 @@ const create_service_provider_validation = require('./create_service_provider')
 const email_validation = require('./email_validation')
 const send_email_link_validation = require('./send_email_link')
 const approve_reject_dealer_validation = require('./approve_reject_dealer')
-
+const filter_dealer = require('./filter_dealer')
 module.exports = {
     login_validation,
     add_role_validation,
@@ -16,5 +16,6 @@ module.exports = {
     send_email_link_validation,
     approve_reject_dealer_validation,
     email_validation,
-    approve_dealer_validation
+    approve_dealer_validation,
+    filter_dealer
 }
