@@ -1006,8 +1006,19 @@ exports.uploadPriceBook = async (req, res) => {
       // Construct the complete URL
       const complete_url = `${base_url_link}/${csvName1}`;
 
+      let entriesData = {
+        userName:checkDealer[0].name,
+        totalEntries: Number(unique.length),
+        SuccessEntries:Number(unique.length)-Number(csvStatus.length),
+        failedEntries:Number(csvStatus.length),
+        routeLink:complete_url
+      }
+
+      // console.log("entriesData=======================",entriesData);
+      // return
+
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({

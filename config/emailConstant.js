@@ -12,16 +12,13 @@ module.exports = {
     };
   },
 
-  sendCsvFile: (toEmail, link) => {
+  sendCsvFile: (toEmail, data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       subject: `CSV link`,
-      text: `CSV Link:- ${link}`,
-      //templateId: "d-ddd46f310f9d4014b95971a3c8664bb6",
-      // dynamic_template_data: {
-      //   resetCode:link
-      // },
+      templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
+      dynamic_template_data:data ,
       mailSettings: {
         // Set the subject for the email
         subject: 'CSV link',
