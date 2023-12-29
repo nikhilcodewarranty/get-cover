@@ -246,7 +246,6 @@ exports.approveServicer = async (req, res, next) => {
   }
 };
 
-
 //
 exports.getServiceProviderById = async (req, res, next) => {
   try {
