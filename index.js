@@ -22,6 +22,7 @@ const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
 const serviceRoutes = require("./Provider/routes/service");
 const priceRoutes = require("./PriceBook/routes/price");
+const customerRoutes = require("./Customer/routes/customer");
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 var app = express();
@@ -69,6 +70,7 @@ app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
 app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
+app.use("/api-v1/customer", customerRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
