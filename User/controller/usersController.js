@@ -361,6 +361,20 @@ exports.validateData = async (req, res) => {
 }
 
 
+function uniqByKeepLast(data, key) {
+
+  return [
+
+    ...new Map(
+
+      data.map(x => [key(x), x])
+
+    ).values()
+
+  ]
+
+}
+
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
@@ -556,7 +570,6 @@ exports.createDealer = async (req, res) => {
             })
             return;
           }
-
           let csvName = req.file.filename
           const csvWriter = createCsvWriter({
             path: './uploads/resultFile/' + csvName,
@@ -575,7 +588,40 @@ exports.createDealer = async (req, res) => {
           let allPriceBooks;
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
+          const ws = wb.Sheets[sheets[0]];
+          const headers = [];
+
+          for (let cell in ws) {
+            // Check if the cell is in the first row and has a non-empty value
+            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+              headers.push(ws[cell].v);
+            }
+          }
           if (sheets.length > 0) {
+            let original_csv_array = ['priceBook', 'retailPrice'];
+
+            if (original_csv_array.length != headers.length) {
+              res.send({
+                code: constant.errorCode,
+                message: 'The csv coloumn is not match.Please check the csv format'
+              });
+              return;
+            }
+
+            let equality = Array.isArray(original_csv_array) &&
+              Array.isArray(headers) &&
+              original_csv_array.length === headers.length &&
+              original_csv_array.every((val, index) => val === headers[index]);
+
+            if (!equality) {
+              res.send({
+                code: constant.errorCode,
+                message: 'Invalid Csv! '
+              });
+              return;
+            }
+
+
             const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
             let results = data1
               .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
@@ -584,7 +630,8 @@ exports.createDealer = async (req, res) => {
                 retailPrice: obj.retailPrice,
               }));
 
-            priceBookName = results.map(obj => obj.priceBook);
+            let unique = uniqByKeepLast(results, it => it.priceBook)
+            priceBookName = unique.map(obj => obj.priceBook);
             const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
             const foundProducts = await priceBookService.findByName(priceBookName1);
 
@@ -947,36 +994,44 @@ exports.createDealer = async (req, res) => {
           });
 
           const count = await dealerService.getDealerCount();
-          const dealerMeta = {
-            name: data.name,
-            street: data.street,
-            userAccount: req.body.customerAccountCreated,
-            city: data.city,
-            zip: data.zip,
-            state: data.state,
-            country: data.country,
-            status: 'Approved',
-            createdBy: data.createdBy,
-            unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-          };
-          // Create Dealer Meta Data
-          const createMetaData = await dealerService.createDealer(dealerMeta);
-          if (!createMetaData) {
-            res.send({
-              code: constant.errorCode,
-              message: "Unable to create dealer"
-            });
-            return;
-          }
-
           const results = [];
           let priceBookName = [];
           let allpriceBookIds = [];
           let newArray1;
           let allPriceBooks;
           const wb = XLSX.readFile(req.file.path);
+          const ws = wb.Sheets[sheets[0]];
+          const headers = [];
+          for (let cell in ws) {
+            // Check if the cell is in the first row and has a non-empty value
+            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+              headers.push(ws[cell].v);
+            }
+          }
           const sheets = wb.SheetNames;
           if (sheets.length > 0) {
+            let original_csv_array = ['priceBook', 'retailPrice'];
+
+            if (original_csv_array.length != headers.length) {
+              res.send({
+                code: constant.errorCode,
+                message: 'The csv coloumn is not match.Please check the csv format'
+              });
+              return;
+            }
+            let equality = Array.isArray(original_csv_array) &&
+              Array.isArray(headers) &&
+              original_csv_array.length === headers.length &&
+              original_csv_array.every((val, index) => val === headers[index]);
+
+            if (!equality) {
+              res.send({
+                code: constant.errorCode,
+                message: 'Invalid Csv! '
+              });
+              return;
+            }
+
             const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
             let results = data1
               .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
@@ -985,9 +1040,31 @@ exports.createDealer = async (req, res) => {
                 retailPrice: obj.retailPrice,
               }));
 
-            priceBookName = results.map(obj => obj.priceBook);
+            let unique = uniqByKeepLast(results, it => it.priceBook)
+            priceBookName = unique.map(obj => obj.priceBook);
             const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
             const foundProducts = await priceBookService.findByName(priceBookName1);
+            const dealerMeta = {
+              name: data.name,
+              street: data.street,
+              userAccount: req.body.customerAccountCreated,
+              city: data.city,
+              zip: data.zip,
+              state: data.state,
+              country: data.country,
+              status: 'Approved',
+              createdBy: data.createdBy,
+              unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+            };
+            // Create Dealer Meta Data
+            const createMetaData = await dealerService.createDealer(dealerMeta);
+            if (!createMetaData) {
+              res.send({
+                code: constant.errorCode,
+                message: "Unable to create dealer"
+              });
+              return;
+            }
             if (foundProducts.length > 0) {
               let count1 = await dealerPriceService.getDealerPriceCount();
 
