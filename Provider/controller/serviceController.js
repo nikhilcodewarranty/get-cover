@@ -71,7 +71,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
 };
 
 // get servicer registration request
-exports.getPendingServicer = async (req, res) => {
+exports.getServicer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
       res.send({
@@ -209,7 +209,7 @@ exports.updateServiceProvide = async (req, res, next) => {
   }
 };
 
-exports.deleteServiceProvide = async (req, res, next) => {
+exports.deleteServiceProvider = async (req, res, next) => {
   try {
     const deletedServiceProvide = await providerService.deleteServiceProvide(
       req.body.id
@@ -224,6 +224,31 @@ exports.deleteServiceProvide = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
+exports.rejectServicer = async(req,res)=>{
+  try{
+    let data = req.body
+    let checkServicer = await providerService.deleteServicer({_id:req.params.servicerId})
+    if(!checkServicer){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to delete the servicer"
+      })
+      return;
+    };
+    let deleteUser = await userService.deleteUser({accountId:checkServicer._id})
+    res.send({
+      code:constant.successCode,
+      message:"Deleted"
+    })
+
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 /**---------------------------------------------Register Service Provider---------------------------------------- */

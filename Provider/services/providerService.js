@@ -91,7 +91,6 @@ module.exports = class providerService {
     }
   }
 
-
   // Get servicer detail with Name
   static async getServicerByName(query, projection) {
     try {
@@ -103,5 +102,13 @@ module.exports = class providerService {
     }
   }
 
+  static async deleteServicer(query){
+    try {
+      const singleDealerResponse = await serviceProvider.deleteOne(query);
+      return singleDealerResponse;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+  }
 
 };

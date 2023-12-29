@@ -5,7 +5,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 const validator = require('../config/validation');
 
 
-router.get("/customer", customerController.getAllCustomers);
+router.get("/customer/:status", customerController.getAllCustomers);
 router.get("/create-customer", validator('createCustomerValidation'),[verifyToken] ,customerController.createCustomer);
 router.post('/createCustomer',validator('createCustomerValidation'),customerController.createCustomer)
 
