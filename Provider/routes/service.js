@@ -8,6 +8,7 @@ router.post("/createServiceProvider",validator('create_servicer_validation'),[ve
 router.post("/register", serviceController.registerServiceProvider)
 router.get("/serviceProvider", serviceController.getAllServiceProviders);
 router.get("/servicers/:status", [verifyToken], serviceController.getServicer); //get all dealers
+router.delete("/rejectServicer/:servicerId", [verifyToken], serviceController.rejectServicer); //get all dealers
 
 router.get("/serviceProvider/create-serviceProvider", serviceController.createServiceProvider);
 
