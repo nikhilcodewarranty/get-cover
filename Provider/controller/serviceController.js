@@ -128,7 +128,7 @@ exports.getPendingServicer = async (req, res) => {
   }
 };
 
-//-------------------------Created By Super Admin
+//Created customer
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
@@ -181,6 +181,7 @@ exports.createServiceProvider = async (req, res, next) => {
   }
 };
 
+//
 exports.getServiceProviderById = async (req, res, next) => {
   try {
     const singleServiceProvider = await providerService.getServiceProviderById(
@@ -319,9 +320,8 @@ exports.registerServiceProvider = async (req, res) => {
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
     if (createNotification) {
-      let templateID = "d-7ab4316bd7054941984bfc6a1770fc72"
       // Send Email code here
-      let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(templateID, data.email))
+      let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
     }
 
     res.send({
@@ -336,6 +336,7 @@ exports.registerServiceProvider = async (req, res) => {
     return;
   }
 };
+
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
     res.send({
