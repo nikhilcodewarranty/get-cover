@@ -69,25 +69,25 @@ exports.getAllDealers = async (req, res) => {
     } else {
       // If only one of them is provided, use $or
       const orConditions = [];
-    
-      if (req.body.email !== undefined && req.body.email!='' ) {
+
+      if (req.body.email !== undefined && req.body.email != '') {
         orConditions.push({ email: req.body.email });
       }
-    
-      if (req.body.phoneNumber !== undefined && req.body.phoneNumber!='') {
+
+      if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
         orConditions.push({ phoneNumber: req.body.phoneNumber });
       }
-    
+
       if (orConditions.length > 0) {
         query1 = {
           ...query1,
           $or: orConditions
         };
       }
-    
+
     }
 
-   //-------------Get All Dealers Id's------------------------
+    //-------------Get All Dealers Id's------------------------
 
     // Get Dealer Primary Users from colection
     //const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
@@ -769,6 +769,20 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
   }
 }
 
+function uniqByKeepLast( data, key) {
+
+  return [
+
+      ...new Map(
+
+            data.map( x => [key(x), x])
+
+      ).values( )
+
+  ]
+
+}
+
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -824,20 +838,38 @@ exports.uploadPriceBook = async (req, res) => {
     let upload
     const wb = XLSX.readFile(req.file.path);
     const sheets = wb.SheetNames;
-    console.log(sheets);
     const ws = wb.Sheets[sheets[0]];
-    console.log("ws==================",ws);
     const headers = [];
     for (let cell in ws) {
-      if ((cell[0] === 'A' || cell[0] === 'B') && cell[1] === '1') {
+      // Check if the cell is in the first row and has a non-empty value
+      if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
         headers.push(ws[cell].v);
-      } else {
-        // Assuming headers are in the first row, break when you reach the second row
-        break;
       }
-    }   
-   
+    }
     if (sheets.length > 0) {
+      let original_csv_array = ['priceBook', 'retailPrice'];
+
+      if (original_csv_array.length != headers.length) {
+        res.send({
+          code: constant.errorCode,
+          message: 'The csv coloumn is not match.Please check the csv format'
+        });
+        return;
+      }
+
+      let equality = Array.isArray(original_csv_array) &&
+        Array.isArray(headers) &&
+        original_csv_array.length === headers.length &&
+        original_csv_array.every((val, index) => val === headers[index]);
+
+      if (!equality) {
+        res.send({
+          code: constant.errorCode,
+          message: 'Invalid Csv! '
+        });
+        return;
+      }
+
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
       let results = data
         .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
@@ -845,14 +877,11 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: obj.priceBook,
           retailPrice: obj.retailPrice,
         }));
+      //check duplicate Object in array 
 
-        let original_csv_array = ['priceBook','retailPrice'];
+      let unique = uniqByKeepLast(results, it => it.priceBook)
 
-        if(original_csv_array.length!=headers.length){
-          
-        }
-
-      priceBookName = results.map(obj => obj.priceBook);
+      priceBookName = unique.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
       const foundProducts = await priceBookService.findByName(priceBookName1);
       if (foundProducts.length > 0) {
@@ -953,8 +982,8 @@ exports.uploadPriceBook = async (req, res) => {
         }
       }
       else {
-        if (results.length > 0) {
-          results.map(product => {
+        if (unique.length > 0) {
+          unique.map(product => {
             let csvData = {
               'priceBook': product.priceBook,
               'status': 'Failed',
@@ -978,9 +1007,9 @@ exports.uploadPriceBook = async (req, res) => {
       const complete_url = `${base_url_link}/${csvName1}`;
 
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', complete_url));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', complete_url));
       if (mailing) {
-        console.log('Email sent successfully');
+        //  console.log('Email sent successfully');
         res.send({
           code: constant.successCode,
           data: upload
