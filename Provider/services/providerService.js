@@ -31,23 +31,19 @@ module.exports = class providerService {
     }
   }
 
-  static async getServiceProviderById(serviceProviderId) {
+  static async getServiceProviderById(query) {
     try {
-      const singleServiceProviderResponse = await serviceProvider.findById({
-        _id: serviceProviderId,
-      });
+      console.log("ddddddddddddddddd",query)
+      const singleServiceProviderResponse = await serviceProvider.findOne(query);
       return singleServiceProviderResponse;
     } catch (error) {
       console.log(`Service provider not found. ${error}`);
     }
   }
 
-  static async updateServiceProvider(data) {
+  static async updateServiceProvider(criteria,data) {
     try {
-      const updatedResponse = await serviceProvider.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
+      const updatedResponse = await serviceProvider.updateOne(criteria,data,{new:true});
 
       return updatedResponse;
     } catch (error) {

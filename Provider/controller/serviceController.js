@@ -138,7 +138,6 @@ exports.createServiceProvider = async (req, res, next) => {
       status: data.status,
       accountStatus: "Approved",
     }
-    console.log(data.accountName)
     let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
     if (checkAccountName) {
       res.send({
@@ -176,20 +175,100 @@ exports.createServiceProvider = async (req, res, next) => {
   }
 };
 
+exports.approveServicer = async (req, res, next) => {
+  try {
+    let data = req.body
+    let servicerObject = {
+      name: data.accountName,
+      street: data.street,
+      city: data.city,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      status: data.status,
+      accountStatus: "Approved",
+    }
+    let checkDetail = await providerService.getServicerByName({_id:req.params.servicerId})
+    if(!checkDetail){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid ID"
+      })
+      return;
+    }
+    if (servicerObject.name != data.oldName) {
+      let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
+      if (checkAccountName) {
+        res.send({
+          code: constant.errorCode,
+          message: "Servicer already exist with this account name"
+        })
+        return;
+      };
+    }
+    console.log(data.email,data.oldEmail)
+    if (data.email != data.oldEmail) {
+      let emailCheck = await userService.findOneUser({ email: data.email });
+      if (emailCheck) {
+        res.send({
+          code: constant.errorCode,
+          message: "Primary user email already exist"
+        })
+        return;
+      }
+    }
+
+    let teamMembers = data.members
+
+    const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+    if (!updateServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the servicer"
+      })
+      return;
+    };
+
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id }));
+
+    let saveMembers = await userService.insertManyUser(teamMembers)
+    res.send({
+      code: constant.successCode,
+      message: "Customer created successfully",
+      result: data
+    })
+
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
 //
 exports.getServiceProviderById = async (req, res, next) => {
   try {
-    const singleServiceProvider = await providerService.getServiceProviderById(
-      serviceProviderId
-    );
+    const singleServiceProvider = await providerService.getServiceProviderById({_id:req.params.servicerId});
     if (!singleServiceProvider) {
-      res.status(404).json("There are no service provider found yet!");
-    }
-    res.json(singleServiceProvider);
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to fetch the details"
+      })
+      return;
+    };
+    let getMetaData = await userService.findOneUser({accountId:singleServiceProvider._id,isPrimary:true})
+    let resultUser = getMetaData.toObject()
+    resultUser.meta = singleServiceProvider
+    res.send({
+      code:constant.successCode,
+      message:resultUser
+    })
   } catch (error) {
-    res
-      .status(serviceResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+   res.send({
+    code:constant.errorCode,
+    message:err.message
+   })
   }
 };
 
@@ -225,27 +304,27 @@ exports.deleteServiceProvider = async (req, res, next) => {
   }
 };
 
-exports.rejectServicer = async(req,res)=>{
-  try{
+exports.rejectServicer = async (req, res) => {
+  try {
     let data = req.body
-    let checkServicer = await providerService.deleteServicer({_id:req.params.servicerId})
-    if(!checkServicer){
+    let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
+    if (!checkServicer) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to delete the servicer"
+        code: constant.errorCode,
+        message: "Unable to delete the servicer"
       })
       return;
     };
-    let deleteUser = await userService.deleteUser({accountId:checkServicer._id})
+    let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
     res.send({
-      code:constant.successCode,
-      message:"Deleted"
+      code: constant.successCode,
+      message: "Deleted"
     })
 
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
