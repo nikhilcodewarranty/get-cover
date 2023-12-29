@@ -95,6 +95,7 @@ module.exports = class providerService {
   // Get servicer detail with Name
   static async getServicerByName(query, projection) {
     try {
+      console.log(query)
       const singleDealerResponse = await serviceProvider.findOne(query, projection);
       return singleDealerResponse;
     } catch (error) {

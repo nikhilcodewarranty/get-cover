@@ -129,7 +129,7 @@ exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
     let servicerObject = {
-      username: data.accountName,
+      name: data.accountName,
       street: data.street,
       city: data.city,
       zip: data.zip,
@@ -138,7 +138,7 @@ exports.createServiceProvider = async (req, res, next) => {
       status: data.status,
       accountStatus: "Approved",
     }
-
+    console.log(data.accountName)
     let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
     if (checkAccountName) {
       res.send({
@@ -147,7 +147,7 @@ exports.createServiceProvider = async (req, res, next) => {
       })
       return;
     };
-
+    console.log(checkAccountName)
     let teamMembers = data.members
 
     const createServiceProvider = await providerService.createServiceProvider(servicerObject);
