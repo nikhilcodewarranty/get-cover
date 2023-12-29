@@ -128,8 +128,6 @@ exports.getPendingServicer = async (req, res) => {
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
-    // console.log("data+++++++++++++++++++++++=",data)
-    // return;
     let servicerObject = {
       username: data.accountName,
       street: data.street,
