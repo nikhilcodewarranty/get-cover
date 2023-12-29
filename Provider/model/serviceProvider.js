@@ -33,6 +33,10 @@ const serviceProviderSchema = new mongoose.Schema({
     default:''
   },
   status: {
+    type: Boolean,
+    default:true
+  },
+  accountStatus: {
     type: String,
     enum: ["Pending", "Approved", "Rejected"],
     default:"Pending"

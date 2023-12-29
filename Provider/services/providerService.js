@@ -23,6 +23,7 @@ module.exports = class providerService {
 
   static async createServiceProvider(data) {
     try {
+      console.log(data)
       const response = await new serviceProvider(data).save();
       return response;
     } catch (error) {

@@ -70,11 +70,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
   }
 };
 
-// get all dealers 
-
-
-//Get Pending Request Servicer
-
+// get servicer registration request
 exports.getPendingServicer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -132,7 +128,8 @@ exports.getPendingServicer = async (req, res) => {
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
-
+    // console.log("data+++++++++++++++++++++++=",data)
+    // return;
     let servicerObject = {
       username: data.accountName,
       street: data.street,
@@ -319,10 +316,14 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
-    if (createNotification) {
-      // Send Email code here
-      let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
-    }
+    // if (!createNotification) {
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:""
+    //   })
+    //   // Send Email code here
+    // }
+    let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
 
     res.send({
       code: constant.successCode,
