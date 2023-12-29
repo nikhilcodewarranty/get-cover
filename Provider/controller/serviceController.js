@@ -71,7 +71,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
 };
 
 // get servicer registration request
-exports.getPendingServicer = async (req, res) => {
+exports.getServicer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
       res.send({

@@ -80,7 +80,7 @@ exports.createCustomer = async (req, res, next) => {
 
 exports.getAllCustomers = async (req, res, next) => {
   try {
-    let query = { isDeleted: false }
+    let query = { isDeleted: false,accountStatus:req.params.status }
     let projection = { __v: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
@@ -90,28 +90,30 @@ exports.getAllCustomers = async (req, res, next) => {
       });
       return;
     };
-    let queryUser = { accountId: { $in: customers.map(item => item._id.toString()) } }
+    const customersId = customers.map(obj => obj._id.toString());
+    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+
 
     console.log(queryUser)
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
-    const enrichedResultMap = new Map(getPrimaryUser.map(item => [item._id.toString(), item]));
+    const result_Array = getPrimaryUser.map(item1 => {
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
 
-    // Merge the data into the original array
-    const mergedArray = customers.map(item => ({
-      ...item,
-      additionalData: enrichedResultMap.get(item._id.toString()) || {}
-    }));
-
-    console.log(mergedArray);
-
-
-
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          customerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
     console.log(getPrimaryUser)
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: mergedArray
+      result: result_Array
     })
   } catch (err) {
     res.send({
