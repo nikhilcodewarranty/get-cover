@@ -80,7 +80,7 @@ exports.getPendingServicer = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, status: "Pending" }
+    let query = { isDeleted: false, accountStatus: "Pending" }
     let projection = { __v: 0, isDeleted: 0 }
     let servicer = await providerService.getAllServiceProvider(query, projection);
     //-------------Get All servicer Id's------------------------
