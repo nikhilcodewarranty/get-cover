@@ -10,7 +10,7 @@ const create_servicer_validation = Joi.object({
     status: Joi.boolean().required(),
     street: Joi.string().trim().replace(/\s+/g, ' ').required(),
     city: Joi.string().trim().replace(/\s+/g, ' ').required(),
-    zip: Joi.string().trim().replace(/\s+/g, ' ').required(),
+    zip: Joi.number().required(),
     state: Joi.string().trim().replace(/\s+/g, ' ').required(),
     country: Joi.string().trim().replace(/\s+/g, ' ').required(),
     email: Joi.string().replace(/\s+/g, ' ').trim().required(),
