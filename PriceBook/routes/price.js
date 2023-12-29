@@ -27,7 +27,7 @@ router.get('/getPriceBookCategoryById/:catId',[verifyToken],priceController.getP
 router.get('/getCategoryByPriceBook/:name',[verifyToken],priceController.getCategoryByPriceBook) // get price book category by price book
 
 // Dealer Price Book api's
-
+ 
 
 
 module.exports = router;
