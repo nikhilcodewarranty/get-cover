@@ -1092,7 +1092,7 @@ exports.createDealer = async (req, res) => {
                   let csvData = {
                     'priceBook': product,
                     'status': 'Failed',
-                    'reason': 'The product is not exist in the catalog',
+                    'reason': 'The product does not exist in the catalog',
 
                   }
                   csvStatus.push(csvData)
