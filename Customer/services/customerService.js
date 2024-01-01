@@ -22,7 +22,7 @@ module.exports = class customerService {
   static async getCustomerByName(accountName) {
     try {
       const singleCustomerResponse = await customer.findOne({
-        userName: accountName,
+        username: accountName,
       });
       return singleCustomerResponse;
     } catch (error) {
