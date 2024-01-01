@@ -15,7 +15,7 @@ const create_customer_validation = Joi.object({
     phoneNumber: Joi.number().optional(),
     isPrimary: Joi.boolean().optional(),
     status: Joi.boolean().optional(),
-    position: Joi.string().trim().replace(/\s+/g, ' ').optional(),
+    position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional(),
     members: Joi.array().items(Joi.object().keys({
         email: Joi.string().replace(/\s+/g, ' ').trim().required(),
         firstName: Joi.string().replace(/\s+/g, ' ').trim().required(),
@@ -23,7 +23,7 @@ const create_customer_validation = Joi.object({
         phoneNumber: Joi.number().required(),
         isPrimary: Joi.boolean().required(),
         status: Joi.boolean().required(),
-        position: Joi.string().trim().replace(/\s+/g, ' ').optional()
+        position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional()
     }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique."),
 })
 
