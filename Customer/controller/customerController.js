@@ -44,15 +44,15 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     let teamMembers = data.members
-    // let emailsToCheck = members.map(member => member.email);
-    // let queryEmails = { email: { $in: emailsToCheck } };
-    // let checkEmails = await customerService.getAllCustomers(queryEmails,{});
-    // if(checkEmails.length > 0){
-    //   res.send({
-    //     code:constant.errorCode,
-    //     message:"Some email ids already exist"
-    //   })
-    // }
+    let emailsToCheck = members.map(member => member.email);
+    let queryEmails = { email: { $in: emailsToCheck } };
+    let checkEmails = await customerService.getAllCustomers(queryEmails,{});
+    if(checkEmails.length > 0){
+      res.send({
+        code:constant.errorCode,
+        message:"Some email ids already exist"
+      })
+    }
 
     const createdCustomer = await customerService.createCustomer(customerObject);
     if (!createdCustomer) {
