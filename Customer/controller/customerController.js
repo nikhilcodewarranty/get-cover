@@ -81,8 +81,8 @@ exports.createCustomer = async (req, res, next) => {
 exports.getAllCustomers = async (req, res, next) => {
   try {
 
-    let query = { isDeleted: false, accountStatus: req.params.status }
-    let projection = { __v: 0 }
+    let query = { isDeleted: false}
+    let projection = { __v: 0,firstName:0,lastName:0,email:0,password:0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
       res.send({
@@ -99,11 +99,11 @@ exports.getAllCustomers = async (req, res, next) => {
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
 
       if (matchingItem) {
         return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject()
         };
       } else {
