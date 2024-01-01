@@ -13,7 +13,7 @@ exports.createCustomer = async (req, res, next) => {
     let data = req.body;
 
     //check dealer ID
-    let checkDealer = await dealerService.getDealerByName({ name: data.dealerName }, {});
+    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -80,7 +80,8 @@ exports.createCustomer = async (req, res, next) => {
 
 exports.getAllCustomers = async (req, res, next) => {
   try {
-    let query = { isDeleted: false,accountStatus:req.params.status }
+
+    let query = { isDeleted: false, accountStatus: req.params.status }
     let projection = { __v: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
