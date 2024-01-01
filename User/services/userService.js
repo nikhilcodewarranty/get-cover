@@ -85,7 +85,6 @@ module.exports = class userService {
 
 
   static async insertManyUser(data) {
-    console.log(data)
     try {
       const response = await user.insertMany(data);
       return response;
