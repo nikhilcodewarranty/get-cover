@@ -27,5 +27,6 @@ const create_customer_validation = Joi.object({
     }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique."),
 })
 
+
 module.exports = create_customer_validation
 
