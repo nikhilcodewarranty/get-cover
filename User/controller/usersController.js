@@ -843,16 +843,16 @@ exports.createDealer = async (req, res) => {
 
 
               let entriesData = {
-                userName: checkDealer[0].name,
-                totalEntries: Number(unique.length),
-                SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+                userName: singleDealer.name,
+                totalEntries: Number(results.length),
+                SuccessEntries: Number(results.length) - Number(csvStatus.length),
                 failedEntries: Number(csvStatus.length),
                 routeLink: complete_url
               }
 
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -1092,7 +1092,7 @@ exports.createDealer = async (req, res) => {
                   let csvData = {
                     'priceBook': product,
                     'status': 'Failed',
-                    'reason': 'The product is not exist in the catalog',
+                    'reason': 'The product does not exist in the catalog',
 
                   }
                   csvStatus.push(csvData)
@@ -1234,15 +1234,15 @@ exports.createDealer = async (req, res) => {
 
 
               let entriesData = {
-                userName: checkDealer[0].name,
-                totalEntries: Number(unique.length),
-                SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+                userName: data.name,
+                totalEntries: Number(results.length),
+                SuccessEntries: Number(results.length) - Number(csvStatus.length),
                 failedEntries: Number(csvStatus.length),
                 routeLink: complete_url
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
