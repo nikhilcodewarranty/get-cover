@@ -1158,6 +1158,16 @@ exports.updateDealerMeta = async (req, res) => {
       })
       return;
     }
+    if(data.oldName != data.accountName){
+      let checkAccountName = await dealerService.getDealerByName({name:data.accountName},{})
+      if(!checkAccountName){
+        res.send({
+          code:constant.errorCode,
+          message:"Account name is not available"
+        })
+        return;
+      };
+    };
     let criteria = { _id: checkDealer._id }
     let option = { new: true }
     let updatedData = await dealerService.updateDealer(criteria, data, option)
