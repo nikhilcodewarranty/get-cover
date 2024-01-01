@@ -843,7 +843,7 @@ exports.createDealer = async (req, res) => {
 
 
               let entriesData = {
-                userName: checkDealer[0].name,
+                userName: singleDealer.name,
                 totalEntries: Number(unique.length),
                 SuccessEntries: Number(unique.length) - Number(csvStatus.length),
                 failedEntries: Number(csvStatus.length),
@@ -1234,7 +1234,7 @@ exports.createDealer = async (req, res) => {
 
 
               let entriesData = {
-                userName: checkDealer[0].name,
+                userName: data.name,
                 totalEntries: Number(unique.length),
                 SuccessEntries: Number(unique.length) - Number(csvStatus.length),
                 failedEntries: Number(csvStatus.length),
