@@ -3,7 +3,7 @@ const customer = require("../model/customer");
 module.exports = class customerService {
   static async getAllCustomers(query,projection) {
     try {
-      const allCustomers = await customer.find(query,projection);
+      const allCustomers = await customer.find(query,projection).sort({'createdAt':-1});
       return allCustomers;
     } catch (error) {
       console.log(`Could not fetch customer ${error}`);
