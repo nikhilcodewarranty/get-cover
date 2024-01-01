@@ -12,6 +12,9 @@ exports.createCustomer = async (req, res, next) => {
   try {
     let data = req.body;
 
+    let getCount = await customerService.getCustomersCount({})
+     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
+
     //check dealer ID
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     if (!checkDealer) {
@@ -40,6 +43,7 @@ exports.createCustomer = async (req, res, next) => {
       state: data.state,
       country: data.country,
       status: data.status,
+      unique_key:data.unique_key,
       accountStatus: "Approved",
     }
 

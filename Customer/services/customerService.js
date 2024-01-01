@@ -10,6 +10,15 @@ module.exports = class customerService {
     }
   }
 
+  static async getCustomersCount(query) {
+    try {
+      const allCustomers = await customer.find(query).sort({'unique_key':-1});
+      return allCustomers;
+    } catch (error) {
+      console.log(`Could not fetch customer ${error}`);
+    }
+  }
+
   static async createCustomer(data) {
     try {
       const response = await new customer(data).save();

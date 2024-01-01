@@ -279,6 +279,7 @@ exports.getDealerById = async (req, res) => {
     });
   };
 };
+
 //get dealer detail by ID
 exports.getUserByDealerId = async (req, res) => {
   try {
@@ -325,8 +326,6 @@ exports.getUserByDealerId = async (req, res) => {
     });
   };
 };
-
-
 
 //update dealer detail with ID
 exports.updateDealer = async (req, res) => {
@@ -769,15 +768,15 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
   }
 }
 
-function uniqByKeepLast( data, key) {
+function uniqByKeepLast(data, key) {
 
   return [
 
-      ...new Map(
+    ...new Map(
 
-            data.map( x => [key(x), x])
+      data.map(x => [key(x), x])
 
-      ).values( )
+    ).values()
 
   ]
 
@@ -1007,11 +1006,11 @@ exports.uploadPriceBook = async (req, res) => {
       const complete_url = `${base_url_link}/${csvName1}`;
 
       let entriesData = {
-        userName:checkDealer[0].name,
+        userName: checkDealer[0].name,
         totalEntries: Number(unique.length),
-        SuccessEntries:Number(unique.length)-Number(csvStatus.length),
-        failedEntries:Number(csvStatus.length),
-        routeLink:complete_url
+        SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+        failedEntries: Number(csvStatus.length),
+        routeLink: complete_url
       }
 
       // Send email with the CSV file link
@@ -1093,6 +1092,7 @@ exports.createDealerPriceBook = async (req, res) => {
     })
   }
 }
+
 exports.rejectDealer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -1146,6 +1146,41 @@ exports.rejectDealer = async (req, res) => {
     })
   }
 }
+
+exports.updateDealerMeta = async (req, res) => {
+  try {
+    let data = req.body
+    let checkDealer = await dealerService.getDealerById(data.dealerId, {})
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
+    let criteria = { _id: checkDealer._id }
+    let option = { new: true }
+    let updatedData = await dealerService.updateDealer(criteria, data, option)
+    if (!updatedData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the data"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: updatedData
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 //-------------------------------------under developement section ----------------------------//
 
 const MongoClient = require('mongodb').MongoClient;
