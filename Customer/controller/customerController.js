@@ -128,6 +128,52 @@ exports.getAllCustomers = async (req, res, next) => {
   }
 };
 
+exports.getDealerCustomers = async(req,res)=>{
+  try {
+
+    let query = { isDeleted: false,dealerId:req.params.dealerId}
+    let projection = { __v: 0,firstName:0,lastName:0,email:0,password:0 }
+    const customers = await customerService.getAllCustomers(query, projection);
+    if (!customers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customer"
+      });
+      return;
+    };
+    const customersId = customers.map(obj => obj._id.toString());
+    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+
+
+    console.log(queryUser)
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    const result_Array = getPrimaryUser.map(item1 => {
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          customerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+    console.log(getPrimaryUser)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: result_Array
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
 exports.getCustomerById = async (req, res, next) => {
   try {
     const singleCustomer = await customerService.getCustomerById(customerId);
