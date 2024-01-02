@@ -22,6 +22,8 @@ router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceB
 router.put("/changeDealerStatus/:dealerId",[verifyToken],validator('change_status_dealer'),dealerController.changeDealerStatus);
 router.get("/getDealerPriceBookById/:dealerPriceBookId",[verifyToken],dealerController.getDealerPriceBookById);
 router.get("/getDealerPriceBookByDealerId/:dealerId",[verifyToken],dealerController.getDealerPriceBookByDealerId);
+router.post("/getAllPriceBooksByFilter",[verifyToken],validator('filter_price_book'),dealerController.getAllPriceBooksByFilter);
+
 router.get("/getDealerRequest",[verifyToken],dealerController.getDealerRequest);
 
 router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],validator('update_dealer_price_validation'),dealerController.statusUpdate); // update price book detail with ID

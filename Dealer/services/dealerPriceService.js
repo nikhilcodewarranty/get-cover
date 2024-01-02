@@ -59,10 +59,7 @@ module.exports = class dealerPriceService {
                   foreignField: "_id",
                   as: "category"
                 }
-              },
-              {
-                $unwind:'$category'
-              },
+              }
             ]
           },
         },
@@ -89,6 +86,56 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
+
+  static async getAllPriceBooksByFilter(query,projection) {
+    try {
+      console.log("query----------------",query)
+      const SingleDealerPrice = await dealerPrice.aggregate([     
+        {
+          $lookup: {
+            from: "pricebooks",
+            localField: "priceBook",
+            foreignField: "_id",
+            as: "priceBooks",
+            pipeline:[
+              {              
+                $lookup: {
+                  from: "pricecategories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category"
+                }
+              }
+            ]
+          },
+        },
+        {
+          $unwind:'$priceBooks'
+        },
+        {
+          $match: query, // Add $match stage based on the provided query
+        },
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "dealerId",
+            foreignField: "_id",
+            as: "dealer"
+          }
+        },
+        {
+          $unwind:'$dealer'
+        },
+   
+     
+      ]).sort({ "createdAt": -1 });
+     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      return SingleDealerPrice;
+    } catch (error) {
+      console.log(`Could not fetch dealer price ${error}`);
+    }
+  }
+
 
   static async getDealerPriceCount() {
     try {
