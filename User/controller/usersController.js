@@ -1478,6 +1478,32 @@ exports.updateUser = async (req, res) => {
   };
 };
 
+exports.updateUserData = async (req, res) => {
+  try {
+    let data = req.body
+    let criteria = { _id: req.params.userId };
+    let option = { new: true };
+    const updateUser = await userService.updateSingleUser(criteria, data, option);
+    if (!updateUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the user data"
+      });
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully",
+      result:updateUser
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
+};
+
 // get all roles
 exports.getAllTerms = async (req, res) => {
   try {
@@ -1649,6 +1675,7 @@ exports.deleteUser = async (req, res) => {
     });
   }
 };
+
 
 exports.uploadPriceBook = async (req, res) => {
   try {
