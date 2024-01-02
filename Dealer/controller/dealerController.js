@@ -768,6 +768,73 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
   }
 }
 
+exports.getAllPriceBooksByFilter = async (req, res, next) => {
+  try {
+    let data = req.body
+    let categorySearch = req.body.category ? req.body.category : ''
+    let queryCategories = {
+      $and: [
+        { isDeleted: false },
+        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+      ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchName = req.body.name ? req.body.name : ''
+    let query
+   // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
+    if ((data.status || !data.status) & data.status != undefined) {
+       query = {
+        $and: [
+          { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'status': data.status },
+          { 'category': { $in: catIdsArray } }          
+        ]
+      };
+    } else {
+       query = {
+        $and: [
+          { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'category': { $in: catIdsArray } },
+        ]
+      };
+    }
+
+    
+    //
+    console.log("query======================", query);
+    let projection = { isDeleted: 0, __v: 0 }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
+    if (!priceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+
 function uniqByKeepLast(data, key) {
 
   return [
@@ -1158,12 +1225,12 @@ exports.updateDealerMeta = async (req, res) => {
       })
       return;
     }
-    if(data.oldName != data.accountName){
-      let checkAccountName = await dealerService.getDealerByName({name:data.accountName},{})
-      if(!checkAccountName){
+    if (data.oldName != data.accountName) {
+      let checkAccountName = await dealerService.getDealerByName({ name: data.accountName }, {})
+      if (!checkAccountName) {
         res.send({
-          code:constant.errorCode,
-          message:"Account name is not available"
+          code: constant.errorCode,
+          message: "Account name is not available"
         })
         return;
       };
