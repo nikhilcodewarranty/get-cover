@@ -59,7 +59,10 @@ module.exports = class dealerPriceService {
                   foreignField: "_id",
                   as: "category"
                 }
-              }
+              },
+              {
+                $unwind:'$category'
+              },
             ]
           },
         },
