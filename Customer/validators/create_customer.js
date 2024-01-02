@@ -9,7 +9,7 @@ const create_customer_validation = Joi.object({
     zip: Joi.number().required(),
     state: Joi.string().trim().replace(/\s+/g, ' ').required(),
     country: Joi.string().trim().replace(/\s+/g, ' ').required(),
-    email: Joi.string().replace(/\s+/g, ' ').trim().required(),
+    email: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     firstName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     lastName: Joi.string().replace(/\s+/g, ' ').trim().optional(),
     phoneNumber: Joi.number().optional(),
