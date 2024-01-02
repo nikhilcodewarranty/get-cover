@@ -6,8 +6,6 @@ let userService = require('../../User/services/userService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 
-
-
 exports.createCustomer = async (req, res, next) => {
   try {
     let data = req.body;
