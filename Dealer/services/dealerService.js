@@ -76,7 +76,7 @@ module.exports = class dealerService {
   // Update dealer detail with ID
   static async updateDealer(criteria,newValue,option) {
     try {
-      const updatedResponse = await dealer.updateOne(criteria,newValue,option);
+      const updatedResponse = await dealer.findOneAndUpdate(criteria,newValue,option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer ${error}`);

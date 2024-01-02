@@ -25,6 +25,7 @@ router.get("/getDealerPriceBookByDealerId/:dealerId",[verifyToken],dealerControl
 router.get("/getDealerRequest",[verifyToken],dealerController.getDealerRequest);
 
 router.put("/updateDealerPriceBook/:dealerPriceBookId",[verifyToken],validator('update_dealer_price_validation'),dealerController.statusUpdate); // update price book detail with ID
+router.put("/updateDealerMeta",[verifyToken],dealerController.updateDealerMeta); // update price book detail with ID
 // update price book detail with ID
 
 router.post("/createDealerPriceBook",[verifyToken],validator('create_dealer_price_book_validation'),dealerController.createDealerPriceBook)
