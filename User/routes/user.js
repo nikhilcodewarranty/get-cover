@@ -45,7 +45,7 @@ router.post("/createDealer",[verifyToken], userController.createDealer);
 
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
-router.delete('/deleteUser/:userId', [verifyToken], validator("create_service_provider_validation"), userController.deleteUser);
+router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
 
 
 
