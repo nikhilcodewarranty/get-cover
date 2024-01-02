@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const dealerPrice = require("../model/dealerPrice");
 
 module.exports = class dealerPriceService {
@@ -89,48 +90,46 @@ module.exports = class dealerPriceService {
 
   static async getAllPriceBooksByFilter(query,projection) {
     try {
-      console.log("query----------------",query)
-      const SingleDealerPrice = await dealerPrice.aggregate([     
+      console.log('----------------------------',query)
+      const result = await dealerPrice.aggregate([
         {
           $lookup: {
             from: "pricebooks",
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-            pipeline:[
-              {              
-                $lookup: {
-                  from: "pricecategories",
-                  localField: "category",
-                  foreignField: "_id",
-                  as: "category"
-                }
-              }
-            ]
           },
         },
         {
-          $unwind:'$priceBooks'
+          $unwind: '$priceBooks',
         },
         {
-          $match: query, // Add $match stage based on the provided query
+          $lookup: {
+            from: "pricecategories",
+            localField: "priceBooks.category",
+            foreignField: "_id",
+            as: "priceBooks.category",
+          },
         },
+        {
+          $match: query
+        },
+        
         {
           $lookup: {
             from: "dealers",
             localField: "dealerId",
             foreignField: "_id",
-            as: "dealer"
-          }
+            as: "dealer",
+          },
         },
         {
-          $unwind:'$dealer'
+          $unwind: '$dealer',
         },
-   
-     
+        // Additional stages or project as needed
       ]).sort({ "createdAt": -1 });
-     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
-      return SingleDealerPrice;
+  
+      return result;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }

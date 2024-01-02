@@ -782,27 +782,32 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-   // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
+    // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if ((data.status || !data.status) & data.status != undefined) {
-       query = {
+      query = {
         $and: [
-          { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'status': data.status },
-          { 'category': { $in: catIdsArray } }          
+          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.category._id': { $in: catIdsArray } },
+          { 'priceBooks.status': data.status },
+          {
+            dealerId: new mongoose.Types.ObjectId(data.dealerId)
+          }
         ]
       };
     } else {
-       query = {
+      query = {
         $and: [
-          { 'name': { '$regex': searchName, '$options': 'i' } },
-          { 'category': { $in: catIdsArray } },
+          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.category._id': { $in: catIdsArray } },
+          {
+            dealerId: new mongoose.Types.ObjectId(data.dealerId)
+          }
         ]
       };
     }
 
-    
+
     //
-    console.log("query======================", query);
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
