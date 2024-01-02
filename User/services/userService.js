@@ -103,6 +103,16 @@ module.exports = class userService {
     }
   };
 
+  static async getUserById1(userId, projection) {
+    try {
+      console.log("query---------------",userId)
+      const singleUserResponse = await user.findById(userId, projection );
+      return singleUserResponse;
+    } catch (error) {
+      console.log(`User not found. ${error}`);
+    }
+  };
+
   //update user details with ID
   static async updateUser(criteria, data, option) {
     try {
@@ -314,6 +324,14 @@ module.exports = class userService {
     }
   }
   
+  static async updateSingleUser(criteria, newValue, option) {
+    try {
+      const updatedResponse = await user.findOneAndUpdate(criteria, newValue, option);     
+      return updatedResponse;
+    } catch (error) {
+      console.log(`Could not update dealer book ${error}`);
+    }
+  }
   
 
 

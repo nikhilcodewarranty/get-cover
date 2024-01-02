@@ -10,5 +10,6 @@ router.get("/getDealerCustomers/:dealerId", [verifyToken], customerController.ge
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer);
 router.post('/createCustomer', [verifyToken], validator('createCustomerValidation'), customerController.createCustomer)
 router.put('/editCustomer/:dealerId', [verifyToken], customerController.editCustomer)
+router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 
 module.exports = router;
