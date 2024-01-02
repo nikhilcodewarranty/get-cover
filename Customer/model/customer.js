@@ -36,6 +36,9 @@ const customerSchema = new mongoose.Schema({
     type: String,
     default:''
   },
+  unique_key:{
+    type :Number,
+  },
   state: {
     type: String,
     default:''
@@ -47,6 +50,10 @@ const customerSchema = new mongoose.Schema({
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealers",
+  },
+  dealerName:{
+    type:String,
+    default:''
   },
   // dealerId: {
   //   type: mongoose.Schema.Types.ObjectId,
