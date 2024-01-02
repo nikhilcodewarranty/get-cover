@@ -34,6 +34,7 @@ router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userC
 
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
+router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
 router.post("/checkEmail", [verifyToken],validator("email_validation"), userController.checkEmail);
 router.post("/validateData", [verifyToken], userController.validateData);
