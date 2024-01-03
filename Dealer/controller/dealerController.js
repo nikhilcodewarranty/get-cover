@@ -1299,7 +1299,7 @@ exports.updateDealerMeta = async (req, res) => {
     }
     if (data.oldName != data.accountName) {
       let checkAccountName = await dealerService.getDealerByName({ name: data.accountName }, {})
-      if (!checkAccountName) {
+      if (checkAccountName) {
         res.send({
           code: constant.errorCode,
           message: "Account name is not available"
