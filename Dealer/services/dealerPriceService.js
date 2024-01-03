@@ -143,19 +143,18 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-          },
-        },
-        {
-          $unwind: '$priceBooks',
-        },
-        {
-          $lookup: {
-            from: "pricecategories",
-            localField: "priceBooks.category",
-            foreignField: "_id",
-            as: "priceBooks.category",
-          },
-        },   
+            pipeline:[
+              {
+                $lookup: {
+                  from: "pricecategories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category"
+                }
+              }
+            ]
+          }
+        }, 
         {
           $lookup: {
             from: "dealers",
@@ -165,9 +164,6 @@ module.exports = class dealerPriceService {
           },
         },
 
-        {
-          $unwind: '$dealer',
-        },
         query,
        
         // Additional stages or project as needed

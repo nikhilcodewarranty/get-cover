@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   username: {
     type: String,
-    default:''
+    default:'',
+    index:true
   },
   email: {
     type: String,
@@ -61,7 +62,8 @@ const customerSchema = new mongoose.Schema({
   // },
   status: {
     type: Boolean,
-    default:true
+    default:true,
+    index:true
   },
   accountStatus:{
     type:String,

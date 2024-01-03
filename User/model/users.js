@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     default: '',
+    index:true
   },
   password: {
     type: String,
@@ -34,7 +35,8 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    default: ''
+    default: '',
+    index:true
   },
   roleId: {
     type: mongoose.Schema.Types.ObjectId, ref: "roles",

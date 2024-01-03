@@ -1010,6 +1010,7 @@ exports.createDealer = async (req, res) => {
           let newArray1;
           let allPriceBooks;
           const wb = XLSX.readFile(req.file.path);
+          const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
           const headers = [];
           for (let cell in ws) {
@@ -1018,7 +1019,7 @@ exports.createDealer = async (req, res) => {
               headers.push(ws[cell].v);
             }
           }
-          const sheets = wb.SheetNames;
+       
           if (sheets.length > 0) {
             let original_csv_array = ['priceBook', 'retailPrice'];
 
@@ -1242,7 +1243,7 @@ exports.createDealer = async (req, res) => {
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,

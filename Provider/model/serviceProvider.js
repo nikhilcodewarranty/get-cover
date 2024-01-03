@@ -3,7 +3,8 @@ const connection = require('../../db')
 const serviceProviderSchema = new mongoose.Schema({
   name: {
     type: String,
-    default:''
+    default:'',
+    index:true
   },
   street: {
     type: String,

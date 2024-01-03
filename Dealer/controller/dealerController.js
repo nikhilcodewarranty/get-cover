@@ -857,28 +857,22 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
-    if ((data.status || !data.status) & data.status != undefined) {
+ 
+
+    if ((data.status || !data.status) & data.status != undefined && data.status!='') {
       matchConditions.push({ 'status': data.status });
     }
 
     if (data.term) {
-      matchConditions.push({ 'priceBooks.term': data.term });
+      matchConditions.push({ 'priceBooks.term': Number(data.term) });
     }
 
     if (data.name) {
       matchConditions.push({ 'dealer.name': searchDealerName });
     }
-    // query = {
-    //   $and: [
-    //     { 'status': req.body.status == 'true' ? true : false },
-    //     { 'dealer.name': 'MarkWood' },
-
-    //   ]
-    // };
-
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
-
-    // console.log(matchStage);return;
+    console.log(matchStage);
+   // console.log(matchStage);return;
 
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
@@ -1152,8 +1146,8 @@ exports.uploadPriceBook = async (req, res) => {
 
       let entriesData = {
         userName: checkDealer[0].name,
-        totalEntries: Number(unique.length),
-        SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+        totalEntries: Number(results.length),
+        SuccessEntries: Number(results.length) - Number(csvStatus.length),
         failedEntries: Number(csvStatus.length),
         routeLink: complete_url
       }
