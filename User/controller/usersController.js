@@ -1178,6 +1178,19 @@ exports.createDealer = async (req, res) => {
               }
 
             }
+            else {
+              if (results.length > 0) {
+                results.map(product => {
+                  let csvData = {
+                    'priceBook': product.priceBook,
+                    'status': 'Failed',
+                    'reason': 'The product is not exist in the catalog',
+                  }
+                  csvStatus.push(csvData)
+                })
+              }
+
+            }
             let allUsersData = allUserData.map((obj, index) => ({
               ...obj,
               roleId: checkRole._id,
