@@ -74,11 +74,11 @@ exports.approveServicer = async (req, res, next) => {
       status: data.status,
       accountStatus: "Approved",
     }
-    let checkDetail = await providerService.getServicerByName({_id:req.params.servicerId})
-    if(!checkDetail){
+    let checkDetail = await providerService.getServicerByName({ _id: req.params.servicerId })
+    if (!checkDetail) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid ID"
+        code: constant.errorCode,
+        message: "Invalid ID"
       })
       return;
     }
@@ -92,7 +92,7 @@ exports.approveServicer = async (req, res, next) => {
         return;
       };
     }
-    console.log(data.email,data.oldEmail)
+    console.log(data.email, data.oldEmail)
     if (data.email != data.oldEmail) {
       let emailCheck = await userService.findOneUser({ email: data.email });
       if (emailCheck) {
@@ -189,26 +189,26 @@ exports.getServicer = async (req, res) => {
 //get servicer by ID
 exports.getServiceProviderById = async (req, res, next) => {
   try {
-    const singleServiceProvider = await providerService.getServiceProviderById({_id:req.params.servicerId});
+    const singleServiceProvider = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     if (!singleServiceProvider) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to fetch the details"
+        code: constant.errorCode,
+        message: "Unable to fetch the details"
       })
       return;
     };
-    let getMetaData = await userService.findOneUser({accountId:singleServiceProvider._id,isPrimary:true})
+    let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
     resultUser.meta = singleServiceProvider
     res.send({
-      code:constant.successCode,
-      message:resultUser
+      code: constant.successCode,
+      message: resultUser
     })
   } catch (error) {
-   res.send({
-    code:constant.errorCode,
-    message:err.message
-   })
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -240,24 +240,50 @@ exports.rejectServicer = async (req, res) => {
 
 //edit servicer details
 
-// exports.editServicerDetail = async(req,res)=>{
-//   try{
-//     let data = req.body
-//     let checkServicer = await providerService.getServiceProviderById({_id:req.params.providerId})
-//     if(!checkServicer){
-//       res.send({
-//         code:constant.errorCode,
-//         message:"Invalid servicer ID"
-//       })
-//       return;
-//     }
-//     let criteria = {_id:checkServicer._id}
-//     let option={new:true}
-//     let updateData = await providerService.updateServiceProvider()
-//   }catch(err){
-
-//   }
-// }
+exports.editServicerDetail = async (req, res) => {
+  try {
+    let data = req.body
+    let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid servicer ID"
+      })
+      return;
+    }
+    let criteria = { _id: checkServicer._id }
+    let updateData = await providerService.updateServiceProvider(criteria, data)
+    if (!updateData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the data"
+      })
+      return;
+    }
+    let criteria1 = {$or:[
+      { _id: data.userId},
+      { accountId: checkServicer._id}
+    ] }
+    let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
+    if (!updateMetaData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the primary details"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result:{updateData,updateMetaData}
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 

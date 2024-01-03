@@ -42,7 +42,7 @@ module.exports = class providerService {
 
   static async updateServiceProvider(criteria,data) {
     try {
-      const updatedResponse = await serviceProvider.updateOne(criteria,data,{new:true});
+      const updatedResponse = await serviceProvider.findOneAndUpdate(criteria,data,{new:true});
 
       return updatedResponse;
     } catch (error) {

@@ -300,8 +300,6 @@ module.exports = class userService {
     }
   };
 
-
-
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
