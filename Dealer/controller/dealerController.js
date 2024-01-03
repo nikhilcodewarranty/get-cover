@@ -1144,8 +1144,8 @@ exports.uploadPriceBook = async (req, res) => {
 
       let entriesData = {
         userName: checkDealer[0].name,
-        totalEntries: Number(unique.length),
-        SuccessEntries: Number(unique.length) - Number(csvStatus.length),
+        totalEntries: Number(results.length),
+        SuccessEntries: Number(results.length) - Number(csvStatus.length),
         failedEntries: Number(csvStatus.length),
         routeLink: complete_url
       }
