@@ -18,11 +18,12 @@ router.post("/uploadsDealerPriceBook",[verifyToken],uploadMiddleware.singleFileU
 router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById/:dealerId", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 router.get("/getUserByDealerId/:dealerId", [verifyToken], dealerController.getUserByDealerId); //get dealer detail with ID
-router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceBooks);
+router.post("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceBooks);
 router.put("/changeDealerStatus/:dealerId",[verifyToken],validator('change_status_dealer'),dealerController.changeDealerStatus);
 router.get("/getDealerPriceBookById/:dealerPriceBookId",[verifyToken],dealerController.getDealerPriceBookById);
 router.get("/getDealerPriceBookByDealerId/:dealerId",[verifyToken],dealerController.getDealerPriceBookByDealerId);
 router.post("/getAllPriceBooksByFilter",[verifyToken],validator('filter_price_book'),dealerController.getAllPriceBooksByFilter);
+router.post("/getAllDealerPriceBooksByFilter",[verifyToken],dealerController.getAllDealerPriceBooksByFilter);
 
 router.get("/getDealerRequest",[verifyToken],dealerController.getDealerRequest);
 

@@ -839,6 +839,79 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
   }
 };
 
+exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
+  try {
+    let data = req.body
+    let categorySearch = req.body.category ? req.body.category : ''
+    let queryCategories = {
+      $and: [
+        { isDeleted: false },
+        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+      ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchDealerName = req.body.name ? req.body.name : ''
+    let query
+    let matchConditions = [];
+   
+   matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
+
+    if ((data.status || !data.status) & data.status != undefined) {
+      matchConditions.push({ 'status': data.status });
+    }
+
+    if (data.term) {
+      matchConditions.push({ 'priceBooks.term': data.term });
+    }
+
+    if (data.name) {
+      matchConditions.push({ 'dealer.name': searchDealerName});
+    }
+    // query = {
+    //   $and: [
+    //     { 'status': req.body.status == 'true' ? true : false },
+    //     { 'dealer.name': 'MarkWood' },
+
+    //   ]
+    // };
+
+    const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
+
+   // console.log(matchStage);return;
+
+    let projection = { isDeleted: 0, __v: 0 }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
+    if (!priceBooks) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+
 
 function uniqByKeepLast(data, key) {
 
