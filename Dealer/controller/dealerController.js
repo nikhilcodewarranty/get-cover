@@ -859,7 +859,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
  
 
-    if ((data.status || !data.status) & data.status != undefined && data.status!='') {
+    if ((data.status || !data.status || data.status!='') & data.status != undefined) {
       matchConditions.push({ 'status': data.status });
     }
 
