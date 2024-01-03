@@ -333,7 +333,7 @@ module.exports = class userService {
   static async getSingleUserByEmail(query, project) {
     try {
       console.log("checking-------------------", query)
-      let getUser = await user.find(query)
+      let getUser = await user.findOne(query)
       return getUser;
     } catch (err) {
       console.log("service error:-", err.message)
