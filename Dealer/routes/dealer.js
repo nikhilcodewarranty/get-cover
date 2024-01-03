@@ -15,7 +15,7 @@ router.post("/uploadsDealerPriceBook",[verifyToken],uploadMiddleware.singleFileU
 
 
 //--------------- get api's endpoints ---------------------------//
-router.get("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
+router.post("/dealers",[verifyToken], dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById/:dealerId", [verifyToken], dealerController.getDealerById); //get dealer detail with ID
 router.get("/getUserByDealerId/:dealerId", [verifyToken], dealerController.getUserByDealerId); //get dealer detail with ID
 router.get("/dealerPriceBooks",[verifyToken],dealerController.getAllDealerPriceBooks);
