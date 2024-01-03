@@ -868,14 +868,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     if (data.name) {
       matchConditions.push({ 'dealer.name': searchDealerName});
     }
-    // query = {
-    //   $and: [
-    //     { 'status': req.body.status == 'true' ? true : false },
-    //     { 'dealer.name': 'MarkWood' },
-
-    //   ]
-    // };
-
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
 
    // console.log(matchStage);return;
