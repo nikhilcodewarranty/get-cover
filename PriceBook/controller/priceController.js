@@ -41,7 +41,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     }
-    
+
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
@@ -713,7 +713,7 @@ exports.updatePriceBookCat = async (req, res) => {
       return
     }
     // Check if the category already exists
-    if (isValid.name.toLowerCase()!= req.body.name.toLowerCase()) {
+    if (isValid.name.toLowerCase() != req.body.name.toLowerCase()) {
       const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
       if (existingCategory) {
         res.send({
@@ -878,7 +878,14 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-    let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: new mongoose.Types.ObjectId(req.params.categoryId) }, { __v: 0 }, limit, page)
+    let queryFilter = {
+      $and: [
+        { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+        { status: true }
+      ]
+    };
+    //console.log("queryFilter=======================",queryFilter)
+    let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)
     // console.log("fetchPriceBooks=======================",fetchPriceBooks)
     // return;
     res.send({
