@@ -4,12 +4,14 @@ const connection = require('../../db')
 const priceSchema = new mongoose.Schema({
   name: {
     type: String,
+    index:true
   },
   description: {
     type: String,
   },
   term: {
     type: Number,
+    index:true
   },
   frontingFee: {
     type: Number,
@@ -30,6 +32,7 @@ const priceSchema = new mongoose.Schema({
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "pricecategories",
+    index:true
   },
   userId:{
     type: mongoose.Schema.Types.ObjectId,
@@ -37,7 +40,8 @@ const priceSchema = new mongoose.Schema({
   },
   status: {
     type: Boolean,
-    default: true
+    default: true,
+    index:true
   },
   isDeleted: {
     type: Boolean,

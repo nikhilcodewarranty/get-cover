@@ -9,10 +9,12 @@ const dealerBookSchema = new mongoose.Schema({
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealers",
+    index:true
   },
   status: {
     type: Boolean,
-    default: false
+    default: false,
+    index:true
   },
   retailPrice: {
     type: Number,
