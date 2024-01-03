@@ -301,8 +301,8 @@ exports.getUserByDealerId = async (req, res) => {
         code: constant.errorCode,
         message: "Dealer not found"
       });
-      return
-    }
+      return;
+    };
     const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
 
     const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
