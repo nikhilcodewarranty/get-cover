@@ -145,7 +145,7 @@ exports.getAllCustomers = async (req, res, next) => {
 
 exports.getDealerCustomers = async (req, res) => {
   try {
-
+    let data = req.body
     let query = { isDeleted: false, dealerId: req.params.dealerId }
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
@@ -160,7 +160,6 @@ exports.getDealerCustomers = async (req, res) => {
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
 
 
-    console.log(queryUser)
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
@@ -175,11 +174,27 @@ exports.getDealerCustomers = async (req, res) => {
         return dealerData.toObject();
       }
     });
+
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+    const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      console.log('entry----------',entry.email,emailRegex)
+      return (
+        firstNameRegex.test(entry.firstName) &&
+        lastNameRegex.test(entry.lastName)&&
+        emailRegex.test(entry.email)&&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
     console.log(getPrimaryUser)
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: result_Array
+      result: filteredData
     })
   } catch (err) {
     res.send({

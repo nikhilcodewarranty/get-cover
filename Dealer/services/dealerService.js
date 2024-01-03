@@ -53,7 +53,7 @@ module.exports = class dealerService {
 
   static async getUserByDealerId(query) {
     try {
-      const singleDealerResponse = await users.find(query);
+      const singleDealerResponse = await users.find(query).sort({isPrimary:-1,createdAt:-1});
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);

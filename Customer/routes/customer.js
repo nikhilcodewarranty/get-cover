@@ -5,8 +5,8 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 const validator = require('../config/validation');
 
 
-router.get("/customer", [verifyToken], customerController.getAllCustomers);
-router.get("/getDealerCustomers/:dealerId", [verifyToken], customerController.getDealerCustomers);
+router.post("/customer", [verifyToken], customerController.getAllCustomers);
+router.post("/getDealerCustomers/:dealerId", [verifyToken], customerController.getDealerCustomers);
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer);
 router.post('/createCustomer', [verifyToken], validator('createCustomerValidation'), customerController.createCustomer)
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
