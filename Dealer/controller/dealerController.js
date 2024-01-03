@@ -283,6 +283,7 @@ exports.getDealerById = async (req, res) => {
 //get dealer detail by ID
 exports.getUserByDealerId = async (req, res) => {
   try {
+    let data = req.body
     //fetching data from user table
     if (req.role != "Super Admin") {
       res.send({
@@ -304,6 +305,21 @@ exports.getUserByDealerId = async (req, res) => {
     }
     const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
 
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+
+
+    const filteredData = users.filter(entry => {
+      console.log("entry==================",entry)
+      return (
+        firstNameRegex.test(entry.firstName) &&
+        emailRegex.test(entry.email)&&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+
     //result.metaData = singleDealer
     if (!users) {
       res.send({
@@ -316,7 +332,7 @@ exports.getUserByDealerId = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: users,
+      result: filteredData,
     })
 
   } catch (err) {
@@ -857,9 +873,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
- 
 
-    if ((data.status || !data.status || data.status!='') & data.status != undefined) {
+
+    if ((data.status || !data.status || data.status != '') & data.status != undefined) {
       matchConditions.push({ 'status': data.status });
     }
 
@@ -872,7 +888,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
     console.log(matchStage);
-   // console.log(matchStage);return;
+    // console.log(matchStage);return;
 
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
