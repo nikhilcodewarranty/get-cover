@@ -403,7 +403,7 @@ exports.createDealer = async (req, res) => {
       if (allEmails.length !== uniqueEmails.size) {
         res.send({
           code: constant.errorCode,
-          message: 'Multiple user cannot have same emails',
+          message: 'Multiple user cannot have same email',
         });
         return
       }
