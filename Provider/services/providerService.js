@@ -33,7 +33,6 @@ module.exports = class providerService {
 
   static async getServiceProviderById(query) {
     try {
-      console.log("ddddddddddddddddd",query)
       const singleServiceProviderResponse = await serviceProvider.findOne(query);
       return singleServiceProviderResponse;
     } catch (error) {

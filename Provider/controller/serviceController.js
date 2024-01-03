@@ -9,120 +9,6 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const bcrypt = require("bcrypt");
 
-exports.getAllServiceProviders = async (req, res, next) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    let query = { isDeleted: false, status: "Approved" }
-    let projection = { __v: 0, isDeleted: 0 }
-    const serviceProviders = await providerService.getAllServiceProvider(query, projection);
-
-    //console.log("serviceProviders==============================",serviceProviders)
-    if (!serviceProviders) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    }
-
-    const servicerIds = serviceProviders.map(obj => obj._id);
-    // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-    let servicerUser = await userService.getServicerUser(query1, projection)
-
-    if (!servicerUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-
-    const result_Array = servicerUser.map(item1 => {
-      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-      if (matchingItem) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject()
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-    res.send({
-      code: constant.successCode,
-      data: result_Array
-    });
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
-
-// get servicer registration request
-exports.getServicer = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    let query = { isDeleted: false, accountStatus: req.params.status }
-    let projection = { __v: 0, isDeleted: 0 }
-    let servicer = await providerService.getAllServiceProvider(query, projection);
-    //-------------Get All servicer Id's------------------------
-
-    const servicerIds = servicer.map(obj => obj._id);
-    // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-    let servicerUser = await userService.getServicerUser(query1, projection)
-
-    if (!servicerUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-
-    const result_Array = servicerUser.map(item1 => {
-      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-      if (matchingItem) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject()
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-    res.send({
-      code: constant.successCode,
-      data: result_Array
-    });
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
 
 //Created customer
 exports.createServiceProvider = async (req, res, next) => {
@@ -246,7 +132,61 @@ exports.approveServicer = async (req, res, next) => {
   }
 };
 
-//
+// get servicer registration request
+exports.getServicer = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let query = { isDeleted: false, accountStatus: req.params.status }
+    let projection = { __v: 0, isDeleted: 0 }
+    let servicer = await providerService.getAllServiceProvider(query, projection);
+    //-------------Get All servicer Id's------------------------
+
+    const servicerIds = servicer.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getServicerUser(query1, projection)
+
+    if (!servicerUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: result_Array
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+//get servicer by ID
 exports.getServiceProviderById = async (req, res, next) => {
   try {
     const singleServiceProvider = await providerService.getServiceProviderById({_id:req.params.servicerId});
@@ -269,6 +209,117 @@ exports.getServiceProviderById = async (req, res, next) => {
     code:constant.errorCode,
     message:err.message
    })
+  }
+};
+
+// reject servicer request
+exports.rejectServicer = async (req, res) => {
+  try {
+    let data = req.body
+    let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to delete the servicer"
+      })
+      return;
+    };
+    let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
+    res.send({
+      code: constant.successCode,
+      message: "Deleted"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//edit servicer details
+
+// exports.editServicerDetail = async(req,res)=>{
+//   try{
+//     let data = req.body
+//     let checkServicer = await providerService.getServiceProviderById({_id:req.params.providerId})
+//     if(!checkServicer){
+//       res.send({
+//         code:constant.errorCode,
+//         message:"Invalid servicer ID"
+//       })
+//       return;
+//     }
+//     let criteria = {_id:checkServicer._id}
+//     let option={new:true}
+//     let updateData = await providerService.updateServiceProvider()
+//   }catch(err){
+
+//   }
+// }
+
+
+
+
+exports.getAllServiceProviders = async (req, res, next) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let query = { isDeleted: false, status: "Approved" }
+    let projection = { __v: 0, isDeleted: 0 }
+    const serviceProviders = await providerService.getAllServiceProvider(query, projection);
+
+    //console.log("serviceProviders==============================",serviceProviders)
+    if (!serviceProviders) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    }
+
+    const servicerIds = serviceProviders.map(obj => obj._id);
+    // Get Dealer Primary Users from colection
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getServicerUser(query1, projection)
+
+    if (!servicerUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+      const matchingItem = serviceProviders.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: result_Array
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -303,32 +354,6 @@ exports.deleteServiceProvider = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
-
-exports.rejectServicer = async (req, res) => {
-  try {
-    let data = req.body
-    let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
-    if (!checkServicer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to delete the servicer"
-      })
-      return;
-    };
-    let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
-    res.send({
-      code: constant.successCode,
-      message: "Deleted"
-    })
-
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
 
 /**---------------------------------------------Register Service Provider---------------------------------------- */
 exports.registerServiceProvider = async (req, res) => {

@@ -335,7 +335,9 @@ module.exports = class userService {
 
   static async getSingleUserByEmail(query,project){
     try{
-      let getUser = await user.findOne(query)
+      console.log("checking-------------------",query)
+      let getUser = await user.find( { email: 'ak@codenomad.net' })
+      return getUser;
     }catch(err){
       console.log("service error:-",err.message)
     }

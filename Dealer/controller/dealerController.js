@@ -1357,7 +1357,7 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     };
-    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email },{})
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
