@@ -150,7 +150,6 @@ exports.getPendingDealers = async (req, res) => {
     const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
 
     let dealarUser = await userService.getDealersUser(query1, projection)
-
     if (!dealers) {
       res.send({
         code: constant.errorCode,
