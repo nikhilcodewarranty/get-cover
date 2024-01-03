@@ -164,9 +164,6 @@ module.exports = class dealerPriceService {
           },
         },
 
-        {
-          $unwind: '$dealer',
-        },
         query,
        
         // Additional stages or project as needed

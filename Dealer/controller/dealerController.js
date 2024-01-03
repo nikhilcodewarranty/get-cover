@@ -857,7 +857,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
    
    matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
-    if ((data.status || !data.status) & data.status != undefined) {
+ 
+
+    if ((data.status || !data.status) & data.status != undefined && data.status!='') {
       matchConditions.push({ 'status': data.status });
     }
 
@@ -869,7 +871,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       matchConditions.push({ 'dealer.name': searchDealerName});
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
-
+    console.log(matchStage);
    // console.log(matchStage);return;
 
     let projection = { isDeleted: 0, __v: 0 }
