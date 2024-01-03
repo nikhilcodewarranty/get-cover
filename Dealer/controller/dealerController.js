@@ -311,7 +311,6 @@ exports.getUserByDealerId = async (req, res) => {
 
 
     const filteredData = users.filter(entry => {
-      console.log("entry==================",entry)
       return (
         firstNameRegex.test(entry.firstName) &&
         emailRegex.test(entry.email)&&
@@ -1325,6 +1324,7 @@ exports.updateDealerMeta = async (req, res) => {
     };
     let criteria = { _id: checkDealer._id }
     let option = { new: true }
+    data.name = data.accountName
     let updatedData = await dealerService.updateDealer(criteria, data, option)
     if (!updatedData) {
       res.send({
