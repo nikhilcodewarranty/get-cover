@@ -23,7 +23,7 @@ router.put("/changeDealerStatus/:dealerId",[verifyToken],validator('change_statu
 router.get("/getDealerPriceBookById/:dealerPriceBookId",[verifyToken],dealerController.getDealerPriceBookById);
 router.get("/getDealerPriceBookByDealerId/:dealerId",[verifyToken],dealerController.getDealerPriceBookByDealerId);
 router.post("/getAllPriceBooksByFilter",[verifyToken],validator('filter_price_book'),dealerController.getAllPriceBooksByFilter);
-router.post("/getAllDealerPriceBooksByFilter",[verifyToken],dealerController.getAllDealerPriceBooksByFilter);
+router.post("/getAllDealerPriceBooksByFilter",[verifyToken],validator('filter_dealer_price'),dealerController.getAllDealerPriceBooksByFilter);
 
 router.get("/getDealerRequest",[verifyToken],dealerController.getDealerRequest);
 

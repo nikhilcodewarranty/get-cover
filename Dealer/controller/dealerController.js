@@ -862,7 +862,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
 
     if (data.term) {
-      matchConditions.push({ 'priceBooks.term': data.term });
+      matchConditions.push({ 'priceBooks.term': Number(data.term) });
     }
 
     if (data.name) {
