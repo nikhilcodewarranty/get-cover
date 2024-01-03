@@ -854,8 +854,8 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     let searchDealerName = req.body.name ? req.body.name : ''
     let query
     let matchConditions = [];
-   
-   matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
+
+    matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
  
 
@@ -868,7 +868,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
 
     if (data.name) {
-      matchConditions.push({ 'dealer.name': searchDealerName});
+      matchConditions.push({ 'dealer.name': searchDealerName });
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
     console.log(matchStage);
@@ -1329,6 +1329,83 @@ exports.updateDealerMeta = async (req, res) => {
     })
   }
 }
+
+exports.addDealerUser = async (req, res) => {
+  try {
+    let data = req.body
+    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId }, {})
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    };
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    if (checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "User already exist with this email"
+      })
+      return;
+    }
+    data.accountId = checkDealer._id
+    let saveData = await userService.createUser(data)
+    if (!saveData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to add the data"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Added successfully",
+        result: saveData
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //-------------------------------------under developement section ----------------------------//
 
