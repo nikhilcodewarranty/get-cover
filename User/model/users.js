@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
   },
   isPrimary: {
     type: Boolean,
-    default: false
+    default: true
   },
   status: {
     type: Boolean,
