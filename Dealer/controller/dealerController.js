@@ -150,7 +150,6 @@ exports.getPendingDealers = async (req, res) => {
     const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
 
     let dealarUser = await userService.getDealersUser(query1, projection)
-
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -798,7 +797,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name : ''
     let query
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-    if ((data.status || !data.status) & data.status != undefined) {
+    if ((data.status || !data.status || data.status!='') & data.status != undefined) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },

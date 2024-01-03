@@ -33,6 +33,7 @@ router.post("/servicerStatusUpdate", [verifyToken], serviceController.statusUpda
 router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
 
 
+
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
