@@ -105,8 +105,8 @@ module.exports = class userService {
 
   static async getUserById1(userId, projection) {
     try {
-      console.log("query---------------",userId)
-      const singleUserResponse = await user.findById(userId, projection );
+      console.log("query---------------", userId)
+      const singleUserResponse = await user.findById(userId, projection);
       return singleUserResponse;
     } catch (error) {
       console.log(`User not found. ${error}`);
@@ -189,27 +189,27 @@ module.exports = class userService {
   //find user by email
   static async findByEmail(query) {
     try {
-    // const response = await user.find({ 'email': { $in: query } }).select('-_id email');
-    const response = await user.aggregate([
-      {
-        $match: {
-          email: { $in: query }
+      // const response = await user.find({ 'email': { $in: query } }).select('-_id email');
+      const response = await user.aggregate([
+        {
+          $match: {
+            email: { $in: query }
+          }
+        },
+        {
+          $addFields: {
+            flag: true
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            email: 1,
+            flag: 1
+          }
         }
-      },
-      {
-        $addFields: {
-          flag: true
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          email: 1,
-          flag: 1
-        }
-      }
-    ]);   
- 
+      ]);
+
       return response;
       // const response = await user.aggregate([
       //   {
@@ -270,18 +270,18 @@ module.exports = class userService {
 
     }
   }
-  getServicerUser
-      //create user 
-    static async createNotification(data) {
-      try {
-        const response = await new notification(data).save();
-        return response;
-      } catch (error) {
-        console.log(error);
-      }
-    };
 
-      //get all roles
+  //create user 
+  static async createNotification(data) {
+    try {
+      const response = await new notification(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  //get all roles
   static async getAllNotifications(query, projection) {
     try {
       const roles = await notification.find(query, projection).sort({ "createdAt": -1 });
@@ -293,47 +293,53 @@ module.exports = class userService {
 
   static async getCountNotification() {
     try {
-      const roles = await notification.countDocuments({ isDeleted: false, status:false })
+      const roles = await notification.countDocuments({ isDeleted: false, status: false })
       return roles;
     } catch (error) {
       console.log(`Could not find role ${error}`);
     }
   };
 
-  
+
 
   static async updateNotification(criteria, newValue, option) {
     try {
-      const updatedResponse = await notification.updateMany(criteria, newValue, option);     
+      const updatedResponse = await notification.updateMany(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
     }
   }
 
-  static async findUserforCustomer(query){
+  static async findUserforCustomer(query) {
     try {
       const fetchUser = await user.aggregate([
         {
-          $match:query
+          $match: query
         }
-      ]);     
+      ]);
       return fetchUser;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
     }
   }
-  
+
   static async updateSingleUser(criteria, newValue, option) {
     try {
-      const updatedResponse = await user.findOneAndUpdate(criteria, newValue, option);     
+      const updatedResponse = await user.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
     }
   }
-  
 
+  static async getSingleUserByEmail(query,project){
+    try{
+      let getUser = await user.findOne(query)
+    }catch(err){
+      console.log("service error:-",err.message)
+    }
+  }
 
 
 };

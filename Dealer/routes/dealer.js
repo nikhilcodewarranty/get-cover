@@ -10,6 +10,7 @@ const upload = multer({ dest: 'uploads/' });
 const uploadMiddleware = require('../middleware/uploadMiddleware');
 
 router.post("/register",validator('register_dealer'),dealerController.registerDealer)
+router.post("/addDealerUser",[verifyToken],dealerController.addDealerUser)
 router.post("/uploadsDealerPriceBook",[verifyToken],uploadMiddleware.singleFileUpload,dealerController.uploadPriceBook)
 
 

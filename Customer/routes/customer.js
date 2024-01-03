@@ -9,6 +9,7 @@ router.get("/customer", [verifyToken], customerController.getAllCustomers);
 router.get("/getDealerCustomers/:dealerId", [verifyToken], customerController.getDealerCustomers);
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer);
 router.post('/createCustomer', [verifyToken], validator('createCustomerValidation'), customerController.createCustomer)
+router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
 router.put('/editCustomer/:dealerId', [verifyToken], customerController.editCustomer)
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 

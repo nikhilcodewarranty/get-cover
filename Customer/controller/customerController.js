@@ -24,7 +24,9 @@ exports.createCustomer = async (req, res, next) => {
     };
 
     // check customer acccount name 
-    let checkAccountName = await customerService.getCustomerByName(data.accountName);
+    let checkAccountName = await customerService.getCustomerByName({
+      username: data.accountName,
+    });
     if (checkAccountName) {
       res.send({
         code: constant.errorCode,
@@ -310,6 +312,51 @@ exports.changePrimaryUser = async (req, res) => {
         result: updatePrimary
       })
     }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.addCustomerUser = async (req, res) => {
+  try {
+    let data = req.body
+
+    let checkCustomer = await customerService.getCustomerByName({ _id: data.customerId })
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid customer"
+      })
+      return;
+    }
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    if (checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "User already added with this email"
+      })
+      return;
+    };
+
+    data.accountId = checkCustomer._id
+    let saveData = await userService.createUser(data)
+    if (!saveData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to add the user"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "User added successfully",
+        result: saveData
+      })
+    }
+
 
   } catch (err) {
     res.send({

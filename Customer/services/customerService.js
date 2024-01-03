@@ -28,11 +28,9 @@ module.exports = class customerService {
     }
   }
 
-  static async getCustomerByName(accountName) {
+  static async getCustomerByName(query) {
     try {
-      const singleCustomerResponse = await customer.findOne({
-        username: accountName,
-      });
+      const singleCustomerResponse = await customer.findOne(query);
       return singleCustomerResponse;
     } catch (error) {
       console.log(`Customer not found. ${error}`);
