@@ -70,7 +70,7 @@ module.exports = class priceBookService {
   static async getTotalCount() {
     try {
       const count = await priceCategory.find().sort({"unique_key":-1})
-      return count;
+      return count.sort((a, b) => b.unique_key - a.unique_key);
     } catch (error) {
       console.log(`Could not fetch price book category${error}`);
     }
@@ -80,7 +80,7 @@ module.exports = class priceBookService {
   static async getPriceBookCount() {
     try {
       const count = await priceBook.find().sort({"unique_key":-1});
-      return count;
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }

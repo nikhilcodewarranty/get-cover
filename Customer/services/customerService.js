@@ -13,7 +13,7 @@ module.exports = class customerService {
   static async getCustomersCount(query) {
     try {
       const allCustomers = await customer.find(query).sort({'unique_key':-1});
-      return allCustomers;
+      return allCustomers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch customer ${error}`);
     }

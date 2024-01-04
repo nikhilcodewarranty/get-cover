@@ -14,7 +14,7 @@ module.exports = class providerService {
   static async getServicerCount() {
     try {
       const count = await serviceProvider.find().sort({ "unique_key": -1 });
-      return count;
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }

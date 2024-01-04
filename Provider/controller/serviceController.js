@@ -124,7 +124,7 @@ exports.createServiceProvider = async (req, res, next) => {
       const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
-        message: "Approve ccessfully",
+        message: "Approve successfully",
         result: data
       })
     }

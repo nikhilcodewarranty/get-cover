@@ -22,8 +22,10 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
+    data.status = typeof (data.status) == "string" ? "all" : data.status
+
     let query;
-    if ((data.status || !data.status) & data.status != undefined) {
+    if (data.status == "all") {
       query = {
         $and: [
           { isDeleted: false },
