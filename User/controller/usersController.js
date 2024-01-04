@@ -553,7 +553,7 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
-          let resetLink = `http://15.207.221.207/newPassword/{{singleDealerUser._id}}/{{resetPasswordCode}}`
+          let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
           const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email,{link:resetLink}))
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -826,7 +826,7 @@ exports.createDealer = async (req, res) => {
 
             //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/{{singleDealerUser._id}}/{{resetPasswordCode}}`
+            let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email,{link:resetLink}))
 
             if (mailing) {
@@ -972,7 +972,7 @@ exports.createDealer = async (req, res) => {
           //Approve status 
 
           let resetPasswordCode = randtoken.generate(4, '123456789')
-          let resetLink = `http://15.207.221.207/newPassword/{{createUsers[0]._id}}/{{resetPasswordCode}}`
+          let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
           const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email,{link:resetLink}))
 
           if (mailing) {
@@ -1234,7 +1234,7 @@ exports.createDealer = async (req, res) => {
 
             //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/{{createUsers[0]._id}}/{{resetPasswordCode}}`
+            let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email,{link:resetLink}))
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
