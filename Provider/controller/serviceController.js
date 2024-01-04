@@ -77,6 +77,8 @@ exports.approveServicer = async (req, res, next) => {
       status: data.status,
       accountStatus: "Approved",
     }
+
+   
     let checkDetail = await providerService.getServicerByName({ _id: req.params.servicerId })
     if (!checkDetail) {
       res.send({
@@ -108,6 +110,10 @@ exports.approveServicer = async (req, res, next) => {
 
     let teamMembers = data.members
 
+    let getUserId = await userService.getUserById1({accountId:checkDetail._id.toString(),isPrimary:true},{})
+    // console.log("getUserId================",getUserId);
+    // return;
+
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
     if (!updateServicer) {
       res.send({
@@ -121,18 +127,19 @@ exports.approveServicer = async (req, res, next) => {
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
-    let resetLink = `http://15.207.221.207/newPassword/${updateServicer._id}/${resetPasswordCode}`
+  
+    let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
     const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
       code: constant.successCode,
-      message: "Customer created successfully",
+      message: "Approve ccessfully",
       result: data
     })
 
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };

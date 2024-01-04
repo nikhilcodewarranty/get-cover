@@ -106,7 +106,7 @@ module.exports = class userService {
   static async getUserById1(userId, projection) {
     try {
       console.log("query---------------", userId)
-      const singleUserResponse = await user.findById(userId, projection);
+      const singleUserResponse = await user.findOne(userId, projection);
       return singleUserResponse;
     } catch (error) {
       console.log(`User not found. ${error}`);
