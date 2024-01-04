@@ -1219,7 +1219,6 @@ exports.uploadPriceBook = async (req, res) => {
       // Construct the complete URL
       const complete_url = `${base_url_link}/${csvName1}`;
 
-      console.log(csvStatus);
 
       let entriesData = {
         userName: checkDealer[0].name,
