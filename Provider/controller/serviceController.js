@@ -135,6 +135,7 @@ exports.approveServicer = async (req, res, next) => {
 // get servicer registration request
 exports.getServicer = async (req, res) => {
   try {
+    let data = req.body
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -174,9 +175,22 @@ exports.getServicer = async (req, res) => {
       }
     });
 
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.servicerData.name) &&
+        emailRegex.test(entry.email)&&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
     res.send({
       code: constant.successCode,
-      data: result_Array
+      message:"Success",
+      data: filteredData
     });
   } catch (err) {
     res.send({
@@ -567,4 +581,14 @@ exports.getSerivicerUsers = async (req, res) => {
   }
 }
 
+exports.addServicerUser = async(req,res)=>{
+  try{
+
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
