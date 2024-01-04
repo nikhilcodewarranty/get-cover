@@ -24,6 +24,8 @@ const path = require('path');
 
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
+const { isBoolean } = require('util');
+const { string } = require('joi');
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -894,6 +896,11 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
+   
+    data.status = typeof(data.status) == "string" ? "all" : data.status
+
+    //return;
+
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -909,8 +916,8 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
-    if ((data.status || !data.status || data.status!= '') & data.status != undefined) {
-      console.log("fdssdsffsdfsd");
+
+    if (data.status!='all' &&  data.status != undefined  ) {
       matchConditions.push({ 'status': data.status });
     }
 
