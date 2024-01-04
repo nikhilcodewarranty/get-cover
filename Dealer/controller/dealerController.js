@@ -910,7 +910,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
-    let searchDealerName = req.body.name ? req.body.name : ''
+    let searchDealerName =  { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
     let query
     let matchConditions = [];
 
