@@ -1118,8 +1118,7 @@ exports.uploadPriceBook = async (req, res) => {
           if (existingData.length > 0) {
             allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
             newArray1 = results
-              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-              
+              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))              
               .map(obj => ({
                 priceBook: obj.priceBook,
                 status: true,
