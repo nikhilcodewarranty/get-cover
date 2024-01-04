@@ -1,0 +1,7 @@
+Price Book,Status,Reason
+tc-01,Failed,The product is inactive
+test the product,Failed,The product is not exist in the catalog
+product,Failed,The product is not exist in the catalog
+Test 101,Failed,The product is not exist in the catalog
+tc-01,Failed,The product is not exist in the catalog
+tc-03,Failed,This product is already in the dealer product catalog

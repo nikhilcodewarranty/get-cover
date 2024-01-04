@@ -49,7 +49,7 @@ exports.getAllDealers = async (req, res) => {
       $and: [
         { isDeleted: false },
         { status: "Approved" },
-        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+        { 'name': { '$regex': req.body.name ? req.body.name.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
       ]
 
     };
@@ -1045,13 +1045,13 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    if (checkDealer[0].status == 'Pending') {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer has not been approved yet!"
-      })
-      return;
-    }
+    // if (checkDealer[0].status == 'Pending') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Dealer has not been approved yet!"
+    //   })
+    //   return;
+    // }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -1106,18 +1106,42 @@ exports.uploadPriceBook = async (req, res) => {
       priceBookName = unique.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
       const foundProducts = await priceBookService.findByName(priceBookName1);
-      // console.log("foundProducts==============================",foundProducts);
       // return;
       if (foundProducts.length > 0) {
         const count = await dealerPriceService.getDealerPriceCount();
         // Extract the names and ids of found products
-        const foundProductData = foundProducts.map(product => ({
-          priceBook: product._id,
-          name: product.name,
-          dealerId: req.body.dealerId,
-          status: true,
-          wholePrice: (Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)).toFixed(2)
-        }));
+        let foundProductData1 = foundProducts.map(product => {
+          if (product.status) {
+            return {
+              priceBook: product._id,
+              name: product.name,
+              dealerId: req.body.dealerId,
+              status: true,
+              wholePrice: (Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)).toFixed(2)
+            }
+          }
+        });
+
+        const inactiveData = foundProducts.filter(inactive => inactive.status === false);
+        const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
+
+        if (inactiveData.length > 0) {
+          inactiveData.map(inactive => {
+            let csvData = {
+              'priceBook': inactive.name,
+              'status': 'Failed',
+              'reason': 'The product is inactive',
+
+            }
+            csvStatus.push(csvData)
+          })
+
+        }
+        const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
+          // Remove product from csv based on inactive name
+        priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
+
+  
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
@@ -1142,11 +1166,10 @@ exports.uploadPriceBook = async (req, res) => {
             ]
           }
           let existingData = await dealerPriceService.findByIds(query);
-          // console.log("existingData==================",existingData);return;
           if (existingData.length > 0) {
             allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
             newArray1 = results
-              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))              
+              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
               .map(obj => ({
                 priceBook: obj.priceBook,
                 status: true,
@@ -1190,7 +1213,7 @@ exports.uploadPriceBook = async (req, res) => {
             });
           }
           else {
-        
+
             newArray1 = results
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
@@ -1246,16 +1269,18 @@ exports.uploadPriceBook = async (req, res) => {
       // Construct the complete URL
       const complete_url = `${base_url_link}/${csvName1}`;
 
+      //console.log(csvStatus);return;
 
       let entriesData = {
         userName: checkDealer[0].name,
         totalEntries: Number(results.length),
         SuccessEntries: Number(passedEnteries.length),
-        failedEntries: Number(results.length)-Number(passedEnteries.length),
+        failedEntries: Number(results.length) - Number(passedEnteries.length),
         routeLink: complete_url
       }
+
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
