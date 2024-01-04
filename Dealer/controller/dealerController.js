@@ -1237,7 +1237,7 @@ exports.uploadPriceBook = async (req, res) => {
 
 
       // Construct the base URL link
-      const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
+      const base_url_link = 'https://15.207.221.207:3002/uploads/resultFile';
 
       // Get the CSV name from the csvWriter path
       const csvName1 = csvName;
