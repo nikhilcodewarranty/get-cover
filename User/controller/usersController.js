@@ -638,13 +638,33 @@ exports.createDealer = async (req, res) => {
 
             if (foundProducts.length > 0) {
               // Extract the names and ids of found products
-              const foundProductData = foundProducts.map(product => ({
-                priceBook: product._id,
-                name: product.name,
-                dealerId: req.body.dealerId,
-                status: true,
-                wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
-              }));
+              let foundProductData1 = foundProducts.map(product => {
+                if (product.status) {
+                  return {
+                    priceBook: product._id,
+                    name: product.name,
+                    dealerId: req.body.dealerId,
+                    status: true,
+                    wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+                  }
+                }
+              });
+              const inactiveData = foundProducts.filter(inactive => inactive.status === false);
+              const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
+
+              if (inactiveData.length > 0) {
+                inactiveData.map(inactive => {
+                  let csvData = {
+                    'priceBook': inactive.name,
+                    'status': 'Failed',
+                    'reason': 'The product is inactive',
+
+                  }
+                  csvStatus.push(csvData)
+                })
+
+              }
+
               const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
               if (missingProductNames.length > 0) {
                 missingProductNames.map(product => {
@@ -1074,6 +1094,7 @@ exports.createDealer = async (req, res) => {
             priceBookName = unique.map(obj => obj.priceBook);
             const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
             const foundProducts = await priceBookService.findByName(priceBookName1);
+
             const dealerMeta = {
               name: data.name,
               street: data.street,
@@ -1099,13 +1120,31 @@ exports.createDealer = async (req, res) => {
               let count1 = await dealerPriceService.getDealerPriceCount();
 
               // Extract the names and ids of found products
-              const foundProductData = foundProducts.map(product => ({
-                priceBook: product._id,
-                name: product.name,
-                dealerId: createMetaData._id,
-                status: true,
-                wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
-              }));
+              let foundProductData1 = foundProducts.map(product => {
+                if (product.status) {
+                  return {
+                    priceBook: product._id,
+                    name: product.name,
+                    dealerId: createMetaData._id,
+                    status: true,
+                    wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
+                  }
+                }
+              });
+              const inactiveData = foundProducts.filter(inactive => inactive.status === false);
+              const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
+              if (inactiveData.length > 0) {
+                inactiveData.map(inactive => {
+                  let csvData = {
+                    'priceBook': inactive.name,
+                    'status': 'Failed',
+                    'reason': 'The product is inactive',
+
+                  }
+                  csvStatus.push(csvData)
+                })
+
+              }
               const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
               if (missingProductNames.length > 0) {
                 missingProductNames.map(product => {

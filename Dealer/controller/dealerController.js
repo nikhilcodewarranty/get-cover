@@ -49,7 +49,7 @@ exports.getAllDealers = async (req, res) => {
       $and: [
         { isDeleted: false },
         { status: "Approved" },
-        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+        { 'name': { '$regex': req.body.name ? req.body.name.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
       ]
 
     };
@@ -1107,12 +1107,11 @@ exports.uploadPriceBook = async (req, res) => {
               'status': 'Failed',
               'reason': 'The product is inactive',
 
-            }
+            } 
             csvStatus.push(csvData)
           })
+        
         }
-
-     
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
