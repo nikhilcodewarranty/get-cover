@@ -870,7 +870,7 @@ exports.createDealer = async (req, res) => {
 
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -1291,7 +1291,7 @@ exports.createDealer = async (req, res) => {
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
