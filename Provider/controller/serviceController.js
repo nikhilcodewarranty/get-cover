@@ -260,10 +260,12 @@ exports.editServicerDetail = async (req, res) => {
       })
       return;
     }
-    let criteria1 = {$or:[
-      { _id: data.userId},
-      { accountId: checkServicer._id}
-    ] }
+    let criteria1 = {
+      $or: [
+        { _id: data.userId },
+        { accountId: checkServicer._id }
+      ]
+    }
     let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
     if (!updateMetaData) {
       res.send({
@@ -274,7 +276,7 @@ exports.editServicerDetail = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: "Updated Successfully",
-        result:{updateData,updateMetaData}
+        result: { updateData, updateMetaData }
       })
     }
   } catch (err) {
@@ -284,9 +286,6 @@ exports.editServicerDetail = async (req, res) => {
     })
   }
 }
-
-
-
 
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
@@ -529,5 +528,43 @@ exports.statusUpdate = async (req, res) => {
     });
   }
 };
+
+exports.getSerivicerUsers = async (req, res) => {
+  try {
+    let data = req.body
+    let getUsers = await userService.findUser({ accountId: req.params.servicerId })
+
+    if (!getUsers) {
+      res.send({
+        code: constant.errorCode,
+        message: "No Users Found!"
+      })
+    } else {
+      const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+      const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+      const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
+      const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+      const filteredData = getUsers.filter(entry => {
+        return (
+          firstNameRegex.test(entry.firstName) &&
+          lastNameRegex.test(entry.firstName) &&
+          emailRegex.test(entry.email) &&
+          phoneRegex.test(entry.phoneNumber)
+        );
+      });
+
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: filteredData
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 

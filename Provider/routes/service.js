@@ -9,6 +9,7 @@ router.put("/approveServicer/:servicerId",[verifyToken],serviceController.approv
 router.put("/editServicerDetail/:servicerId",[verifyToken],serviceController.editServicerDetail)
 router.post("/register", serviceController.registerServiceProvider)
 router.get("/serviceProvider", serviceController.getAllServiceProviders);
+router.get("/getSerivicerUsers/:servicerId", serviceController.getSerivicerUsers);
 router.get("/servicers/:status", [verifyToken], serviceController.getServicer); //get all dealers
 router.get("/getServiceProviderById/:servicerId", [verifyToken], serviceController.getServiceProviderById); //get all dealers
 router.delete("/rejectServicer/:servicerId", [verifyToken], serviceController.rejectServicer); //get all dealers

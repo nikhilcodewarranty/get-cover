@@ -54,6 +54,7 @@ module.exports = class userService {
   static async findUser(query) {
     try {
       const allUsers = await user.find(query);
+      console.log("===================",allUsers)
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -332,7 +333,6 @@ module.exports = class userService {
 
   static async getSingleUserByEmail(query, project) {
     try {
-      console.log("checking-------------------", query)
       let getUser = await user.findOne(query)
       return getUser;
     } catch (err) {
