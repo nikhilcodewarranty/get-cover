@@ -910,7 +910,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
-    let searchDealerName =  { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+    let searchDealerName = req.body.name ? req.body.name : ''
     let query
     let matchConditions = [];
 
@@ -926,7 +926,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
 
     if (data.name) {
-      matchConditions.push({ 'dealer.name': searchDealerName });
+      matchConditions.push({ 'dealer.name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } });
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
     console.log(matchStage);
