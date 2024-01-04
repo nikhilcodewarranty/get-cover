@@ -277,36 +277,36 @@ exports.editCustomer = async (req, res) => {
   }
 }
 
-exports.editCustomer = async (req, res) => {
-  try {
-    let data = req.body
-    let checkDealer = await customerService.getCustomerById(req.params.dealerId, {})
-    if (!checkDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid ID"
-      })
-      return;
-    };
-    let updateDetail = await userService.updateUser({ accountId: checkDealer._id }, data, { new: true })
-    if (!updateDetail) {
-      res.send({
-        code: constant.errorCode,
-        message: `Fail to edit`
-      })
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Updated successfully"
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
+// exports.editCustomer = async (req, res) => {
+//   try {
+//     let data = req.body
+//     let checkDealer = await customerService.getCustomerById(req.params.dealerId, {})
+//     if (!checkDealer) {
+//       res.send({
+//         code: constant.errorCode,
+//         message: "Invalid ID"
+//       })
+//       return;
+//     };
+//     let updateDetail = await userService.updateUser({ accountId: checkDealer._id }, data, { new: true })
+//     if (!updateDetail) {
+//       res.send({
+//         code: constant.errorCode,
+//         message: `Fail to edit`
+//       })
+//       return;
+//     };
+//     res.send({
+//       code: constant.successCode,
+//       message: "Updated successfully"
+//     })
+//   } catch (err) {
+//     res.send({
+//       code: constant.errorCode,
+//       message: err.message
+//     })
+//   }
+// }
 
 exports.changePrimaryUser = async (req, res) => {
   try {
