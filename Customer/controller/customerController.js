@@ -204,52 +204,10 @@ exports.getDealerCustomers = async (req, res) => {
   }
 }
 
-exports.getCustomerById = async (req, res, next) => {
-  try {
-    const singleCustomer = await customerService.getCustomerById(customerId);
-    if (!singleCustomer) {
-      res.status(404).json("There are no customer found yet!");
-    }
-    res.json(singleCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
-exports.updateCustomer = async (req, res, next) => {
-  try {
-    const updatedCustomer = await customerService.updateCustomer(req.body);
-    if (!updatedCustomer) {
-      res.status(404).json("There are no customer updated yet!");
-    }
-    res.json(updatedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
-exports.deleteCustomer = async (req, res, next) => {
-  try {
-    const deletedCustomer = await customerService.deleteCustomer(req.body.id);
-    if (!deletedCustomer) {
-      res.status(404).json("There are no customer deleted yet!");
-    }
-    res.json(deletedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
-    let checkDealer = await customerService.getCustomerById(req.params.dealerId, {})
+    let checkDealer = await customerService.getCustomerById({_id:req.params.dealerId}, {})
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -257,7 +215,17 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     };
-    let updateDetail = await userService.updateUser({ accountId: checkDealer._id }, data, { new: true })
+    let criteria1 = {_id:checkDealer._id}
+    let option = {new:true}
+    let updateCustomer = await customerService.updateCustomer(criteria1,data,option)
+    if(!updateCustomer){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to update the customer detail"
+      })
+      return;
+    }
+    let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
     if (!updateDetail) {
       res.send({
         code: constant.errorCode,
@@ -276,37 +244,6 @@ exports.editCustomer = async (req, res) => {
     })
   }
 }
-
-// exports.editCustomer = async (req, res) => {
-//   try {
-//     let data = req.body
-//     let checkDealer = await customerService.getCustomerById(req.params.dealerId, {})
-//     if (!checkDealer) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Invalid ID"
-//       })
-//       return;
-//     };
-//     let updateDetail = await userService.updateUser({ accountId: checkDealer._id }, data, { new: true })
-//     if (!updateDetail) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: `Fail to edit`
-//       })
-//       return;
-//     };
-//     res.send({
-//       code: constant.successCode,
-//       message: "Updated successfully"
-//     })
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -393,3 +330,92 @@ exports.addCustomerUser = async (req, res) => {
     })
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+exports.getCustomerById = async (req, res, next) => {
+  try {
+    const singleCustomer = await customerService.getCustomerById(customerId);
+    if (!singleCustomer) {
+      res.status(404).json("There are no customer found yet!");
+    }
+    res.json(singleCustomer);
+  } catch (error) {
+    res
+      .status(customerResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+exports.updateCustomer = async (req, res, next) => {
+  try {
+    const updatedCustomer = await customerService.updateCustomer(req.body);
+    if (!updatedCustomer) {
+      res.status(404).json("There are no customer updated yet!");
+    }
+    res.json(updatedCustomer);
+  } catch (error) {
+    res
+      .status(customerResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+exports.deleteCustomer = async (req, res, next) => {
+  try {
+    const deletedCustomer = await customerService.deleteCustomer(req.body.id);
+    if (!deletedCustomer) {
+      res.status(404).json("There are no customer deleted yet!");
+    }
+    res.json(deletedCustomer);
+  } catch (error) {
+    res
+      .status(customerResourceResponse.serverError.statusCode)
+      .json({ error: "Internal server error" });
+  }
+};
+
+
+
+// exports.editCustomer = async (req, res) => {
+//   try {
+//     let data = req.body
+//     let checkDealer = await customerService.getCustomerById(req.params.dealerId, {})
+//     if (!checkDealer) {
+//       res.send({
+//         code: constant.errorCode,
+//         message: "Invalid ID"
+//       })
+//       return;
+//     };
+//     let updateDetail = await userService.updateUser({ accountId: checkDealer._id }, data, { new: true })
+//     if (!updateDetail) {
+//       res.send({
+//         code: constant.errorCode,
+//         message: `Fail to edit`
+//       })
+//       return;
+//     };
+//     res.send({
+//       code: constant.successCode,
+//       message: "Updated successfully"
+//     })
+//   } catch (err) {
+//     res.send({
+//       code: constant.errorCode,
+//       message: err.message
+//     })
+//   }
+// }
+
+

@@ -1694,7 +1694,6 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -1721,7 +1720,6 @@ exports.uploadPriceBook = async (req, res) => {
     });
   }
 };
-
 
 // get all roles
 exports.getAllRoles = async (req, res) => {
@@ -1821,6 +1819,7 @@ exports.getAllNotifications = async (req, res) => {
     })
   }
 };
+
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
@@ -1886,6 +1885,7 @@ exports.notificationStatusUpdate = async (req, res) => {
     })
   }
 };
+
 exports.getCountNotification = async (req, res) => {
   try {
     const allNotification = await userService.getCountNotification();
@@ -1904,7 +1904,6 @@ exports.getCountNotification = async (req, res) => {
     })
   }
 };
-
 
 exports.checkEmailForSingle =async(req,res)=>{
   try{

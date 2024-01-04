@@ -39,21 +39,16 @@ module.exports = class customerService {
 
   static async getCustomerById(customerId) {
     try {
-      const singleCustomerResponse = await customer.findById({
-        _id: customerId,
-      });
+      const singleCustomerResponse = await customer.findById(customerId);
       return singleCustomerResponse;
     } catch (error) {
       console.log(`Customer not found. ${error}`);
     }
   }
 
-  static async updateCustomer(data) {
+  static async updateCustomer(criteria,data,option) {
     try {
-      const updatedResponse = await customer.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
+      const updatedResponse = await customer.updateOne(criteria,data,option);
 
       return updatedResponse;
     } catch (error) {
