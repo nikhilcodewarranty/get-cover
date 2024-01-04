@@ -742,14 +742,28 @@ exports.createDealer = async (req, res) => {
                   const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
                   if (uploaded) {
                     existingData.forEach(product => {
-                      const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-                      let csvAlreadyData = {
-                        'priceBook': priceBooksList,
-                        'status': 'Failed',
-                        'reason': 'This product is already in the dealer product catalog',
-                      };
-                      csvStatus.push(csvAlreadyData);
+                      product.priceBooks.forEach(priceBook => {
+                        const matchedData = unique.filter(item => priceBook.name == item.priceBook);
+                        // console.log(priceBook.name);
+                        // console.log(priceBook._id);
+                        // console.log(matchedData[0].retailPrice);
+                        let newValue = {
+                          $set: {
+                            retailPrice: matchedData[0].retailPrice
+                          }
+                        };
+                        let option = { new: true }
+                        let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id }, newValue, option);
+                        let csvData = {
+                          'priceBook': priceBook.name,
+                          'status': 'Passed',
+                          'reason': 'Successfull Processed!',
+                        }
+                        csvStatus.push(csvData)
+                        passedEnteries.push(csvData)
+                      });
                     });
+
                     // res.send({
                     //   code: constant.successCode,
                     //   message: 'Success',
@@ -892,7 +906,7 @@ exports.createDealer = async (req, res) => {
 
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -1216,14 +1230,28 @@ exports.createDealer = async (req, res) => {
                   const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
                   const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
                   existingData.forEach(product => {
-                    const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-                    let csvAlreadyData = {
-                      'priceBook': priceBooksList,
-                      'status': 'Failed',
-                      'reason': 'The product is already in the catalog',
-                    };
-                    csvStatus.push(csvAlreadyData);
+                    product.priceBooks.forEach(priceBook => {
+                      const matchedData = unique.filter(item => priceBook.name == item.priceBook);
+                      // console.log(priceBook.name);
+                      // console.log(priceBook._id);
+                      // console.log(matchedData[0].retailPrice);
+                      let newValue = {
+                        $set: {
+                          retailPrice: matchedData[0].retailPrice
+                        }
+                      };
+                      let option = { new: true }
+                      let update = dealerPriceService.updateDealerPrice({ dealerId:createMetaData._id, priceBook: priceBook._id }, newValue, option);
+                      let csvData = {
+                        'priceBook': priceBook.name,
+                        'status': 'Passed',
+                        'reason': 'Successfull Processed!',
+                      }
+                      csvStatus.push(csvData)
+                      passedEnteries.push(csvData)
+                    });
                   });
+
 
                 }
 
@@ -1336,7 +1364,7 @@ exports.createDealer = async (req, res) => {
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
