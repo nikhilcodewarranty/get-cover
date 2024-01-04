@@ -11,6 +11,7 @@ const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 //-------------------- get api's endpoints--------------------------//
 router.get("/users/:role", [verifyToken], userController.getAllUsers); // get all users 
 router.get("/getUserById/:userId", [verifyToken], userController.getUserById); // get all users 
+router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // get all users 
 router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
 router.post("/approveDealers", [verifyToken], validator("filter_dealer"),dealerController.getAllDealers); //get all dealers
 router.get("/approveServicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers

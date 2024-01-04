@@ -1906,7 +1906,27 @@ exports.getCountNotification = async (req, res) => {
 };
 
 
-
+exports.checkEmailForSingle =async(req,res)=>{
+  try{
+    let checkEmail  = await userService.getUserById1({email:req.body.email},{})
+    if(checkEmail){
+      res.send({
+        code:constant.errorCode,
+        message:"User already exist with this email ID"
+      })
+    }else{
+      res.send({
+        code:constant.successCode,
+        message:"Success"
+      })
+    }
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 
