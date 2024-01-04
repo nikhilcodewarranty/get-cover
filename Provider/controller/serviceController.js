@@ -29,6 +29,7 @@ exports.createServiceProvider = async (req, res, next) => {
     }
 
     if (data.flag == "create") {
+
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
         res.send({
@@ -37,9 +38,29 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
+      let teamMembers = data.members
+
+      const createServiceProvider = await providerService.createServiceProvider(servicerObject);
+      if (!createServiceProvider) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to create the servicer"
+        })
+        return;
+      };
+
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id }));
+
+      let saveMembers = await userService.insertManyUser(teamMembers)
+      res.send({
+        code: constant.successCode,
+        message: "Customer created successfully",
+        result: data
+      })
     }
 
     if (data.flag == "approve") {
+      let emailCheck = await userService.findOneUser({ email: data.email });
       if (servicerObject.name != data.oldName) {
         let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
         if (checkAccountName) {
@@ -50,33 +71,70 @@ exports.createServiceProvider = async (req, res, next) => {
           return;
         };
       }
+      let checkDetail = await providerService.getServicerByName({ _id: emailCheck.accountId })
+      if (!checkDetail) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid ID"
+        })
+        return;
+      }
+      if (servicerObject.name != data.oldName) {
+        let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
+        if (checkAccountName) {
+          res.send({
+            code: constant.errorCode,
+            message: "Servicer already exist with this account name"
+          })
+          return;
+        };
+      }
+      if (data.email != data.oldEmail) {
+        let emailCheck = await userService.findOneUser({ email: data.email });
+        if (emailCheck) {
+          res.send({
+            code: constant.errorCode,
+            message: "Primary user email already exist"
+          })
+          return;
+        }
+      }
+
+      let teamMembers = data.members
+
+      let getUserId = await userService.getUserById1({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
+      // console.log("getUserId================",getUserId);
+      // return;
+
+      const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+      if (!updateServicer) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the servicer"
+        })
+        return;
+      };
+
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id }));
+
+      let saveMembers = await userService.insertManyUser(teamMembers)
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+
+      let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
+      const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
+      res.send({
+        code: constant.successCode,
+        message: "Approve ccessfully",
+        result: data
+      })
     }
 
-    console.log(checkAccountName)
-    let teamMembers = data.members
 
-    const createServiceProvider = await providerService.createServiceProvider(servicerObject);
-    if (!createServiceProvider) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create the servicer"
-      })
-      return;
-    };
-
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id }));
-
-    let saveMembers = await userService.insertManyUser(teamMembers)
-    res.send({
-      code: constant.successCode,
-      message: "Customer created successfully",
-      result: data
-    })
 
   } catch (error) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: error.message
     })
   }
 };
