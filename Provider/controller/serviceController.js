@@ -14,6 +14,8 @@ const bcrypt = require("bcrypt");
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
+    const count = await providerService.getServicerCount();
+
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -23,6 +25,7 @@ exports.createServiceProvider = async (req, res, next) => {
       country: data.country,
       status: data.status,
       accountStatus: "Approved",
+      unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
     let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
     if (checkAccountName) {
