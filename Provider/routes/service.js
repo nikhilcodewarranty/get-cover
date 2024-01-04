@@ -5,6 +5,7 @@ const serviceController = require("../controller/serviceController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 
 router.post("/createServiceProvider",validator('create_servicer_validation'),[verifyToken],serviceController.createServiceProvider)
+router.post("/addServicerUser/:servicerId",[verifyToken],serviceController.addServicerUser)
 router.put("/approveServicer/:servicerId",[verifyToken],serviceController.approveServicer)
 router.put("/editServicerDetail/:servicerId",[verifyToken],serviceController.editServicerDetail)
 router.post("/register", serviceController.registerServiceProvider)

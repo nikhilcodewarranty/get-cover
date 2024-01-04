@@ -182,14 +182,14 @@ exports.getServicer = async (req, res) => {
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.servicerData.name) &&
-        emailRegex.test(entry.email)&&
+        emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
 
     res.send({
       code: constant.successCode,
-      message:"Success",
+      message: "Success",
       data: filteredData
     });
   } catch (err) {
@@ -561,7 +561,7 @@ exports.getSerivicerUsers = async (req, res) => {
       const filteredData = getUsers.filter(entry => {
         return (
           firstNameRegex.test(entry.firstName) &&
-          lastNameRegex.test(entry.firstName) &&
+          lastNameRegex.test(entry.lastName) &&
           emailRegex.test(entry.email) &&
           phoneRegex.test(entry.phoneNumber)
         );
@@ -581,13 +581,44 @@ exports.getSerivicerUsers = async (req, res) => {
   }
 }
 
-exports.addServicerUser = async(req,res)=>{
-  try{
-
-  }catch(err){
+exports.addServicerUser = async (req, res) => {
+  try {
+    let data = req.body
+    let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid servicer ID"
+      })
+      return
+    }
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    if (checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "user already exist with this email"
+      })
+    } else {
+      data.isPrimary = false
+      data.accountId = checkServicer._id
+      let saveData = await userService.createUser(data)
+      if (!saveData) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to add the user"
+        })
+        return;
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Added successfully",
+        result: saveData
+      })
+    }
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
