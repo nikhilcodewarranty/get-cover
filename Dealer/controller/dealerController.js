@@ -1130,6 +1130,13 @@ exports.uploadPriceBook = async (req, res) => {
               const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
               if (matchingItem != undefined) {
+                let csvData = {
+                  'priceBook': foundProduct.name,
+                  'status': 'Passed',
+                  'reason': 'Successfull Processed!',
+                }
+                csvStatus.push(csvData)
+                
                 return {
                   ...foundProduct,
                   retailPrice: matchingItem.retailPrice,
