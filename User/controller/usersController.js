@@ -664,7 +664,9 @@ exports.createDealer = async (req, res) => {
                 })
 
               }
-
+              const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
+              // Remove product from csv based on inactive name
+              priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
               const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
               if (missingProductNames.length > 0) {
                 missingProductNames.map(product => {
@@ -1145,6 +1147,10 @@ exports.createDealer = async (req, res) => {
                 })
 
               }
+
+              const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
+              // Remove product from csv based on inactive name
+              priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
               const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
               if (missingProductNames.length > 0) {
                 missingProductNames.map(product => {
@@ -1330,7 +1336,7 @@ exports.createDealer = async (req, res) => {
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,

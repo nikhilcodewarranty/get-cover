@@ -1020,13 +1020,13 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    if (checkDealer[0].status == 'Pending') {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer has not been approved yet!"
-      })
-      return;
-    }
+    // if (checkDealer[0].status == 'Pending') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Dealer has not been approved yet!"
+    //   })
+    //   return;
+    // }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -1107,11 +1107,16 @@ exports.uploadPriceBook = async (req, res) => {
               'status': 'Failed',
               'reason': 'The product is inactive',
 
-            } 
+            }
             csvStatus.push(csvData)
           })
-        
+
         }
+        const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
+          // Remove product from csv based on inactive name
+        priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
+
+  
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
