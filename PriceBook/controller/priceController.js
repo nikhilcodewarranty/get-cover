@@ -22,9 +22,8 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
-    data.status = data.status ? data.status :""
-    data.status = typeof(data.status) == "string" ? "all" : data.status
-
+    let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
+    data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
     if (data.status != "all") {
       query = {
@@ -45,7 +44,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       };
     }
 
-    console.log("-----------------------------------------",query)
+    console.log("-----------------------------------------", query)
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
       res.send({
