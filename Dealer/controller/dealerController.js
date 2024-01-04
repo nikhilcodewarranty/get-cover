@@ -1201,9 +1201,6 @@ exports.uploadPriceBook = async (req, res) => {
             existingData.forEach(product => {
               product.priceBooks.forEach(priceBook => {
                 const matchedData = unique.filter(item => priceBook.name==item.priceBook);
-                console.log(priceBook.name);
-                console.log(priceBook._id);
-                console.log(matchedData[0].retailPrice);
                 let newValue = {
                   $set: {
                     retailPrice:matchedData[0].retailPrice
