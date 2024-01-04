@@ -909,7 +909,7 @@ exports.createDealer = async (req, res) => {
               const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
-                code: constant.successCode,
+                code: constant.successCode, 
                 message: 'Successfully Created',
               });
 
