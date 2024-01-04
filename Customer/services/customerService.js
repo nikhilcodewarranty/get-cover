@@ -39,7 +39,7 @@ module.exports = class customerService {
 
   static async getCustomerById(customerId) {
     try {
-      const singleCustomerResponse = await customer.findById(customerId);
+      const singleCustomerResponse = await customer.findOne(customerId);
       return singleCustomerResponse;
     } catch (error) {
       console.log(`Customer not found. ${error}`);

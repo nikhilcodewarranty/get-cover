@@ -331,31 +331,47 @@ exports.addCustomerUser = async (req, res) => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-exports.getCustomerById = async (req, res, next) => {
-  try {
-    const singleCustomer = await customerService.getCustomerById(customerId);
-    if (!singleCustomer) {
-      res.status(404).json("There are no customer found yet!");
+exports.getCustomerById = async(req,res)=>{
+  try{
+    let data = req.body
+    let checkCustomer = await customerService.getCustomerById({_id:req.params.customerId},{})
+    if(!checkCustomer){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid customer ID"
+      })
+    }else{
+      let getPrimaryUser = await userService.getUserById1({accountId:checkCustomer._id.toString(),isPrimary:true},{})
+     
+        res.send({
+          code:constant.successCode,
+          message:"Success",
+          result:{
+            meta:checkCustomer,
+            primary:getPrimaryUser
+          }
+        })
+      
     }
-    res.json(singleCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
   }
-};
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 exports.updateCustomer = async (req, res, next) => {
   try {
