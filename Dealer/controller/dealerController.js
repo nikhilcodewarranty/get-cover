@@ -1031,6 +1031,7 @@ exports.uploadPriceBook = async (req, res) => {
     let csvStatus = [];
     let newArray1;
     let allPriceBooks;
+    let passedEnteries = []
     let upload
     const wb = XLSX.readFile(req.file.path);
     const sheets = wb.SheetNames;
@@ -1136,7 +1137,7 @@ exports.uploadPriceBook = async (req, res) => {
                   'reason': 'Successfull Processed!',
                 }
                 csvStatus.push(csvData)
-                
+                passedEnteries.push(csvData)
                 return {
                   ...foundProduct,
                   retailPrice: matchingItem.retailPrice,
@@ -1162,6 +1163,7 @@ exports.uploadPriceBook = async (req, res) => {
             });
           }
           else {
+        
             newArray1 = results
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
@@ -1173,6 +1175,7 @@ exports.uploadPriceBook = async (req, res) => {
                     'reason': 'Successfull Processed!',
                   }
                   csvStatus.push(csvData)
+                  passedEnteries.push(csvData)
                 }
                 const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
                 //Print the value of updatedCount
@@ -1221,8 +1224,8 @@ exports.uploadPriceBook = async (req, res) => {
       let entriesData = {
         userName: checkDealer[0].name,
         totalEntries: Number(results.length),
-        SuccessEntries: Number(results.length) - Number(csvStatus.length),
-        failedEntries: Number(csvStatus.length),
+        SuccessEntries: Number(passedEnteries.length),
+        failedEntries: Number(results.length)-Number(passedEnteries.length),
         routeLink: complete_url
       }
       // Send email with the CSV file link

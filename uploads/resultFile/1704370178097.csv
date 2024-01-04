@@ -1,0 +1,6 @@
+Price Book,Status,Reason
+test the product,Failed,The product is not exist in the catalog
+product,Failed,The product is not exist in the catalog
+Anjali-002,Failed,The product is not exist in the catalog
+testnew,Failed,This product is already in the dealer product catalog
+test,Failed,This product is already in the dealer product catalog
