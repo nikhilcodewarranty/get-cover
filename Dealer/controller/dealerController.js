@@ -151,9 +151,9 @@ exports.getPendingDealers = async (req, res) => {
       ]
 
     };
-   // let query = { isDeleted: false, status: "Pending" }
-   let projection = { __v: 0, isDeleted: 0 }
-   let dealers = await dealerService.getAllDealers(dealerFilter, projection);
+    // let query = { isDeleted: false, status: "Pending" }
+    let projection = { __v: 0, isDeleted: 0 }
+    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     //-------------Get All Dealers Id's------------------------
 
     const dealerIds = dealers.map(obj => obj._id);
@@ -352,7 +352,7 @@ exports.getUserByDealerId = async (req, res) => {
     const filteredData = users.filter(entry => {
       return (
         firstNameRegex.test(entry.firstName) &&
-        emailRegex.test(entry.email)&&
+        emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
@@ -837,7 +837,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name : ''
     let query
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-    if ((data.status || !data.status || data.status!='') & data.status != undefined) {
+    if ((data.status || !data.status || data.status != '') & data.status != undefined) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -896,8 +896,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
-   
-    data.status = typeof(data.status) == "string" ? "all" : data.status
+
+    data.status = typeof (data.status) == "string" ? "all" : data.status
 
     //return;
 
@@ -917,7 +917,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
 
-    if (data.status!='all' &&  data.status != undefined  ) {
+    if (data.status != 'all' && data.status != undefined) {
       matchConditions.push({ 'status': data.status });
     }
 
@@ -1119,6 +1119,7 @@ exports.uploadPriceBook = async (req, res) => {
             allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
             newArray1 = results
               .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
+              
               .map(obj => ({
                 priceBook: obj.priceBook,
                 status: true,
@@ -1159,6 +1160,14 @@ exports.uploadPriceBook = async (req, res) => {
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
                 const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
+                if (matchingProduct) {
+                  let csvData = {
+                    'priceBook': obj.priceBook,
+                    'status': 'Passed',
+                    'reason': 'Successfull Processed!',
+                  }
+                  csvStatus.push(csvData)
+                }
                 const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
                 //Print the value of updatedCount
                 return {
@@ -1201,6 +1210,8 @@ exports.uploadPriceBook = async (req, res) => {
       // Construct the complete URL
       const complete_url = `${base_url_link}/${csvName1}`;
 
+      console.log(csvStatus);
+
       let entriesData = {
         userName: checkDealer[0].name,
         totalEntries: Number(results.length),
@@ -1208,9 +1219,8 @@ exports.uploadPriceBook = async (req, res) => {
         failedEntries: Number(csvStatus.length),
         routeLink: complete_url
       }
-
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
@@ -1221,7 +1231,6 @@ exports.uploadPriceBook = async (req, res) => {
 
 
     }
-
 
   } catch (err) {
     // Handle errors and respond with an error message
@@ -1399,7 +1408,7 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     };
-    let checkEmail = await userService.getSingleUserByEmail({ email: data.email },{})
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email }, {})
     if (checkEmail) {
       res.send({
         code: constant.errorCode,

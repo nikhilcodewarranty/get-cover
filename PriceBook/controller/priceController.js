@@ -595,7 +595,6 @@ exports.getPriceBookCat = async (req, res) => {
         ]
       }
     }
-    console.log('kkkkk', query)
     let getCat = await priceBookService.getAllPriceCat(query, projection)
     if (!getCat) {
       res.send({
@@ -621,7 +620,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
-    console.log(ID, req.query.priceBookId)
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
