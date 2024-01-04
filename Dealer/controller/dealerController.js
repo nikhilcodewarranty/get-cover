@@ -140,14 +140,52 @@ exports.getPendingDealers = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, status: "Pending" }
-    let projection = { __v: 0, isDeleted: 0 }
-    let dealers = await dealerService.getAllDealers(query, projection);
+
+    let dealerFilter = {
+      $and: [
+        { isDeleted: false },
+        { status: "Pending" },
+        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+      ]
+
+    };
+   // let query = { isDeleted: false, status: "Pending" }
+   let projection = { __v: 0, isDeleted: 0 }
+   let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     //-------------Get All Dealers Id's------------------------
 
     const dealerIds = dealers.map(obj => obj._id);
-    // Get Dealer Primary Users from colection
-    const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    if (req.body.email && req.body.phoneNumber) {
+      query1 = {
+        ...query1,
+        $and: [
+          { email: req.body.email },
+          { phoneNumber: req.body.phoneNumber }
+        ]
+      };
+    } else {
+      // If only one of them is provided, use $or
+      const orConditions = [];
+
+      if (req.body.email !== undefined && req.body.email != '') {
+        orConditions.push({ email: req.body.email });
+      }
+
+      if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
+        orConditions.push({ phoneNumber: req.body.phoneNumber });
+      }
+
+      if (orConditions.length > 0) {
+        query1 = {
+          ...query1,
+          $or: orConditions
+        };
+      }
+
+    }
 
     let dealarUser = await userService.getDealersUser(query1, projection)
     if (!dealers) {
@@ -871,9 +909,10 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
+    console.log("body====================",req.body)
 
-
-    if ((data.status || !data.status || data.status != '') & data.status != undefined) {
+    if ((data.status || !data.status || data.status!= '') & data.status != undefined) {
+      console.log("fdssdsffsdfsd");
       matchConditions.push({ 'status': data.status });
     }
 
