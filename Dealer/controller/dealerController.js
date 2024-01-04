@@ -459,20 +459,46 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
-    if (existingDealer) {
+    const pendingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
+    if (pendingDealer) {
       res.send({
         code: constant.errorCode,
         message: "You have registered already with this name! Waiting for the approval"
       })
       return;
     }
+
+    // Check if the dealer already exists
+    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    if (existingDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Account name already exist"
+      })
+      return;
+    }
+
+
+    // Check if the email already exists
+    const pendingUser = await userService.findOneUser({ email: req.body.email });
+    if (pendingUser) {
+      let checkDealer = await dealerService.getDealerByName({_id:pendingUser.accountId})
+      if(checkDealer.status == "Pending"){
+        res.send({
+          code: constant.errorCode,
+          message: "You have registered already with this email! Waiting for the approval"
+        })
+        return;
+      }
+      
+    }
+
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       res.send({
         code: constant.errorCode,
-        message: "You have registered already with this email! Waiting for the approval"
+        message: "User already exist with this email"
       })
       return;
     }
@@ -1119,7 +1145,7 @@ exports.uploadPriceBook = async (req, res) => {
           if (existingData.length > 0) {
             allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
             newArray1 = results
-              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))              
+              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
               .map(obj => ({
                 priceBook: obj.priceBook,
                 status: true,
@@ -1163,7 +1189,7 @@ exports.uploadPriceBook = async (req, res) => {
             });
           }
           else {
-        
+
             newArray1 = results
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
@@ -1224,7 +1250,7 @@ exports.uploadPriceBook = async (req, res) => {
         userName: checkDealer[0].name,
         totalEntries: Number(results.length),
         SuccessEntries: Number(passedEnteries.length),
-        failedEntries: Number(results.length)-Number(passedEnteries.length),
+        failedEntries: Number(results.length) - Number(passedEnteries.length),
         routeLink: complete_url
       }
       // Send email with the CSV file link
