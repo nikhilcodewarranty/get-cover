@@ -46,14 +46,14 @@ module.exports = {
     };
   },
 
-  dealerApproval: (toEmail) => {
+  dealerApproval: (toEmail,data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.approval_mail,
-     // dynamic_template_data:data
+      dynamic_template_data:data
     };
   },
 
