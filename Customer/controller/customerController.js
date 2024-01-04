@@ -174,7 +174,7 @@ exports.getDealerCustomers = async (req, res) => {
         return dealerData.toObject();
       }
     });
-
+    
     const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
     const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
