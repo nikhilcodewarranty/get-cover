@@ -1155,7 +1155,6 @@ exports.uploadPriceBook = async (req, res) => {
             });
           }
           else {
-
             newArray1 = results
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
@@ -1178,8 +1177,8 @@ exports.uploadPriceBook = async (req, res) => {
         }
       }
       else {
-        if (unique.length > 0) {
-          unique.map(product => {
+        if (results.length > 0) {
+          results.map(product => {
             let csvData = {
               'priceBook': product.priceBook,
               'status': 'Failed',
