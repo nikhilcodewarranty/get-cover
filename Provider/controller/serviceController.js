@@ -9,7 +9,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const bcrypt = require("bcrypt");
 
-
+const randtoken = require('rand-token').generator()
 //Created customer
 exports.createServiceProvider = async (req, res, next) => {
   try {
@@ -95,7 +95,6 @@ exports.approveServicer = async (req, res, next) => {
         return;
       };
     }
-    console.log(data.email, data.oldEmail)
     if (data.email != data.oldEmail) {
       let emailCheck = await userService.findOneUser({ email: data.email });
       if (emailCheck) {
@@ -121,6 +120,9 @@ exports.approveServicer = async (req, res, next) => {
     teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id }));
 
     let saveMembers = await userService.insertManyUser(teamMembers)
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+    let resetLink = `http://15.207.221.207/newPassword/${updateServicer._id}/${resetPasswordCode}`
+    const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
       code: constant.successCode,
       message: "Customer created successfully",
@@ -549,7 +551,7 @@ exports.statusUpdate = async (req, res) => {
         message: "Updated Successfully",
       })
     } else {
-      let criteria1 = { accountId: updatedResult._id,isPrimary:true }
+      let criteria1 = { accountId: updatedResult._id, isPrimary: true }
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {

@@ -57,6 +57,17 @@ module.exports = {
     };
   },
 
+  servicerApproval: (toEmail,data) => {
+    return {
+      to: toEmail,
+      from: process.env.from_email,
+      // subject: `Sending an email using SendGrid`,
+      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
+      templateId: process.env.approval_mail,
+      dynamic_template_data:data
+    };
+  },
+
   // sendMissingProduct: (toEmail, missingProductNames, sub) => {
   //   const htmlContent = `
   //         <p>Please check the following missing products:</p>
