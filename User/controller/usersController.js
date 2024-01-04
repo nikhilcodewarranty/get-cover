@@ -390,7 +390,7 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-
+      let passedEnteries = []
       let priceBook = [];
       let priceBookIds = [];
       let csvStatus = [];
@@ -554,7 +554,7 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email,{link:resetLink}))
+          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
@@ -699,6 +699,13 @@ exports.createDealer = async (req, res) => {
                     const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                     if (matchingItem != undefined) {
+                      let csvData = {
+                        'priceBook': foundProduct.name,
+                        'status': 'Passed',
+                        'reason': 'Successfull Processed!',
+                      }
+                      csvStatus.push(csvData)
+                      passedEnteries.push(csvData)
                       return {
                         ...foundProduct,
                         retailPrice: matchingItem.retailPrice,
@@ -736,6 +743,15 @@ exports.createDealer = async (req, res) => {
                     .map((obj, index) => {
                       const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
                       const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
+                      if (matchingProduct) {
+                        let csvData = {
+                          'priceBook': obj.priceBook,
+                          'status': 'Passed',
+                          'reason': 'Successfull Processed!',
+                        }
+                        csvStatus.push(csvData)
+                        passedEnteries.push(csvData)
+                      }
                       //Print the value of updatedCount
                       return {
                         priceBook: matchingProduct.priceBook,
@@ -827,7 +843,7 @@ exports.createDealer = async (req, res) => {
             //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-            const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email,{link:resetLink}))
+            const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
 
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -847,14 +863,14 @@ exports.createDealer = async (req, res) => {
               let entriesData = {
                 userName: singleDealer.name,
                 totalEntries: Number(results.length),
-                SuccessEntries: Number(results.length) - Number(csvStatus.length),
-                failedEntries: Number(csvStatus.length),
+                SuccessEntries: Number(passedEnteries.length),
+                failedEntries: Number(results.length) - Number(passedEnteries.length),
                 routeLink: complete_url
               }
 
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -970,10 +986,10 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
- 
+
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-          const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email,{link:resetLink}))
+          const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
 
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -1022,7 +1038,7 @@ exports.createDealer = async (req, res) => {
               headers.push(ws[cell].v);
             }
           }
-       
+
           if (sheets.length > 0) {
             let original_csv_array = ['priceBook', 'retailPrice'];
 
@@ -1134,6 +1150,14 @@ exports.createDealer = async (req, res) => {
                     const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
 
                     if (matchingItem != undefined) {
+                      let csvData = {
+                        'priceBook': foundProduct.name,
+                        'status': 'Passed',
+                        'reason': 'Successfull Processed!',
+                      }
+                      csvStatus.push(csvData)
+                      passedEnteries.push(csvData)
+
                       return {
                         ...foundProduct,
                         retailPrice: matchingItem.retailPrice,
@@ -1164,6 +1188,15 @@ exports.createDealer = async (req, res) => {
                     .map((obj, index) => {
                       const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
                       const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
+                      if (matchingProduct) {
+                        let csvData = {
+                          'priceBook': obj.priceBook,
+                          'status': 'Passed',
+                          'reason': 'Successfull Processed!',
+                        }
+                        csvStatus.push(csvData)
+                        passedEnteries.push(csvData)
+                      }
                       //Print the value of updatedCount
                       return {
                         priceBook: matchingProduct.priceBook,
@@ -1235,7 +1268,7 @@ exports.createDealer = async (req, res) => {
             //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email,{link:resetLink}))
+            const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               const res12 = await csvWriter.writeRecords(csvStatus);
@@ -1249,18 +1282,16 @@ exports.createDealer = async (req, res) => {
 
               // Construct the complete URL
               const complete_url = `${base_url_link}/${csvName1}`;
-
-
               let entriesData = {
                 userName: data.name,
                 totalEntries: Number(results.length),
-                SuccessEntries: Number(results.length) - Number(csvStatus.length),
-                failedEntries: Number(csvStatus.length),
+                SuccessEntries: Number(passedEnteries.length),
+                failedEntries: Number(results.length) - Number(passedEnteries.length),
                 routeLink: complete_url
               }
 
               // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+              const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
 
               res.send({
                 code: constant.successCode,
@@ -1512,7 +1543,7 @@ exports.updateUserData = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      result:updateUser
+      result: updateUser
     });
   } catch (err) {
     res.send({
@@ -1905,24 +1936,24 @@ exports.getCountNotification = async (req, res) => {
   }
 };
 
-exports.checkEmailForSingle =async(req,res)=>{
-  try{
-    let checkEmail  = await userService.getUserById1({email:req.body.email},{})
-    if(checkEmail){
+exports.checkEmailForSingle = async (req, res) => {
+  try {
+    let checkEmail = await userService.getUserById1({ email: req.body.email }, {})
+    if (checkEmail) {
       res.send({
-        code:constant.errorCode,
-        message:"User already exist with this email ID"
+        code: constant.errorCode,
+        message: "User already exist with this email ID"
       })
-    }else{
+    } else {
       res.send({
-        code:constant.successCode,
-        message:"Success"
+        code: constant.successCode,
+        message: "Success"
       })
     }
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
