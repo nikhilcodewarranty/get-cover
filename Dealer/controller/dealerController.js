@@ -909,8 +909,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
-    console.log("body====================",req.body)
-
     if ((data.status || !data.status || data.status!= '') & data.status != undefined) {
       console.log("fdssdsffsdfsd");
       matchConditions.push({ 'status': data.status });
