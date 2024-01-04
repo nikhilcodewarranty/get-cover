@@ -27,14 +27,31 @@ exports.createServiceProvider = async (req, res, next) => {
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
-    let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
-    if (checkAccountName) {
-      res.send({
-        code: constant.errorCode,
-        message: "Servicer already exist with this account name"
-      })
-      return;
-    };
+
+    if (data.flag == "create") {
+      let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
+      if (checkAccountName) {
+        res.send({
+          code: constant.errorCode,
+          message: "Servicer already exist with this account name"
+        })
+        return;
+      };
+    }
+
+    if (data.flag == "approve") {
+      if (servicerObject.name != data.oldName) {
+        let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
+        if (checkAccountName) {
+          res.send({
+            code: constant.errorCode,
+            message: "Servicer already exist with this account name"
+          })
+          return;
+        };
+      }
+    }
+
     console.log(checkAccountName)
     let teamMembers = data.members
 
@@ -78,7 +95,7 @@ exports.approveServicer = async (req, res, next) => {
       accountStatus: "Approved",
     }
 
-   
+
     let checkDetail = await providerService.getServicerByName({ _id: req.params.servicerId })
     if (!checkDetail) {
       res.send({
@@ -110,7 +127,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let teamMembers = data.members
 
-    let getUserId = await userService.getUserById1({accountId:checkDetail._id.toString(),isPrimary:true},{})
+    let getUserId = await userService.getUserById1({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
     // console.log("getUserId================",getUserId);
     // return;
 
@@ -127,7 +144,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
-  
+
     let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
     const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
