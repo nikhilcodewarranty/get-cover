@@ -53,7 +53,7 @@ module.exports = class userService {
   //find user
   static async findUser(query) {
     try {
-      const allUsers = await user.find(query);
+      const allUsers = await user.find(query).sort({isPrimary:-1,createdAt:-1});
       console.log("===================",allUsers)
       return allUsers;
     } catch (error) {

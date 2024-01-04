@@ -253,7 +253,6 @@ exports.rejectServicer = async (req, res) => {
 }
 
 //edit servicer details
-
 exports.editServicerDetail = async (req, res) => {
   try {
     let data = req.body
@@ -504,6 +503,7 @@ exports.registerServiceProvider = async (req, res) => {
   }
 };
 
+// status update for servicer 
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
     res.send({
@@ -529,11 +529,39 @@ exports.statusUpdate = async (req, res) => {
       });
       return;
     };
-    res.send({
-      code: constant.successCode,
-      message: "Updated Successfully",
-      data: updatedResult
-    })
+
+    if (req.body.status == false) {
+      let criteria1 = { accountId: updatedResult._id }
+      let option = { new: true }
+      let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
+      if (!updateUsers) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the users"
+        })
+        return
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Updated Successfully",
+      })
+    } else {
+      let criteria1 = { accountId: updatedResult._id,isPrimary:true }
+      let option = { new: true }
+      let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
+      if (!updateUsers) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the primary user"
+        })
+        return
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Updated Successfully",
+      })
+    }
+
   }
   catch (err) {
     return res.send({
@@ -543,6 +571,7 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 
+//get servicer user list with filter
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
@@ -581,6 +610,7 @@ exports.getSerivicerUsers = async (req, res) => {
   }
 }
 
+// add servicer user 
 exports.addServicerUser = async (req, res) => {
   try {
     let data = req.body
@@ -622,4 +652,6 @@ exports.addServicerUser = async (req, res) => {
     })
   }
 }
+
+
 
