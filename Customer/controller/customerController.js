@@ -123,8 +123,8 @@ exports.getAllCustomers = async (req, res, next) => {
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
-        emailRegex.test(entry.email)&&
-        dealerRegex.test(entry.customerData.dealerName)&&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.customerData.dealerName) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
@@ -174,18 +174,25 @@ exports.getDealerCustomers = async (req, res) => {
         return dealerData.toObject();
       }
     });
-    
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
-    const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
+    let name = data.firstName ? data.firstName : ""
+    let nameArray = name.split(" ");
+
+    // Create new keys for first name and last name
+    let newObj = {
+      f_name: nameArray[0],  // First name
+      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+    };
+    console.log('name check ++++++++++++++++++++++=', newObj)
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
-      console.log('entry----------',entry.email,emailRegex)
       return (
         firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName)&&
-        emailRegex.test(entry.email)&&
+        lastNameRegex.test(entry.lastName) &&
+        emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
@@ -207,7 +214,7 @@ exports.getDealerCustomers = async (req, res) => {
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
-    let checkDealer = await customerService.getCustomerById({_id:req.params.dealerId}, {})
+    let checkDealer = await customerService.getCustomerById({ _id: req.params.dealerId }, {})
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -215,13 +222,13 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     };
-    let criteria1 = {_id:checkDealer._id}
-    let option = {new:true}
-    let updateCustomer = await customerService.updateCustomer(criteria1,data,option)
-    if(!updateCustomer){
+    let criteria1 = { _id: checkDealer._id }
+    let option = { new: true }
+    let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
+    if (!updateCustomer) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to update the customer detail"
+        code: constant.errorCode,
+        message: "Unable to update the customer detail"
       })
       return;
     }
@@ -331,32 +338,32 @@ exports.addCustomerUser = async (req, res) => {
   }
 }
 
-exports.getCustomerById = async(req,res)=>{
-  try{
+exports.getCustomerById = async (req, res) => {
+  try {
     let data = req.body
-    let checkCustomer = await customerService.getCustomerById({_id:req.params.customerId},{})
-    if(!checkCustomer){
+    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
+    if (!checkCustomer) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid customer ID"
+        code: constant.errorCode,
+        message: "Invalid customer ID"
       })
-    }else{
-      let getPrimaryUser = await userService.getUserById1({accountId:checkCustomer._id.toString(),isPrimary:true},{})
-     
-        res.send({
-          code:constant.successCode,
-          message:"Success",
-          result:{
-            meta:checkCustomer,
-            primary:getPrimaryUser
-          }
-        })
-      
+    } else {
+      let getPrimaryUser = await userService.getUserById1({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
+
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: {
+          meta: checkCustomer,
+          primary: getPrimaryUser
+        }
+      })
+
     }
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
