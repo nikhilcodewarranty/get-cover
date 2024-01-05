@@ -497,8 +497,8 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const Pendingervicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
-    if (Pendingervicer) {
+    const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    if (existingServicer) {
       res.send({
         code: constant.errorCode,
         message: "You have registered already with this name! Waiting for the approval"
@@ -506,39 +506,15 @@ exports.registerServiceProvider = async (req, res) => {
       return;
     }
 
-    const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
-    if (existingServicer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Account name already exist"
-      })
-      return;
-    }
-
-    // Check if the email already exists
-    const pendingUser = await userService.findOneUser({ email: req.body.email });
-    if (pendingUser) {
-      let checkDealer = await providerService.getServicerByName({ _id: pendingUser.accountId })
-      if (checkDealer.status == "Pending") {
-        res.send({
-          code: constant.errorCode,
-          message: "You have registered already with this email! Waiting for the approval"
-        })
-        return;
-      }
-
-    }
-
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       res.send({
         code: constant.errorCode,
-        message: "User already exist with this email"
+        message: "You have registered already with this email! Waiting for the approval"
       })
       return;
     }
-
 
     const count = await providerService.getServicerCount();
     // Extract necessary data for dealer creation

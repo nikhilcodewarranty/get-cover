@@ -27,7 +27,7 @@ const create_servicer_validation = Joi.object({
         isPrimary: Joi.boolean().required(),
         status: Joi.boolean().required(),
         position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional()
-    }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique."),
+    }).unknown(true)).unique((a, b) => a.email === b.email).message("Each servicer's email must be unique."),
 })
 
 module.exports = create_servicer_validation
