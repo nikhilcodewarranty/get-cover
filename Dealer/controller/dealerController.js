@@ -26,6 +26,25 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const uploadStorage = multer({ storage: storage });
+
+module.exports = {
+  singleFileUpload: uploadStorage.single('file'),
+};
+
+
+
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -34,6 +53,8 @@ const checkObjectId = async (Id) => {
     return false;
   }
 }
+
+
 
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
@@ -1540,7 +1561,20 @@ exports.addDealerUser = async (req, res) => {
   }
 }
 
-
+exports.uploadDealerPriceBook = async(req,res)=>{
+  try{
+    uploadStorage(req,res,async(err)=>{
+      let data = req.body
+      let file = req.file
+      console.log("check file ++++++++++",file)
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 
