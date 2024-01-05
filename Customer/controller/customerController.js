@@ -232,14 +232,14 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
-    let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
-    if (!updateDetail) {
-      res.send({
-        code: constant.errorCode,
-        message: `Fail to edit`
-      })
-      return;
-    };
+    // let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
+    // if (!updateDetail) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: `Fail to edit`
+    //   })
+    //   return;
+    // };
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
@@ -251,6 +251,7 @@ exports.editCustomer = async (req, res) => {
     })
   }
 }
+
 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -364,6 +365,56 @@ exports.getCustomerById = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
+    })
+  }
+}
+
+exports.getCustomerUsers =async(req,res)=>{
+  try{
+    let data = req.body
+    let getCustomerUsers = await userService.findUser({accountId:req.params.customerId,isDeleted:false})
+    if(!getCustomerUsers){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to fetch the customers"
+      })
+      return;
+    }
+
+    let name = data.firstName ? data.firstName : ""
+    let nameArray = name.split(" ");
+
+    // Create new keys for first name and last name
+    let newObj = {
+      f_name: nameArray[0],  // First name
+      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+    };
+
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+
+    const filteredData = getCustomerUsers.filter(entry => {
+      return (
+        firstNameRegex.test(entry.firstName) &&
+        lastNameRegex.test(entry.lastName) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+
+
+    res.send({
+      code:constant.successCode,
+      message:"Success",
+      result:filteredData
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
     })
   }
 }
