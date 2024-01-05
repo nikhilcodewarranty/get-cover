@@ -1039,7 +1039,7 @@ exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
 
-   // console.log("filesPath=========",req.file);return;
+    // console.log("filesPath=========",req.file);return;
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -1078,13 +1078,13 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    if (checkDealer[0].status == 'Pending') {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer has not been approved yet!"
-      })
-      return;
-    }
+    // if (checkDealer[0].status == 'Pending') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Dealer has not been approved yet!"
+    //   })
+    //   return;
+    // }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -1126,15 +1126,21 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      // let results = data
+      //   .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
+      //   .map(obj => ({
+      //     priceBook: obj.priceBook,
+      //     retailPrice: obj.retailPrice,
+      //   }));
+
       let results = data
-        .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
         .map(obj => ({
           priceBook: obj.priceBook,
           retailPrice: obj.retailPrice,
         }));
       //check duplicate Object in array 
 
-      let unique = uniqByKeepLast(results, it => it.priceBook)
+      let unique = uniqByKeepLast(results, it => it.priceBook)   
 
       priceBookName = unique.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
@@ -1237,7 +1243,7 @@ exports.uploadPriceBook = async (req, res) => {
                   }
                 };
                 let option = { new: true }
-                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id,status:true}, newValue, option);
+                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id, status: true }, newValue, option);
                 let csvData = {
                   'priceBook': priceBook.name,
                   'status': 'Passed',
@@ -1248,7 +1254,7 @@ exports.uploadPriceBook = async (req, res) => {
               });
             });
 
-            //upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+            upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
 
 
