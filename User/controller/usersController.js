@@ -604,7 +604,7 @@ exports.createDealer = async (req, res) => {
             if (original_csv_array.length != headers.length) {
               res.send({
                 code: constant.errorCode,
-                message: 'The csv coloumn is not match.Please check the csv format'
+                message: 'The uploaded file coloumn is not match.Please check the uploaded file'
               });
               return;
             }
@@ -617,7 +617,7 @@ exports.createDealer = async (req, res) => {
             if (!equality) {
               res.send({
                 code: constant.errorCode,
-                message: 'Invalid Csv! '
+                message: 'Invalid uploaded file! '
               });
               return;
             }
@@ -1067,7 +1067,7 @@ exports.createDealer = async (req, res) => {
             if (original_csv_array.length != headers.length) {
               res.send({
                 code: constant.errorCode,
-                message: 'The csv coloumn is not match.Please check the csv format'
+                message: 'The uploaded file coloumn is not match.Please check the uploaded file format'
               });
               return;
             }
@@ -1079,7 +1079,7 @@ exports.createDealer = async (req, res) => {
             if (!equality) {
               res.send({
                 code: constant.errorCode,
-                message: 'Invalid Csv! '
+                message: 'Invalid uploaded file! '
               });
               return;
             }

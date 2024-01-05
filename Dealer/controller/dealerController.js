@@ -1074,7 +1074,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (original_csv_array.length != headers.length) {
         res.send({
           code: constant.errorCode,
-          message: 'The csv coloumn is not match.Please check the csv format'
+          message: 'The uploaded file coloumn is not match.Please check the uploaded file'
         });
         return;
       }
@@ -1087,7 +1087,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (!equality) {
         res.send({
           code: constant.errorCode,
-          message: 'Invalid Csv! '
+          message: 'Invalid uploaded file! '
         });
         return;
       }
@@ -1291,7 +1291,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
