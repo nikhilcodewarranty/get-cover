@@ -26,25 +26,6 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
-
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const uploadStorage = multer({ storage: storage });
-
-module.exports = {
-  singleFileUpload: uploadStorage.single('file'),
-};
-
-
-
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -53,8 +34,6 @@ const checkObjectId = async (Id) => {
     return false;
   }
 }
-
-
 
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
@@ -1059,8 +1038,6 @@ function uniqByKeepLast(data, key) {
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
-
-   // console.log("filesPath=========",req.file);return;
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -1099,13 +1076,13 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    if (checkDealer[0].status == 'Pending') {
-      res.send({
-        code: constant.errorCode,
-        message: "Dealer has not been approved yet!"
-      })
-      return;
-    }
+    // if (checkDealer[0].status == 'Pending') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Dealer has not been approved yet!"
+    //   })
+    //   return;
+    // }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -1128,7 +1105,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (original_csv_array.length != headers.length) {
         res.send({
           code: constant.errorCode,
-          message: 'The uploaded file coloumn is not match.Please check the uploaded file'
+          message: 'The csv coloumn is not match.Please check the csv format'
         });
         return;
       }
@@ -1141,7 +1118,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (!equality) {
         res.send({
           code: constant.errorCode,
-          message: 'Invalid uploaded file! '
+          message: 'Invalid Csv! '
         });
         return;
       }
@@ -1158,8 +1135,9 @@ exports.uploadPriceBook = async (req, res) => {
       let unique = uniqByKeepLast(results, it => it.priceBook)
 
       priceBookName = unique.map(obj => obj.priceBook);
-      const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
+      const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
       const foundProducts = await priceBookService.findByName(priceBookName1);
+      // return;
       if (foundProducts.length > 0) {
         const count = await dealerPriceService.getDealerPriceCount();
         // Extract the names and ids of found products
@@ -1193,6 +1171,8 @@ exports.uploadPriceBook = async (req, res) => {
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
         // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
+
+
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
@@ -1258,7 +1238,7 @@ exports.uploadPriceBook = async (req, res) => {
                   }
                 };
                 let option = { new: true }
-                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id,status:true}, newValue, option);
+                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id }, newValue, option);
                 let csvData = {
                   'priceBook': priceBook.name,
                   'status': 'Passed',
@@ -1269,7 +1249,7 @@ exports.uploadPriceBook = async (req, res) => {
               });
             });
 
-            //upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+            upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
 
 
@@ -1342,7 +1322,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
@@ -1560,20 +1540,7 @@ exports.addDealerUser = async (req, res) => {
   }
 }
 
-exports.uploadDealerPriceBook = async(req,res)=>{
-  try{
-    uploadStorage(req,res,async(err)=>{
-      let data = req.body
-      let file = req.file
-      console.log("check file ++++++++++",file)
-    })
-  }catch(err){
-    res.send({
-      code:constant.errorCode,
-      message:err.message
-    })
-  }
-}
+
 
 
 
