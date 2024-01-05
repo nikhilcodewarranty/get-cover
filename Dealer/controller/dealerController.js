@@ -392,7 +392,18 @@ exports.getUserByDealerId = async (req, res) => {
     };
     const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
 
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+    let name = data.firstName ? data.firstName : ""
+    let nameArray = name.split(" ");
+
+    // Create new keys for first name and last name
+    let newObj = {
+      f_name: nameArray[0],  // First name
+      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+    };
+
+
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
 
@@ -400,6 +411,7 @@ exports.getUserByDealerId = async (req, res) => {
     const filteredData = users.filter(entry => {
       return (
         firstNameRegex.test(entry.firstName) &&
+        lastNameRegex.test(entry.lastName) &&
         emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
@@ -1052,6 +1064,7 @@ function uniqByKeepLast(data, key) {
 
 }
 
+
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -1143,25 +1156,32 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      // let results = data
-      //   .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
-      //   .map(obj => ({
-      //     priceBook: obj.priceBook,
-      //     retailPrice: obj.retailPrice,
-      //   }));
+
+      //Get data from csv when priceBooks and retailPrice is undefined
 
       let results = data
+        .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
         .map(obj => ({
           priceBook: obj.priceBook,
           retailPrice: obj.retailPrice,
         }));
-      //check duplicate Object in array 
 
-      let unique = uniqByKeepLast(results, it => it.priceBook)   
+      let allResults = data
+        .map(obj => ({
+          priceBook: obj.priceBook,
+          retailPrice: obj.retailPrice,
+        }));
+
+      // Get only unique data from csv
+      let unique = uniqByKeepLast(results, it => it.priceBook)
+
+      // Get only name from unique
 
       priceBookName = unique.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
+      //Get founded products
       const foundProducts = await priceBookService.findByName(priceBookName1);
+
       if (foundProducts.length > 0) {
         const count = await dealerPriceService.getDealerPriceCount();
         // Extract the names and ids of found products
@@ -1177,8 +1197,12 @@ exports.uploadPriceBook = async (req, res) => {
           }
         });
 
+        //Get inactive products
+
         const inactiveData = foundProducts.filter(inactive => inactive.status === false);
+
         const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
+
 
         if (inactiveData.length > 0) {
           inactiveData.map(inactive => {
@@ -1195,8 +1219,13 @@ exports.uploadPriceBook = async (req, res) => {
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
         // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
+        console.log("results=========================", allResults); 
+        const missingProductNames = allResults.filter(name => {
+          const lowercaseName = name.priceBook!= '' ? name.priceBook.toLowerCase() : name.priceBook;
+          return !foundProductData.some(product => product.name.toLowerCase() === lowercaseName);
+        });
 
-        const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
+        console.log("missingProductNames=========================", missingProductNames); return
         if (missingProductNames.length > 0) {
           missingProductNames.map(product => {
             let csvData = {
@@ -1272,9 +1301,6 @@ exports.uploadPriceBook = async (req, res) => {
             });
 
             upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-
-
-
           }
           else {
 
@@ -1593,9 +1619,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
       let totalDataOut = []
       for (let i in totalDataComing) {
-        console.log("lllll",totalDataComing[i].priceBook)
-        let checkProduct = await priceBookService.findByName1({name:totalDataComing[i].priceBook ? totalDataComing[i].priceBook : ''})
-        console.log("rsult---------",checkProduct)
+        console.log("lllll", totalDataComing[i].priceBook)
+        let checkProduct = await priceBookService.findByName1({ name: totalDataComing[i].priceBook ? totalDataComing[i].priceBook : '' })
+        console.log("rsult---------", checkProduct)
 
       }
       return;
