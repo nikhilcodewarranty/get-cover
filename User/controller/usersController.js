@@ -554,7 +554,7 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+          const mailing = await sgMail.send(emailConstant.dealerApproval(['amit@codenomad.net','rahulverma@codenomad.net'], { link: resetLink }))
           if (mailing) {
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             res.send({
