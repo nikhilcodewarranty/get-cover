@@ -315,7 +315,7 @@ module.exports = class userService {
         {
           $match: query
         }
-      ]);
+      ]).sort({createdAt:-1});
       return fetchUser;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
