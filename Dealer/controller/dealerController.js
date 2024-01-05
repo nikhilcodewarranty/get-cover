@@ -1198,19 +1198,30 @@ exports.uploadPriceBook = async (req, res) => {
               }
             });
             const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
+            existingData.forEach(product => {
+              product.priceBooks.forEach(priceBook => {
+                const matchedData = unique.filter(item => priceBook.name==item.priceBook);
+                let newValue = {
+                  $set: {
+                    retailPrice:matchedData[0].retailPrice
+                  }
+                };
+                let option = { new: true }
+                 let update = dealerPriceService.updateDealerPrice({dealerId:req.body.dealerId,priceBook:priceBook._id},newValue,option);
+                 let csvData = {
+                  'priceBook': priceBook.name,
+                  'status': 'Passed',
+                  'reason': 'Successfull Processed!',
+                }
+                csvStatus.push(csvData)
+                passedEnteries.push(csvData)
+              });
+            });           
 
             upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
 
-            existingData.forEach(product => {
-              const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-              let csvAlreadyData = {
-                'priceBook': priceBooksList,
-                'status': 'Failed',
-                'reason': 'This product is already in the dealer product catalog',
-              };
-              csvStatus.push(csvAlreadyData);
-            });
+      
           }
           else {
 
@@ -1280,7 +1291,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
