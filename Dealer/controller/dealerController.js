@@ -26,6 +26,23 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
+
+
+var StorageP = multer.diskStorage({
+  destination: function (req, files, cb) {
+    cb(null, path.join(__dirname, '../../uploads/resultFile'));
+  },
+  filename: function (req, files, cb) {
+    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+  }
+})
+
+var uploadP = multer({
+  storage: StorageP,
+}).single('file');
+
+
+
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -1546,6 +1563,51 @@ exports.addDealerUser = async (req, res) => {
 }
 
 
+exports.uploadDealerPriceBook = async (req, res) => {
+  try {
+    uploadP(req, res, async (err) => {
+      let file = req.file
+      let data = req.body
+
+      if (!req.file) {
+        res.send({
+          code: constant.errorCode,
+          message: "No file uploaded"
+        })
+        return;
+      }
+
+      let csvName = req.file.filename
+      const csvWriter = createCsvWriter({
+        path: './uploads/resultFile/' + csvName,
+        header: [
+          { id: 'priceBook', title: 'Price Book' },
+          { id: 'status', title: 'Status' },
+          { id: 'reason', title: 'Reason' },
+          // Add more headers as needed
+        ],
+      });
+      const wb = XLSX.readFile(req.file.path);
+      const sheets = wb.SheetNames;
+      const ws = wb.Sheets[sheets[0]];
+      const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      let totalDataOut = []
+      for (let i in totalDataComing) {
+        console.log("lllll",totalDataComing[i].priceBook)
+        let checkProduct = await priceBookService.findByName1({name:totalDataComing[i].priceBook ? totalDataComing[i].priceBook : ''})
+        console.log("rsult---------",checkProduct)
+
+      }
+      return;
+      console.log("file check+++++++++++++++++", totalDataComing)
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 
