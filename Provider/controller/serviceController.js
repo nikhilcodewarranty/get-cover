@@ -38,6 +38,16 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
+
+      let checkPrimaryEmail = await userService.findOneUser({ email: data.email });
+      if(checkPrimaryEmail){
+        res.send({
+          code:constant.errorCode,
+          message:"Primary user already exist with this email "
+        })
+        return;
+      }
+
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
@@ -60,18 +70,8 @@ exports.createServiceProvider = async (req, res, next) => {
     }
 
     if (data.flag == "approve") {
-      let emailCheck = await userService.findOneUser({ email: data.email });
-      if (servicerObject.name != data.oldName) {
-        let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
-        if (checkAccountName) {
-          res.send({
-            code: constant.errorCode,
-            message: "Servicer already exist with this account name"
-          })
-          return;
-        };
-      }
-      let checkDetail = await providerService.getServicerByName({ _id: emailCheck.accountId })
+     
+      let checkDetail = await providerService.getServicerByName({ _id: data.providerId})
       if (!checkDetail) {
         res.send({
           code: constant.errorCode,
@@ -262,9 +262,9 @@ exports.getServicer = async (req, res) => {
       }
     });
 
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (

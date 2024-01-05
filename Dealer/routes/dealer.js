@@ -33,6 +33,7 @@ router.put("/updateDealerMeta",[verifyToken],dealerController.updateDealerMeta);
 // update price book detail with ID
 
 router.post("/createDealerPriceBook",[verifyToken],validator('create_dealer_price_book_validation'),dealerController.createDealerPriceBook)
+router.post("/uploadDealerPriceBook",[verifyToken],dealerController.uploadDealerPriceBook)
 
 
 module.exports = router;

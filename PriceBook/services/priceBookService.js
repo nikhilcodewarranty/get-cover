@@ -236,6 +236,15 @@ module.exports = class priceBookService {
     }
   }
 
+  static async findByName1(priceBooksName) {
+    try {
+      const response = await priceBook.findOne(priceBooksName);
+      return response;
+    } catch (error) {
+      console.log(`Could not fetch price book ${error}`);
+    }
+  }
+
   static async getMultiplePriceBok(query, projection, limit, page) {
     try {
 

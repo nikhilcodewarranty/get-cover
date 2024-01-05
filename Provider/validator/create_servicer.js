@@ -18,6 +18,7 @@ const create_servicer_validation = Joi.object({
     isPrimary: Joi.boolean().optional(),
     status: Joi.boolean().optional(),
     flag: Joi.string().optional(),
+    providerId: Joi.string().optional(),
     position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional(),
     members: Joi.array().items(Joi.object().keys({
         email: Joi.string().replace(/\s+/g, ' ').trim().required(),
