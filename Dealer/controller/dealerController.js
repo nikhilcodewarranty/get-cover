@@ -38,6 +38,9 @@ const checkObjectId = async (Id) => {
 // get all dealers 
 exports.getAllDealers = async (req, res) => {
   try {
+
+    let data = req.body
+
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -60,34 +63,34 @@ exports.getAllDealers = async (req, res) => {
     const dealerIds = dealers.map(obj => obj._id);
     let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
 
-    if (req.body.email && req.body.phoneNumber) {
-      query1 = {
-        ...query1,
-        $and: [
-          { email: req.body.email },
-          { phoneNumber: req.body.phoneNumber }
-        ]
-      };
-    } else {
-      // If only one of them is provided, use $or
-      const orConditions = [];
+    // if (req.body.email && req.body.phoneNumber) {
+    //   query1 = {
+    //     ...query1,
+    //     $and: [
+    //       { email: { '$regex': req.body.email ? req.body.email.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } },
+    //       { phoneNumber: { '$regex': req.body.phoneNumber ? req.body.phoneNumber.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
+    //     ]
+    //   };
+    // } else {
+    //   // If only one of them is provided, use $or
+    //   const orConditions = [];
 
-      if (req.body.email !== undefined && req.body.email != '') {
-        orConditions.push({ email: req.body.email });
-      }
+    //   if (req.body.email !== undefined && req.body.email != '') {
+    //     orConditions.push({ email: req.body.email });
+    //   }
 
-      if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
-        orConditions.push({ phoneNumber: req.body.phoneNumber });
-      }
+    //   if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
+    //     orConditions.push({ phoneNumber: req.body.phoneNumber });
+    //   }
 
-      if (orConditions.length > 0) {
-        query1 = {
-          ...query1,
-          $or: orConditions
-        };
-      }
+    //   if (orConditions.length > 0) {
+    //     query1 = {
+    //       ...query1,
+    //       $or: orConditions
+    //     };
+    //   }
 
-    }
+    // }
 
     //-------------Get All Dealers Id's------------------------
 
@@ -118,9 +121,21 @@ exports.getAllDealers = async (req, res) => {
       }
     });
 
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.dealerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
     res.send({
       code: constant.successCode,
-      data: result_Array
+      data: filteredData
     });
   } catch (err) {
     res.send({
@@ -135,6 +150,9 @@ exports.getAllDealers = async (req, res) => {
 
 exports.getPendingDealers = async (req, res) => {
   try {
+
+    let data = req.body
+
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -160,34 +178,34 @@ exports.getPendingDealers = async (req, res) => {
 
     let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
 
-    if (req.body.email && req.body.phoneNumber) {
-      query1 = {
-        ...query1,
-        $and: [
-          { email: req.body.email },
-          { phoneNumber: req.body.phoneNumber }
-        ]
-      };
-    } else {
-      // If only one of them is provided, use $or
-      const orConditions = [];
+    // if (req.body.email && req.body.phoneNumber) {
+    //   query1 = {
+    //     ...query1,
+    //     $and: [
+    //       { email: { '$regex': req.body.email ? req.body.email : '', '$options': 'i' } },
+    //       { phoneNumber: req.body.phoneNumber }
+    //     ]
+    //   };
+    // } else {
+    //   // If only one of them is provided, use $or
+    //   const orConditions = [];
 
-      if (req.body.email !== undefined && req.body.email != '') {
-        orConditions.push({ email: req.body.email });
-      }
+    //   if (req.body.email !== undefined && req.body.email != '') {
+    //     orConditions.push({ email: req.body.email });
+    //   }
 
-      if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
-        orConditions.push({ phoneNumber: req.body.phoneNumber });
-      }
+    //   if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
+    //     orConditions.push({ phoneNumber: req.body.phoneNumber });
+    //   }
 
-      if (orConditions.length > 0) {
-        query1 = {
-          ...query1,
-          $or: orConditions
-        };
-      }
+    //   if (orConditions.length > 0) {
+    //     query1 = {
+    //       ...query1,
+    //       $or: orConditions
+    //     };
+    //   }
 
-    }
+    // }
 
     let dealarUser = await userService.getDealersUser(query1, projection)
     if (!dealers) {
@@ -211,9 +229,22 @@ exports.getPendingDealers = async (req, res) => {
       }
     });
 
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.dealerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+
     res.send({
       code: constant.successCode,
-      data: result_Array
+      data: filteredData
     });
   } catch (err) {
     res.send({
@@ -457,50 +488,50 @@ exports.registerDealer = async (req, res) => {
       })
       return;
     }
-// Check if the dealer already exists
-const pendingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
-if (pendingDealer) {
-  res.send({
-    code: constant.errorCode,
-    message: "You have registered already with this name! Waiting for the approval"
-  })
-  return;
-}
+    // Check if the dealer already exists
+    const pendingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
+    if (pendingDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "You have registered already with this name! Waiting for the approval"
+      })
+      return;
+    }
 
-// Check if the dealer already exists
-const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
-if (existingDealer) {
-  res.send({
-    code: constant.errorCode,
-    message: "Account name already exist"
-  })
-  return;
-}
+    // Check if the dealer already exists
+    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    if (existingDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Account name already exist"
+      })
+      return;
+    }
 
 
-// Check if the email already exists
-const pendingUser = await userService.findOneUser({ email: req.body.email });
-if (pendingUser) {
-  let checkDealer = await dealerService.getDealerByName({_id:pendingUser.accountId})
-  if(checkDealer.status == "Pending"){
-    res.send({
-      code: constant.errorCode,
-      message: "You have registered already with this email! Waiting for the approval"
-    })
-    return;
-  }
+    // Check if the email already exists
+    const pendingUser = await userService.findOneUser({ email: req.body.email });
+    if (pendingUser) {
+      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.accountId })
+      if (checkDealer.status == "Pending") {
+        res.send({
+          code: constant.errorCode,
+          message: "You have registered already with this email! Waiting for the approval"
+        })
+        return;
+      }
 
-}
+    }
 
-// Check if the email already exists
-const existingUser = await userService.findOneUser({ email: req.body.email });
-if (existingUser) {
-  res.send({
-    code: constant.errorCode,
-    message: "User already exist with this email"
-  })
-  return;
-}
+    // Check if the email already exists
+    const existingUser = await userService.findOneUser({ email: req.body.email });
+    if (existingUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "User already exist with this email"
+      })
+      return;
+    }
 
     const count = await dealerService.getDealerCount();
 
@@ -1138,10 +1169,10 @@ exports.uploadPriceBook = async (req, res) => {
 
         }
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
-          // Remove product from csv based on inactive name
+        // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
 
-  
+
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
@@ -1200,15 +1231,15 @@ exports.uploadPriceBook = async (req, res) => {
             const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
             existingData.forEach(product => {
               product.priceBooks.forEach(priceBook => {
-                const matchedData = unique.filter(item => priceBook.name==item.priceBook);
+                const matchedData = unique.filter(item => priceBook.name == item.priceBook);
                 let newValue = {
                   $set: {
-                    retailPrice:matchedData[0].retailPrice
+                    retailPrice: matchedData[0].retailPrice
                   }
                 };
                 let option = { new: true }
-                 let update = dealerPriceService.updateDealerPrice({dealerId:req.body.dealerId,priceBook:priceBook._id},newValue,option);
-                 let csvData = {
+                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id }, newValue, option);
+                let csvData = {
                   'priceBook': priceBook.name,
                   'status': 'Passed',
                   'reason': 'Successfull Processed!',
@@ -1216,12 +1247,12 @@ exports.uploadPriceBook = async (req, res) => {
                 csvStatus.push(csvData)
                 passedEnteries.push(csvData)
               });
-            });           
+            });
 
             upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
 
-      
+
           }
           else {
 
