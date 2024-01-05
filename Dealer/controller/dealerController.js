@@ -1055,6 +1055,8 @@ function uniqByKeepLast(data, key) {
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
+
+   // console.log("filesPath=========",req.file);return;
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -1093,13 +1095,13 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    // if (checkDealer[0].status == 'Pending') {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Dealer has not been approved yet!"
-    //   })
-    //   return;
-    // }
+    if (checkDealer[0].status == 'Pending') {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer has not been approved yet!"
+      })
+      return;
+    }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -1122,7 +1124,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (original_csv_array.length != headers.length) {
         res.send({
           code: constant.errorCode,
-          message: 'The csv coloumn is not match.Please check the csv format'
+          message: 'The uploaded file coloumn is not match.Please check the uploaded file'
         });
         return;
       }
@@ -1135,7 +1137,7 @@ exports.uploadPriceBook = async (req, res) => {
       if (!equality) {
         res.send({
           code: constant.errorCode,
-          message: 'Invalid Csv! '
+          message: 'Invalid uploaded file! '
         });
         return;
       }
@@ -1152,9 +1154,8 @@ exports.uploadPriceBook = async (req, res) => {
       let unique = uniqByKeepLast(results, it => it.priceBook)
 
       priceBookName = unique.map(obj => obj.priceBook);
-      const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
+      const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
       const foundProducts = await priceBookService.findByName(priceBookName1);
-      // return;
       if (foundProducts.length > 0) {
         const count = await dealerPriceService.getDealerPriceCount();
         // Extract the names and ids of found products
@@ -1188,8 +1189,6 @@ exports.uploadPriceBook = async (req, res) => {
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
         // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-
-
 
         const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
         if (missingProductNames.length > 0) {
@@ -1255,7 +1254,7 @@ exports.uploadPriceBook = async (req, res) => {
                   }
                 };
                 let option = { new: true }
-                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id }, newValue, option);
+                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id,status:true}, newValue, option);
                 let csvData = {
                   'priceBook': priceBook.name,
                   'status': 'Passed',
@@ -1266,7 +1265,7 @@ exports.uploadPriceBook = async (req, res) => {
               });
             });
 
-            upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
+            //upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
 
 
 

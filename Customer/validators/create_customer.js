@@ -24,7 +24,7 @@ const create_customer_validation = Joi.object({
         isPrimary: Joi.boolean().required(),
         status: Joi.boolean().required(),
         position: Joi.string().trim().allow('').replace(/\s+/g, ' ').optional()
-    }).unknown(true)).unique((a, b) => a.email === b.email).message("Each dealer's email must be unique."),
+    }).unknown(true)).unique((a, b) => a.email === b.email).message("Each customer's email must be unique."),
 })
 
 
