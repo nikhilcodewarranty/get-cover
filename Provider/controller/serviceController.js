@@ -115,9 +115,10 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id }));
-
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id }));
+      if(teamMembers.length > 0){
       let saveMembers = await userService.insertManyUser(teamMembers)
+      }
       let resetPasswordCode = randtoken.generate(4, '123456789')
 
       let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
