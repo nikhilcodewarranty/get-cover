@@ -1803,7 +1803,13 @@ exports.createDeleteRelation = async (req, res) => {
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       res.send({
-        code: constant.successCode
+        code: constant.successCode,
+        message:success
+      })
+    }else{
+      res.send({
+        code: constant.successCode,
+        message:success
       })
     }
 
