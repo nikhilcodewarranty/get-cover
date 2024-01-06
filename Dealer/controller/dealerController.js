@@ -2,6 +2,7 @@ require('dotenv').config()
 const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
+const dealerRelationService = require("../services/dealerRelationService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const userService = require("../../User/services/userService");
@@ -26,6 +27,8 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
+const providerService = require('../../Provider/services/providerService');
+const { getServicer } = require('../../Provider/controller/serviceController');
 
 
 var StorageP = multer.diskStorage({
@@ -1616,6 +1619,22 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      if (!totalDataComing[0].priceBook) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid priceBook field"
+        })
+        return;
+      }
+      if (!totalDataComing[0].retailPrice) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid retailPrice field"
+        })
+        return;
+      }
+
+      return;
       const repeatedMap = {};
       for (let i = totalDataComing.length - 1; i >= 0; i--) {
         if (repeatedMap[totalDataComing[i].priceBook]) {
@@ -1746,6 +1765,142 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
+
+exports.createDeleteRelation = async (req, res) => {
+  try {
+    let data = req.body
+    let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
+
+    const existingRecords = await dealerRelationService.getDealerRelations({
+      dealerId: req.params.dealerId,
+      servicerId: { $in: data.servicers }
+    });
+
+    // Step 2: Separate existing and non-existing servicer IDs
+    const existingServicerIds = existingRecords.map(record => record.servicerId);
+    const newServicerIds = data.servicers.filter(id => !existingServicerIds.includes(id));
+
+    console.log('existing-----------', existingServicerIds)
+
+    // Step 3: Delete existing records
+    await dealerRelationService.deleteRelations({
+      dealerId: req.params.dealerId,
+      servicerId: { $in: existingServicerIds }
+    });
+
+    // Step 4: Insert new records
+    const newRecords = newServicerIds.map(servicerId => ({
+      dealerId: req.params.dealerId,
+      servicerId: servicerId
+    }));
+    if (newRecords.length > 0) {
+      let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+      res.send({
+        code: constant.successCode
+      })
+    }
+
+
+
+
+
+
+    // for (let i = 0; i < data.servicers.length; i++) {
+    //   let servicer = data.servicers[i]
+    //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.params.dealerId })
+    //   if (!checkRelation) {
+    //     console.log('new------------')
+
+    //   } else {
+    //     console.log('delete------------')
+
+    //   }
+    // }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDealerServicers = async (req, res) => {
+  try {
+    let data = req.body
+    let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
+    if (!getServicersIds) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicer"
+      })
+      return;
+    }
+    let ids = getServicersIds.map((item) => item.servicerId)
+    let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+    if (!servicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicers"
+      })
+      return;
+    }
+    const servicerIds = servicer.map(obj => obj._id);
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getServicerUser(query1, {})
+    if (!servicerUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const nameRegex = new RegExp(data.firstName ? data.firstName.trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.servicerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      data: filteredData
+    });
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 

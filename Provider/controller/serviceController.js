@@ -741,5 +741,16 @@ exports.addServicerUser = async (req, res) => {
   }
 }
 
+exports.createRelationWithDealer = async(req,res)=>{
+  try{
+
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
 
 
