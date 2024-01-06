@@ -392,7 +392,7 @@ exports.getUserByDealerId = async (req, res) => {
     const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
 
     let name = data.firstName ? data.firstName : ""
-    let nameArray = name.split(" ");
+    let nameArray = name.trim().split(" ");
 
     // Create new keys for first name and last name
     let newObj = {
@@ -401,10 +401,10 @@ exports.getUserByDealerId = async (req, res) => {
     };
 
 
-    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
-    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    const firstNameRegex = new RegExp(newObj.f_name? newObj.f_name  : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name  : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.trim()  : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.trim()  : '', 'i')
 
 
     const filteredData = users.filter(entry => {
@@ -1743,14 +1743,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       console.log(htmlTableString)
 
-      return res.json({
-        // dealerArray,
-        countNotExist,
-        countNotUnique,
-        totalCount,
-        csvArray,
-        htmlTableString
-      });
+      res.send({
+        code: constant.successCode,
+        message: "Added successfully"
+      })
 
     })
   } catch (err) {
