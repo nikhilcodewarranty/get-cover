@@ -1634,7 +1634,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         return;
       }
 
-      return;
       const repeatedMap = {};
       for (let i = totalDataComing.length - 1; i >= 0; i--) {
         if (repeatedMap[totalDataComing[i].priceBook]) {
@@ -1743,7 +1742,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', htmlTableString));
 
       console.log(htmlTableString)
 
