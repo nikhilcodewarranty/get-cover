@@ -273,9 +273,6 @@ exports.getPendingDealers = async (req, res) => {
   }
 };
 
-
-
-
 //create new dealer
 exports.createDealer = async (req, res) => {
   try {
@@ -1803,12 +1800,12 @@ exports.createDeleteRelation = async (req, res) => {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       res.send({
         code: constant.successCode,
-        message:success
+        message: success
       })
-    }else{
+    } else {
       res.send({
         code: constant.successCode,
-        message:success
+        message: success
       })
     }
 
@@ -1907,6 +1904,28 @@ exports.getDealerServicers = async (req, res) => {
   }
 }
 
+exports.unAssignServicer = async (req, res) => {
+  try {
+    let data = req.body
+    let unAssignServicer = await dealerRelationService.deleteRelation({ servicerId: data.servicerId, dealerId: data.dealerId })
+    if (!unAssignServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to unassign the servicer"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Unassigned successfully"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 
