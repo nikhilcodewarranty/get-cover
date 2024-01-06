@@ -164,7 +164,6 @@ exports.getAllDealers = async (req, res) => {
 
 
 //Get Pending Request dealers
-
 exports.getPendingDealers = async (req, res) => {
   try {
 
@@ -1219,9 +1218,9 @@ exports.uploadPriceBook = async (req, res) => {
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
         // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-        console.log("results=========================", allResults); 
+        console.log("results=========================", allResults);
         const missingProductNames = allResults.filter(name => {
-          const lowercaseName = name.priceBook!= '' ? name.priceBook.toLowerCase() : name.priceBook;
+          const lowercaseName = name.priceBook != '' ? name.priceBook.toLowerCase() : name.priceBook;
           return !foundProductData.some(product => product.name.toLowerCase() === lowercaseName);
         });
 
@@ -1617,15 +1616,127 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      let totalDataOut = []
-      for (let i in totalDataComing) {
-        console.log("lllll", totalDataComing[i].priceBook)
-        let checkProduct = await priceBookService.findByName1({ name: totalDataComing[i].priceBook ? totalDataComing[i].priceBook : '' })
-        console.log("rsult---------", checkProduct)
-
+      const repeatedMap = {};
+      for (let i = totalDataComing.length - 1; i >= 0; i--) {
+        if (repeatedMap[totalDataComing[i].priceBook]) {
+          totalDataComing[i].status = "not unique";
+          console.log("not unique", totalDataComing[i])
+        } else {
+          repeatedMap[totalDataComing[i].priceBook] = true;
+          totalDataComing[i].status = null;
+          console.log("unique", totalDataComing[i])
+        }
       }
-      return;
-      console.log("file check+++++++++++++++++", totalDataComing)
+      const pricebookArrayPromise = totalDataComing.map(item => {
+        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+        return null;
+      })
+      const pricebooksArray = await Promise.all(pricebookArrayPromise);
+      for (let i = 0; i < totalDataComing.length; i++) {
+        if (!pricebooksArray[i]) {
+          if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+          totalDataComing[i].priceBookDetail = null
+        } else {
+          totalDataComing[i].priceBookDetail = pricebooksArray[i];
+        }
+      }
+      const dealerArrayPromise = totalDataComing.map(item => {
+
+        if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
+        return false;
+      })
+      const dealerArray = await Promise.all(dealerArrayPromise);
+      for (let i = 0; i < totalDataComing.length; i++) {
+        if (totalDataComing[i].priceBookDetail) {
+          if (dealerArray[i]) {
+            console.log('--------------------------------', totalDataComing[i].retailPrice)
+
+            dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
+            console.log('++++++++++++++++++++++++++++++++++', dealerArray[i].retailPrice)
+            dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
+            await dealerArray[i].save();
+            totalDataComing[i].status = "Dealer catalog updated successully";
+          } else {
+            let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+            dealerPriceService.createDealerPrice({
+              dealerId: data.dealerId,
+              priceBook: totalDataComing[i].priceBookDetail._id,
+              retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+              brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+              wholesalePrice
+
+            })
+            totalDataComing[i].status = "Dealer catalog created successully";
+          }
+        }
+      }
+      const csvArray = totalDataComing.map((item) => {
+        return {
+          priceBook: item.priceBook ? item.priceBook : "",
+          retailPrice: item.retailPrice ? item.retailPrice : "",
+          status: item.status
+        }
+      })
+
+      function countStatus(array, status) {
+        return array.filter(item => item.status === status).length;
+      }
+
+      const countNotExist = countStatus(csvArray, "price catalog does not exist");
+      const countNotUnique = countStatus(csvArray, "not unique");
+      const totalCount = csvArray.length
+
+      function convertArrayToHTMLTable(array) {
+        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+        const rows = array.map(obj => {
+          const values = Object.values(obj).map(value => `<td>${value}</td>`);
+          values[2] = `${values[2]}`;
+          return values.join('');
+        });
+
+        const htmlContent = `<html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>
+            <body>
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
+        </html>`;
+
+        return htmlContent;
+      }
+
+
+      const htmlTableString = convertArrayToHTMLTable(csvArray);
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+
+      console.log(htmlTableString)
+
+      return res.json({
+        // dealerArray,
+        countNotExist,
+        countNotUnique,
+        totalCount,
+        csvArray,
+        htmlTableString
+      });
+
     })
   } catch (err) {
     res.send({

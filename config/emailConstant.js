@@ -17,12 +17,13 @@ module.exports = {
       to: toEmail,
       from: process.env.from_email,
       subject: `CSV link`,
-      templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
-      dynamic_template_data:data ,
-      mailSettings: {
-        // Set the subject for the email
-        subject: 'CSV link',
-      },
+      html:data
+      // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
+      // dynamic_template_data:data ,
+      // mailSettings: {
+      //   // Set the subject for the email
+      //   subject: 'CSV link',
+      // },
     };
   },
 

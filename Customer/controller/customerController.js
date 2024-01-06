@@ -214,7 +214,7 @@ exports.getDealerCustomers = async (req, res) => {
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
-    let checkDealer = await customerService.getCustomerById({ _id: req.params.dealerId }, {})
+    let checkDealer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
