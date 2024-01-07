@@ -17,4 +17,9 @@ router.delete("/rejectServicer/:servicerId", [verifyToken], serviceController.re
 
 router.get("/serviceProvider/create-serviceProvider", serviceController.createServiceProvider);
 
+
+router.post("/createRelationWithDealer/:servicerId",[verifyToken],serviceController.createDeleteRelation)
+router.post("/getServicerDealers/:servicerId",[verifyToken],serviceController.getServicerDealers)
+
+
 module.exports = router;

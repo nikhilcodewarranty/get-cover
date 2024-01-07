@@ -53,12 +53,12 @@ module.exports = class dealerService {
 
     static async deleteRelation(criteria) {
         const deleteRelation = await relationTable.findOneAndDelete(criteria)
-        return;
+        return deleteRelation;
     }
 
     static async deleteRelations(criteria) {
         console.log(criteria)
         const deleteRelation = await relationTable.deleteMany(criteria)
-        return;
+        return deleteRelation;
     }
 };

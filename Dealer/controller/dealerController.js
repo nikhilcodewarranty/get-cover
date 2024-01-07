@@ -401,10 +401,10 @@ exports.getUserByDealerId = async (req, res) => {
     };
 
 
-    const firstNameRegex = new RegExp(newObj.f_name? newObj.f_name  : '', 'i')
-    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name  : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.trim()  : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.trim()  : '', 'i')
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
 
     const filteredData = users.filter(entry => {
@@ -1587,7 +1587,6 @@ exports.addDealerUser = async (req, res) => {
   }
 }
 
-
 exports.uploadDealerPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
@@ -1670,7 +1669,11 @@ exports.uploadDealerPriceBook = async (req, res) => {
             console.log('++++++++++++++++++++++++++++++++++', dealerArray[i].retailPrice)
             dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
             await dealerArray[i].save();
-            totalDataComing[i].status = "Dealer catalog updated successully";
+            if (totalDataComing[i].retailPrice == undefined) {
+              totalDataComing[i].status = "Dealer catalog retail price is empty";
+            } else {
+              totalDataComing[i].status = "Dealer catalog updated successully";
+            }
           } else {
             let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
             dealerPriceService.createDealerPrice({
@@ -1739,7 +1742,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', htmlTableString));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', htmlTableString));
 
       console.log(htmlTableString)
 
@@ -1757,10 +1760,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
-
 exports.createDeleteRelation = async (req, res) => {
   try {
     let data = req.body
+    console.log('fffffffffffffffffff')
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
       res.send({
@@ -1796,12 +1799,12 @@ exports.createDeleteRelation = async (req, res) => {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       res.send({
         code: constant.successCode,
-        message: success
+        message: "success"
       })
     } else {
       res.send({
         code: constant.successCode,
-        message: success
+        message: "success"
       })
     }
 
@@ -1922,6 +1925,8 @@ exports.unAssignServicer = async (req, res) => {
     })
   }
 }
+
+
 
 
 
