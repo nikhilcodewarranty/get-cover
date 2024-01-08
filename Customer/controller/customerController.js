@@ -124,7 +124,7 @@ exports.getAllCustomers = async (req, res, next) => {
       return (
         nameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        dealerRegex.test(entry.customerData._id) &&
+        dealerRegex.test(entry.customerData.dealerId) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
@@ -214,7 +214,7 @@ exports.getDealerCustomers = async (req, res) => {
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
-    let checkDealer = await customerService.getCustomerById({ _id: req.params.dealerId }, {})
+    let checkDealer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,

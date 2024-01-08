@@ -1,6 +1,7 @@
 const { serviceProvider } = require("../model/serviceProvider");
 const serviceResourceResponse = require("../utils/constant");
 const providerService = require("../services/providerService");
+const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const role = require("../../User/model/role");
 const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
@@ -8,6 +9,7 @@ const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const bcrypt = require("bcrypt");
+const dealerService = require("../../Dealer/services/dealerService");
 
 const randtoken = require('rand-token').generator()
 //Created customer
@@ -40,10 +42,10 @@ exports.createServiceProvider = async (req, res, next) => {
       };
 
       let checkPrimaryEmail = await userService.findOneUser({ email: data.email });
-      if(checkPrimaryEmail){
+      if (checkPrimaryEmail) {
         res.send({
-          code:constant.errorCode,
-          message:"Primary user already exist with this email "
+          code: constant.errorCode,
+          message: "Primary user already exist with this email "
         })
         return;
       }
@@ -70,8 +72,8 @@ exports.createServiceProvider = async (req, res, next) => {
     }
 
     if (data.flag == "approve") {
-     
-      let checkDetail = await providerService.getServicerByName({ _id: data.providerId})
+
+      let checkDetail = await providerService.getServicerByName({ _id: data.providerId })
       if (!checkDetail) {
         res.send({
           code: constant.errorCode,
@@ -116,8 +118,8 @@ exports.createServiceProvider = async (req, res, next) => {
       };
 
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id }));
-      if(teamMembers.length > 0){
-      let saveMembers = await userService.insertManyUser(teamMembers)
+      if (teamMembers.length > 0) {
+        let saveMembers = await userService.insertManyUser(teamMembers)
       }
       let resetPasswordCode = randtoken.generate(4, '123456789')
 
@@ -740,6 +742,141 @@ exports.addServicerUser = async (req, res) => {
     })
   }
 }
+
+exports.createDeleteRelation = async (req, res) => {
+  try {
+    let data = req.body
+    let checkServicer = await providerService.getServicerByName({ _id: req.params.servicerId }, {})
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid servicer ID"
+      })
+      return;
+    }
+
+    const existingRecords = await dealerRelationService.getDealerRelations({
+      servicerId: req.params.servicerId,
+      dealerId: { $in: data.dealers }
+    });
+
+    // Step 2: Separate existing and non-existing servicer IDs
+    const existingServicerIds = existingRecords.map(record => record.dealerId.toString());
+    const newDealerIds = data.dealers.filter(id => !existingServicerIds.includes(id));
+    console.log('check-----------', existingServicerIds, newDealerIds)
+
+
+    // Step 3: Delete existing records
+    let deleteExisted = await dealerRelationService.deleteRelations({
+      servicerId: req.params.servicerId,
+      dealerId: { $in: existingServicerIds }
+    });
+    console.log('existing-----------', deleteExisted)
+
+    // Step 4: Insert new records
+    const newRecords = newDealerIds.map(dealerId => ({
+      servicerId: req.params.servicerId,
+      dealerId: dealerId
+    }));
+    if (newRecords.length > 0) {
+      console.log('exisdfdfting-----------', newRecords)
+
+      let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+      res.send({
+        code: constant.successCode,
+        message: "success"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "success"
+      })
+    }
+
+    // for (let i = 0; i < data.servicers.length; i++) {
+    //   let servicer = data.servicers[i]
+    //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.params.dealerId })
+    //   if (!checkRelation) {
+    //     console.log('new------------')
+
+    //   } else {
+    //     console.log('delete------------')
+
+    //   }
+    // }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getServicerDealers = async (req, res) => {
+  try {
+    let data = req.body
+    let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
+    if (!getDealersIds) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the dealers"
+      })
+      return;
+    };
+    let ids = getDealersIds.map((item) => item.dealerId)
+    let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
+
+    if (!dealers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+    // return false;
+
+    let dealarUser = await userService.getDealersUser({ accountId: { $in: ids },isPrimary:true }, {})
+    console.log("check+++++++++++++++",dealarUser)
+
+    const result_Array = dealarUser.map(item1 => {
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.dealerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: filteredData
+    });
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 
 
