@@ -573,12 +573,29 @@ exports.createDealer = async (req, res) => {
           }
         }
         else if (savePriceBookType == 'no') {
+          // uploadP(req, res, async (err) => {
+          let file = req.file
+          let data = req.body
+
           if (!req.file) {
             res.send({
               code: constant.errorCode,
               message: "No file uploaded"
             })
             return;
+          }
+
+          const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
+          const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+          if (cleanStr1 !== cleanStr2) {
+            const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+            if (existingDealer) {
+              res.send({
+                code: constant.errorCode,
+                message: 'Dealer name already exists',
+              });
+              return
+            }
           }
           let csvName = req.file.filename
           const csvWriter = createCsvWriter({
@@ -587,332 +604,196 @@ exports.createDealer = async (req, res) => {
               { id: 'priceBook', title: 'Price Book' },
               { id: 'status', title: 'Status' },
               { id: 'reason', title: 'Reason' },
+              // Add more headers as needed
             ],
           });
-
-          const results = [];
-          let priceBookName = [];
-          let allpriceBookIds = [];
-          let newArray1;
-          let allPriceBooks;
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
-          const headers = [];
-
-          for (let cell in ws) {
-            // Check if the cell is in the first row and has a non-empty value
-            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-              headers.push(ws[cell].v);
-            }
-          }
-          if (sheets.length > 0) {
-            let original_csv_array = ['priceBook', 'retailPrice'];
-
-            if (original_csv_array.length != headers.length) {
+          const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          if (!totalDataComing[0].priceBook) {
             res.send({
               code: constant.errorCode,
-              message: 'The uploaded file coloumn is not match.Please check the uploaded file'
-            });
+              message: "Invalid priceBook field"
+            })
             return;
+          }
+          if (!totalDataComing[0].retailPrice) {
+            res.send({
+              code: constant.errorCode,
+              message: "Invalid retailPrice field"
+            })
+            return;
+          }
+
+          const repeatedMap = {};
+          for (let i = totalDataComing.length - 1; i >= 0; i--) {
+            if (repeatedMap[totalDataComing[i].priceBook]) {
+              totalDataComing[i].status = "not unique";
+              console.log("not unique", totalDataComing[i])
+            } else {
+              repeatedMap[totalDataComing[i].priceBook] = true;
+              totalDataComing[i].status = null;
+              console.log("unique", totalDataComing[i])
             }
+          }
+          const pricebookArrayPromise = totalDataComing.map(item => {
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+            return null;
+          })
+          const pricebooksArray = await Promise.all(pricebookArrayPromise);
+          for (let i = 0; i < totalDataComing.length; i++) {
+            if (!pricebooksArray[i]) {
+              if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+              totalDataComing[i].priceBookDetail = null
+            } else {
+              totalDataComing[i].priceBookDetail = pricebooksArray[i];
+            }
+          }
+          const dealerArrayPromise = totalDataComing.map(item => {
+            if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(req.body.dealerId), priceBook: item.priceBookDetail._id }, {});
+            return false;
+          })
+          const dealerArray = await Promise.all(dealerArrayPromise);
+          for (let i = 0; i < totalDataComing.length; i++) {
+            if (totalDataComing[i].priceBookDetail) {
+              if (dealerArray[i]) {
+                dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
+                dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
+                await dealerArray[i].save();
+                if (totalDataComing[i].retailPrice == undefined) {
+                  totalDataComing[i].status = "Dealer catalog retail price is empty";
+                } else {
+                  totalDataComing[i].status = "Dealer catalog updated successully";
+                }
+              } else {
+                let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+                dealerPriceService.createDealerPrice({
+                  dealerId: req.body.dealerId,
+                  priceBook: totalDataComing[i].priceBookDetail._id,
+                  unique_key: unique_key,
+                  status: true,
+                  retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                  brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+                  wholesalePrice
+                })
+                totalDataComing[i].status = "Dealer catalog created successully";
+              }
+            }
+          }
+          const csvArray = totalDataComing.map((item) => {
+            return {
+              priceBook: item.priceBook ? item.priceBook : "",
+              retailPrice: item.retailPrice ? item.retailPrice : "",
+              status: item.status
+            }
+          })
 
-            let equality = Array.isArray(original_csv_array) &&
-              Array.isArray(headers) &&
-              original_csv_array.length === headers.length &&
-              original_csv_array.every((val, index) => val === headers[index]);
+          function countStatus(array, status) {
+            return array.filter(item => item.status === status).length;
+          }
+          const countNotExist = countStatus(csvArray, "price catalog does not exist");
+          const countNotUnique = countStatus(csvArray, "not unique");
+          const totalCount = csvArray.length
 
-            if (!equality) {
+          function convertArrayToHTMLTable(array) {
+            const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+            const rows = array.map(obj => {
+              const values = Object.values(obj).map(value => `<td>${value}</td>`);
+              values[2] = `${values[2]}`;
+              return values.join('');
+            });
+
+            const htmlContent = `<html>
+                  <head>
+                      <style>
+                          table {
+                              border-collapse: collapse;
+                              width: 100%;
+                          }
+                          th, td {
+                              border: 1px solid #dddddd;
+                              text-align: left;
+                              padding: 8px;
+                          }
+                          th {
+                              background-color: #f2f2f2;
+                          }
+                      </style>
+                  </head>
+                  <body>
+                      <table>
+                          <thead><tr>${header}</tr></thead>
+                          <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                      </table>
+                  </body>
+              </html>`;
+
+            return htmlContent;
+          }
+          const htmlTableString = convertArrayToHTMLTable(csvArray);
+          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
+          let newValues1 = {
+            $set: {
+              email: allUserData[0].email,
+              firstName: allUserData[0].firstName,
+              lastName: allUserData[0].lastName,
+              phoneNumber: allUserData[0].phoneNumber,
+              position: allUserData[0].position,
+              status: allUserData[0].status,
+            }
+          }
+          let updateStatus1 = await userService.updateUser(userQuery, newValues1, { new: true })
+          let allUsersData = allUserData.map((obj, index) => ({
+            ...obj,
+            roleId: checkRole._id,
+            accountId: req.body.dealerId,
+            isPrimary: index === 0 ? true : false,
+            status: req.body.isAccountCreate ? obj.status : false
+          }));
+          if (allUsersData.length > 1) {
+            allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
+            const createUsers = await userService.insertManyUser(allUsersData);
+            if (!createUsers) {
               res.send({
                 code: constant.errorCode,
-                message: 'Invalid uploaded file! '
+                message: "Unable to save users"
               });
-              return;
-            }
-
-
-            const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            let results = data1
-              .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
-              .map(obj => ({
-                priceBook: obj.priceBook,
-                retailPrice: obj.retailPrice,
-              }));
-
-            let unique = uniqByKeepLast(results, it => it.priceBook)
-            priceBookName = unique.map(obj => obj.priceBook);
-            const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
-            const foundProducts = await priceBookService.findByName(priceBookName1);
-
-            if (foundProducts.length > 0) {
-              // Extract the names and ids of found products
-              let foundProductData1 = foundProducts.map(product => {
-                if (product.status) {
-                  return {
-                    priceBook: product._id,
-                    name: product.name,
-                    dealerId: req.body.dealerId,
-                    status: true,
-                    wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
-                  }
-                }
-              });
-              const inactiveData = foundProducts.filter(inactive => inactive.status === false);
-              const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
-
-              if (inactiveData.length > 0) {
-                inactiveData.map(inactive => {
-                  let csvData = {
-                    'priceBook': inactive.name,
-                    'status': 'Failed',
-                    'reason': 'The product is inactive',
-
-                  }
-                  csvStatus.push(csvData)
-                })
-
-              }
-              const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
-              // Remove product from csv based on inactive name
-              priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-              const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
-              if (missingProductNames.length > 0) {
-                missingProductNames.map(product => {
-                  let csvData = {
-                    'priceBook': product,
-                    'status': 'Failed',
-                    'reason': 'The product is not exist in the catalog',
-
-                  }
-                  csvStatus.push(csvData)
-                })
-              }
-              const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
-              // Check for duplicates and return early if found
-              if (allpriceBookIds.length > 0) {
-                let query = {
-                  $and: [
-                    { 'priceBook': { $in: allpriceBookIds } },
-                    { 'dealerId': new mongoose.Types.ObjectId(req.body.dealerId) }
-                  ]
-                }
-                let existingData = await dealerPriceService.findByIds(query);
-
-                if (existingData.length > 0) {
-                  const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
-                  const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
-                  if (cleanStr1 !== cleanStr2) {
-                    const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
-                    if (existingDealer) {
-                      res.send({
-                        code: constant.errorCode,
-                        message: 'Dealer name already exists',
-                      });
-                      return
-                    }
-                  }
-
-                  allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
-
-                  newArray1 = results
-                    .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                    .map(obj => ({
-                      priceBook: obj.priceBook,
-                      status: true,
-                      retailPrice: obj.retailPrice,
-                      dealerId: req.body.dealerId,
-                    }));
-
-
-                  // Merge brokerFee from newArray into foundProductData based on priceBook
-                  const mergedArray = foundProductData.map((foundProduct, index) => {
-                    const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
-
-                    if (matchingItem != undefined) {
-                      let csvData = {
-                        'priceBook': foundProduct.name,
-                        'status': 'Passed',
-                        'reason': 'Successfull Processed!',
-                      }
-                      csvStatus.push(csvData)
-                      passedEnteries.push(csvData)
-                      return {
-                        ...foundProduct,
-                        retailPrice: matchingItem.retailPrice,
-                        brokerFee: ((matchingItem.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                        unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
-                        wholesalePrice: foundProduct.wholePrice
-                      };
-                    }
-                  });
-
-                  const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-                  const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-                  if (uploaded) {
-                    existingData.forEach(product => {
-                      const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-                      let csvAlreadyData = {
-                        'priceBook': priceBooksList,
-                        'status': 'Failed',
-                        'reason': 'This product is already in the dealer product catalog',
-                      };
-                      csvStatus.push(csvAlreadyData);
-                    });
-
-                  }
-                }
-
-                else {
-                  newArray1 = results
-                    .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
-                    .map((obj, index) => {
-                      const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
-                      const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
-                      if (matchingProduct) {
-                        let csvData = {
-                          'priceBook': obj.priceBook,
-                          'status': 'Passed',
-                          'reason': 'Successfull Processed!',
-                        }
-                        csvStatus.push(csvData)
-                        passedEnteries.push(csvData)
-                      }
-                      //Print the value of updatedCount
-                      return {
-                        priceBook: matchingProduct.priceBook,
-                        status: true,
-                        dealerId: req.body.dealerId,
-                        unique_key: updatedCount,
-                        retailPrice: obj.retailPrice,
-                        brokerFee: (Number(obj.retailPrice) - Number(matchingProduct.wholePrice)).toFixed(2),
-                        wholesalePrice: matchingProduct ? matchingProduct.wholePrice : 0.00, // Use wholePrice from matching product or null if not found
-                      };
-                    });
-
-                  upload = await dealerPriceService.uploadPriceBook(newArray1);
-
-                }
-              }
-            }
-
-            else {
-              if (results.length > 0) {
-                results.map(product => {
-                  let csvData = {
-                    'priceBook': product.priceBook,
-                    'status': 'Failed',
-                    'reason': 'The product is not exist in the catalog',
-                  }
-                  csvStatus.push(csvData)
-                })
-              }
-
-            }
-
-            let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
-
-            let newValues1 = {
-              $set: {
-                email: allUserData[0].email,
-                firstName: allUserData[0].firstName,
-                lastName: allUserData[0].lastName,
-                phoneNumber: allUserData[0].phoneNumber,
-                position: allUserData[0].position,
-                status: allUserData[0].status,
-              }
-            }
-            let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
-            let allUsersData = allUserData.map((obj, index) => ({
-              ...obj,
-              roleId: checkRole._id,
-              accountId: req.body.dealerId,
-              isPrimary: index === 0 ? true : false,
-              status: req.body.isAccountCreate ? obj.status : false
-            }));
-            if (allUsersData.length > 1) {
-              allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-              const createUsers = await userService.insertManyUser(allUsersData);
-              if (!createUsers) {
-                res.send({
-                  code: constant.errorCode,
-                  message: "Unable to save users"
-                });
-                return;
-              }
-            }
-            let dealerQuery = { _id: req.body.dealerId }
-            let newValues = {
-              $set: {
-                status: "Approved",
-              }
-            }
-            let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-            if (!dealerStatus) {
-              res.send({
-                code: constant.errorCode,
-                message: "Unable to approve dealer status"
-              });
-              return;
-            }
-
-
-            let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
-            let updateData = {
-              $set: {
-                approvedStatus: 'Approved'
-              }
-            }
-            let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
-
-
-            //  let userStatus = await dealerService.upda teDealer(dealerQuery, newValues, { new: true })
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-            const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
-
-            if (mailing) {
-              let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-              const res12 = await csvWriter.writeRecords(csvStatus);
-
-
-              // Construct the base URL link
-              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
-
-              // Get the CSV name from the csvWriter path
-              const csvName1 = csvName;
-
-              // Construct the complete URL
-              const complete_url = `${base_url_link}/${csvName1}`;
-
-
-              let entriesData = {
-                userName: singleDealer.name,
-                totalEntries: Number(results.length),
-                SuccessEntries: Number(passedEnteries.length),
-                failedEntries: Number(results.length) - Number(passedEnteries.length),
-                routeLink: complete_url
-              }
-
-
-              // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
-
-              res.send({
-                code: constant.successCode,
-                message: 'Successfully Created',
-              });
-
-            }
-
-            else {
-              res.send({
-                code: constant.errorCode,
-                message: 'Failed ! Please check email.',
-              });
-
               return;
             }
           }
+          let dealerQuery = { _id: req.body.dealerId }
+          let newValues = {
+            $set: {
+              status: "Approved",
+            }
+          }
+          let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          if (!dealerStatus) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to approve dealer status"
+            });
+            return;
+          }
+          let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
+          let updateData = {
+            $set: {
+              approvedStatus: 'Approved'
+            }
+          }
+          let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+          let resetPasswordCode = randtoken.generate(4, '123456789')
+          let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
+          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+          let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+          res.send({
+            code: constant.successCode,
+            message: 'Successfully Created',
+          });
+          return;
+
         }
 
         return;
@@ -1027,7 +908,6 @@ exports.createDealer = async (req, res) => {
         }
 
         else if (savePriceBookType == 'no') {
-
           if (!req.file) {
             res.send({
               code: constant.errorCode,
@@ -1056,306 +936,211 @@ exports.createDealer = async (req, res) => {
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
-          const headers = [];
-          for (let cell in ws) {
-            // Check if the cell is in the first row and has a non-empty value
-            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-              headers.push(ws[cell].v);
+          const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          if (!totalDataComing[0].priceBook) {
+            res.send({
+              code: constant.errorCode,
+              message: "Invalid priceBook field"
+            })
+
+            return;
+          }
+          if (!totalDataComing[0].retailPrice) {
+            res.send({
+              code: constant.errorCode,
+              message: "Invalid retailPrice field"
+            })
+
+            return;
+          }
+          const dealerMeta = {
+            name: data.name,
+            street: data.street,
+            userAccount: req.body.customerAccountCreated,
+            city: data.city,
+            zip: data.zip,
+            state: data.state,
+            country: data.country,
+            status: 'Approved',
+            createdBy: data.createdBy,
+            unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+          };
+          // Create Dealer Meta Data
+          const createMetaData = await dealerService.createDealer(dealerMeta);
+          if (!createMetaData) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to create dealer"
+            });
+            return;
+          }
+          const repeatedMap = {};
+          for (let i = totalDataComing.length - 1; i >= 0; i--) {
+            if (repeatedMap[totalDataComing[i].priceBook]) {
+              totalDataComing[i].status = "not unique";
+              console.log("not unique", totalDataComing[i])
+            } else {
+              repeatedMap[totalDataComing[i].priceBook] = true;
+              totalDataComing[i].status = null;
+              console.log("unique", totalDataComing[i])
             }
           }
-
-          if (sheets.length > 0) {
-            let original_csv_array = ['priceBook', 'retailPrice'];
-
-            if (original_csv_array.length != headers.length) {
-              res.send({
-                code: constant.errorCode,
-                message: 'The uploaded file coloumn is not match.Please check the uploaded file format'
-              });
-              return;
+          const pricebookArrayPromise = totalDataComing.map(item => {
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+            return null;
+          })
+          const pricebooksArray = await Promise.all(pricebookArrayPromise);
+          for (let i = 0; i < totalDataComing.length; i++) {
+            if (!pricebooksArray[i]) {
+              if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+              totalDataComing[i].priceBookDetail = null
+            } else {
+              totalDataComing[i].priceBookDetail = pricebooksArray[i];
             }
-            let equality = Array.isArray(original_csv_array) &&
-              Array.isArray(headers) &&
-              original_csv_array.length === headers.length &&
-              original_csv_array.every((val, index) => val === headers[index]);
+          }
+          const dealerArrayPromise = totalDataComing.map(item => {
 
-            if (!equality) {
-              res.send({
-                code: constant.errorCode,
-                message: 'Invalid uploaded file! '
-              });
-              return;
-            }
+            if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(createMetaData._id), priceBook: item.priceBookDetail._id }, {});
+            return false;
+          })
 
-            const data1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            let results = data1
-              .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
-              .map(obj => ({
-                priceBook: obj.priceBook,
-                retailPrice: obj.retailPrice,
-              }));
-
-            let unique = uniqByKeepLast(results, it => it.priceBook)
-            priceBookName = unique.map(obj => obj.priceBook);
-            const priceBookName1 = results.map(name => new RegExp(`${name.priceBook}`, 'i'));
-            const foundProducts = await priceBookService.findByName(priceBookName1);
-
-            const dealerMeta = {
-              name: data.name,
-              street: data.street,
-              userAccount: req.body.customerAccountCreated,
-              city: data.city,
-              zip: data.zip,
-              state: data.state,
-              country: data.country,
-              status: 'Approved',
-              createdBy: data.createdBy,
-              unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-            };
-            // Create Dealer Meta Data
-            const createMetaData = await dealerService.createDealer(dealerMeta);
-            if (!createMetaData) {
-              res.send({
-                code: constant.errorCode,
-                message: "Unable to create dealer"
-              });
-              return;
-            }
-            if (foundProducts.length > 0) {
-              let count1 = await dealerPriceService.getDealerPriceCount();
-
-              // Extract the names and ids of found products
-              let foundProductData1 = foundProducts.map(product => {
-                if (product.status) {
-                  return {
-                    priceBook: product._id,
-                    name: product.name,
-                    dealerId: createMetaData._id,
-                    status: true,
-                    wholePrice: Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)
-                  }
+          const dealerArray = await Promise.all(dealerArrayPromise);
+          for (let i = 0; i < totalDataComing.length; i++) {
+            if (totalDataComing[i].priceBookDetail) {
+              if (dealerArray[i]) {
+                dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
+                dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
+                await dealerArray[i].save();
+                if (totalDataComing[i].retailPrice == undefined) {
+                  totalDataComing[i].status = "Dealer catalog retail price is empty";
+                } else {
+                  totalDataComing[i].status = "Dealer catalog updated successully";
                 }
-              });
-              const inactiveData = foundProducts.filter(inactive => inactive.status === false);
-              const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
-              if (inactiveData.length > 0) {
-                inactiveData.map(inactive => {
-                  let csvData = {
-                    'priceBook': inactive.name,
-                    'status': 'Failed',
-                    'reason': 'The product is inactive',
-
-                  }
-                  csvStatus.push(csvData)
+              } else {
+                let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+                dealerPriceService.createDealerPrice({
+                  dealerId: createMetaData._id,
+                  priceBook: totalDataComing[i].priceBookDetail._id,
+                  unique_key: unique_key,
+                  status: true,
+                  retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                  brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+                  wholesalePrice
                 })
-
+                totalDataComing[i].status = "Dealer catalog created successully";
               }
+            }
+          }
+          const csvArray = totalDataComing.map((item) => {
+            return {
+              priceBook: item.priceBook ? item.priceBook : "",
+              retailPrice: item.retailPrice ? item.retailPrice : "",
+              status: item.status
+            }
+          })
 
-              const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
-              // Remove product from csv based on inactive name
-              priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-              const missingProductNames = priceBookName.filter(name => !foundProductData.some(product => product.name.toLowerCase() === name.toLowerCase()));
-              if (missingProductNames.length > 0) {
-                missingProductNames.map(product => {
-                  let csvData = {
-                    'priceBook': product,
-                    'status': 'Failed',
-                    'reason': 'The product does not exist in the catalog',
+          function countStatus(array, status) {
+            return array.filter(item => item.status === status).length;
+          }
+          const countNotExist = countStatus(csvArray, "price catalog does not exist");
+          const countNotUnique = countStatus(csvArray, "not unique");
+          const totalCount = csvArray.length
+          function convertArrayToHTMLTable(array) {
+            const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+            const rows = array.map(obj => {
+              const values = Object.values(obj).map(value => `<td>${value}</td>`);
+              values[2] = `${values[2]}`;
+              return values.join('');
+            });
 
-                  }
-                  csvStatus.push(csvData)
-                })
-
-              }
-              // Extract _id values from priceBookIds
-              const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
-              // Check for duplicates and return early if found
-              if (allpriceBookIds.length > 0) {
-                let query = {
-                  $and: [
-                    { 'priceBook': { $in: allpriceBookIds } },
-                    { 'dealerId': new mongoose.Types.ObjectId(createMetaData._id) }
-                  ]
-                }
-                let existingData = await dealerPriceService.findByIds(query);
-                if (existingData.length > 0) {
-                  //const mailing = await sgMail.send(emailConstant.sendAlreadyProduct('amit@codenomad.net', existingData, "Already Upload Products"))
-                  if (mailing) {
-                    // console.log("Mail has been sent");
-                  }
-                  allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
-
-                  newArray1 = results
-                    .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-                    .map(obj => ({
-                      priceBook: obj.priceBook,
-                      status: true,
-                      retailPrice: obj.retailPrice,
-                      dealerId: createMetaData._id,
-                    }));
-
-                  const mergedArray = foundProductData.map((foundProduct, index) => {
-                    const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
-
-                    if (matchingItem != undefined) {
-                      let csvData = {
-                        'priceBook': foundProduct.name,
-                        'status': 'Passed',
-                        'reason': 'Successfull Processed!',
-                      }
-                      csvStatus.push(csvData)
-                      passedEnteries.push(csvData)
-
-                      return {
-                        ...foundProduct,
-                        retailPrice: matchingItem.retailPrice,
-                        brokerFee: ((matchingItem.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                        unique_key: Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1,
-                        wholesalePrice: foundProduct.wholePrice
-                      };
-                    }
-
-                  });
-                  const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-                  const uploaded = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-                  existingData.forEach(product => {
-                    const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-                    let csvAlreadyData = {
-                      'priceBook': priceBooksList,
-                      'status': 'Failed',
-                      'reason': 'The product is already in the catalog',
-                    };
-                    csvStatus.push(csvAlreadyData);
-                  });
-
-                }
-
-                else {
-                  newArray1 = results
-                    .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
-                    .map((obj, index) => {
-                      const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
-                      const updatedCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + index + 1;
-                      if (matchingProduct) {
-                        let csvData = {
-                          'priceBook': obj.priceBook,
-                          'status': 'Passed',
-                          'reason': 'Successfull Processed!',
+            const htmlContent = `<html>
+                <head>
+                    <style>
+                        table {
+                            border-collapse: collapse;
+                            width: 100%;
                         }
-                        csvStatus.push(csvData)
-                        passedEnteries.push(csvData)
-                      }
-                      //Print the value of updatedCount
-                      return {
-                        priceBook: matchingProduct.priceBook,
-                        status: true,
-                        dealerId: createMetaData._id,
-                        unique_key: updatedCount,
-                        retailPrice: obj.retailPrice,
-                        brokerFee: (Number(obj.retailPrice) - Number(matchingProduct.wholePrice)).toFixed(2),
-                        wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
-                      };
-                    });
-                  const uploaded = await dealerPriceService.uploadPriceBook(newArray1);
-                }
+                        th, td {
+                            border: 1px solid #dddddd;
+                            text-align: left;
+                            padding: 8px;
+                        }
+                        th {
+                            background-color: #f2f2f2;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <table>
+                        <thead><tr>${header}</tr></thead>
+                        <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                    </table>
+                </body>
+            </html>`;
 
-              }
-
-            }
-            else {
-              if (results.length > 0) {
-                results.map(product => {
-                  let csvData = {
-                    'priceBook': product.priceBook,
-                    'status': 'Failed',
-                    'reason': 'The product is not exist in the catalog',
-                  }
-                  csvStatus.push(csvData)
-                })
-              }
-
-            }
-            let allUsersData = allUserData.map((obj, index) => ({
-              ...obj,
-              roleId: checkRole._id,
-              accountId: createMetaData._id,
-              isPrimary: index === 0 ? true : false,
-              status: req.body.isAccountCreate ? obj.status : false
-            }));
-            const createUsers = await userService.insertManyUser(allUsersData);
-            if (!createUsers) {
-              res.send({
-                code: constant.errorCode,
-                message: "Unable to save users"
-              });
-              return;
-            }
-            let dealerQuery = { _id: createMetaData._id }
-            let newValues = {
-              $set: {
-                status: "Approved",
-              }
-            }
-            let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-            if (!dealerStatus) {
-              res.send({
-                code: constant.errorCode,
-                message: "Unable to approve dealer status"
-              });
-              return;
-            }
-
-            let statusUpdateCreateria = { accountId: { $in: [createMetaData._id] } }
-            let updateData = {
-              $set: {
-                approvedStatus: 'Approved'
-              }
-            }
-            let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
-
-            //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
-            if (mailing) {
-              let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-              const res12 = await csvWriter.writeRecords(csvStatus);
-
-
-              // Construct the base URL link
-              const base_url_link = 'http://15.207.221.207:3002/uploads/resultFile';
-
-              // Get the CSV name from the csvWriter path
-              const csvName1 = csvName;
-
-              // Construct the complete URL
-              const complete_url = `${base_url_link}/${csvName1}`;
-              let entriesData = {
-                userName: data.name,
-                totalEntries: Number(results.length),
-                SuccessEntries: Number(passedEnteries.length),
-                failedEntries: Number(results.length) - Number(passedEnteries.length),
-                routeLink: complete_url
-              }
-
-              // Send email with the CSV file link
-              const mailing = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', entriesData));
-
-              res.send({
-                code: constant.successCode,
-                message: 'Successfully Created',
-                data: createMetaData
-              });
-            }
-            else {
-              res.send({
-                code: constant.errorCode,
-                message: 'Failed ! Please check email.',
-              });
-
-              return;
+            return htmlContent;
+          }
+          const htmlTableString = convertArrayToHTMLTable(csvArray);
+          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          let allUsersData = allUserData.map((obj, index) => ({
+            ...obj,
+            roleId: checkRole._id,
+            accountId: createMetaData._id,
+            isPrimary: index === 0 ? true : false,
+            status: req.body.isAccountCreate ? obj.status : false
+          }));
+          const createUsers = await userService.insertManyUser(allUsersData);
+          if (!createUsers) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to save users"
+            });
+            return;
+          }
+          let dealerQuery = { _id: createMetaData._id }
+          let newValues = {
+            $set: {
+              status: "Approved",
             }
           }
+          let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          if (!dealerStatus) {
+            res.send({
+              code: constant.errorCode,
+              message: "Unable to approve dealer status"
+            });
+            return;
+          }
+
+          let statusUpdateCreateria = { accountId: { $in: [createMetaData._id] } }
+          let updateData = {
+            $set: {
+              approvedStatus: 'Approved'
+            }
+          }
+          let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+          //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          let resetPasswordCode = randtoken.generate(4, '123456789')
+          let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
+          const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+          if (mailing) {
+            let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            res.send({
+              code: constant.successCode,
+              message: 'Successfully Created',
+              data: createMetaData
+            });
+          }
+          else {
+            res.send({
+              code: constant.errorCode,
+              message: 'Failed ! Please check email.',
+            });
+
+            return;
+          }
+
         }
 
 
