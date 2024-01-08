@@ -1763,7 +1763,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 exports.createDeleteRelation = async (req, res) => {
   try {
     let data = req.body
-    console.log('fffffffffffffffffff')
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
       res.send({
@@ -1773,23 +1772,37 @@ exports.createDeleteRelation = async (req, res) => {
       return;
     }
 
+    const trueArray = [];
+    const falseArray = [];
+    
+    data.servicers.forEach(item => {
+      if (item.status) {
+        trueArray.push(item);
+      } else {
+        falseArray.push(item);
+      }
+    });
+
+    let uncheckId = falseArray.map(record =>new mongoose.Types.ObjectId(record._id))
+    let checkId = trueArray.map(record =>record._id)
+    console.log(uncheckId,checkId)
     const existingRecords = await dealerRelationService.getDealerRelations({
-      dealerId: req.params.dealerId,
-      servicerId: { $in: data.servicers }
+      dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
+      servicerId: { $in: checkId }
     });
 
     // Step 2: Separate existing and non-existing servicer IDs
     const existingServicerIds = existingRecords.map(record => record.servicerId);
-    const newServicerIds = data.servicers.filter(id => !existingServicerIds.includes(id));
+    const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
 
-    console.log('existing-----------', existingServicerIds)
+    console.log(newServicerIds)
 
     // Step 3: Delete existing records
-    await dealerRelationService.deleteRelations({
-      dealerId: req.params.dealerId,
-      servicerId: { $in: existingServicerIds }
+   let deleteData=  await dealerRelationService.deleteRelations({
+      dealerId:  new mongoose.Types.ObjectId(req.params.dealerId),
+      servicerId: { $in: uncheckId }
     });
-
+    // return res.json(deleteData)
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
       dealerId: req.params.dealerId,
