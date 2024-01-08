@@ -10,6 +10,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
+const mongoose = require('mongoose')
 
 const randtoken = require('rand-token').generator()
 //Created customer
@@ -755,21 +756,36 @@ exports.createDeleteRelation = async (req, res) => {
       return;
     }
 
+    const trueArray = [];
+    const falseArray = [];
+
+    data.dealers.forEach(item => {
+      if (item.status) {
+        trueArray.push(item);
+      } else {
+        falseArray.push(item);
+      }
+    });
+
+    let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
+    let checkId = trueArray.map(record => record._id)
+
     const existingRecords = await dealerRelationService.getDealerRelations({
-      servicerId: req.params.servicerId,
-      dealerId: { $in: data.dealers }
+      servicerId: new mongoose.Types.ObjectId(req.params.servicerId),
+      dealerId: { $in: checkId }
     });
 
     // Step 2: Separate existing and non-existing servicer IDs
     const existingServicerIds = existingRecords.map(record => record.dealerId.toString());
-    const newDealerIds = data.dealers.filter(id => !existingServicerIds.includes(id));
-    console.log('check-----------', existingServicerIds, newDealerIds)
+    console.log('existing-11111111111111----------', existingServicerIds)
+    const newDealerIds = checkId.filter(id => !existingServicerIds.includes(id));
+    console.log('check------222222222222-----', newDealerIds)
 
 
     // Step 3: Delete existing records
     let deleteExisted = await dealerRelationService.deleteRelations({
-      servicerId: req.params.servicerId,
-      dealerId: { $in: existingServicerIds }
+      servicerId:  new mongoose.Types.ObjectId(req.params.servicerId),
+      dealerId: { $in: uncheckId }
     });
     console.log('existing-----------', deleteExisted)
 

@@ -1681,7 +1681,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
               retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
               brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
               wholesalePrice
-
             })
             totalDataComing[i].status = "Dealer catalog created successully";
           }
