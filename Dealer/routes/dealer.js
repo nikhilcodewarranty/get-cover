@@ -39,5 +39,6 @@ router.post("/uploadDealerPriceBook",[verifyToken],dealerController.uploadDealer
 router.post("/createRelationWithServicer/:dealerId",[verifyToken],dealerController.createDeleteRelation)
 router.post("/getDealerServicers/:dealerId",[verifyToken],dealerController.getDealerServicers)
 router.post("/unAssignServicer",[verifyToken],dealerController.unAssignServicer)
+router.get("/getServicersList/:dealerId",[verifyToken],dealerController.getServicersList)
 
 module.exports = router;

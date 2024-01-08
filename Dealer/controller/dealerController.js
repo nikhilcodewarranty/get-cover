@@ -1680,7 +1680,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               dealerId: data.dealerId,
               priceBook: totalDataComing[i].priceBookDetail._id,
               unique_key: unique_key,
-              status:true,
+              status: true,
               retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
               brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
               wholesalePrice
@@ -1775,7 +1775,7 @@ exports.createDeleteRelation = async (req, res) => {
 
     const trueArray = [];
     const falseArray = [];
-    
+
     data.servicers.forEach(item => {
       if (item.status) {
         trueArray.push(item);
@@ -1784,9 +1784,8 @@ exports.createDeleteRelation = async (req, res) => {
       }
     });
 
-    let uncheckId = falseArray.map(record =>new mongoose.Types.ObjectId(record._id))
-    let checkId = trueArray.map(record =>record._id)
-    console.log(uncheckId,checkId)
+    let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
+    let checkId = trueArray.map(record => record._id)
     const existingRecords = await dealerRelationService.getDealerRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
       servicerId: { $in: checkId }
@@ -1796,11 +1795,10 @@ exports.createDeleteRelation = async (req, res) => {
     const existingServicerIds = existingRecords.map(record => record.servicerId);
     const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
 
-    console.log(newServicerIds)
 
     // Step 3: Delete existing records
-   let deleteData=  await dealerRelationService.deleteRelations({
-      dealerId:  new mongoose.Types.ObjectId(req.params.dealerId),
+    let deleteData = await dealerRelationService.deleteRelations({
+      dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
       servicerId: { $in: uncheckId }
     });
     // return res.json(deleteData)
@@ -1940,6 +1938,41 @@ exports.unAssignServicer = async (req, res) => {
   }
 }
 
+exports.getServicersList = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let query = { isDeleted: false, accountStatus: "Approved" }
+    let projection = { __v: 0, isDeleted: 0 }
+    let servicer = await providerService.getAllServiceProvider(query, projection);
+
+
+    let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
+
+    const resultArray = servicer.map(item => {
+      const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
+      const documentData = item._doc;
+      return { ...documentData, check: !!matchingServicer };
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: resultArray
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 
 
