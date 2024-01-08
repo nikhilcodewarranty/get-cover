@@ -423,6 +423,10 @@ exports.createDealer = async (req, res) => {
         }
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
+
+         
+
+
           const priceBookCreateria = { _id: { $in: priceBook } }
           // console.log("priceBookCreateria=======================", priceBookCreateria)
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
