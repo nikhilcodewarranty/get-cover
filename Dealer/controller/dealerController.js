@@ -400,7 +400,7 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-
+    console.log('sdhfjdhfjshdfsj',newObj)
     const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
@@ -1156,7 +1156,7 @@ exports.uploadPriceBook = async (req, res) => {
 
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
 
-      //Get data from csv when priceBooks and retailPrice is undefined
+      //Get data from csv when priceBooks and retailPrice is not undefined
 
       let results = data
         .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
@@ -1642,7 +1642,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
       }
       const pricebookArrayPromise = totalDataComing.map(item => {
-        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
+        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
         return null;
       })
       const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -1663,7 +1663,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
       for (let i = 0; i < totalDataComing.length; i++) {
         if (totalDataComing[i].priceBookDetail) {
           if (dealerArray[i]) {
-
             dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
             dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
             await dealerArray[i].save();
@@ -1674,8 +1673,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
             }
           } else {
             let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
-            const count = await dealerPriceService.getDealerPriceCount();
-            let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             dealerPriceService.createDealerPrice({
               dealerId: data.dealerId,
               priceBook: totalDataComing[i].priceBookDetail._id,
@@ -1684,6 +1681,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
               brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
               wholesalePrice
+
             })
             totalDataComing[i].status = "Dealer catalog created successully";
           }
