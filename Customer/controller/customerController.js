@@ -12,7 +12,6 @@ exports.createCustomer = async (req, res, next) => {
 
     let getCount = await customerService.getCustomersCount({})
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
-    console.log(getCount[0], data.unique_key)
     //check dealer ID
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     if (!checkDealer) {
@@ -34,6 +33,15 @@ exports.createCustomer = async (req, res, next) => {
       })
       return;
     };
+
+    let checkCustomerEmail = await userService.findOneUser({ email: data.email });
+    if (checkCustomerEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "Primary user email already exist"
+      })
+      return;
+    }
 
     let customerObject = {
       username: data.accountName,
@@ -369,14 +377,14 @@ exports.getCustomerById = async (req, res) => {
   }
 }
 
-exports.getCustomerUsers =async(req,res)=>{
-  try{
+exports.getCustomerUsers = async (req, res) => {
+  try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({accountId:req.params.customerId,isDeleted:false})
-    if(!getCustomerUsers){
+    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false })
+    if (!getCustomerUsers) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to fetch the customers"
+        code: constant.errorCode,
+        message: "Unable to fetch the customers"
       })
       return;
     }
@@ -407,14 +415,14 @@ exports.getCustomerUsers =async(req,res)=>{
 
 
     res.send({
-      code:constant.successCode,
-      message:"Success",
-      result:filteredData
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
