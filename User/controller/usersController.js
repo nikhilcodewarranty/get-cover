@@ -412,16 +412,16 @@ exports.createDealer = async (req, res) => {
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
-        if (data.email != data.oldEmail) {
-          let emailCheck = await userService.findOneUser({ email: data.email });
-          if (emailCheck) {
-            res.send({
-              code: constant.errorCode,
-              message: "Primary user email already exist"
-            })
-            return;
-          }
-        }
+        // if (data.email != data.oldEmail) {
+        //   let emailCheck = await userService.findOneUser({ email: data.email });
+        //   if (emailCheck) {
+        //     res.send({
+        //       code: constant.errorCode,
+        //       message: "Primary user email already exist"
+        //     })
+        //     return;
+        //   }
+        // }
         const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
