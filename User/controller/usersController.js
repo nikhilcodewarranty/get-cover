@@ -412,6 +412,16 @@ exports.createDealer = async (req, res) => {
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
+        if (data.email != data.oldEmail) {
+          let emailCheck = await userService.findOneUser({ email: data.email });
+          if (emailCheck) {
+            res.send({
+              code: constant.errorCode,
+              message: "Primary user email already exist"
+            })
+            return;
+          }
+        }
         const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
@@ -423,12 +433,7 @@ exports.createDealer = async (req, res) => {
         }
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
-
-         
-
-
           const priceBookCreateria = { _id: { $in: priceBook } }
-          // console.log("priceBookCreateria=======================", priceBookCreateria)
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
           if (checkPriceBook.length == 0) {
             res.send({
@@ -582,7 +587,6 @@ exports.createDealer = async (req, res) => {
               { id: 'priceBook', title: 'Price Book' },
               { id: 'status', title: 'Status' },
               { id: 'reason', title: 'Reason' },
-              // Add more headers as needed
             ],
           });
 
@@ -606,11 +610,11 @@ exports.createDealer = async (req, res) => {
             let original_csv_array = ['priceBook', 'retailPrice'];
 
             if (original_csv_array.length != headers.length) {
-              res.send({
-                code: constant.errorCode,
-                message: 'The uploaded file coloumn is not match.Please check the uploaded file'
-              });
-              return;
+            res.send({
+              code: constant.errorCode,
+              message: 'The uploaded file coloumn is not match.Please check the uploaded file'
+            });
+            return;
             }
 
             let equality = Array.isArray(original_csv_array) &&
@@ -754,11 +758,6 @@ exports.createDealer = async (req, res) => {
                       };
                       csvStatus.push(csvAlreadyData);
                     });
-                    // res.send({
-                    //   code: constant.successCode,
-                    //   message: 'Success',
-                    //   data: uploaded
-                    // });
 
                   }
                 }
