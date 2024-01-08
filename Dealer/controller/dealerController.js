@@ -403,9 +403,6 @@ exports.getUserByDealerId = async (req, res) => {
     console.log('sdhfjdhfjshdfsj',newObj)
     const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-    console.log('sdhfjdhfjshdfsj',firstNameRegex,lastNameRegex)
     const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
