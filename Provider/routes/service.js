@@ -20,6 +20,7 @@ router.get("/serviceProvider/create-serviceProvider", serviceController.createSe
 
 router.post("/createRelationWithDealer/:servicerId",[verifyToken],serviceController.createDeleteRelation)
 router.post("/getServicerDealers/:servicerId",[verifyToken],serviceController.getServicerDealers)
+router.get("/getDealerList/:servicerId",[verifyToken],serviceController.getDealerList)
 
 
 module.exports = router;

@@ -777,17 +777,14 @@ exports.createDeleteRelation = async (req, res) => {
 
     // Step 2: Separate existing and non-existing servicer IDs
     const existingServicerIds = existingRecords.map(record => record.dealerId.toString());
-    console.log('existing-11111111111111----------', existingServicerIds)
     const newDealerIds = checkId.filter(id => !existingServicerIds.includes(id));
-    console.log('check------222222222222-----', newDealerIds)
 
 
     // Step 3: Delete existing records
     let deleteExisted = await dealerRelationService.deleteRelations({
-      servicerId:  new mongoose.Types.ObjectId(req.params.servicerId),
+      servicerId: new mongoose.Types.ObjectId(req.params.servicerId),
       dealerId: { $in: uncheckId }
     });
-    console.log('existing-----------', deleteExisted)
 
     // Step 4: Insert new records
     const newRecords = newDealerIds.map(dealerId => ({
@@ -795,7 +792,6 @@ exports.createDeleteRelation = async (req, res) => {
       dealerId: dealerId
     }));
     if (newRecords.length > 0) {
-      console.log('exisdfdfting-----------', newRecords)
 
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       res.send({
@@ -813,10 +809,8 @@ exports.createDeleteRelation = async (req, res) => {
     //   let servicer = data.servicers[i]
     //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.params.dealerId })
     //   if (!checkRelation) {
-    //     console.log('new------------')
 
     //   } else {
-    //     console.log('delete------------')
 
     //   }
     // }
@@ -851,8 +845,8 @@ exports.getServicerDealers = async (req, res) => {
     };
     // return false;
 
-    let dealarUser = await userService.getDealersUser({ accountId: { $in: ids },isPrimary:true }, {})
-    console.log("check+++++++++++++++",dealarUser)
+    let dealarUser = await userService.getDealersUser({ accountId: { $in: ids }, isPrimary: true }, {})
+    console.log("check+++++++++++++++", dealarUser)
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -882,6 +876,36 @@ exports.getServicerDealers = async (req, res) => {
     res.send({
       code: constant.successCode,
       data: filteredData
+    });
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDealerList = async (req, res) => {
+  try {
+    let data = req.body
+    let query = { isDeleted: false, status: "Approved" }
+    let projection = { __v: 0, isDeleted: 0 }
+    let dealers = await dealerService.getAllDealers(query, projection);
+
+    let getRelations = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
+
+    const resultArray = dealers.map(item => {
+      const matchingDealer = getRelations.find(dealer => dealer.dealerId.toString() == item._id.toString());
+      const documentData = item._doc;
+      return { ...documentData, check: !!matchingDealer };
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: resultArray
     });
 
 
