@@ -671,7 +671,7 @@ exports.createDealer = async (req, res) => {
                 dealerPriceService.createDealerPrice({
                   dealerId: req.body.dealerId,
                   priceBook: totalDataComing[i].priceBookDetail._id,
-                  unique_key: unique_key,
+                  unique_key: 1111,
                   status: true,
                   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
