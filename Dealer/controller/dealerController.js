@@ -1642,7 +1642,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
       }
       const pricebookArrayPromise = totalDataComing.map(item => {
-        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
         return null;
       })
       const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -1663,10 +1663,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
       for (let i = 0; i < totalDataComing.length; i++) {
         if (totalDataComing[i].priceBookDetail) {
           if (dealerArray[i]) {
-            console.log('--------------------------------', totalDataComing[i].retailPrice)
 
             dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
-            console.log('++++++++++++++++++++++++++++++++++', dealerArray[i].retailPrice)
             dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
             await dealerArray[i].save();
             if (totalDataComing[i].retailPrice == undefined) {
@@ -1676,13 +1674,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
             }
           } else {
             let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+            const count = await dealerPriceService.getDealerPriceCount();
+            let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             dealerPriceService.createDealerPrice({
               dealerId: data.dealerId,
               priceBook: totalDataComing[i].priceBookDetail._id,
+              unique_key: unique_key,
+              status:true,
               retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
               brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
               wholesalePrice
-
             })
             totalDataComing[i].status = "Dealer catalog created successully";
           }
