@@ -355,6 +355,28 @@ exports.editServicerDetail = async (req, res) => {
       })
       return;
     }
+    if(data.name != data.oldName){
+      let checkName = await providerService.getServicerByName({name:data.name},{})
+      if(!checkName){
+        res.send({
+          code:constant.errorCode,
+          message:"Servicer already exist with this name"
+        })
+        return;
+      };
+    }
+
+    // if(data.Email != data.oldEmail){
+    //   let checkName = await userService.getSingleUserByEmail({email:data.email},{})
+    //   if(!checkName){
+    //     res.send({
+    //       code:constant.errorCode,
+    //       message:"Servicer already exist with this name"
+    //     })
+    //     return;
+    //   };
+    // }
+
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
     if (!updateData) {
