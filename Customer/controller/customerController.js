@@ -230,6 +230,17 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     };
+
+    if(data.oldName != data.name){
+      let checkName =  await customerService.getCustomerByName({name:data.name})
+      if(checkName){
+        res.send({
+          code:constant.errorCode,
+          message:"Customer already exist with this account name"
+        })
+        return;
+      };
+    }
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
