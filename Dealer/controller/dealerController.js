@@ -401,11 +401,12 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-
+    console.log('sdhfjdhfjshdfsj',newObj)
     const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    console.log('sdhfjdhfjshdfsj',firstNameRegex,lastNameRegex)
 
 
     const filteredData = users.filter(entry => {
@@ -1157,7 +1158,7 @@ exports.uploadPriceBook = async (req, res) => {
 
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
 
-      //Get data from csv when priceBooks and retailPrice is undefined
+      //Get data from csv when priceBooks and retailPrice is not undefined
 
       let results = data
         .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
