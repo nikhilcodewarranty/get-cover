@@ -66,6 +66,10 @@ exports.createServiceProvider = async (req, res, next) => {
       teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id ,approvedStatus:"Approved",status:true}));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
+      let checkPrimaryEmail1 = await userService.findOneUser({ email: data.email,isPrimary:true });
+
+      let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPasswordCode}`
+      const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Customer created successfully",
