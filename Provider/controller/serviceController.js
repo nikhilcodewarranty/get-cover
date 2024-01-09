@@ -547,7 +547,8 @@ exports.registerServiceProvider = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      const existingServicer3 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }},{ isDeleted: 0, __v: 0 });
+      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId},{ isDeleted: 0, __v: 0 });
+      console.log(existingUser,existingServicer3)
       if (existingServicer3) {
         if (existingServicer3.accountStatus == "Pending") {
           res.send({
@@ -556,6 +557,7 @@ exports.registerServiceProvider = async (req, res) => {
           })
           return;
         }
+
       }
 
       // const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
@@ -568,11 +570,11 @@ exports.registerServiceProvider = async (req, res) => {
       //     return;
       //   }
       // }
-      // res.send({
-      //   code: constant.errorCode,
-      //   message: "You have registered already with this email!"
-      // })
-      // return;
+      res.send({
+        code: constant.errorCode,
+        message: "You have already registered  with this email!"
+      })
+      return;
     }
 
     const count = await providerService.getServicerCount();
