@@ -54,7 +54,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
-      console.log('check for create+++++++++++++++++++++=',createServiceProvider)
+      console.log('check for create+++++++++++++++++++++=', createServiceProvider)
       if (!createServiceProvider) {
         res.send({
           code: constant.errorCode,
@@ -111,7 +111,7 @@ exports.createServiceProvider = async (req, res, next) => {
       // return;
 
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
-      console.log('check for approve+++++++++++++++++++++=',updateServicer)
+      console.log('check for approve+++++++++++++++++++++=', updateServicer)
 
       if (!updateServicer) {
         res.send({
@@ -120,7 +120,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-       
+
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -358,12 +358,12 @@ exports.editServicerDetail = async (req, res) => {
       })
       return;
     }
-    if(data.name != data.oldName){
-      let checkName = await providerService.getServicerByName({name:data.name},{})
-      if(!checkName){
+    if (data.name != data.oldName) {
+      let checkName = await providerService.getServicerByName({ name: data.name }, {})
+      if (!checkName) {
         res.send({
-          code:constant.errorCode,
-          message:"Servicer already exist with this name"
+          code: constant.errorCode,
+          message: "Servicer already exist with this name"
         })
         return;
       };
@@ -526,7 +526,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     // Check if the dealer already exists
-    const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
     if (existingServicer) {
       res.send({
         code: constant.errorCode,
@@ -535,14 +535,44 @@ exports.registerServiceProvider = async (req, res) => {
       return;
     }
 
+    const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }}, { isDeleted: 0, __v: 0 });
+    if (existingServicer2) {
+      res.send({
+        code: constant.errorCode,
+        message: "You have registered already with this name!"
+      })
+      return;
+    }
+
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "You have registered already with this email! Waiting for the approval"
-      })
-      return;
+      const existingServicer3 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }},{ isDeleted: 0, __v: 0 });
+      if (existingServicer3) {
+        if (existingServicer3.accountStatus == "Pending") {
+          res.send({
+            code: constant.errorCode,
+            message: "You have registered already with this email! Waiting for the approval"
+          })
+          return;
+        }
+      }
+
+      // const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
+      // if(existingServicer){
+      //   if(existingServicer.accountStatus == "Pending"){
+      //     res.send({
+      //       code: constant.errorCode,
+      //       message: "You have registered already with this email!"
+      //     })
+      //     return;
+      //   }
+      // }
+      // res.send({
+      //   code: constant.errorCode,
+      //   message: "You have registered already with this email!"
+      // })
+      // return;
     }
 
     const count = await providerService.getServicerCount();
