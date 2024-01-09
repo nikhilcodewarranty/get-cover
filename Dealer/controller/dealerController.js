@@ -914,6 +914,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
     data.status = typeof (data.status) == "string" ? "all" : data.status
+    console.log(data)
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -925,13 +926,14 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
+    console.log(data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-    if (data.status != 'all' && data.status != undefine) {
+    if (data.status != 'all' && data.status != undefined) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
           { 'priceBooks.category._id': { $in: catIdsArray } },
-          { 'priceBooks.status': data.status },
+          { 'priceBooks.status': data.status ? true:false },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
           }
@@ -1007,7 +1009,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
 
     if (data.status != 'all' && data.status != undefined) {
-      matchConditions.push({ 'status': data.status });
+      matchConditions.push({ 'status': data.status=="true" ? true:false });
     }
 
     if (data.term) {
