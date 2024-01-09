@@ -444,6 +444,7 @@ exports.createDealer = async (req, res) => {
         }
         if (savePriceBookType == 'yes') {
           console.log("I am here", typeof (req.body.isAccountCreate))
+          console.log("I am here1", req.body.isAccountCreate)
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
@@ -518,7 +519,7 @@ exports.createDealer = async (req, res) => {
               lastName: allUserData[0].lastName,
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
-              status: allUserData[0].status,
+              status: allUserData[0].status=='true' ? true : false,
             }
           }
 
@@ -536,7 +537,10 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: data.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false
+            status: req.body.isAccountCreate === 'true'
+            ? obj.status === 'true' ? true
+            : false
+          : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -573,7 +577,7 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-          if (req.body.isAccountCreate) {
+          if (req.body.isAccountCreate=='true') {
             console.log("I am inside")
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
