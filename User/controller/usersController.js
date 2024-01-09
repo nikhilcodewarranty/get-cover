@@ -381,6 +381,9 @@ exports.createDealer = async (req, res) => {
     uploadMiddleware.singleFileUpload(req, res, async () => {
 
       const data = req.body;
+
+      console.log(data);
+      console.log(req.body.isAccountCreate);
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
@@ -1148,6 +1151,7 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
+          
           if (req.body.isAccountCreate) {
             const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
             if (mailing) {
