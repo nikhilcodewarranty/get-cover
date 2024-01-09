@@ -362,7 +362,7 @@ exports.editServicerDetail = async (req, res) => {
     }
     if (data.name != data.oldName) {
       let checkName = await providerService.getServicerByName({ name: data.name }, {})
-      if (!checkName) {
+      if (checkName) {
         res.send({
           code: constant.errorCode,
           message: "Servicer already exist with this name"
