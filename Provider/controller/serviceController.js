@@ -117,7 +117,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-
+       
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
