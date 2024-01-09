@@ -1921,7 +1921,15 @@ exports.getDealerServicers = async (req, res) => {
 exports.unAssignServicer = async (req, res) => {
   try {
     let data = req.body
-    let unAssignServicer = await dealerRelationService.deleteRelation({ servicerId: data.servicerId, dealerId: data.dealerId })
+    let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: data.servicerId, dealerId: data.dealerId })
+    if (!checkRelation) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid relation"
+      })
+      return
+    } 
+    let unAssignServicer = await dealerRelationService.deleteRelation({ _id:checkRelation._id })
     if (!unAssignServicer) {
       res.send({
         code: constant.errorCode,
