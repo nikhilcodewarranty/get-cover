@@ -422,6 +422,17 @@ exports.createDealer = async (req, res) => {
             return;
           }
         }
+
+          if (data.name != data.oldName) {
+            let nameCheck = await dealerService.getDealerByName({ name: data.name });
+            if (nameCheck) {
+              res.send({
+                code: constant.errorCode,
+                message: "Dealer name already exist"
+              })
+              return;
+            }
+          }
         const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
