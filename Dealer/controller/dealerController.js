@@ -1619,6 +1619,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      
       if (!totalDataComing[0].priceBook) {
         res.send({
           code: constant.errorCode,
