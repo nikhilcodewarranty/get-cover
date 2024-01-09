@@ -902,6 +902,9 @@ exports.createDealer = async (req, res) => {
             approvedStatus: 'Approved'
           }));
 
+
+          console.log("allUsersData++++++++++++++++++++++",allUsersData);
+
           const createUsers = await userService.insertManyUser(allUsersData);
 
           if (!createUsers) {

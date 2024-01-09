@@ -63,9 +63,14 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id ,approvedStatus:"Approved",status:true}));
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved", status: true }));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true });
+
+      let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPasswordCode}`
+      const mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Customer created successfully",
@@ -107,12 +112,11 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let teamMembers = data.members
 
-      let getUserId = await userService.getUserById1({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
+
       // console.log("getUserId================",getUserId);
       // return;
 
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
-      console.log('check for approve+++++++++++++++++++++=', updateServicer)
 
       if (!updateServicer) {
         res.send({
@@ -121,15 +125,14 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id ,approvedStatus:"Approved"}));
+      let resetPasswordCode = randtoken.generate(4, '123456789')
+      let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id.toString(), isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, approvedStatus: "Approved", status: true }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
-      let resetPasswordCode = randtoken.generate(4, '123456789')
-
       let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
-      const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
+      const mailing = await sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -537,7 +540,7 @@ exports.registerServiceProvider = async (req, res) => {
       return;
     }
 
-    const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }}, { isDeleted: 0, __v: 0 });
+    const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingServicer2) {
       res.send({
         code: constant.errorCode,
@@ -549,8 +552,8 @@ exports.registerServiceProvider = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId},{ isDeleted: 0, __v: 0 });
-      console.log(existingUser,existingServicer3)
+      const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId }, { isDeleted: 0, __v: 0 });
+      console.log(existingUser, existingServicer3)
       if (existingServicer3) {
         if (existingServicer3.accountStatus == "Pending") {
           res.send({
