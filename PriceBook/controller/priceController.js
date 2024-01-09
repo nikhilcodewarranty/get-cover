@@ -395,7 +395,6 @@ exports.updatePriceBookById = async (req, res, next) => {
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
-
     res.send({
       code: constant.successCode,
       message: "Successfully Update",
