@@ -1964,7 +1964,7 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, accountStatus: "Approved" }
+    let query = { isDeleted: false, accountStatus: "Approved", status: true }
     let projection = { __v: 0, isDeleted: 0 }
     let servicer = await providerService.getAllServiceProvider(query, projection);
 
