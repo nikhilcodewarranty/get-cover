@@ -1307,7 +1307,7 @@
         }
       },
       
-      "/dealer/uploadsDealerPriceBook": {
+      "/dealer/uploadDealerPriceBook": {
         "post": {
           "security": [ { "Bearer": [] } ],
           "tags": ["Super Admin"],
