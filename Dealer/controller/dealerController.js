@@ -931,7 +931,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
           { 'priceBooks.category._id': { $in: catIdsArray } },
-          { 'priceBooks.status': data.status },
+          { 'priceBooks.status': data.status=="true" ? true:false },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
           }
@@ -1007,7 +1007,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
 
     if (data.status != 'all' && data.status != undefined) {
-      matchConditions.push({ 'status': data.status });
+      matchConditions.push({ 'status': data.status=="true" ? true:false });
     }
 
     if (data.term) {
