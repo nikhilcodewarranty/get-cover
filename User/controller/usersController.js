@@ -443,8 +443,6 @@ exports.createDealer = async (req, res) => {
           return;
         }
         if (savePriceBookType == 'yes') {
-          console.log("I am here", typeof (req.body.isAccountCreate))
-          console.log("I am here1", req.body.isAccountCreate)
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
@@ -455,7 +453,6 @@ exports.createDealer = async (req, res) => {
             })
             return;
           }
-
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
             res.send({
@@ -519,7 +516,7 @@ exports.createDealer = async (req, res) => {
               lastName: allUserData[0].lastName,
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
-              status: allUserData[0].status == 'true' ? true : false,
+              status: allUserData[0].status ? true : false,
             }
           }
 
@@ -537,10 +534,8 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: data.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate === 'true'
-              ? obj.status === 'true' ? true
-                : false
-              : false
+            status: req.body.isAccountCreate ? obj.status : false 
+              
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -577,7 +572,7 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
-          if (req.body.isAccountCreate == 'true') {
+          if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
@@ -767,7 +762,7 @@ exports.createDealer = async (req, res) => {
               lastName: allUserData[0].lastName,
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
-              status: allUserData[0].status == 'true' ? true : false,
+              status: allUserData[0].status  ? true : false,
             }
           }
           let updateStatus1 = await userService.updateUser(userQuery, newValues1, { new: true })
@@ -777,10 +772,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate === 'true'
-              ? obj.status === 'true' ? true
-                : false
-              : false
+            status: req.body.isAccountCreate  ? true  : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -814,7 +806,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
-          if (req.body.isAccountCreate == 'true') {
+          if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
@@ -900,22 +892,16 @@ exports.createDealer = async (req, res) => {
             return;
           }
           // Create User for primary dealer
-          const allUsersData = allUserData.map((obj, index) => {
-            // Declare a variable to store obj.status
-            const status = obj.status === 'true' ? true : false;
-          
-            return {
-              ...obj,
-              roleId: checkRole._id,
-              accountId: createMetaData._id,
-              position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
-              isPrimary: index === 0,
-              status: req.body.isAccountCreate === 'true' ? status : false,
-              approvedStatus: 'Approved'
-            };
-          });
+          let allUsersData = allUserData.map((obj, index) => ({
+            ...obj,
+            roleId: checkRole._id,
+            accountId: createMetaData._id,
+            position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
+            isPrimary: index === 0 ? true : false,
+            status: req.body.isAccountCreate ? obj.status : false,
+            approvedStatus: 'Approved'
+          }));
 
-          console.log("allUsersData++++++++++++++",allUsersData)
           const createUsers = await userService.insertManyUser(allUsersData);
 
           if (!createUsers) {
@@ -947,9 +933,8 @@ exports.createDealer = async (req, res) => {
           }
           //Approve status 
 
-          console.log("isAccountCreate++++++++++",req.body.isAccountCreate)
 
-          if (req.body.isAccountCreate == 'true') {
+          if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
@@ -1152,12 +1137,12 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: checkRole._id,
             accountId: createMetaData._id,
+            position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate === 'true'
-              ? obj.status === 'true' ? true
-                : false
-              : false
+            status: req.body.isAccountCreate ? obj.status : false,
+            approvedStatus: 'Approved'
           }));
+   
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.send({
