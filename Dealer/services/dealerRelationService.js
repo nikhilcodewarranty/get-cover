@@ -52,7 +52,8 @@ module.exports = class dealerService {
     }
 
     static async deleteRelation(criteria) {
-        const deleteRelation = await relationTable.findOneAndDelete(criteria)
+        console.log('-----------------------------------',criteria)
+        const deleteRelation = await relationTable.deleteOne(criteria)
         return deleteRelation;
     }
 
