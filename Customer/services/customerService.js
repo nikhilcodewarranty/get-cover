@@ -56,6 +56,17 @@ module.exports = class customerService {
     }
   }
 
+
+  static async updateDealerName(criteria,data,option) {
+    try {
+      const updatedResponse = await customer.updateMany(criteria,data,option);
+
+      return updatedResponse;
+    } catch (error) {
+      console.log(`Could not update customer ${error}`);
+    }
+  }
+
   static async deleteCustomer(customerId) {
     try {
       const deletedResponse = await customer.findOneAndDelete(customerId);

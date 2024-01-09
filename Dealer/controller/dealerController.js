@@ -3,6 +3,7 @@ const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const dealerRelationService = require("../services/dealerRelationService");
+const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const userService = require("../../User/services/userService");
@@ -1532,6 +1533,9 @@ exports.updateDealerMeta = async (req, res) => {
         message: "Unable to update the data"
       })
     } else {
+      let Customercriteria = { dealerId: checkDealer._id }
+      let option = { new: true }
+      let updatedData = await customerService.updateDealerName(Customercriteria, {dealerName:data.accountName}, option)
       res.send({
         code: constant.successCode,
         message: "Success",
