@@ -46,7 +46,7 @@ exports.createServiceProvider = async (req, res, next) => {
       if (checkPrimaryEmail) {
         res.send({
           code: constant.errorCode,
-          message: "Primary user already exist with this email "
+          message: "User already exist with this email "
         })
         return;
       }
@@ -63,7 +63,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id }));
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id ,approvedStatus:"Approved",status:true}));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
       res.send({
@@ -122,7 +122,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id }));
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id ,approvedStatus:"Approved",status:true}));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
