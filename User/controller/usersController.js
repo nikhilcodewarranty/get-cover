@@ -535,7 +535,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: data.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate==='yes' ? obj.status : false
+            status: req.body.isAccountCreate ? obj.status : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -763,7 +763,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate==='yes' ? obj.status : false
+            status: req.body.isAccountCreate? obj.status : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -799,7 +799,7 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-          if (req.body.isAccountCreate == 'yes') {
+          if (req.body.isAccountCreate) {
             const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
           }    
@@ -882,7 +882,7 @@ exports.createDealer = async (req, res) => {
             accountId: createMetaData._id,
             position: obj.position ? obj.position : '',
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate==='yes' ? obj.status : false,
+            status: req.body.isAccountCreate ? obj.status : false,
             approvedStatus: 'Approved'
           }));
           const createUsers = await userService.insertManyUser(allUsersData);
@@ -1112,7 +1112,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: createMetaData._id,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate==='yes' ? obj.status : false
+            status: req.body.isAccountCreate ? obj.status : false
           }));
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
@@ -1148,7 +1148,7 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-          if (req.body.isAccountCreate == 'yes') {
+          if (req.body.isAccountCreate) {
             const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
             if (mailing) {
               let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
