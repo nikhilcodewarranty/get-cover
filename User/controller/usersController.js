@@ -423,16 +423,16 @@ exports.createDealer = async (req, res) => {
           }
         }
 
-          if (data.name != data.oldName) {
-            let nameCheck = await dealerService.getDealerByName({ name: data.name });
-            if (nameCheck) {
-              res.send({
-                code: constant.errorCode,
-                message: "Dealer name already exist"
-              })
-              return;
-            }
+        if (data.name != data.oldName) {
+          let nameCheck = await dealerService.getDealerByName({ name: data.name });
+          if (nameCheck) {
+            res.send({
+              code: constant.errorCode,
+              message: "Dealer name already exist"
+            })
+            return;
           }
+        }
         const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
@@ -535,7 +535,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: data.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false
+            status: req.body.isAccountCreate==='yes' ? obj.status : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -649,7 +649,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
-            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '',status: true });
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -763,7 +763,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false
+            status: req.body.isAccountCreate==='yes' ? obj.status : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -799,8 +799,10 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-          const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
-          let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+          if (req.body.isAccountCreate == 'yes') {
+            const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+            let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+          }    
           res.send({
             code: constant.successCode,
             message: 'Successfully Created',
@@ -821,13 +823,13 @@ exports.createDealer = async (req, res) => {
           return
         }
         let emailCheck = await userService.findOneUser({ email: data.email });
-          if (emailCheck) {
-            res.send({
-              code: constant.errorCode,
-              message: "Primary user email already exist"
-            })
-            return;
-          }
+        if (emailCheck) {
+          res.send({
+            code: constant.errorCode,
+            message: "Primary user email already exist"
+          })
+          return;
+        }
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
@@ -880,7 +882,7 @@ exports.createDealer = async (req, res) => {
             accountId: createMetaData._id,
             position: obj.position ? obj.position : '',
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false,
+            status: req.body.isAccountCreate==='yes' ? obj.status : false,
             approvedStatus: 'Approved'
           }));
           const createUsers = await userService.insertManyUser(allUsersData);
@@ -1007,7 +1009,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
-            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '',status: true });
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -1110,7 +1112,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: createMetaData._id,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false
+            status: req.body.isAccountCreate==='yes' ? obj.status : false
           }));
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
@@ -1146,23 +1148,33 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           let resetPasswordCode = randtoken.generate(4, '123456789')
           let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-          const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
-          if (mailing) {
-            let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            res.send({
-              code: constant.successCode,
-              message: 'Successfully Created',
-              data: createMetaData
-            });
-          }
-          else {
-            res.send({
-              code: constant.errorCode,
-              message: 'Failed ! Please check email.',
-            });
+          if (req.body.isAccountCreate == 'yes') {
+            const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+            if (mailing) {
+              let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              res.send({
+                code: constant.successCode,
+                message: 'Successfully Created',
+                data: createMetaData
+              });
+            }
+            else {
+              res.send({
+                code: constant.errorCode,
+                message: 'Failed ! Please check email.',
+              });
 
-            return;
+              return;
+            }
           }
+
+          res.send({
+            code: constant.successCode,
+            message: 'Successfully Created',
+            data: createMetaData
+          });
+
+
 
         }
 
