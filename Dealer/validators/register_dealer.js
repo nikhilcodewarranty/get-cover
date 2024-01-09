@@ -1,7 +1,7 @@
 const Joi = require('joi')
 
 const register_dealer_validation = Joi.object({
-    name:Joi.string().trim().min(3).required(),
+    name:Joi.string().trim().min(3).message("Account name must be at least 3 character long" ).required(),
     street:Joi.string().trim().required(),
     city:Joi.string().trim().required(),
     zip:Joi.number().required(),

@@ -926,7 +926,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name : ''
     let query
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-    if (data.status != 'all' && data.status != undefine) {
+    if (data.status != 'all' && data.status != undefined) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
