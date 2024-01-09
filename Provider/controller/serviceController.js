@@ -71,6 +71,7 @@ exports.createServiceProvider = async (req, res, next) => {
         message: "Customer created successfully",
         result: data
       })
+      return
     }
 
     if (data.flag == "approve") {
@@ -134,6 +135,7 @@ exports.createServiceProvider = async (req, res, next) => {
         message: "Approve successfully",
         result: data
       })
+      return;
     }
 
 
