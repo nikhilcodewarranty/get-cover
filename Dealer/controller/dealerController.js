@@ -542,13 +542,16 @@ exports.registerDealer = async (req, res) => {
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
       let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.accountId })
-      if (checkDealer.status == "Pending") {
-        res.send({
-          code: constant.errorCode,
-          message: "You have registered already with this email! Waiting for the approval"
-        })
-        return;
+      if (checkDealer) {
+        if (checkDealer.status == "Pending") {
+          res.send({
+            code: constant.errorCode,
+            message: "You have registered already with this email! Waiting for the approval"
+          })
+          return;
+        }
       }
+
 
     }
 
@@ -635,7 +638,7 @@ exports.registerDealer = async (req, res) => {
 
   } catch (err) {
     res.send({
-      code: "2000",
+      code: constant.errorCode,
       message: err.message,
     });
     return;
@@ -1535,7 +1538,7 @@ exports.updateDealerMeta = async (req, res) => {
     } else {
       let Customercriteria = { dealerId: checkDealer._id }
       let option = { new: true }
-      let updatedData = await customerService.updateDealerName(Customercriteria, {dealerName:data.accountName}, option)
+      let updatedData = await customerService.updateDealerName(Customercriteria, { dealerName: data.accountName }, option)
       res.send({
         code: constant.successCode,
         message: "Success",
@@ -1928,8 +1931,8 @@ exports.unAssignServicer = async (req, res) => {
         message: "Invalid relation"
       })
       return
-    } 
-    let unAssignServicer = await dealerRelationService.deleteRelation({ _id:checkRelation._id })
+    }
+    let unAssignServicer = await dealerRelationService.deleteRelation({ _id: checkRelation._id })
     if (!unAssignServicer) {
       res.send({
         code: constant.errorCode,
