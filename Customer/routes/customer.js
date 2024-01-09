@@ -15,4 +15,4 @@ router.get('/changePrimaryUser/:userId', [verifyToken], customerController.chang
 router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById)
 router.post('/getCustomerUsers/:customerId', [verifyToken], customerController.getCustomerUsers)
 
-module.exports = router;
+module.exports = router; 
