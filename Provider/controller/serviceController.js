@@ -63,7 +63,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved", status: true }));
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved" }));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
       let resetPasswordCode = randtoken.generate(4, '123456789')
