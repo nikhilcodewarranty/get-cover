@@ -1895,7 +1895,7 @@ exports.getDealerServicers = async (req, res) => {
       }
     });
 
-    const nameRegex = new RegExp(data.firstName ? data.firstName.trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
