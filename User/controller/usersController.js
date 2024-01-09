@@ -667,11 +667,13 @@ exports.createDealer = async (req, res) => {
                   totalDataComing[i].status = "Dealer catalog updated successully";
                 }
               } else {
+                const countPriceDocument = await dealerPriceService.getDealerPriceCount();
+                let unique_key = Number(countPriceDocument.length > 0 && countPriceDocument[0].unique_key ? countPriceDocument[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
                 dealerPriceService.createDealerPrice({
                   dealerId: req.body.dealerId,
                   priceBook: totalDataComing[i].priceBookDetail._id,
-                  unique_key: 1111,
+                  unique_key: unique_key,
                   status: true,
                   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
@@ -732,7 +734,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', htmlTableString));
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
             $set: {
@@ -1017,11 +1019,13 @@ exports.createDealer = async (req, res) => {
                   totalDataComing[i].status = "Dealer catalog updated successully";
                 }
               } else {
+                const countPriceDocument = await dealerPriceService.getDealerPriceCount();
+                let unique_key = Number(countPriceDocument.length > 0 && countPriceDocument[0].unique_key ? countPriceDocument[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
                 dealerPriceService.createDealerPrice({
                   dealerId: createMetaData._id,
                   priceBook: totalDataComing[i].priceBookDetail._id,
-                  unique_key: 1234,
+                  unique_key: unique_key,
                   status: true,
                   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
@@ -1081,7 +1085,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          const mailing1 = await sgMail.send(emailConstant.sendCsvFile('keshav@codenomad.net', htmlTableString));
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: checkRole._id,
