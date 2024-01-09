@@ -26,7 +26,7 @@ exports.createServiceProvider = async (req, res, next) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
-      status: true,
+      status: data.status,
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
@@ -122,7 +122,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id ,approvedStatus:"Approved",status:true}));
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id ,approvedStatus:"Approved"}));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
