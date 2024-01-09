@@ -900,18 +900,20 @@ exports.createDealer = async (req, res) => {
             return;
           }
           // Create User for primary dealer
-          const allUsersData = allUserData.map((obj, index) => ({
-            ...obj,
-            roleId: checkRole._id,
-            accountId: createMetaData._id,
-            position: obj.position ? obj.position : '',
-            isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate === 'true'
-              ? obj.status === 'true' ? true
-                : false
-              : false,
-            approvedStatus: 'Approved'
-          }));
+          const allUsersData = allUserData.map((obj, index) => {
+            // Declare a variable to store obj.status
+            const status = obj.status === 'true' ? true : false;
+          
+            return {
+              ...obj,
+              roleId: checkRole._id,
+              accountId: createMetaData._id,
+              position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
+              isPrimary: index === 0,
+              status: req.body.isAccountCreate === 'true' ? status : false,
+              approvedStatus: 'Approved'
+            };
+          });
           const createUsers = await userService.insertManyUser(allUsersData);
 
           if (!createUsers) {
