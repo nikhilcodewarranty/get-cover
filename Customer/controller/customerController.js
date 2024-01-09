@@ -231,8 +231,8 @@ exports.editCustomer = async (req, res) => {
       return;
     };
 
-    if(data.oldName != data.name){
-      let checkName =  await customerService.getCustomerByName({name:data.name})
+    if(data.oldName != data.username){
+      let checkName =  await customerService.getCustomerByName({name:data.username})
       if(checkName){
         res.send({
           code:constant.errorCode,
