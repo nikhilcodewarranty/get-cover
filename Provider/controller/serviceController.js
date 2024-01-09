@@ -54,6 +54,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
+      console.log('check for create+++++++++++++++++++++=',createServiceProvider)
       if (!createServiceProvider) {
         res.send({
           code: constant.errorCode,
@@ -110,6 +111,8 @@ exports.createServiceProvider = async (req, res, next) => {
       // return;
 
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+      console.log('check for approve+++++++++++++++++++++=',updateServicer)
+
       if (!updateServicer) {
         res.send({
           code: constant.errorCode,
