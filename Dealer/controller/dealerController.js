@@ -400,7 +400,7 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    console.log('sdhfjdhfjshdfsj',newObj)
+    console.log('sdhfjdhfjshdfsj', newObj)
     const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
@@ -1672,6 +1672,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
               totalDataComing[i].status = "Dealer catalog updated successully";
             }
           } else {
+            const count = await dealerPriceService.getDealerPriceCount();
+            let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
             dealerPriceService.createDealerPrice({
               dealerId: data.dealerId,
