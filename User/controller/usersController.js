@@ -552,6 +552,7 @@ exports.createDealer = async (req, res) => {
           let newValues = {
             $set: {
               status: "Approved",
+              accountStatus:true
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -786,9 +787,11 @@ exports.createDealer = async (req, res) => {
             }
           }
           let dealerQuery = { _id: req.body.dealerId }
+          
           let newValues = {
             $set: {
               status: "Approved",
+              accountStatus:true
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -879,6 +882,7 @@ exports.createDealer = async (req, res) => {
             state: data.state,
             country: data.country,
             status: 'Approved',
+            accountStatus: true,
             createdBy: data.createdBy,
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
@@ -902,8 +906,6 @@ exports.createDealer = async (req, res) => {
             approvedStatus: 'Approved'
           }));
 
-
-          console.log("allUsersData++++++++++++++++++++++",allUsersData);
 
           const createUsers = await userService.insertManyUser(allUsersData);
 
@@ -1014,6 +1016,7 @@ exports.createDealer = async (req, res) => {
             state: data.state,
             country: data.country,
             status: 'Approved',
+            accountStatus:true,
             createdBy: data.createdBy,
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
