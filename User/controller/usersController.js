@@ -914,6 +914,8 @@ exports.createDealer = async (req, res) => {
               approvedStatus: 'Approved'
             };
           });
+
+          console.log("allUsersData++++++++++++++",allUsersData)
           const createUsers = await userService.insertManyUser(allUsersData);
 
           if (!createUsers) {
@@ -944,6 +946,8 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
+
+          console.log("isAccountCreate++++++++++",req.body.isAccountCreate)
 
           if (req.body.isAccountCreate == 'true') {
             let resetPasswordCode = randtoken.generate(4, '123456789')
