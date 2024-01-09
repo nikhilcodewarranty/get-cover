@@ -897,7 +897,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
-            isPrimary: index === 0 ? true : false,
+            isPrimary: index === 0 ? true : false, 
             status: req.body.isAccountCreate ? obj.status : false,
             approvedStatus: 'Approved'
           }));
