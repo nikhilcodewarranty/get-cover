@@ -913,6 +913,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
+    data.status = typeof (data.status) == "string" ? "all" : data.status
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -925,7 +926,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let searchName = req.body.name ? req.body.name : ''
     let query
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-    if ((data.status || !data.status || data.status != '') & data.status != undefined) {
+    if (data.status != 'all' && data.status != undefine) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
