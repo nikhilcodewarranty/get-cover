@@ -1623,7 +1623,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      
+
       if (!totalDataComing[0].priceBook) {
         res.send({
           code: constant.errorCode,
@@ -1651,7 +1651,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
       }
       const pricebookArrayPromise = totalDataComing.map(item => {
-        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+        if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
         return null;
       })
       const pricebooksArray = await Promise.all(pricebookArrayPromise);

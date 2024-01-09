@@ -649,7 +649,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
-            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '',status: true });
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -1007,7 +1007,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
-            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '' });
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '',status: true });
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
