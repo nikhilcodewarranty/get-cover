@@ -380,7 +380,7 @@ exports.getUserByDealerId = async (req, res) => {
       return;
     }
 
-    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId },{status:1});
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId },{accountStatus:1});
 
     //result.metaData = singleDealer
     if (!dealers) {
@@ -426,12 +426,12 @@ exports.getUserByDealerId = async (req, res) => {
       });
       return
     }
-
+    console.log(dealers)
     res.send({
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      dealerStatus:dealers.accountStatus
+      dealerStatus:dealers[0].accountStatus
     })
 
   } catch (err) {
