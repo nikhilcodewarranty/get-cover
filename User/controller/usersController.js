@@ -535,8 +535,8 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: data.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false 
-              
+            status: req.body.isAccountCreate ? obj.status : false
+
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -553,7 +553,7 @@ exports.createDealer = async (req, res) => {
           let newValues = {
             $set: {
               status: "Approved",
-              accountStatus:true
+              accountStatus: true
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -619,6 +619,8 @@ exports.createDealer = async (req, res) => {
               return
             }
           }
+
+
           let csvName = req.file.filename
           const csvWriter = createCsvWriter({
             path: './uploads/resultFile/' + csvName,
@@ -632,21 +634,43 @@ exports.createDealer = async (req, res) => {
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
-          const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-          if (!totalDataComing[0].priceBook) {
+          const headers = [];
+          for (let cell in ws) {
+            // Check if the cell is in the first row and has a non-empty value
+            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+              headers.push(ws[cell].v);
+            }
+          }
+
+          if (headers.length !== 2) {
             res.send({
               code: constant.errorCode,
-              message: "Invalid priceBook field"
+              message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
-            return;
+            return
           }
-          if (!totalDataComing[0].retailPrice) {
-            res.send({
-              code: constant.errorCode,
-              message: "Invalid retailPrice field"
-            })
-            return;
-          }
+          const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          const totalDataComing = totalDataComing1.map(item => {
+            const keys = Object.keys(item);
+            return {
+              priceBook: item[keys[0]],
+              retailPrice: item[keys[1]]
+            };
+          });
+          // if (!totalDataComing[0].priceBook) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "Invalid priceBook field"
+          //   })
+          //   return;
+          // }
+          // if (!totalDataComing[0].retailPrice) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "Invalid retailPrice field"
+          //   })
+          //   return;
+          // }
 
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
@@ -765,7 +789,7 @@ exports.createDealer = async (req, res) => {
               lastName: allUserData[0].lastName,
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
-              status: allUserData[0].status  ? true : false,
+              status: allUserData[0].status ? true : false,
             }
           }
           let updateStatus1 = await userService.updateUser(userQuery, newValues1, { new: true })
@@ -775,7 +799,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate  ? true  : false
+            status: req.body.isAccountCreate ? true : false
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -789,11 +813,11 @@ exports.createDealer = async (req, res) => {
             }
           }
           let dealerQuery = { _id: req.body.dealerId }
-          
+
           let newValues = {
             $set: {
               status: "Approved",
-              accountStatus:true
+              accountStatus: true
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -904,7 +928,7 @@ exports.createDealer = async (req, res) => {
             roleId: checkRole._id,
             accountId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
-            isPrimary: index === 0 ? true : false, 
+            isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? obj.status : false,
             approvedStatus: 'Approved'
           }));
@@ -994,23 +1018,45 @@ exports.createDealer = async (req, res) => {
           const wb = XLSX.readFile(req.file.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
-          const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-          if (!totalDataComing[0].priceBook) {
+          const headers = [];
+          for (let cell in ws) {
+            // Check if the cell is in the first row and has a non-empty value
+            if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+              headers.push(ws[cell].v);
+            }
+          }
+
+          if (headers.length !== 2) {
             res.send({
               code: constant.errorCode,
-              message: "Invalid priceBook field"
+              message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
-
-            return;
+            return
           }
-          if (!totalDataComing[0].retailPrice) {
-            res.send({
-              code: constant.errorCode,
-              message: "Invalid retailPrice field"
-            })
+          const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          const totalDataComing = totalDataComing1.map(item => {
+            const keys = Object.keys(item);
+            return {
+              priceBook: item[keys[0]],
+              retailPrice: item[keys[1]]
+            };
+          });
+          // if (!totalDataComing[0].priceBook) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "Invalid priceBook field"
+          //   })
 
-            return;
-          }
+          //   return;
+          // }
+          // if (!totalDataComing[0].retailPrice) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "Invalid retailPrice field"
+          //   })
+
+          //   return;
+          // }
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -1020,7 +1066,7 @@ exports.createDealer = async (req, res) => {
             state: data.state,
             country: data.country,
             status: 'Approved',
-            accountStatus:true,
+            accountStatus: true,
             createdBy: data.createdBy,
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
@@ -1152,7 +1198,7 @@ exports.createDealer = async (req, res) => {
             status: req.body.isAccountCreate ? obj.status : false,
             approvedStatus: 'Approved'
           }));
-   
+
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.send({
@@ -1395,19 +1441,19 @@ exports.getUserById = async (req, res) => {
       return;
     };
     let mainStatus;
-    let criteria = {_id:singleUser.accountId}
+    let criteria = { _id: singleUser.accountId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
-    if(!checkStatus){
+    if (!checkStatus) {
       let checkDealer = await dealerService.getDealerById(criteria)
-      mainStatus= checkDealer.accountStatus
-    }else{
-      mainStatus= checkStatus.status
+      mainStatus = checkDealer.accountStatus
+    } else {
+      mainStatus = checkStatus.status
     }
     res.send({
       code: constant.successCode,
       message: "Success",
       result: singleUser,
-      mainStatus:mainStatus
+      mainStatus: mainStatus
     })
   } catch (error) {
     res.send({
