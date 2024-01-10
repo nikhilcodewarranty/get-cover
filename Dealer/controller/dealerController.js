@@ -1790,7 +1790,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+      const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
 
       console.log(htmlTableString)
 
