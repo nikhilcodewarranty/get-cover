@@ -26,6 +26,7 @@ const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 
 const csvParser = require('csv-parser');
+const customerService = require("../../Customer/services/customerService");
 
 
 //----------------------- api's function ---------------//
@@ -1390,10 +1391,20 @@ exports.getUserById = async (req, res) => {
       })
       return;
     };
+    let mainStatus;
+    let criteria = {_id:singleUser.accountId}
+    let checkStatus = await providerService.getServiceProviderById(criteria)
+    if(!checkStatus){
+      let checkDealer = await dealerService.getDealerById(criteria)
+      mainStatus= checkDealer.accountStatus
+    }else{
+      mainStatus= checkStatus.status
+    }
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: singleUser
+      result: singleUser,
+      mainStatus:mainStatus
     })
   } catch (error) {
     res.send({
