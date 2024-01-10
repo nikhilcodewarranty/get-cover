@@ -846,6 +846,10 @@ exports.addServicerUser = async (req, res) => {
     } else {
       data.isPrimary = false
       data.accountId = checkServicer._id
+      let statusCheck;
+      if(!checkServicer.accountStatus){
+        data.status = false
+      }
       let saveData = await userService.createUser(data)
       if (!saveData) {
         res.send({
