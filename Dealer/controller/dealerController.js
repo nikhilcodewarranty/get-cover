@@ -782,7 +782,7 @@ exports.changeDealerStatus = async (req, res) => {
       })
       return;
     }
-    //Update Dealer User Status
+    //Update Dealer User Status if inactive
     if (!req.body.status) {
       let dealerUserCreateria = { accountId: req.params.dealerId };
       let newValue = {
@@ -792,6 +792,33 @@ exports.changeDealerStatus = async (req, res) => {
       };
       let option = { new: true };
       const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+
+      //Inactive dealer price Books
+      const changeDealerPriceBookStatus = await dealerPriceService.updateDealerPrice({ dealerId: req.params.dealerId }, {
+        $set: {
+          status: req.body.status
+        }
+      }, option);
+
+      // // Inactive Dealer Customer
+      // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
+      //   $set: {
+      //     status: req.body.status
+      //   }
+      // }, option);
+
+      // // Get Dealer Customers
+      // let projection = { __v: 0, isDeleted: 0 }
+
+      // let allCustomers = await customerService.getAllCustomers({ dealerId: req.params.dealerId }, projection)
+
+      // let customerIdsArray = allCustomers.map(customer => customer._id.toString())
+      // let queryIds = { accountId: { $in: customerIdsArray } };
+
+      // //Inactive Customer Status
+      // const changeCustomerUserStatus = await customerService.updateCustomerData(queryIds,{status: req.body.status}, option);
+
+      // console.log("changeCustomerUserStatus++++++++",changeCustomerUserStatus)
 
     }
 
@@ -927,14 +954,14 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-    console.log("lklklkkklk",data.status)
+    console.log("lklklkkklk", data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
           { 'priceBooks.category._id': { $in: catIdsArray } },
-          { 'status': data.status  },
+          { 'status': data.status },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
           }
@@ -989,9 +1016,12 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
 
-    data.status = typeof (data.status) == "string" ? "all" : data.status
+   data.status = typeof (data.status) == "string" ? "all" : data.status
 
+  //  data.status =  data.status==='true'  ? true : false;
     //return;
+
+    console.log(data.status)
 
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
@@ -1010,7 +1040,8 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
 
     if (data.status != 'all' && data.status != undefined) {
-      matchConditions.push({ 'status': data.status=="true" ? true:false });
+      console.log("dssdsdf");
+      matchConditions.push({ 'status': data.status });
     }
 
     if (data.term) {
@@ -1034,6 +1065,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
+
+    console.log('matching ----------------------------------',matchStage)
+
     const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
     if (!priceBooks) {
       res.send({
@@ -1045,7 +1079,8 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: priceBooks
+      result: priceBooks,
+      matchStage
     })
   } catch (err) {
     res.send({
