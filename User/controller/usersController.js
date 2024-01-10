@@ -1183,7 +1183,7 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
-          if (req.body.isAccountCreate == 'true') {
+          if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
             const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
