@@ -390,19 +390,24 @@ exports.editServicerDetail = async (req, res) => {
         { accountId: checkServicer._id }
       ]
     }
-    let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
-    if (!updateMetaData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to update the primary details"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Updated Successfully",
-        result: { updateData, updateMetaData }
-      })
-    }
+    res.send({
+      code: constant.successCode,
+      message: "Updated Successfully",
+      result:  updateData 
+    })
+    // let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
+    // if (!updateMetaData) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Unable to update the primary details"
+    //   })
+    // } else {
+    //   res.send({
+    //     code: constant.successCode,
+    //     message: "Updated Successfully",
+    //     result: { updateData, updateMetaData }
+    //   })
+    // }
   } catch (err) {
     res.send({
       code: constant.errorCode,

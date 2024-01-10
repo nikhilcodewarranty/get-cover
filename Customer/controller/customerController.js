@@ -13,14 +13,14 @@ exports.createCustomer = async (req, res, next) => {
     let getCount = await customerService.getCustomersCount({})
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
     //check dealer ID
-    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
-    if (!checkDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid dealer"
-      })
-      return;
-    };
+    // let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
+    // if (!checkDealer) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Invalid dealer"
+    //   })
+    //   return;
+    // };
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({

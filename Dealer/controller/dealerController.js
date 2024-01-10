@@ -380,7 +380,7 @@ exports.getUserByDealerId = async (req, res) => {
       return;
     }
 
-    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId },{accountStatus:1});
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
 
     //result.metaData = singleDealer
     if (!dealers) {
@@ -431,7 +431,7 @@ exports.getUserByDealerId = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      dealerStatus:dealers[0].accountStatus
+      dealerStatus: dealers[0].accountStatus
     })
 
   } catch (err) {
@@ -1015,9 +1015,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
 
-   data.status = typeof (data.status) == "string" ? "all" : data.status
+    data.status = typeof (data.status) == "string" ? "all" : data.status
 
-  //  data.status =  data.status==='true'  ? true : false;
+    //  data.status =  data.status==='true'  ? true : false;
     //return;
 
     console.log(data.status)
@@ -1066,7 +1066,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
 
-    console.log('matching ----------------------------------',matchStage)
+    console.log('matching ----------------------------------', matchStage)
 
     const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
     if (!priceBooks) {
@@ -1653,6 +1653,48 @@ exports.uploadDealerPriceBook = async (req, res) => {
       }
 
       let csvName = req.file.filename
+
+      // const csvWriter = createCsvWriter({
+      //   path: './uploads/resultFile/' + csvName,
+      //   header: [
+      //     { id: 'priceBook', title: 'priceBook' },
+      //     { id: 'retailPrice', title: 'retailPrice' },
+      //     // No more headers since only two columns are expected
+      //   ],
+      // });
+      // const wb = XLSX.readFile(req.file.path);
+      // const sheets = wb.SheetNames;
+      // const ws = wb.Sheets[sheets[0]];
+
+      // // Check each row for data beyond column B
+      // for (let row in ws) {
+      //   // Skip header row and other non-cell rows
+      //   if (row[0] === '!') continue;
+
+      //   // Check if the cell is beyond column B
+      //   if (row[0] > 'B') {
+      //    res.send({
+      //     code:constant.errorCode,
+      //     message:"kkkk"
+      //    })
+      //   }
+      // }
+
+      // // If no error is thrown, convert sheet to JSON
+      // const totalDataComing = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+      // console.log("totalDataComing------------------------------", totalDataComing)
+
+
+      
+
+
+
+
+
+
+
+
       const csvWriter = createCsvWriter({
         path: './uploads/resultFile/' + csvName,
         header: [
@@ -1665,22 +1707,48 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const wb = XLSX.readFile(req.file.path);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
-      const totalDataComing = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
 
-      if (!totalDataComing[0].priceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid priceBook field"
-        })
-        return;
-      }
-      if (!totalDataComing[0].retailPrice) {
-        res.send({
-          code: constant.errorCode,
-          message: "Invalid retailPrice field"
-        })
-        return;
-      }
+      // if (!totalDataComing[0].priceBook) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: "Invalid priceBook field"
+      //   })
+      //   return;
+      // }
+      // if (!totalDataComing[0].retailPrice) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: "Invalid retailPrice field"
+      //   })
+      //   return;
+      // }
+      console.log('kdjfkdjf--------------',totalDataComing1)
+
+
+      // totalDataComing1.forEach((item, index) => {
+      //   const keys = Object.keys(item);
+      //   if (keys.length !== 2) {
+      //     throw new Error(`Invalid format in array at index ${index}. Each object should only contain 'priceBook' and 'retailPrice'.`);
+      //   }
+      // });
+
+      const totalDataComing = totalDataComing1.map(item => {
+        const keys = Object.keys(item);
+        
+        if (keys.length !== 2) {
+          res.send({
+            code:constant.errorCode,
+            message:"Invalid file format detected. The sheet should contain exactly two columns."
+          })
+          return
+        }
+      
+        return {
+          priceBook: item[keys[0]],
+          retailPrice: item[keys[1]]
+        };
+      });
 
       const repeatedMap = {};
       for (let i = totalDataComing.length - 1; i >= 0; i--) {
