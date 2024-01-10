@@ -12,27 +12,27 @@ exports.createCustomer = async (req, res, next) => {
 
     let getCount = await customerService.getCustomersCount({})
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
-    //check dealer ID
-    // let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
-    // if (!checkDealer) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Invalid dealer"
-    //   })
-    //   return;
-    // };
+    // check dealer ID
+    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer"
+      })
+      return;
+    };
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
       username: data.accountName,
     });
-    if (checkAccountName) {
-      res.send({
-        code: constant.errorCode,
-        message: "Customer already exist with this account name"
-      })
-      return;
-    };
+    // if (checkAccountName) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Customer already exist with this account name"
+    //   })
+    //   return;
+    // };
 
     let checkCustomerEmail = await userService.findOneUser({ email: data.email });
     if (checkCustomerEmail) {
@@ -231,16 +231,16 @@ exports.editCustomer = async (req, res) => {
       return;
     };
 
-    if(data.oldName != data.username){
-      let checkName =  await customerService.getCustomerByName({username:data.username})
-      if(checkName){
-        res.send({
-          code:constant.errorCode,
-          message:"Customer already exist with this account name"
-        })
-        return;
-      };
-    }
+    // if(data.oldName != data.username){
+    //   let checkName =  await customerService.getCustomerByName({username:data.username})
+    //   if(checkName){
+    //     res.send({
+    //       code:constant.errorCode,
+    //       message:"Customer already exist with this account name"
+    //     })
+    //     return;
+    //   };
+    // }
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
