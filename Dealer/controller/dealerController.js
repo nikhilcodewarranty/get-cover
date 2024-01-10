@@ -1022,6 +1022,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     //return;
 
     console.log(data.status)
+    console.log(typeof (data.status))
 
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
