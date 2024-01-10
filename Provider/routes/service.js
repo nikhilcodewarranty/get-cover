@@ -8,6 +8,7 @@ router.post("/createServiceProvider",validator('create_servicer_validation'),[ve
 router.post("/addServicerUser/:servicerId",[verifyToken],serviceController.addServicerUser)
 router.put("/approveServicer/:servicerId",[verifyToken],serviceController.approveServicer)
 router.put("/editServicerDetail/:servicerId",[verifyToken],serviceController.editServicerDetail)
+router.put("/updateStatus/:servicerId",[verifyToken],serviceController.updateStatus)
 router.post("/register", serviceController.registerServiceProvider)
 router.get("/serviceProvider", serviceController.getAllServiceProviders);
 router.post("/getSerivicerUsers/:servicerId", serviceController.getSerivicerUsers);
