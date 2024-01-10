@@ -848,8 +848,12 @@ exports.addServicerUser = async (req, res) => {
       data.accountId = checkServicer._id
       let statusCheck;
       if(!checkServicer.accountStatus){
-        data.status = false
+        statusCheck = false
+      }else{
+        statusCheck = data.status
+
       }
+      data.status = statusCheck
       let saveData = await userService.createUser(data)
       if (!saveData) {
         res.send({
