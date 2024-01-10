@@ -779,7 +779,6 @@ exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
     let getUsers = await userService.findUser({ accountId: req.params.servicerId })
-
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -798,11 +797,19 @@ exports.getSerivicerUsers = async (req, res) => {
           phoneRegex.test(entry.phoneNumber)
         );
       });
-
+      let getServicerStatus = await providerService.getServiceProviderById({_id:req.params.servicerId},{status:1})
+      if(!getServicerStatus){
+        res.send({
+          code:constant.errorCode,
+          message:"Invalid servicer ID"
+        })
+        return;
+      }
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: filteredData
+        result: filteredData,
+        servicerStatus:getServicerStatus.status
       })
     }
   } catch (err) {
