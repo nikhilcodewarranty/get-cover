@@ -1016,9 +1016,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
 
-   // data.status = typeof (data.status) == "string" ? "all" : data.status
+   data.status = typeof (data.status) == "string" ? "all" : data.status
 
-   data.status =  data.status==='true'  ? true : false;
+  //  data.status =  data.status==='true'  ? true : false;
     //return;
 
     console.log(data.status)
@@ -1038,10 +1038,10 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
 
-    console.log(data.status)
 
     if (data.status != 'all' && data.status != undefined) {
-      matchConditions.push({ 'status': data.status == "true" ? true : false });
+      console.log("dssdsdf");
+      matchConditions.push({ 'status': data.status });
     }
 
     if (data.term) {
@@ -1065,6 +1065,9 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
+
+    console.log('matching ----------------------------------',matchStage)
+
     const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
     if (!priceBooks) {
       res.send({
@@ -1076,7 +1079,8 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: priceBooks
+      result: priceBooks,
+      matchStage
     })
   } catch (err) {
     res.send({
