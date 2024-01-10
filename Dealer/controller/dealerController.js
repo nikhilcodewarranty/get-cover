@@ -6,6 +6,7 @@ const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
+const dealerRelation = require("../../Provider/model/dealerServicer")
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
@@ -1975,24 +1976,16 @@ exports.getDealerServicers = async (req, res) => {
 exports.unAssignServicer = async (req, res) => {
   try {
     let data = req.body
-    let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: data.servicerId, dealerId: data.dealerId })
-    if (!checkRelation) {
+    let deleteRelation = await dealerRelation.findOneAndDelete({servicerId:data.servicerId,dealerId:data.dealerId})
+    if(!deleteRelation){
       res.send({
-        code: constant.errorCode,
-        message: "Invalid relation"
+        code:constant.errorCode,
+        message:"Unable to unassign"
       })
-      return
-    }
-    let unAssignServicer = await dealerRelationService.deleteRelation({ _id: checkRelation._id })
-    if (!unAssignServicer) {
+    }else{
       res.send({
-        code: constant.errorCode,
-        message: "Unable to unassign the servicer"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Unassigned successfully"
+        code:constant.successCode,
+        message:"Unassigned successfully",deleteRelation
       })
     }
   } catch (err) {
