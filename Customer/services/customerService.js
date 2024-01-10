@@ -1,9 +1,9 @@
 const customer = require("../model/customer");
 
 module.exports = class customerService {
-  static async getAllCustomers(query,projection) {
+  static async getAllCustomers(query, projection) {
     try {
-      const allCustomers = await customer.find(query,projection).sort({'createdAt':-1});
+      const allCustomers = await customer.find(query, projection).sort({ 'createdAt': -1 });
       return allCustomers;
     } catch (error) {
       console.log(`Could not fetch customer ${error}`);
@@ -12,7 +12,7 @@ module.exports = class customerService {
 
   static async getCustomersCount(query) {
     try {
-      const allCustomers = await customer.find(query).sort({'unique_key':-1});
+      const allCustomers = await customer.find(query).sort({ 'unique_key': -1 });
       return allCustomers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch customer ${error}`);
@@ -46,9 +46,9 @@ module.exports = class customerService {
     }
   }
 
-  static async updateCustomer(criteria,data,option) {
+  static async updateCustomer(criteria, data, option) {
     try {
-      const updatedResponse = await customer.updateOne(criteria,data,option);
+      const updatedResponse = await customer.updateOne(criteria, data, option);
 
       return updatedResponse;
     } catch (error) {
@@ -57,9 +57,9 @@ module.exports = class customerService {
   }
 
 
-  static async updateDealerName(criteria,data,option) {
+  static async updateDealerName(criteria, data, option) {
     try {
-      const updatedResponse = await customer.updateMany(criteria,data,option);
+      const updatedResponse = await customer.updateMany(criteria, data, option);
 
       return updatedResponse;
     } catch (error) {
@@ -75,4 +75,17 @@ module.exports = class customerService {
       console.log(`Could  not delete customer ${error}`);
     }
   }
+
+  // Inactive Dealer Customer
+  static async updateCustomerData(criteria, data, option) {
+    try {
+      const updatedResponse = await customer.updateMany(criteria, data, option);
+
+      return updatedResponse;
+    } catch (error) {
+      console.log(`Could not update customer ${error}`);
+    }
+  }
+
+
 };
