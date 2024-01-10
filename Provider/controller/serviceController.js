@@ -70,7 +70,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true });
 
       let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPasswordCode}`
-      const mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+      // const mailing = await sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Customer created successfully",
@@ -132,7 +132,7 @@ exports.createServiceProvider = async (req, res, next) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
       let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
-      const mailing = await sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
+      // const mailing = await sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -216,7 +216,7 @@ exports.approveServicer = async (req, res, next) => {
     let resetPasswordCode = randtoken.generate(4, '123456789')
 
     let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
-    const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
+    // const mailing = await sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
       code: constant.successCode,
       message: "Approve ccessfully",
@@ -691,7 +691,7 @@ exports.registerServiceProvider = async (req, res) => {
     //   })
     //   // Send Email code here
     // }
-    let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
+    // let mailing = await sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
 
     res.send({
       code: constant.successCode,
