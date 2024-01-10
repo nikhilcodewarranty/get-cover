@@ -1645,6 +1645,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let file = req.file
       let data = req.body
 
+      let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
+      // Your array of objects
+      if (checkDealer.length == 0) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dealer Not found"
+        })
+        return;
+      }
+
       if (!req.file) {
         res.send({
           code: constant.errorCode,
@@ -1670,17 +1680,24 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
 
-      const totalDataComing = totalDataComing1.map(item => {
-        const keys = Object.keys(item);
-        
-        if (keys.length !== 2) {
-          res.send({
-            code:constant.errorCode,
-            message:"Invalid file format detected. The sheet should contain exactly two columns."
-          })
-          return
+      const headers = [];
+      for (let cell in ws) {
+        // Check if the cell is in the first row and has a non-empty value
+        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+          headers.push(ws[cell].v);
         }
-      
+      }
+
+      if (headers.length !== 2) {
+        res.send({
+          code:constant.errorCode,
+          message:"Invalid file format detected. The sheet should contain exactly two columns."
+        })
+        return
+      }
+    
+      const totalDataComing = totalDataComing1.map(item => {
+         const keys = Object.keys(item);      
         return {
           priceBook: item[keys[0]],
           retailPrice: item[keys[1]]
