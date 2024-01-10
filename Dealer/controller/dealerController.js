@@ -1654,47 +1654,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       let csvName = req.file.filename
 
-      // const csvWriter = createCsvWriter({
-      //   path: './uploads/resultFile/' + csvName,
-      //   header: [
-      //     { id: 'priceBook', title: 'priceBook' },
-      //     { id: 'retailPrice', title: 'retailPrice' },
-      //     // No more headers since only two columns are expected
-      //   ],
-      // });
-      // const wb = XLSX.readFile(req.file.path);
-      // const sheets = wb.SheetNames;
-      // const ws = wb.Sheets[sheets[0]];
-
-      // // Check each row for data beyond column B
-      // for (let row in ws) {
-      //   // Skip header row and other non-cell rows
-      //   if (row[0] === '!') continue;
-
-      //   // Check if the cell is beyond column B
-      //   if (row[0] > 'B') {
-      //    res.send({
-      //     code:constant.errorCode,
-      //     message:"kkkk"
-      //    })
-      //   }
-      // }
-
-      // // If no error is thrown, convert sheet to JSON
-      // const totalDataComing = XLSX.utils.sheet_to_json(ws, { header: 1 });
-
-      // console.log("totalDataComing------------------------------", totalDataComing)
-
-
-      
-
-
-
-
-
-
-
-
+      // from here copy
       const csvWriter = createCsvWriter({
         path: './uploads/resultFile/' + csvName,
         header: [
@@ -1708,30 +1668,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-
-      // if (!totalDataComing[0].priceBook) {
-      //   res.send({
-      //     code: constant.errorCode,
-      //     message: "Invalid priceBook field"
-      //   })
-      //   return;
-      // }
-      // if (!totalDataComing[0].retailPrice) {
-      //   res.send({
-      //     code: constant.errorCode,
-      //     message: "Invalid retailPrice field"
-      //   })
-      //   return;
-      // }
-      console.log('kdjfkdjf--------------',totalDataComing1)
-
-
-      // totalDataComing1.forEach((item, index) => {
-      //   const keys = Object.keys(item);
-      //   if (keys.length !== 2) {
-      //     throw new Error(`Invalid format in array at index ${index}. Each object should only contain 'priceBook' and 'retailPrice'.`);
-      //   }
-      // });
 
       const totalDataComing = totalDataComing1.map(item => {
         const keys = Object.keys(item);
@@ -1749,6 +1685,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
           retailPrice: item[keys[1]]
         };
       });
+      // copy to here
+
 
       const repeatedMap = {};
       for (let i = totalDataComing.length - 1; i >= 0; i--) {
