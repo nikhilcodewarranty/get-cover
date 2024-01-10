@@ -364,7 +364,7 @@ exports.editServicerDetail = async (req, res) => {
       return;
     }
     if (data.name != data.oldName) {
-      let checkName = await providerService.getServicerByName({ name: data.name }, {})
+      let checkName = await providerService.getServicerByName({ name: new RegExp(data.name) }, {})
       if (checkName) {
         res.send({
           code: constant.errorCode,
@@ -374,16 +374,6 @@ exports.editServicerDetail = async (req, res) => {
       };
     }
 
-    // if(data.Email != data.oldEmail){
-    //   let checkName = await userService.getSingleUserByEmail({email:data.email},{})
-    //   if(!checkName){
-    //     res.send({
-    //       code:constant.errorCode,
-    //       message:"Servicer already exist with this name"
-    //     })
-    //     return;
-    //   };
-    // }
 
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
@@ -395,7 +385,7 @@ exports.editServicerDetail = async (req, res) => {
       return;
     }
     let criteria1 = {
-      $or: [
+      $and: [
         { _id: data.userId },
         { accountId: checkServicer._id }
       ]
@@ -413,6 +403,66 @@ exports.editServicerDetail = async (req, res) => {
         result: { updateData, updateMetaData }
       })
     }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.updateStatus = async (req, res) => {
+  try {
+    let data = req.body
+    let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid servicer ID"
+      })
+      return;
+    }
+    let criteria = { _id: checkServicer._id }
+    let updateData = await providerService.updateServiceProvider(criteria, data)
+    if (!updateData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the data"
+      })
+      return;
+    }
+    if (data.status == "false" || !data.status) {
+      let criteria1 = { accountId: checkServicer._id }
+      let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
+      if (!updateMetaData) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the primary details 'false'"
+        })
+      } else {
+        res.send({
+          code: constant.successCode,
+          message: "Updated Successfully 'false'",
+          result: { updateData, updateMetaData }
+        })
+      }
+    } else {
+      let criteria1 = { accountId: checkServicer._id, isPrimary: true }
+      let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
+      if (!updateMetaData) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the primary details"
+        })
+      } else {
+        res.send({
+          code: constant.successCode,
+          message: "Updated Successfully",
+          result: { updateData, updateMetaData }
+        })
+      }
+    }
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -729,7 +779,6 @@ exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
     let getUsers = await userService.findUser({ accountId: req.params.servicerId })
-
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -748,11 +797,19 @@ exports.getSerivicerUsers = async (req, res) => {
           phoneRegex.test(entry.phoneNumber)
         );
       });
-
+      let getServicerStatus = await providerService.getServiceProviderById({_id:req.params.servicerId},{status:1})
+      if(!getServicerStatus){
+        res.send({
+          code:constant.errorCode,
+          message:"Invalid servicer ID"
+        })
+        return;
+      }
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: filteredData
+        result: filteredData,
+        servicerStatus:getServicerStatus.status
       })
     }
   } catch (err) {

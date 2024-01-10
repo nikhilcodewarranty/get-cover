@@ -422,13 +422,21 @@ exports.getCustomerUsers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
-
+    let checkCustomer = await customerService.getCustomerByName({_id:req.params.customerId},{status:1})
+    if(!checkCustomer){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid customer ID"
+      })
+      return;
+    };
 
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: filteredData
+      result: filteredData,
+      customerStatus:checkCustomer.status
     })
   } catch (err) {
     res.send({
