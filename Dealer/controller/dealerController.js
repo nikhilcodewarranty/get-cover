@@ -1871,18 +1871,21 @@ exports.createDeleteRelation = async (req, res) => {
       }
     });
 
+
+
     let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
-    let checkId = trueArray.map(record => new mongoose.Schema.Types.ObjectId(record._id))
+    let checkId = trueArray.map(record => record._id)
     const existingRecords = await dealerRelationService.getDealerRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
       servicerId: { $in: checkId }
     });
 
     // Step 2: Separate existing and non-existing servicer IDs
-    const existingServicerIds = existingRecords.map(record => record.servicerId);
+    const existingServicerIds = existingRecords.map(record => record.servicerId.toString());
+
     const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
 
-
+    console.log(existingRecords,existingServicerIds,checkId,newServicerIds)
     // Step 3: Delete existing records
     let deleteData = await dealerRelationService.deleteRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),

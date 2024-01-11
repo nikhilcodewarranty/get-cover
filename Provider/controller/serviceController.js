@@ -899,7 +899,7 @@ exports.createDeleteRelation = async (req, res) => {
       }
     });
 
-    let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
+    let uncheckId = falseArray.map(record => record._id)
     let checkId = trueArray.map(record => record._id)
 
     const existingRecords = await dealerRelationService.getDealerRelations({
