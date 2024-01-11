@@ -1619,9 +1619,12 @@ exports.addDealerUser = async (req, res) => {
     }
     data.accountId = checkDealer._id
     let statusCheck;
-    if(!checkDealer.status){
-      data.status = false
+    if(!checkDealer.accountStatus){
+      statusCheck = false
+    }else{
+      statusCheck = data.status
     }
+    data.status = statusCheck
     let saveData = await userService.createUser(data)
     if (!saveData) {
       res.send({
