@@ -1724,7 +1724,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const pricebookArrayPromise = totalDataComing.map(item => {
-          if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? item.priceBook : '', status: true });
+          if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
         })
     
