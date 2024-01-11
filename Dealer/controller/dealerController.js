@@ -1710,6 +1710,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
           retailPrice: item[keys[1]]
         };
       });
+
+      // console.log("totalDataComing+++++++++++",totalDataComing);
+      // return;
       // copy to here
 
 

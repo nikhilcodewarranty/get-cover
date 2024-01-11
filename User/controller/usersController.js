@@ -672,6 +672,8 @@ exports.createDealer = async (req, res) => {
           //   return;
           // }
 
+          
+
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
             if (repeatedMap[totalDataComing[i].priceBook]) {
