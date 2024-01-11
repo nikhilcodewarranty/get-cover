@@ -672,6 +672,8 @@ exports.createDealer = async (req, res) => {
           //   return;
           // }
 
+
+
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
             if (repeatedMap[totalDataComing[i].priceBook]) {
@@ -1440,12 +1442,18 @@ exports.getUserById = async (req, res) => {
       })
       return;
     };
+
     let mainStatus;
     let criteria = { _id: singleUser.accountId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     if (!checkStatus) {
       let checkDealer = await dealerService.getDealerById(criteria)
-      mainStatus = checkDealer.accountStatus
+      if (!checkDealer) {
+        mainStatus= true
+      } else {
+        mainStatus = checkDealer.accountStatus
+
+      }
     } else {
       mainStatus = checkStatus.status
     }
