@@ -628,7 +628,7 @@ exports.registerDealer = async (req, res) => {
 
     if (createNotification) {
       // Send Email code here
-      let mailing =  sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
+      let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
 
     }
     res.send({
@@ -750,7 +750,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
         message: "Unable to get the dealer price books"
       })
     } else {
-      res.send({ 
+      res.send({
         code: constant.successCode,
         message: "Success",
         result: getDealerPrice
@@ -1413,7 +1413,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing =  sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
@@ -1619,9 +1619,9 @@ exports.addDealerUser = async (req, res) => {
     }
     data.accountId = checkDealer._id
     let statusCheck;
-    if(!checkDealer.accountStatus){
+    if (!checkDealer.accountStatus) {
       statusCheck = false
-    }else{
+    } else {
       statusCheck = data.status
     }
     data.status = statusCheck
@@ -1697,14 +1697,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       if (headers.length !== 2) {
         res.send({
-          code:constant.errorCode,
-          message:"Invalid file format detected. The sheet should contain exactly two columns."
+          code: constant.errorCode,
+          message: "Invalid file format detected. The sheet should contain exactly two columns."
         })
         return
       }
-    
+
       const totalDataComing = totalDataComing1.map(item => {
-         const keys = Object.keys(item);      
+        const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
           retailPrice: item[keys[1]]
@@ -1825,7 +1825,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing =  sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       console.log(htmlTableString)
 
@@ -2000,16 +2000,16 @@ exports.getDealerServicers = async (req, res) => {
 exports.unAssignServicer = async (req, res) => {
   try {
     let data = req.body
-    let deleteRelation = await dealerRelation.findOneAndDelete({servicerId:data.servicerId,dealerId:data.dealerId})
-    if(!deleteRelation){
+    let deleteRelation = await dealerRelation.findOneAndDelete({ servicerId: data.servicerId, dealerId: data.dealerId })
+    if (!deleteRelation) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to unassign"
+        code: constant.errorCode,
+        message: "Unable to unassign"
       })
-    }else{
+    } else {
       res.send({
-        code:constant.successCode,
-        message:"Unassigned successfully",deleteRelation
+        code: constant.successCode,
+        message: "Unassigned successfully", deleteRelation
       })
     }
   } catch (err) {
@@ -2055,6 +2055,28 @@ exports.getServicersList = async (req, res) => {
     })
   }
 }
+
+exports.filterDealer = async (req, res) => {
+  try {
+    let data = req.body
+
+    console.log(data)
+
+    let response  = await dealerService.getAllDealers1(data)
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: response
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 
 

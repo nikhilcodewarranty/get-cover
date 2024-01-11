@@ -104,21 +104,57 @@ module.exports = class dealerPriceService {
                 }
               }
             ]
-          },
+          }
         },
-        {
-          $unwind: '$priceBooks'
-        },
+        {$unwind:"$priceBooks"},
         {
           $lookup: {
             from: "dealers",
             localField: "dealerId",
             foreignField: "_id",
-            as: "dealer"
-          }
+            as: "dealer",
+          },
+        },
+        {$unwind:"$dealer"},
+        {
+          $project: {
+
+            _id: 1,
+            name: 1,
+            wholesalePrice: {
+              $sum: [
+                // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
+                "$priceBooks.reserveFutureFee",
+                "$priceBooks.reinsuranceFee",
+                "$priceBooks.adminFee",
+                "$priceBooks.frontingFee",
+              ],
+            },
+            "priceBook": 1,
+            "dealerId": 1,
+            "status": 1,
+            "retailPrice": 1,
+            "description": 1,
+            "isDeleted": 1,
+            // "brokerFee": {
+            //   $subtract: ["$retailPrice","$wholesalePrice" ],
+            // },
+            "unique_key": 1,
+            "__v": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            priceBooks: 1,
+            dealer: 1
+
+          },
         },
         {
-          $unwind: '$dealer'
+          $addFields: {
+            brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+          },
         },
 
 

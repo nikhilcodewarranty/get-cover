@@ -34,6 +34,7 @@ router.put("/updateDealerMeta",[verifyToken],dealerController.updateDealerMeta);
 
 router.post("/createDealerPriceBook",[verifyToken],validator('create_dealer_price_book_validation'),dealerController.createDealerPriceBook)
 router.post("/uploadDealerPriceBook",[verifyToken],dealerController.uploadDealerPriceBook)
+router.post("/filterDealer",[verifyToken],dealerController.filterDealer)
 
 
 router.post("/createRelationWithServicer/:dealerId",[verifyToken],dealerController.createDeleteRelation)

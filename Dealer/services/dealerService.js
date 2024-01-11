@@ -1,6 +1,7 @@
 const dealer = require("../model/dealer");
 const dealerPrice = require("../model/dealerPrice");
 const users = require("../../User/model/users");
+const { $_match } = require("../validators/register_dealer");
 
 module.exports = class dealerService {
   // Get all dealers
@@ -8,6 +9,21 @@ module.exports = class dealerService {
     try {
       const AllDealers = await dealer.find(query,projection).sort({"unique_key":1});
       return AllDealers.sort((a, b) => b.unique_key - a.unique_key);;
+    } catch (error) {
+      console.log(`Could not fetch dealers ${error}`);
+    }
+  }
+
+  static async getAllDealers1(data) {
+    try {
+      const AllDealers = await dealer.aggregate(
+        [
+          {$match: {
+            'name':{ $regex: /data.name/i }
+        }}
+        ]
+      );
+      return AllDealers;  
     } catch (error) {
       console.log(`Could not fetch dealers ${error}`);
     }
