@@ -1867,7 +1867,7 @@ exports.createDeleteRelation = async (req, res) => {
     });
 
     let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
-    let checkId = trueArray.map(record => record._id)
+    let checkId = trueArray.map(record => new mongoose.Schema.Types.ObjectId(record._id))
     const existingRecords = await dealerRelationService.getDealerRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
       servicerId: { $in: checkId }
