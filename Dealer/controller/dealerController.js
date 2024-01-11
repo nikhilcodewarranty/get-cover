@@ -1715,10 +1715,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
-          if (repeatedMap[totalDataComing[i].priceBook]) {
+          if (repeatedMap[totalDataComing[i].priceBook.toUpperCase()]) {
             totalDataComing[i].status = "not unique";
           } else {
-            repeatedMap[totalDataComing[i].priceBook] = true;
+            repeatedMap[totalDataComing[i].priceBook.toUpperCase()] = true;
             totalDataComing[i].status = null;
           }
         }
@@ -1831,7 +1831,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
       }
       
       res.send({

@@ -676,11 +676,11 @@ exports.createDealer = async (req, res) => {
 
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            if (repeatedMap[totalDataComing[i].priceBook]) {
+            if (repeatedMap[totalDataComing[i].priceBook.toUpperCase()]) {
               totalDataComing[i].status = "not unique";
               console.log("not unique", totalDataComing[i])
             } else {
-              repeatedMap[totalDataComing[i].priceBook] = true;
+              repeatedMap[totalDataComing[i].priceBook.toUpperCase()] = true;
               totalDataComing[i].status = null;
               console.log("unique", totalDataComing[i])
             }
