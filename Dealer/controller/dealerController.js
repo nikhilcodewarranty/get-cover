@@ -1862,7 +1862,7 @@ exports.createDeleteRelation = async (req, res) => {
     const falseArray = [];
 
     data.servicers.forEach(item => {
-      if (item.status) {
+      if (item.status || item.status == "true") {
         trueArray.push(item);
       } else {
         falseArray.push(item);
