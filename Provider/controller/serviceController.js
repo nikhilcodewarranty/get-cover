@@ -70,7 +70,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true });
 
       let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPasswordCode}`
-      const mailing =  sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+      const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Customer created successfully",
@@ -132,7 +132,7 @@ exports.createServiceProvider = async (req, res, next) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
       let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
-      const mailing =  sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
+      const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -393,7 +393,7 @@ exports.editServicerDetail = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      result:  updateData 
+      result: updateData
     })
     // let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
     // if (!updateMetaData) {
@@ -696,7 +696,7 @@ exports.registerServiceProvider = async (req, res) => {
     //   })
     //   // Send Email code here
     // }
-    let mailing =  sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
+    let mailing = sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
 
     res.send({
       code: constant.successCode,
@@ -802,11 +802,11 @@ exports.getSerivicerUsers = async (req, res) => {
           phoneRegex.test(entry.phoneNumber)
         );
       });
-      let getServicerStatus = await providerService.getServiceProviderById({_id:req.params.servicerId},{status:1})
-      if(!getServicerStatus){
+      let getServicerStatus = await providerService.getServiceProviderById({ _id: req.params.servicerId }, { status: 1 })
+      if (!getServicerStatus) {
         res.send({
-          code:constant.errorCode,
-          message:"Invalid servicer ID"
+          code: constant.errorCode,
+          message: "Invalid servicer ID"
         })
         return;
       }
@@ -814,7 +814,7 @@ exports.getSerivicerUsers = async (req, res) => {
         code: constant.successCode,
         message: "Success",
         result: filteredData,
-        servicerStatus:getServicerStatus.status
+        servicerStatus: getServicerStatus.status
       })
     }
   } catch (err) {
@@ -847,9 +847,9 @@ exports.addServicerUser = async (req, res) => {
       data.isPrimary = false
       data.accountId = checkServicer._id
       let statusCheck;
-      if(!checkServicer.accountStatus){
+      if (!checkServicer.accountStatus) {
         statusCheck = false
-      }else{
+      } else {
         statusCheck = data.status
 
       }
@@ -1022,7 +1022,7 @@ exports.getServicerDealers = async (req, res) => {
 exports.getDealerList = async (req, res) => {
   try {
     let data = req.body
-    let query = { isDeleted: false, status: "Approved" }
+    let query = { isDeleted: false, status: "Approved", accountStatus: true }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
 
