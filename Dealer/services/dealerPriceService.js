@@ -33,19 +33,6 @@ module.exports = class dealerPriceService {
             as: "dealer",
           },
         },
-        // {
-        //   $group: {
-        //     _id: "$_id",
-        //     totalAmount: {
-        //       $sum: [
-        //         "$priceBooks.reserveFutureFee",
-        //         "$priceBooks.reinsuranceFee",
-        //         "$priceBooks.adminFee",
-        //         "$priceBooks.frontingFee",
-        //       ],
-        //     },
-        //   },
-        // },
         {
           $project: {
 
@@ -198,17 +185,18 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-            pipeline: [
-              {
-                $lookup: {
-                  from: "pricecategories",
-                  localField: "category",
-                  foreignField: "_id",
-                  as: "category"
-                }
-              }
-            ]
-          }
+          },
+        },
+        {
+          $unwind: "$priceBooks", // Unwind to access individual priceBooks
+        },
+        {
+          $lookup: {
+            from: "pricecategories",
+            localField: "priceBooks.category",
+            foreignField: "_id",
+            as: "category",
+          },
         },
         {
           $lookup: {
@@ -217,6 +205,46 @@ module.exports = class dealerPriceService {
             foreignField: "_id",
             as: "dealer",
           },
+        },
+        {
+          $project: {
+
+            _id: 1,
+            name: 1,
+            wholesalePrice: {
+              $sum: [
+                "$priceBooks.reserveFutureFee",
+                "$priceBooks.reinsuranceFee",
+                "$priceBooks.adminFee",
+                "$priceBooks.frontingFee",
+              ],
+            },
+            "priceBook": 1,
+            "dealerId": 1,
+            "status": 1,
+            "retailPrice": 1,
+            "description": 1,
+            "isDeleted": 1,
+            // "brokerFee": {
+            //   $subtract: ["$retailPrice","$wholesalePrice" ],
+            // },
+            "unique_key": 1,
+            "__v": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            priceBooks: 1,
+            category: 1,
+            dealer: 1
+
+          },
+        },
+        {
+          $addFields: {
+            brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+          },
+        },
+        {
+          $sort: { "createdAt": -1 },
         },
 
         query,
