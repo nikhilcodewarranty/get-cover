@@ -12,39 +12,94 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-            pipeline:[
-              {
-                $lookup: {
-                  from: "pricecategories",
-                  localField: "category",
-                  foreignField: "_id",
-                  as: "category"
-                }
-              }
-            ]
-          }
+          },
+        },
+        {
+          $unwind: "$priceBooks", // Unwind to access individual priceBooks
+        },
+        {
+          $lookup: {
+            from: "pricecategories",
+            localField: "priceBooks.category",
+            foreignField: "_id",
+            as: "category",
+          },
         },
         {
           $lookup: {
             from: "dealers",
             localField: "dealerId",
             foreignField: "_id",
-            as: "dealer"
-          }
+            as: "dealer",
+          },
         },
-      ]).sort({ "createdAt": -1 });
-     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+        // {
+        //   $group: {
+        //     _id: "$_id",
+        //     totalAmount: {
+        //       $sum: [
+        //         "$priceBooks.reserveFutureFee",
+        //         "$priceBooks.reinsuranceFee",
+        //         "$priceBooks.adminFee",
+        //         "$priceBooks.frontingFee",
+        //       ],
+        //     },
+        //   },
+        // },
+        {
+          $project: {
+
+            _id: 1,
+            name: 1,
+            wholesalePrice: {
+              $sum: [
+                "$priceBooks.reserveFutureFee",
+                "$priceBooks.reinsuranceFee",
+                "$priceBooks.adminFee",
+                "$priceBooks.frontingFee",
+              ],
+            },
+            "priceBook": 1,
+            "dealerId": 1,
+            "status": 1,
+            "retailPrice": 1,
+            "description": 1,
+            "isDeleted": 1,
+            // "brokerFee": {
+            //   $subtract: ["$retailPrice","$wholesalePrice" ],
+            // },
+            "unique_key": 1,
+            "__v": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            priceBooks: 1,
+            category: 1,
+            dealer: 1
+
+          },
+        },
+        {
+          $addFields: {
+            brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+          },
+        },
+        {
+          $sort: { "createdAt": -1 },
+        },
+      ]);
+
+      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
-  static async getDealerPriceBookById(query,projection) {
+  static async getDealerPriceBookById(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate([
         {
-          $match:query
+          $match: query
         },
         {
           $lookup: {
@@ -52,7 +107,7 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-            pipeline:[
+            pipeline: [
               {
                 $lookup: {
                   from: "pricecategories",
@@ -65,7 +120,7 @@ module.exports = class dealerPriceService {
           },
         },
         {
-          $unwind:'$priceBooks'
+          $unwind: '$priceBooks'
         },
         {
           $lookup: {
@@ -76,19 +131,19 @@ module.exports = class dealerPriceService {
           }
         },
         {
-          $unwind:'$dealer'
+          $unwind: '$dealer'
         },
-   
-     
+
+
       ]).sort({ "createdAt": -1 });
-     // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return SingleDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
-  static async getAllPriceBooksByFilter(query,projection) {
+  static async getAllPriceBooksByFilter(query, projection) {
     try {
       const result = await dealerPrice.aggregate([
         {
@@ -113,7 +168,7 @@ module.exports = class dealerPriceService {
         {
           $match: query
         },
-        
+
         {
           $lookup: {
             from: "dealers",
@@ -127,14 +182,14 @@ module.exports = class dealerPriceService {
         },
         // Additional stages or project as needed
       ]).sort({ "createdAt": -1 });
-  
+
       return result;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
-  static async getAllDealerPriceBooksByFilter(query,projection) {
+  static async getAllDealerPriceBooksByFilter(query, projection) {
     try {
       const result = await dealerPrice.aggregate([
         {
@@ -143,7 +198,7 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-            pipeline:[
+            pipeline: [
               {
                 $lookup: {
                   from: "pricecategories",
@@ -154,7 +209,7 @@ module.exports = class dealerPriceService {
               }
             ]
           }
-        }, 
+        },
         {
           $lookup: {
             from: "dealers",
@@ -165,29 +220,29 @@ module.exports = class dealerPriceService {
         },
 
         query,
-       
+
         // Additional stages or project as needed
       ]).sort({ "createdAt": -1 });
-  
+
       return result;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
-  
+
 
 
   static async getDealerPriceCount() {
     try {
-      const count = await dealerPrice.find().sort({"unique_key":-1});
+      const count = await dealerPrice.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }
 
-  
+
   // create new dealer price 
   static async createDealerPrice(data) {
     try {
@@ -208,9 +263,9 @@ module.exports = class dealerPriceService {
     }
   }
   // get dealer price detail with ID
-  static async getDealerPriceById(ID,projection) {
+  static async getDealerPriceById(ID, projection) {
     try {
-      const singleDealerPriceResponse = await dealerPrice.findOne(ID,projection);
+      const singleDealerPriceResponse = await dealerPrice.findOne(ID, projection);
       return singleDealerPriceResponse;
     } catch (error) {
       console.log(`Dealer price not found. ${error}`);
@@ -233,7 +288,7 @@ module.exports = class dealerPriceService {
 
   static async updateDealerPrice(criteria, newValue, option) {
     try {
-      const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);     
+      const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
@@ -250,39 +305,39 @@ module.exports = class dealerPriceService {
     }
   }
 
- // upload csv
- static async uploadPriceBook(dealerPriceId) {
-  try {
-    const uploadPriceBook = await dealerPrice.insertMany(dealerPriceId);
-    return uploadPriceBook;
-  } catch (error) {
-    console.log(`Could not delete dealer price ${error}`);
+  // upload csv
+  static async uploadPriceBook(dealerPriceId) {
+    try {
+      const uploadPriceBook = await dealerPrice.insertMany(dealerPriceId);
+      return uploadPriceBook;
+    } catch (error) {
+      console.log(`Could not delete dealer price ${error}`);
+    }
   }
-}
 
- // Find By Multiple Ids
- static async findByIds(query) {
-  try {
-    // return;
-    const response = await dealerPrice.aggregate([
-      {
-        $match:query
-      },
-      {
-        $lookup: {
-          from: "pricebooks",
-          localField: "priceBook",
-          foreignField: "_id",
-          as: "priceBooks",
-        }
-      },
-    ])
-  
-    return response;
-  } catch (error) {
-    console.log(`Could not delete dealer price ${error}`);
+  // Find By Multiple Ids
+  static async findByIds(query) {
+    try {
+      // return;
+      const response = await dealerPrice.aggregate([
+        {
+          $match: query
+        },
+        {
+          $lookup: {
+            from: "pricebooks",
+            localField: "priceBook",
+            foreignField: "_id",
+            as: "priceBooks",
+          }
+        },
+      ])
+
+      return response;
+    } catch (error) {
+      console.log(`Could not delete dealer price ${error}`);
+    }
   }
-}
 
-  
+
 };

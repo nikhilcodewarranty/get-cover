@@ -628,7 +628,7 @@ exports.registerDealer = async (req, res) => {
 
     if (createNotification) {
       // Send Email code here
-      // let mailing = await sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
+      let mailing =  sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
 
     }
     res.send({
@@ -750,7 +750,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
         message: "Unable to get the dealer price books"
       })
     } else {
-      res.send({
+      res.send({ 
         code: constant.successCode,
         message: "Success",
         result: getDealerPrice
@@ -1413,14 +1413,14 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      // const mailing = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
-      // if (mailing) {
-      //   //  console.log('Email sent successfully');
-      //   res.send({
-      //     code: constant.successCode,
-      //     data: upload
-      //   });
-      // }
+      const mailing =  sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+      if (mailing) {
+        //  console.log('Email sent successfully');
+        res.send({
+          code: constant.successCode,
+          data: upload
+        });
+      }
 
       res.send({
         code: constant.successCode,
@@ -1822,7 +1822,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      // const mailing = await sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+      const mailing =  sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       console.log(htmlTableString)
 

@@ -577,7 +577,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-            // const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+            const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -780,7 +780,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          // const mailing1 = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
             $set: {
@@ -838,7 +838,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-            // const mailing = await sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+            const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -969,7 +969,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            // const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+            const mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -1188,7 +1188,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          // const mailing1 = await sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: checkRole._id,
@@ -1235,7 +1235,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            // const mailing = await sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+            const mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -1593,7 +1593,7 @@ exports.sendLinkToEmail = async (req, res) => {
         })
         return;
       }
-      // const mailing = await sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email))
+      const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email))
 
       if (mailing) {
         let updateStatus = await userService.updateUser({ _id: checkEmail._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
