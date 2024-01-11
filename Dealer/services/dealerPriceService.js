@@ -185,18 +185,17 @@ module.exports = class dealerPriceService {
             localField: "priceBook",
             foreignField: "_id",
             as: "priceBooks",
-          },
-        },
-        {
-          $unwind: "$priceBooks", // Unwind to access individual priceBooks
-        },
-        {
-          $lookup: {
-            from: "pricecategories",
-            localField: "priceBooks.category",
-            foreignField: "_id",
-            as: "category",
-          },
+            pipeline: [
+              {
+                $lookup: {
+                  from: "pricecategories",
+                  localField: "category",
+                  foreignField: "_id",
+                  as: "category"
+                }
+              }
+            ]
+          }
         },
         {
           $lookup: {
@@ -213,10 +212,10 @@ module.exports = class dealerPriceService {
             name: 1,
             wholesalePrice: {
               $sum: [
-                "$priceBooks.reserveFutureFee",
-                "$priceBooks.reinsuranceFee",
-                "$priceBooks.adminFee",
-                "$priceBooks.frontingFee",
+                { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
+                { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
+                { $arrayElemAt: ["$priceBooks.adminFee", 0] },
+                { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
               ],
             },
             "priceBook": 1,
@@ -233,7 +232,6 @@ module.exports = class dealerPriceService {
             "createdAt": 1,
             "updatedAt": 1,
             priceBooks: 1,
-            category: 1,
             dealer: 1
 
           },
@@ -243,10 +241,6 @@ module.exports = class dealerPriceService {
             brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
           },
         },
-        {
-          $sort: { "createdAt": -1 },
-        },
-
         query,
 
         // Additional stages or project as needed
