@@ -127,7 +127,7 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
-   let quantityPriceDetail;
+    let quantityPriceDetail;
     if (data.priceType == 'QuantityPricing') {
       quantityPriceDetail = data.quantityPriceDetail;
     }
@@ -369,7 +369,13 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-    let quantityPriceDetail = [];
+    let quantityPriceDetail = [
+      {
+
+        name:'',
+        quantity:''
+
+      }];
     if (body.priceType == 'QuantityPricing') {
       quantityPriceDetail = body.quantityPriceDetail;
     }
@@ -384,8 +390,8 @@ exports.updatePriceBookById = async (req, res, next) => {
         description: body.description || existingPriceBook.description,
         priceType: body.priceType || existingPriceBook.priceType,
         rangeStart: body.rangeStart || '',
-        rangeEnd: body.rangeEnd || '' ,
-        quantityPriceDetail: body.quantityPriceDetail || [{name:'',quantity:''}],
+        rangeEnd: body.rangeEnd || '',
+        quantityPriceDetail: quantityPriceDetail
       }
     };
     // Update Price Book Status
