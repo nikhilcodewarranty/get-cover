@@ -5,6 +5,7 @@ const mongoose = require('mongoose')
 
 const dbUrl = process.env.DB_URL + 'Order'
 
+console.log('order db is connected')
 
 const connection = {
     useNewUrlParser: true,

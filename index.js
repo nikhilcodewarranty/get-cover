@@ -17,6 +17,7 @@ const user = require('./User/userServer')
 const service = require('./Provider/serviceServer')
 const customer = require('./Customer/customerServer')
 const dealer = require('./Dealer/dealerServer')
+//const order = require('./Order/orderServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
