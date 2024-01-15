@@ -197,7 +197,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let teamMembers = data.members
 
-    let getUserId = await userService.getUserById1({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
+    let getUserId = await userService.findOneUser({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
     // console.log("getUserId================",getUserId);
     // return;
 
@@ -251,7 +251,7 @@ exports.getServicer = async (req, res) => {
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getServicerUser(query1, projection)
+    let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
       res.send({
@@ -502,7 +502,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getServicerUser(query1, projection)
+    let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
       res.send({
@@ -638,6 +638,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     const count = await providerService.getServicerCount();
+   // console.log("CountServicer++++++++",count);return;
     // Extract necessary data for dealer creation
     const ServicerMeta = {
       name: data.name,
@@ -783,7 +784,7 @@ exports.statusUpdate = async (req, res) => {
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getUsers = await userService.findUser({ accountId: req.params.servicerId })
+    let getUsers = await userService.findUser({ accountId: req.params.servicerId },{isPrimary:-1})
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -837,7 +838,7 @@ exports.addServicerUser = async (req, res) => {
       })
       return
     }
-    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    let checkEmail = await userService.findOneUser({ email: data.email })
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -977,9 +978,7 @@ exports.getServicerDealers = async (req, res) => {
     };
     // return false;
 
-    let dealarUser = await userService.getDealersUser({ accountId: { $in: ids }, isPrimary: true }, {})
-    console.log("check+++++++++++++++", dealarUser)
-
+    let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
 

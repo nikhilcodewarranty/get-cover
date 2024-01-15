@@ -275,7 +275,7 @@ exports.editCustomer = async (req, res) => {
 exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
-    let checkUser = await userService.getUserById1({ _id: req.params.userId }, {})
+    let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -325,7 +325,7 @@ exports.addCustomerUser = async (req, res) => {
       })
       return;
     }
-    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    let checkEmail = await userService.findOneUser({ email: data.email })
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -368,7 +368,7 @@ exports.getCustomerById = async (req, res) => {
         message: "Invalid customer ID"
       })
     } else {
-      let getPrimaryUser = await userService.getUserById1({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
+      let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
 
       res.send({
         code: constant.successCode,
@@ -391,7 +391,7 @@ exports.getCustomerById = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false })
+    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false },{ isPrimary: -1 })
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,

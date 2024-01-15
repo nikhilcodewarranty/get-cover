@@ -414,7 +414,7 @@ exports.createDealer = async (req, res) => {
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
         if (data.email != data.oldEmail) {
-          let emailCheck = await userService.findOneUser({ email: data.email });
+          let emailCheck = await userService.findOneUser({ email: data.email },{});
           if (emailCheck) {
             res.send({
               code: constant.errorCode,
@@ -434,7 +434,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
         }
-        const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId });
+        const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId },{});
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
           res.send({
@@ -870,7 +870,7 @@ exports.createDealer = async (req, res) => {
           });
           return
         }
-        let emailCheck = await userService.findOneUser({ email: data.email });
+        let emailCheck = await userService.findOneUser({ email: data.email },{});
         if (emailCheck) {
           res.send({
             code: constant.errorCode,
@@ -1281,7 +1281,7 @@ exports.createDealer = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
-    const user = await userService.findOneUser({ email: req.body.email });
+    const user = await userService.findOneUser({ email: req.body.email },{});
     if (!user) {
       res.send({
         code: constant.errorCode,
@@ -1337,7 +1337,7 @@ exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
     // Check if the user with the provided email already exists
-    const existingUser = await userService.findOneUser({ email: data.email });
+    const existingUser = await userService.findOneUser({ email: data.email },{});
     if (existingUser) {
       res.send({
         code: constant.errorCode,
@@ -1405,7 +1405,6 @@ exports.getAllUsers = async (req, res) => {
     };
     const checkRole = await role.findOne({ role: { '$regex': req.params.role, '$options': 'i' } });
     let query = { roleId: new mongoose.Types.ObjectId(checkRole ? checkRole._id : '000000000000000000000000'), isDeleted: false }
-    console.log(query)
     let projection = { isDeleted: 0, __v: 0 }
     const users = await userService.getAllUsers(query, projection);
     if (!users) {
@@ -1434,7 +1433,7 @@ exports.getUserById = async (req, res) => {
   try {
     let projection = { __v: 0, status: 0 }
     let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
-    const singleUser = await userService.getUserById(userId, projection);
+    const singleUser = await userService.findOneUser({ _id: userId, }, projection);
     if (!singleUser) {
       res.send({
         code: constant.errorCode,
@@ -1587,7 +1586,7 @@ exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
     let resetPasswordCode = randtoken.generate(4, '123456789')
-    let checkEmail = await userService.findOneUser({ email: data.email })
+    let checkEmail = await userService.findOneUser({ email: data.email },{})
     if (!checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -1624,7 +1623,7 @@ exports.sendLinkToEmail = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     let data = req.body
-    let checkUser = await userService.findOneUser({ _id: req.params.userId })
+    let checkUser = await userService.findOneUser({ _id: req.params.userId },{})
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -1823,7 +1822,7 @@ exports.getAllNotifications = async (req, res) => {
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ 'email': req.body.email });
+    const existingUser = await userService.findOneUser({ 'email': req.body.email },{});
     // console.log(existingUser)
     if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
@@ -1907,7 +1906,7 @@ exports.getCountNotification = async (req, res) => {
 
 exports.checkEmailForSingle = async (req, res) => {
   try {
-    let checkEmail = await userService.getUserById1({ email: req.body.email }, {})
+    let checkEmail = await userService.findOneUser({ email: req.body.email }, {})
     if (checkEmail) {
       res.send({
         code: constant.errorCode,

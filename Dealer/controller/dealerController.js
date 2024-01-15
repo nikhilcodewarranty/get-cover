@@ -120,7 +120,7 @@ exports.getAllDealers = async (req, res) => {
     //const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
     //User Query Filter
 
-    let dealarUser = await userService.getDealersUser(query1, projection)
+    let dealarUser = await userService.getMembers(query1, projection)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -228,7 +228,7 @@ exports.getPendingDealers = async (req, res) => {
 
     // }
 
-    let dealarUser = await userService.getDealersUser(query1, projection)
+    let dealarUser = await userService.getMembers(query1, projection)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -330,7 +330,7 @@ exports.getDealerById = async (req, res) => {
     }
     const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
 
-    let dealarUser = await userService.getDealersUser(query1, { isDeleted: false })
+    let dealarUser = await userService.getMembers(query1, { isDeleted: false })
 
 
     if (!dealarUser) {
@@ -1609,7 +1609,7 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     };
-    let checkEmail = await userService.getSingleUserByEmail({ email: data.email }, {})
+    let checkEmail = await userService.findOneUser({ email: data.email }, {})
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -1957,7 +1957,7 @@ exports.getDealerServicers = async (req, res) => {
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
-    let servicerUser = await userService.getServicerUser(query1, {})
+    let servicerUser = await userService.getMembers(query1, {})
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,

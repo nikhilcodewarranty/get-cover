@@ -4,44 +4,74 @@ const connection = require('../../db')
 const priceSchema = new mongoose.Schema({
   name: {
     type: String,
-    index:true
+    index: true
   },
   description: {
     type: String,
   },
   term: {
     type: Number,
-    index:true
+    index: true
   },
   frontingFee: {
     type: Number,
+    default:0
   },
-  unique_key:{
+  unique_key: {
     type: Number,
   },
   reserveFutureFee: {
     type: Number,
-    default: ''
+    default: 0
   },
   reinsuranceFee: {
     type: Number,
+    default:0
   },
   adminFee: {
     type: Number,
+    default:0
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "pricecategories",
-    index:true
+    index: true
   },
-  userId:{
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
+  },
+  price_type: {
+    type: String,
+    default: ''
+  },
+  startRange: {
+    type: String,
+    default: ''
+  },
+  endRange: {
+    type: String,
+    default: ''
   },
   status: {
     type: Boolean,
     default: true,
-    index:true
+    index: true
+  },
+  quantityPriceDetail: {
+    type: [
+      {
+        name: {
+          type: String,
+          default: ''
+        },
+        quantity: {
+          type: Number,
+          default: 0
+        }
+      }
+    ],
+    default: [{ name: '', quantity: '' }]
   },
   isDeleted: {
     type: Boolean,

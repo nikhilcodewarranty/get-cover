@@ -51,25 +51,15 @@ module.exports = class userService {
   }
 
   //find user
-  static async findUser(query) {
+  static async findUser(query,sorting) {
     try {
-      const allUsers = await user.find(query).sort({isPrimary:-1});
-      console.log("===================",allUsers)
+      const allUsers = await user.find(query).sort(sorting);
       return allUsers;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
     }
   }
 
-  //find user for unique checks
-  static async findOneUser(query) {
-    try {
-      const loggedInUser = await user.findOne(query);
-      return loggedInUser;
-    } catch (error) {
-      console.log(`Could not fetch users ${error}`);
-    }
-  }
 
   //create user 
   static async createUser(data) {
@@ -80,10 +70,6 @@ module.exports = class userService {
       console.log(error);
     }
   };
-
-
-
-
   static async insertManyUser(data) {
     try {
       const response = await user.insertMany(data);
@@ -105,7 +91,6 @@ module.exports = class userService {
 
   static async getUserById1(userId, projection) {
     try {
-      console.log("query---------------", userId)
       const singleUserResponse = await user.findOne(userId, projection);
       return singleUserResponse;
     } catch (error) {
@@ -189,7 +174,6 @@ module.exports = class userService {
   //find user by email
   static async findByEmail(query) {
     try {
-      // const response = await user.find({ 'email': { $in: query } }).select('-_id email');
       const response = await user.aggregate([
         {
           $match: {
@@ -315,10 +299,10 @@ module.exports = class userService {
         {
           $match: query
         }
-      ]).sort({createdAt:-1});
+      ]).sort({ createdAt: -1 });
       return fetchUser;
     } catch (error) {
-      console.log(`Could not update dealer book ${error}`);
+      console.log(`Could not get user ${error}`);
     }
   }
 
@@ -337,6 +321,30 @@ module.exports = class userService {
       return getUser;
     } catch (err) {
       console.log("service error:-", err.message)
+    }
+  }
+
+
+
+  //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
+  //find user for unique checks
+  static async findOneUser(query,projection) {
+    try {
+      projection = projection ? projection :{}
+      const loggedInUser = await user.findOne(query,projection);
+      return loggedInUser;
+    } catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
+
+  static async getMembers(query, projection) {
+    try {
+      const response = await user.find(query, projection).sort({ "createdAt": -1 });
+      return response
+    } catch (err) {
+      console.log(err);
+
     }
   }
 
