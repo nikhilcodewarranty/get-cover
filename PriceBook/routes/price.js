@@ -11,7 +11,7 @@ router.post("/priceBooks",[verifyToken],validator('filter_price_book'),priceCont
 router.get("/getAllActivePriceBook",[verifyToken],priceController.getAllActivePriceBook); //get price books api
 router.post("/searchPriceBook",[verifyToken],validator('search_price_book_validation'),priceController.searchPriceBook); // search price book with defined price category ID
 //router.put("/updatePriceBook/:priceId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBook); // update price book detail with ID
-router.put("/updatePriceBook/:priceBookId",[verifyToken],validator('update_price_validation'),priceController.updatePriceBookById); // update price book detail with ID
+router.put("/updatePriceBook/:priceBookId",[verifyToken],priceController.updatePriceBookById); // update price book detail with ID
 router.get("/getPriceBookByCategory/:categoryName",[verifyToken],priceController.getPriceBookByCategory); // update price book detail with ID
 router.get("/getPriceBookByCategoryId/:categoryId",[verifyToken],priceController.getPriceBookByCategoryId); // update price book detail with ID
 
