@@ -46,11 +46,11 @@ const priceSchema = new mongoose.Schema({
     default: ''
   },
   rangeStart: {
-    type: String,
+    type: Number,
     default: ''
   },
   rangeEnd: {
-    type: String,
+    type: Number,
     default: ''
   },
   status: {
@@ -70,7 +70,8 @@ const priceSchema = new mongoose.Schema({
           default: 0
         }
       }
-    ]
+    ],
+    default: [{ name: '', quantity: '' }]
   },
   isDeleted: {
     type: Boolean,
