@@ -41,7 +41,7 @@ const priceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
   },
-  price_type: {
+  priceType: {
     type: String,
     default: ''
   },

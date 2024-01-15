@@ -8,7 +8,11 @@ const update_price_validation = Joi.object({
     adminFee:Joi.number().optional().allow(),
     reserveFutureFee:Joi.number().optional().allow(),
     priceCatId:Joi.string().trim().optional().allow(),
-    status: Joi.boolean().optional().allow()
+    status: Joi.boolean().optional().allow(),
+    priceType: Joi.string().allow('').optional(),
+    startRange: Joi.string().allow('').optional(),
+    endRange: Joi.string().allow('').optional(),
+    quantityPriceDetail: Joi.array().allow([]).optional(),
 })
 
 module.exports = update_price_validation
