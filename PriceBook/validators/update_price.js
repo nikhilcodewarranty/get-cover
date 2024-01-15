@@ -12,7 +12,7 @@ const update_price_validation = Joi.object({
     priceType: Joi.string().allow('').optional(),
     startRange: Joi.string().allow('').optional(),
     endRange: Joi.string().allow('').optional(),
-    quantityPriceDetail: Joi.array().allow([]).optional(),
+    quantityPriceDetail: Joi.array().optional(),
 })
 
 module.exports = update_price_validation
