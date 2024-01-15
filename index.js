@@ -17,11 +17,12 @@ const user = require('./User/userServer')
 const service = require('./Provider/serviceServer')
 const customer = require('./Customer/customerServer')
 const dealer = require('./Dealer/dealerServer')
-//const order = require('./Order/orderServer')
+const order = require('./Order/orderServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
 const serviceRoutes = require("./Provider/routes/service");
+const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
 const { createProxyMiddleware } = require('http-proxy-middleware');
@@ -71,6 +72,7 @@ app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
 app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
+app.use("/api-v1/order", orderRoutes);
 app.use("/api-v1/customer", customerRoutes);
 
 // catch 404 and forward to error handler

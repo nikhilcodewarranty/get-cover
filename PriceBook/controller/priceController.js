@@ -383,9 +383,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
         priceType: body.priceType || existingPriceBook.priceType,
-        rangeStart: body.rangeStart || existingPriceBook.rangeStart,
-        rangeEnd: body.rangeEnd || existingPriceBook.rangeEnd ,
-        quantityPriceDetail: body.quantityPriceDetail || existingPriceBook.quantityPriceDetail,
+        rangeStart: body.rangeStart || '',
+        rangeEnd: body.rangeEnd || '' ,
+        quantityPriceDetail: body.quantityPriceDetail || [{name:'',quantity:''}],
       }
     };
     // Update Price Book Status

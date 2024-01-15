@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema({
+
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealer",
   },
-  serviceprovId: {
+  servicerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceProvider",
   },
@@ -12,62 +13,148 @@ const orderSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "customer",
   },
+  dealerPurchaseOrder: {
+    type: String,
+    default: ''
+  },
+  serviceCoverageType: {
+    type: String,
+    default: ''
+  },
+  coverageType: {
+    type: String,
+    default: ''
+  },
+  productsArray: {
+    type: [
+      {
+        categoryId: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        priceBookId: {
+          type: mongoose.Schema.Types.ObjectId,
+        },
+        unitPrice: {
+          type: Number,
+        },
+        noOfProducts: {
+          type: Number,
+        },
+        price: {
+          type: Number,
+        },
+        additionalNotes: {
+          type: String,
+          default: ''
+        },
+      }
+    ]
+  },
   orderAmount: {
     type: Number,
+    default: 0
   },
-  paymentMethod: {
-    type: String,
+
+  sendNotification: {
+    type: Boolean,
+    default: false
   },
   paymentStatus: {
     type: String,
-  },
-  paidAmount: {
-    type: Number,
-  },
-  dueAmount: {
-    type: Number,
-  },
-  orderDate: {
-    type: Date,
-    default: Date.now,
+    enum: ['Paid', 'Unpaid', 'Partly Paid'],
+    default: 'Paid'
   },
   createdBy: {
     type: String,
   },
-  venderOrder: {
-    type: String,
-  },
-  coverageStartDate: {
-    type: Date,
-  },
-  waitPeriodBd: {
-    type: Number,
-  },
-  waitPeriodAdh: {
-    type: Number,
-    ref: "dealer",
-  },
-  serviceCoverageType: {
-    type: String,
-  },
-  CoverageType: {
-    type: String,
-  },
-  additional_notes: {
-    type: String,
-  },
-  status:{
-    type:Boolean,
-    default:true
-  },
-  isDeleted:{
-    type:Boolean,
-    default:false
-  },
-  send_notification: {
+  status: {
     type: Boolean,
-    default:false
+    default: true
   },
-},{timestamps:true});
+  isDeleted: {
+    type: Boolean,
+    default: false
+  },
+  orderDate: {
+    type: Date,
+    default: Date.now(),
+  },
+
+
+
+
+  // dealerId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "dealer",
+  // },
+  // serviceprovId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "serviceProvider",
+  // },
+  // customerId: {
+  //   type: mongoose.Schema.Types.ObjectId,
+  //   ref: "customer",
+  // },
+  // orderAmount: {
+  //   type: Number,
+  // },
+  // paymentMethod: {
+  //   type: String,
+  // },
+  // paymentStatus: {
+  //   type: String,
+  // },
+  // paidAmount: {
+  //   type: Number,
+  // },
+  // dueAmount: {
+  //   type: Number,
+  // },
+  // orderDate: {
+  //   type: Date,
+  //   default: Date.now,
+  // },
+  // createdBy: {
+  //   type: String,
+  // },
+  // venderOrder: {
+  //   type: String,
+  // },
+  // coverageStartDate: {
+  //   type: Date,
+  // },
+  // waitPeriodBd: {
+  //   type: Number,
+  // },
+  // waitPeriodAdh: {
+  //   type: Number,
+  //   ref: "dealer",
+  // },
+  // serviceCoverageType: {
+  //   type: String,
+  // },
+  // CoverageType: {
+  //   type: String,
+  // },
+  // additionalNotes: {
+  //   type: String,
+  // },
+  // status:{
+  //   type:Boolean,
+  //   default:true
+  // },
+  // noOfProducts:{
+  //   type: Number,
+  //   default:0
+  // },
+  // isDeleted:{
+  //   type:Boolean,
+  //   default:false
+  // },
+  // sendNotification: {
+  //   type: Boolean,
+  //   default:false
+  // },
+}, { timestamps: true });
 
 module.exports = mongoose.model("order", orderSchema);
