@@ -45,11 +45,11 @@ const priceSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  startRange: {
+  rangeStart: {
     type: String,
     default: ''
   },
-  endRange: {
+  rangeEnd: {
     type: String,
     default: ''
   },

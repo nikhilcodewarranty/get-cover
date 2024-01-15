@@ -10,9 +10,13 @@ const update_price_validation = Joi.object({
     priceCatId:Joi.string().trim().optional().allow(),
     status: Joi.boolean().optional().allow(),
     priceType: Joi.string().allow('').optional(),
-    startRange: Joi.string().allow('').optional(),
-    endRange: Joi.string().allow('').optional(),
-    quantityPriceDetail: Joi.array().optional(),
+    rangeStart: Joi.string().allow('').optional(),
+    rangeEnd: Joi.string().allow('').optional(),
+    quantityPriceDetail: Joi.array().items(Joi.object().keys({
+        name: Joi.string().allow('').optional(),     
+        quantity: Joi.number().optional(),
+
+    }))
 })
 
 module.exports = update_price_validation
