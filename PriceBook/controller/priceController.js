@@ -128,7 +128,12 @@ exports.createPriceBook = async (req, res, next) => {
       return;
     }
 
+    let quantityPriceDetail = [];
+    if (data.priceType == 'QuantityPricing') {
+      quantityPriceDetail = data.quantityPriceDetail;
+    }
     const count = await priceBookService.getPriceBookCount();
+
     // price book data 
     let priceBookData = {
       name: data.name,
@@ -137,7 +142,11 @@ exports.createPriceBook = async (req, res, next) => {
       frontingFee: data.frontingFee,
       reinsuranceFee: data.reinsuranceFee,
       adminFee: data.adminFee,
+      priceType: data.priceType,
+      rangeStart: data.rangeStart,
+      rangeEnd: data.rangeEnd,
       reserveFutureFee: data.reserveFutureFee,
+      quantityPriceDetail: quantityPriceDetail,
       category: checkCat._id,
       status: data.status,
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -361,7 +370,10 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-
+    let quantityPriceDetail = [];
+    if (body.priceType == 'QuantityPricing') {
+      quantityPriceDetail = body.quantityPriceDetail;
+    }
     const newValue = {
       $set: {
         status: body.status,
@@ -371,6 +383,10 @@ exports.updatePriceBookById = async (req, res, next) => {
         adminFee: body.adminFee || existingPriceBook.adminFee,
         category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
+        priceType: body.priceType || existingPriceBook.priceType,
+        rangeStart: body.rangeStart || existingPriceBook.rangeStart,
+        rangeEnd: body.rangeEnd || existingPriceBook.rangeEnd ,
+        quantityPriceDetail: body.quantityPriceDetail || existingPriceBook.quantityPriceDetail,
       }
     };
     // Update Price Book Status

@@ -41,15 +41,15 @@ const priceSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "users",
   },
-  price_type: {
+  priceType: {
     type: String,
     default: ''
   },
-  startRange: {
+  rangeStart: {
     type: String,
     default: ''
   },
-  endRange: {
+  rangeEnd: {
     type: String,
     default: ''
   },
@@ -70,8 +70,7 @@ const priceSchema = new mongoose.Schema({
           default: 0
         }
       }
-    ],
-    default: [{ name: '', quantity: '' }]
+    ]
   },
   isDeleted: {
     type: Boolean,
