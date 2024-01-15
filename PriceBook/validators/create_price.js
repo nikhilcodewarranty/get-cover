@@ -16,7 +16,7 @@ const create_price_validation = Joi.object({
         name: Joi.string().allow('').optional(),     
         quantity: Joi.number().optional(),
 
-    }))
+    })).optional()
 })
 
 module.exports = create_price_validation
