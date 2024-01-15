@@ -15,6 +15,7 @@ const update_price_validation = Joi.object({
     quantityPriceDetail: Joi.array().items(Joi.object().keys({
         name: Joi.string().allow('').optional(),     
         quantity: Joi.string().allow('').optional(),
+        // _id:Joi.string().allow('').optional()
 
     })).optional()
 })
