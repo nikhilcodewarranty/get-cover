@@ -127,7 +127,7 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
-
+   let quantityPriceDetail;
     if (data.priceType == 'QuantityPricing') {
       quantityPriceDetail = data.quantityPriceDetail;
     }
