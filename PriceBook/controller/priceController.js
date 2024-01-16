@@ -372,13 +372,14 @@ exports.updatePriceBookById = async (req, res, next) => {
     let quantityPriceDetail = [
       {
 
-        name:'',
-        quantity:''
+        name: '',
+        quantity: ''
 
       }];
     if (body.priceType == 'QuantityPricing') {
       quantityPriceDetail = body.quantityPriceDetail;
     }
+    console.log("quantityPriceDetail++++++++++",quantityPriceDetail)
     const newValue = {
       $set: {
         status: body.status,
@@ -389,8 +390,8 @@ exports.updatePriceBookById = async (req, res, next) => {
         category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
         priceType: body.priceType || existingPriceBook.priceType,
-        rangeStart: body.priceType=='FlatPricing' ? body.rangeStart : '',
-        rangeEnd:  body.priceType=='FlatPricing' ? body.rangeEnd : '',
+        rangeStart: body.priceType == 'FlatPricing' ? body.rangeStart : '',
+        rangeEnd: body.priceType == 'FlatPricing' ? body.rangeEnd : '',
         quantityPriceDetail: quantityPriceDetail
       }
     };

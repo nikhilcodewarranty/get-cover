@@ -1702,7 +1702,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return
       }
-
+      // console.log("totalDataComing1+++++++++++",totalDataComing1);
+      // return;
       const totalDataComing = totalDataComing1.map(item => {
         const keys = Object.keys(item);
         return {
@@ -1714,11 +1715,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
       // copy to here
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
+   
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
-          if (repeatedMap[totalDataComing[i].priceBook.toUpperCase()]) {
+          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()]) {
             totalDataComing[i].status = "not unique";
           } else {
-            repeatedMap[totalDataComing[i].priceBook.toUpperCase()] = true;
+            repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = true;
             totalDataComing[i].status = null;
           }
         }
@@ -1831,7 +1833,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
       }
       
       res.send({
