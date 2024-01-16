@@ -6,11 +6,11 @@ const servicerService = require("../../Provider/services/providerService");
 const customerService = require("../../Customer/services/customerService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const constant = require("../../config/constant");
-const mongoose = require('mongoose');const multer = require('multer');
+const mongoose = require('mongoose'); const multer = require('multer');
 const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const XLSX = require("xlsx");
-
+const fs = require('fs')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
@@ -94,7 +94,7 @@ exports.createOrder = async (req, res) => {
         }
         data.createdBy = req.userId
         data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
-        data.customerId = data.customerId ? data.customerId :  new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+        data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
         let count = await orderService.getOrdersCount()
         data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
         let savedResponse = await orderService.addOrder(data);
@@ -142,16 +142,16 @@ exports.getAllOrders = async (req, res) => {
     const result_Array = ordersResult.map(item1 => {
         console.log(item1)
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
-        const servicerName = item1.servicerId!='' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
-        const customerName = item1.customerId!='' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()):null;
+        const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
+        const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         if (dealerName || customerName || servicerName) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                 dealerName: dealerName ? dealerName.toObject() : dealerName,
-                servicerName: servicerName ? servicerName.toObject(): servicerName,
-                customerName: customerName ? customerName.toObject():customerName,
+                servicerName: servicerName ? servicerName.toObject() : servicerName,
+                customerName: customerName ? customerName.toObject() : customerName,
             };
-        } else { 
+        } else {
             return {
                 dealerName: dealerName.toObject(),
                 servicerName: servicerName.toObject(),
@@ -191,30 +191,44 @@ exports.checkFileValidation = async (req, res) => {
 
             const headers = [];
             for (let cell in ws) {
-              // Check if the cell is in the first row and has a non-empty value
-              if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                headers.push(ws[cell].v);
-              }
+                // Check if the cell is in the first row and has a non-empty value
+                if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+                    headers.push(ws[cell].v);
+                }
             }
-      
+
             if (headers.length !== 6) {
-              res.send({
-                code: constant.errorCode,
-                message: "Invalid file format detected. The sheet should contain exactly six columns."
-              })
-              return
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly six columns."
+                })
+                return
             }
 
             const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 6);
-            if(isValidLength){
-                console.log('valid length ---------------')
-            }else{
-                console.log('not valid length ---------------')
+            if (!isValidLength) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid fields value"
+                })
+                return;
             }
-            console.log('check+++++++++++++++++++++++++++',totalDataComing1,totalDataComing1.length,isValidLength)
-
-
-
+            if (data.noOfProducts != totalDataComing1.length) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Data does not match to the number of orders"
+                })
+                return;
+            }
+            console.log('check+++++++++++++++++++++++++++', totalDataComing1, totalDataComing1.length, isValidLength)
+        //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            res.send({
+                code: constant.successCode,
+                message: "Verified"
+            })
         })
 
     } catch (err) {
