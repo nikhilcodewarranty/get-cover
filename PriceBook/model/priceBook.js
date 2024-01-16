@@ -43,7 +43,7 @@ const priceSchema = new mongoose.Schema({
   },
   priceType: {
     type: String,
-    default: ''
+    enum:['Regular Pricing','Flat Pricing','Quantity Pricing'],
   },
   rangeStart: {
     type: Number,

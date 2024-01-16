@@ -118,9 +118,9 @@ exports.getAllOrders = async (req, res) => {
     let respectiveServicer = await servicerService.getAllServiceProvider(servicerCreteria, { name: 1 })
     let customerIdsArray = ordersResult.map(result => result.customerId)
     const customerCreteria = { _id: { $in: customerIdsArray } }
+      //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
     const result_Array = ordersResult.map(item1 => {
-        console.log(item1)
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
         const servicerName = item1.servicerId!='' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
         const customerName = item1.customerId!='' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()):null;
@@ -128,8 +128,8 @@ exports.getAllOrders = async (req, res) => {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                 dealerName: dealerName ? dealerName.toObject() : dealerName,
-                servicerName: servicerName ? servicerName.toObject(): servicerName,
-                customerName: customerName ? customerName.toObject():customerName,
+                servicerName: servicerName ? servicerName.toObject(): {},
+                customerName: customerName ? customerName.toObject():{},
             };
         } else { 
             return {

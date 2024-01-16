@@ -7,13 +7,13 @@ const orderSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-   default:''
+    default: ''
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default:new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7effee')
+    default: new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7effee')
   },
-  dealerPurchaseOrder: {
+  venderOrder: {
     type: String,
     default: ''
   },
@@ -50,6 +50,14 @@ const orderSchema = new mongoose.Schema({
           type: String,
           default: ''
         },
+        coverageStartDate: {
+          type: Date,
+          default: Date.now(),
+        },
+        coverageEndDate: {
+          type: Date,
+          default: '',
+        },
       }
     ]
   },
@@ -82,9 +90,18 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
-
-
-
+  paidAmount: {
+    type: Number,
+    default:0
+  },
+  dueAmount: {
+    type: Number,
+    default:0
+  },
+  paymentMethod: {
+    type: String,
+    default: 'Manually'
+  }
 
   // dealerId: {
   //   type: mongoose.Schema.Types.ObjectId,
@@ -125,13 +142,6 @@ const orderSchema = new mongoose.Schema({
   // },
   // coverageStartDate: {
   //   type: Date,
-  // },
-  // waitPeriodBd: {
-  //   type: Number,
-  // },
-  // waitPeriodAdh: {
-  //   type: Number,
-  //   ref: "dealer",
   // },
   // serviceCoverageType: {
   //   type: String,

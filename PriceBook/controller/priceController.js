@@ -128,7 +128,7 @@ exports.createPriceBook = async (req, res, next) => {
       return;
     }
     let quantityPriceDetail;
-    if (data.priceType == 'QuantityPricing') {
+    if (data.priceType == 'Quantity Pricing') {
       quantityPriceDetail = data.quantityPriceDetail;
     }
     const count = await priceBookService.getPriceBookCount();
@@ -376,10 +376,9 @@ exports.updatePriceBookById = async (req, res, next) => {
         quantity: ''
 
       }];
-    if (body.priceType == 'QuantityPricing') {
+    if (body.priceType == 'Quantity Pricing') {
       quantityPriceDetail = body.quantityPriceDetail;
     }
-    console.log("quantityPriceDetail++++++++++",quantityPriceDetail)
     const newValue = {
       $set: {
         status: body.status,
@@ -390,8 +389,8 @@ exports.updatePriceBookById = async (req, res, next) => {
         category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
         priceType: body.priceType || existingPriceBook.priceType,
-        rangeStart: body.priceType == 'FlatPricing' ? body.rangeStart : '',
-        rangeEnd: body.priceType == 'FlatPricing' ? body.rangeEnd : '',
+        rangeStart: body.priceType == 'Flat Pricing' ? body.rangeStart : '',
+        rangeEnd: body.priceType == 'Flat Pricing' ? body.rangeEnd : '',
         quantityPriceDetail: quantityPriceDetail
       }
     };
