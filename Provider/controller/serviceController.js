@@ -270,7 +270,7 @@ exports.getServicer = async (req, res) => {
           servicerData: matchingItem.toObject()
         };
       } else {
-        return dealerData.toObject();
+        return servicerData.toObject();
       }
     });
 

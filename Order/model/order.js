@@ -7,11 +7,11 @@ const orderSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "serviceProvider",
+   default:''
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "customer",
+    default:new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7effee')
   },
   dealerPurchaseOrder: {
     type: String,
@@ -24,6 +24,9 @@ const orderSchema = new mongoose.Schema({
   coverageType: {
     type: String,
     default: ''
+  },
+  unique_key: {
+    type: Number,
   },
   productsArray: {
     type: [
