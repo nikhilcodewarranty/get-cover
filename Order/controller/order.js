@@ -39,7 +39,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let data = req.body
-            let productArray = req.productsArray;
+            let productArray = req.body.productsArray;
             let finalContractArray = [];
             if (data.dealerId) {
                 let projection = { isDeleted: 0 }
@@ -96,6 +96,9 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
+            data.orderAmount = productArray.reduce((accumulator, object) => {
+                return accumulator + object.price;
+            }, 0);
             data.createdBy = req.userId
             data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
@@ -217,7 +220,7 @@ exports.checkFileValidation = async (req, res) => {
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
             const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-           // console.log(totalDataComing1); return;
+            // console.log(totalDataComing1); return;
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
