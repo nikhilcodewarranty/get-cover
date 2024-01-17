@@ -11,7 +11,7 @@ const create_price_validation = Joi.object({
     status: Joi.boolean().optional(),
     priceType: Joi.string().allow('').optional(),
     rangeStart: Joi.number().optional(),
-    rangeEnd: Joi.number().optional(),
+    rangeEnd: Joi.number().optional().greater(Joi.ref('rangeStart')),
     quantityPriceDetail: Joi.array().items(Joi.object().keys({
         name: Joi.string().allow('').optional(),     
         quantity: Joi.string().allow('').optional(),
