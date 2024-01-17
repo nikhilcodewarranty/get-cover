@@ -31,10 +31,15 @@ const contractSchema = new mongoose.Schema({
   },
   regDate: {
     type: Date,
-    // required: true,
+    default: Date.now()
+  },
+  condition: {
+    type: String,
+    default: ''
   },
   claimStatus: {
     type: String,
+    default: ''
     // required: true,
   },
   claimAmount: {
@@ -45,14 +50,12 @@ const contractSchema = new mongoose.Schema({
   eligibilty: {
     type: String,
     // required: true,
-  },
-  covEndDate: {
-    type: Date,
-    // required: true,
+    default: ''
   },
   status: {
-    type: Boolean,
-    default: true
+    type: String,
+    enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],
+    default: 'Waiting'
   },
   isDeleted: {
     type: Boolean,
