@@ -11,7 +11,10 @@ const create_price_validation = Joi.object({
     status: Joi.boolean().optional(),
     priceType: Joi.string().allow('').optional(),
     rangeStart: Joi.number().optional(),
-    rangeEnd: Joi.number().optional().greater(Joi.ref('rangeStart')),
+    rangeEnd: Joi.number()
+    .optional()
+    .greater(Joi.ref('rangeStart'))
+    .messages({ 'number.greater': 'Number should be greater than start range' }), // Corrected custom message
     quantityPriceDetail: Joi.array().items(Joi.object().keys({
         name: Joi.string().allow('').optional(),     
         quantity: Joi.string().allow('').optional(),
