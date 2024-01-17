@@ -3,6 +3,7 @@ const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
 const dealerService = require("../../Dealer/services/dealerService");
 const servicerService = require("../../Provider/services/providerService");
+const contractService = require("../../Contract/services/contractService");
 const customerService = require("../../Customer/services/customerService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const constant = require("../../config/constant");
@@ -105,6 +106,8 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
+        //Add Contracts based on order Id
+        let bulkContracts = await contractService.createBulkContracts(contracts)
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -126,6 +129,7 @@ exports.getAllOrders = async (req, res) => {
         })
         return;
     }
+
 
     let ordersResult = await orderService.getAllOrders();
     let dealerIdsArray = ordersResult.map(result => result.dealerId)

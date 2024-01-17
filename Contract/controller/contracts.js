@@ -1,14 +1,23 @@
 const { Contracts } = require("../model/contract");
 const contractResourceResponse = require("../utils/constant");
 const contractService = require("../services/contractService");
+const constant = require("../../config/constant");
 
 exports.getAllContracts = async (req, res, next) => {
   try {
     const contracts = await contractService.getAllContracts();
     if (!contracts) {
-      res.status(404).json("There are no contract published yet!");
+      res.send({
+        code:constant.errorCode,
+        message:"There are not any contracts"
+      });
+      return
     }
-    res.json(contracts);
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: contracts
+    })
   } catch (error) {
     res
       .status(contractResourceResponse.serverError.statusCode)
@@ -18,6 +27,7 @@ exports.getAllContracts = async (req, res, next) => {
 
 exports.createContract = async (req, res, next) => {
   try {
+    
     const createdContract = await contractService.createContract(req.body);
     if (!createdContract) {
       res.status(404).json("There are no contract created yet!");

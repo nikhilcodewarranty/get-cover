@@ -18,6 +18,15 @@ module.exports = class contractService {
       console.log(error);
     }
   }
+  static async createBulkContracts(data) {
+    try {
+      const bulkContract = await contract.insertMany(data);
+      return bulkContract;
+    }
+    catch(error){
+      console.log(`Contract not found ${error}`)
+    }
+  }
   static async getContractById(contractId) {
     try {
       const singleContractResponse = await contract.findById({

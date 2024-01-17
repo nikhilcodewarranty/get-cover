@@ -5,19 +5,14 @@ const contractSchema = new mongoose.Schema({
     ref: "order",
     // required: true,
   },
-  productOrderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "productOrder",
-    // required: true,
-  },
   productName: {
     type: String,
     // required: true,
   },
-  description: {
-    type: String,
-    // required: true,
-  },
+  // description: {
+  //   type: String,
+  //   // required: true,
+  // },
   model: {
     type: String,
     // required: true,
@@ -45,6 +40,7 @@ const contractSchema = new mongoose.Schema({
   claimAmount: {
     type: Number,
     // required: true,
+    default: 0
   },
   eligibilty: {
     type: String,
@@ -54,18 +50,18 @@ const contractSchema = new mongoose.Schema({
     type: Date,
     // required: true,
   },
-  status:{
-    type:Boolean,
-    default:true
+  status: {
+    type: Boolean,
+    default: true
   },
-  isDeleted:{
-    type:Boolean,
-    default:false
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   deductible: {
     type: Number,
     // required: true,
   },
-},{timestamps:true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("contract", contractSchema);

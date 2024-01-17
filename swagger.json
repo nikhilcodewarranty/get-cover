@@ -1089,6 +1089,27 @@
           }
         }
       },
+      "/order/getAllOrders": {
+        "get": {
+          "security": [ { "Bearer": [] } ],
+          "tags": ["Super Admin"],
+          "summary": "Get All Orders",
+          "responses": {
+            "200": {
+              "description": "Ok"
+            },
+            "401": {
+              "description": "Error"
+            },
+            "404": {
+              "description": "No found"
+            },
+            "406": {
+              "description": "Validation Error"
+            }
+          }
+        }
+      },
       "/price/updatePriceBookCategory/{catId}": {
         "put": {
           "security": [ { "Bearer": [] } ],
@@ -1256,10 +1277,7 @@
             }
           }
         }
-      },
-
-      
-        
+      },        
       
       "/dealer/createDealerPriceBook": {
         "post": {
@@ -1440,6 +1458,8 @@
           }
         }
       },
+
+
       
       
       "/dealer/register":{
