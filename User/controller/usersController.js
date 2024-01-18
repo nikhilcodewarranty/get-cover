@@ -414,7 +414,7 @@ exports.createDealer = async (req, res) => {
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
         if (data.email != data.oldEmail) {
-          let emailCheck = await userService.findOneUser({ email: data.email },{});
+          let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
             res.send({
               code: constant.errorCode,
@@ -434,7 +434,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
         }
-        const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId },{});
+        const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId }, {});
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
           res.send({
@@ -676,7 +676,7 @@ exports.createDealer = async (req, res) => {
 
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()]) {
+            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] && repeatedMap[totalDataComing[i].retailPrice != '']) {
               totalDataComing[i].status = "not unique";
               console.log("not unique", totalDataComing[i])
             } else {
@@ -686,7 +686,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
-            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i'): '', status: true });
+            if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
@@ -870,7 +870,7 @@ exports.createDealer = async (req, res) => {
           });
           return
         }
-        let emailCheck = await userService.findOneUser({ email: data.email },{});
+        let emailCheck = await userService.findOneUser({ email: data.email }, {});
         if (emailCheck) {
           res.send({
             code: constant.errorCode,
@@ -1083,7 +1083,7 @@ exports.createDealer = async (req, res) => {
           }
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()]) {
+            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] && repeatedMap[totalDataComing[i].retailPrice != '']) {
               totalDataComing[i].status = "not unique";
               console.log("not unique", totalDataComing[i])
             } else {
@@ -1281,7 +1281,7 @@ exports.createDealer = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
-    const user = await userService.findOneUser({ email: req.body.email },{});
+    const user = await userService.findOneUser({ email: req.body.email }, {});
     if (!user) {
       res.send({
         code: constant.errorCode,
@@ -1337,7 +1337,7 @@ exports.createSuperAdmin = async (req, res) => {
   try {
     let data = req.body
     // Check if the user with the provided email already exists
-    const existingUser = await userService.findOneUser({ email: data.email },{});
+    const existingUser = await userService.findOneUser({ email: data.email }, {});
     if (existingUser) {
       res.send({
         code: constant.errorCode,
@@ -1448,7 +1448,7 @@ exports.getUserById = async (req, res) => {
     if (!checkStatus) {
       let checkDealer = await dealerService.getDealerById(criteria)
       if (!checkDealer) {
-        mainStatus= true
+        mainStatus = true
       } else {
         mainStatus = checkDealer.accountStatus
 
@@ -1586,7 +1586,7 @@ exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
     let resetPasswordCode = randtoken.generate(4, '123456789')
-    let checkEmail = await userService.findOneUser({ email: data.email },{})
+    let checkEmail = await userService.findOneUser({ email: data.email }, {})
     if (!checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -1623,7 +1623,7 @@ exports.sendLinkToEmail = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   try {
     let data = req.body
-    let checkUser = await userService.findOneUser({ _id: req.params.userId },{})
+    let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -1822,7 +1822,7 @@ exports.getAllNotifications = async (req, res) => {
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
-    const existingUser = await userService.findOneUser({ 'email': req.body.email },{});
+    const existingUser = await userService.findOneUser({ 'email': req.body.email }, {});
     // console.log(existingUser)
     if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
