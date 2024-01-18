@@ -42,7 +42,8 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let data = req.body
-            let productArray = req.body.productsArray;
+            let productArray = data.productsArray;
+            data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
             if (data.dealerId) {
                 let projection = { isDeleted: 0 }
@@ -115,29 +116,67 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
+            let count1 = await contractService.getContractsCount();
+            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             //Read csv file from product array one by one
             for (let i = 0; i < productArray.length; i++) {
                 let file = productArray[i].file
+                let priceBookId = productArray[i].priceBookId
+                let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+                let projection = { isDeleted: 0 }
+                let priceBook = await priceBookService.getPriceBookById(query, projection)
                 const wb = XLSX.readFile(file.path);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
                         orderId: savedResponse._id,
-                        productName: 'AAA',
+                        productName: priceBook[0].name,
                         manufacture: item[keys[1]],
                         model: item[keys[2]],
                         serial: item[keys[3]],
                         condition: item[keys[5]],
                         productValue: item[keys[8]],
                         regDate: item[keys[9]],
+                        unique_key: contractCount
 
                     };
                 });
+                contractCount = contractCount + 1;
             }
+            // console.log("productArray++++++++++++++++++",productArray);return
+            // for (let i = 0; i < productArray.length; i++) {
+            //     let priceBookId = productArray[i].priceBookId
+            //     let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+            //     let projection = { isDeleted: 0, __v: 0 }
+            //     let priceBook = await priceBookService.getPriceBookById(query,projection)
+            //     // const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            //     let obj = {
+            //         orderId: savedResponse._id,
+            //         productName: priceBook[0].name,
+            //         manufacture: productArray[i].manufacture,
+            //         model: productArray[i].model,
+            //         serial: productArray[i].serial,
+            //         condition: productArray[i].condition,
+            //         productValue: productArray[i].productValue,
+            //         regDate: productArray[i].regDate,
+            //         unique_key: contractCount
+            //     }
+            //     finalContractArray.push(obj)
+
+            //     contractCount = contractCount + 1;
+            // }
+            //Create Bulk Contracts
             let bulkContracts = await contractService.createBulkContracts(finalContractArray)
+            if (!bulkContracts) {
+                res.send({
+                    code: constant.errorCode,
+                    message: 'Error while create contracts!'
+                })
+                return;
+            }
             res.send({
                 code: constant.successCode,
                 message: "Success",
