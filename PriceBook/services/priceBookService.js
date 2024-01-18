@@ -100,7 +100,6 @@ module.exports = class priceBookService {
   // get price book by ids
   static async getPriceBookById(query, projection) {
     try {
-      console.log(query)
       const singlePriceBookResponse = await priceBook.aggregate([
         {
           $match: query

@@ -30,117 +30,155 @@ var uploadP = multer({
 
 exports.createOrder = async (req, res) => {
     try {
-        uploadP(req, res, async (err) => {
-            if (req.role != "Super Admin") {
+        // uploadP(req, res, async (err) => {
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+        let data = req.body
+        let productArray = data.productsArray;
+        let finalContractArray = [];
+        if (data.dealerId) {
+            let projection = { isDeleted: 0 }
+            let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
+            if (!checkDealer) {
                 res.send({
                     code: constant.errorCode,
-                    message: "Only super admin allow to do this action"
+                    message: "Dealer not found"
                 })
                 return;
             }
-            let data = req.body
-            let productArray = req.body.productsArray;
-            let finalContractArray = [];
-            if (data.dealerId) {
-                let projection = { isDeleted: 0 }
-                let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
-                if (!checkDealer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Dealer not found"
-                    })
-                    return;
-                }
-            }
-            if (data.servicerId) {
-                let query = { _id: data.servicerId }
-                let checkServicer = await servicerService.getServiceProviderById(query)
-                if (!checkServicer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Servicer not found"
-                    })
-                    return;
-                }
-            }
-            if (data.customerId) {
-                let query = { _id: data.customerId }
-                let checkCustomer = await customerService.getCustomerById(query);
-                if (!checkCustomer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Customer not found"
-                    })
-                    return;
-                }
-            }
-            if (data.categoryId) {
-                let query = { _id: data.categoryId }
-                let checkCategory = await priceBookService.getPriceCatById(query, { isDeleted: 0 })
-                if (!checkCategory) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Category not found"
-                    })
-                    return;
-                }
-            }
-            if (data.priceBookId) {
-                let query = { _id: data.priceBookId }
-                let checkPriceBook = await priceBookService.findByName1(query)
-                if (!checkPriceBook) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "PriceBook not found"
-                    })
-                    return;
-                }
-            }
-            data.orderAmount = productArray.reduce((accumulator, object) => {
-                return accumulator + object.price;
-            }, 0);
-            data.createdBy = req.userId
-            data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
-            data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
-            let count = await orderService.getOrdersCount()
-            data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-            let savedResponse = await orderService.addOrder(data);
-            if (!savedResponse) {
+        }
+        if (data.servicerId) {
+            let query = { _id: data.servicerId }
+            let checkServicer = await servicerService.getServiceProviderById(query)
+            if (!checkServicer) {
                 res.send({
                     code: constant.errorCode,
-                    message: "unable to create order"
-                });
+                    message: "Servicer not found"
+                })
                 return;
             }
-            //Read csv file from product array one by one
-            for (let i = 0; i < productArray.length; i++) {
-                let file = productArray[i].file
-                const wb = XLSX.readFile(file.path);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-                finalContractArray = totalDataComing1.map(item => {
-                    const keys = Object.keys(item);
-                    return {
-                        orderId: savedResponse._id,
-                        productName: 'AAA',
-                        manufacture: item[keys[1]],
-                        model: item[keys[2]],
-                        serial: item[keys[3]],
-                        condition: item[keys[5]],
-                        productValue: item[keys[8]],
-                        regDate: item[keys[9]],
-
-                    };
-                });
+        }
+        if (data.customerId) {
+            let query = { _id: data.customerId }
+            let checkCustomer = await customerService.getCustomerById(query);
+            if (!checkCustomer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Customer not found"
+                })
+                return;
             }
-            let bulkContracts = await contractService.createBulkContracts(finalContractArray)
+        }
+        if (data.categoryId) {
+            let query = { _id: data.categoryId }
+            let checkCategory = await priceBookService.getPriceCatById(query, { isDeleted: 0 })
+            if (!checkCategory) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Category not found"
+                })
+                return;
+            }
+        }
+        if (data.priceBookId) {
+            let query = { _id: data.priceBookId }
+            let checkPriceBook = await priceBookService.findByName1(query)
+            if (!checkPriceBook) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "PriceBook not found"
+                })
+                return;
+            }
+        }
+        data.orderAmount = productArray.reduce((accumulator, object) => {
+            return accumulator + object.price;
+        }, 0);
+        data.createdBy = req.userId
+        data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+        data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+        let count = await orderService.getOrdersCount()
+        data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+        let savedResponse = await orderService.addOrder(data);
+        if (!savedResponse) {
             res.send({
-                code: constant.successCode,
-                message: "Success",
-                result: savedResponse
+                code: constant.errorCode,
+                message: "unable to create order"
+            });
+            return;
+        }
+        let count1 = await contractService.getContractsCount();
+        let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
+        //Read csv file from product array one by one
+        for (let i = 0; i < productArray.length; i++) {
+            let file = productArray[i].file
+            let priceBookId = productArray[i].priceBookId
+            let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+            let projection = { isDeleted: 0 }
+            let priceBook = await priceBookService.getPriceBookById(query, projection)
+            const wb = XLSX.readFile(file.path);
+            const sheets = wb.SheetNames;
+            const ws = wb.Sheets[sheets[0]];
+            const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            finalContractArray = totalDataComing1.map(item => {
+                const keys = Object.keys(item);
+                return {
+                    orderId: savedResponse._id,
+                    productName: priceBook[0].name,
+                    manufacture: item[keys[1]],
+                    model: item[keys[2]],
+                    serial: item[keys[3]],
+                    condition: item[keys[5]],
+                    productValue: item[keys[8]],
+                    regDate: item[keys[9]],
+                    unique_key: contractCount
+
+                };
+            });
+            contractCount = contractCount + 1;
+        }
+        // console.log("productArray++++++++++++++++++",productArray);return
+        // for (let i = 0; i < productArray.length; i++) {
+        //     let priceBookId = productArray[i].priceBookId
+        //     let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+        //     let projection = { isDeleted: 0, __v: 0 }
+        //     let priceBook = await priceBookService.getPriceBookById(query,projection)
+        //     // const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+        //     let obj = {
+        //         orderId: savedResponse._id,
+        //         productName: priceBook[0].name,
+        //         manufacture: productArray[i].manufacture,
+        //         model: productArray[i].model,
+        //         serial: productArray[i].serial,
+        //         condition: productArray[i].condition,
+        //         productValue: productArray[i].productValue,
+        //         regDate: productArray[i].regDate,
+        //         unique_key: contractCount
+        //     }
+        //     finalContractArray.push(obj)
+
+        //     contractCount = contractCount + 1;
+        // }
+        //Create Bulk Contracts
+        let bulkContracts = await contractService.createBulkContracts(finalContractArray)
+        if (!bulkContracts) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Error while create contracts!'
             })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: savedResponse
         })
+        // })
     } catch (err) {
         res.send({
             code: constant.errorCode,

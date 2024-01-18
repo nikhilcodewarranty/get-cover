@@ -52,6 +52,9 @@ const contractSchema = new mongoose.Schema({
     // required: true,
     default: ''
   },
+  unique_key: {
+    type: Number,
+  },
   status: {
     type: String,
     enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],
@@ -63,6 +66,7 @@ const contractSchema = new mongoose.Schema({
   },
   deductible: {
     type: Number,
+    default:0
     // required: true,
   },
 }, { timestamps: true });

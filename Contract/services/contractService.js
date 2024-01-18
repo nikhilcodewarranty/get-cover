@@ -18,6 +18,14 @@ module.exports = class contractService {
       console.log(error);
     }
   }
+  static async getContractsCount() {
+    try {
+      const count = await contract.find().sort({ "unique_key": -1 });
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
+    } catch (error) {
+      console.log(`Could not fetch contract count ${error}`);
+    }
+  }
   static async createBulkContracts(data) {
     try {
       const bulkContract = await contract.insertMany(data);
