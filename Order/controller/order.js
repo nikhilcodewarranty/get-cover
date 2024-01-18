@@ -15,6 +15,7 @@ const fs = require('fs')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
+        console.log('file+++++++++++++++++++++',files)
         cb(null, path.join(__dirname, '../../uploads/orderFile'));
     },
     filename: function (req, files, cb) {
@@ -22,18 +23,27 @@ var StorageP = multer.diskStorage({
     }
 })
 
+var upload = multer({
+    storage: StorageP,
+    limits: {
+        fileSize: 500 * 1024 * 1024, // 500 MB limit
+    },
+}).array('file',100)
+
 var uploadP = multer({
     storage: StorageP,
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).single('file');
+}).single('file')
 
 
 
 exports.createOrder = async (req, res) => {
     try {
-        uploadP(req, res, async (err) => {
+        upload(req, res, async (err) => {
+            let data = req.body
+
             if (req.role != "Super Admin") {
                 res.send({
                     code: constant.errorCode,
@@ -41,7 +51,6 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            let data = req.body
             console.log("data+++++++++++++++++++++++", data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
@@ -102,9 +111,9 @@ exports.createOrder = async (req, res) => {
                 }
             }
             console.log(productArray);
-            data.orderAmount = productArray.reduce((accumulator, object) => {
-                return accumulator + object.price;
-            }, 0);
+            // data.orderAmount = productArray.reduce((accumulator, object) => {
+            //     return accumulator + object.price;
+            // }, 0);
             data.createdBy = req.userId
             data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
@@ -121,13 +130,26 @@ exports.createOrder = async (req, res) => {
             let count1 = await contractService.getContractsCount();
             let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             //Read csv file from product array one by one
-            for (let i = 0; i < productArray.length; i++) {
-                let file = productArray[i].file
-                let priceBookId = productArray[i].priceBookId
+            const uploadedFiles = req.files.map(file => ({
+                fileName: file.filename,
+                filePath: file.path
+              }));
+
+              const productsWithFiles = uploadedFiles1.map((file, index) => ({
+                products: {
+                    ...data.productsArray[index],
+                    file: file.filePath,
+                },
+              }));
+
+           //   console.log('check+++++++++++++++++++++++++',productsWithFiles);return;
+            for (let i = 0; i < productsWithFiles.length; i++) {
+                let products = productsWithFiles[i].products
+                let priceBookId = products.priceBookId
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
                 let projection = { isDeleted: 0 }
                 let priceBook = await priceBookService.getPriceBookById(query, projection)
-                const wb = XLSX.readFile(file.path);
+                const wb = XLSX.readFile(products.file);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
