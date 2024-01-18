@@ -37,7 +37,6 @@ module.exports = class orderService {
 
   static async addOrder(data) {
     try {
-      console.log("resulat========", data)
       const createOrder = await order(data).save();
       return createOrder;
     } catch (error) {
