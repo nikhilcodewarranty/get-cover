@@ -42,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
+            let data = req.body 
             console.log(req.files)
             if (req.role != "Super Admin") {
                 res.send({
@@ -51,7 +51,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", data)
+            console.log("data+++++++++++++++++++++++", req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -238,11 +238,11 @@ exports.getAllOrders = async (req, res) => {
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
-    console.log("ordersResult+++++++++++++++++",ordersResult);
-    console.log("respectiveDealers+++++++++++++++++",respectiveDealers);
+    console.log("ordersResult+++++++++++++++++", ordersResult);
+    console.log("respectiveDealers+++++++++++++++++", respectiveDealers);
     const result_Array = ordersResult.map(item1 => {
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
-        console.log("dealerName+++++++++++++++++",dealerName);
+        console.log("dealerName+++++++++++++++++", dealerName);
         const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
         const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         if (dealerName || customerName || servicerName) {
