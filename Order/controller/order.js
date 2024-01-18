@@ -15,7 +15,7 @@ const fs = require('fs')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
-        console.log('file+++++++++++++++++++++',files)
+        console.log('file+++++++++++++++++++++', files)
         cb(null, path.join(__dirname, '../../uploads/orderFile'));
     },
     filename: function (req, files, cb) {
@@ -28,7 +28,7 @@ var upload = multer({
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).array('file',100)
+}).array('file', 100)
 
 var uploadP = multer({
     storage: StorageP,
@@ -43,7 +43,7 @@ exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body
-
+            console.log(req.files)
             if (req.role != "Super Admin") {
                 res.send({
                     code: constant.errorCode,
@@ -133,16 +133,16 @@ exports.createOrder = async (req, res) => {
             const uploadedFiles = req.files.map(file => ({
                 fileName: file.filename,
                 filePath: file.path
-              }));
+            }));
 
-              const productsWithFiles = uploadedFiles1.map((file, index) => ({
+            const productsWithFiles = uploadedFiles.map((file, index) => ({
                 products: {
                     ...data.productsArray[index],
                     file: file.filePath,
                 },
-              }));
+            }));
 
-           //   console.log('check+++++++++++++++++++++++++',productsWithFiles);return;
+            //   console.log('check+++++++++++++++++++++++++',productsWithFiles);return;
             for (let i = 0; i < productsWithFiles.length; i++) {
                 let products = productsWithFiles[i].products
                 let priceBookId = products.priceBookId
@@ -170,7 +170,7 @@ exports.createOrder = async (req, res) => {
                 });
                 contractCount = contractCount + 1;
             }
-             console.log("finalContractArray++++++++++++++++++",finalContractArray);
+            console.log("finalContractArray++++++++++++++++++", finalContractArray);
             // for (let i = 0; i < productArray.length; i++) {
             //     let priceBookId = productArray[i].priceBookId
             //     let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
