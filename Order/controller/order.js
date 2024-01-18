@@ -24,6 +24,9 @@ var StorageP = multer.diskStorage({
 
 var uploadP = multer({
     storage: StorageP,
+    limits: {
+        fileSize: 500 * 1024 * 1024, // 500 MB limit
+    },
 }).single('file');
 
 
