@@ -13,7 +13,7 @@ module.exports = class orderService {
             customerId:1,
             paymentStatus:1,
             status:1,
-            dealerPurchaseOrder:1,
+            venderOrder:1,
             orderAmount:1
           }
         }
