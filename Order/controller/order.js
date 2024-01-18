@@ -43,7 +43,7 @@ exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body 
-            console.log(req.files)
+            console.log(req.file)
             if (req.role != "Super Admin") {
                 res.send({
                     code: constant.errorCode,
@@ -51,7 +51,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", req, data)
+            console.log("data+++++++++++++++++++++++", req.file, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
