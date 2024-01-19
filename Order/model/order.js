@@ -79,8 +79,9 @@ const orderSchema = new mongoose.Schema({
     type: String,
   },
   status: {
-    type: Boolean,
-    default: true
+    type: String,
+    enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],
+    default: 'Waiting'
   },
   isDeleted: {
     type: Boolean,

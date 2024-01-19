@@ -13,7 +13,7 @@ module.exports = class orderService {
             customerId:1,
             paymentStatus:1,
             status:1,
-            dealerPurchaseOrder:1,
+            venderOrder:1,
             orderAmount:1
           }
         }
@@ -37,7 +37,6 @@ module.exports = class orderService {
 
   static async addOrder(data) {
     try {
-      console.log("resulat========", data)
       const createOrder = await order(data).save();
       return createOrder;
     } catch (error) {

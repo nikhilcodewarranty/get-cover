@@ -15,6 +15,7 @@ const fs = require('fs')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
+        console.log('file+++++++++++++++++++++', files)
         cb(null, path.join(__dirname, '../../uploads/orderFile'));
     },
     filename: function (req, files, cb) {
@@ -22,18 +23,76 @@ var StorageP = multer.diskStorage({
     }
 })
 
+var upload = multer({
+    storage: StorageP,
+    limits: {
+        fileSize: 500 * 1024 * 1024, // 500 MB limit
+    },
+}).array('file', 100)
+
 var uploadP = multer({
     storage: StorageP,
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).single('file');
+}).single('file')
 
 
 
 exports.createOrder = async (req, res) => {
     try {
-        uploadP(req, res, async (err) => {
+        upload(req, res, async (err) => {
+            let data = req.body 
+            // let data = {
+            //     "dealerId": "65a0d25d503003dcd4abfc33",
+            //     "servicerId": "65a0d64b23eec30f66ea0c44",
+            //     "customerId": "65a0e563169e80fd0600a965",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65a0dacd3a9009fd982ba41e",
+            //             "priceBookId": "65a0daf83a9009fd982ba41f",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#12345",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
+
             if (req.role != "Super Admin") {
                 res.send({
                     code: constant.errorCode,
@@ -41,7 +100,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            let data = req.body
+            console.log("data+++++++++++++++++++++++",req, req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -100,6 +159,7 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
+            console.log(productArray);
             data.orderAmount = productArray.reduce((accumulator, object) => {
                 return accumulator + object.price;
             }, 0);
@@ -119,17 +179,33 @@ exports.createOrder = async (req, res) => {
             let count1 = await contractService.getContractsCount();
             let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             //Read csv file from product array one by one
-            for (let i = 0; i < productArray.length; i++) {
-                let file = productArray[i].file
-                let priceBookId = productArray[i].priceBookId
+            const uploadedFiles = req.files.map(file => ({
+                fileName: file.filename,
+                filePath: file.path
+            }));
+
+
+            const productsWithFiles = uploadedFiles.map((file, index) => ({
+                products: {
+                    ...data.productsArray[index],
+                    file: file.filePath,
+                },
+            }));
+
+              console.log('check+++++++++++++++++++++++++',productsWithFiles);
+            for (let i = 0; i < productsWithFiles.length; i++) {
+                let products = productsWithFiles[i].products
+
+                let priceBookId = products.priceBookId
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
                 let projection = { isDeleted: 0 }
                 let priceBook = await priceBookService.getPriceBookById(query, projection)
-                const wb = XLSX.readFile(file.path);
+                const wb = XLSX.readFile(products.file);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                finalContractArray = totalDataComing1.map(item => {
+              console.log('check+++++++++++++++++++111111111++++++',ws,products.file);
+              finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
                         orderId: savedResponse._id,
@@ -137,38 +213,20 @@ exports.createOrder = async (req, res) => {
                         manufacture: item[keys[1]],
                         model: item[keys[2]],
                         serial: item[keys[3]],
-                        condition: item[keys[5]],
-                        productValue: item[keys[8]],
-                        regDate: item[keys[9]],
+                        condition: item[keys[4]],
+                        productValue: item[keys[5]],
+                        // regDate: item[keys[6]],
                         unique_key: contractCount
 
                     };
                 });
                 contractCount = contractCount + 1;
             }
-            // console.log("productArray++++++++++++++++++",productArray);return
-            // for (let i = 0; i < productArray.length; i++) {
-            //     let priceBookId = productArray[i].priceBookId
-            //     let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
-            //     let projection = { isDeleted: 0, __v: 0 }
-            //     let priceBook = await priceBookService.getPriceBookById(query,projection)
-            //     // const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-            //     let obj = {
-            //         orderId: savedResponse._id,
-            //         productName: priceBook[0].name,
-            //         manufacture: productArray[i].manufacture,
-            //         model: productArray[i].model,
-            //         serial: productArray[i].serial,
-            //         condition: productArray[i].condition,
-            //         productValue: productArray[i].productValue,
-            //         regDate: productArray[i].regDate,
-            //         unique_key: contractCount
-            //     }
-            //     finalContractArray.push(obj)
-
-            //     contractCount = contractCount + 1;
-            // }
+            console.log("finalContractArray++++++++++++++++++", finalContractArray);
+            
             //Create Bulk Contracts
+
+
             let bulkContracts = await contractService.createBulkContracts(finalContractArray)
             if (!bulkContracts) {
                 res.send({
@@ -214,8 +272,11 @@ exports.getAllOrders = async (req, res) => {
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
+    console.log("ordersResult+++++++++++++++++", ordersResult);
+    console.log("respectiveDealers+++++++++++++++++", respectiveDealers);
     const result_Array = ordersResult.map(item1 => {
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
+        console.log("dealerName+++++++++++++++++", dealerName);
         const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
         const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         if (dealerName || customerName || servicerName) {
@@ -271,7 +332,7 @@ exports.checkFileValidation = async (req, res) => {
                 }
             }
 
-            if (headers.length !== 6) {
+            if (headers.length !== 5) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.errorCode,
@@ -280,7 +341,7 @@ exports.checkFileValidation = async (req, res) => {
                 return
             }
 
-            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 6);
+            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 5);
             if (!isValidLength) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
