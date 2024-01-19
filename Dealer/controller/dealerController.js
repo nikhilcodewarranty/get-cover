@@ -1708,20 +1708,40 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const keys = Object.keys(item);
         return {
           priceBook: item[keys[0]],
-          retailPrice: item[keys[1]]
+          retailPrice: item[keys[1]],
+          duplicates : [],
+          exit : false
         };
       });
       //  return;
       // copy to here
+      totalDataComing.forEach(data=>{
+        if (!data.retailPrice) {
+          data.status = "Dealer catalog retail price is empty";
+          data.exit = true;
+        }
+        else {
+          data.status = null
+        }
+      })
+      console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
    
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
-          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()]) {
+          console.log("uniquw", i, totalDataComing[i]);
+          if(totalDataComing[i].exit){
+            continue;
+          }
+          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >=0) {
             totalDataComing[i].status = "not unique";
+            totalDataComing[i].exit = true;
+            const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
+            totalDataComing[index].duplicates.push(i);
           } else {
-            repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = true;
-            totalDataComing[i].status = null;
+            
+              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
+              totalDataComing[i].status = null;
           }
         }
 
@@ -1734,7 +1754,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
   
         for (let i = 0; i < totalDataComing.length; i++) {
           if (!pricebooksArray[i]) {
-            if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+            if (!totalDataComing[i].exit){
+              totalDataComing[i].status = "price catalog does not exist";
+              totalDataComing[i].duplicates.forEach((index)=>{
+                totalDataComing[index].status = "price catalog does not exist";
+              })
+            }
             totalDataComing[i].priceBookDetail = null
           } else {
             totalDataComing[i].priceBookDetail = pricebooksArray[i];
@@ -1756,11 +1781,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
               dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
               dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
               await dealerArray[i].save();
-              if (totalDataComing[i].retailPrice == undefined) {
-                totalDataComing[i].status = "Dealer catalog retail price is empty";
-              } else {
+              
                 totalDataComing[i].status = "Dealer catalog updated successully";
-              }
+                totalDataComing[i].duplicates.forEach((index)=>{
+                  totalDataComing[index].status = "Dealer catalog updated successully";
+                })
+              
             } else {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -1774,7 +1800,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              totalDataComing[i].status = "Dealer catalog created successully";
+              totalDataComing[i].status = "Dealer catalog updated successully"
+              totalDataComing[i].duplicates.forEach((index,i)=>{
+                totalDataComing[index].status = i==0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+              })
             }
           }
         }
@@ -1833,7 +1862,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', htmlTableString));
       }
       
       res.send({
@@ -1843,6 +1872,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
     })
   } catch (err) {
+    console.log(err)
     res.send({
       code: constant.errorCode,
       message: err.message
