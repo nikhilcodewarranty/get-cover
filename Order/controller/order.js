@@ -28,7 +28,7 @@ var upload = multer({
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).array('file[0]', 100)
+}).array('file', 100)
 
 var uploadP = multer({
     storage: StorageP,
