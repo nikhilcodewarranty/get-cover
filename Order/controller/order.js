@@ -42,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body 
+            let data = req.body
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -100,7 +100,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++",req.files,req.file, data)
+            console.log("data+++++++++++++++++++++++", req.files, req.file, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -192,7 +192,7 @@ exports.createOrder = async (req, res) => {
                 },
             }));
 
-              console.log('check+++++++++++++++++++++++++',productsWithFiles);
+            console.log('check+++++++++++++++++++++++++', productsWithFiles);
             for (let i = 0; i < productsWithFiles.length; i++) {
                 let products = productsWithFiles[i].products
 
@@ -204,8 +204,8 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-              console.log('check+++++++++++++++++++111111111++++++',ws,products.file);
-              finalContractArray = totalDataComing1.map(item => {
+                console.log('check+++++++++++++++++++111111111++++++', ws, products.file);
+                finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
                         orderId: savedResponse._id,
@@ -219,11 +219,11 @@ exports.createOrder = async (req, res) => {
                         unique_key: contractCount
 
                     };
-                });
+                }); 
                 contractCount = contractCount + 1;
             }
             console.log("finalContractArray++++++++++++++++++", finalContractArray);
-            
+
             //Create Bulk Contracts
 
 
@@ -358,6 +358,101 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
+            //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            res.send({
+                code: constant.successCode,
+                message: "Verified"
+            })
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.checkMultipleFileValidation = async (req, res) => {
+    try {
+        upload(req, res, async (err) => {
+            let data = req.body
+            const uploadedFiles = req.files.map(file => ({
+                filePath: file.path
+            }));
+
+
+            const productsWithFiles = uploadedFiles.map((file, index) => ({
+                products: {
+                    key: index + 1,
+                    file: file.filePath,
+                },
+            }));
+
+            let ws = [];
+            console.log(productsWithFiles, req.body);
+            for (let j = 0; j < productsWithFiles.length; j++) {
+                const wb = XLSX.readFile(productsWithFiles[j].products.file);
+                const sheets = wb.SheetNames;
+                let obj = {
+                    key: productsWithFiles[j].products.key,
+                    sheet: wb.Sheets[sheets[0]]
+
+                }
+                ws.push(obj);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            }
+
+            console.log("ws+++++++++++++++++++++=", ws);
+            if (ws.every(obj => Object.keys(obj.sheet).length === 5)) {
+                // Continue processing if the header lengths match for all objects
+                // ...
+            } else {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The header lengths do not match for all objects."
+                });
+            }
+            return;
+            const headers = [];
+            for (let cell in ws) {
+                // Check if the cell is in the first row and has a non-empty value
+                if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+                    headers.push(ws[cell].v);
+                }
+            }
+
+            if (headers.length !== 5) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly five columns."
+                })
+                return
+            }
+
+            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 5);
+            if (!isValidLength) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid fields value"
+                })
+                return;
+            }
+            if (data.noOfProducts != totalDataComing1.length) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Data does not match to the number of orders"
+                })
+                return;
+            }
+            if (data.rangeStart > data.rangeEnd) {
+
+            }
+            console.log("totalDataComing1+++++++++++++++", totalDataComing1);
+            return;
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
             res.send({
                 code: constant.successCode,
