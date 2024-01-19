@@ -100,7 +100,6 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", req.files, req.file, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -187,8 +186,6 @@ exports.createOrder = async (req, res) => {
                     file: file.filePath,
                 },
             }));
-
-            console.log('check+++++++++++++++++++++++++', productsWithFiles);
             for (let i = 0; i < productsWithFiles.length; i++) {
                 let products = productsWithFiles[i].products
 
@@ -200,7 +197,6 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                console.log('check+++++++++++++++++++111111111++++++', ws, products.file);
                 finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
@@ -218,8 +214,6 @@ exports.createOrder = async (req, res) => {
                 }); 
                 contractCount = contractCount + 1;
             }
-            console.log("finalContractArray++++++++++++++++++", finalContractArray);
-
             //Create Bulk Contracts
 
 
