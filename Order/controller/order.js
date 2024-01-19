@@ -100,7 +100,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", req.files, data)
+            console.log("data+++++++++++++++++++++++",req.file, req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
