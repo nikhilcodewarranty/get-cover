@@ -28,7 +28,7 @@ var upload = multer({
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).array('file', 100)
+}).array('file[0]', 100)
 
 var uploadP = multer({
     storage: StorageP,
@@ -100,7 +100,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++",req, req.files, data)
+            console.log("data+++++++++++++++++++++++",req.files,req.file, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
