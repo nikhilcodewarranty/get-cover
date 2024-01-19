@@ -213,9 +213,9 @@ exports.createOrder = async (req, res) => {
                         manufacture: item[keys[1]],
                         model: item[keys[2]],
                         serial: item[keys[3]],
-                        condition: item[keys[5]],
-                        productValue: item[keys[8]],
-                        regDate: item[keys[9]],
+                        condition: item[keys[4]],
+                        productValue: item[keys[5]],
+                        // regDate: item[keys[6]],
                         unique_key: contractCount
 
                     };
@@ -352,7 +352,7 @@ exports.checkFileValidation = async (req, res) => {
                 }
             }
 
-            if (headers.length !== 6) {
+            if (headers.length !== 5) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.errorCode,
@@ -361,7 +361,7 @@ exports.checkFileValidation = async (req, res) => {
                 return
             }
 
-            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 6);
+            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 5);
             if (!isValidLength) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
