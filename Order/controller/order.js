@@ -15,6 +15,7 @@ const fs = require('fs')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
+        console.log('file+++++++++++++++++++++', files)
         cb(null, path.join(__dirname, '../../uploads/orderFile'));
     },
     filename: function (req, files, cb) {
@@ -27,7 +28,7 @@ var upload = multer({
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).array('file[0]', 100)
+}).array('file', 100)
 
 var uploadP = multer({
     storage: StorageP,
@@ -41,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
+            let data = req.body 
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -99,7 +100,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", req, req.files, data)
+            console.log("data+++++++++++++++++++++++",req, req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -191,7 +192,7 @@ exports.createOrder = async (req, res) => {
                 },
             }));
 
-            console.log('check+++++++++++++++++++++++++', productsWithFiles);
+              console.log('check+++++++++++++++++++++++++',productsWithFiles);
             for (let i = 0; i < productsWithFiles.length; i++) {
                 let products = productsWithFiles[i].products
 
@@ -203,8 +204,8 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                console.log('check+++++++++++++++++++111111111++++++', ws, products.file);
-                finalContractArray = totalDataComing1.map(item => {
+              console.log('check+++++++++++++++++++111111111++++++',ws,products.file);
+              finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
                         orderId: savedResponse._id,
@@ -222,7 +223,7 @@ exports.createOrder = async (req, res) => {
                 contractCount = contractCount + 1;
             }
             console.log("finalContractArray++++++++++++++++++", finalContractArray);
-
+            
             //Create Bulk Contracts
 
 
@@ -301,45 +302,28 @@ exports.getAllOrders = async (req, res) => {
 
 exports.checkFileValidation = async (req, res) => {
     try {
-        upload(req, res, async (err) => {
+        uploadP(req, res, async (err) => {
             let data = req.body
-            const uploadedFiles = req.files.map(file => ({
-                filePath: file.path
-            }));
+            let file = req.file
 
-
-            const productsWithFiles = uploadedFiles.map((file, index) => ({
-                products: {
-                    key: index + 1,
-                    file: file.filePath,
-                },
-            }));
-
-            let ws=[];
-            console.log(productsWithFiles, req.body);
-            for (let j = 0; j < productsWithFiles.length; j++) {
-                const wb = XLSX.readFile(productsWithFiles[j].products.file);
-                const sheets = wb.SheetNames;
-                let obj = {
-                    key:productsWithFiles[j].products.key,
-                    sheet:wb.Sheets[sheets[0]]
-
-                }
-                ws.push(obj);
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-            }
-
-            console.log("ws+++++++++++++++++++++=",ws);
-            if (ws.every(obj => Object.keys(obj.sheet).length === 5)) {
-                // Continue processing if the header lengths match for all objects
-                // ...
-              } else {
-                res.send({
-                  code: constant.errorCode,
-                  message: "Invalid file format detected. The header lengths do not match for all objects."
-                });
-              }
-            return;
+            let csvName = req.file.filename
+            const csvWriter = createCsvWriter({
+                path: './uploads/resultFile/' + csvName,
+                header: [
+                    { id: 'Brand', title: 'Brand' },
+                    { id: 'Model', title: 'Model' },
+                    { id: 'Serial', title: 'Serial' },
+                    { id: 'Class', title: 'Class' },
+                    { id: 'Condition', title: 'Condition' },
+                    { id: 'Retail Value', title: 'Retail Value' },
+                    // Add more headers as needed
+                ],
+            });
+            const wb = XLSX.readFile(req.file.path);
+            const sheets = wb.SheetNames;
+            const ws = wb.Sheets[sheets[0]];
+            const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            // console.log(totalDataComing1); return;
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
@@ -374,11 +358,6 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (data.rangeStart > data.rangeEnd) {
-
-            }
-            console.log("totalDataComing1+++++++++++++++", totalDataComing1);
-            return;
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
             res.send({
                 code: constant.successCode,
