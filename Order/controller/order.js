@@ -28,7 +28,7 @@ var upload = multer({
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
-}).array('file', 100)
+}).array('file[0]', 100)
 
 var uploadP = multer({
     storage: StorageP,
@@ -41,7 +41,7 @@ var uploadP = multer({
 
 exports.createOrder = async (req, res) => {
     try {
-        uploadP(req, res, async (err) => {
+        upload(req, res, async (err) => {
             // let data = req.body 
             let data = {
                 "dealerId": "65a0d25d503003dcd4abfc33",
