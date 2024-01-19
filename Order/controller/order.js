@@ -159,10 +159,6 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
-            console.log(productArray);
-            data.orderAmount = productArray.reduce((accumulator, object) => {
-                return accumulator + object.price;
-            }, 0);
             data.createdBy = req.userId
             data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
