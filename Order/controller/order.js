@@ -161,6 +161,7 @@ exports.createOrder = async (req, res) => {
             data.createdBy = req.userId
             data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+            let contractArrrayData = []
             let count = await orderService.getOrdersCount()
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             let savedResponse = await orderService.addOrder(data);
@@ -197,30 +198,22 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                console.log("totalDataComing1+++++++++++++++++++",totalDataComing1);
-                finalContractArray = totalDataComing1.map(item => {
-                    const keys = Object.keys(item);
-                    return {
-                        orderId: savedResponse._id,
-                        productName: priceBook[0].name,
-                        manufacture: item[keys[1]],
-                        model: item[keys[2]],
-                        serial: item[keys[3]],
-                        condition: item[keys[4]],
-                        productValue: item[keys[5]],
-                        // regDate: item[keys[6]],
-                        unique_key: contractCount
+                let contractObject = {
+                    orderId: savedResponse._id,
+                    productName: priceBook[0].name,
+                    manufacture: totalDataComing1[0]['Brand'],
+                    model: totalDataComing1[0]['Model'],
+                    serial: totalDataComing1[0]['Serial'],
+                    condition: totalDataComing1[0]['Condition'],
+                    productValue: totalDataComing1[0]['Retail Value'],
+                    unique_key: contractCount
 
-                    };
-                });
+                }
+                contractArrrayData.push(contractObject)
                 contractCount = contractCount + 1;
             }
-            console.log("finalContractArray++++++++++++++++++", finalContractArray);
-
             //Create Bulk Contracts
-
-
-            let bulkContracts = await contractService.createBulkContracts(finalContractArray)
+            let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
             if (!bulkContracts) {
                 res.send({
                     code: constant.errorCode,
