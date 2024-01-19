@@ -197,6 +197,7 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                console.log("totalDataComing1+++++++++++++++++++",totalDataComing1);
                 finalContractArray = totalDataComing1.map(item => {
                     const keys = Object.keys(item);
                     return {
@@ -211,9 +212,11 @@ exports.createOrder = async (req, res) => {
                         unique_key: contractCount
 
                     };
-                }); 
+                });
                 contractCount = contractCount + 1;
             }
+            console.log("finalContractArray++++++++++++++++++", finalContractArray);
+
             //Create Bulk Contracts
 
 
