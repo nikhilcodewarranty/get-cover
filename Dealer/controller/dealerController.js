@@ -1787,7 +1787,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                   totalDataComing[index].status = "Dealer catalog updated successully";
                 })
               
-            } else {
+            } else { 
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
