@@ -51,7 +51,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++", req.file, data)
+            console.log("data+++++++++++++++++++++++", req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -134,6 +134,7 @@ exports.createOrder = async (req, res) => {
                 fileName: file.filename,
                 filePath: file.path
             }));
+            
 
             const productsWithFiles = uploadedFiles.map((file, index) => ({
                 products: {
