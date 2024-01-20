@@ -7,7 +7,7 @@ router.post('/createOrder',[verifyToken],orderController.createOrder)
 router.post('/checkFileValidation',[verifyToken],orderController.checkFileValidation)
 router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMultipleFileValidation)
 
-router.get('/getAllOrders',[verifyToken],orderController.getAllOrders)
+router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
 
 
 module.exports = router;

@@ -23,17 +23,17 @@ exports.createCustomer = async (req, res, next) => {
       return;
     };
 
-    // check reseller valid or not
-    if(data.resellerName || data.resellerName != ""){
-      let checkReseller = await resellerService.getReseller({_id:data.resellerName},{})
-      if(!checkReseller){
-        res.send({
-          code: constant.errorCode,
-          message:"Invalid Reseller."
-        })
-        return;
-      }
-    }
+    // // check reseller valid or not
+    // if(data.resellerName || data.resellerName != ""){
+    //   let checkReseller = await resellerService.getReseller({_id:data.resellerName},{})
+    //   if(!checkReseller){
+    //     res.send({
+    //       code: constant.errorCode,
+    //       message:"Invalid Reseller."
+    //     })
+    //     return;
+    //   }
+    // }
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
@@ -283,7 +283,6 @@ exports.editCustomer = async (req, res) => {
     })
   }
 }
-
 
 exports.changePrimaryUser = async (req, res) => {
   try {
