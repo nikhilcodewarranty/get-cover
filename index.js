@@ -22,6 +22,7 @@ const order = require('./Order/orderServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
+const resellerRoutes = require("./Dealer/routes/reseller");
 const contractRoutes = require("./Contract/routes/contract");
 const serviceRoutes = require("./Provider/routes/service");
 const orderRoutes = require("./Order/routes/order");
@@ -72,6 +73,7 @@ app.get('/download/:filename', (req, res) => {
 app.use("/api-v1/user", userRoutes);
 app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
+app.use("/api-v1/reseller", resellerRoutes);
 app.use("/api-v1/contract", contractRoutes);
 app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
