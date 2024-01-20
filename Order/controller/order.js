@@ -42,56 +42,56 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // let data = req.body
-            let data = {
-                "dealerId": "65a0d25d503003dcd4abfc33",
-                "servicerId": "65a0d64b23eec30f66ea0c44",
-                "customerId": "65a0e563169e80fd0600a965",
-                "productsArray": [
-                    {
-                        "categoryId": "65a0dacd3a9009fd982ba41e",
-                        "priceBookId": "65a0daf83a9009fd982ba41f",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": [
-                            {
-                                "name": "a",
-                                "quantity": 45,
-                                "_id": "65a7863cc6690cd3e0a62256",
-                                "enterQuantity": "20"
-                            },
-                            {
-                                "name": "b",
-                                "quantity": 10,
-                                "_id": "65a7863cc6690cd3e0a62257",
-                                "enterQuantity": "11"
-                            }
-                        ]
-                    }
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#12345",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+            let data = req.body
+            // let data = {
+            //     "dealerId": "65a0d25d503003dcd4abfc33",
+            //     "servicerId": "65a0d64b23eec30f66ea0c44",
+            //     "customerId": "65a0e563169e80fd0600a965",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65a0dacd3a9009fd982ba41e",
+            //             "priceBookId": "65a0daf83a9009fd982ba41f",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#12345",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
 
             if (req.role != "Super Admin") {
                 res.send({
@@ -200,12 +200,12 @@ exports.createOrder = async (req, res) => {
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 let contractObject = {
                     orderId: savedResponse._id,
-                    productName: 'asdas',
+                    productName: priceBook[0].name,
                     manufacture: totalDataComing1[0]['Brand'],
                     model: totalDataComing1[0]['Model'],
                     serial: totalDataComing1[0]['Serial'],
                     condition: totalDataComing1[0]['Condition'],
-                    productValue: totalDataComing1[0]['Retail'],
+                    productValue: totalDataComing1[0]['Retail Value'],
                     unique_key: contractCount
 
                 }
@@ -362,84 +362,181 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
+            // let data = req.body
+            let data = {
+                "dealerId": "65a0d25d503003dcd4abfc33",
+                "servicerId": "65a0d64b23eec30f66ea0c44",
+                "customerId": "65a0e563169e80fd0600a965",
+                "productsArray": [
+                    {
+                        "categoryId": "65a0dacd3a9009fd982ba41e",
+                        "priceBookId": "65a0daf83a9009fd982ba41f",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 1,
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
+                    },
+                    {
+                        "categoryId": "65a0dacd3a9009fd982ba41e",
+                        "priceBookId": "65a0daf83a9009fd982ba41f",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 1,
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
+                    }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
             const uploadedFiles = req.files.map(file => ({
                 filePath: file.path
             }));
-
-
             const productsWithFiles = uploadedFiles.map((file, index) => ({
                 products: {
                     key: index + 1,
+                    noOfProducts: data.productsArray[index].noOfProducts,
                     file: file.filePath,
                 },
             }));
 
-            let ws = [];
-            console.log(productsWithFiles, req.body);
+            let allHeaders = [];
+            let allDataComing = [];
+            //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
                 const sheets = wb.SheetNames;
-                let obj = {
-                    key: productsWithFiles[j].products.key,
-                    sheet: wb.Sheets[sheets[0]]
-
+                const sheet = wb.Sheets[sheets[0]];
+                const headers = [];
+                for (let cell in sheet) {
+                    // Check if the cell is in the first row and has a non-empty value
+                    if (/^[A-Z]1$/.test(cell) && sheet[cell].v !== undefined && sheet[cell].v !== null && sheet[cell].v.trim() !== '') {
+                        headers.push(sheet[cell].v);
+                    }
                 }
-                ws.push(obj);
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-            }
-
-            console.log("ws+++++++++++++++++++++=", ws);
-            if (ws.every(obj => Object.keys(obj.sheet).length === 5)) {
-                // Continue processing if the header lengths match for all objects
-                // ...
-            } else {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Invalid file format detected. The header lengths do not match for all objects."
+                allDataComing.push({
+                    key: productsWithFiles[j].products.key,
+                    noOfProducts: productsWithFiles[j].products.noOfProducts,
+                    data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]])
+                });
+                allHeaders.push({
+                    key: productsWithFiles[j].products.key,
+                    headers: headers,
                 });
             }
-            return;
-            const headers = [];
-            for (let cell in ws) {
-                // Check if the cell is in the first row and has a non-empty value
-                if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                    headers.push(ws[cell].v);
-                }
-            }
-
-            if (headers.length !== 5) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                res.send({
-                    code: constant.errorCode,
+            //Check each csv if it does not contain 5 column
+            const errorMessages = allHeaders
+                .filter(headerObj => headerObj.headers.length !== 5)
+                .map(headerObj => ({
+                    key: headerObj.key,
                     message: "Invalid file format detected. The sheet should contain exactly five columns."
-                })
-                return
-            }
+                }));
 
-            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 5);
+                console.log("allDataComing--------------------",allDataComing)
+                return;
+            const isValidLength = allDataComing.map(obj => {
+                if (!obj.data || typeof obj.data !== 'object') {
+                    return false; // 'data' should be an object
+                }
+                console.log(Object.keys(obj))
+            });
+
             if (!isValidLength) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                // Handle case where the number of properties in 'data' is not valid
                 res.send({
                     code: constant.errorCode,
                     message: "Invalid fields value"
-                })
+                });
                 return;
             }
-            if (data.noOfProducts != totalDataComing1.length) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+
+            console.log("isValidLength",isValidLength)
+            return
+
+            // Continue with your logic if everything is valid
+            // ...
+
+            if (!isValidLength) {
+                // Handle case where the length of 'data' array doesn't match 'noOfProducts'
                 res.send({
                     code: constant.errorCode,
-                    message: "Data does not match to the number of orders"
-                })
+                    message: "Invalid fields value"
+                });
                 return;
             }
-            if (data.rangeStart > data.rangeEnd) {
 
-            }
-            console.log("totalDataComing1+++++++++++++++", totalDataComing1);
+            res.send({
+                code: constant.successCode,
+                message: "Valid"
+            });
             return;
-            //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            if (errorMessages.length > 0) {
+                // There are errors, send the error messages
+                res.send({
+                    code: constant.errorCode,
+                    messages: errorMessages
+                });
+                return;
+            }
+
+
             res.send({
                 code: constant.successCode,
                 message: "Verified"
