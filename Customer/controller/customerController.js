@@ -284,7 +284,6 @@ exports.editCustomer = async (req, res) => {
   }
 }
 
-
 exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body

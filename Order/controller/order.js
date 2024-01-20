@@ -236,6 +236,7 @@ exports.createOrder = async (req, res) => {
 };
 
 exports.getAllOrders = async (req, res) => {
+    let data = req.body
     if (req.role != "Super Admin") {
         res.send({
             code: constant.errorCode,
@@ -280,9 +281,23 @@ exports.getAllOrders = async (req, res) => {
             }
         }
     });
+
+    const unique_keyRegex = new RegExp(data.unique_key ? data.unique_key.trim() : '', 'i')
+    const venderOrderRegex = new RegExp(data.venderOrder ? data.venderOrder.trim() : '', 'i')
+    const status = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        unique_keyRegex.test(entry.unique_key) &&
+        venderOrderRegex.test(entry.venderOrder) &&
+        status.test(entry.status)
+      );
+    });
+
+
     res.send({
         code: constant.successCode,
-        result: result_Array
+        result: filteredData
     })
 }
 
