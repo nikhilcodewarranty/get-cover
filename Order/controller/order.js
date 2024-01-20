@@ -42,56 +42,56 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body 
-            // let data = {
-            //     "dealerId": "65a0d25d503003dcd4abfc33",
-            //     "servicerId": "65a0d64b23eec30f66ea0c44",
-            //     "customerId": "65a0e563169e80fd0600a965",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65a0dacd3a9009fd982ba41e",
-            //             "priceBookId": "65a0daf83a9009fd982ba41f",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+            // let data = req.body
+            let data = {
+                "dealerId": "65a0d25d503003dcd4abfc33",
+                "servicerId": "65a0d64b23eec30f66ea0c44",
+                "customerId": "65a0e563169e80fd0600a965",
+                "productsArray": [
+                    {
+                        "categoryId": "65a0dacd3a9009fd982ba41e",
+                        "priceBookId": "65a0daf83a9009fd982ba41f",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
+                    }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
             if (req.role != "Super Admin") {
                 res.send({
@@ -100,7 +100,6 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            console.log("data+++++++++++++++++++++++",req, req.files, data)
             let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
             let finalContractArray = [];
@@ -159,13 +158,10 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
-            console.log(productArray);
-            data.orderAmount = productArray.reduce((accumulator, object) => {
-                return accumulator + object.price;
-            }, 0);
             data.createdBy = req.userId
             data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+            let contractArrrayData = []
             let count = await orderService.getOrdersCount()
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             let savedResponse = await orderService.addOrder(data);
@@ -191,8 +187,6 @@ exports.createOrder = async (req, res) => {
                     file: file.filePath,
                 },
             }));
-
-              console.log('check+++++++++++++++++++++++++',productsWithFiles);
             for (let i = 0; i < productsWithFiles.length; i++) {
                 let products = productsWithFiles[i].products
 
@@ -204,30 +198,22 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-              console.log('check+++++++++++++++++++111111111++++++',ws,products.file);
-              finalContractArray = totalDataComing1.map(item => {
-                    const keys = Object.keys(item);
-                    return {
-                        orderId: savedResponse._id,
-                        productName: priceBook[0].name,
-                        manufacture: item[keys[1]],
-                        model: item[keys[2]],
-                        serial: item[keys[3]],
-                        condition: item[keys[4]],
-                        productValue: item[keys[5]],
-                        // regDate: item[keys[6]],
-                        unique_key: contractCount
+                let contractObject = {
+                    orderId: savedResponse._id,
+                    productName: 'asdas',
+                    manufacture: totalDataComing1[0]['Brand'],
+                    model: totalDataComing1[0]['Model'],
+                    serial: totalDataComing1[0]['Serial'],
+                    condition: totalDataComing1[0]['Condition'],
+                    productValue: totalDataComing1[0]['Retail'],
+                    unique_key: contractCount
 
-                    };
-                });
+                }
+                contractArrrayData.push(contractObject)
                 contractCount = contractCount + 1;
             }
-            console.log("finalContractArray++++++++++++++++++", finalContractArray);
-            
             //Create Bulk Contracts
-
-
-            let bulkContracts = await contractService.createBulkContracts(finalContractArray)
+            let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
             if (!bulkContracts) {
                 res.send({
                     code: constant.errorCode,
@@ -336,7 +322,7 @@ exports.checkFileValidation = async (req, res) => {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.errorCode,
-                    message: "Invalid file format detected. The sheet should contain exactly six columns."
+                    message: "Invalid file format detected. The sheet should contain exactly five columns."
                 })
                 return
             }
@@ -358,6 +344,101 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
+            //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            res.send({
+                code: constant.successCode,
+                message: "Verified"
+            })
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.checkMultipleFileValidation = async (req, res) => {
+    try {
+        upload(req, res, async (err) => {
+            let data = req.body
+            const uploadedFiles = req.files.map(file => ({
+                filePath: file.path
+            }));
+
+
+            const productsWithFiles = uploadedFiles.map((file, index) => ({
+                products: {
+                    key: index + 1,
+                    file: file.filePath,
+                },
+            }));
+
+            let ws = [];
+            console.log(productsWithFiles, req.body);
+            for (let j = 0; j < productsWithFiles.length; j++) {
+                const wb = XLSX.readFile(productsWithFiles[j].products.file);
+                const sheets = wb.SheetNames;
+                let obj = {
+                    key: productsWithFiles[j].products.key,
+                    sheet: wb.Sheets[sheets[0]]
+
+                }
+                ws.push(obj);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            }
+
+            console.log("ws+++++++++++++++++++++=", ws);
+            if (ws.every(obj => Object.keys(obj.sheet).length === 5)) {
+                // Continue processing if the header lengths match for all objects
+                // ...
+            } else {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The header lengths do not match for all objects."
+                });
+            }
+            return;
+            const headers = [];
+            for (let cell in ws) {
+                // Check if the cell is in the first row and has a non-empty value
+                if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+                    headers.push(ws[cell].v);
+                }
+            }
+
+            if (headers.length !== 5) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly five columns."
+                })
+                return
+            }
+
+            const isValidLength = totalDataComing1.every(obj => Object.keys(obj).length === 5);
+            if (!isValidLength) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid fields value"
+                })
+                return;
+            }
+            if (data.noOfProducts != totalDataComing1.length) {
+                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                res.send({
+                    code: constant.errorCode,
+                    message: "Data does not match to the number of orders"
+                })
+                return;
+            }
+            if (data.rangeStart > data.rangeEnd) {
+
+            }
+            console.log("totalDataComing1+++++++++++++++", totalDataComing1);
+            return;
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
             res.send({
                 code: constant.successCode,
