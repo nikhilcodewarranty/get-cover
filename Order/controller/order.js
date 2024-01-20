@@ -337,7 +337,6 @@ exports.checkFileValidation = async (req, res) => {
                 return;
             }
             if (data.noOfProducts != totalDataComing1.length) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.errorCode,
                     message: "Data does not match to the number of orders"
@@ -459,6 +458,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             let allHeaders = [];
             let allDataComing = [];
+            let message = [];
             //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -488,45 +488,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     key: headerObj.key,
                     message: "Invalid file format detected. The sheet should contain exactly five columns."
                 }));
-
-                console.log("allDataComing--------------------",allDataComing)
-                return;
-            const isValidLength = allDataComing.map(obj => {
-                if (!obj.data || typeof obj.data !== 'object') {
-                    return false; // 'data' should be an object
-                }
-                console.log(Object.keys(obj))
-            });
-
-            if (!isValidLength) {
-                // Handle case where the number of properties in 'data' is not valid
-                res.send({
-                    code: constant.errorCode,
-                    message: "Invalid fields value"
-                });
-                return;
-            }
-
-            console.log("isValidLength",isValidLength)
-            return
-
-            // Continue with your logic if everything is valid
-            // ...
-
-            if (!isValidLength) {
-                // Handle case where the length of 'data' array doesn't match 'noOfProducts'
-                res.send({
-                    code: constant.errorCode,
-                    message: "Invalid fields value"
-                });
-                return;
-            }
-
-            res.send({
-                code: constant.successCode,
-                message: "Valid"
-            });
-            return;
             if (errorMessages.length > 0) {
                 // There are errors, send the error messages
                 res.send({
@@ -535,7 +496,54 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
                 return;
             }
+            //Check if csv every column has data 
+            const isValidLength1 = allDataComing.map(obj => {
+                if (!obj.data || typeof obj.data !== 'object') {
+                    return false; // 'data' should be an object
+                }
 
+                const isValidLength = obj.data.every(obj1 => Object.keys(obj1).length === 5);
+                if (!isValidLength) {
+                    message.push({
+                        code: constant.errorCode,
+                        key: obj.key,
+                        message: "Invalid fields value"
+                    })
+                }
+
+            });
+
+            if (message.length > 0) {
+                // Handle case where the number of properties in 'data' is not valid
+                res.send({
+                    data: message
+                });
+                return;
+            }
+
+            //Check if csv data length equal to no of products
+            const isValidNumberData = allDataComing.map(obj => {
+                // Check if 'noOfProducts' matches the length of 'data'
+                if (obj.noOfProducts !== obj.data.length) {
+                    // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                    message.push({
+                        code: constant.errorCode,
+                        key: obj.key,
+                        message: "Invalid number of products"
+                    });
+                    return false; // Set the return value to false when the condition fails
+                }
+                return true;
+            });
+
+
+            if (message.length > 0) {
+                // Handle case where the number of properties in 'data' is not valid
+                res.send({
+                    data: message
+                });
+                return;
+            }
 
             res.send({
                 code: constant.successCode,
