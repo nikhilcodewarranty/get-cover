@@ -2,59 +2,63 @@ const mongoose = require("mongoose");
 const customerSchema = new mongoose.Schema({
   username: {
     type: String,
-    default:'',
-    index:true
+    default: '',
+    index: true
   },
   email: {
     type: String,
-    default:''
+    default: ''
   },
   phone: {
     type: String,
-    default:''
+    default: ''
   },
   firstName: {
     type: String,
-    default:''
+    default: ''
   },
   lastName: {
     type: String,
-    default:''
+    default: ''
   },
   password: {
     type: String,
-    default:''
+    default: ''
   },
   street: {
     type: String,
-    default:''
+    default: ''
   },
   city: {
     type: String,
-    default:''
+    default: ''
   },
   zip: {
     type: String,
-    default:''
+    default: ''
   },
-  unique_key:{
-    type :Number,
+  unique_key: {
+    type: Number,
   },
   state: {
     type: String,
-    default:''
+    default: ''
   },
   country: {
     type: String,
-    default:''
+    default: ''
   },
   dealerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "dealers",
   },
-  dealerName:{
-    type:String,
-    default:''
+  resellerId: {
+    type: String,
+    default:"",
+  },
+  dealerName: {
+    type: String,
+    default: ''
   },
   // dealerId: {
   //   type: mongoose.Schema.Types.ObjectId,
@@ -62,22 +66,22 @@ const customerSchema = new mongoose.Schema({
   // },
   status: {
     type: Boolean,
-    default:true,
-    index:true
+    default: true,
+    index: true
   },
-  accountStatus:{
-    type:String,
+  accountStatus: {
+    type: String,
     enum: ["Pending", "Approved", "Rejected"],
-    default:"Pending"
+    default: "Pending"
   },
-  isDeleted:{
-    type:Boolean,
-    default:false
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   token: {
     type: String,
-    default:''
+    default: ''
   },
-},{timestamps:true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("customer", customerSchema);
