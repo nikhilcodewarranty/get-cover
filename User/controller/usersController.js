@@ -1643,7 +1643,9 @@ exports.resetPassword = async (req, res) => {
       $set: {
         password: hash,
         resetPasswordCode: null,
-        isResetPassword: false
+        isResetPassword: false,
+        approvedStatus:'Approved',
+        status:true
       }
     }
     let option = { new: true }

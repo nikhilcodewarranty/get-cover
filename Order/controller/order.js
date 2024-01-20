@@ -200,12 +200,12 @@ exports.createOrder = async (req, res) => {
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 let contractObject = {
                     orderId: savedResponse._id,
-                    productName: 'asdas',
+                    productName:priceBook[0].name ,
                     manufacture: totalDataComing1[0]['Brand'],
                     model: totalDataComing1[0]['Model'],
                     serial: totalDataComing1[0]['Serial'],
                     condition: totalDataComing1[0]['Condition'],
-                    productValue: totalDataComing1[0]['Retail'],
+                    productValue: totalDataComing1[0]['Retail Value'],
                     unique_key: contractCount
 
                 }
