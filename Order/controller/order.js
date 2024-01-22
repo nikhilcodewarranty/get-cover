@@ -428,12 +428,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         "serial": "S123GHK",
                         "condition": "Breakdown",
                         "productValue": 123,
+                        rangeStart: 23425,
+                        rangeEnd: 23425,
                         "regDate": "2024-01-18T00:00:00.000Z",
                         "coverageStartDate": "2024-01-30T00:00:00.000Z",
                         "coverageEndDate": "2025-01-30T00:00:00.000Z",
                         "description": "003",
                         "term": 12,
-                        "priceType": "Quantity Pricing",
+                        "priceType": "Flat Pricing",
                         "additionalNotes": "this is test ",
                         "QuantityPricing": [
                             {
@@ -462,12 +464,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         "serial": "S123GHK",
                         "condition": "Breakdown",
                         "productValue": 123,
+                        rangeStart: 23425,
+                        rangeEnd: 23423,
                         "regDate": "2024-01-18T00:00:00.000Z",
                         "coverageStartDate": "2024-01-30T00:00:00.000Z",
                         "coverageEndDate": "2025-01-30T00:00:00.000Z",
                         "description": "003",
                         "term": 12,
-                        "priceType": "Quantity Pricing",
+                        "priceType": "Flat Pricing",
                         "additionalNotes": "this is test ",
                         "QuantityPricing": [
                             {
@@ -501,6 +505,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 products: {
                     key: index + 1,
                     noOfProducts: data.productsArray[index].noOfProducts,
+                    priceType: data.productsArray[index].priceType,
+                    rangeStart: data.productsArray[index].rangeStart,
+                    rangeEnd: data.productsArray[index].rangeEnd,
                     file: file.filePath,
                 },
             }));
@@ -508,6 +515,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             let allHeaders = [];
             let allDataComing = [];
             let message = [];
+            let finalRetailValue = [];
             //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -523,6 +531,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 allDataComing.push({
                     key: productsWithFiles[j].products.key,
                     noOfProducts: productsWithFiles[j].products.noOfProducts,
+                    priceType: productsWithFiles[j].products.priceType,
+                    rangeStart: productsWithFiles[j].products.rangeStart,
+                    rangeEnd: productsWithFiles[j].products.rangeEnd,
                     data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]])
                 });
                 allHeaders.push({
@@ -593,6 +604,51 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
                 return;
             }
+            let checkRetailValue = allDataComing.map(obj => {
+                if (obj.priceType == 'Flat Pricing') {
+                    const priceObj = obj.data.map(item => {
+                        const keys = Object.keys(item);
+                        return {
+                            key: obj.key,
+                            noOfProducts: obj.noOfProducts,
+                            rangeStart: obj.rangeStart,
+                            rangeEnd: obj.rangeEnd,
+                            retailValue: item[keys[4]],
+                        };
+                    });
+                    finalRetailValue.push(priceObj)
+                }
+            })
+
+            //console.log(finalRetailValue);return
+            if (finalRetailValue.length > 0) {
+                const fdfd = finalRetailValue.map(obj => {
+
+
+                    if ((obj[0].retailValue < obj[0].rangeStart || obj[0].retailValue > obj[0].rangeEnd)) {
+                        message.push({
+                            code: constant.errorCode,
+                            retailPrice: obj[0].retailValue,
+                            key: obj[0].key,
+                            message: "Invalid Retail Price!"
+                        });
+                    }
+                });
+            }
+            if (message.length > 0) {
+                // Handle case where the number of properties in 'data' is not valid
+                res.send({
+                    data: message
+                });
+                return;
+            }
+
+            //console.log('allDataComing____________________', allDataComing);
+            res.send({
+                code: constant.successCode,
+                message: allDataComing
+            })
+            return;
 
             res.send({
                 code: constant.successCode,
