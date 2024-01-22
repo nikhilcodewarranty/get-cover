@@ -42,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body
+            let data = req.body
             // let data = {
             //     "dealerId": "65aba175107144beb95f3bcf",
             //     "servicerId": "",
@@ -134,9 +134,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
-            let finalContractArray = [];
             if (data.dealerId) {
                 let projection = { isDeleted: 0 }
                 let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
@@ -197,6 +195,8 @@ exports.createOrder = async (req, res) => {
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             let contractArrrayData = []
             let count = await orderService.getOrdersCount()
+            let count1 = await contractService.getContractsCount();
+            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
 
             if (req.files) {
@@ -206,7 +206,7 @@ exports.createOrder = async (req, res) => {
                     filePath: file.path
                 }));
 
-                const productsWithFiles = uploadedFiles.map((file, index) => ({
+                const productsWithOrderFIles = uploadedFiles.map((file, index) => ({
                     ...data.productsArray[index],
                     file: file.filePath,
                     orderFile: {
@@ -215,27 +215,7 @@ exports.createOrder = async (req, res) => {
                     }
 
                 }));
-                data.productsArray = productsWithFiles
-
-            }
-
-            let savedResponse = await orderService.addOrder(data);
-            if (!savedResponse) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "unable to create order"
-                });
-                return;
-            }
-            let count1 = await contractService.getContractsCount();
-            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
-            //Read csv file from product array one by one
-            if (req.files) {
-                const uploadedFiles = req.files.map(file => ({
-                    fileName: file.filename,
-                    filePath: file.path
-                }));
-
+                data.productsArray = productsWithOrderFIles
 
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
@@ -244,6 +224,7 @@ exports.createOrder = async (req, res) => {
                         orderFile: file.fileName
                     },
                 }));
+                //Read csv file from product array one by one
                 for (let i = 0; i < productsWithFiles.length; i++) {
                     let products = productsWithFiles[i].products
 
@@ -279,7 +260,18 @@ exports.createOrder = async (req, res) => {
                     contractArrrayData.push(contractObject)
                     contractCount = contractCount + 1;
                 }
+
             }
+
+            let savedResponse = await orderService.addOrder(data);
+            if (!savedResponse) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "unable to create order"
+                });
+                return;
+            }
+
 
             //Create Bulk Contracts
             let bulkContracts = await contractService.createBulkContracts(contractArrrayData)

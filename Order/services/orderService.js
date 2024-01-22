@@ -44,5 +44,14 @@ module.exports = class orderService {
     }
   }
 
+  static async updateOrder(data) {
+    try {
+      const createOrder = await order(data).save();
+      return createOrder;
+    } catch (error) {
+      console.log(`Could not add order ${error}`);
+    }
+  }
+
 
 };
