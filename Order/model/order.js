@@ -1,3 +1,4 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 const orderSchema = new mongoose.Schema({
 
@@ -42,6 +43,22 @@ const orderSchema = new mongoose.Schema({
         },
         noOfProducts: {
           type: Number,
+        },
+        orderFile: {
+          type: {
+            fileName: {
+              type: String,
+              default: ''
+            },
+            originalName: {
+              type: String,
+              default: ''
+            }
+          },
+          default: {
+            fileName: '',
+            originalName: '',
+          }
         },
         price: {
           type: Number,
@@ -93,11 +110,11 @@ const orderSchema = new mongoose.Schema({
   },
   paidAmount: {
     type: Number,
-    default:0
+    default: 0
   },
   dueAmount: {
     type: Number,
-    default:0
+    default: 0
   },
   paymentMethod: {
     type: String,

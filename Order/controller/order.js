@@ -81,6 +81,40 @@ exports.createOrder = async (req, res) => {
                                 "enterQuantity": "11"
                             }
                         ]
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "222222222Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
                     }
                 ],
                 "sendNotification": true,
@@ -164,6 +198,27 @@ exports.createOrder = async (req, res) => {
             let contractArrrayData = []
             let count = await orderService.getOrdersCount()
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+
+            if (req.files) {
+                const uploadedFiles = req.files.map(file => ({
+                    fileName: file.filename,
+                    originalName: file.originalname,
+                    filePath: file.path
+                }));
+
+                const productsWithFiles = uploadedFiles.map((file, index) => ({
+                    ...data.productsArray[index],
+                    file: file.filePath,
+                    orderFile: {
+                        fileName: file.fileName,
+                        originalName: file.originalName
+                    }
+
+                }));
+                data.productsArray = productsWithFiles
+
+            }
+
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
@@ -175,62 +230,66 @@ exports.createOrder = async (req, res) => {
             let count1 = await contractService.getContractsCount();
             let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             //Read csv file from product array one by one
-            const uploadedFiles = req.files.map(file => ({
-                fileName: file.filename,
-                filePath: file.path
-            }));
+            if (req.files) {
+                const uploadedFiles = req.files.map(file => ({
+                    fileName: file.filename,
+                    filePath: file.path
+                }));
 
 
-            const productsWithFiles = uploadedFiles.map((file, index) => ({
-                products: {
-                    ...data.productsArray[index],
-                    file: file.filePath,
-                },
-            }));
-            for (let i = 0; i < productsWithFiles.length; i++) {
-                let products = productsWithFiles[i].products
+                const productsWithFiles = uploadedFiles.map((file, index) => ({
+                    products: {
+                        ...data.productsArray[index],
+                        file: file.filePath,
+                        orderFile: file.fileName
+                    },
+                }));
+                for (let i = 0; i < productsWithFiles.length; i++) {
+                    let products = productsWithFiles[i].products
 
-                let priceBookId = products.priceBookId
-                let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
-                let projection = { isDeleted: 0 }
-                let priceBook = await priceBookService.getPriceBookById(query, projection)
-                const wb = XLSX.readFile(products.file);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                const totalDataComing = totalDataComing1.map(item => {
-                    const keys = Object.keys(item);
-                    return {
-                        brand: item[keys[0]],
-                        model: item[keys[1]],
-                        serial: item[keys[2]],
-                        condition: item[keys[3]],
-                        retailValue: item[keys[4]],
-                    };
-                });
-                let contractObject = {
-                    orderId: savedResponse._id,
-                    productName: priceBook[0].name,
-                    manufacture: totalDataComing[0]['brand'],
-                    model: totalDataComing[0]['model'],
-                    serial: totalDataComing[0]['serial'],
-                    condition: totalDataComing[0]['condition'],
-                    productValue: totalDataComing[0]['retailValue'],
-                    unique_key: contractCount
+                    let priceBookId = products.priceBookId
+                    let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+                    let projection = { isDeleted: 0 }
+                    let priceBook = await priceBookService.getPriceBookById(query, projection)
+                    const wb = XLSX.readFile(products.file);
+                    const sheets = wb.SheetNames;
+                    const ws = wb.Sheets[sheets[0]];
+                    const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                    const totalDataComing = totalDataComing1.map(item => {
+                        const keys = Object.keys(item);
+                        return {
+                            brand: item[keys[0]],
+                            model: item[keys[1]],
+                            serial: item[keys[2]],
+                            condition: item[keys[3]],
+                            retailValue: item[keys[4]],
+                        };
+                    });
+                    let contractObject = {
+                        orderId: savedResponse._id,
+                        productName: priceBook[0].name,
+                        manufacture: totalDataComing[0]['brand'],
+                        model: totalDataComing[0]['model'],
+                        serial: totalDataComing[0]['serial'],
+                        condition: totalDataComing[0]['condition'],
+                        productValue: totalDataComing[0]['retailValue'],
+                        unique_key: contractCount
 
+                    }
+                    contractArrrayData.push(contractObject)
+                    contractCount = contractCount + 1;
                 }
-                contractArrrayData.push(contractObject)
-                contractCount = contractCount + 1;
             }
+
             //Create Bulk Contracts
             let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
-            if (bulkContracts.length == 0) {
-                res.send({
-                    code: constant.errorCode,
-                    message: 'Error while create contracts!'
-                })
-                return;
-            }
+            // if (bulkContracts.length == 0) {
+            //     res.send({
+            //         code: constant.errorCode,
+            //         message: 'Error while create contracts!'
+            //     })
+            //     return;
+            // }
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -410,7 +469,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body
+            let data = req.body
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
