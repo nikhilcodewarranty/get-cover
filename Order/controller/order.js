@@ -42,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            //  let data = req.body
+            // let data = req.body
             let data = {
                 "dealerId": "65aba175107144beb95f3bcf",
                 "servicerId": "",
@@ -198,14 +198,24 @@ exports.createOrder = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing = totalDataComing1.map(item => {
+                    const keys = Object.keys(item);
+                    return {
+                        brand: item[keys[0]],
+                        model: item[keys[1]],
+                        serial: item[keys[2]],
+                        condition: item[keys[3]],
+                        retailValue: item[keys[4]],
+                    };
+                });
                 let contractObject = {
                     orderId: savedResponse._id,
                     productName: priceBook[0].name,
-                    manufacture: totalDataComing1[0]['Brand'],
-                    model: totalDataComing1[0]['Model'],
-                    serial: totalDataComing1[0]['Serial'],
-                    condition: totalDataComing1[0]['Condition'],
-                    productValue: totalDataComing1[0]['Retail Value'],
+                    manufacture: totalDataComing[0]['brand'],
+                    model: totalDataComing[0]['model'],
+                    serial: totalDataComing[0]['serial'],
+                    condition: totalDataComing[0]['condition'],
+                    productValue: totalDataComing[0]['retailValue'],
                     unique_key: contractCount
 
                 }
@@ -259,11 +269,9 @@ exports.getAllOrders = async (req, res) => {
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
-    console.log("ordersResult+++++++++++++++++", ordersResult);
-    console.log("respectiveDealers+++++++++++++++++", respectiveDealers);
+
     const result_Array = ordersResult.map(item1 => {
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
-        console.log("dealerName+++++++++++++++++", dealerName);
         const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
         const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         if (dealerName || customerName || servicerName) {
@@ -287,11 +295,11 @@ exports.getAllOrders = async (req, res) => {
     const status = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
-      return (
-        unique_keyRegex.test(entry.unique_key) &&
-        venderOrderRegex.test(entry.venderOrder) &&
-        status.test(entry.status)
-      );
+        return (
+            unique_keyRegex.test(entry.unique_key) &&
+            venderOrderRegex.test(entry.venderOrder) &&
+            status.test(entry.status)
+        );
     });
 
 
@@ -323,6 +331,7 @@ exports.checkFileValidation = async (req, res) => {
             const wb = XLSX.readFile(req.file.path);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
+            let message = []
             const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
             // console.log(totalDataComing1); return;
             const headers = [];
@@ -359,6 +368,31 @@ exports.checkFileValidation = async (req, res) => {
                 return;
             }
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            const totalDataComing = totalDataComing1.map(item => {
+                const keys = Object.keys(item);
+                return {
+                    retailValue: item[keys[4]],
+                };
+            });
+
+            // Check retail price is in between rangeStart and rangeEnd
+
+            const isValidRetailPrice = totalDataComing.map(obj => {
+                // Check if 'noOfProducts' matches the length of 'data'
+                if (obj.retailValue < data.rangeStart || obj.retailValue > data.rangeEnd) {
+                    message.push({
+                        code: constant.errorCode,
+                        retailPrice: obj.retailValue,
+                        message: "Invalid Retail Price!"
+                    });
+                }
+            });
+            if (message.length > 0) {
+                res.send({
+                    data: message
+                })
+                return
+            }
             res.send({
                 code: constant.successCode,
                 message: "Verified"
