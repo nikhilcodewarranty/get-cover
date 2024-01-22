@@ -272,7 +272,6 @@ exports.createOrder = async (req, res) => {
                 return;
             }
 
-
             //Create Bulk Contracts
             let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
             // if (bulkContracts.length == 0) {
