@@ -121,13 +121,13 @@ exports.getAllResellers = async (req, res) => {
             return;
         };
 
-        console.log('sjdhfjdshf-------------',resellers)
+        console.log('sjdhfjdshf-------------', resellers)
 
         const resellerId = resellers.map(obj => obj._id.toString());
         const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-        console.log('sjdhfjdshf-------------',getPrimaryUser,resellerId,queryUser)
+        console.log('sjdhfjdshf-------------', getPrimaryUser, resellerId, queryUser)
 
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -159,7 +159,7 @@ exports.getAllResellers = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: filteredData
-          })
+        })
 
 
     } catch (err) {
@@ -168,4 +168,55 @@ exports.getAllResellers = async (req, res) => {
             message: err.message
         })
     }
+}
+exports.getResellerByDealerId = async (req, res) => {
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
+
+    //result.metaData = singleDealer
+    if (!dealers) {
+        res.send({
+            code: constant.errorCode,
+            message: "Dealer not found"
+        });
+        return;
+    };
+    let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        data: resellerData
+    });
+}
+
+exports.getResellerUsers = async (req, res) => {
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+    const queryUser = { accountId: { $in: checkReseller._id } }
+    let users = await userService.getMembers(queryUser, { isDeleted: 0 });
+    res.send({
+        code: constant.successCode,
+        data: users
+    });
+    return;
 }

@@ -444,31 +444,7 @@ exports.getUserByDealerId = async (req, res) => {
   };
 };
 
-exports.getResellerByDealerId = async (req, res) => {
-  if (req.role != "Super Admin") {
-    res.send({
-      code: constant.errorCode,
-      message: "Only super admin allow to do this action"
-    })
-    return;
-  }
-  const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
 
-  //result.metaData = singleDealer
-  if (!dealers) {
-    res.send({
-      code: constant.errorCode,
-      message: "Dealer not found"
-    });
-    return;
-  };
-  let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
-  res.send({
-    code: constant.successCode,
-    message: "Success",
-    data:resellerData
-  });
-}
 
 
 //update dealer detail with ID
