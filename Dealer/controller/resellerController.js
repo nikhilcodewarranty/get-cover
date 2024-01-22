@@ -195,6 +195,24 @@ exports.getResellerByDealerId = async (req, res) => {
     });
 }
 
+exports.getResellerById = async (req, res) => {
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+    let checkReseller = await resellerService.getReseller({_id:req.params.resellerId},{isDeleted:0});
+    if(!checkReseller){
+        res.send({
+            code:constant.errorCode,
+            message:'Reseller not found'
+        })
+        return;
+    }
+}
+
 exports.getResellerUsers = async (req, res) => {
     if (req.role != "Super Admin") {
         res.send({
