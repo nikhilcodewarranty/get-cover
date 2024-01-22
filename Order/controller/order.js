@@ -643,12 +643,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 return;
             }
 
-            //console.log('allDataComing____________________', allDataComing);
-            res.send({
-                code: constant.successCode,
-                message: allDataComing
-            })
-            return;
 
             res.send({
                 code: constant.successCode,
