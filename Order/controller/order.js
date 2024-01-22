@@ -636,12 +636,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check if csv data length equal to no of products
             const isValidNumberData = allDataComing.map(obj => {
-                // Check if 'noOfProducts' matches the length of 'data'
-                console.log(typeof(obj.data))
-               console.log(typeof(obj.noOfProducts)) 
-                console.log(obj.noOfProducts)
-                console.log(obj.data.length)
-                if (obj.noOfProducts !== obj.data.length) {
+    
+                if (parseInt(obj.noOfProducts) != obj.data.length) {
                     // Handle case where 'noOfProducts' doesn't match the length of 'data'
                     message.push({
                         code: constant.errorCode,
