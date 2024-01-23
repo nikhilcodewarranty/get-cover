@@ -46,6 +46,7 @@ exports.createOrder = async (req, res) => {
                 "dealerId": "65aba175107144beb95f3bcf",
                 "servicerId": "",
                 "customerId": "",
+                "resellerId": "",
                 "productsArray": [
                     {
                         "categoryId": "65aba24e182e38ce2ea76f6a",
@@ -215,8 +216,6 @@ exports.createOrder = async (req, res) => {
 
 
             }
-            console.log('----------------------------------------------', data)
-
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
