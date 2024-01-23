@@ -1583,9 +1583,11 @@ exports.updateDealerMeta = async (req, res) => {
         message: "Unable to update the data"
       })
     } else {
-      let Customercriteria = { dealerId: checkDealer._id }
+      let criteria = { dealerId: checkDealer._id }
       let option = { new: true }
-      let updatedData = await customerService.updateDealerName(Customercriteria, { dealerName: data.accountName }, option)
+      let updatedCustomer = await customerService.updateDealerName(checkObjectIdriteria, { dealerName: data.accountName }, option)
+      //Update dealer name in reseller
+      let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       res.send({
         code: constant.successCode,
         message: "Success",

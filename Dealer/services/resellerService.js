@@ -38,4 +38,14 @@ module.exports = class resellerService {
         }
     }
 
+    static async updateMeta(query, projection) {
+        try {
+            let updateMeta = await reseller.updateMany(query, projection);
+            return updateMeta
+        }
+        catch (err) {
+            console.log(`Unable to update the name ${err}`)
+        }
+    }
+
 }
