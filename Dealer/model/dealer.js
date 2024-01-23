@@ -4,57 +4,61 @@ const connection = require('../../db')
 const dealarSchema = new mongoose.Schema({
   name: {
     type: String,
-    default:'',
-    index:true
+    default: '',
+    index: true
   },
   street: {
     type: String,
-    default:''
+    default: ''
   },
   city: {
     type: String,
-    default:''
+    default: ''
   },
-  userAccount:{
-    type:Boolean,
-    default:false
+  userAccount: {
+    type: Boolean,
+    default: false
   },
   zip: {
     type: Number,
-    default:''
+    default: ''
   },
-  unique_key:{
+  unique_key: {
     type: Number,
   },
   state: {
     type: String,
-    default:''
+    default: ''
   },
   country: {
     type: String,
-    default:''
+    default: ''
   },
   token: {
     type: String,
-    default:''
+    default: ''
   },
-  createdBy:{
+  createdBy: {
     type: String,
-    default:''
+    default: ''
   },
   status: {
     type: String,
     enum: ["Pending", "Approved", "Rejected"],
-    default:"Pending"
+    default: "Pending"
   },
   accountStatus: {
-    type:Boolean,
-    default:false
+    type: Boolean,
+    default: false
+  },
+  isServicer: {
+    type: Boolean,
+    default: false
   },
   isDeleted: {
     type: String,
     default: false
   },
-},{timestamps:true});
+}, { timestamps: true });
 
 module.exports = connection.dealerConnection.model("dealer", dealarSchema);
