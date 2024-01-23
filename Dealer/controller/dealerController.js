@@ -1092,7 +1092,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 };
 
 
-
 function uniqByKeepLast(data, key) {
 
   return [
@@ -1709,13 +1708,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         return {
           priceBook: item[keys[0]],
           retailPrice: item[keys[1]],
-          duplicates : [],
-          exit : false
+          duplicates: [],
+          exit: false
         };
       });
       //  return;
       // copy to here
-      totalDataComing.forEach(data=>{
+      totalDataComing.forEach(data => {
         if (!data.retailPrice) {
           data.status = "Dealer catalog retail price is empty";
           data.exit = true;
@@ -1727,21 +1726,21 @@ exports.uploadDealerPriceBook = async (req, res) => {
       console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
-   
+
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
           console.log("uniquw", i, totalDataComing[i]);
-          if(totalDataComing[i].exit){
+          if (totalDataComing[i].exit) {
             continue;
           }
-          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >=0) {
+          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
             totalDataComing[i].status = "not unique";
             totalDataComing[i].exit = true;
             const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
             totalDataComing[index].duplicates.push(i);
           } else {
-            
-              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
-              totalDataComing[i].status = null;
+
+            repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
+            totalDataComing[i].status = null;
           }
         }
 
@@ -1749,14 +1748,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
           if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
         })
-    
+
         const pricebooksArray = await Promise.all(pricebookArrayPromise);
-  
+
         for (let i = 0; i < totalDataComing.length; i++) {
           if (!pricebooksArray[i]) {
-            if (!totalDataComing[i].exit){
+            if (!totalDataComing[i].exit) {
               totalDataComing[i].status = "price catalog does not exist";
-              totalDataComing[i].duplicates.forEach((index)=>{
+              totalDataComing[i].duplicates.forEach((index) => {
                 totalDataComing[index].status = "price catalog does not exist";
               })
             }
@@ -1765,29 +1764,29 @@ exports.uploadDealerPriceBook = async (req, res) => {
             totalDataComing[i].priceBookDetail = pricebooksArray[i];
           }
         }
-        console.log("totalDataComing1",totalDataComing);
+        console.log("totalDataComing1", totalDataComing);
         const dealerArrayPromise = totalDataComing.map(item => {
 
           if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
           return false;
         })
-      //  console.log(dealerArrayPromise);return;
+        //  console.log(dealerArrayPromise);return;
         const dealerArray = await Promise.all(dealerArrayPromise);
-        console.log("totalDataComing2",totalDataComing);
-        console.log("dealerArray",dealerArray);
+        console.log("totalDataComing2", totalDataComing);
+        console.log("dealerArray", dealerArray);
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
               dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
               dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
               await dealerArray[i].save();
-              
-                totalDataComing[i].status = "Dealer catalog updated successully";
-                totalDataComing[i].duplicates.forEach((index)=>{
-                  totalDataComing[index].status = "Dealer catalog updated successully";
-                })
-              
-            } else { 
+
+              totalDataComing[i].status = "Dealer catalog updated successully";
+              totalDataComing[i].duplicates.forEach((index) => {
+                totalDataComing[index].status = "Dealer catalog updated successully";
+              })
+
+            } else {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
@@ -1801,14 +1800,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 wholesalePrice
               })
               totalDataComing[i].status = "Dealer catalog updated successully"
-              totalDataComing[i].duplicates.forEach((index,i)=>{
-                totalDataComing[index].status = i==0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+              totalDataComing[i].duplicates.forEach((index, i) => {
+                totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
               })
             }
           }
         }
 
-        console.log("totalDataComing3",totalDataComing);
+        console.log("totalDataComing3", totalDataComing);
         const csvArray = totalDataComing.map((item) => {
           return {
             priceBook: item.priceBook ? item.priceBook : "",
@@ -1864,7 +1863,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const htmlTableString = convertArrayToHTMLTable(csvArray);
         const mailing = sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', htmlTableString));
       }
-      
+
       res.send({
         code: constant.successCode,
         message: "Added successfully"
@@ -1917,7 +1916,7 @@ exports.createDeleteRelation = async (req, res) => {
 
     const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
 
-    console.log(existingRecords,existingServicerIds,checkId,newServicerIds)
+    console.log(existingRecords, existingServicerIds, checkId, newServicerIds)
     // Step 3: Delete existing records
     let deleteData = await dealerRelationService.deleteRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
@@ -2109,6 +2108,84 @@ exports.filterDealer = async (req, res) => {
       message: "Success",
       result: response
     });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDealerResellers = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let checkDealer = await dealerService.getDealerById(req.params.dealerId, {})
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    };
+
+    let query = { isDeleted: false, dealerId: req.params.dealerId }
+    let projection = { __v: 0 }
+    const resellers = await resellerService.getResellers(query, projection);
+    if (!resellers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the resellers"
+      });
+      return;
+    };
+
+    console.log('sjdhfjdshf-------------', resellers)
+
+    const resellerId = resellers.map(obj => obj._id.toString());
+    const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    console.log('sjdhfjdshf-------------', getPrimaryUser, resellerId, queryUser)
+
+    const result_Array = getPrimaryUser.map(item1 => {
+      const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          resellerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.resellerData.username) &&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.resellerData.dealerId) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData
+    })
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
