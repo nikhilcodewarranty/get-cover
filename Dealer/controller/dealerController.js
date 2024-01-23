@@ -2179,7 +2179,7 @@ exports.getDealerResellers = async (req, res) => {
 
     const filteredData = result_Array.filter(entry => {
       return (
-        nameRegex.test(entry.resellerData.username) &&
+        nameRegex.test(entry.resellerData.name) &&
         emailRegex.test(entry.email) &&
         dealerRegex.test(entry.resellerData.dealerId) &&
         phoneRegex.test(entry.phoneNumber)
