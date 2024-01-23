@@ -38,7 +38,6 @@ var uploadP = multer({
 }).single('file')
 
 
-
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
@@ -707,3 +706,4 @@ exports.checkMultipleFileValidation = async (req, res) => {
         })
     }
 }
+

@@ -1095,7 +1095,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 };
 
 
-
 function uniqByKeepLast(data, key) {
 
   return [
@@ -2112,6 +2111,84 @@ exports.filterDealer = async (req, res) => {
       message: "Success",
       result: response
     });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDealerResellers = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let checkDealer = await dealerService.getDealerById(req.params.dealerId, {})
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    };
+
+    let query = { isDeleted: false, dealerId: req.params.dealerId }
+    let projection = { __v: 0 }
+    const resellers = await resellerService.getResellers(query, projection);
+    if (!resellers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the resellers"
+      });
+      return;
+    };
+
+    console.log('sjdhfjdshf-------------', resellers)
+
+    const resellerId = resellers.map(obj => obj._id.toString());
+    const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    console.log('sjdhfjdshf-------------', getPrimaryUser, resellerId, queryUser)
+
+    const result_Array = getPrimaryUser.map(item1 => {
+      const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          resellerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.resellerData.username) &&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.resellerData.dealerId) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData
+    })
+
   } catch (err) {
     res.send({
       code: constant.errorCode,

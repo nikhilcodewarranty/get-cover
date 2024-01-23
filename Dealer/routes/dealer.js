@@ -42,4 +42,8 @@ router.post("/getDealerServicers/:dealerId",[verifyToken],dealerController.getDe
 router.post("/unAssignServicer",[verifyToken],dealerController.unAssignServicer)
 router.get("/getServicersList/:dealerId",[verifyToken],dealerController.getServicersList)
 
+//resellers 
+router.post("/getDealerResellers/:dealerId",[verifyToken],dealerController.getDealerResellers)
+
+
 module.exports = router;
