@@ -166,8 +166,9 @@ exports.createOrder = async (req, res) => {
             }
 
             data.createdBy = req.userId
-            resellerId
+
             data.servicerId = data.servicerId != '' ? data.servicerId : null
+            data.resellerId = data.resellerId != '' ? data.resellerId : null
             data.customerId = data.customerId != '' ? data.customerId : null
             let contractArrrayData = []
 
@@ -232,8 +233,8 @@ exports.createOrder = async (req, res) => {
             //     console.log('contract save codes--------------------')
             // }
             res.send({
-                code:constant.successCode,
-                message:"Success"
+                code: constant.successCode,
+                message: "Success"
             })
         })
     } catch (err) {
@@ -597,7 +598,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                     return; // Set the return value to false when the condition fails
                 }
-                
+
             });
 
 
