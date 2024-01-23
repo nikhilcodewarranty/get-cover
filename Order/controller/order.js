@@ -131,7 +131,6 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-
             if (data.servicerId) {
                 let query = { _id: data.servicerId }
                 let checkServicer = await servicerService.getServiceProviderById(query)
@@ -541,7 +540,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
             }
 
-            
+
             //Check each csv if it does not contain 5 column
 
             console.log("allDataComing", allDataComing);
