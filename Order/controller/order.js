@@ -41,56 +41,90 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            //  let data = req.body
-            let data = {
-                "dealerId": "65aba175107144beb95f3bcf",
-                "servicerId": "",
-                "customerId": "",
-                "productsArray": [
-                    {
-                        "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": [
-                            {
-                                "name": "a",
-                                "quantity": 45,
-                                "_id": "65a7863cc6690cd3e0a62256",
-                                "enterQuantity": "20"
-                            },
-                            {
-                                "name": "b",
-                                "quantity": 10,
-                                "_id": "65a7863cc6690cd3e0a62257",
-                                "enterQuantity": "11"
-                            }
-                        ]
-                    }
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#12345",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+            let data = req.body
+            // let data = {
+            //     "dealerId": "65aba175107144beb95f3bcf",
+            //     "servicerId": "",
+            //     "customerId": "",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65aba24e182e38ce2ea76f6a",
+            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         },
+            //         {
+            //             "categoryId": "65aba24e182e38ce2ea76f6a",
+            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "222222222Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#12345",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
 
             if (req.role != "Super Admin") {
                 res.send({
@@ -99,9 +133,7 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
-            let productArray = data.productsArray;
             data.venderOrder = data.dealerPurchaseOrder
-            let finalContractArray = [];
             if (data.dealerId) {
                 let projection = { isDeleted: 0 }
                 let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
@@ -162,7 +194,74 @@ exports.createOrder = async (req, res) => {
             data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
             let contractArrrayData = []
             let count = await orderService.getOrdersCount()
+            let count1 = await contractService.getContractsCount();
+            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+
+            if (req.files) {
+                const uploadedFiles = req.files.map(file => ({
+                    fileName: file.filename,
+                    originalName: file.originalname,
+                    filePath: file.path
+                }));
+
+                const productsWithOrderFIles = uploadedFiles.map((file, index) => ({
+                    ...data.productsArray[index],
+                    file: file.filePath,
+                    orderFile: {
+                        fileName: file.fileName,
+                        originalName: file.originalName
+                    }
+
+                }));
+                data.productsArray = productsWithOrderFIles
+
+                const productsWithFiles = uploadedFiles.map((file, index) => ({
+                    products: {
+                        ...data.productsArray[index],
+                        file: file.filePath,
+                        orderFile: file.fileName
+                    },
+                }));
+                //Read csv file from product array one by one
+                for (let i = 0; i < productsWithFiles.length; i++) {
+                    let products = productsWithFiles[i].products
+
+                    let priceBookId = products.priceBookId
+                    let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+                    let projection = { isDeleted: 0 }
+                    let priceBook = await priceBookService.getPriceBookById(query, projection)
+                    const wb = XLSX.readFile(products.file);
+                    const sheets = wb.SheetNames;
+                    const ws = wb.Sheets[sheets[0]];
+                    const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                    const totalDataComing = totalDataComing1.map(item => {
+                        const keys = Object.keys(item);
+                        return {
+                            brand: item[keys[0]],
+                            model: item[keys[1]],
+                            serial: item[keys[2]],
+                            condition: item[keys[3]],
+                            retailValue: item[keys[4]],
+                        };
+                    });
+                    let contractObject = {
+                        orderId: savedResponse._id,
+                        productName: priceBook[0].name,
+                        manufacture: totalDataComing[0]['brand'],
+                        model: totalDataComing[0]['model'],
+                        serial: totalDataComing[0]['serial'],
+                        condition: totalDataComing[0]['condition'],
+                        productValue: totalDataComing[0]['retailValue'],
+                        unique_key: contractCount
+
+                    }
+                    contractArrrayData.push(contractObject)
+                    contractCount = contractCount + 1;
+                }
+
+            }
+
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
@@ -171,55 +270,16 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
-            let count1 = await contractService.getContractsCount();
-            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
-            //Read csv file from product array one by one
-            const uploadedFiles = req.files.map(file => ({
-                fileName: file.filename,
-                filePath: file.path
-            }));
 
-
-            const productsWithFiles = uploadedFiles.map((file, index) => ({
-                products: {
-                    ...data.productsArray[index],
-                    file: file.filePath,
-                },
-            }));
-            for (let i = 0; i < productsWithFiles.length; i++) {
-                let products = productsWithFiles[i].products
-
-                let priceBookId = products.priceBookId
-                let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
-                let projection = { isDeleted: 0 }
-                let priceBook = await priceBookService.getPriceBookById(query, projection)
-                const wb = XLSX.readFile(products.file);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                let contractObject = {
-                    orderId: savedResponse._id,
-                    productName: priceBook[0].name,
-                    manufacture: totalDataComing1[0]['Brand'],
-                    model: totalDataComing1[0]['Model'],
-                    serial: totalDataComing1[0]['Serial'],
-                    condition: totalDataComing1[0]['Condition'],
-                    productValue: totalDataComing1[0]['Retail Value'],
-                    unique_key: contractCount
-
-                }
-                contractArrrayData.push(contractObject)
-                contractCount = contractCount + 1;
-            }
             //Create Bulk Contracts
             let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
-            if (bulkContracts.length == 0) {
-                res.send({
-                    code: constant.errorCode,
-                    message: 'Error while create contracts!'
-                })
-                return;
-            }
+            // if (bulkContracts.length == 0) {
+            //     res.send({
+            //         code: constant.errorCode,
+            //         message: 'Error while create contracts!'
+            //     })
+            //     return;
+            // }
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -258,11 +318,9 @@ exports.getAllOrders = async (req, res) => {
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
-    console.log("ordersResult+++++++++++++++++", ordersResult);
-    console.log("respectiveDealers+++++++++++++++++", respectiveDealers);
+
     const result_Array = ordersResult.map(item1 => {
         const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
-        console.log("dealerName+++++++++++++++++", dealerName);
         const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
         const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         if (dealerName || customerName || servicerName) {
@@ -286,11 +344,11 @@ exports.getAllOrders = async (req, res) => {
     const status = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
-      return (
-        unique_keyRegex.test(entry.unique_key) &&
-        venderOrderRegex.test(entry.venderOrder) &&
-        status.test(entry.status)
-      );
+        return (
+            unique_keyRegex.test(entry.unique_key) &&
+            venderOrderRegex.test(entry.venderOrder) &&
+            status.test(entry.status)
+        );
     });
 
 
@@ -322,6 +380,7 @@ exports.checkFileValidation = async (req, res) => {
             const wb = XLSX.readFile(req.file.path);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
+            let message = []
             const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
             // console.log(totalDataComing1); return;
             const headers = [];
@@ -358,6 +417,31 @@ exports.checkFileValidation = async (req, res) => {
                 return;
             }
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
+            const totalDataComing = totalDataComing1.map(item => {
+                const keys = Object.keys(item);
+                return {
+                    retailValue: item[keys[4]],
+                };
+            });
+
+            // Check retail price is in between rangeStart and rangeEnd
+
+            const isValidRetailPrice = totalDataComing.map(obj => {
+                // Check if 'noOfProducts' matches the length of 'data'
+                if (obj.retailValue < data.rangeStart || obj.retailValue > data.rangeEnd) {
+                    message.push({
+                        code: constant.errorCode,
+                        retailPrice: obj.retailValue,
+                        message: "Invalid Retail Price!"
+                    });
+                }
+            });
+            if (message.length > 0) {
+                res.send({
+                    data: message
+                })
+                return
+            }
             res.send({
                 code: constant.successCode,
                 message: "Verified"
@@ -375,90 +459,94 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // let data = req.body
-            let data = {
-                "dealerId": "65a0d25d503003dcd4abfc33",
-                "servicerId": "65a0d64b23eec30f66ea0c44",
-                "customerId": "65a0e563169e80fd0600a965",
-                "productsArray": [
-                    {
-                        "categoryId": "65a0dacd3a9009fd982ba41e",
-                        "priceBookId": "65a0daf83a9009fd982ba41f",
-                        "unitPrice": "80.00",
-                        "noOfProducts": 1,
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": [
-                            {
-                                "name": "a",
-                                "quantity": 45,
-                                "_id": "65a7863cc6690cd3e0a62256",
-                                "enterQuantity": "20"
-                            },
-                            {
-                                "name": "b",
-                                "quantity": 10,
-                                "_id": "65a7863cc6690cd3e0a62257",
-                                "enterQuantity": "11"
-                            }
-                        ]
-                    },
-                    {
-                        "categoryId": "65a0dacd3a9009fd982ba41e",
-                        "priceBookId": "65a0daf83a9009fd982ba41f",
-                        "unitPrice": "80.00",
-                        "noOfProducts": 1,
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": [
-                            {
-                                "name": "a",
-                                "quantity": 45,
-                                "_id": "65a7863cc6690cd3e0a62256",
-                                "enterQuantity": "20"
-                            },
-                            {
-                                "name": "b",
-                                "quantity": 10,
-                                "_id": "65a7863cc6690cd3e0a62257",
-                                "enterQuantity": "11"
-                            }
-                        ]
-                    }
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#12345",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+            let data = req.body
+            // let data = {
+            //     "dealerId": "65a0d25d503003dcd4abfc33",
+            //     "servicerId": "65a0d64b23eec30f66ea0c44",
+            //     "customerId": "65a0e563169e80fd0600a965",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65a0dacd3a9009fd982ba41e",
+            //             "priceBookId": "65a0daf83a9009fd982ba41f",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": 1,
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             rangeStart: 23425,
+            //             rangeEnd: 23425,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Flat Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         },
+            //         {
+            //             "categoryId": "65a0dacd3a9009fd982ba41e",
+            //             "priceBookId": "65a0daf83a9009fd982ba41f",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": 1,
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             rangeStart: 23425,
+            //             rangeEnd: 23423,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Flat Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#12345",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
             const uploadedFiles = req.files.map(file => ({
                 filePath: file.path
             }));
@@ -466,6 +554,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 products: {
                     key: index + 1,
                     noOfProducts: data.productsArray[index].noOfProducts,
+                    priceType: data.productsArray[index].priceType,
+                    rangeStart: data.productsArray[index].rangeStart,
+                    rangeEnd: data.productsArray[index].rangeEnd,
                     file: file.filePath,
                 },
             }));
@@ -473,6 +564,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             let allHeaders = [];
             let allDataComing = [];
             let message = [];
+            let finalRetailValue = [];
             //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -488,6 +580,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 allDataComing.push({
                     key: productsWithFiles[j].products.key,
                     noOfProducts: productsWithFiles[j].products.noOfProducts,
+                    priceType: productsWithFiles[j].products.priceType,
+                    rangeStart: productsWithFiles[j].products.rangeStart,
+                    rangeEnd: productsWithFiles[j].products.rangeEnd,
                     data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]])
                 });
                 allHeaders.push({
@@ -496,6 +591,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
             }
             //Check each csv if it does not contain 5 column
+
+            console.log("allDataComing",allDataComing);
+            console.log("product",productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
                 .map(headerObj => ({
@@ -537,8 +635,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check if csv data length equal to no of products
             const isValidNumberData = allDataComing.map(obj => {
-                // Check if 'noOfProducts' matches the length of 'data'
-                if (obj.noOfProducts !== obj.data.length) {
+    
+                if (parseInt(obj.noOfProducts) != obj.data.length) {
                     // Handle case where 'noOfProducts' doesn't match the length of 'data'
                     message.push({
                         code: constant.errorCode,
@@ -558,6 +656,45 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
                 return;
             }
+            let checkRetailValue = allDataComing.map(obj => {
+                if (obj.priceType == 'Flat Pricing') {
+                    const priceObj = obj.data.map(item => {
+                        const keys = Object.keys(item);
+                        return {
+                            key: obj.key,
+                            noOfProducts: obj.noOfProducts,
+                            rangeStart: obj.rangeStart,
+                            rangeEnd: obj.rangeEnd,
+                            retailValue: item[keys[4]],
+                        };
+                    });
+                    finalRetailValue.push(priceObj)
+                }
+            })
+
+            //console.log(finalRetailValue);return
+            if (finalRetailValue.length > 0) {
+                const fdfd = finalRetailValue.map(obj => {
+
+
+                    if ((obj[0].retailValue < obj[0].rangeStart || obj[0].retailValue > obj[0].rangeEnd)) {
+                        message.push({
+                            code: constant.errorCode,
+                            retailPrice: obj[0].retailValue,
+                            key: obj[0].key,
+                            message: "Invalid Retail Price!"
+                        });
+                    }
+                });
+            }
+            if (message.length > 0) {
+                // Handle case where the number of properties in 'data' is not valid
+                res.send({
+                    data: message
+                });
+                return;
+            }
+
 
             res.send({
                 code: constant.successCode,

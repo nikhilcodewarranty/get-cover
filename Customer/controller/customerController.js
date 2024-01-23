@@ -23,17 +23,17 @@ exports.createCustomer = async (req, res, next) => {
       return;
     };
 
-    // // check reseller valid or not
-    // if(data.resellerName || data.resellerName != ""){
-    //   let checkReseller = await resellerService.getReseller({_id:data.resellerName},{})
-    //   if(!checkReseller){
-    //     res.send({
-    //       code: constant.errorCode,
-    //       message:"Invalid Reseller."
-    //     })
-    //     return;
-    //   }
-    // }
+    // check reseller valid or not
+    if (data.resellerName || data.resellerName != "") {
+      let checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+      if (!checkReseller) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid Reseller."
+        })
+        return;
+      }
+    }
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
@@ -61,6 +61,7 @@ exports.createCustomer = async (req, res, next) => {
       street: data.street,
       city: data.city,
       dealerId: checkDealer._id,
+      resellerId: checkReseller ? checkReseller._id : '',
       zip: data.zip,
       state: data.state,
       country: data.country,
@@ -120,27 +121,43 @@ exports.getAllCustomers = async (req, res, next) => {
     };
     const customersId = customers.map(obj => obj._id.toString());
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-
+    //Get Resselers
+    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
+    const queryReseller = { _id: { $in: resellerId } }
+    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
-    const result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+    // const result_Array = getPrimaryUser.map(item1 => {
+    //   const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
 
-      if (matchingItem) {
+    //   if (matchingItem) {
+    //     return {
+    //       ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+    //       customerData: matchingItem.toObject()
+    //     };
+    //   } else {
+    //     return dealerData.toObject();
+    //   }
+    // });
+
+    const result_Array = customers.map(customer => {
+      const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
+      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString())
+      if (matchingItem || matchingReseller) {
         return {
-          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject()
+          ...matchingItem ? matchingItem : {},
+          customerData: customer ? customer : {},
+          reseller: matchingReseller ? matchingReseller : {}
         };
-      } else {
-        return dealerData.toObject();
       }
-    });
+
+    }).filter(item => item !== undefined);
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-
+    console.log(result_Array);
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
@@ -149,8 +166,6 @@ exports.getAllCustomers = async (req, res, next) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
-
-    console.log(getPrimaryUser)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -403,7 +418,7 @@ exports.getCustomerById = async (req, res) => {
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false },{ isPrimary: -1 })
+    let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
     if (!getCustomerUsers) {
       res.send({
         code: constant.errorCode,
@@ -434,11 +449,11 @@ exports.getCustomerUsers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
-    let checkCustomer = await customerService.getCustomerByName({_id:req.params.customerId},{status:1})
-    if(!checkCustomer){
+    let checkCustomer = await customerService.getCustomerByName({ _id: req.params.customerId }, { status: 1 })
+    if (!checkCustomer) {
       res.send({
-        code:constant.errorCode,
-        message:"Invalid customer ID"
+        code: constant.errorCode,
+        message: "Invalid customer ID"
       })
       return;
     };
@@ -448,7 +463,7 @@ exports.getCustomerUsers = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      customerStatus:checkCustomer.status
+      customerStatus: checkCustomer.status
     })
   } catch (err) {
     res.send({

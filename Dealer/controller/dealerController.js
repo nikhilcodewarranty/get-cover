@@ -31,6 +31,7 @@ const { isBoolean } = require('util');
 const { string } = require('joi');
 const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceController');
+const resellerService = require('../services/resellerService');
 
 
 var StorageP = multer.diskStorage({
@@ -442,6 +443,9 @@ exports.getUserByDealerId = async (req, res) => {
     });
   };
 };
+
+
+
 
 //update dealer detail with ID
 exports.updateDealer = async (req, res) => {
