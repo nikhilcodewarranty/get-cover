@@ -167,6 +167,7 @@ exports.createOrder = async (req, res) => {
             }
 
             data.createdBy = req.userId
+            resellerId
             data.servicerId = data.servicerId != '' ? data.servicerId : null
             data.customerId = data.customerId != '' ? data.customerId : null
             let contractArrrayData = []

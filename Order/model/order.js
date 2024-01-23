@@ -12,7 +12,11 @@ const orderSchema = new mongoose.Schema({
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7effee')
+    default: ''
+  },
+  resellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: ''
   },
   venderOrder: {
     type: String,
