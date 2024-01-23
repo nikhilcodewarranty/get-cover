@@ -24,7 +24,7 @@ exports.createCustomer = async (req, res, next) => {
     };
 
     // check reseller valid or not
-    if (data.resellerName || data.resellerName != "") {
+    if (data.resellerName && data.resellerName != "") {
       let checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
       if (!checkReseller) {
         res.send({

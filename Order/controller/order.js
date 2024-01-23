@@ -41,91 +41,79 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
-            // let data = {
-            //     "dealerId": "65aba175107144beb95f3bcf",
-            //     "servicerId": "",
-            //     "customerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "222222222Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+            // let data = req.body
+            let data = {
+                "dealerId": "65aba175107144beb95f3bcf",
+                "servicerId": "",
+                "customerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": null,
+                        "manufacture": "Get-Cover123",
+                        "model": "222222222Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Regular",
+                        "additionalNotes": "this is test ",
+                        "noOfProducts": 1
+                    }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
+            //check for super admin
             if (req.role != "Super Admin") {
                 res.send({
                     code: constant.errorCode,
@@ -134,17 +122,16 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             data.venderOrder = data.dealerPurchaseOrder
-            if (data.dealerId) {
-                let projection = { isDeleted: 0 }
-                let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
-                if (!checkDealer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Dealer not found"
-                    })
-                    return;
-                }
+            let projection = { isDeleted: 0 }
+            let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
+            if (!checkDealer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Dealer not found"
+                })
+                return;
             }
+
             if (data.servicerId) {
                 let query = { _id: data.servicerId }
                 let checkServicer = await servicerService.getServiceProviderById(query)
@@ -167,17 +154,6 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
-            if (data.categoryId) {
-                let query = { _id: data.categoryId }
-                let checkCategory = await priceBookService.getPriceCatById(query, { isDeleted: 0 })
-                if (!checkCategory) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Category not found"
-                    })
-                    return;
-                }
-            }
             if (data.priceBookId) {
                 let query = { _id: data.priceBookId }
                 let checkPriceBook = await priceBookService.findByName1(query)
@@ -189,14 +165,20 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
+
             data.createdBy = req.userId
-            data.servicerId = data.servicerId ? data.servicerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
-            data.customerId = data.customerId ? data.customerId : new mongoose.Types.ObjectId('61c8c7d38e67bb7c7f7eeeee')
+            data.servicerId = data.servicerId != '' ? data.servicerId : null
+            data.customerId = data.customerId != '' ? data.customerId : null
             let contractArrrayData = []
+
             let count = await orderService.getOrdersCount()
-            let count1 = await contractService.getContractsCount();
-            let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
+
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
+
+
+
+            // let count1 = await contractService.getContractsCount();
+            // let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
 
             if (req.files) {
                 const uploadedFiles = req.files.map(file => ({
@@ -205,62 +187,34 @@ exports.createOrder = async (req, res) => {
                     filePath: file.path
                 }));
 
-                const productsWithOrderFIles = uploadedFiles.map((file, index) => ({
-                    ...data.productsArray[index],
-                    file: file.filePath,
-                    orderFile: {
-                        fileName: file.fileName,
-                        originalName: file.originalName
-                    }
+                const filteredProducts = data.productsArray.filter(product => product.file !== null);
+                const filteredProducts2 = data.productsArray.filter(product => product.file === null);
 
-                }));
-                data.productsArray = productsWithOrderFIles
+                const productsWithOrderFiles = filteredProducts.map((product, index) => {
+                    const file = uploadedFiles[index];
 
-                const productsWithFiles = uploadedFiles.map((file, index) => ({
-                    products: {
-                        ...data.productsArray[index],
-                        file: file.filePath,
-                        orderFile: file.fileName
-                    },
-                }));
-                //Read csv file from product array one by one
-                for (let i = 0; i < productsWithFiles.length; i++) {
-                    let products = productsWithFiles[i].products
-
-                    let priceBookId = products.priceBookId
-                    let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
-                    let projection = { isDeleted: 0 }
-                    let priceBook = await priceBookService.getPriceBookById(query, projection)
-                    const wb = XLSX.readFile(products.file);
-                    const sheets = wb.SheetNames;
-                    const ws = wb.Sheets[sheets[0]];
-                    const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    const totalDataComing = totalDataComing1.map(item => {
-                        const keys = Object.keys(item);
+                    // Check if 'file' is not null
+                    if (file && file.filePath) {
                         return {
-                            brand: item[keys[0]],
-                            model: item[keys[1]],
-                            serial: item[keys[2]],
-                            condition: item[keys[3]],
-                            retailValue: item[keys[4]],
+                            ...product,
+                            file: file.filePath,
+                            orderFile: {
+                                fileName: file.fileName,
+                                originalName: file.originalName
+                            }
                         };
-                    });
-                    let contractObject = {
-                        orderId: savedResponse._id,
-                        productName: priceBook[0].name,
-                        manufacture: totalDataComing[0]['brand'],
-                        model: totalDataComing[0]['model'],
-                        serial: totalDataComing[0]['serial'],
-                        condition: totalDataComing[0]['condition'],
-                        productValue: totalDataComing[0]['retailValue'],
-                        unique_key: contractCount
-
+                    } else {
+                        // If 'file' is null, return the original product without modifications
+                        return product;
                     }
-                    contractArrrayData.push(contractObject)
-                    contractCount = contractCount + 1;
-                }
+                });
+
+                const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
+                data.productsArray = finalOutput
+
 
             }
+            console.log('----------------------------------------------', data)
 
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
@@ -271,19 +225,15 @@ exports.createOrder = async (req, res) => {
                 return;
             }
 
-            //Create Bulk Contracts
-            let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
-            // if (bulkContracts.length == 0) {
-            //     res.send({
-            //         code: constant.errorCode,
-            //         message: 'Error while create contracts!'
-            //     })
-            //     return;
+            console.log('----------------------------------------------', data)
+            console.log('----------------------------------------------', data.servicerId, data.customerId, data.paymentStatus)
+
+            // if (req.files.length === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
+            //     console.log('contract save codes--------------------')
             // }
             res.send({
-                code: constant.successCode,
-                message: "Success",
-                result: savedResponse
+                code:constant.successCode,
+                message:"Success"
             })
         })
     } catch (err) {
@@ -592,8 +542,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
             }
             //Check each csv if it does not contain 5 column
 
-            console.log("allDataComing",allDataComing);
-            console.log("product",productsWithFiles);
+            console.log("allDataComing", allDataComing);
+            console.log("product", productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
                 .map(headerObj => ({
@@ -635,7 +585,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check if csv data length equal to no of products
             const isValidNumberData = allDataComing.map(obj => {
-    
+
                 if (parseInt(obj.noOfProducts) != obj.data.length) {
                     // Handle case where 'noOfProducts' doesn't match the length of 'data'
                     message.push({
@@ -709,4 +659,5 @@ exports.checkMultipleFileValidation = async (req, res) => {
         })
     }
 }
+
 
