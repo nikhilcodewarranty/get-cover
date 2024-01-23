@@ -403,7 +403,6 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    console.log('sdhfjdhfjshdfsj', newObj)
     const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
@@ -1584,9 +1583,11 @@ exports.updateDealerMeta = async (req, res) => {
         message: "Unable to update the data"
       })
     } else {
-      let Customercriteria = { dealerId: checkDealer._id }
+      let criteria = { dealerId: checkDealer._id }
       let option = { new: true }
-      let updatedData = await customerService.updateDealerName(Customercriteria, { dealerName: data.accountName }, option)
+      let updatedCustomer = await customerService.updateDealerName(checkObjectIdriteria, { dealerName: data.accountName }, option)
+      //Update dealer name in reseller
+      let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       res.send({
         code: constant.successCode,
         message: "Success",

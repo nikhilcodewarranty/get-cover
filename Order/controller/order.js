@@ -359,7 +359,7 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (data.noOfProducts != totalDataComing1.length) {
+            if (parseInt(data.noOfProducts) != totalDataComing1.length) {
                 res.send({
                     code: constant.errorCode,
                     message: "Data does not match to the number of orders"
@@ -593,9 +593,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         key: obj.key,
                         message: "Invalid number of products"
                     });
-                    return false; // Set the return value to false when the condition fails
+                    return; // Set the return value to false when the condition fails
                 }
-                return true;
+                
             });
 
 

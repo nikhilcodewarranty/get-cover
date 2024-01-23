@@ -233,7 +233,6 @@ exports.getDealerCustomers = async (req, res) => {
       );
     });
 
-    console.log(getPrimaryUser)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -247,6 +246,46 @@ exports.getDealerCustomers = async (req, res) => {
   }
 }
 
+exports.getResellerCustomers = async (req, res) => {
+  try {
+    let data = req.body;
+    let query = { isDeleted: false, resellerId: req.params.resellerId }
+    let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+    const customers = await customerService.getAllCustomers(query, projection);
+    if (!customers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customer"
+      });
+      return;
+    };
+    const customersId = customers.map(obj => obj._id.toString());
+    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    const result_Array = getPrimaryUser.map(item1 => {
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          customerData: matchingItem.toObject()
+        };
+      } else {
+        return {};
+      }
+    });
+    res.send({
+      code: constant.successCode,
+      data: result_Array
+    })
+  }
+  catch (err) {
+    console.log(`Unable to find customer ${err}`)
+  }
+}
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body

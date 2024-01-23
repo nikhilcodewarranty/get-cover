@@ -188,10 +188,25 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
+    const resellerIds = resellerData.map(reseller => reseller._id.toString())
+    const queryUser = { accountId: { $in: resellerIds }, isPrimary: true };
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    const result_Array = getPrimaryUser.map(item1 => {
+        const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+        if (matchingItem) {
+            return {
+                ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                resellerData: matchingItem.toObject()
+            };
+        } else {
+            return resellerData.toObject();
+        }
+    });
     res.send({
         code: constant.successCode,
         message: "Success",
-        data: resellerData
+        data: result_Array
     });
 }
 
@@ -203,14 +218,45 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
-    let checkReseller = await resellerService.getReseller({_id:req.params.resellerId},{isDeleted:0});
-    if(!checkReseller){
+    let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+    if (!checkReseller) {
         res.send({
-            code:constant.errorCode,
-            message:'Reseller not found'
+            code: constant.errorCode,
+            message: 'Reseller not found'
         })
         return;
     }
+    const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
+    let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+    if (!resellerUser) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Primary user not found of this reseller'
+        })
+        return;
+    }
+    const result_Array = resellerUser.map(user => {
+        let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
+        if (matchItem) {
+            return {
+                ...user.toObject(),
+                resellerData: matchItem.toObject()
+            }
+        }
+        else {
+            return {
+                ...user.toObject(),
+                resellerData: {}
+            }
+        }
+    })
+
+    res.send({
+        code: constant.successCode,
+        data: result_Array
+    })
+
+
 }
 
 exports.getResellerUsers = async (req, res) => {
@@ -237,4 +283,49 @@ exports.getResellerUsers = async (req, res) => {
         data: users
     });
     return;
+}
+
+exports.getResellerPriceBook = async (req, res) => {
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+
+    let checkDealer = await dealerService.getDealerById(checkReseller.dealerId, { isDeleted: false });
+    if (!checkDealer) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Dealer not found of this reseller!'
+        });
+        return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id) }
+    let getResellerPriceBook = await dealerPriceService.getDealerPriceBookById(query, projection)
+    if (!getResellerPriceBook) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Unable to find price books!'
+        });
+        return;
+    }
+
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getResellerPriceBook
+    })
+
+
 }
