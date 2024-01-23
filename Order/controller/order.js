@@ -41,78 +41,78 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // let data = req.body
-            let data = {
-                "dealerId": "65aba175107144beb95f3bcf",
-                "servicerId": "",
-                "customerId": "",
-                "resellerId": "",
-                "productsArray": [
-                    {
-                        "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": [
-                            {
-                                "name": "a",
-                                "quantity": 45,
-                                "_id": "65a7863cc6690cd3e0a62256",
-                                "enterQuantity": "20"
-                            },
-                            {
-                                "name": "b",
-                                "quantity": 10,
-                                "_id": "65a7863cc6690cd3e0a62257",
-                                "enterQuantity": "11"
-                            }
-                        ]
-                    },
-                    {
-                        "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": null,
-                        "manufacture": "Get-Cover123",
-                        "model": "222222222Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Regular",
-                        "additionalNotes": "this is test ",
-                        "noOfProducts": 1
-                    }
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#12345",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+             let data = req.body
+            // let data = {
+            //     "dealerId": "65aba175107144beb95f3bcf",
+            //     "servicerId": "",
+            //     "customerId": "",
+            //     "resellerId": "",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65aba24e182e38ce2ea76f6a",
+            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": [
+            //                 {
+            //                     "name": "a",
+            //                     "quantity": 45,
+            //                     "_id": "65a7863cc6690cd3e0a62256",
+            //                     "enterQuantity": "20"
+            //                 },
+            //                 {
+            //                     "name": "b",
+            //                     "quantity": 10,
+            //                     "_id": "65a7863cc6690cd3e0a62257",
+            //                     "enterQuantity": "11"
+            //                 }
+            //             ]
+            //         },
+            //         {
+            //             "categoryId": "65aba24e182e38ce2ea76f6a",
+            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": null,
+            //             "manufacture": "Get-Cover123",
+            //             "model": "222222222Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Regular",
+            //             "additionalNotes": "this is test ",
+            //             "noOfProducts": 1
+            //         }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#12345",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
 
             //check for super admin
             if (req.role != "Super Admin") {
