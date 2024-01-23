@@ -640,9 +640,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         key: obj.key,
                         message: "Invalid number of products"
                     });
-                    return false; // Set the return value to false when the condition fails
+                    return; // Set the return value to false when the condition fails
                 }
-                return true;
+                
             });
 
 
