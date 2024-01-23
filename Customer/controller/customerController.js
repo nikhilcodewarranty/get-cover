@@ -233,7 +233,6 @@ exports.getDealerCustomers = async (req, res) => {
       );
     });
 
-    console.log(getPrimaryUser)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -247,6 +246,14 @@ exports.getDealerCustomers = async (req, res) => {
   }
 }
 
+exports.getResellerCustomers = async (req, res) => {
+  try {
+
+  }
+  catch (err) {
+console.log(`Unable to find customer ${err}`)
+  }
+}
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body

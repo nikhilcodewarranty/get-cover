@@ -188,10 +188,25 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
+    const resellerIds = resellerData.map(reseller => reseller._id.toString())
+    const queryUser = { accountId: { $in: resellerIds }, isPrimary: true };
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    const result_Array = getPrimaryUser.map(item1 => {
+        const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+        if (matchingItem) {
+            return {
+                ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                resellerData: matchingItem.toObject()
+            };
+        } else {
+            return resellerData.toObject();
+        }
+    });
     res.send({
         code: constant.successCode,
         message: "Success",
-        data: resellerData
+        data: result_Array
     });
 }
 
