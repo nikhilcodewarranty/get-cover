@@ -238,7 +238,7 @@ exports.getResellerById = async (req, res) => {
 
     res.send({
         code: constant.successCode,
-        data:result_Array
+        data: result_Array
     })
 
 
@@ -268,4 +268,49 @@ exports.getResellerUsers = async (req, res) => {
         data: users
     });
     return;
+}
+
+exports.getResellerPriceBook = async (req, res) => {
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+
+    let checkDealer = await dealerService.getDealerById(checkReseller.dealerId, { isDeleted: false });
+    if (!checkDealer) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Dealer not found of this reseller!'
+        });
+        return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id) }
+    let getResellerPriceBook = await dealerPriceService.getDealerPriceBookById(query, projection)
+    if (!getResellerPriceBook) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Unable to find price books!'
+        });
+        return;
+    }
+
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getResellerPriceBook
+    })
+
+
 }
