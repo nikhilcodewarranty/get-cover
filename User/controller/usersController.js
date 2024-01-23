@@ -924,6 +924,27 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+
+          if (data.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+
+            let servicerObject = {
+              name: data.name,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId:createMetaData._id,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+
+            let createData = await providerService.createServiceProvider(servicerObject)
+          }
+
+
           // Create User for primary dealer
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
@@ -1644,8 +1665,8 @@ exports.resetPassword = async (req, res) => {
         password: hash,
         resetPasswordCode: null,
         isResetPassword: false,
-        approvedStatus:'Approved',
-        status:true
+        approvedStatus: 'Approved',
+        status: true
       }
     }
     let option = { new: true }

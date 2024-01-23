@@ -6,6 +6,10 @@ const serviceProviderSchema = new mongoose.Schema({
     default:'',
     index:true
   },
+  dealerId:{
+    type:String,
+    default:null
+  },
   street: {
     type: String,
     default:''
