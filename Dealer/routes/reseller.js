@@ -8,5 +8,6 @@ router.post('/createReseller',[verifyToken],validator('create_reseller'),reselle
 router.post('/getAllResellers',[verifyToken],resellerController.getAllResellers)
 router.get("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
 router.get("/getResellerById/:resellerId", [verifyToken], resellerController.getResellerById);
+router.get("/getResellerPriceBook/:resellerId", [verifyToken], resellerController.getResellerById);
 router.get("/getResellerUsers/:resellerId", [verifyToken], resellerController.getResellerUsers);
 module.exports = router; 

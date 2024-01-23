@@ -592,9 +592,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 });
             }
             //Check each csv if it does not contain 5 column
-
-            console.log("allDataComing",allDataComing);
-            console.log("product",productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
                 .map(headerObj => ({
@@ -636,7 +633,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check if csv data length equal to no of products
             const isValidNumberData = allDataComing.map(obj => {
-    
+
                 if (parseInt(obj.noOfProducts) != obj.data.length) {
                     // Handle case where 'noOfProducts' doesn't match the length of 'data'
                     message.push({

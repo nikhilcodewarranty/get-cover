@@ -203,14 +203,45 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
-    let checkReseller = await resellerService.getReseller({_id:req.params.resellerId},{isDeleted:0});
-    if(!checkReseller){
+    let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+    if (!checkReseller) {
         res.send({
-            code:constant.errorCode,
-            message:'Reseller not found'
+            code: constant.errorCode,
+            message: 'Reseller not found'
         })
         return;
     }
+    const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
+    let resellerUser = await userService.getMembers(query1, { isDeleted: false })
+    if (!resellerUser) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Primary user not found of this reseller'
+        })
+        return;
+    }
+    const result_Array = resellerUser.map(user => {
+        let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
+        if (matchItem) {
+            return {
+                ...user.toObject(),
+                resellerData: matchItem.toObject()
+            }
+        }
+        else {
+            return {
+                ...user.toObject(),
+                resellerData: {}
+            }
+        }
+    })
+
+    res.send({
+        code: constant.successCode,
+        data:result_Array
+    })
+
+
 }
 
 exports.getResellerUsers = async (req, res) => {
