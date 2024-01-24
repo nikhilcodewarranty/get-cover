@@ -1981,6 +1981,7 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    console.log("getServicersIds================",getServicersIds);
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
     if (!servicer) {
