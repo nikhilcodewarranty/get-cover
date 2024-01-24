@@ -146,7 +146,7 @@ exports.getAllCustomers = async (req, res, next) => {
     console.log("resellerData++++++++++++++++++++++++++++++++++", resellerData)
     const result_Array = customers.map(customer => {
       const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
-      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString())
+      const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
       if (matchingItem || matchingReseller) {
         return {
           ...matchingItem ? matchingItem : {},
@@ -439,14 +439,14 @@ exports.getCustomerById = async (req, res) => {
     } else {
       let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
-      console.log("checkCustomer=======================",checkCustomer)
+      console.log("checkCustomer=======================", checkCustomer)
       res.send({
         code: constant.successCode,
         message: "Success",
         result: {
           meta: checkCustomer,
           primary: getPrimaryUser,
-          resellerName:checkReseller ? checkReseller.name : ''
+          resellerName: checkReseller ? checkReseller.name : ''
         }
       })
 
