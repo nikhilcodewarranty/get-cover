@@ -103,7 +103,7 @@ exports.createReseller = async (req, res) => {
               street: data.street,
               city: data.city,
               zip: data.zip,
-              dealerId:createMetaData._id,
+              resellerId:createdReseler._id,
               state: data.state,
               country: data.country,
               status: data.status,
