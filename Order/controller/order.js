@@ -12,6 +12,7 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require('fs')
+const moment = require('moment')
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
@@ -41,78 +42,78 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body
-            // let data = {
-            //     "dealerId": "65aba175107144beb95f3bcf",
-            //     "servicerId": "",
-            //     "customerId": "",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": null,
-            //             "manufacture": "Get-Cover123",
-            //             "model": "222222222Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Regular",
-            //             "additionalNotes": "this is test ",
-            //             "noOfProducts": 1
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+            // let data = req.body
+            let data = {
+                "dealerId": "65aba175107144beb95f3bcf",
+                "servicerId": "",
+                "customerId": "",
+                "resellerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": '',
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2025-01-30",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": [
+                            {
+                                "name": "a",
+                                "quantity": 45,
+                                "_id": "65a7863cc6690cd3e0a62256",
+                                "enterQuantity": "20"
+                            },
+                            {
+                                "name": "b",
+                                "quantity": 10,
+                                "_id": "65a7863cc6690cd3e0a62257",
+                                "enterQuantity": "11"
+                            }
+                        ]
+                    },
+                    // {
+                    //     "categoryId": "65aba24e182e38ce2ea76f6a",
+                    //     "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                    //     "unitPrice": "80.00",
+                    //     "noOfProducts": "",
+                    //     "price": 160,
+                    //     "file": '',
+                    //     "manufacture": "Get-Cover123",
+                    //     "model": "222222222Inverter123",
+                    //     "serial": "S123GHK",
+                    //     "condition": "Breakdown",
+                    //     "productValue": 123,
+                    //     "regDate": "2024-01-18T00:00:00.000Z",
+                    //     "coverageStartDate": "2025-01-30",
+                    //     "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                    //     "description": "003",
+                    //     "term": 12,
+                    //     "priceType": "Regular",
+                    //     "additionalNotes": "this is test ",
+                    //     "noOfProducts": 1
+                    // }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
             //check for super admin
             if (req.role != "Super Admin") {
@@ -179,8 +180,7 @@ exports.createOrder = async (req, res) => {
 
 
 
-            // let count1 = await contractService.getContractsCount();
-            // let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
+
 
             if (req.files) {
                 const uploadedFiles = req.files.map(file => ({
@@ -216,6 +216,14 @@ exports.createOrder = async (req, res) => {
 
 
             }
+            let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
+            if (checkVenderOrder) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "dealer purchase order is already exist"
+                })
+                return;
+            }
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
@@ -224,13 +232,64 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
+            let fileLength = req.files ? req.files.length : 0
+            if (fileLength === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
 
-            console.log('----------------------------------------------', data)
-            console.log('----------------------------------------------', data.servicerId, data.customerId, data.paymentStatus)
+                const isValidDate = data.productsArray.every(product => {
+                    console.log(product.coverageStartDate)
+                    const coverageStartDate = product.coverageStartDate != '' ? moment(product.coverageStartDate).format('YYYY-MM-DD') : product.coverageStartDate;
+                    return moment(coverageStartDate, 'YYYY-MM-DD', true).isValid();
+                });
+                if (isValidDate) {
+                    console.log('valid date +++++++++++++++++++++++++++++++++++++++')
+                    let contractArrrayData = []
+                    for (let i = 0; i < data.productsArray.length; i++) {
+                        let products = data.productsArray[i]
+                        console.log('valid date +++++++++++++++++++++++++++++++++++++++', products)
 
-            // if (req.files.length === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
-            //     console.log('contract save codes--------------------')
-            // }
+                        let priceBookId = products.priceBookId
+                        let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
+                        let projection = { isDeleted: 0 }
+                        let priceBook = await priceBookService.getPriceBookById(query, projection)
+
+                        const wb = XLSX.readFile(products.file);
+                        const sheets = wb.SheetNames;
+                        const ws = wb.Sheets[sheets[0]];
+
+                        let count1 = await contractService.getContractsCount();
+                        let contractCount = Number(count1.length > 0 && count1[0].unique_key ? count1[0].unique_key : 0) + 1;
+
+                        const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+
+                        const totalDataComing = totalDataComing1.map(item => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]],
+                            };
+                        });
+                        let contractObject = {
+                            orderId: savedResponse._id,
+                            productName: priceBook[0].name,
+                            manufacture: totalDataComing[0]['brand'],
+                            model: totalDataComing[0]['model'],
+                            serial: totalDataComing[0]['serial'],
+                            condition: totalDataComing[0]['condition'],
+                            productValue: totalDataComing[0]['retailValue'],
+                            unique_key: contractCount
+
+                        }
+                        contractArrrayData.push(contractObject)
+                    }
+                    console.log('---------------------------------------------------------------', data.productsArray, contractArrrayData)
+                    let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
+                    console.log('jj-----------------', bulkContracts)
+
+                }
+            }
             res.send({
                 code: constant.successCode,
                 message: "Success"
