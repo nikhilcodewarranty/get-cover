@@ -249,7 +249,6 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
-    console.log("checkReseller================",checkReseller)
     const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
     let resellerUser = await userService.getMembers(query1, { isDeleted: false })
     if (!resellerUser) {
@@ -260,7 +259,6 @@ exports.getResellerById = async (req, res) => {
         return;
     }
 
-    console.log("resellerUser================",resellerUser)
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
         if (matchItem) {
@@ -402,3 +400,4 @@ exports.editResellers = async (req, rs) => {
         })
     }
 }
+
