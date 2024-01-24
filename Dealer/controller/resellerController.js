@@ -40,7 +40,7 @@ exports.createReseller = async (req, res) => {
             return;
         };
 
-        let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.accountName}$`, 'i'),dealerId:data.dealerName }, {})
+        let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName }, {})
         if (checkName) {
             res.send({
                 code: constant.errorCode,
@@ -66,7 +66,7 @@ exports.createReseller = async (req, res) => {
             zip: data.zip,
             state: data.state,
             country: data.country,
-            isServicer:data.isServicer ? data.isServicer : false,
+            isServicer: data.isServicer ? data.isServicer : false,
             status: data.status,
             unique_key: data.unique_key,
             accountStatus: "Approved",
@@ -99,20 +99,20 @@ exports.createReseller = async (req, res) => {
             const CountServicer = await providerService.getServicerCount();
 
             let servicerObject = {
-              name: data.name,
-              street: data.street,
-              city: data.city,
-              zip: data.zip,
-              resellerId:createdReseler._id,
-              state: data.state,
-              country: data.country,
-              status: data.status,
-              accountStatus: "Approved",
-              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+                name: data.name,
+                street: data.street,
+                city: data.city,
+                zip: data.zip,
+                resellerId: createdReseler._id,
+                state: data.state,
+                country: data.country,
+                status: data.status,
+                accountStatus: "Approved",
+                unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
             }
 
             let createData = await providerService.createServiceProvider(servicerObject)
-          }
+        }
 
         res.send({
             code: constant.successCode,
@@ -277,7 +277,7 @@ exports.getResellerById = async (req, res) => {
 
     res.send({
         code: constant.successCode,
-        message:"Success",
+        message: "Success",
         reseller: result_Array
     })
 
@@ -362,15 +362,15 @@ exports.editResellers = async (req, rs) => {
         let option = { new: true }
 
         let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 });
-        if(!checkReseller){
+        if (!checkReseller) {
             res.send({
-                code:constant.errorCode,
-                message:"Invalid reseller ID"
+                code: constant.errorCode,
+                message: "Invalid reseller ID"
             })
             return;
         }
-        if(data.oldName != data.accountName){
-            let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.name}$`, 'i'),dealerId:data.dealerName }, {})
+        if (data.oldName != data.accountName) {
+            let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.name}$`, 'i'), dealerId: data.dealerName }, {})
             if (checkName) {
                 res.send({
                     code: constant.errorCode,
@@ -379,20 +379,68 @@ exports.editResellers = async (req, rs) => {
                 return;
             };
         }
-        let updateReseller = await resellerService.updateReseller(criteria,data)
-        if(!updateReseller){
+        let updateReseller = await resellerService.updateReseller(criteria, data)
+        if (!updateReseller) {
             res.send({
-                code:constant.errorCode,
-                message:"Unable to update the data"
+                code: constant.errorCode,
+                message: "Unable to update the data"
             })
             return;
         }
         res.send({
-            code:constant.successCode,
-            message:"Success",
-            result:updateReseller
+            code: constant.successCode,
+            message: "Success",
+            result: updateReseller
         })
 
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.addResellerUser = async (req, res) => {
+    try {
+        let data = req.body
+        let checkReseller = await resellerService.getReseller({ _id: data.resellerId }, {})
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller ID"
+            })
+            return;
+        };
+        let checkEmail = await userService.findOneUser({ email: data.email }, {})
+        if (checkEmail) {
+            res.send({
+                code: constant.errorCode,
+                message: "User already exist with this email"
+            })
+            return;
+        }
+        data.accountId = checkReseller._id
+        let statusCheck;
+        if (!checkReseller.status) {
+            statusCheck = false
+        } else {
+            statusCheck = data.status
+        }
+        data.status = statusCheck
+        let saveData = await userService.createUser(data)
+        if (!saveData) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to add the data"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Added successfully",
+                result: saveData
+            })
+        }
     } catch (err) {
         res.send({
             code: constant.errorCode,

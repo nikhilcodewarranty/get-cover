@@ -957,7 +957,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-    console.log("lklklkkklk", data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
       query = {
