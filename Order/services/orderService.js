@@ -16,8 +16,10 @@ module.exports = class orderService {
             status:1,
             venderOrder:1,
             orderAmount:1
-          }
-        }
+          },
+        
+        },
+        {$sort: {unique_key: -1}}
       ])
       return allOrders;
     } catch (error) {
