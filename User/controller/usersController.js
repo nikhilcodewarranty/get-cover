@@ -909,6 +909,7 @@ exports.createDealer = async (req, res) => {
             city: data.city,
             zip: data.zip,
             state: data.state,
+            isServicer:data.isServicer ? data.isServicer :false,
             country: data.country,
             status: 'Approved',
             accountStatus: true,
