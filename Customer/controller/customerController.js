@@ -25,7 +25,8 @@ exports.createCustomer = async (req, res, next) => {
 
     // check reseller valid or not
     if (data.resellerName && data.resellerName != "") {
-      let checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+      var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+      console.log("checkReseller================",checkReseller)
       if (!checkReseller) {
         res.send({
           code: constant.errorCode,
@@ -37,7 +38,7 @@ exports.createCustomer = async (req, res, next) => {
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
-       name: new RegExp(`^${data.accountName}$`, 'i'),dealerId:data.dealerName 
+      username: new RegExp(`^${data.accountName}$`, 'i'),dealerId:data.dealerName 
     });
     if (checkAccountName) {
       res.send({
@@ -141,6 +142,9 @@ exports.getAllCustomers = async (req, res, next) => {
     //   }
     // });
 
+
+    console.log("customers++++++++++++++++++++++++++++++++++",customers)
+    console.log("resellerData++++++++++++++++++++++++++++++++++",resellerData)
     const result_Array = customers.map(customer => {
       const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
       const matchingReseller = resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString())

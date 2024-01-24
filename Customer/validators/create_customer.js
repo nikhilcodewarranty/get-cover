@@ -3,6 +3,7 @@ const Joi = require('joi')
 const create_customer_validation = Joi.object({
     accountName: Joi.string().trim().replace(/\s+/g, ' ').required(),
     dealerName:Joi.string().required(),
+    resellerName:Joi.string().allow('').optional(),
     status: Joi.boolean().required(),
     street: Joi.string().trim().replace(/\s+/g, ' ').required().messages({'string.base': `"a" should be a type of 'text'`,
     'string.empty': `Customer street address not allowed to be empty `}),
