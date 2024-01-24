@@ -26,7 +26,6 @@ exports.createCustomer = async (req, res, next) => {
     // check reseller valid or not
     if (data.resellerName && data.resellerName != "") {
       var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
-      console.log("checkReseller================", checkReseller)
       if (!checkReseller) {
         res.send({
           code: constant.errorCode,
@@ -440,8 +439,7 @@ exports.getCustomerById = async (req, res) => {
     } else {
       let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
-
-      checkCustomer.resellerName = checkReseller.name
+      console.log("checkCustomer=======================",checkCustomer)
       res.send({
         code: constant.successCode,
         message: "Success",
