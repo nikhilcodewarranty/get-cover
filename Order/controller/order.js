@@ -2,6 +2,7 @@ const { Order } = require("../model/order");
 const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
 const dealerService = require("../../Dealer/services/dealerService");
+const resellerService = require("../../Dealer/services/resellerService");
 const servicerService = require("../../Provider/services/providerService");
 const contractService = require("../../Contract/services/contractService");
 const customerService = require("../../Customer/services/customerService");
@@ -41,7 +42,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body
+            let data = req.body
             // let data = {
             //     "dealerId": "65aba175107144beb95f3bcf",
             //     "servicerId": "",
@@ -268,23 +269,29 @@ exports.getAllOrders = async (req, res) => {
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
-
+    //Get all Reseller
+    let resellerIdsArray = ordersResult.map(result => result.resellerId)
+    const resellerCreteria = { _id: { $in: resellerIdsArray } }
+    let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1 })
     const result_Array = ordersResult.map(item1 => {
-        const dealerName = respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString());
-        const servicerName = item1.servicerId != '' ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
-        const customerName = item1.customerId != '' ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
-        if (dealerName || customerName || servicerName) {
+        const dealerName = item1.respectiveDealers != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
+        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
+        const customerName = item1.customerId != null ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
+        const resellerName = item1.resellerId != null ? respectiveReseller.find(item2 => item2._id.toString() === item1.resellerId.toString()) : null;
+        if (dealerName || customerName || servicerName || resellerName) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                 dealerName: dealerName ? dealerName.toObject() : dealerName,
                 servicerName: servicerName ? servicerName.toObject() : {},
                 customerName: customerName ? customerName.toObject() : {},
+                resellerName: resellerName ? resellerName.toObject() : {},
             };
         } else {
             return {
                 dealerName: dealerName.toObject(),
                 servicerName: servicerName.toObject(),
                 customerName: customerName.toObject(),
+                resellerName: resellerName.toObject
             }
         }
     });

@@ -11,6 +11,7 @@ module.exports = class orderService {
             unique_key:1,
             servicerId:1,
             customerId:1,
+            resellerId:1,
             paymentStatus:1,
             status:1,
             venderOrder:1,
