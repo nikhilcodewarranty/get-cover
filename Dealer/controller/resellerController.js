@@ -8,6 +8,7 @@ const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const dealerRelation = require("../../Provider/model/dealerServicer")
+const providerService = require("../../Provider/services/providerService")
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
@@ -65,6 +66,7 @@ exports.createReseller = async (req, res) => {
             zip: data.zip,
             state: data.state,
             country: data.country,
+            isServicer:data.isServicer ? data.isServicer : false,
             status: data.status,
             unique_key: data.unique_key,
             accountStatus: "Approved",
@@ -92,6 +94,26 @@ exports.createReseller = async (req, res) => {
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+
+        if (data.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+
+            let servicerObject = {
+              name: data.name,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId:createMetaData._id,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+
+            let createData = await providerService.createServiceProvider(servicerObject)
+          }
+
         res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
