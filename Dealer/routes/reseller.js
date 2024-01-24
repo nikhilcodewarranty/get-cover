@@ -13,6 +13,8 @@ router.post('/getAllResellers',[verifyToken],resellerController.getAllResellers)
 
 
 router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
+router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
+
 router.get("/getResellerById/:resellerId", [verifyToken], resellerController.getResellerById);
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], resellerController.getResellerPriceBook);
 router.post("/getResellerUsers/:resellerId", [verifyToken], resellerController.getResellerUsers);
