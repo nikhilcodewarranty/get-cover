@@ -10,6 +10,10 @@ const serviceProviderSchema = new mongoose.Schema({
     type:String,
     default:null
   },
+  resellerId:{
+    type:String,
+    default:null
+  },
   street: {
     type: String,
     default:''

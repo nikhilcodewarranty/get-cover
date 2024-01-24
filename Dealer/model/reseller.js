@@ -15,6 +15,10 @@ const reseller = new Schema({
         type: String,
         default: ''
     },
+    isServicer: {
+        type: Boolean,
+        default: false
+    },
     zip: {
         type: String,
         default: ''

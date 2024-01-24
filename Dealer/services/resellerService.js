@@ -48,4 +48,13 @@ module.exports = class resellerService {
         }
     }
 
+    static async updateReseller(criteria,data){
+        try{
+            let updateMeta = await reseller.findOneAndUpdate(criteria, data,{new:true});
+            return updateMeta
+        }catch(err){
+            console.log(`Unable to update the name ${err}`)
+        }
+    }
+
 }

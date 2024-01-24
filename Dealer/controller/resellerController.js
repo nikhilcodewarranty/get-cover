@@ -39,14 +39,14 @@ exports.createReseller = async (req, res) => {
             return;
         };
 
-        let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.name}$`, 'i') }, {})
-        // if (checkName) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Reseller already exist with this account name"
-        //     })
-        //     return;
-        // };
+        let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.accountName}$`, 'i'),dealerId:data.dealerName }, {})
+        if (checkName) {
+            res.send({
+                code: constant.errorCode,
+                message: "Reseller already exist with this account name"
+            })
+            return;
+        };
 
         let checkCustomerEmail = await userService.findOneUser({ email: data.email });
         if (checkCustomerEmail) {
@@ -169,6 +169,7 @@ exports.getAllResellers = async (req, res) => {
         })
     }
 }
+
 exports.getResellerByDealerId = async (req, res) => {
     if (req.role != "Super Admin") {
         res.send({
@@ -206,7 +207,7 @@ exports.getResellerByDealerId = async (req, res) => {
     res.send({
         code: constant.successCode,
         message: "Success",
-        data: result_Array
+        result: result_Array
     });
 }
 
@@ -218,7 +219,7 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
-    let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 });
     if (!checkReseller) {
         res.send({
             code: constant.errorCode,
@@ -226,7 +227,7 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
-    const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
+    const query1 = { accountId: { $in: [checkReseller._id] }, isPrimary: true };
     let resellerUser = await userService.getMembers(query1, { isDeleted: false })
     if (!resellerUser) {
         res.send({
@@ -253,7 +254,8 @@ exports.getResellerById = async (req, res) => {
 
     res.send({
         code: constant.successCode,
-        data: result_Array
+        message:"Success",
+        reseller: result_Array
     })
 
 
@@ -328,4 +330,50 @@ exports.getResellerPriceBook = async (req, res) => {
     })
 
 
+}
+
+exports.editResellers = async (req, rs) => {
+    try {
+        let data = req.body
+        let criteria = { _id: req.params.resellerId }
+        let option = { new: true }
+
+        let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 });
+        if(!checkReseller){
+            res.send({
+                code:constant.errorCode,
+                message:"Invalid reseller ID"
+            })
+            return;
+        }
+        if(data.oldName != data.accountName){
+            let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.name}$`, 'i'),dealerId:data.dealerName }, {})
+            if (checkName) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Reseller already exist with this account name"
+                })
+                return;
+            };
+        }
+        let updateReseller = await resellerService.updateReseller(criteria,data)
+        if(!updateReseller){
+            res.send({
+                code:constant.errorCode,
+                message:"Unable to update the data"
+            })
+            return;
+        }
+        res.send({
+            code:constant.successCode,
+            message:"Success",
+            result:updateReseller
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
 }

@@ -37,15 +37,15 @@ exports.createCustomer = async (req, res, next) => {
 
     // check customer acccount name 
     let checkAccountName = await customerService.getCustomerByName({
-      username: data.accountName,
+       name: new RegExp(`^${data.accountName}$`, 'i'),dealerId:data.dealerName 
     });
-    // if (checkAccountName) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Customer already exist with this account name"
-    //   })
-    //   return;
-    // };
+    if (checkAccountName) {
+      res.send({
+        code: constant.errorCode,
+        message: "Customer already exist with this account name"
+      })
+      return;
+    };
 
     let checkCustomerEmail = await userService.findOneUser({ email: data.email });
     if (checkCustomerEmail) {
