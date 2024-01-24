@@ -8,6 +8,7 @@ router.post('/checkFileValidation',[verifyToken],orderController.checkFileValida
 router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMultipleFileValidation)
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
+router.post('/getCustomerInOrder',[verifyToken],orderController.getCustomerInOrder)
 
 
 module.exports = router;

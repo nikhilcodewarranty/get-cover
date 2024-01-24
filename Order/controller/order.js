@@ -452,12 +452,14 @@ exports.checkFileValidation = async (req, res) => {
                     });
                 }
             });
+
             if (message.length > 0) {
                 res.send({
                     data: message
                 })
                 return
             }
+
             res.send({
                 code: constant.successCode,
                 message: "Verified"
@@ -720,6 +722,38 @@ exports.checkMultipleFileValidation = async (req, res) => {
             })
         })
 
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getCustomerInOrder = async (req, res) => {
+    try {
+        let data = req.body
+        let query;
+        if (data.resellerId != '') {
+            query = { dealerId: data.dealerId, resellerId: data.resellerId }
+        }else{
+            query = { dealerId: data.dealerId }
+
+        }
+        let getCustomers = await customerService.getAllCustomers(query, {})
+        if (!getCustomers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customers"
+            })
+            return;
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: 'Successfully Fetched',
+            result:getCustomers
+        })
     } catch (err) {
         res.send({
             code: constant.errorCode,
