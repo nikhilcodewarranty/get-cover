@@ -4,6 +4,7 @@ const create_reseller_validation = Joi.object({
     accountName: Joi.string().trim().replace(/\s+/g, ' ').required(),
     dealerName:Joi.string().required(),
     status: Joi.boolean().required(),
+    isServicer: Joi.boolean().required(),
     street: Joi.string().trim().replace(/\s+/g, ' ').required().messages({'string.base': `"a" should be a type of 'text'`,
     'string.empty': `Customer street address not allowed to be empty `}),
     city: Joi.string().trim().replace(/\s+/g, ' ').required(),
