@@ -16,6 +16,7 @@ const XLSX = require("xlsx");
 const fs = require('fs')
 const moment = require('moment');
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
+const userService = require("../../User/services/userService");
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
@@ -764,11 +765,11 @@ exports.getCustomerInOrder = async (req, res) => {
     }
 }
 
-exports.getServicer = async (req, res) => {
+exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
     let servicer = []
     if (data.dealerId) {
-        let checkDealer = await dealerService.getDealerById(data.dealerId, { isDeleted: 0 });
+        var checkDealer = await dealerService.getDealerById(data.dealerId, { isDeleted: 0 });
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -776,17 +777,16 @@ exports.getServicer = async (req, res) => {
             });
             return
         }
-        console.log("Dealer======================", checkDealer)
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
-        if (!getServicersIds) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the servicer"
-            })
-            return;
-        }
+        // if (!getServicersIds) {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Unable to fetch the servicer"
+        //     })
+        //     return;
+        // }
         let ids = getServicersIds.map((item) => item.servicerId)
-         servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+        servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -794,7 +794,57 @@ exports.getServicer = async (req, res) => {
             })
             return;
         }
+
+
     }
+    if (data.resellerId) {
+        var checkReseller = await resellerService.getReseller({ _id: data.resellerId })
+        // if (!checkReseller) {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Invalid Reseller ID"
+        //     })
+        //     return;
+        // }
+
+    }
+    if (checkReseller.isServicer) {
+        servicer.unshift(checkReseller)
+    }
+    if (checkDealer.isServicer) {
+        servicer.unshift(checkDealer);
+    }
+
+    const servicerIds = servicer.map(obj => obj._id);
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getMembers(query1, {})
+    if (!servicerUser) {
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the data"
+        });
+        return;
+    };
+
+    const result_Array = servicerUser.map(item1 => {
+        const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+        if (matchingItem) {
+            return {
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: matchingItem.toObject()
+            };
+        } else {
+            return servicerUser.toObject();
+        }
+    });
+
+    res.send({
+        code: constant.successCode,
+        result: result_Array
+    })
+
 }
 
 exports.getCategoryAndPriceBooks = async (req, res) => {

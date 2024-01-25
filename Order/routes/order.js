@@ -8,7 +8,7 @@ router.post('/checkFileValidation',[verifyToken],orderController.checkFileValida
 router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMultipleFileValidation)
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
-router.post('/getServicer',[verifyToken],orderController.getServicer)
+router.post('/getServicerInOrders',[verifyToken],orderController.getServicerInOrders)
 
 router.post('/getCustomerInOrder',[verifyToken],orderController.getCustomerInOrder)
 router.post('/getCategoryAndPriceBooks/:dealerId',[verifyToken],orderController.getCategoryAndPriceBooks)
