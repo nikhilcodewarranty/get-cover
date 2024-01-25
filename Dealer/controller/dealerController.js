@@ -1573,10 +1573,10 @@ exports.updateDealerMeta = async (req, res) => {
         return;
       };
     };
-    let criteria = { _id: checkDealer._id }
+    let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     data.name = data.accountName
-    let updatedData = await dealerService.updateDealer(criteria, data, option)
+    let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
@@ -1585,7 +1585,7 @@ exports.updateDealerMeta = async (req, res) => {
     } else {
       let criteria = { dealerId: checkDealer._id }
       let option = { new: true }
-      let updatedCustomer = await customerService.updateDealerName(checkObjectIdriteria, { dealerName: data.accountName }, option)
+      let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       res.send({
