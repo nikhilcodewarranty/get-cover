@@ -11,6 +11,7 @@ const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const userService = require("../services/userService");
 const dealerService = require('../../Dealer/services/dealerService')
+const resellerService = require('../../Dealer/services/resellerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
 const priceBookService = require('../../PriceBook/services/priceBookService')
@@ -909,7 +910,7 @@ exports.createDealer = async (req, res) => {
             city: data.city,
             zip: data.zip,
             state: data.state,
-            isServicer:data.isServicer ? data.isServicer :false,
+            isServicer: data.isServicer ? data.isServicer : false,
             country: data.country,
             status: 'Approved',
             accountStatus: true,
@@ -934,7 +935,7 @@ exports.createDealer = async (req, res) => {
               street: data.street,
               city: data.city,
               zip: data.zip,
-              dealerId:createMetaData._id,
+              dealerId: createMetaData._id,
               state: data.state,
               country: data.country,
               status: data.status,
@@ -1489,7 +1490,12 @@ exports.getUserById = async (req, res) => {
     if (!checkStatus) {
       let checkDealer = await dealerService.getDealerById(criteria)
       if (!checkDealer) {
-        mainStatus = true
+        let checkReseller = await resellerService.getReseller(criteria, {})
+        if (checkDealer) {
+          mainStatus = checkReseller.status
+        } else {
+          mainStatus = true
+        }
       } else {
         mainStatus = checkDealer.accountStatus
 

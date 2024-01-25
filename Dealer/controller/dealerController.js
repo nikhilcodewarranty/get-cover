@@ -957,6 +957,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
+    console.log("lklklkkklk", data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
       query = {
@@ -1572,10 +1573,10 @@ exports.updateDealerMeta = async (req, res) => {
         return;
       };
     };
-    let criteria = { _id: checkDealer._id }
+    let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     data.name = data.accountName
-    let updatedData = await dealerService.updateDealer(criteria, data, option)
+    let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
@@ -1584,7 +1585,7 @@ exports.updateDealerMeta = async (req, res) => {
     } else {
       let criteria = { dealerId: checkDealer._id }
       let option = { new: true }
-      let updatedCustomer = await customerService.updateDealerName(checkObjectIdriteria, { dealerName: data.accountName }, option)
+      let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       res.send({
@@ -1972,6 +1973,15 @@ exports.createDeleteRelation = async (req, res) => {
 exports.getDealerServicers = async (req, res) => {
   try {
     let data = req.body
+
+    let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     if (!getServicersIds) {
       res.send({
@@ -1989,10 +1999,18 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    if (checkDealer.isServicer) {
+      console.log('is servicer check ++++++++++++++++++')
+      servicer.unshift(checkDealer);
+    }
+
+    console.log("check1--------------------------------",servicer)
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    console.log("check2--------------------------------",query1)
 
     let servicerUser = await userService.getMembers(query1, {})
+    console.log("check3--------------------------------",servicerUser)
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
@@ -2010,7 +2028,7 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: matchingItem.toObject()
         };
       } else {
-        return dealerData.toObject();
+        return servicerUser.toObject();
       }
     });
 
@@ -2073,7 +2091,7 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, accountStatus: "Approved", status: true }
+    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
     let projection = { __v: 0, isDeleted: 0 }
     let servicer = await providerService.getAllServiceProvider(query, projection);
 
