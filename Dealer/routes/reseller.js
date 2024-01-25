@@ -11,7 +11,7 @@ router.post('/getAllResellers',[verifyToken],resellerController.getAllResellers)
 
 
 
-
+router.post("/getResellerServicers/:resellerId",[verifyToken],resellerController.getResellerServicers)
 router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
 router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
 

@@ -2,6 +2,7 @@ const { Order } = require("../model/order");
 const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
 const dealerService = require("../../Dealer/services/dealerService");
+const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const resellerService = require("../../Dealer/services/resellerService");
 const servicerService = require("../../Provider/services/providerService");
 const contractService = require("../../Contract/services/contractService");
@@ -736,7 +737,7 @@ exports.getCustomerInOrder = async (req, res) => {
         let query;
         if (data.resellerId != '') {
             query = { dealerId: data.dealerId, resellerId: data.resellerId }
-        }else{
+        } else {
             query = { dealerId: data.dealerId }
 
         }
@@ -752,13 +753,46 @@ exports.getCustomerInOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: 'Successfully Fetched',
-            result:getCustomers
+            result: getCustomers
         })
     } catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
         })
+    }
+}
+
+exports.getServicer = async (req, res) => {
+    let data = req.body;
+    let servicer = []
+    if (data.dealerId) {
+        let checkDealer = await dealerService.getDealerById(data.dealerId, { isDeleted: 0 });
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Dealer not found!'
+            });
+            return
+        }
+        console.log("Dealer======================", checkDealer)
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
+        if (!getServicersIds) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicer"
+            })
+            return;
+        }
+        let ids = getServicersIds.map((item) => item.servicerId)
+         servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers"
+            })
+            return;
+        }
     }
 }
 

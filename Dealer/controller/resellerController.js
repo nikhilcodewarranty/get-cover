@@ -449,3 +449,81 @@ exports.addResellerUser = async (req, res) => {
     }
 }
 
+
+exports.getResellerServicers = async (req, res) => {
+    let data = req.body
+
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: "Invalid Reseller ID"
+        })
+        return;
+    }
+    let checkDealer = await dealerService.getDealerByName({ _id: req.body.dealerId })
+    if (!checkDealer) {
+        res.send({
+            code: constant.errorCode,
+            message: "Invalid dealer ID"
+        })
+        return;
+    }
+    let result_Array = []
+    let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.body.dealerId })
+    if (!getServicersIds) {
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the servicer"
+        })
+        return;
+    }
+    let ids = getServicersIds.map((item) => item.servicerId)
+    var servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+    if (!servicer) {
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the servicers"
+        })
+        return;
+    }
+    if (checkDealer.isServicer) {
+        servicer.unshift(checkDealer);
+    }
+    if (checkReseller.isServicer) {
+         servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
+        servicer.unshift(checkReseller);
+        console.log("dealerServicer=2===================",servicer);
+        const servicerIds = servicer.map(obj => obj._id);
+        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        let servicerUser = await userService.getMembers(query1, {})
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            });
+            return;
+        };
+        result_Array = servicerUser.map(item1 => {
+            const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+            if (matchingItem) {
+                return {
+                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: matchingItem.toObject()
+                };
+            } else {
+                return servicerUser.toObject();
+            }
+        });
+
+    }
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        data: result_Array
+    });
+
+
+
+}

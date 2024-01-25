@@ -2000,17 +2000,12 @@ exports.getDealerServicers = async (req, res) => {
       return;
     }
     if (checkDealer.isServicer) {
-      console.log('is servicer check ++++++++++++++++++')
       servicer.unshift(checkDealer);
     }
-
-    console.log("check1--------------------------------",servicer)
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    console.log("check2--------------------------------",query1)
 
     let servicerUser = await userService.getMembers(query1, {})
-    console.log("check3--------------------------------",servicerUser)
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
