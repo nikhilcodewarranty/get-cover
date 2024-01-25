@@ -1973,6 +1973,15 @@ exports.createDeleteRelation = async (req, res) => {
 exports.getDealerServicers = async (req, res) => {
   try {
     let data = req.body
+
+    let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     if (!getServicersIds) {
       res.send({
@@ -1990,10 +1999,18 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    if (checkDealer.isServicer) {
+      console.log('is servicer check ++++++++++++++++++')
+      servicer.unshift(checkDealer);
+    }
+
+    console.log("check1--------------------------------",servicer)
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    console.log("check2--------------------------------",query1)
 
     let servicerUser = await userService.getMembers(query1, {})
+    console.log("check3--------------------------------",servicerUser)
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
@@ -2011,7 +2028,7 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: matchingItem.toObject()
         };
       } else {
-        return dealerData.toObject();
+        return servicerUser.toObject();
       }
     });
 
