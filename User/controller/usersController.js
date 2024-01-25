@@ -1474,9 +1474,7 @@ exports.getUserById = async (req, res) => {
         let checkReseller = await resellerService.getReseller(criteria, {})
         if (checkDealer) {
           mainStatus = checkReseller.status
-        } else {
-          mainStatus = true
-        }
+        } 
       } else {
         mainStatus = checkDealer.accountStatus
 
