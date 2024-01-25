@@ -1089,6 +1089,7 @@ exports.createDealer = async (req, res) => {
             zip: data.zip,
             state: data.state,
             country: data.country,
+            isServicer:data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,
             createdBy: data.createdBy,
@@ -1102,6 +1103,24 @@ exports.createDealer = async (req, res) => {
               message: "Unable to create dealer"
             });
             return;
+          }
+          if (data.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+
+            let servicerObject = {
+              name: data.name,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId:createMetaData._id,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+
+            let createData = await providerService.createServiceProvider(servicerObject)
           }
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
