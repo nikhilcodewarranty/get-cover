@@ -14,7 +14,8 @@ const path = require('path');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const XLSX = require("xlsx");
 const fs = require('fs')
-const moment = require('moment')
+const moment = require('moment');
+const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
@@ -796,4 +797,101 @@ exports.getServicer = async (req, res) => {
     }
 }
 
+exports.getCategoryAndPriceBooks = async (req, res) => {
+    try {
+        let data = req.body
 
+        //check dealer id to get price book
+        let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({ dealerId: req.params.dealerId, status: true })
+        if (!getDealerPriceBook) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            })
+            return;
+        }
+        // price book ids array from dealer price book
+        let dealerPriceIds = getDealerPriceBook.map(item => item.priceBook)
+        let query = { _id: { $in: dealerPriceIds } }
+
+        // if(data.priceCatId){
+        //     let categories = 
+        //     query = { _id: { $in: dealerPriceIds } ,}
+        // }
+
+        let getPriceBooks = await priceBookService.getAllPriceIds(query, {})
+
+        //unique categories IDs from price books
+        let uniqueCategory = {};
+        let uniqueCategories = getPriceBooks.filter((item) => {
+            if (!uniqueCategory[item.category.toString()]) {
+                uniqueCategory[item.category.toString()] = true;
+                return true;
+            }
+            return false;
+        });
+
+        uniqueCategories = uniqueCategories.map(item => item.category)
+
+        // get categories related to dealers
+        let getCategories = await priceBookService.getAllPriceCat({ _id: { $in: uniqueCategories } }, {})
+
+        // gettign selected category if user select the price book first
+        let filteredPiceBook;
+        let checkSelectedCategory;
+        let dealerPriceBookDetail = {
+            "_id": "",
+            "priceBook": "",
+            "dealerId": "",
+            "status": "",
+            "retailPrice": "",
+            "description": "",
+            "isDeleted": "",
+            "brokerFee": "",
+            "unique_key": "",
+            "wholesalePrice": "",
+            "__v": 0,
+            "createdAt": "",
+            "updatedAt": ""
+        }
+        if (data.priceBookId || data.priceBookId != '') {
+            filteredPiceBook = getPriceBooks
+                .filter((item) => item._id.toString() === data.priceBookId)
+                .map((item) => item.category);
+            checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
+
+            dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
+        }
+
+        if (data.priceCatId || data.priceCatId != '') {
+            getPriceBooks = getPriceBooks
+                .filter((item) => item.category.toString() === data.priceCatId)
+            checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
+
+            // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
+        }
+
+        let result = {
+            priceCategories: getCategories,
+            priceBooks: getPriceBooks,
+            selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
+            dealerPriceBookDetail: dealerPriceBookDetail
+        }
+
+
+        console.log("uniqueCategories", uniqueCategories);
+        console.log("checkSelectedCategory", checkSelectedCategory);
+        console.log('dealer price ids', dealerPriceIds, "getPriceBooks", getPriceBooks)
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}

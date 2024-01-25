@@ -11,6 +11,7 @@ router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
 router.post('/getServicer',[verifyToken],orderController.getServicer)
 
 router.post('/getCustomerInOrder',[verifyToken],orderController.getCustomerInOrder)
+router.post('/getCategoryAndPriceBooks/:dealerId',[verifyToken],orderController.getCategoryAndPriceBooks)
 
 
 module.exports = router;
