@@ -554,7 +554,8 @@ exports.createDealer = async (req, res) => {
           let newValues = {
             $set: {
               status: "Approved",
-              accountStatus: true
+              accountStatus: true,
+              isServicer: data.isServicer ? data.isServicer : false
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -580,14 +581,25 @@ exports.createDealer = async (req, res) => {
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            // if (mailing) {
-            //   let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            //   res.send({
-            //     code: constant.successCode,
-            //     message: 'Successfully Created',
-            //   });
-            //   return;
-            // }
+           
+          }
+          if (req.body.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+
+            let servicerObject = {
+              name: data.name,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId: req.body.dealerId,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+
+            let createData = await providerService.createServiceProvider(servicerObject)
           }
           res.send({
             code: constant.successCode,
@@ -820,7 +832,8 @@ exports.createDealer = async (req, res) => {
           let newValues = {
             $set: {
               status: "Approved",
-              accountStatus: true
+              accountStatus: true,
+              isServicer: data.isServicer ? data.isServicer : false
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
@@ -843,14 +856,24 @@ exports.createDealer = async (req, res) => {
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            // if (mailing) {
-            //   let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            //   res.send({
-            //     code: constant.successCode,
-            //     message: 'Successfully Created',
-            //   });
-            //   return;
-            // }
+          }
+          if (req.body.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+
+            let servicerObject = {
+              name: data.name,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId: req.body.dealerId,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+
+            let createData = await providerService.createServiceProvider(servicerObject)
           }
           res.send({
             code: constant.successCode,
@@ -1090,7 +1113,7 @@ exports.createDealer = async (req, res) => {
             zip: data.zip,
             state: data.state,
             country: data.country,
-            isServicer:data.isServicer ? data.isServicer : false,
+            isServicer: data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,
             createdBy: data.createdBy,
@@ -1113,7 +1136,7 @@ exports.createDealer = async (req, res) => {
               street: data.street,
               city: data.city,
               zip: data.zip,
-              dealerId:createMetaData._id,
+              dealerId: createMetaData._id,
               state: data.state,
               country: data.country,
               status: data.status,
