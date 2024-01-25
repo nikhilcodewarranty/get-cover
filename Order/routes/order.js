@@ -9,6 +9,7 @@ router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMu
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
 router.post('/getCustomerInOrder',[verifyToken],orderController.getCustomerInOrder)
+router.post('/getCategoryAndPriceBooks/:dealerId',[verifyToken],orderController.getCategoryAndPriceBooks)
 
 
 module.exports = router;

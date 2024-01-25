@@ -82,6 +82,17 @@ module.exports = class dealerPriceService {
     }
   }
 
+  static async findAllDealerPrice(query) {
+    try {
+      const AllDealerPrice = await dealerPrice.find(query)
+
+      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      return AllDealerPrice;
+    } catch (error) {
+      console.log(`Could not fetch dealer price ${error}`);
+    }
+  }
+
   static async getDealerPriceBookById(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate([
@@ -106,7 +117,7 @@ module.exports = class dealerPriceService {
             ]
           }
         },
-        {$unwind:"$priceBooks"},
+        { $unwind: "$priceBooks" },
         {
           $lookup: {
             from: "dealers",
@@ -115,7 +126,7 @@ module.exports = class dealerPriceService {
             as: "dealer",
           },
         },
-        {$unwind:"$dealer"},
+        { $unwind: "$dealer" },
         {
           $project: {
 
@@ -287,9 +298,6 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
-
-
 
   static async getDealerPriceCount() {
     try {
