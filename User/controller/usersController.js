@@ -1496,7 +1496,7 @@ exports.getAllUsers = async (req, res) => {
 //get user detail with ID
 exports.getUserById = async (req, res) => {
   try {
-    let projection = { __v: 0, status: 0 }
+    let projection = { __v: 0 }
     let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
     const singleUser = await userService.findOneUser({ _id: userId, }, projection);
     if (!singleUser) {
@@ -1512,8 +1512,9 @@ exports.getUserById = async (req, res) => {
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
-    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : false
-    console.log("check1---------------------------------------",mainStatus, checkStatus, checkDealer, checkReseller)
+    let checkCustomer = await customerService.getCustomerByName(criteria)
+    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
+    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
