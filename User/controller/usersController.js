@@ -581,7 +581,7 @@ exports.createDealer = async (req, res) => {
             let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
             const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
             let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-           
+
           }
           if (req.body.isServicer) {
             const CountServicer = await providerService.getServicerCount();
@@ -1496,7 +1496,7 @@ exports.getAllUsers = async (req, res) => {
 //get user detail with ID
 exports.getUserById = async (req, res) => {
   try {
-    let projection = { __v: 0, status: 0 }
+    let projection = { __v: 0 }
     let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
     const singleUser = await userService.findOneUser({ _id: userId, }, projection);
     if (!singleUser) {
@@ -1510,20 +1510,11 @@ exports.getUserById = async (req, res) => {
     let mainStatus;
     let criteria = { _id: singleUser.accountId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
-    if (!checkStatus) {
-      let checkDealer = await dealerService.getDealerById(criteria)
-      if (!checkDealer) {
-        let checkReseller = await resellerService.getReseller(criteria, {})
-        if (checkDealer) {
-          mainStatus = checkReseller.status
-        } 
-      } else {
-        mainStatus = checkDealer.accountStatus
-
-      }
-    } else {
-      mainStatus = checkStatus.status
-    }
+    let checkDealer = await dealerService.getDealerById(criteria)
+    let checkReseller = await resellerService.getReseller(criteria, {})
+    let checkCustomer = await customerService.getCustomerByName(criteria)
+    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
+    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
