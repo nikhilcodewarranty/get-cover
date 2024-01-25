@@ -2074,7 +2074,7 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, accountStatus: "Approved", status: true }
+    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null }
     let projection = { __v: 0, isDeleted: 0 }
     let servicer = await providerService.getAllServiceProvider(query, projection);
 
