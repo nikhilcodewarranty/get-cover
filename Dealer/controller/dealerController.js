@@ -1981,7 +1981,13 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+
+    console.log('check1--------------------------------------', getServicersIds)
+
     let ids = getServicersIds.map((item) => item.servicerId)
+    console.log('check2--------------------------------------', ids)
+
+    let getServicer = await providerService.getServicerByName({ dealerId: req.params.dealerId }, {})
     let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
     if (!servicer) {
       res.send({
@@ -1990,8 +1996,20 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    console.log('check3--------------------------------------', getServicer, servicer)
+
     const servicerIds = servicer.map(obj => obj._id);
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const query1 = {
+      $and: [
+        {
+          $or: [
+            { accountId: getServicer.dealerId },
+            { accountId: { $in: servicerIds } }
+          ]
+        },
+        { isPrimary: true }
+      ]
+    };
 
     let servicerUser = await userService.getMembers(query1, {})
     if (!servicerUser) {
@@ -2001,6 +2019,7 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
+    console.log('check4--------------------------------------', servicerUser)
 
     const result_Array = servicerUser.map(item1 => {
       const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -2011,7 +2030,7 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: matchingItem.toObject()
         };
       } else {
-        return dealerData.toObject();
+        return servicers.toObject();
       }
     });
 
@@ -2074,7 +2093,7 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, accountStatus: "Approved", status: true }
+    let query = { isDeleted: false, accountStatus: "Approved", status: true,dealerId:null }
     let projection = { __v: 0, isDeleted: 0 }
     let servicer = await providerService.getAllServiceProvider(query, projection);
 
