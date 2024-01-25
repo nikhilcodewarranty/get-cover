@@ -820,7 +820,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             "createdAt": "",
             "updatedAt": ""
         }
-        if (data.priceBookId) {
+        if (data.priceBookId || data.priceBookId != '') {
             filteredPiceBook = getPriceBooks
                 .filter((item) => item._id.toString() === data.priceBookId)
                 .map((item) => item.category);
@@ -829,7 +829,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
-        if (data.priceCatId) {
+        if (data.priceCatId || data.priceCatId != '') {
             getPriceBooks = getPriceBooks
                 .filter((item) => item.category.toString() === data.priceCatId)
             checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
