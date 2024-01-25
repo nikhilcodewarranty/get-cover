@@ -807,11 +807,12 @@ exports.getServicerInOrders = async (req, res) => {
         //     return;
         // }
 
+
     }
-    if (checkReseller.isServicer) {
+    if (checkReseller && checkReseller.isServicer) {
         servicer.unshift(checkReseller)
     }
-    if (checkDealer.isServicer) {
+    if (checkDealer && checkDealer.isServicer) {
         servicer.unshift(checkDealer);
     }
 
