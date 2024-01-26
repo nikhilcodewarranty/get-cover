@@ -641,7 +641,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 if (!isValidLength) {
                     message.push({
                         code: constant.errorCode,
-                        key: obj.key,
+                        result: obj.key,
                         message: "Invalid fields value"
                     })
                 }
@@ -651,7 +651,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
-                    data: message
+                    message
                 });
                 return;
             }
@@ -864,13 +864,36 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map(item => item.priceBook)
         let query = { _id: { $in: dealerPriceIds } }
-
+        console.log('getDealerPriceBook', getDealerPriceBook)
         // if(data.priceCatId){
         //     let categories = 
         //     query = { _id: { $in: dealerPriceIds } ,}
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {})
+        console.log("get price book", getPriceBooks)
+
+
+        const dealerPriceBookMap = new Map(
+            getDealerPriceBook.map((item) => [item.priceBook.toString(), item.retailPrice])
+        );
+
+        // Update getPriceBook array with retailPrice from getDealerPriceBook
+        const mergedPriceBooks = getPriceBooks.map((item) => {
+            const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
+            return {
+                ...item._doc,
+                retailPrice,
+              };
+          });
+
+        console.log("mergedPriceBook",mergedPriceBooks);
+
+
+
+
+
+
 
         //unique categories IDs from price books
         let uniqueCategory = {};
@@ -924,7 +947,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let result = {
             priceCategories: getCategories,
-            priceBooks: getPriceBooks,
+            priceBooks: mergedPriceBooks,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail
         }
