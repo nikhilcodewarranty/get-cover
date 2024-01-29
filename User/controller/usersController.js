@@ -886,7 +886,8 @@ exports.createDealer = async (req, res) => {
         return;
       }
       else {
-        const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
+        const existingDealer = await dealerService.getDealerByName({ name:  data.name }, { isDeleted: 0, __v: 0 });
+        // const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
         if (existingDealer) {
           res.send({
             code: constant.errorCode,

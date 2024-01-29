@@ -884,10 +884,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             return {
                 ...item._doc,
                 retailPrice,
-              };
-          });
+            };
+        });
 
-        console.log("mergedPriceBook",mergedPriceBooks);
+        console.log("mergedPriceBook", mergedPriceBooks);
 
 
 
