@@ -491,9 +491,9 @@ exports.getResellerServicers = async (req, res) => {
         servicer.unshift(checkDealer);
     }
     if (checkReseller.isServicer) {
-         servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
+        servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
         servicer.unshift(checkReseller);
-        console.log("dealerServicer=2===================",servicer);
+        console.log("dealerServicer=2===================", servicer);
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
@@ -524,6 +524,48 @@ exports.getResellerServicers = async (req, res) => {
         data: result_Array
     });
 
+
+
+}
+
+exports.getResselerByCustomer = async (req, res) => {
+    try {
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+        let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, { isDeleted: 0 })
+        if (!checkCustomer) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Customer not found!'
+            });
+            return;
+        }
+
+        let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId });
+
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Reseller not found of this customer!'
+            })
+        }
+
+        res.send({
+            code: constant.successCode,
+            data: checkReseller
+        })
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
 
 
 }
