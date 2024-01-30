@@ -382,7 +382,13 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body
             let file = req.file
-
+            if(!data.rangeStart||!data.rangeEnd){
+                res.send({
+                    code:constant.errorCode,
+                    message:"Range start and range end is required"
+                })
+                return;
+            }
             let csvName = req.file.filename
             const csvWriter = createCsvWriter({
                 path: './uploads/resultFile/' + csvName,
