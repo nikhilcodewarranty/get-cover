@@ -444,10 +444,11 @@ exports.checkFileValidation = async (req, res) => {
             });
 
             // Check retail price is in between rangeStart and rangeEnd
-
+            console.log("totalDataComing========================",totalDataComing)
             const isValidRetailPrice = totalDataComing.map(obj => {
                 // Check if 'noOfProducts' matches the length of 'data'
-                if (obj.retailValue < parseInt(data.rangeStart) || obj.retailValue > parseInt(data.rangeEnd)) {
+                console.log(obj)
+                if (obj.retailValue < Number(data.rangeStart) || obj.retailValue > Number(data.rangeEnd)) {
                     message.push({
                         code: constant.errorCode,
                         retailPrice: obj.retailValue,
@@ -699,7 +700,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             console.log("finalRetailValue",finalRetailValue);
             if (finalRetailValue.length > 0) {
                 const fdfd = finalRetailValue.map(obj => {
-                    if ((obj[0].retailValue < parseInt(obj[0].rangeStart) || obj[0].retailValue > parseInt(obj[0].rangeEnd))) {
+                    if ((obj[0].retailValue < Number(obj[0].rangeStart) || obj[0].retailValue > Number(obj[0].rangeEnd))) {
                         message.push({
                             code: constant.errorCode,
                             retailPrice: obj[0].retailValue,
