@@ -622,8 +622,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check each csv if it does not contain 5 column
 
-            console.log("allDataComing", allDataComing);
-            console.log("product", productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
                 .map(headerObj => ({
@@ -699,26 +697,21 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         };
                     });
 
-                    console.log("priceObj=================",priceObj);
+                    if (priceObj.length > 0) {
+                        priceObj.map((obj, index) => {
+                            if ((Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd))) {
+                                message.push({
+                                    code: constant.errorCode,
+                                    retailPrice: obj.retailValue,
+                                    key: obj.key,
+                                    message: "Invalid Retail Price!"
+                                });
+                            }
+                        })
+                    }
 
                 }
             })
-            if (finalRetailValue.length > 0) {
-                const fdfd = finalRetailValue.map((obj, index) => {
-                    console.log("rangeStart-=============", obj[index].rangeStart)
-                    console.log("retailValue-=============", obj[index].retailValue)
-                    console.log("rangeEnd-=============", obj[index].rangeEnd)
-                    console.log("objIndex-=============", obj[index])
-                    if ((Number(obj[index].retailValue) < Number(obj[index].rangeStart) || Number(obj[index].retailValue) > Number(obj[index].rangeEnd))) {
-                        message.push({
-                            code: constant.errorCode,
-                            retailPrice: obj[0].retailValue,
-                            key: obj[0].key,
-                            message: "Invalid Retail Price!"
-                        });
-                    }
-                });
-            }
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
