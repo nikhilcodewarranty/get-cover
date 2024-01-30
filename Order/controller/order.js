@@ -646,7 +646,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 if (!isValidLength) {
                     message.push({
                         code: constant.errorCode,
-                        result: obj.key,
+                        key: obj.key,
                         message: "Invalid fields value"
                     })
                 }
