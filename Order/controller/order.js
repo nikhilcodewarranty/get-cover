@@ -695,11 +695,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }
             })
 
-            //console.log(finalRetailValue);return
+
+            console.log("finalRetailValue",finalRetailValue);
             if (finalRetailValue.length > 0) {
                 const fdfd = finalRetailValue.map(obj => {
-
-
                     if ((obj[0].retailValue < obj[0].rangeStart || obj[0].retailValue > obj[0].rangeEnd)) {
                         message.push({
                             code: constant.errorCode,
