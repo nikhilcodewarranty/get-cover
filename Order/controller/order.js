@@ -615,7 +615,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check each csv if it does not contain 5 column
 
-            console.log("allDataComing", allDataComing);
+            console.log("allDataComing", allDataComing); 
             console.log("product", productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
@@ -968,4 +968,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             message: err.message
         })
     }
+}
+exports.getDealerCustomers = async (req, res) => {
+
 }
