@@ -444,7 +444,7 @@ exports.checkFileValidation = async (req, res) => {
             });
 
             // Check retail price is in between rangeStart and rangeEnd
-            console.log("totalDataComing========================",totalDataComing)
+            console.log("totalDataComing========================", totalDataComing)
             const isValidRetailPrice = totalDataComing.map(obj => {
                 // Check if 'noOfProducts' matches the length of 'data'
                 console.log(obj)
@@ -586,7 +586,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             let allHeaders = [];
             let allDataComing = [];
             let message = [];
-            let finalRetailValue ;
+            let finalRetailValue = [];
             //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -616,7 +616,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             //Check each csv if it does not contain 5 column
 
-            console.log("allDataComing", allDataComing); 
+            console.log("allDataComing", allDataComing);
             console.log("product", productsWithFiles);
             const errorMessages = allHeaders
                 .filter(headerObj => headerObj.headers.length !== 5)
@@ -693,19 +693,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         };
                     });
 
-                    console.log("object=============",priceObj)
+                    console.log("object=============", priceObj)
                     finalRetailValue.push(priceObj)
                 }
             })
 
 
-            console.log("finalRetailValue",finalRetailValue);
+            console.log("finalRetailValue", finalRetailValue);
             if (finalRetailValue.length > 0) {
-                const fdfd = finalRetailValue.map((obj,index) => {
-                    console.log("rangeStart-=============",obj[index].rangeStart)
-                    console.log("retailValue-=============",obj[index].retailValue)
-                    console.log("rangeEnd-=============",obj[index].rangeEnd)
-                    console.log("objIndex-=============",obj[index])
+                const fdfd = finalRetailValue.map((obj, index) => {
+                    console.log("rangeStart-=============", obj[index].rangeStart)
+                    console.log("retailValue-=============", obj[index].retailValue)
+                    console.log("rangeEnd-=============", obj[index].rangeEnd)
+                    console.log("objIndex-=============", obj[index])
                     if ((Number(obj[index].retailValue) < Number(obj[index].rangeStart) || Number(obj[index].retailValue) > Number(obj[index].rangeEnd))) {
                         message.push({
                             code: constant.errorCode,
