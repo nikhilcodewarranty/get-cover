@@ -340,7 +340,7 @@ module.exports = class userService {
 
   static async getMembers(query, projection) {
     try {
-      const response = await user.find(query, projection).sort({ "createdAt": -1 });
+      const response = await user.find(query, projection).sort({isPrimary:-1,"createdAt": -1 });
       return response
     } catch (err) {
       console.log(err);

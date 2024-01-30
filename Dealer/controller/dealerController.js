@@ -443,9 +443,6 @@ exports.getUserByDealerId = async (req, res) => {
   };
 };
 
-
-
-
 //update dealer detail with ID
 exports.updateDealer = async (req, res) => {
   try {
