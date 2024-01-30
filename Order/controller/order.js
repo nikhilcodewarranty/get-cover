@@ -811,12 +811,16 @@ exports.getServicerInOrders = async (req, res) => {
 
 
     }
+    console.log('1st-------------------------------',servicer)
     if (checkReseller && checkReseller.isServicer) {
         servicer.unshift(checkReseller)
     }
+    console.log('2nd-------------------------------',servicer)
+
     if (checkDealer && checkDealer.isServicer) {
         servicer.unshift(checkDealer);
     }
+    console.log('3rd-------------------------------',servicer)
 
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
@@ -829,9 +833,10 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     };
+    console.log('3rd-------------------------------',servicerUser)
 
-    const result_Array = servicerUser.map(item1 => {
-        const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+    const result_Array = servicer.map(item1 => {
+        const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
 
         if (matchingItem) {
             return {
@@ -839,7 +844,7 @@ exports.getServicerInOrders = async (req, res) => {
                 servicerData: matchingItem.toObject()
             };
         } else {
-            return servicerUser.toObject();
+            return servicer.toObject();
         }
     });
 
@@ -971,7 +976,4 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             message: err.message
         })
     }
-}
-exports.getDealerCustomers = async (req, res) => {
-
 }
