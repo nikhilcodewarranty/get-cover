@@ -2022,8 +2022,8 @@ exports.getDealerServicers = async (req, res) => {
 
       if (matchingItem) {
         return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject()
+          ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: item1.toObject()
         };
       } else {
         return servicerUser.toObject();
