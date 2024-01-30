@@ -282,7 +282,7 @@ exports.getResellerCustomers = async (req, res) => {
     });
     res.send({
       code: constant.successCode,
-      data: result_Array
+      result: result_Array
     })
   }
   catch (err) {
