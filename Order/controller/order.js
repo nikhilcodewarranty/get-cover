@@ -680,7 +680,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
-                    data: message
+                     message
                 });
                 return;
             }
