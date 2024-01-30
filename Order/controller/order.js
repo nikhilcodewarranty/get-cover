@@ -648,7 +648,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         code: constant.errorCode,
                         key: obj.key,
                         message: "Invalid fields value"
-                    })
+                    }) 
                 }
 
             });
