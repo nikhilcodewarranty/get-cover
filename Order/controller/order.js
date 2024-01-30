@@ -632,7 +632,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 // There are errors, send the error messages
                 res.send({
                     code: constant.errorCode,
-                    messages: errorMessages
+                    message: errorMessages
                 });
                 return;
             }
