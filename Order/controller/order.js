@@ -945,7 +945,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         if (data.priceCatId || data.priceCatId != '') {
-            getPriceBooks = getPriceBooks
+            mergedPriceBooks = mergedPriceBooks
                 .filter((item) => item.category.toString() === data.priceCatId)
             checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
 
