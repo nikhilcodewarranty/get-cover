@@ -693,13 +693,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         };
                     });
 
-                    console.log("object=============", priceObj)
-                    finalRetailValue.push(priceObj)
+                    console.log("priceObj=================",priceObj);
+
                 }
             })
-
-
-            console.log("finalRetailValue", finalRetailValue);
             if (finalRetailValue.length > 0) {
                 const fdfd = finalRetailValue.map((obj, index) => {
                     console.log("rangeStart-=============", obj[index].rangeStart)
