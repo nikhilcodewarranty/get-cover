@@ -693,10 +693,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                     if (priceObj.length > 0) {
                         priceObj.map((obj, index) => {
-                            console.log("rangeStart-=============", obj.rangeStart)
-                            console.log("retailValue-=============", obj.retailValue)
-                            console.log("rangeEnd-=============", obj.rangeEnd)
-                            console.log("objIndex-=============", obj)
                             if ((Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd))) {
                                 message.push({
                                     code: constant.errorCode,
