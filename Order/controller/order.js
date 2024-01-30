@@ -692,6 +692,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             retailValue: item[keys[4]],
                         };
                     });
+
+                    console.log("object=============",priceObj)
                     finalRetailValue.push(priceObj)
                 }
             })
