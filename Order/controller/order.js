@@ -704,7 +704,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     console.log("retailValue-=============",obj.retailValue)
                     console.log("rangeEnd-=============",obj.rangeEnd)
                     console.log("obj-=============",obj)
-                    if ((Number(obj.retailValue) < Number(obj.rangeStart) || NUmber(obj.retailValue) > Number(obj.rangeEnd))) {
+                    if ((Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd))) {
                         message.push({
                             code: constant.errorCode,
                             retailPrice: obj[0].retailValue,
