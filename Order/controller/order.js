@@ -586,7 +586,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             let allHeaders = [];
             let allDataComing = [];
             let message = [];
-            let finalRetailValue = [];
+            let finalRetailValue ;
             //Collect all header length for all csv 
             for (let j = 0; j < productsWithFiles.length; j++) {
                 const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -701,12 +701,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             console.log("finalRetailValue",finalRetailValue);
             if (finalRetailValue.length > 0) {
-                const fdfd = finalRetailValue.map(obj => {
-                    console.log("rangeStart-=============",obj.rangeStart)
-                    console.log("retailValue-=============",obj.retailValue)
-                    console.log("rangeEnd-=============",obj.rangeEnd)
-                    console.log("obj-=============",obj)
-                    if ((Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd))) {
+                const fdfd = finalRetailValue.map((obj,index) => {
+                    console.log("rangeStart-=============",obj[index].rangeStart)
+                    console.log("retailValue-=============",obj[index].retailValue)
+                    console.log("rangeEnd-=============",obj[index].rangeEnd)
+                    console.log("objIndex-=============",obj[index])
+                    if ((Number(obj[index].retailValue) < Number(obj[index].rangeStart) || Number(obj[index].retailValue) > Number(obj[index].rangeEnd))) {
                         message.push({
                             code: constant.errorCode,
                             retailPrice: obj[0].retailValue,
