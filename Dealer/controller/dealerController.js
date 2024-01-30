@@ -1999,11 +1999,16 @@ exports.getDealerServicers = async (req, res) => {
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     }
-    
+
+
+
+
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
     let servicerUser = await userService.getMembers(query1, {})
+    // console.log("servicer============================",servicer);
+    // console.log("servicerUser============================",servicerUser);
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
@@ -2012,8 +2017,8 @@ exports.getDealerServicers = async (req, res) => {
       return;
     };
 
-    const result_Array = servicerUser.map(item1 => {
-      const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+    const result_Array = servicer.map(item1 => {
+      const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
 
       if (matchingItem) {
         return {
