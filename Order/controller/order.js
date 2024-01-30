@@ -648,7 +648,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         code: constant.errorCode,
                         key: obj.key,
                         message: "Invalid fields value"
-                    }) 
+                    })
                 }
 
             });
@@ -680,7 +680,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
-                     message
+                    message
                 });
                 return;
             }
@@ -715,7 +715,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
-                   message
+                    message
                 });
                 return;
             }
@@ -811,16 +811,16 @@ exports.getServicerInOrders = async (req, res) => {
 
 
     }
-    console.log('1st-------------------------------',servicer)
+    console.log('1st-------------------------------', servicer)
     if (checkReseller && checkReseller.isServicer) {
         servicer.unshift(checkReseller)
     }
-    console.log('2nd-------------------------------',servicer)
+    console.log('2nd-------------------------------', servicer)
 
     if (checkDealer && checkDealer.isServicer) {
         servicer.unshift(checkDealer);
     }
-    console.log('3rd-------------------------------',servicer)
+    console.log('3rd-------------------------------', servicer)
 
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
@@ -833,7 +833,7 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     };
-    console.log('3rd-------------------------------',servicerUser)
+    console.log('3rd-------------------------------', servicerUser)
 
     const result_Array = servicer.map(item1 => {
         const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
@@ -970,6 +970,37 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             result: result
         })
     } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.checkPurchaseOrder = async (req, res) => {
+    try {
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.venderOrder }, { isDeleted: 0 });
+        if (checkPurchaseOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: 'The order of this vender number is already exist!'
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: 'Success!'
+        })
+
+    }
+    catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
