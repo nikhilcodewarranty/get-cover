@@ -886,7 +886,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         );
 
         // Update getPriceBook array with retailPrice from getDealerPriceBook
-        const mergedPriceBooks = getPriceBooks.map((item) => {
+        let mergedPriceBooks = getPriceBooks.map((item) => {
             const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
             return {
                 ...item._doc,
