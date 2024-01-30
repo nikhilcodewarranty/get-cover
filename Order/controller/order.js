@@ -882,7 +882,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         );
 
         // Update getPriceBook array with retailPrice from getDealerPriceBook
-        const mergedPriceBooks = getPriceBooks.map((item) => {
+        let mergedPriceBooks = getPriceBooks.map((item) => {
             const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
             return {
                 ...item._doc,
@@ -940,11 +940,11 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
-        if (data.priceCatId || data.priceCatId != '') {
-            getPriceBooks = getPriceBooks
+        if ( data.priceCatId != '') {
+            mergedPriceBooks = mergedPriceBooks
                 .filter((item) => item.category.toString() === data.priceCatId)
             checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
-
+            console.log("getPriceBooks---------------------------------",getPriceBooks)
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
