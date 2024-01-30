@@ -700,6 +700,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             console.log("finalRetailValue",finalRetailValue);
             if (finalRetailValue.length > 0) {
                 const fdfd = finalRetailValue.map(obj => {
+                    console.log("object-=============",obj)
                     if ((obj[0].retailValue < Number(obj[0].rangeStart) || obj[0].retailValue > Number(obj[0].rangeEnd))) {
                         message.push({
                             code: constant.errorCode,
