@@ -1999,6 +1999,7 @@ exports.getDealerServicers = async (req, res) => {
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     }
+    
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
