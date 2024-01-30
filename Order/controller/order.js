@@ -181,11 +181,6 @@ exports.createOrder = async (req, res) => {
             let count = await orderService.getOrdersCount()
 
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-
-
-
-
-
             if (req.files) {
                 const uploadedFiles = req.files.map(file => ({
                     fileName: file.filename,
@@ -249,7 +244,6 @@ exports.createOrder = async (req, res) => {
                     let contractArrrayData = []
                     for (let i = 0; i < data.productsArray.length; i++) {
                         let products = data.productsArray[i]
-                        console.log('valid date +++++++++++++++++++++++++++++++++++++++', products)
 
                         let priceBookId = products.priceBookId
                         let query = { _id: new mongoose.Types.ObjectId(priceBookId) }
@@ -288,9 +282,7 @@ exports.createOrder = async (req, res) => {
                         }
                         contractArrrayData.push(contractObject)
                     }
-                    console.log('---------------------------------------------------------------', data.productsArray, contractArrrayData)
                     let bulkContracts = await contractService.createBulkContracts(contractArrrayData)
-                    console.log('jj-----------------', bulkContracts)
 
                 }
             }
@@ -1007,3 +999,4 @@ exports.checkPurchaseOrder = async (req, res) => {
         })
     }
 }
+exports.getOrderById
