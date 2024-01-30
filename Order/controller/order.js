@@ -978,7 +978,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             })
             return;
         }
-        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.venderOrder }, { isDeleted: 0 });
+        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder }, { isDeleted: 0 });
         if (checkPurchaseOrder) {
             res.send({
                 code: constant.errorCode,
@@ -999,4 +999,3 @@ exports.checkPurchaseOrder = async (req, res) => {
         })
     }
 }
-exports.getOrderById
