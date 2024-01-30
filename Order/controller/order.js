@@ -382,13 +382,13 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body
             let file = req.file
-            // if(!data.rangeStart||!data.rangeEnd){
-            //     res.send({
-            //         code:constant.errorCode,
-            //         message:"Range start and range end is required"
-            //     })
-            //     return;
-            // }
+            if(!data.rangeStart||!data.rangeEnd){
+                res.send({
+                    code:constant.errorCode,
+                    message:"Range start and range end is required"
+                })
+                return;
+            }
             let csvName = req.file.filename
             const csvWriter = createCsvWriter({
                 path: './uploads/resultFile/' + csvName,
@@ -715,7 +715,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             if (message.length > 0) {
                 // Handle case where the number of properties in 'data' is not valid
                 res.send({
-                    data: message
+                   message
                 });
                 return;
             }
@@ -845,7 +845,6 @@ exports.getServicerInOrders = async (req, res) => {
 
     res.send({
         code: constant.successCode,
-        message:"Success",
         result: result_Array
     })
 
@@ -882,7 +881,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         );
 
         // Update getPriceBook array with retailPrice from getDealerPriceBook
-        let mergedPriceBooks = getPriceBooks.map((item) => {
+        const mergedPriceBooks = getPriceBooks.map((item) => {
             const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
             return {
                 ...item._doc,
@@ -940,11 +939,11 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
-        if ( data.priceCatId != '') {
-            mergedPriceBooks = mergedPriceBooks
+        if (data.priceCatId || data.priceCatId != '') {
+            getPriceBooks = getPriceBooks
                 .filter((item) => item.category.toString() === data.priceCatId)
             checkSelectedCategory = await priceBookService.getPriceCatByName({ _id: filteredPiceBook })
-            console.log("getPriceBooks---------------------------------",getPriceBooks)
+
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
