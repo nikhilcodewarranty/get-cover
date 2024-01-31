@@ -63,7 +63,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved" }));
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved",roleId:"65719c8368a8a86ef8e1ae4d" }));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
       let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -219,7 +219,7 @@ exports.approveServicer = async (req, res, next) => {
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
       code: constant.successCode,
-      message: "Approve ccessfully",
+      message: "Approve successfully",
       result: data
     })
 
@@ -576,14 +576,6 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Check if the specified role exists
     // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-    const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
-    if (!checkRole) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid role"
-      })
-      return;
-    }
 
     // Check if the dealer already exists
     const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
@@ -666,7 +658,7 @@ exports.registerServiceProvider = async (req, res) => {
       firstName: data.firstName,
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
-      roleId: checkRole._id,
+      roleId: "65719c8368a8a86ef8e1ae4d",
       accountId: createMetaData._id,
     };
 

@@ -1355,6 +1355,7 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    console.log(user)
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
@@ -1387,7 +1388,8 @@ exports.login = async (req, res) => {
       message: "Login Successful",
       result: {
         token: token,
-        email: user.email
+        email: user.email,
+        role:getRole.role
       }
     })
   } catch (err) {
