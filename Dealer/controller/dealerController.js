@@ -30,7 +30,7 @@ const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
 const providerService = require('../../Provider/services/providerService');
-const { getServicer } = require('../../Provider/controller/serviceController');
+const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
 
 
