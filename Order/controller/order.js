@@ -803,11 +803,9 @@ exports.getServicerInOrders = async (req, res) => {
 
 
     }
-    console.log('1st-------------------------------', servicer)
     if (checkReseller && checkReseller.isServicer) {
         servicer.unshift(checkReseller)
     }
-    console.log('2nd-------------------------------', servicer)
 
     if (checkDealer && checkDealer.isServicer) {
         servicer.unshift(checkDealer);
