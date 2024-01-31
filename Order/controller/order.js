@@ -322,6 +322,7 @@ exports.getAllOrders = async (req, res) => {
     //Get Respective Dealers
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1 })
     let servicerIdArray = ordersResult.map(result => result.servicerId)
+    console.log('check++++++++++++++++++++++++++++++++++++',ordersResult[0],servicerIdArray)
     const servicerCreteria = {
         $or: [
             { _id: { $in: servicerIdArray } },
@@ -331,6 +332,7 @@ exports.getAllOrders = async (req, res) => {
     };
     //Get Respective Servicer
     let respectiveServicer = await servicerService.getAllServiceProvider(servicerCreteria, { name: 1 })
+    console.log('check++++++++++++++++++++++++++++++++++++',respectiveServicer)
     let customerIdsArray = ordersResult.map(result => result.customerId)
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer

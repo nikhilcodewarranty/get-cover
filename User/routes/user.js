@@ -3,7 +3,7 @@ const router = express.Router();
 
 const userController = require("../controller/usersController");// user controller
 const dealerController = require("../../Dealer/controller/dealerController");// user controller
-const serviceController = require("../../Provider/controller/serviceController");// user controller
+const servicerAdminController = require("../../Provider/controller/serviceAdminController");// user controller
 const { verifyToken } = require('../../middleware/auth');  // authentication with jwt as middleware
 const validator = require('../config/validation');
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
@@ -14,9 +14,9 @@ router.get("/getUserById/:userId", [verifyToken], userController.getUserById); /
 router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // get all users 
 router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
 router.post("/approveDealers", [verifyToken], validator("filter_dealer"),dealerController.getAllDealers); //get all dealers
-router.get("/approveServicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers
+router.get("/approveServicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
 router.post("/pendingDealers", [verifyToken],validator("filter_dealer"), dealerController.getPendingDealers); //get all dealers
-router.get("/servicer", [verifyToken], serviceController.getAllServiceProviders); //get all dealers
+router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
 router.get("/getAllNotifications", [verifyToken], userController.getAllNotifications); //get all dealers
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
@@ -30,7 +30,7 @@ router.post("/addRole", [verifyToken], validator("add_role_validation"), userCon
 router.post("/sendLinkToEmail", userController.sendLinkToEmail); //send password link to email 
 router.post("/resetPassword/:userId/:code", userController.resetPassword); //reset password 
 router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); //Update Status
-router.post("/servicerStatusUpdate", [verifyToken], serviceController.statusUpdate); //Update Status
+router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); //Update Status
 router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
 
 
