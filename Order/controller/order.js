@@ -714,8 +714,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }
             }
             res.send({
-                code: constant.errorCode,
-                message: "No file chosen!"
+                code: constant.successCode
             })
 
         })
