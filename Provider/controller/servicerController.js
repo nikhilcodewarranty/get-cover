@@ -101,4 +101,45 @@ exports.getServicerUsers = async (req, res) => {
     }
 }
 
+exports.changePrimaryUser = async(req,res)=>{
+    try {
+        let data = req.body
+        let checkUser = await userService.findOneUser({ _id: req.userId }, {})
+        if (!checkUser) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to find the user"
+          })
+          return;
+        };
+        let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+        if (!updateLastPrimary) {
+          res.send({
+            code: constant.errorCode,
+            message: "Unable to change tha primary"
+          })
+          return;
+        };
+        let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+        if (!updatePrimary) {
+          res.send({
+            code: constant.errorCode,
+            message: "Something went wrong"
+          })
+        } else {
+          res.send({
+            code: constant.successCode,
+            message: "Updated successfully",
+            result: updatePrimary
+          })
+        }
+    
+      }catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+    }
+}
+
 
