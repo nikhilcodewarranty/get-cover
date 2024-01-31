@@ -322,7 +322,13 @@ exports.getAllOrders = async (req, res) => {
     //Get Respective Dealers
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1 })
     let servicerIdArray = ordersResult.map(result => result.servicerId)
-    const servicerCreteria = { _id: { $in: servicerIdArray } };
+    const servicerCreteria = {
+        $or: [
+            { _id: { $in: servicerIdArray } },
+            { resellerId: { $in: servicerIdArray } },
+            { dealerId: { $in: servicerIdArray } },
+        ]
+    };
     //Get Respective Servicer
     let respectiveServicer = await servicerService.getAllServiceProvider(servicerCreteria, { name: 1 })
     let customerIdsArray = ordersResult.map(result => result.customerId)
@@ -996,7 +1002,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             message: 'Success!'
         })
 
-    } 
+    }
     catch (err) {
         res.send({
             code: constant.errorCode,

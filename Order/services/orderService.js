@@ -6,20 +6,21 @@ module.exports = class orderService {
       const allOrders = await order.aggregate([
         {
           $project: {
-            noOfProducts: { $size: '$productsArray' },
-            dealerId:1,
-            unique_key:1,
-            servicerId:1,
-            customerId:1,
-            resellerId:1,
-            paymentStatus:1,
-            status:1,
-            venderOrder:1,
-            orderAmount:1
+            // "shop": { $arrayElemAt: ["$productsArray", 0] },
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1
           },
-        
+
         },
-        {$sort: {unique_key: -1}}
+        { $sort: { unique_key: -1 } }
       ])
       return allOrders;
     } catch (error) {
@@ -27,9 +28,9 @@ module.exports = class orderService {
     }
   }
 
-  static async getOrder(query,projection) {
+  static async getOrder(query, projection) {
     try {
-      const getOrder = await order.findOne(query,projection)
+      const getOrder = await order.findOne(query, projection)
       return getOrder;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
