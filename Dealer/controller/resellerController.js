@@ -336,7 +336,7 @@ exports.getResellerPriceBook = async (req, res) => {
         return;
     }
     let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id) }
+    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getDealerPriceBookById(query, projection)
     if (!getResellerPriceBook) {
         res.send({
@@ -487,37 +487,57 @@ exports.getResellerServicers = async (req, res) => {
         })
         return;
     }
+    console.log("1st-----------------------",servicer)
     if (checkDealer.isServicer) {
         servicer.unshift(checkDealer);
     }
+    console.log("2nd-----------------------",servicer)
+
     if (checkReseller.isServicer) {
-        servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
+        //servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
         servicer.unshift(checkReseller);
-        console.log("dealerServicer=2===================", servicer);
-        const servicerIds = servicer.map(obj => obj._id);
-        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-        let servicerUser = await userService.getMembers(query1, {})
-        if (!servicerUser) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the data"
-            });
-            return;
-        };
-        result_Array = servicerUser.map(item1 => {
-            const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-            if (matchingItem) {
-                return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: matchingItem.toObject()
-                };
-            } else {
-                return servicerUser.toObject();
-            }
-        });
-
     }
+    console.log("3rd-----------------------",servicer)
+
+    const servicerIds = servicer.map(obj => obj._id);
+    console.log("servicer3=============",servicerIds)
+    
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    let servicerUser = await userService.getMembers(query1, {})
+    if (!servicerUser) {
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the data"
+        });
+        return;
+    };
+
+
+    // result_Array = servicerUser.map(item1 => {
+    //     const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+    //     if (matchingItem) {
+    //         return {
+    //             ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+    //             servicerData: matchingItem.toObject()
+    //         };
+    //     } else {
+    //         return servicerUser.toObject();
+    //     }
+    // });
+
+
+    result_Array =  servicer.map(servicer=>{
+        const matchingItem = servicerUser.find(user=>user.accountId.toString()===servicer._id.toString())
+        if (matchingItem) {
+            return {
+                ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: servicer.toObject()
+            };
+        } else {
+            return servicer.toObject();
+        }
+    })
     res.send({
         code: constant.successCode,
         message: "Success",
