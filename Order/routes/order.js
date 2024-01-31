@@ -11,6 +11,8 @@ router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMu
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
+router.post('/getOrderById/:orderId',[verifyToken],orderController.getSingleOrder)
+
 router.post('/getServicerInOrders',[verifyToken],orderController.getServicerInOrders)
 router.post('/checkPurchaseOrder',[verifyToken],orderController.checkPurchaseOrder)
 

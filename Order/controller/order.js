@@ -322,7 +322,6 @@ exports.getAllOrders = async (req, res) => {
     //Get Respective Dealers
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1 })
     let servicerIdArray = ordersResult.map(result => result.servicerId)
-    console.log('check++++++++++++++++++++++++++++++++++++',ordersResult[0],servicerIdArray)
     const servicerCreteria = {
         $or: [
             { _id: { $in: servicerIdArray } },
@@ -332,7 +331,6 @@ exports.getAllOrders = async (req, res) => {
     };
     //Get Respective Servicer
     let respectiveServicer = await servicerService.getAllServiceProvider(servicerCreteria, { name: 1 })
-    console.log('check++++++++++++++++++++++++++++++++++++',respectiveServicer)
     let customerIdsArray = ordersResult.map(result => result.customerId)
     const customerCreteria = { _id: { $in: customerIdsArray } }
     //Get Respective Customer
@@ -492,7 +490,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-           let data = req.body
+            let data = req.body
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -991,7 +989,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             })
             return;
         }
-        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder }, { isDeleted: 0 });
+        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         if (checkPurchaseOrder) {
             res.send({
                 code: constant.errorCode,
@@ -1004,6 +1002,40 @@ exports.checkPurchaseOrder = async (req, res) => {
             message: 'Success!'
         })
 
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getSingleOrder = async (req, res) => {
+    try {
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+        let projection = { isDeleted: 0 };
+        let query = { _id: req.params.orderId }
+        let checkOrder = await orderService.getOrder(query, projection);
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Order not found!'
+            });
+            return
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: 'Success!',
+            result: checkOrder
+        })
     }
     catch (err) {
         res.send({
