@@ -282,7 +282,7 @@ exports.getResellerCustomers = async (req, res) => {
     });
 
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const nameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
     console.log(result_Array);
