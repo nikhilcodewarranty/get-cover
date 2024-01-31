@@ -990,7 +990,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             message: 'Success!'
         })
 
-    }
+    } 
     catch (err) {
         res.send({
             code: constant.errorCode,
