@@ -25,6 +25,7 @@ const dealerRoutes = require("./Dealer/routes/dealer");
 const resellerRoutes = require("./Dealer/routes/reseller");
 const contractRoutes = require("./Contract/routes/contract");
 const serviceRoutes = require("./Provider/routes/service");
+const servicePortal = require("./Provider/routes/servicerUserRoute");
 const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
@@ -79,6 +80,10 @@ app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
 app.use("/api-v1/order", orderRoutes);
 app.use("/api-v1/customer", customerRoutes);
+
+
+app.use("/api-v1/servicerPortal", servicePortal);
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
