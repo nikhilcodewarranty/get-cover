@@ -462,7 +462,7 @@ exports.getResellerServicers = async (req, res) => {
             })
             return;
         }
-        let checkDealer = await dealerService.getDealerByName({ _id: req.body.dealerId })
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -471,7 +471,7 @@ exports.getResellerServicers = async (req, res) => {
             return;
         }
         let result_Array = []
-        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.body.dealerId })
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
         if (!getServicersIds) {
             res.send({
                 code: constant.errorCode,
