@@ -341,7 +341,7 @@ exports.getAllOrders = async (req, res) => {
     let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1 })
     const result_Array = ordersResult.map(item1 => {
         const dealerName = item1.respectiveDealers != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
-        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
+        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString() || item2.resellerId === item1.servicerId) : null;
         const customerName = item1.customerId != null ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         const resellerName = item1.resellerId != null ? respectiveReseller.find(item2 => item2._id.toString() === item1.resellerId.toString()) : null;
         if (dealerName || customerName || servicerName || resellerName) {
@@ -438,7 +438,7 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (parseInt(data.noOfProducts) != totalDataComing1.length) {
+            if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
                 res.send({
                     code: constant.errorCode,
                     message: "Data does not match to the number of orders"
@@ -454,7 +454,6 @@ exports.checkFileValidation = async (req, res) => {
             });
 
             // Check retail price is in between rangeStart and rangeEnd
-            console.log("totalDataComing========================", totalDataComing)
             const isValidRetailPrice = totalDataComing.map(obj => {
                 // Check if 'noOfProducts' matches the length of 'data'
                 console.log(obj)
@@ -492,7 +491,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body
-            console.log("body data==================", data)
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
