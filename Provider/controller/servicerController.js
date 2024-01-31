@@ -170,6 +170,7 @@ exports.addServicerUser = async (req, res) => {
             statusCheck = data.status
         }
         data.status = statusCheck
+        console.log("check---------------------",data)
         let saveData = await userService.createUser(data)
         if (!saveData) {
             res.send({
