@@ -268,7 +268,7 @@ exports.getResellerCustomers = async (req, res) => {
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
-    const result_Array = getPrimaryUser.map(item1 => {
+    let result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
 
       if (matchingItem) {
@@ -280,6 +280,21 @@ exports.getResellerCustomers = async (req, res) => {
         return {};
       }
     });
+
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    console.log(result_Array);
+    result_Array = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.customerData.username) &&
+        emailRegex.test(entry.email) &&
+        dealerRegex.test(entry.customerData.dealerId) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
     res.send({
       code: constant.successCode,
       result: result_Array
@@ -289,6 +304,7 @@ exports.getResellerCustomers = async (req, res) => {
     console.log(`Unable to find customer ${err}`)
   }
 }
+
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
