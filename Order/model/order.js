@@ -101,8 +101,8 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],
-    default: 'Waiting'
+    enum: ['Active', 'Pending','Archieved'],
+    default: 'Pending'
   },
   isDeleted: {
     type: Boolean,

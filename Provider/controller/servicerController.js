@@ -58,7 +58,7 @@ exports.getServicerUsers = async (req, res) => {
             })
             return;
         };
-        console.log("check+++++++++++++++++++++",getMetaData)
+        console.log("check+++++++++++++++++++++", getMetaData)
         let getUsers = await userService.findUser({ accountId: getMetaData.accountId })
         if (!getUsers) {
             res.send({
@@ -101,43 +101,93 @@ exports.getServicerUsers = async (req, res) => {
     }
 }
 
-exports.changePrimaryUser = async(req,res)=>{
+exports.changePrimaryUser = async (req, res) => {
     try {
         let data = req.body
         let checkUser = await userService.findOneUser({ _id: req.userId }, {})
         if (!checkUser) {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to find the user"
-          })
-          return;
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to find the user"
+            })
+            return;
         };
         let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
         if (!updateLastPrimary) {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to change tha primary"
-          })
-          return;
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to change tha primary"
+            })
+            return;
         };
         let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
         if (!updatePrimary) {
-          res.send({
-            code: constant.errorCode,
-            message: "Something went wrong"
-          })
+            res.send({
+                code: constant.errorCode,
+                message: "Something went wrong"
+            })
         } else {
-          res.send({
-            code: constant.successCode,
-            message: "Updated successfully",
-            result: updatePrimary
-          })
+            res.send({
+                code: constant.successCode,
+                message: "Updated successfully",
+                result: updatePrimary
+            })
         }
-    
-      }catch(err){
+
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.addServicerUser = async (req, res) => {
+    try {
+        let data = req.body
+        let checkServicer = await userService.getSingleUserByEmail({ _id: req.userId })
+        if (!checkServicer) {
+            res.send({
+                code: constant.errorCode,
+                message: err.message
+            })
+            return;
+        }
+        let checkEmail = await userService.findOneUser({ email: data.email })
+        if (checkEmail) {
+            res.send({
+                code: constant.errorCode,
+                message: "user already exist with this email"
+            })
+            return;
+        };
+        data.isPrimary = false
+        data.accountId = checkServicer.accountId
+        let statusCheck;
+        if (!checkServicer.accountStatus) {
+            statusCheck = false
+        } else {
+            statusCheck = data.status
+        }
+        data.status = statusCheck
+        let saveData = await userService.createUser(data)
+        if (!saveData) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to add the user"
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Added successfully",
+            result: saveData
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
