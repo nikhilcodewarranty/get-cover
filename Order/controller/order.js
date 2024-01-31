@@ -343,7 +343,7 @@ exports.getAllOrders = async (req, res) => {
     let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1 })
     const result_Array = ordersResult.map(item1 => {
         const dealerName = item1.respectiveDealers != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
-        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString()) : null;
+        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString() || item2.resellerId === item1.servicerId) : null;
         const customerName = item1.customerId != null ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         const resellerName = item1.resellerId != null ? respectiveReseller.find(item2 => item2._id.toString() === item1.resellerId.toString()) : null;
         if (dealerName || customerName || servicerName || resellerName) {
@@ -440,7 +440,7 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (parseInt(data.noOfProducts) != totalDataComing1.length) {
+            if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
                 res.send({
                     code: constant.errorCode,
                     message: "Data does not match to the number of orders"
@@ -456,7 +456,6 @@ exports.checkFileValidation = async (req, res) => {
             });
 
             // Check retail price is in between rangeStart and rangeEnd
-            console.log("totalDataComing========================", totalDataComing)
             const isValidRetailPrice = totalDataComing.map(obj => {
                 // Check if 'noOfProducts' matches the length of 'data'
                 console.log(obj)
@@ -493,8 +492,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
-            console.log("body data==================", data)
+           let data = req.body
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -505,6 +503,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //             "priceBookId": "65a0daf83a9009fd982ba41f",
             //             "unitPrice": "80.00",
             //             "noOfProducts": 1,
+            //             "checkNumberProducts": 31,
             //             "price": 160,
             //             "file": "",
             //             "manufacture": "Get-Cover123",
@@ -541,6 +540,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //             "priceBookId": "65a0daf83a9009fd982ba41f",
             //             "unitPrice": "80.00",
             //             "noOfProducts": 1,
+            //             "checkNumberProducts":31,
             //             "price": 160,
             //             "file": "",
             //             "manufacture": "Get-Cover123",
@@ -590,7 +590,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                        noOfProducts: data.productsArray[index].noOfProducts,
+                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
                         rangeEnd: data.productsArray[index].rangeEnd,
@@ -615,7 +615,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
-                        noOfProducts: productsWithFiles[j].products.noOfProducts,
+                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
                         rangeEnd: productsWithFiles[j].products.rangeEnd,
@@ -672,7 +672,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Check if csv data length equal to no of products
                 const isValidNumberData = allDataComing.map(obj => {
 
-                    if (parseInt(obj.noOfProducts) != obj.data.length) {
+                    if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                         // Handle case where 'noOfProducts' doesn't match the length of 'data'
                         message.push({
                             code: constant.errorCode,
@@ -696,7 +696,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                noOfProducts: obj.noOfProducts,
+                                checkNumberProducts: obj.checkNumberProducts,
                                 rangeStart: obj.rangeStart,
                                 rangeEnd: obj.rangeEnd,
                                 retailValue: item[keys[4]],
