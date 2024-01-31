@@ -301,7 +301,10 @@ exports.getResellerCustomers = async (req, res) => {
     })
   }
   catch (err) {
-    console.log(`Unable to find customer ${err}`)
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 }
 
