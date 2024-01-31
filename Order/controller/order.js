@@ -492,7 +492,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body
+           let data = req.body
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -503,6 +503,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //             "priceBookId": "65a0daf83a9009fd982ba41f",
             //             "unitPrice": "80.00",
             //             "noOfProducts": 1,
+            //             "checkNumberProducts": 31,
             //             "price": 160,
             //             "file": "",
             //             "manufacture": "Get-Cover123",
@@ -539,6 +540,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //             "priceBookId": "65a0daf83a9009fd982ba41f",
             //             "unitPrice": "80.00",
             //             "noOfProducts": 1,
+            //             "checkNumberProducts":31,
             //             "price": 160,
             //             "file": "",
             //             "manufacture": "Get-Cover123",
@@ -588,7 +590,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                        noOfProducts: data.productsArray[index].noOfProducts,
+                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
                         rangeEnd: data.productsArray[index].rangeEnd,
@@ -613,7 +615,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
-                        noOfProducts: productsWithFiles[j].products.noOfProducts,
+                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
                         rangeEnd: productsWithFiles[j].products.rangeEnd,
@@ -670,7 +672,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Check if csv data length equal to no of products
                 const isValidNumberData = allDataComing.map(obj => {
 
-                    if (parseInt(obj.noOfProducts) != obj.data.length) {
+                    if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                         // Handle case where 'noOfProducts' doesn't match the length of 'data'
                         message.push({
                             code: constant.errorCode,
@@ -694,7 +696,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                noOfProducts: obj.noOfProducts,
+                                checkNumberProducts: obj.checkNumberProducts,
                                 rangeStart: obj.rangeStart,
                                 rangeEnd: obj.rangeEnd,
                                 retailValue: item[keys[4]],
