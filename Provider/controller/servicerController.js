@@ -50,7 +50,7 @@ exports.getServicerDetail = async (req, res) => {
 exports.getServicerUsers = async (req, res) => {
     try {
         let data = req.body
-        let getMetaData = await userService.findOneUser({ _id: req.userId, isPrimary: true })
+        let getMetaData = await userService.findOneUser({ _id: req.userId })
         if (!getMetaData) {
             res.send({
                 code: constant.errorCode,
@@ -182,6 +182,62 @@ exports.addServicerUser = async (req, res) => {
             code: constant.successCode,
             message: "Added successfully",
             result: saveData
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getUserId = async (req, res) => {
+    try {
+        let getUserDetail = await userService.getSingleUserByEmail({ _id: req.params.userId })
+        if (!getUserDetail) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to get the user"
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Successfully fetched the user",
+            result: getUserDetail
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.editUserDetail = async (req, res) => {
+    try {
+        let data = req.body
+        let checkId = await userService.getSingleUserByEmail({ _id: req.params.userId })
+        if (!checkId) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid user ID"
+            })
+            return;
+        }
+        let updateUser = await userService.updateUser({  _id: req.params.userId  }, data, { new: true })
+        if (!updateUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to update user"
+            })
+            return;
+        };
+        res.send({
+            code: constant.errorCode,
+            message: "Successfully updated",
+            result: updateUser
         })
 
     } catch (err) {
