@@ -480,6 +480,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body
+            console.log("body data==================",data)
             // let data = {
             //     "dealerId": "65a0d25d503003dcd4abfc33",
             //     "servicerId": "65a0d64b23eec30f66ea0c44",
@@ -580,6 +581,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     file: file.filePath,
                 },
             }));
+
+            console.log("productsWithFiles===============",productsWithFiles)
 
             let allHeaders = [];
             let allDataComing = [];
