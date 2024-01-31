@@ -981,7 +981,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         if (checkPurchaseOrder) {
             res.send({
                 code: constant.errorCode,
-                message: 'The order of this vender number is already exist!'
+                message: 'The order of this vendor number is already exist!'
             })
             return;
         }
