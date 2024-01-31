@@ -1388,7 +1388,8 @@ exports.login = async (req, res) => {
       message: "Login Successful",
       result: {
         token: token,
-        email: user.email
+        email: user.email,
+        role:getRole.role
       }
     })
   } catch (err) {
