@@ -985,7 +985,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             })
             return;
         }
-        res.send({
+        res.send({ 
             code: constant.successCode,
             message: 'Success!'
         })
