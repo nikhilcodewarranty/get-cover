@@ -138,7 +138,13 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             if (data.servicerId) {
-                let query = { _id: data.servicerId }
+                let query = {
+                    $or: [
+                        { _id: data.servicerId },
+                        { resellerId: data.servicerId },
+                        { dealerId: data.servicerId },
+                    ]
+                }
                 let checkServicer = await servicerService.getServiceProviderById(query)
                 if (!checkServicer) {
                     res.send({
@@ -715,7 +721,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             }
             res.send({
                 code: constant.successCode,
-                message:"Success!"
+                message: "Success!"
             })
 
         })
@@ -985,7 +991,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             })
             return;
         }
-        res.send({ 
+        res.send({
             code: constant.successCode,
             message: 'Success!'
         })
