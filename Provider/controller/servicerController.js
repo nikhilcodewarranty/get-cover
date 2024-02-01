@@ -170,6 +170,7 @@ exports.addServicerUser = async (req, res) => {
             statusCheck = data.status
         }
         data.status = statusCheck
+        data.roleId = "65719c8368a8a86ef8e1ae4d"
         console.log("check---------------------",data)
         let saveData = await userService.createUser(data)
         if (!saveData) {
