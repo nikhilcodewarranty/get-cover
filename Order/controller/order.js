@@ -373,11 +373,10 @@ exports.getAllOrders = async (req, res) => {
             status.test(entry.status)
         );
     });
-    // console.log('filter data-----------------------------------',filteredData)
+    
     const updatedArray = filteredData.map(item => ({
         ...item,
-        servicerName: item.dealerName.isServicer ? item.dealerName : item.servicerName,
-        servicerName: item.resellerName.isServicer ? item.resellerName : item.servicerName
+        servicerName: item.dealerName.isServicer ? item.dealerName :  item.resellerName.isServicer ? item.resellerName : item.servicerName,
     }));
 
 
@@ -1048,6 +1047,21 @@ exports.getSingleOrder = async (req, res) => {
         res.send({
             code: constant.errorCode,
             message: err.message
+        })
+    }
+}
+
+let checkOrderToProcessed = async(req,res)=>{
+    try{
+        let data = req.body
+        let projection = { isDeleted: 0 };
+        let query = { _id: req.params.orderId }
+        let checkOrder = await orderService.getOrder(query, projection);
+        
+    }catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
         })
     }
 }
