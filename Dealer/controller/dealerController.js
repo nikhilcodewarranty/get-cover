@@ -1495,6 +1495,46 @@ exports.createDealerPriceBook = async (req, res) => {
   }
 }
 
+exports.checkDealerPriceBook = async (req, res) => {
+  try {
+    let data = req.body
+    let checkDealer = await dealerService.getDealerById(data.dealerId)
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer"
+      })
+      return;
+    }
+    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+    if (!checkPriceBookMain) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid price book ID"
+      })
+      return;
+    }
+    let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
+    if (checkPriceBook) {
+      res.send({
+        code: constant.errorCode,
+        message: "Dealer price book already created with this product name"
+      })
+      return;
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 exports.rejectDealer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {

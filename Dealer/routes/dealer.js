@@ -33,6 +33,8 @@ router.put("/updateDealerMeta",[verifyToken],dealerController.updateDealerMeta);
 // update price book detail with ID
 
 router.post("/createDealerPriceBook",[verifyToken],validator('create_dealer_price_book_validation'),dealerController.createDealerPriceBook)
+router.post("/checkDealerPriceBook",[verifyToken],dealerController.checkDealerPriceBook)
+
 router.post("/uploadDealerPriceBook",[verifyToken],dealerController.uploadDealerPriceBook)
 router.post("/filterDealer",[verifyToken],dealerController.filterDealer)
 
