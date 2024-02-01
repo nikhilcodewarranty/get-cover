@@ -587,17 +587,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             // console.log("data=======================",data)
 
-            // data.productsArray.forEach(product => {
-            //     console.log("QuantityPricing=======================",product.QuantityPricing)
-            //     let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
-            //         return sum + parseInt(quantity.enterQuantity);
-            //     }, 0);
+            data.productsArray.forEach(product => {
+                console.log("QuantityPricing=======================",typeof(product.QuantityPricing))
+                let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
+                    return sum + parseInt(quantity.enterQuantity);
+                }, 0);
 
-            //     // Replace the value of checkNumberProducts with the calculated sum
-            //     product.checkNumberProducts = productEnterQuantitySum;
+                // Replace the value of checkNumberProducts with the calculated sum
+                product.checkNumberProducts = productEnterQuantitySum;
 
-            // });
+            });
 
+            console.log("")
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
@@ -728,6 +729,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             return {
                                 key: obj.key,
                                 checkNumberProducts: obj.checkNumberProducts,
+                                noOfProducts: obj.noOfProducts,
                                 rangeStart: obj.rangeStart,
                                 rangeEnd: obj.rangeEnd,
                                 retailValue: item[keys[4]],
