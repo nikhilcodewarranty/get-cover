@@ -667,45 +667,53 @@ exports.createDealer = async (req, res) => {
             const keys = Object.keys(item);
             return {
               priceBook: item[keys[0]],
-              retailPrice: item[keys[1]]
+              retailPrice: item[keys[1]],
+              duplicates: [],
+              exit: false
             };
           });
-          // if (!totalDataComing[0].priceBook) {
-          //   res.send({
-          //     code: constant.errorCode,
-          //     message: "Invalid priceBook field"
-          //   })
-          //   return;
-          // }
-          // if (!totalDataComing[0].retailPrice) {
-          //   res.send({
-          //     code: constant.errorCode,
-          //     message: "Invalid retailPrice field"
-          //   })
-          //   return;
-          // }
 
-
+          totalDataComing.forEach(data => {
+            if (!data.retailPrice) {
+              data.status = "Dealer catalog retail price is empty";
+              data.exit = true;
+            }
+            else {
+              data.status = null
+            }
+          })
 
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] && repeatedMap[totalDataComing[i].retailPrice != '']) {
+            console.log("uniquw", i, totalDataComing[i]);
+            if (totalDataComing[i].exit) {
+              continue;
+            }
+            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
               totalDataComing[i].status = "not unique";
-              console.log("not unique", totalDataComing[i])
+              totalDataComing[i].exit = true;
+              const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
+              totalDataComing[index].duplicates.push(i);
             } else {
-              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = true;
+  
+              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
               totalDataComing[i].status = null;
-              console.log("unique", totalDataComing[i])
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
             if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
             return null;
           })
+  
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
           for (let i = 0; i < totalDataComing.length; i++) {
             if (!pricebooksArray[i]) {
-              if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+              if (!totalDataComing[i].exit) {
+                totalDataComing[i].status = "price catalog does not exist";
+                totalDataComing[i].duplicates.forEach((index) => {
+                  totalDataComing[index].status = "price catalog does not exist";
+                })
+              }
               totalDataComing[i].priceBookDetail = null
             } else {
               totalDataComing[i].priceBookDetail = pricebooksArray[i];
@@ -722,14 +730,15 @@ exports.createDealer = async (req, res) => {
                 dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                 dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
                 await dealerArray[i].save();
-                if (totalDataComing[i].retailPrice == undefined) {
-                  totalDataComing[i].status = "Dealer catalog retail price is empty";
-                } else {
-                  totalDataComing[i].status = "Dealer catalog updated successully";
-                }
+  
+                totalDataComing[i].status = "Dealer catalog updated successully";
+                totalDataComing[i].duplicates.forEach((index) => {
+                  totalDataComing[index].status = "Dealer catalog updated successully";
+                })
+  
               } else {
-                const countPriceDocument = await dealerPriceService.getDealerPriceCount();
-                let unique_key = Number(countPriceDocument.length > 0 && countPriceDocument[0].unique_key ? countPriceDocument[0].unique_key : 0) + 1
+                const count = await dealerPriceService.getDealerPriceCount();
+                let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
                 dealerPriceService.createDealerPrice({
                   dealerId: req.body.dealerId,
@@ -740,7 +749,10 @@ exports.createDealer = async (req, res) => {
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
                 })
-                totalDataComing[i].status = "Dealer catalog created successully";
+                totalDataComing[i].status = "Dealer catalog updated successully"
+                totalDataComing[i].duplicates.forEach((index, i) => {
+                  totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+                })
               }
             }
           }
@@ -886,7 +898,7 @@ exports.createDealer = async (req, res) => {
         return;
       }
       else {
-        const existingDealer = await dealerService.getDealerByName({ name:  data.name }, { isDeleted: 0, __v: 0 });
+        const existingDealer = await dealerService.getDealerByName({ name: data.name }, { isDeleted: 0, __v: 0 });
         // const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
         if (existingDealer) {
           res.send({
@@ -1087,25 +1099,20 @@ exports.createDealer = async (req, res) => {
             const keys = Object.keys(item);
             return {
               priceBook: item[keys[0]],
-              retailPrice: item[keys[1]]
+              retailPrice: item[keys[1]],
+              duplicates: [],
+              exit: false
             };
           });
-          // if (!totalDataComing[0].priceBook) {
-          //   res.send({
-          //     code: constant.errorCode,
-          //     message: "Invalid priceBook field"
-          //   })
-
-          //   return;
-          // }
-          // if (!totalDataComing[0].retailPrice) {
-          //   res.send({
-          //     code: constant.errorCode,
-          //     message: "Invalid retailPrice field"
-          //   })
-
-          //   return;
-          // }
+          totalDataComing.forEach(data => {
+            if (!data.retailPrice) {
+              data.status = "Dealer catalog retail price is empty";
+              data.exit = true;
+            }
+            else {
+              data.status = null
+            }
+          })
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -1149,13 +1156,19 @@ exports.createDealer = async (req, res) => {
           }
           const repeatedMap = {};
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] && repeatedMap[totalDataComing[i].retailPrice != '']) {
+            console.log("uniquw", i, totalDataComing[i]);
+            if (totalDataComing[i].exit) {
+              continue;
+            }
+            if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
               totalDataComing[i].status = "not unique";
-              console.log("not unique", totalDataComing[i])
+              totalDataComing[i].exit = true;
+              const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
+              totalDataComing[index].duplicates.push(i);
             } else {
-              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = true;
+  
+              repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
               totalDataComing[i].status = null;
-              console.log("unique", totalDataComing[i])
             }
           }
           const pricebookArrayPromise = totalDataComing.map(item => {
@@ -1165,7 +1178,12 @@ exports.createDealer = async (req, res) => {
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
           for (let i = 0; i < totalDataComing.length; i++) {
             if (!pricebooksArray[i]) {
-              if (totalDataComing[i].status != "not unique") totalDataComing[i].status = "price catalog does not exist";
+              if (!totalDataComing[i].exit) {
+                totalDataComing[i].status = "price catalog does not exist";
+                totalDataComing[i].duplicates.forEach((index) => {
+                  totalDataComing[index].status = "price catalog does not exist";
+                })
+              }
               totalDataComing[i].priceBookDetail = null
             } else {
               totalDataComing[i].priceBookDetail = pricebooksArray[i];
@@ -1184,14 +1202,15 @@ exports.createDealer = async (req, res) => {
                 dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                 dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
                 await dealerArray[i].save();
-                if (totalDataComing[i].retailPrice == undefined) {
-                  totalDataComing[i].status = "Dealer catalog retail price is empty";
-                } else {
-                  totalDataComing[i].status = "Dealer catalog updated successully";
-                }
+  
+                totalDataComing[i].status = "Dealer catalog updated successully";
+                totalDataComing[i].duplicates.forEach((index) => {
+                  totalDataComing[index].status = "Dealer catalog updated successully";
+                })
+  
               } else {
-                const countPriceDocument = await dealerPriceService.getDealerPriceCount();
-                let unique_key = Number(countPriceDocument.length > 0 && countPriceDocument[0].unique_key ? countPriceDocument[0].unique_key : 0) + 1
+                const count = await dealerPriceService.getDealerPriceCount();
+                let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
                 dealerPriceService.createDealerPrice({
                   dealerId: createMetaData._id,
@@ -1202,7 +1221,10 @@ exports.createDealer = async (req, res) => {
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
                 })
-                totalDataComing[i].status = "Dealer catalog created successully";
+                totalDataComing[i].status = "Dealer catalog updated successully"
+                totalDataComing[i].duplicates.forEach((index, i) => {
+                  totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+                })
               }
             }
           }
@@ -1355,7 +1377,7 @@ exports.login = async (req, res) => {
       })
       return;
     }
-    console.log("user=----------------------",user)
+    console.log("user=----------------------", user)
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
@@ -1390,7 +1412,7 @@ exports.login = async (req, res) => {
       result: {
         token: token,
         email: user.email,
-        role:getRole.role
+        role: getRole.role
       }
     })
   } catch (err) {
