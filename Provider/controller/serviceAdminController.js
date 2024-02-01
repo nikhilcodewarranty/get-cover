@@ -63,7 +63,7 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved",roleId:"65719c8368a8a86ef8e1ae4d" }));
+      teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
 
       let saveMembers = await userService.insertManyUser(teamMembers)
       let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -210,7 +210,7 @@ exports.approveServicer = async (req, res, next) => {
       return;
     };
 
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id }));
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id, roleId: '65719c8368a8a86ef8e1ae4d' }));
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -630,7 +630,7 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     const count = await providerService.getServicerCount();
-   // console.log("CountServicer++++++++",count);return;
+    // console.log("CountServicer++++++++",count);return;
     // Extract necessary data for dealer creation
     const ServicerMeta = {
       name: data.name,
@@ -776,7 +776,7 @@ exports.statusUpdate = async (req, res) => {
 exports.getSerivicerUsers = async (req, res) => {
   try {
     let data = req.body
-    let getUsers = await userService.findUser({ accountId: req.params.servicerId },{isPrimary:-1})
+    let getUsers = await userService.findUser({ accountId: req.params.servicerId }, { isPrimary: -1 })
     if (!getUsers) {
       res.send({
         code: constant.errorCode,
@@ -847,6 +847,7 @@ exports.addServicerUser = async (req, res) => {
 
       }
       data.status = statusCheck
+      data.roleId = '65719c8368a8a86ef8e1ae4d'
       let saveData = await userService.createUser(data)
       if (!saveData) {
         res.send({

@@ -1659,6 +1659,7 @@ exports.addDealerUser = async (req, res) => {
       return;
     }
     data.accountId = checkDealer._id
+    data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
     if (!checkDealer.accountStatus) {
       statusCheck = false
