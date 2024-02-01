@@ -379,12 +379,11 @@ exports.getAllOrders = async (req, res) => {
         servicerName: item.dealerName.isServicer ? item.dealerName : item.servicerName,
         servicerName: item.resellerName.isServicer ? item.resellerName : item.servicerName
     }));
-    console.log('filter data-----------------------------------',updatedArray)
 
 
     res.send({
         code: constant.successCode,
-        message: "Successssss",
+        message: "Success",
         result: updatedArray
     })
 }
