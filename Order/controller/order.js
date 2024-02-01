@@ -373,13 +373,11 @@ exports.getAllOrders = async (req, res) => {
             status.test(entry.status)
         );
     });
-    // console.log('filter data-----------------------------------',filteredData)
     const updatedArray = filteredData.map(item => ({
         ...item,
         servicerName: item.dealerName.isServicer ? item.dealerName : item.servicerName,
         servicerName: item.resellerName.isServicer ? item.resellerName : item.servicerName
     }));
-    console.log('filter data-----------------------------------',updatedArray)
 
 
     res.send({
