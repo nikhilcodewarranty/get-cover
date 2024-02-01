@@ -6,7 +6,6 @@ module.exports = class orderService {
       const allOrders = await order.aggregate([
         {
           $project: {
-            // "shop": { $arrayElemAt: ["$productsArray", 0] },
             productsArray: 1,
             dealerId: 1,
             unique_key: 1,
@@ -16,9 +15,16 @@ module.exports = class orderService {
             paymentStatus: 1,
             status: 1,
             venderOrder: 1,
-            orderAmount: 1
+            orderAmount: 1,
           },
 
+        },
+        {
+          "$addFields": {
+            "noOfProducts": {
+              "$sum": "$productsArray.noOfProducts"
+            }
+          }
         },
         { $sort: { unique_key: -1 } }
       ])
