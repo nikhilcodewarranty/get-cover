@@ -91,7 +91,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id }));
+        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -421,6 +421,8 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
         data.accountId = checkReseller._id
+        data.roleId = '65bb94b4b68e5a4a62a0b563'
+
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false

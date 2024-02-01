@@ -90,7 +90,7 @@ exports.createCustomer = async (req, res, next) => {
       })
       return;
     };
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id }));
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
     res.send({
@@ -423,6 +423,7 @@ exports.addCustomerUser = async (req, res) => {
     };
 
     data.accountId = checkCustomer._id
+    data.roleId = '656f080e1eb1acda244af8c7'
     let saveData = await userService.createUser(data)
     if (!saveData) {
       res.send({
