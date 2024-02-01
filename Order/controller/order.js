@@ -496,109 +496,19 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body
-            // let data = {
-            //     "dealerId": "65a0d25d503003dcd4abfc33",
-            //     "servicerId": "65a0d64b23eec30f66ea0c44",
-            //     "customerId": "65a0e563169e80fd0600a965",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65a0dacd3a9009fd982ba41e",
-            //             "priceBookId": "65a0daf83a9009fd982ba41f",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 1,
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             rangeStart: 23425,
-            //             rangeEnd: 23425,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Flat Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         },
-            //         {
-            //             "categoryId": "65a0dacd3a9009fd982ba41e",
-            //             "priceBookId": "65a0daf83a9009fd982ba41f",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 1,
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             rangeStart: 23425,
-            //             rangeEnd: 23423,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Flat Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+             let data = req.body        
 
-            // console.log("data=======================",data)
+            // data.productsArray.forEach(product => {
+            //     console.log("QuantityPricing=======================",typeof(product.QuantityPricing))
+            //     let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
+            //         return sum + parseInt(quantity.enterQuantity);
+            //     }, 0);
 
-            data.productsArray.forEach(product => {
-                console.log("QuantityPricing=======================",typeof(product.QuantityPricing))
-                let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
-                    return sum + parseInt(quantity.enterQuantity);
-                }, 0);
+            //     // Replace the value of checkNumberProducts with the calculated sum
+            //     product.checkNumberProducts = productEnterQuantitySum;
 
-                // Replace the value of checkNumberProducts with the calculated sum
-                product.checkNumberProducts = productEnterQuantitySum;
+            // });
 
-            });
-
-            console.log("")
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
@@ -607,7 +517,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
+                       // checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         noOfProducts: data.noOfProducts[index].noOfProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
@@ -633,7 +543,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
-                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                        //checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
                         noOfProducts: productsWithFiles[j].products.noOfProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
@@ -689,20 +599,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }
 
                 //Check if csv data length equal to no of products
-                const isValidNumberData = allDataComing.map(obj => {
-                    if (obj.priceType == 'Quantity Pricing') {
-                        if (parseInt(obj.checkNumberProducts) != obj.data.length) {
-                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid number of products"
-                            });
-                            return; // Set the return value to false when the condition fails
-                        }
-                    }
+                const isValidNumberData = allDataComing.map(obj => {              
 
-                    else {
                         if (parseInt(obj.noOfProducts) != obj.data.length) {
                             // Handle case where 'noOfProducts' doesn't match the length of 'data'
                             message.push({
@@ -712,7 +610,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             });
                             return; // Set the return value to false when the condition fails
                         }
-                    }
+                    
 
                 });
                 if (message.length > 0) {
@@ -728,7 +626,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                checkNumberProducts: obj.checkNumberProducts,
+                               // checkNumberProducts: obj.checkNumberProducts,
                                 noOfProducts: obj.noOfProducts,
                                 rangeStart: obj.rangeStart,
                                 rangeEnd: obj.rangeEnd,
