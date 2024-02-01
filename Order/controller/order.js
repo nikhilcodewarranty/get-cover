@@ -320,7 +320,7 @@ exports.getAllOrders = async (req, res) => {
     let dealerIdsArray = ordersResult.map(result => result.dealerId)
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers
-    let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1 })
+    let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1, isServicer: 1 })
     let servicerIdArray = ordersResult.map(result => result.servicerId)
     const servicerCreteria = {
         $or: [
@@ -338,9 +338,9 @@ exports.getAllOrders = async (req, res) => {
     //Get all Reseller
     let resellerIdsArray = ordersResult.map(result => result.resellerId)
     const resellerCreteria = { _id: { $in: resellerIdsArray } }
-    let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1 })
+    let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1, isServicer: 1 })
     const result_Array = ordersResult.map(item1 => {
-        const dealerName = item1.respectiveDealers != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
+        const dealerName = item1.dealerId != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
         const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString() || item2.resellerId === item1.servicerId) : null;
         const customerName = item1.customerId != null ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
         const resellerName = item1.resellerId != null ? respectiveReseller.find(item2 => item2._id.toString() === item1.resellerId.toString()) : null;
@@ -366,18 +366,26 @@ exports.getAllOrders = async (req, res) => {
     const venderOrderRegex = new RegExp(data.venderOrder ? data.venderOrder.trim() : '', 'i')
     const status = new RegExp(data.phone ? data.phone.trim() : '', 'i')
 
-    const filteredData = result_Array.filter(entry => {
+    let filteredData = result_Array.filter(entry => {
         return (
             unique_keyRegex.test(entry.unique_key) &&
             venderOrderRegex.test(entry.venderOrder) &&
             status.test(entry.status)
         );
     });
+    // console.log('filter data-----------------------------------',filteredData)
+    const updatedArray = filteredData.map(item => ({
+        ...item,
+        servicerName: item.dealerName.isServicer ? item.dealerName : item.servicerName,
+        servicerName: item.resellerName.isServicer ? item.resellerName : item.servicerName
+    }));
+    console.log('filter data-----------------------------------',updatedArray)
 
 
     res.send({
         code: constant.successCode,
-        result: filteredData
+        message: "Successssss",
+        result: updatedArray
     })
 }
 
