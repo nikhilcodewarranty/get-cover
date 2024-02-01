@@ -50,16 +50,16 @@ exports.getServicerDetail = async (req, res) => {
 exports.getServicerUsers = async (req, res) => {
     try {
         let data = req.body
-        let getMetaData = await userService.findOneUser({ _id: req.userId })
-        if (!getMetaData) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the details"
-            })
-            return;
-        };
+        // let getMetaData = await userService.findOneUser({ _id: req.userId })
+        // if (!getMetaData) {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Unable to fetch the details"
+        //     })
+        //     return;
+        // };
         console.log("check+++++++++++++++++++++", getMetaData)
-        let getUsers = await userService.findUser({ accountId: getMetaData.accountId },{isPrimary:-1})
+        let getUsers = await userService.findUser({ accountId: req.userId },{isPrimary:-1})
         if (!getUsers) {
             res.send({
                 code: constant.errorCode,

@@ -12,7 +12,7 @@ router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMu
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
 router.get('/getOrderById/:orderId',[verifyToken],orderController.getSingleOrder)
-router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
+// router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
 router.post('/getServicerInOrders',[verifyToken],orderController.getServicerInOrders)
 router.post('/checkPurchaseOrder',[verifyToken],orderController.checkPurchaseOrder)

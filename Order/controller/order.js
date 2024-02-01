@@ -239,7 +239,7 @@ exports.createOrder = async (req, res) => {
             }
             let fileLength = req.files ? req.files.length : 0
             if (fileLength === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
-
+                let updateOrder = await orderService.updateOrder({_id:savedResponse._id},{canProceed:true},{new:true})
                 const isValidDate = data.productsArray.every(product => {
                     console.log(product.coverageStartDate)
                     const coverageStartDate = product.coverageStartDate != '' ? moment(product.coverageStartDate).format('YYYY-MM-DD') : product.coverageStartDate;
@@ -979,17 +979,17 @@ exports.getSingleOrder = async (req, res) => {
     }
 }
 
-let checkOrderToProcessed = async(req,res)=>{
-    try{
-        let data = req.body
-        let projection = { isDeleted: 0 };
-        let query = { _id: req.params.orderId }
-        let checkOrder = await orderService.getOrder(query, projection);
+// let checkOrderToProcessed = async(req,res)=>{
+//     try{
+//         let data = req.body
+//         let projection = { isDeleted: 0 };
+//         let query = { _id: req.params.orderId }
+//         let checkOrder = await orderService.getOrder(query, projection);
         
-    }catch(err){
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-}
+//     }catch(err){
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message
+//         })
+//     }
+// }

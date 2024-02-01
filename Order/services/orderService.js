@@ -63,9 +63,9 @@ module.exports = class orderService {
     }
   }
 
-  static async updateOrder(data) {
+  static async updateOrder(criteria,data,option) {
     try {
-      const createOrder = await order(data).save();
+      const createOrder = await order.findOneAndUpdate(criteria,data,option);
       return createOrder;
     } catch (error) {
       console.log(`Could not add order ${error}`);

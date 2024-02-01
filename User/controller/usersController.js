@@ -1355,7 +1355,7 @@ exports.login = async (req, res) => {
       })
       return;
     }
-    console.log(user)
+    console.log("user=----------------------",user)
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
@@ -1372,13 +1372,14 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    console.log(user)
     let roleQuery = { _id: user.roleId }
     let roleProjection = { __v: 0 }
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user._id, email: user.email, role: getRole.role },
+      { userId: user.accountId, email: user.email, role: getRole.role },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "356d" }
     );

@@ -123,8 +123,11 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     default: 'Manually'
-  }
-
+  },
+  canProceed:{
+    type:Boolean,
+    default:false
+  },
   // dealerId: {
   //   type: mongoose.Schema.Types.ObjectId,
   //   ref: "dealer",
