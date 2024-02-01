@@ -585,18 +585,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //     "dueAmount": 21
             // }
 
-            console.log("data=======================",data)
+            // console.log("data=======================",data)
 
-            data.productsArray.forEach(product => {
-                console.log("QuantityPricing=======================",product.QuantityPricing)
-                let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
-                    return sum + parseInt(quantity.enterQuantity);
-                }, 0);
+            // data.productsArray.forEach(product => {
+            //     console.log("QuantityPricing=======================",product.QuantityPricing)
+            //     let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
+            //         return sum + parseInt(quantity.enterQuantity);
+            //     }, 0);
 
-                // Replace the value of checkNumberProducts with the calculated sum
-                product.checkNumberProducts = productEnterQuantitySum;
+            //     // Replace the value of checkNumberProducts with the calculated sum
+            //     product.checkNumberProducts = productEnterQuantitySum;
 
-            });
+            // });
 
 
             if (req.files.length > 0) {
