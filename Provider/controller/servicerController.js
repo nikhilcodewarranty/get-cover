@@ -146,6 +146,7 @@ exports.addServicerUser = async (req, res) => {
     try {
         let data = req.body
         let checkServicer = await providerService.getServicerByName({ _id: req.userId })
+        console.log('cec--------------------------',req.userId,checkServicer)
         if (!checkServicer) {
             res.send({
                 code: constant.errorCode,
@@ -237,7 +238,7 @@ exports.editUserDetail = async (req, res) => {
             return;
         };
         res.send({
-            code: constant.errorCode,
+            code: constant.successCode,
             message: "Successfully updated",
             result: updateUser
         })
