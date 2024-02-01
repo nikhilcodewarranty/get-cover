@@ -518,7 +518,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                       // checkNumberProducts: data.productsArray[index].checkNumberProducts,
+                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         noOfProducts: data.noOfProducts[index].noOfProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
@@ -544,7 +544,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
-                        //checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
                         noOfProducts: productsWithFiles[j].products.noOfProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
@@ -600,9 +600,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }
 
                 //Check if csv data length equal to no of products
-                const isValidNumberData = allDataComing.map(obj => {              
-
-                        if (parseInt(obj.noOfProducts) != obj.data.length) {
+                const isValidNumberData = allDataComing.map(obj => {                    
+                    if(obj.priceType=='Quantity Pricing'){
+                        if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                             // Handle case where 'noOfProducts' doesn't match the length of 'data'
                             message.push({
                                 code: constant.errorCode,
@@ -611,9 +611,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             });
                             return; // Set the return value to false when the condition fails
                         }
-                    
-
-                });
+                    }
+                    else{
+                            if (parseInt(obj.noOfProducts) != obj.data.length) {
+                                // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid number of products"
+                                });
+                                return; // Set the return value to false when the condition fails
+                            }
+                        }
+                                });
                 if (message.length > 0) {
                     // Handle case where the number of properties in 'data' is not valid
                     res.send({
@@ -627,7 +637,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                               // checkNumberProducts: obj.checkNumberProducts,
+                               checkNumberProducts: obj.checkNumberProducts,
                                 noOfProducts: obj.noOfProducts,
                                 rangeStart: obj.rangeStart,
                                 rangeEnd: obj.rangeEnd,
