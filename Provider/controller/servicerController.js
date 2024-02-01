@@ -58,7 +58,7 @@ exports.getServicerUsers = async (req, res) => {
         //     })
         //     return;
         // };
-        console.log("check+++++++++++++++++++++", getMetaData)
+        // console.log("check+++++++++++++++++++++", getMetaData)
         let getUsers = await userService.findUser({ accountId: req.userId },{isPrimary:-1})
         if (!getUsers) {
             res.send({
@@ -145,11 +145,11 @@ exports.changePrimaryUser = async (req, res) => {
 exports.addServicerUser = async (req, res) => {
     try {
         let data = req.body
-        let checkServicer = await userService.getSingleUserByEmail({ _id: req.userId })
+        let checkServicer = await providerService.getServicerByName({ _id: req.userId })
         if (!checkServicer) {
             res.send({
                 code: constant.errorCode,
-                message: err.message
+                message: "invalid ID"
             })
             return;
         }
@@ -162,7 +162,7 @@ exports.addServicerUser = async (req, res) => {
             return;
         };
         data.isPrimary = false
-        data.accountId = checkServicer.accountId
+        data.accountId = checkServicer._id
         let statusCheck;
         if (!checkServicer.accountStatus) {
             statusCheck = false
