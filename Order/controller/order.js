@@ -373,7 +373,7 @@ exports.getAllOrders = async (req, res) => {
             status.test(entry.status)
         );
     });
-    
+
     const updatedArray = filteredData.map(item => ({
         ...item,
         servicerName: item.dealerName.isServicer ? item.dealerName :  item.resellerName.isServicer ? item.resellerName : item.servicerName,
@@ -1051,13 +1051,29 @@ exports.getSingleOrder = async (req, res) => {
     }
 }
 
-let checkOrderToProcessed = async(req,res)=>{
+exports.checkOrderToProcessed = async(req,res)=>{
     try{
         let data = req.body
         let projection = { isDeleted: 0 };
         let query = { _id: req.params.orderId }
         let checkOrder = await orderService.getOrder(query, projection);
-        
+        let response={};
+        console.log('=========================================================',checkOrder)
+        if(checkOrder){
+            response.paymentStatus = checkOrder.paymentStatus
+            response.customerId = checkOrder.customerId
+            let newArray = checkOrder.productsArray.map(item => ({
+                coverageStartDate: item.coverageStartDate ? "KLK" : null
+            }));
+            console.log('=========================================================',newArray)
+
+
+            response.paymentStatus = checkOrder.paymentStatus
+            response.paymentStatus = checkOrder.paymentStatus
+        }
+        console.log('=========================================================',response)
+        return;
+
     }catch(err){
         res.send({
             code:constant.errorCode,

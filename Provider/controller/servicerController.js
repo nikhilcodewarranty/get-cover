@@ -59,7 +59,7 @@ exports.getServicerUsers = async (req, res) => {
             return;
         };
         console.log("check+++++++++++++++++++++", getMetaData)
-        let getUsers = await userService.findUser({ accountId: getMetaData.accountId })
+        let getUsers = await userService.findUser({ accountId: getMetaData.accountId },{isPrimary:-1})
         if (!getUsers) {
             res.send({
                 code: constant.errorCode,
