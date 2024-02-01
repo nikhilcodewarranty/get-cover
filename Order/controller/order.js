@@ -585,6 +585,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //     "dueAmount": 21
             // }
 
+            console.log("data=======================",data)
+
             data.productsArray.forEach(product => {
                 let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
                     return sum + parseInt(quantity.enterQuantity);
