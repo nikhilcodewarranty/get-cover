@@ -240,7 +240,7 @@ exports.createOrder = async (req, res) => {
             }
             let fileLength = req.files ? req.files.length : 0
             if (fileLength === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
-                let updateStatus = await orderService.updateOrder({_id:savedResponse._id},{status:Active},{new:true})
+                let updateStatus = await orderService.updateOrder({_id:savedResponse._id},{status:"Active"},{new:true})
                 let updateOrder = await orderService.updateOrder({ _id: savedResponse._id }, { canProceed: true }, { new: true })
                 const isValidDate = data.productsArray.every(product => {
                     console.log(product.coverageStartDate)
@@ -1207,3 +1207,4 @@ exports.editOrderDetail = async (req, res) => {
         })
     }
 }
+
