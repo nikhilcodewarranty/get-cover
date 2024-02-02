@@ -48,6 +48,10 @@ const orderSchema = new mongoose.Schema({
         noOfProducts: {
           type: Number,
         },
+        checkNumberProducts: {
+          type: Number,
+          default: 0
+        },
         orderFile: {
           type: {
             fileName: {
@@ -101,7 +105,7 @@ const orderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Active', 'Pending','Archieved'],
+    enum: ['Active', 'Pending', 'Archieved'],
     default: 'Pending'
   },
   isDeleted: {
@@ -124,9 +128,9 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: 'Manually'
   },
-  canProceed:{
-    type:Boolean,
-    default:false
+  canProceed: {
+    type: Boolean,
+    default: false
   },
   // dealerId: {
   //   type: mongoose.Schema.Types.ObjectId,
