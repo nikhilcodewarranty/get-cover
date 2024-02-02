@@ -1826,7 +1826,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         console.log("totalDataComing2", totalDataComing);
         console.log("dealerArray", dealerArray);
 
-        return;
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
