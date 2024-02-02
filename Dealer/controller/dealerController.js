@@ -1766,12 +1766,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
           data.status = null
         }
       })
-      console.log("check empty value", totalDataComing)
+    //  console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
 
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
-          console.log("uniquw", i, totalDataComing[i]);
+          //console.log("uniquw", i, totalDataComing[i]);
           if (totalDataComing[i].exit) {
             continue;
           }
@@ -1787,6 +1787,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           }
         }
 
+        console.log("totalDataComing============================",totalDataComing);
         const pricebookArrayPromise = totalDataComing.map(item => {
           if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
@@ -1817,6 +1818,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const dealerArray = await Promise.all(dealerArrayPromise);
         console.log("totalDataComing2", totalDataComing);
         console.log("dealerArray", dealerArray);
+
+        return;
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
@@ -1904,7 +1907,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
       }
 
       res.send({
