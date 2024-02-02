@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    default: ''
+    default: '$2b$10$LVUNmN0okRsnlgyMzqxgvOq0RGQgfZPknOBvQn81fMQ74aU9TPlQe'
   },
   accountId: {
     type: String,
