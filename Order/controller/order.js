@@ -508,7 +508,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //     // Replace the value of checkNumberProducts with the calculated sum
             //     product.checkNumberProducts = productEnterQuantitySum;
 
-            // });
+            // }); 
 
 
             console.log("data================", data);
@@ -520,7 +520,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
+                      checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         noOfProducts: data.noOfProducts[index].noOfProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
