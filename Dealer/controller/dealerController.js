@@ -1727,8 +1727,15 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const wb = XLSX.readFile(req.file.path);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
-      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
 
+      totalDataComing1 = totalDataComing1.map(item => {
+        if (!item.priceBook) {
+          return { priceBook: '', 'RetailP rice': item['RetailP rice'] };
+        }
+        return item;
+      });
+      
       const headers = [];
       for (let cell in ws) {
         // Check if the cell is in the first row and has a non-empty value
@@ -1861,7 +1868,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
             status: item.status
           }
         })
-
+        console.log('csv array-----------------------------',csvArray)
         function countStatus(array, status) {
           return array.filter(item => item.status === status).length;
         }
