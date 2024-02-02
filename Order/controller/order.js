@@ -939,7 +939,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         }
         let checkPurchaseOrder;
         let data = req.body
-        if (data.orderId != '' && data.oldDealerPurchaseOrder != data.dealerPurchaseOrder) {
+        if (data.oldDealerPurchaseOrder != '' && data.oldDealerPurchaseOrder != data.dealerPurchaseOrder) {
              checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         }
 
