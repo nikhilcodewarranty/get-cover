@@ -240,7 +240,7 @@ exports.createOrder = async (req, res) => {
             }
             let fileLength = req.files ? req.files.length : 0
             if (fileLength === data.productsArray.length && data.customerId != '' && data.paymentStatus == "Paid") {
-                let updateStatus = await orderService.updateOrder({_id:savedResponse._id},{status:"Active"},{new:true})
+                let updateStatus = await orderService.updateOrder({ _id: savedResponse._id }, { status: "Active" }, { new: true })
                 let updateOrder = await orderService.updateOrder({ _id: savedResponse._id }, { canProceed: true }, { new: true })
                 const isValidDate = data.productsArray.every(product => {
                     console.log(product.coverageStartDate)
@@ -522,7 +522,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = uploadedFiles.map((file, index) => ({
                     products: {
                         key: index + 1,
-                      checkNumberProducts: data.productsArray[index].checkNumberProducts,
+                        checkNumberProducts: data.productsArray[index].checkNumberProducts,
                         noOfProducts: data.productsArray[index].noOfProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
@@ -937,7 +937,16 @@ exports.checkPurchaseOrder = async (req, res) => {
             })
             return;
         }
-        let checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
+        let checkPurchaseOrder;
+        let data = req.body
+        if (data.orderId != '' && data.oldDealerPurchaseOrder != data.dealerPurchaseOrder) {
+             checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
+        }
+
+        else {
+             checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
+        }
+
         if (checkPurchaseOrder) {
             res.send({
                 code: constant.errorCode,
@@ -1139,9 +1148,9 @@ exports.editOrderDetail = async (req, res) => {
                 }));
 
                 const filteredProducts = data.productsArray.filter(product => product.orderFile.fileName !== "");
-                const filteredProducts2 = data.productsArray.filter(product => product.file === "" );
-                
-                console.log('file check------------------', data.productsArray,filteredProducts2)
+                const filteredProducts2 = data.productsArray.filter(product => product.file === "");
+
+                console.log('file check------------------', data.productsArray, filteredProducts2)
 
                 const productsWithOrderFiles = filteredProducts.map((product, index) => {
                     const file = uploadedFiles[index];
