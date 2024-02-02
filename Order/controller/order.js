@@ -508,7 +508,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //     // Replace the value of checkNumberProducts with the calculated sum
             //     product.checkNumberProducts = productEnterQuantitySum;
 
-            // });
+            // }); 
 
 
             console.log("data================",data);
