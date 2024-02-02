@@ -521,7 +521,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     products: {
                         key: index + 1,
                       // checkNumberProducts: data.productsArray[index].checkNumberProducts,
-                        noOfProducts: data.noOfProducts[index].noOfProducts,
+                        noOfProducts: data.productsArray[index].noOfProducts,
                         priceType: data.productsArray[index].priceType,
                         rangeStart: data.productsArray[index].rangeStart,
                         rangeEnd: data.productsArray[index].rangeEnd,
