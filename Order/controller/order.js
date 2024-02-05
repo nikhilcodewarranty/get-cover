@@ -847,12 +847,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         console.log("mergedPriceBook", mergedPriceBooks);
 
-
-
-
-
-
-
         //unique categories IDs from price books
         let uniqueCategory = {};
         let uniqueCategories = getPriceBooks.filter((item) => {
