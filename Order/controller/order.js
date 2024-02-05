@@ -130,8 +130,11 @@ exports.createOrder = async (req, res) => {
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
             // console.log("Body=================",hhhhh)
             // console.log("productsArray=================",data.productsArray[0].QuantityPricing)
-            console.log("typeof=================",data.productsArray)
-            console.log("typeof=================",typeof(data.productsArray[0].QuantityPricing))
+            for(let i=0; i<=data.productsArray.length;i++){
+                let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
+                data.productsArray[i].QuantityPricing = jsonArray
+            }
+            console.log("new array=================",data.productsArray)
             data.venderOrder = data.dealerPurchaseOrder
             let projection = { isDeleted: 0 }
             let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
