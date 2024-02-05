@@ -72,20 +72,8 @@ exports.createOrder = async (req, res) => {
             //             "term": 12,
             //             "priceType": "Quantity Pricing",
             //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": [
-            //                 {
-            //                     "name": "a",
-            //                     "quantity": 45,
-            //                     "_id": "65a7863cc6690cd3e0a62256",
-            //                     "enterQuantity": "20"
-            //                 },
-            //                 {
-            //                     "name": "b",
-            //                     "quantity": 10,
-            //                     "_id": "65a7863cc6690cd3e0a62257",
-            //                     "enterQuantity": "11"
-            //                 }
-            //             ]
+            //             "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+
             //         },
             //         {
             //             "categoryId": "65aba24e182e38ce2ea76f6a",
@@ -106,6 +94,8 @@ exports.createOrder = async (req, res) => {
             //             "term": 12,
             //             "priceType": "Regular",
             //             "additionalNotes": "this is test ",
+            //             "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
+
             //             "noOfProducts": 1
             //         }
             //     ],
@@ -127,6 +117,15 @@ exports.createOrder = async (req, res) => {
                 })
                 return;
             }
+            // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
+            // console.log("Body=================",hhhhh)
+            // console.log("productsArray=================",data.productsArray[0].QuantityPricing)
+            for(let i=0; i < data.productsArray.length; i++){
+                let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
+                data.productsArray[i].QuantityPricing = jsonArray
+            }
+            // console.log("new array=================",data.productsArray);
+            // return;
             data.venderOrder = data.dealerPurchaseOrder
             let projection = { isDeleted: 0 }
             let checkDealer = await dealerService.getDealerById(data.dealerId, projection);

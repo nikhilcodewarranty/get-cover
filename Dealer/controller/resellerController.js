@@ -358,7 +358,6 @@ exports.getResellerPriceBook = async (req, res) => {
         return;
     }
 
-    console.log("fdssfddssd", checkDealer);
     let queryCategories = {
         $and: [
             { isDeleted: false },
