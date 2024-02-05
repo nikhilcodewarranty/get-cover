@@ -6,6 +6,7 @@ const validator = require('../config/validation');
 
 router.post('/getDealerUsers',[verifyToken],dealerUserController.getDealerUsers)
 router.post('/getPriceBooks',[verifyToken],dealerUserController.getPriceBooks)
+router.post('/getAllPriceBooksByFilter',[verifyToken],dealerUserController.getAllPriceBooksByFilter)
 
 
 module.exports = router; 
