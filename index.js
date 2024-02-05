@@ -22,6 +22,7 @@ const order = require('./Order/orderServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
+const dealerUserRoutes = require("./Dealer/routes/dealerUser");
 const resellerRoutes = require("./Dealer/routes/reseller");
 const contractRoutes = require("./Contract/routes/contract");
 const serviceRoutes = require("./Provider/routes/service");
@@ -83,6 +84,7 @@ app.use("/api-v1/customer", customerRoutes);
 
 
 app.use("/api-v1/servicerPortal", servicePortal);
+app.use("/api-v1/dealerPortal", dealerUserRoutes);
 
 
 // catch 404 and forward to error handler
