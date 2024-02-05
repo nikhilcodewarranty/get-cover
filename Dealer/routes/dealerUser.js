@@ -5,6 +5,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 const validator = require('../config/validation');
 
 router.post('/getDealerUsers',[verifyToken],dealerUserController.getDealerUsers)
+router.post('/getPriceBooks',[verifyToken],dealerUserController.getPriceBooks)
 
 
 module.exports = router; 

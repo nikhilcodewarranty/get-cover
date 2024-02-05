@@ -114,6 +114,40 @@ exports.getDealerUsers = async (req, res) => {
     }
 }
 
+exports.getPriceBooks = async (req, res) => {
+    try {
+        let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId, status: true }, { isDeleted: false })
+
+        if (checkDealer.length == 0) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer Not found"
+            })
+            return;
+        }
+        let projection = { isDeleted: 0, __v: 0 }
+        let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.userId) }
+        let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+        if (!getDealerPrice) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to get the dealer price books"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: getDealerPrice
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
 
 
 
