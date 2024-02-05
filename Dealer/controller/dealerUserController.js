@@ -150,71 +150,155 @@ exports.getPriceBooks = async (req, res) => {
 
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
-      let data = req.body
-      data.status = typeof (data.status) == "string" ? "all" : data.status
-      console.log(data)
-      let categorySearch = req.body.category ? req.body.category : ''
-      let queryCategories = {
-        $and: [
-          { isDeleted: false },
-          { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-        ]
-      };
-      let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
-      let catIdsArray = getCatIds.map(category => category._id)
-      let searchName = req.body.name ? req.body.name : ''
-      let query
-      console.log("lklklkkklk", data.status)
-      // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-      if (data.status != 'all' && data.status != undefined) {
-        query = {
-          $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            { 'status': data.status },
-            {
-              dealerId: new mongoose.Types.ObjectId(req.userId)
-            }
-          ]
+        let data = req.body
+        data.status = typeof (data.status) == "string" ? "all" : data.status
+        console.log(data)
+        let categorySearch = req.body.category ? req.body.category : ''
+        let queryCategories = {
+            $and: [
+                { isDeleted: false },
+                { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+            ]
         };
-      } else {
-        query = {
-          $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            {
-              dealerId: new mongoose.Types.ObjectId(req.userId)
-            }
-          ]
-        };
-      }
-  
-  
-      //
-      let projection = { isDeleted: 0, __v: 0 }
-     
-      let limit = req.body.limit ? req.body.limit : 10000
-      let page = req.body.page ? req.body.page : 1
-      const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
-      if (!priceBooks) {
+        let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+        let catIdsArray = getCatIds.map(category => category._id)
+        let searchName = req.body.name ? req.body.name : ''
+        let query
+        console.log("lklklkkklk", data.status)
+        // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
+        if (data.status != 'all' && data.status != undefined) {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    {
+                        dealerId: new mongoose.Types.ObjectId(req.userId)
+                    }
+                ]
+            };
+        } else {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    {
+                        dealerId: new mongoose.Types.ObjectId(req.userId)
+                    }
+                ]
+            };
+        }
+
+
+        //
+        let projection = { isDeleted: 0, __v: 0 }
+
+        let limit = req.body.limit ? req.body.limit : 10000
+        let page = req.body.page ? req.body.page : 1
+        const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
+        if (!priceBooks) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            })
+            return;
+        }
         res.send({
-          code: constant.errorCode,
-          message: "Unable to fetch the data"
+            code: constant.successCode,
+            message: "Success",
+            result: priceBooks
         })
-        return;
-      }
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: priceBooks
-      })
     } catch (err) {
-      res.send({
-        code: constant.errorCode,
-        message: err.message
-      })
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
-  };
+};
+
+exports.getDealerServicers = async (req, res) => {
+    try {
+        let data = req.body
+
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId })
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        }
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+        if (!getServicersIds) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicer"
+            })
+            return;
+        }
+        let ids = getServicersIds.map((item) => item.servicerId)
+        let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } ,status:true}, {})
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers"
+            })
+            return;
+        }
+        if (checkDealer.isServicer) {
+            servicer.unshift(checkDealer);
+        }
+
+        const servicerIds = servicer.map(obj => obj._id);
+        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+        let servicerUser = await userService.getMembers(query1, {})
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            });
+            return;
+        };
+
+        const result_Array = servicer.map(item1 => {
+            const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
+
+            if (matchingItem) {
+                return {
+                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: item1.toObject()
+                };
+            } else {
+                return servicerUser.toObject();
+            }
+        });
+
+        const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.servicerData.name) &&
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            data: filteredData
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 
 
 
