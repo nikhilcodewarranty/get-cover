@@ -116,7 +116,7 @@ exports.getDealerUsers = async (req, res) => {
 
 exports.getPriceBooks = async (req, res) => {
     try {
-        let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId, status: true }, { isDeleted: false })
+        let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
 
         if (checkDealer.length == 0) {
             res.send({
@@ -126,7 +126,7 @@ exports.getPriceBooks = async (req, res) => {
             return;
         }
         let projection = { isDeleted: 0, __v: 0 }
-        let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.userId) }
+        let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
             res.send({
@@ -147,6 +147,7 @@ exports.getPriceBooks = async (req, res) => {
         })
     }
 }
+
 
 
 
