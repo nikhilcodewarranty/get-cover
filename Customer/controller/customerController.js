@@ -4,6 +4,7 @@ const customerService = require("../services/customerService");
 let dealerService = require('../../Dealer/services/dealerService')
 let resellerService = require('../../Dealer/services/resellerService')
 let userService = require('../../User/services/userService')
+let orderService = require('../../Order/services/orderService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 
@@ -120,6 +121,7 @@ exports.getAllCustomers = async (req, res, next) => {
       return;
     };
     const customersId = customers.map(obj => obj._id.toString());
+    const customersOrderId = customers.map(obj => obj._id);
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
     //Get Resselers
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
@@ -127,6 +129,26 @@ exports.getAllCustomers = async (req, res, next) => {
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+    //Get customer Orders
+
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderQuery = { customerId: { $in: customersOrderId } };
+
+    let ordersData = await orderService.getAllOrders(orderQuery, project)
+
 
     // const result_Array = getPrimaryUser.map(item1 => {
     //   const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -141,26 +163,25 @@ exports.getAllCustomers = async (req, res, next) => {
     //   }
     // });
 
-
-    console.log("customers++++++++++++++++++++++++++++++++++", customers)
-    console.log("resellerData++++++++++++++++++++++++++++++++++", resellerData)
     const result_Array = customers.map(customer => {
       const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
       const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
-      if (matchingItem || matchingReseller) {
+      const order = ordersData.find(order => order.customerId.toString() === customer._id.toString())
+      if (matchingItem || matchingReseller || order) {
         return {
           ...matchingItem ? matchingItem : {},
           customerData: customer ? customer : {},
-          reseller: matchingReseller ? matchingReseller : {}
+          reseller: matchingReseller ? matchingReseller : {},
+          order:order ? order : {}
         };
       }
 
     }).filter(item => item !== undefined);
+    //console.log("result_Array----------------0",result_Array)
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-    console.log(result_Array);
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&

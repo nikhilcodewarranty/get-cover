@@ -146,6 +146,7 @@ exports.getAllResellers = async (req, res) => {
 
 
         const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerOrderIds = resellers.map(obj => obj._id);
         const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
@@ -165,9 +166,8 @@ exports.getAllResellers = async (req, res) => {
             orderAmount: 1,
         }
 
-        let orderQuery = { resellerId: { $in: resellerId } };
+        let orderQuery = { resellerId: { $in: resellerOrderIds } };
 
-        console.log("orderQuery")
         let ordersData = await orderService.getAllOrders(orderQuery, project)
 
         //console.log("ordersData=================",ordersData);
