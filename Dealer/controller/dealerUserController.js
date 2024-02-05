@@ -148,6 +148,74 @@ exports.getPriceBooks = async (req, res) => {
     }
 }
 
+exports.getAllPriceBooksByFilter = async (req, res, next) => {
+    try {
+      let data = req.body
+      data.status = typeof (data.status) == "string" ? "all" : data.status
+      console.log(data)
+      let categorySearch = req.body.category ? req.body.category : ''
+      let queryCategories = {
+        $and: [
+          { isDeleted: false },
+          { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        ]
+      };
+      let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+      let catIdsArray = getCatIds.map(category => category._id)
+      let searchName = req.body.name ? req.body.name : ''
+      let query
+      console.log("lklklkkklk", data.status)
+      // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
+      if (data.status != 'all' && data.status != undefined) {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': data.status },
+            {
+              dealerId: new mongoose.Types.ObjectId(req.userId)
+            }
+          ]
+        };
+      } else {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            {
+              dealerId: new mongoose.Types.ObjectId(req.userId)
+            }
+          ]
+        };
+      }
+  
+  
+      //
+      let projection = { isDeleted: 0, __v: 0 }
+     
+      let limit = req.body.limit ? req.body.limit : 10000
+      let page = req.body.page ? req.body.page : 1
+      const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
+      if (!priceBooks) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to fetch the data"
+        })
+        return;
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: priceBooks
+      })
+    } catch (err) {
+      res.send({
+        code: constant.errorCode,
+        message: err.message
+      })
+    }
+  };
+
 
 
 

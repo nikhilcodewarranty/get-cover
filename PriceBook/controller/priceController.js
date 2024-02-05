@@ -591,13 +591,6 @@ exports.createPriceBookCat = async (req, res) => {
 exports.getPriceBookCat = async (req, res) => {
   try {
     let data = req.body
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
 
     let projection = { isDeleted: 0, __v: 0 }
     let query;
