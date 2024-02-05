@@ -68,6 +68,28 @@ const orderSchema = new mongoose.Schema({
             originalName: '',
           }
         },
+        QuantityPricing:{
+          type:[
+            {
+              name:{
+                type: String,
+              },
+              quantity:{
+                type: Number,
+              },
+              enterQuantity:{
+                type: Number,
+              },
+            }
+          ],
+          default:[
+            {
+              name:'',
+              quantity:0,
+              enterQuantity:0,
+            }
+          ]
+        },
         price: {
           type: Number,
         },
