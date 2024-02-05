@@ -317,8 +317,20 @@ exports.getAllOrders = async (req, res) => {
         return;
     }
 
+    let project =  {
+        productsArray: 1,
+        dealerId: 1,
+        unique_key: 1,
+        servicerId: 1,
+        customerId: 1,
+        resellerId: 1,
+        paymentStatus: 1,
+        status: 1,
+        venderOrder: 1,
+        orderAmount: 1,
+    }
 
-    let ordersResult = await orderService.getAllOrders();
+    let ordersResult = await orderService.getAllOrders({},project);
     let dealerIdsArray = ordersResult.map(result => result.dealerId)
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers
@@ -934,11 +946,11 @@ exports.checkPurchaseOrder = async (req, res) => {
         let checkPurchaseOrder;
         let data = req.body
         if (data.oldDealerPurchaseOrder != '' && data.oldDealerPurchaseOrder != data.dealerPurchaseOrder) {
-             checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
+            checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         }
 
-        else if(data.oldDealerPurchaseOrder=='') {
-             checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
+        else if (data.oldDealerPurchaseOrder == '') {
+            checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         }
 
         if (checkPurchaseOrder) {
