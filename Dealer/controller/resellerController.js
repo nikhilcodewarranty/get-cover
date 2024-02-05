@@ -144,21 +144,42 @@ exports.getAllResellers = async (req, res) => {
             return;
         };
 
-        console.log('sjdhfjdshf-------------', resellers)
 
         const resellerId = resellers.map(obj => obj._id.toString());
         const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-        console.log('sjdhfjdshf-------------', getPrimaryUser, resellerId, queryUser)
+
+        //Get Reseller Orders
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = { resellerId: { $in: resellerId } };
+
+        console.log("orderQuery")
+        let ordersData = await orderService.getAllOrders(orderQuery, project)
+
+        //console.log("ordersData=================",ordersData);
 
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-            if (matchingItem) {
+            const orders = ordersData.find(order => order.resellerId.toString() === item1.accountId.toString())
+            if (matchingItem || orders) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                    resellerData: matchingItem.toObject()
+                    resellerData: matchingItem.toObject(),
+                    orders:orders ? orders : {}
                 };
             } else {
                 return dealerData.toObject();
@@ -337,7 +358,7 @@ exports.getResellerPriceBook = async (req, res) => {
         return;
     }
 
-    console.log("fdssfddssd",checkDealer);
+    console.log("fdssfddssd", checkDealer);
     let queryCategories = {
         $and: [
             { isDeleted: false },
@@ -346,9 +367,7 @@ exports.getResellerPriceBook = async (req, res) => {
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
-    console.log("catIdsArray",catIdsArray)
     let searchName = req.body.name ? req.body.name : ''
-    console.log("searchName",searchName)
     let projection = { isDeleted: 0, __v: 0 }
     let query = {
         $and: [
@@ -363,8 +382,7 @@ exports.getResellerPriceBook = async (req, res) => {
             }
         ]
     }
-     console.log("query==============",query)
-  //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
+    //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
         res.send({
