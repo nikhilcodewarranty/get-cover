@@ -47,6 +47,7 @@ var uploadP = multer({
     storage: StorageP,
 }).single('file');
 
+//users api
 
 exports.getDealerUsers = async (req, res) => {
     try {
@@ -114,6 +115,8 @@ exports.getDealerUsers = async (req, res) => {
     }
 }
 
+//price api
+
 exports.getPriceBooks = async (req, res) => {
     try {
         let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
@@ -166,28 +169,18 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let query
         console.log("lklklkkklk", data.status)
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-        if (data.status != 'all' && data.status != undefined) {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(req.userId)
-                    }
-                ]
-            };
-        } else {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(req.userId)
-                    }
-                ]
-            };
-        }
+
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(req.userId)
+                }
+            ]
+        };
+
 
 
         //
@@ -216,6 +209,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     }
 };
 
+//servicers api
+
 exports.getDealerServicers = async (req, res) => {
     try {
         let data = req.body
@@ -237,6 +232,7 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         let ids = getServicersIds.map((item) => item.servicerId)
+        console.log('%%%%%%%%%%%%%%%%%%%%%',ids)
         let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
         if (!servicer) {
             res.send({
@@ -299,6 +295,124 @@ exports.getDealerServicers = async (req, res) => {
         })
     }
 }
+
+exports.getServicersList = async (req, res) => {
+    try {
+        let data = req.body
+        let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
+        let projection = { __v: 0, isDeleted: 0 }
+        let servicer = await providerService.getAllServiceProvider(query, projection);
+
+
+        let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+
+        const resultArray = servicer.map(item => {
+            const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
+            const documentData = item._doc;
+            return { ...documentData, check: !!matchingServicer };
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: resultArray
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.createDeleteRelation = async(req,res)=>{
+    try {
+        let data = req.body
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId })
+        if (!checkDealer) {
+          res.send({
+            code: constant.errorCode,
+            message: "Invalid dealer ID"
+          })
+          return;
+        }
+    
+        const trueArray = [];
+        const falseArray = [];
+    
+        data.servicers.forEach(item => {
+          if (item.status || item.status == "true") {
+            trueArray.push(item);
+          } else {
+            falseArray.push(item);
+          }
+        });
+    
+        console.log('asdfadf++++++++++',trueArray,falseArray)
+    
+        let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
+        let checkId = trueArray.map(record => record._id)
+        const existingRecords = await dealerRelationService.getDealerRelations({
+          dealerId: new mongoose.Types.ObjectId(req.userId),
+          servicerId: { $in: checkId }
+        });
+    
+        // Step 2: Separate existing and non-existing servicer IDs
+        const existingServicerIds = existingRecords.map(record => record.servicerId.toString());
+    
+        const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
+    
+        console.log(')))))))))))))))))',existingRecords, existingServicerIds, checkId, newServicerIds)
+        // Step 3: Delete existing records
+        let deleteData = await dealerRelationService.deleteRelations({
+          dealerId: new mongoose.Types.ObjectId(req.userId),
+          servicerId: { $in: uncheckId }
+        });
+        console.log('***************************',deleteData)
+        // return res.json(deleteData)
+        // Step 4: Insert new records
+        const newRecords = newServicerIds.map(servicerId => ({
+          dealerId: req.userId,
+          servicerId: servicerId
+        }));
+        if (newRecords.length > 0) {
+          let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+          res.send({
+            code: constant.successCode,
+            message: "successw"
+          })
+        } else {
+          res.send({
+            code: constant.successCode,
+            message: "success"
+          })
+        }
+    
+    
+    
+    
+    
+    
+        // for (let i = 0; i < data.servicers.length; i++) {
+        //   let servicer = data.servicers[i]
+        //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.userId })
+        //   if (!checkRelation) {
+        //     console.log('new------------')
+    
+        //   } else {
+        //     console.log('delete------------')
+    
+        //   }
+        // }
+      }catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+    }
+}
+
+//customers api
 
 exports.getDealerCustomers = async (req, res) => {
     try {
@@ -366,6 +480,8 @@ exports.getDealerCustomers = async (req, res) => {
         })
     }
 }
+
+//dealers api
 
 exports.getDealerResellers = async (req, res) => {
     try {
