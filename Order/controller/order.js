@@ -128,7 +128,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
-            console.log("Body=================",hhhhh)
+            // console.log("Body=================",hhhhh)
             // console.log("productsArray=================",data.productsArray[0].QuantityPricing)
             console.log("typeof=================",data.productsArray)
             console.log("typeof=================",typeof(data.productsArray[0].QuantityPricing))
