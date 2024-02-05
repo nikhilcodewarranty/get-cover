@@ -49,13 +49,16 @@ const orderSchema = new mongoose.Schema({
           type: Number,
         },
         priceType: {
-          type: String
+          type: String,
+          default:''
         },
         term: {
-          type: Number
+          type: Number,
+          default:0
         },
         description:{
-          type:String
+          type:String,
+          default:''
         },
         checkNumberProducts: {
           type: Number,
