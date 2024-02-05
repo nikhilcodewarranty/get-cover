@@ -303,69 +303,142 @@ exports.getDealerServicers = async (req, res) => {
 exports.getDealerCustomers = async (req, res) => {
     try {
         let data = req.body
-        let query = { isDeleted: false, dealerId: req.userId ,status:true}
+        let query = { isDeleted: false, dealerId: req.userId, status: true }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
-          res.send({
-            code: constant.errorCode,
-            message: "Unable to fetch the customer"
-          });
-          return;
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customer"
+            });
+            return;
         };
         const customersId = customers.map(obj => obj._id.toString());
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-    
-    
+
+
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-    
+
         const result_Array = getPrimaryUser.map(item1 => {
-          const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-    
-          if (matchingItem) {
-            return {
-              ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-              customerData: matchingItem.toObject()
-            };
-          } else {
-            return dealerData.toObject();
-          }
+            const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+            if (matchingItem) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    customerData: matchingItem.toObject()
+                };
+            } else {
+                return dealerData.toObject();
+            }
         });
         let name = data.firstName ? data.firstName : ""
         let nameArray = name.split(" ");
-    
+
         // Create new keys for first name and last name
         let newObj = {
-          f_name: nameArray[0],  // First name
-          l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+            f_name: nameArray[0],  // First name
+            l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
         };
         console.log('name check ++++++++++++++++++++++=', newObj)
         const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
         const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
         const emailRegex = new RegExp(data.email ? data.email : '', 'i')
         const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-    
+
         const filteredData = result_Array.filter(entry => {
-          return (
-            firstNameRegex.test(entry.firstName) &&
-            lastNameRegex.test(entry.lastName) &&
-            emailRegex.test(entry.email) &&
-            phoneRegex.test(entry.phoneNumber)
-          );
+            return (
+                firstNameRegex.test(entry.firstName) &&
+                lastNameRegex.test(entry.lastName) &&
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
         });
-    
+
         res.send({
-          code: constant.successCode,
-          message: "Success",
-          result: filteredData
+            code: constant.successCode,
+            message: "Success",
+            result: filteredData
         })
-      } catch (err) {
+    } catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
         })
     }
 }
+
+exports.getDealerResellers = async (req, res) => {
+    try {
+        let data = req.body
+        let checkDealer = await dealerService.getDealerById(req.userId, {})
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        };
+
+        let query = { isDeleted: false, dealerId: req.userId, status: true }
+        let projection = { __v: 0 }
+        const resellers = await resellerService.getResellers(query, projection);
+        if (!resellers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the resellers"
+            });
+            return;
+        };
+
+        console.log('sjdhfjdshf-------------', resellers)
+
+        const resellerId = resellers.map(obj => obj._id.toString());
+        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        console.log('sjdhfjdshf-------------', getPrimaryUser, resellerId, queryUser)
+
+        const result_Array = getPrimaryUser.map(item1 => {
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+            if (matchingItem) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    resellerData: matchingItem.toObject()
+                };
+            } else {
+                return dealerData.toObject();
+            }
+        });
+
+        const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.resellerData.name) &&
+                emailRegex.test(entry.email) &&
+                dealerRegex.test(entry.resellerData.dealerId) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: filteredData
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
 
 
 
