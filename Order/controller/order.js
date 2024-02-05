@@ -130,7 +130,7 @@ exports.createOrder = async (req, res) => {
             let hhhhh=data.productsArray[0].QuantityPricing.stringify()
             console.log("Body=================",hhhhh)
             console.log("productsArray=================",data.productsArray[0].QuantityPricing)
-            console.log("typeof=================",typeof(data.productsArray[0].QuantityPricing))
+            console.log("typeof=================",typeof(data.productsArray[0].QuantityPricing),typeof(hhhhh))
             data.venderOrder = data.dealerPurchaseOrder
             let projection = { isDeleted: 0 }
             let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
