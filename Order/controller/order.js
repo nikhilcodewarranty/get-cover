@@ -937,7 +937,7 @@ exports.checkPurchaseOrder = async (req, res) => {
              checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         }
 
-        else {
+        else if(data.oldDealerPurchaseOrder=='') {
              checkPurchaseOrder = await orderService.getOrder({ venderOrder: req.body.dealerPurchaseOrder, dealerId: req.body.dealerId }, { isDeleted: 0 });
         }
 
