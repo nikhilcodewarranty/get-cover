@@ -384,6 +384,7 @@ exports.getResellerPriceBook = async (req, res) => {
     }
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
+    console.log("getResellerPriceBook-------------------",getResellerPriceBook)
     if (!getResellerPriceBook) {
         res.send({
             code: constant.errorCode,
