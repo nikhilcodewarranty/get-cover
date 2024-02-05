@@ -8,6 +8,7 @@ router.post('/getDealerUsers',[verifyToken],dealerUserController.getDealerUsers)
 router.post('/getPriceBooks',[verifyToken],dealerUserController.getPriceBooks)
 router.post('/getAllPriceBooksByFilter',[verifyToken],dealerUserController.getAllPriceBooksByFilter)
 router.post('/getDealerServicers',[verifyToken],dealerUserController.getDealerServicers)
+router.post('/getDealerCustomers',[verifyToken],dealerUserController.getDealerCustomers)
 
 
 module.exports = router; 
