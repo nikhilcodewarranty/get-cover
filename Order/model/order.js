@@ -48,6 +48,9 @@ const orderSchema = new mongoose.Schema({
         noOfProducts: {
           type: Number,
         },
+        priceType: {
+          type: String
+        },
         checkNumberProducts: {
           type: Number,
           default: 0
@@ -68,25 +71,25 @@ const orderSchema = new mongoose.Schema({
             originalName: '',
           }
         },
-        QuantityPricing:{
-          type:[
+        QuantityPricing: {
+          type: [
             {
-              name:{
+              name: {
                 type: String,
               },
-              quantity:{
+              quantity: {
                 type: Number,
               },
-              enterQuantity:{
+              enterQuantity: {
                 type: Number,
               },
             }
           ],
-          default:[
+          default: [
             {
-              name:'',
-              quantity:0,
-              enterQuantity:0,
+              name: '',
+              quantity: 0,
+              enterQuantity: 0,
             }
           ]
         },
