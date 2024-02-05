@@ -330,7 +330,105 @@ exports.getAllOrders = async (req, res) => {
         orderAmount: 1,
     }
 
-    let ordersResult = await orderService.getAllOrders({},project);
+    let query = { status: { $ne: 'Archieved' } };
+
+    let ordersResult = await orderService.getAllOrders(query,project);
+    let dealerIdsArray = ordersResult.map(result => result.dealerId)
+    const dealerCreateria = { _id: { $in: dealerIdsArray } };
+    //Get Respective Dealers
+    let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, { name: 1, isServicer: 1 })
+    let servicerIdArray = ordersResult.map(result => result.servicerId)
+    const servicerCreteria = {
+        $or: [
+            { _id: { $in: servicerIdArray } },
+            { resellerId: { $in: servicerIdArray } },
+            { dealerId: { $in: servicerIdArray } },
+        ]
+    };
+    //Get Respective Servicer
+    let respectiveServicer = await servicerService.getAllServiceProvider(servicerCreteria, { name: 1 })
+    let customerIdsArray = ordersResult.map(result => result.customerId)
+    const customerCreteria = { _id: { $in: customerIdsArray } }
+    //Get Respective Customer
+    let respectiveCustomer = await customerService.getAllCustomers(customerCreteria, { username: 1 })
+    //Get all Reseller
+    let resellerIdsArray = ordersResult.map(result => result.resellerId)
+    const resellerCreteria = { _id: { $in: resellerIdsArray } }
+    let respectiveReseller = await resellerService.getResellers(resellerCreteria, { name: 1, isServicer: 1 })
+    const result_Array = ordersResult.map(item1 => {
+        const dealerName = item1.dealerId != '' ? respectiveDealers.find(item2 => item2._id.toString() === item1.dealerId.toString()) : null;
+        const servicerName = item1.servicerId != null ? respectiveServicer.find(item2 => item2._id.toString() === item1.servicerId.toString() || item2.resellerId === item1.servicerId) : null;
+        const customerName = item1.customerId != null ? respectiveCustomer.find(item2 => item2._id.toString() === item1.customerId.toString()) : null;
+        const resellerName = item1.resellerId != null ? respectiveReseller.find(item2 => item2._id.toString() === item1.resellerId.toString()) : null;
+        if (dealerName || customerName || servicerName || resellerName) {
+            return {
+                ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                dealerName: dealerName ? dealerName.toObject() : dealerName,
+                servicerName: servicerName ? servicerName.toObject() : {},
+                customerName: customerName ? customerName.toObject() : {},
+                resellerName: resellerName ? resellerName.toObject() : {},
+            };
+        } else {
+            return {
+                dealerName: dealerName.toObject(),
+                servicerName: servicerName.toObject(),
+                customerName: customerName.toObject(),
+                resellerName: resellerName.toObject
+            }
+        }
+    });
+
+    const unique_keyRegex = new RegExp(data.unique_key ? data.unique_key.trim() : '', 'i')
+    const venderOrderRegex = new RegExp(data.venderOrder ? data.venderOrder.trim() : '', 'i')
+    const status = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+    let filteredData = result_Array.filter(entry => {
+        return (
+            unique_keyRegex.test(entry.unique_key) &&
+            venderOrderRegex.test(entry.venderOrder) &&
+            status.test(entry.status)
+        );
+    });
+
+
+    const updatedArray = filteredData.map(item => ({
+        ...item,
+        servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
+    }));
+
+
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: updatedArray
+    })
+}
+exports.getAllArchieveOrders = async (req, res) => {
+    let data = req.body
+    if (req.role != "Super Admin") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only super admin allow to do this action"
+        })
+        return;
+    }
+
+    let project =  {
+        productsArray: 1,
+        dealerId: 1,
+        unique_key: 1,
+        servicerId: 1,
+        customerId: 1,
+        resellerId: 1,
+        paymentStatus: 1,
+        status: 1,
+        venderOrder: 1,
+        orderAmount: 1,
+    }
+
+    let query = { status: { $eq: 'Archieved' } };
+
+    let ordersResult = await orderService.getAllOrders(query,project);
     let dealerIdsArray = ordersResult.map(result => result.dealerId)
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers

@@ -13,6 +13,7 @@ router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMu
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
 
 router.post('/getAllOrders',[verifyToken],orderController.getAllOrders)
+router.post('/getArchieveOrder',[verifyToken],orderController.getAllArchieveOrders)
 router.get('/getOrderById/:orderId',[verifyToken],orderController.getSingleOrder)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
