@@ -7,6 +7,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 
 router.post('/createOrder',[verifyToken],orderController.createOrder)
 router.post('/editOrderDetail/:orderId',[verifyToken],orderController.editOrderDetail)
+router.post('/archiveOrder/:orderId',[verifyToken],orderController.archiveOrder)
 router.post('/checkFileValidation',[verifyToken],orderController.checkFileValidation)
 router.post('/checkMultipleFileValidation',[verifyToken],orderController.checkMultipleFileValidation)
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);

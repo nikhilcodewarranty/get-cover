@@ -975,6 +975,50 @@ exports.checkPurchaseOrder = async (req, res) => {
     }
 }
 
+exports.archiveOrder=async (req,res)=>{
+    try{
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+
+        let checkOrder = await orderService.getOrder({_id:req.params.orderId},{isDeleted:0})
+        if(!checkOrder){
+            res.send({
+                code:constant.successCode,
+                message:'Order not found!'
+            });
+
+            return;
+        }
+
+         let updateStatus = await orderService.updateOrder({ _id: checkOrder._id }, { status: "Archieved" }, { new: true })
+         if(!updateStatus){
+            res.send({
+                code:constant.errorCode,
+                message:'Unable to archive this order!'
+            });
+            return
+         }
+
+         res.send({
+            code:constant.successCode,
+            message:'Success!',
+         })
+    }
+    catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        });
+
+        return;
+    }
+}
+
 exports.getSingleOrder = async (req, res) => {
     try {
         if (req.role != "Super Admin") {
