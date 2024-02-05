@@ -51,6 +51,12 @@ const orderSchema = new mongoose.Schema({
         priceType: {
           type: String
         },
+        term: {
+          type: Number
+        },
+        description:{
+          type:String
+        },
         checkNumberProducts: {
           type: Number,
           default: 0
