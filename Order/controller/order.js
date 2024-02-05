@@ -46,7 +46,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            //let data = req.body
+            let data = req.body
             // let data = {
             //     "dealerId": "65aba175107144beb95f3bcf",
             //     "servicerId": "",
