@@ -2,6 +2,7 @@ require('dotenv').config()
 const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
+const orderService = require("../../Order/services/orderService");
 const resellerService = require("../services/resellerService");
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -335,9 +336,36 @@ exports.getResellerPriceBook = async (req, res) => {
         });
         return;
     }
+
+    console.log("fdssfddssd",checkDealer);
+    let queryCategories = {
+        $and: [
+            { isDeleted: false },
+            { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    console.log("catIdsArray",catIdsArray)
+    let searchName = req.body.name ? req.body.name : ''
+    console.log("searchName",searchName)
     let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
-    let getResellerPriceBook = await dealerPriceService.getDealerPriceBookById(query, projection)
+    let query = {
+        $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': true },
+            {
+                dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+            },
+            {
+                isDeleted: false
+            }
+        ]
+    }
+     console.log("query==============",query)
+  //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
+    let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
         res.send({
             code: constant.errorCode,
@@ -643,4 +671,56 @@ exports.getDealerByReseller = async (req, res) => {
         })
     }
 
+}
+
+exports.getResellerOrders = async (req, res) => {
+    try {
+        if (req.role != 'Super Admin') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only super admin allow to do this action!'
+
+            })
+            return;
+        }
+        let query = { _id: req.params.resellerId };
+        let projection = { isDeleted: 0 }
+        let checkReseller = await resellerService.getReseller(query, projection)
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Reseller not found!'
+            })
+            return;
+        }
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId) }
+        let orders = await orderService.getAllOrders(orderQuery, project)
+        console.log("fdsfsddsdfs", orders)
+        res.send({
+            code: constant.successCode,
+            message: 'Success!',
+            result: orders
+        })
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+
+    }
 }

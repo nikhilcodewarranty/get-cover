@@ -32,6 +32,8 @@ const { string } = require('joi');
 const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
+const orderService = require('../../Order/services/orderService');
+const order = require('../../Order/model/order');
 
 
 var StorageP = multer.diskStorage({
@@ -122,6 +124,26 @@ exports.getAllDealers = async (req, res) => {
     //User Query Filter
 
     let dealarUser = await userService.getMembers(query1, projection)
+
+    //Get Dealer Order Data     
+
+    let orderQuery = { dealerId: { $in: dealerIds } };
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderData = await orderService.getAllOrders(orderQuery, project);
+
+
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -133,11 +155,13 @@ exports.getAllDealers = async (req, res) => {
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const orders = orderData.find(order => order.dealerId.toString() === item1.accountId.toString())
 
-      if (matchingItem) {
+      if (matchingItem || orders) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject()
+          dealerData: matchingItem.toObject(),
+          ordersData: orders ? orders : {}
         };
       } else {
         return dealerData.toObject();
@@ -1735,7 +1759,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
         return item;
       });
-      
+
       const headers = [];
       for (let cell in ws) {
         // Check if the cell is in the first row and has a non-empty value
@@ -1773,7 +1797,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           data.status = null
         }
       })
-    //  console.log("check empty value", totalDataComing)
+      //  console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
 
@@ -1794,7 +1818,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           }
         }
 
-        console.log("totalDataComing============================",totalDataComing);
+        console.log("totalDataComing============================", totalDataComing);
         const pricebookArrayPromise = totalDataComing.map(item => {
           if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
@@ -1867,7 +1891,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
             status: item.status
           }
         })
-        console.log('csv array-----------------------------',csvArray)
+        console.log('csv array-----------------------------', csvArray)
         function countStatus(array, status) {
           return array.filter(item => item.status === status).length;
         }
@@ -2257,6 +2281,53 @@ exports.getDealerResellers = async (req, res) => {
     })
 
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDealerOrders = async (req, res) => {
+  try {
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.successCode,
+        message: "Only super admin allow to do this action!"
+      })
+      return;
+    }
+
+    let checkDealer = await dealerService.getDealerById(req.params.dealerId, { isDeleted: 0 })
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Dealer not found!'
+      })
+      return;
+    }
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let query = { dealerId:  new mongoose.Types.ObjectId(req.params.dealerId) }
+    let orders = await orderService.getAllOrders(query, project)
+    res.send({
+      code:constant.successCode,
+      message:'Success!',
+      result:orders
+    })
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message

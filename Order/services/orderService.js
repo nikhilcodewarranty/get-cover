@@ -1,22 +1,14 @@
 const order = require("../model/order");
 
 module.exports = class orderService {
-  static async getAllOrders() {
+  static async getAllOrders(query,project) {
     try {
       const allOrders = await order.aggregate([
         {
-          $project: {
-            productsArray: 1,
-            dealerId: 1,
-            unique_key: 1,
-            servicerId: 1,
-            customerId: 1,
-            resellerId: 1,
-            paymentStatus: 1,
-            status: 1,
-            venderOrder: 1,
-            orderAmount: 1,
-          },
+          $match:query
+        },
+        {
+          $project:project,
 
         },
         {
