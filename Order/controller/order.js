@@ -712,7 +712,7 @@ exports.checkFileValidation = async (req, res) => {
             //     return;
             // }
             let csvName = req.file.filename;
-            let originalName = req.file.originalName;
+            let originalName = req.file.originalname;
             let size = req.file.size;
             const csvWriter = createCsvWriter({
                 path: "./uploads/resultFile/" + csvName,
@@ -2144,3 +2144,15 @@ exports.editOrderDetail = async (req, res) => {
 //         })
 //     }
 // }
+
+exports.getDashboardData = async(req,res)=>{
+    try{
+        let data = req.body;
+        
+    }catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+    }
+}
