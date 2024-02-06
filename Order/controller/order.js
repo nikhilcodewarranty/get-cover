@@ -398,16 +398,16 @@ exports.processOrder = async (req, res) => {
             .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
-        if(checkOrder.customerId==''){
+        if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
         }
-        if(checkOrder.paymentStatus!='Paid'){
+        if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('The order payment is not completed yet')
         }
-        if(resultArray.length > 0 ){
+        if (resultArray.length > 0) {
             returnField.push('The coverage start date missing')
         }
-        if(isEmptyOrderFile.length > 0 ){
+        if (isEmptyOrderFile.length > 0) {
             returnField.push('Some contract file is missing')
         }
         // const obj = {
@@ -1176,7 +1176,7 @@ exports.multipleFileValidation = async (req, res) => {
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
                         checkNumberProducts:
-                        productsWithFiles[j].products.checkNumberProducts,
+                            productsWithFiles[j].products.checkNumberProducts,
                         noOfProducts: productsWithFiles[j].products.noOfProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
@@ -1939,7 +1939,9 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
+        console.log('check_____------------------------------------',returnField)
         if (returnField.customerId && returnField.customerId && returnField.customerId && returnField.customerId) {
+            console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
@@ -2170,14 +2172,24 @@ exports.editOrderDetail = async (req, res) => {
 //     }
 // }
 
-exports.getDashboardData = async(req,res)=>{
-    try{
+exports.getDashboardData = async (req, res) => {
+    try {
         let data = req.body;
-        
-    }catch(err){
+        let checkOrders = await orderService.getOrders({ status: "Active", isDeleted: false })
+        if (!checkOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch order data"
+            })
+            return;
+        }
+
+
+
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
