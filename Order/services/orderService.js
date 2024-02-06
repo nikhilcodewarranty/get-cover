@@ -40,14 +40,13 @@ module.exports = class orderService {
         {
           $group: {
             _id: "$dealerId",
-            count: {
-              $sum: "$orderAmount"
-            },
-            checkNumberProducts: {
-              $sum: {
-                $sum: "$productsArray.checkNumberProducts"
-              }
-            }
+            totalOrderAmount: { $sum: "$orderAmount" },
+            noOfOrders: { $sum: 1 }
+            // checkNumberProducts: {
+            //   $sum: {
+            //     $sum: "$productsArray.checkNumberProducts"
+            //   }
+            // }
 
           }
         },
