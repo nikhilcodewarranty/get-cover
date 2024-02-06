@@ -387,27 +387,29 @@ exports.processOrder = async (req, res) => {
             return;
         }
 
+        console.log
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
         let isEmptyOrderFile = checkOrder.productsArray
             .map(
                 (item) =>
-                    item.orderFile.fileName === "" && item.orderFile.originalName === ""
+                    item.orderFile.fileName === "" && item.orderFile.name === ""
             )
-            .some(Boolean);
-        //  console.log(isEmptyOrderFile);
-        // console.log(resultArray)
+            // .some(Boolean);
+         console.log("isEmptyOrderFile-----------------------",isEmptyOrderFile);
+        console.log(resultArray)
         if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
         }
         if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('The order payment is not completed yet')
         }
-        if (resultArray.length > 0) {
+        if (resultArray.includes(true)) {
             returnField.push('The coverage start date missing')
         }
-        if (isEmptyOrderFile.length > 0) {
+
+        if (isEmptyOrderFile.includes(true) ) {
             returnField.push('Some contract file is missing')
         }
         // const obj = {
@@ -1928,21 +1930,21 @@ exports.editOrderDetail = async (req, res) => {
         let isEmptyOrderFile = checkOrder.productsArray
             .map(
                 (item) =>
-                    item.orderFile.fileName === "" && item.orderFile.originalName === ""
+                    item.orderFile.fileName === "" 
             )
-            .some(Boolean);
+            // .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-            coverageStartDate: resultArray.length == 0 ? true : false,
-            fileName: isEmptyOrderFile.length == 0 ? true : false,
+            coverageStartDate: resultArray.includes(true) ? false : true,
+            fileName: isEmptyOrderFile.includes(true) ? false : true,
         };
 
         returnField.push(obj);
         console.log('check_____------------------------------------',returnField)
-        if (returnField.customerId && returnField.customerId && returnField.customerId && returnField.customerId) {
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },

@@ -127,7 +127,7 @@ exports.getAllDealers = async (req, res) => {
 
     //Get Dealer Order Data     
 
-    let orderQuery = { dealerId: { $in: dealerIds } };
+    let orderQuery = { dealerId: { $in: dealerIds } ,status: { $ne: "Archieved" } };
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -2321,7 +2321,7 @@ exports.getDealerOrders = async (req, res) => {
 
     let query = {
       $and: [
-        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) ,status: { $ne: "Archieved" } },
         // {
         //   'unique_key': { '$regex': req.body.id ? req.body.id : '', '$options': 'i' },
         // },

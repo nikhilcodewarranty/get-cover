@@ -166,7 +166,7 @@ exports.getAllResellers = async (req, res) => {
             orderAmount: 1,
         }
 
-        let orderQuery = { resellerId: { $in: resellerOrderIds } };
+        let orderQuery = { resellerId: { $in: resellerOrderIds } ,status: { $ne: "Archieved" } };
 
         let ordersData = await orderService.getAllOrders(orderQuery, project)
 
@@ -724,7 +724,7 @@ exports.getResellerOrders = async (req, res) => {
             orderAmount: 1,
         }
 
-        let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId) }
+        let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId),status: { $ne: "Archieved" }  }
         let orders = await orderService.getAllOrders(orderQuery, project)
         console.log("fdsfsddsdfs", orders)
         res.send({
