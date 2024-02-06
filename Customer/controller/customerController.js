@@ -513,13 +513,39 @@ exports.getCustomerById = async (req, res) => {
       let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
       console.log("checkCustomer=======================", checkCustomer)
+      let project = {
+        productsArray: 1,
+        dealerId: 1,
+        unique_key: 1,
+        servicerId: 1,
+        customerId: 1,
+        resellerId: 1,
+        paymentStatus: 1,
+        status: 1,
+        venderOrder: 1,
+        orderAmount: 1,
+      }
+
+      let orderQuery = {
+        $and: [
+          { customerId: { $in: [checkCustomer._id] }, status: { $ne: "Archieved" } },
+          {
+            'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+          },
+        ]
+      }
+      let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+
+      console.log("orderQuery================",orderQuery);
+
       res.send({
         code: constant.successCode,
         message: "Success",
         result: {
           meta: checkCustomer,
           primary: getPrimaryUser,
-          resellerName: checkReseller ? checkReseller.name : ''
+          resellerName: checkReseller ? checkReseller.name : '',
+          orderData:ordersResult
         }
       })
 
