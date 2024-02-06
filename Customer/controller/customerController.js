@@ -4,9 +4,11 @@ const customerService = require("../services/customerService");
 let dealerService = require('../../Dealer/services/dealerService')
 let resellerService = require('../../Dealer/services/resellerService')
 let userService = require('../../User/services/userService')
+let servicerService = require('../../Provider/services/providerService')
 let orderService = require('../../Order/services/orderService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
+const serviceProvider = require("../../Provider/model/serviceProvider");
 
 exports.createCustomer = async (req, res, next) => {
   try {
@@ -246,19 +248,19 @@ exports.getDealerCustomers = async (req, res) => {
     let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
 
-    console.log("ordersResult=================",ordersResult);
+    console.log("ordersResult=================", ordersResult);
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order=>order.customerId.toString()===item1.accountId)
+      const order = ordersResult.find(order => order.customerId.toString() === item1.accountId)
 
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject(),
-          orderData:order? order : {}
+          orderData: order ? order : {}
         };
       } else {
         return dealerData.toObject();
@@ -581,6 +583,142 @@ exports.getCustomerUsers = async (req, res) => {
       customerStatus: checkCustomer.status
     })
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.customerOrders = async (req, res) => {
+  try {
+    let data = req.body
+    console.log("req.params.customerId", req.params.customerId)
+    let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid customer ID"
+      })
+      return;
+    }
+
+    let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId) }, { isDeleted: 0 })
+
+    //Get Respective dealer
+    let dealerIdsArray = ordersResult.map((result) => result.dealerId);
+    const dealerCreateria = { _id: { $in: dealerIdsArray } };
+    //Get Respective Dealers
+    let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
+      name: 1,
+      isServicer: 1,
+    });
+    //Get Order Customer
+    let customerIdsArray = ordersResult.map((result) => result.customerId);
+    const customerCreteria = { _id: { $in: customerIdsArray } };
+    let respectiveCustomer = await customerService.getAllCustomers(
+      customerCreteria,
+      { username: 1 }
+    );
+    //Get Respective Reseller
+
+    let resellerIdsArray = ordersResult.map((result) => result.resellerId);
+    const resellerCreteria = { _id: { $in: resellerIdsArray } };
+    let respectiveReseller = await resellerService.getResellers(
+      resellerCreteria,
+      { name: 1, isServicer: 1 }
+    );
+
+    let servicerIdArray = ordersResult.map((result) => result.servicerId);
+    const servicerCreteria = {
+      $or: [
+        { _id: { $in: servicerIdArray } },
+        { resellerId: { $in: servicerIdArray } },
+        { dealerId: { $in: servicerIdArray } },
+      ],
+    };
+    //Get Respective Servicer
+    let respectiveServicer = await servicerService.getAllServiceProvider(
+      servicerCreteria,
+      { name: 1 }
+    );
+    const result_Array = ordersResult.map((item1) => {
+      const dealerName =
+        item1.dealerId != ""
+          ? respectiveDealers.find(
+            (item2) => item2._id.toString() === item1.dealerId.toString()
+          )
+          : null;
+      const servicerName =
+        item1.servicerId != null
+          ? respectiveServicer.find(
+            (item2) =>
+              item2._id.toString() === item1.servicerId.toString() ||
+              item2.resellerId === item1.servicerId
+          )
+          : null;
+      const customerName =
+        item1.customerId != null
+          ? respectiveCustomer.find(
+            (item2) => item2._id.toString() === item1.customerId.toString()
+          )
+          : null;
+      const resellerName =
+        item1.resellerId != null
+          ? respectiveReseller.find(
+            (item2) => item2._id.toString() === item1.resellerId.toString()
+          )
+          : null;
+      if (dealerName || customerName || servicerName || resellerName) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerName: servicerName ? servicerName.toObject() : {},
+          dealerName: dealerName ? dealerName.toObject() : dealerName,
+          customerName: customerName ? customerName.toObject() : {},
+          resellerName: resellerName ? resellerName.toObject() : {},
+        };
+      } else {
+        return {
+          dealerName: dealerName.toObject(),
+          servicerName: servicerName.toObject(),
+          customerName: customerName.toObject(),
+          resellerName: resellerName.toObject,
+        };
+      }
+    });
+
+    const unique_keyRegex = new RegExp(
+      data.unique_key ? data.unique_key.trim() : "",
+      "i"
+    );
+    const venderOrderRegex = new RegExp(
+      data.venderOrder ? data.venderOrder.trim() : "",
+      "i"
+    );
+    const status = new RegExp(data.status ? data.status.trim() : "", "i");
+
+    let filteredData = result_Array.filter((entry) => {
+      return (
+        unique_keyRegex.test(entry.unique_key) &&
+        venderOrderRegex.test(entry.venderOrder) &&
+        status.test(entry.status)
+      );
+    });
+    const updatedArray = filteredData.map((item) => ({
+      ...item,
+      servicerName: item.dealerName.isServicer
+        ? item.dealerName
+        : item.resellerName.isServicer
+          ? item.resellerName
+          : item.servicerName,
+    }));
+    res.send({
+      code: constant.successCode,
+      message: 'Success',
+      result: updatedArray
+    })
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
