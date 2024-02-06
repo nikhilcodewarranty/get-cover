@@ -192,10 +192,10 @@ exports.createOrder = async (req, res) => {
             data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
             if (req.files) {
                 const uploadedFiles = req.files.map(file => ({
-                    fileName: file.filename,
-                    name: file.originalname,
-                    filePath: file.path,
-                    size:file.size
+                    fileName: file?file.filename:'',
+                    name: file?file.originalname:'',
+                    filePath: file ? file.path :'',
+                    size:file ? file.size : ''
                 }));
 
                 const filteredProducts = data.productsArray.filter(product => product.file !== null);
