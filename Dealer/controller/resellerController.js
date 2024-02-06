@@ -281,6 +281,31 @@ exports.getResellerById = async (req, res) => {
         return;
     }
 
+    let project = {
+        productsArray: 1,
+        dealerId: 1,
+        unique_key: 1,
+        servicerId: 1,
+        customerId: 1,
+        resellerId: 1,
+        paymentStatus: 1,
+        status: 1,
+        venderOrder: 1,
+        orderAmount: 1,
+    }
+
+    let orderQuery = {
+        $and: [
+            { resellerId: { $in: [checkReseller[0]._id] }, status: { $ne: "Archieved" } },
+            {
+                'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+            },
+        ]
+    }
+    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+
+    console.log("ordersResult================",ordersResult)
+
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
         if (matchItem) {

@@ -512,7 +512,6 @@ exports.getCustomerById = async (req, res) => {
     } else {
       let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
-      console.log("checkCustomer=======================", checkCustomer)
       let project = {
         productsArray: 1,
         dealerId: 1,
@@ -536,7 +535,6 @@ exports.getCustomerById = async (req, res) => {
       }
       let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
-      console.log("orderQuery================",orderQuery);
 
       res.send({
         code: constant.successCode,
