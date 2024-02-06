@@ -217,8 +217,8 @@ exports.getDealerCustomers = async (req, res) => {
       return;
     };
     const customersId = customers.map(obj => obj._id.toString());
+    const orderCustomerId = customers.map(obj => obj._id);
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-    const queryUser = { customerId: { $in: customersId } };
 
     //Get Dealer Customer Orders
 
@@ -235,9 +235,10 @@ exports.getDealerCustomers = async (req, res) => {
       orderAmount: 1,
     }
 
+    console.log("customersId===============",orderCustomerId)
     let orderQuery = {
       $and: [
-        { customerId: { $in: customersId } , status: { $ne: "Archieved" } },
+        { customerId: { $in: orderCustomerId }, status: { $ne: "Archieved" } },
         {
           'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
         },
@@ -245,16 +246,20 @@ exports.getDealerCustomers = async (req, res) => {
     }
     let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
+    console.log("ordersResult==============",ordersResult)
+
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const order = ordersResult.find(order=>order.customerId.toString()===item1.accountId)
 
-      if (matchingItem) {
+      if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject()
+          customerData: matchingItem.toObject(),
+          orderData:order? order : {}
         };
       } else {
         return dealerData.toObject();
