@@ -398,14 +398,26 @@ exports.processOrder = async (req, res) => {
             .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
-        const obj = {
-            customerId: checkOrder.customerId ? true : false,
-            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-            coverageStartDate: resultArray.length == 0 ? true : false,
-            fileName: isEmptyOrderFile.length == 0 ? true : false,
-        };
+        if(checkOrder.customerId==''){
+            returnField.push('Customer Name is missing')
+        }
+        if(checkOrder.paymentStatus!='Paid'){
+            returnField.push('The order payment is not completed yet')
+        }
+        if(resultArray.length > 0 ){
+            returnField.push('The coverage start date missing')
+        }
+        if(isEmptyOrderFile.length > 0 ){
+            returnField.push('Some contract file is missing')
+        }
+        // const obj = {
+        //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
+        //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
+        //     coverageStartDate: resultArray.length == 0 ? true : false,
+        //     fileName: isEmptyOrderFile.length == 0 ? true : false,
+        // };
 
-        returnField.push(obj);
+        // returnField.push(obj);
 
         res.send({
             code: constant.successCode,
@@ -835,8 +847,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }));
 
                 let fileIndex = 0;
-                let filePath;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
+                    let file1 = undefined; // Initialize file to undefined
+                    if (data1.checkFile) { // Check if data1.file is not blank
+                        file1 = uploadedFiles[fileIndex].filePath;
+                        fileIndex++;
+                        console.log(fileIndex);
+                    }
                     return {
                         products: {
                             key: index + 1,
@@ -845,11 +862,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: data1.priceType,
                             rangeStart: data1.rangeStart,
                             rangeEnd: data1.rangeEnd,
-                            flag: data1.file,
-                            file: data1.file ? uploadedFiles[fileIndex].filePath : undefined,
+                            flag: data1.checkFile, // Set flag based on whether data1.file is not blank
+                            file: file1
                         },
                     };
                 });
+
                 let allHeaders = [];
                 let allDataComing = [];
                 let message = [];
@@ -929,7 +947,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                     return;
                 }
-
                 //Check if csv data length equal to no of products
                 const isValidNumberData = allDataComing.map((obj) => {
                     if (obj.priceType == "Quantity Pricing") {
@@ -1033,6 +1050,7 @@ exports.multipleFileValidation = async (req, res) => {
                     checkNumberProducts: 45,
                     price: 160,
                     file: true,
+                    checkFile: true,
                     manufacture: "Get-Cover123",
                     model: "Inverter123",
                     serial: "S123GHK",
@@ -1056,6 +1074,7 @@ exports.multipleFileValidation = async (req, res) => {
                     checkNumberProducts: 12,
                     price: 160,
                     file: false,
+                    checkFile: false,
                     manufacture: "Get-Cover123",
                     model: "222222222Inverter123",
                     serial: "S123GHK",
@@ -1079,6 +1098,7 @@ exports.multipleFileValidation = async (req, res) => {
                     checkNumberProducts: 12,
                     price: 160,
                     file: true,
+                    checkFile: true,
                     manufacture: "Get-Cover123",
                     model: "222222222Inverter123",
                     serial: "S123GHK",
@@ -1111,8 +1131,12 @@ exports.multipleFileValidation = async (req, res) => {
             }));
 
             let fileIndex = 0;
-            let filePath;
             const productsWithFiles = data.productsArray.map((data1, index) => {
+                let file1 = undefined; // Initialize file to undefined
+                if (data1.checkFile) { // Check if data1.file is not blank
+                    file1 = uploadedFiles[fileIndex].filePath;
+                    fileIndex++;
+                }
                 return {
                     products: {
                         key: index + 1,
@@ -1121,11 +1145,12 @@ exports.multipleFileValidation = async (req, res) => {
                         priceType: data1.priceType,
                         rangeStart: data1.rangeStart,
                         rangeEnd: data1.rangeEnd,
-                        flag: data1.file,
-                        file: data1.file ? uploadedFiles[fileIndex].filePath : undefined,
+                        flag: data1.checkFile, // Set flag based on whether data1.file is not blank
+                        file: file1
                     },
                 };
             });
+
             let allHeaders = [];
             let allDataComing = [];
             let message = [];
@@ -1151,7 +1176,7 @@ exports.multipleFileValidation = async (req, res) => {
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
                         checkNumberProducts:
-                            productsWithFiles[j].products.checkNumberProducts,
+                        productsWithFiles[j].products.checkNumberProducts,
                         noOfProducts: productsWithFiles[j].products.noOfProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
