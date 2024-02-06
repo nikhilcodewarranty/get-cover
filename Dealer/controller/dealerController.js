@@ -7,6 +7,7 @@ const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const dealerRelation = require("../../Provider/model/dealerServicer")
+const servicerService = require("../../Provider/services/providerService");
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
@@ -127,7 +128,7 @@ exports.getAllDealers = async (req, res) => {
 
     //Get Dealer Order Data     
 
-    let orderQuery = { dealerId: { $in: dealerIds } ,status: { $ne: "Archieved" } };
+    let orderQuery = { dealerId: { $in: dealerIds }, status: { $ne: "Archieved" } };
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -141,10 +142,9 @@ exports.getAllDealers = async (req, res) => {
       orderAmount: 1,
     }
 
-    let orderData = await orderService.getGroupingOrder(orderQuery,project);
+    let orderData = await orderService.getGroupingOrder(orderQuery, project);
 
 
-    console.log("dd=========================",orderData)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -2324,7 +2324,7 @@ exports.getDealerOrders = async (req, res) => {
 
     let query = {
       $and: [
-        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) ,status: { $ne: "Archieved" } },
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: { $ne: "Archieved" } },
         // {
         //   'unique_key': { '$regex': req.body.id ? req.body.id : '', '$options': 'i' },
         // },
@@ -2333,11 +2333,101 @@ exports.getDealerOrders = async (req, res) => {
         },
       ]
     }
-    let orders = await orderService.getAllOrders(query, project)
+    let ordersResult = await orderService.getAllOrders(query, project);
+    //Get Respective dealer
+    let dealerIdsArray = ordersResult.map((result) => result.dealerId);
+    const dealerCreateria = { _id: { $in: dealerIdsArray } };
+    //Get Respective Dealers
+    let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
+      name: 1,
+      isServicer: 1,
+    });
+    //Get Order Customer
+    let customerIdsArray = ordersResult.map((result) => result.customerId);
+    const customerCreteria = { _id: { $in: customerIdsArray } };
+    let respectiveCustomer = await customerService.getAllCustomers(
+      customerCreteria,
+      { username: 1 }
+    );
+    //Get Respective Reseller
+
+    let resellerIdsArray = ordersResult.map((result) => result.resellerId);
+    const resellerCreteria = { _id: { $in: resellerIdsArray } };
+    let respectiveReseller = await resellerService.getResellers(
+      resellerCreteria,
+      { name: 1, isServicer: 1 }
+    );
+
+    let servicerIdArray = ordersResult.map((result) => result.servicerId);
+    const servicerCreteria = {
+      $or: [
+        { _id: { $in: servicerIdArray } },
+        { resellerId: { $in: servicerIdArray } },
+        { dealerId: { $in: servicerIdArray } },
+      ],
+    };
+    //Get Respective Servicer
+    let respectiveServicer = await servicerService.getAllServiceProvider(
+      servicerCreteria,
+      { name: 1 }
+    );
+    const result_Array = ordersResult.map((item1) => {
+      const dealerName =
+        item1.dealerId != ""
+          ? respectiveDealers.find(
+            (item2) => item2._id.toString() === item1.dealerId.toString()
+          )
+          : null;
+      const servicerName =
+        item1.servicerId != null
+          ? respectiveServicer.find(
+            (item2) =>
+              item2._id.toString() === item1.servicerId.toString() ||
+              item2.resellerId === item1.servicerId
+          )
+          : null;
+      const customerName =
+        item1.customerId != null
+          ? respectiveCustomer.find(
+            (item2) => item2._id.toString() === item1.customerId.toString()
+          )
+          : null;
+      const resellerName =
+        item1.resellerId != null
+          ? respectiveReseller.find(
+            (item2) => item2._id.toString() === item1.resellerId.toString()
+          )
+          : null;
+      if (dealerName || customerName || servicerName || resellerName) {
+        return {
+          ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerName: servicerName ? servicerName.toObject() : {},
+          dealerName: dealerName ? dealerName.toObject() : dealerName,
+          customerName: customerName ? customerName.toObject() : {},
+          resellerName: resellerName ? resellerName.toObject() : {},
+        };
+      } else {
+        return {
+          dealerName: dealerName.toObject(),
+          servicerName: servicerName.toObject(),
+          customerName: customerName.toObject(),
+          resellerName: resellerName.toObject,
+        };
+      }
+    });
+
+    const updatedArray = result_Array.map((item) => ({
+      ...item,
+      servicerName: item.dealerName.isServicer
+        ? item.dealerName
+        : item.resellerName.isServicer
+          ? item.resellerName
+          : item.servicerName,
+    }));
     res.send({
       code: constant.successCode,
       message: 'Success',
-      result: orders
+      result: updatedArray
     })
   }
   catch (err) {
