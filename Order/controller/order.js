@@ -192,7 +192,8 @@ exports.createOrder = async (req, res) => {
                 const uploadedFiles = req.files.map(file => ({
                     fileName: file.filename,
                     name: file.originalname,
-                    filePath: file.path
+                    filePath: file.path,
+                    size:file.size
                 }));
 
                 const filteredProducts = data.productsArray.filter(product => product.file !== null);
@@ -232,6 +233,9 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             data.status = "Pending"
+
+            console.log('saved object++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=',data)
+
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
