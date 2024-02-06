@@ -604,7 +604,7 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (parseInt(data.noOfProducts) != totalDataComing1.length) {
+            if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
                 res.send({
                     code: constant.errorCode,
                     message: "Data does not match to the number of orders"
