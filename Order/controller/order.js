@@ -1929,7 +1929,7 @@ exports.editOrderDetail = async (req, res) => {
         let isEmptyOrderFile = checkOrder.productsArray
             .map(
                 (item) =>
-                    item.orderFile.fileName === "" && item.orderFile.originalName === ""
+                    item.orderFile.fileName === "" 
             )
             .some(Boolean);
         //  console.log(isEmptyOrderFile);
