@@ -191,7 +191,7 @@ exports.createOrder = async (req, res) => {
             if (req.files) {
                 const uploadedFiles = req.files.map(file => ({
                     fileName: file.filename,
-                    originalName: file.originalname,
+                    name: file.originalname,
                     filePath: file.path
                 }));
 
@@ -208,7 +208,8 @@ exports.createOrder = async (req, res) => {
                             file: file.filePath,
                             orderFile: {
                                 fileName: file.fileName,
-                                originalName: file.originalName
+                                name: file.originalName,
+                                size:file.size
                             }
                         };
                     } else {
@@ -452,6 +453,7 @@ exports.getAllOrders = async (req, res) => {
         result: updatedArray
     })
 }
+
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body
     if (req.role != "Super Admin") {
@@ -554,6 +556,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body
             let file = req.file
+            console.log('file check++++++++++++++++++',req.file)
             // if(!data.rangeStart||!data.rangeEnd){
             //     res.send({
             //         code:constant.errorCode,
@@ -562,6 +565,8 @@ exports.checkFileValidation = async (req, res) => {
             //     return;
             // }
             let csvName = req.file.filename
+            let originalName = req.file.originalName
+            let size = req.file.size
             const csvWriter = createCsvWriter({
                 path: './uploads/resultFile/' + csvName,
                 header: [
@@ -629,7 +634,9 @@ exports.checkFileValidation = async (req, res) => {
                     message.push({
                         code: constant.errorCode,
                         retailPrice: obj.retailValue,
-                        message: "Invalid Retail Price!"
+                        message: "Invalid Retail Price!",
+                        fileName:csvName,
+                        name:originalName
                     });
                 }
             });
@@ -644,7 +651,11 @@ exports.checkFileValidation = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Verified",
-                fileName:file.fileName
+               orderFile:{
+                fileName:csvName,
+                name:originalName,
+                size:size
+               }
             })
         })
 
@@ -1349,7 +1360,6 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
             let data = req.body
-            console.log("data+++++++++++++++++++++",data)
             // let data = {
             //     "_id": "65bbc25251dd969ef08028bd",
             //     "dealerId": "65b20d88d118a81cec6af042",
@@ -1417,9 +1427,7 @@ exports.editOrderDetail = async (req, res) => {
                 return;
             }
 
-            console.log('check++++++++++++++++++++++++++++++++++++++++++++++=', checkId)
             if (data.dealerId.toString() != checkId.dealerId.toString()) {
-                console.log('check++++++++++++++++++++++++++++++++++++++++++++++11111')
 
                 let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
                 if (!checkDealer) {
@@ -1430,7 +1438,6 @@ exports.editOrderDetail = async (req, res) => {
                     return;
                 }
             }
-            console.log('check++++++++++++++++++++++++++++++++++++++++++++++11111')
 
             if (data.servicerId != checkId.servicerId) {
                 let query = {
@@ -1449,7 +1456,6 @@ exports.editOrderDetail = async (req, res) => {
                     return;
                 }
             }
-            console.log('check++++++++++++++++++++++++++++++++++++++++++++++2222')
 
             if (data.customerId != checkId.customerId) {
                 let query = { _id: data.customerId }
@@ -1462,7 +1468,6 @@ exports.editOrderDetail = async (req, res) => {
                     return;
                 }
             }
-            console.log('check++++++++++++++++++++++++++++++++++++++++++++++333')
 
             data.createdBy = req.userId
             data.servicerId = data.servicerId != '' ? data.servicerId : null
