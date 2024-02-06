@@ -119,10 +119,12 @@ exports.createOrder = async (req, res) => {
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
             // console.log("Body=================",hhhhh)
-            // console.log("productsArray=================",data.productsArray[0].QuantityPricing)
+             console.log("productsArray=================",typeof(data.productsArray[0].QuantityPricing))
             for(let i=0; i < data.productsArray.length; i++){
-                let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
-                data.productsArray[i].QuantityPricing = jsonArray
+                if(data.productsArray[i].QuantityPricing){
+                    let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
+                    data.productsArray[i].QuantityPricing = jsonArray
+                }
             }
             // console.log("new array=================",data.productsArray);
             // return;
@@ -673,6 +675,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
 
             console.log("data================", data);
+            console.log("files================", req.files);
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
@@ -764,6 +767,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                 //Check if csv data length equal to no of products
                 const isValidNumberData = allDataComing.map(obj => {
+                    console.log("obj=======================",obj)
                     if (obj.priceType == 'Quantity Pricing') {
                         if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                             // Handle case where 'noOfProducts' doesn't match the length of 'data'
@@ -772,7 +776,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid number of products"
                             });
-                            return; // Set the return value to false when the condition fails
+                            //return; // Set the return value to false when the condition fails
                         }
                     }
                     else {
@@ -783,10 +787,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid number of products"
                             });
-                            return; // Set the return value to false when the condition fails
+                           // return; // Set the return value to false when the condition fails
                         }
                     }
                 });
+
+
                 if (message.length > 0) {
                     // Handle case where the number of properties in 'data' is not valid
                     res.send({
