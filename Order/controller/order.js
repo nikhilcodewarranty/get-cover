@@ -851,7 +851,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
-                    if (data1.checkFile) { // Check if data1.file is not blank
+                    if (data1.fileValue) { // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
                     }
@@ -863,7 +863,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: data1.priceType,
                             rangeStart: data1.rangeStart,
                             rangeEnd: data1.rangeEnd,
-                            flag: data1.checkFile, // Set flag based on whether data1.file is not blank
+                            flag: data1.fileValue, // Set flag based on whether data1.file is not blank
                             file: file1
                         },
                     };

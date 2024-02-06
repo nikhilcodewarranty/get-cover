@@ -304,14 +304,16 @@ exports.getResellerById = async (req, res) => {
     }
     let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
-    console.log("ordersResult================",ordersResult)
+    console.log("ordersResult================", ordersResult)
 
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
-        if (matchItem) {
+        let order = ordersResult.find(order => order.resellerId.toString() === user.accountId.toString())
+        if (matchItem || order) {
             return {
                 ...user.toObject(),
-                resellerData: matchItem.toObject()
+                resellerData: matchItem.toObject(),
+                orderData: order ? order : {}
             }
         }
         else {
