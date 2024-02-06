@@ -26,6 +26,38 @@ module.exports = class orderService {
     }
   }
 
+  static async getGroupingOrder(query,project) {
+    try {
+      const allOrders = await order.aggregate([
+        {
+          $match: query
+        },
+
+        {
+          $project: project,
+        },
+        {
+          $group: {
+            _id: "$dealerId",
+            count: {
+              $sum: "$orderAmount"
+            },
+            checkNumberProducts: {
+              $sum: {
+                $sum: "$productsArray.checkNumberProducts"
+              }
+            }
+
+          }
+        },
+        { $sort: { unique_key: -1 } }
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+
   static async getOrder(query, projection) {
     try {
       const getOrder = await order.findOne(query, projection)

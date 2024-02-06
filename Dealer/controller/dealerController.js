@@ -141,9 +141,10 @@ exports.getAllDealers = async (req, res) => {
       orderAmount: 1,
     }
 
-    let orderData = await orderService.getAllOrders(orderQuery, project);
+    let orderData = await orderService.getGroupingOrder(orderQuery,project);
 
 
+    console.log("dd=========================",orderData)
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -155,7 +156,7 @@ exports.getAllDealers = async (req, res) => {
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const orders = orderData.find(order => order.dealerId.toString() === item1.accountId.toString())
+      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
 
       if (matchingItem || orders) {
         return {
@@ -179,6 +180,8 @@ exports.getAllDealers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
+
+
 
     res.send({
       code: constant.successCode,
