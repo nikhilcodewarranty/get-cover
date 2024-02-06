@@ -41,6 +41,7 @@ module.exports = class orderService {
           $group: {
             _id: "$dealerId",
             customerId: { $first: "$customerId" },
+            resellerId: { $first: "$resellerId" },
             totalOrderAmount: { $sum: "$orderAmount" },
             noOfOrders: { $sum: 1 },
             checkNumberProducts: {

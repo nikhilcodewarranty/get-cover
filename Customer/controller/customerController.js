@@ -235,7 +235,6 @@ exports.getDealerCustomers = async (req, res) => {
       orderAmount: 1,
     }
 
-    console.log("customersId===============",orderCustomerId)
     let orderQuery = {
       $and: [
         { customerId: { $in: orderCustomerId }, status: { $ne: "Archieved" } },
@@ -246,14 +245,13 @@ exports.getDealerCustomers = async (req, res) => {
     }
     let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
-    console.log("ordersResult==============",ordersResult)
 
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order=>order.customerId.toString()===item1.accountId)
+      const order = ordersResult.find(order=>order.resellerId.toString()===item1.accountId)
 
       if (matchingItem || order) {
         return {
