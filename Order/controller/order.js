@@ -128,8 +128,8 @@ exports.createOrder = async (req, res) => {
                 }
             }
 
-            // console.log("new array=================",data.productsArray);
-            // return;
+            console.log("new array=================",data.productsArray);
+            
             data.venderOrder = data.dealerPurchaseOrder
             let projection = { isDeleted: 0 }
             let checkDealer = await dealerService.getDealerById(data.dealerId, projection);
