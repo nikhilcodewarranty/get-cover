@@ -35,6 +35,15 @@ module.exports = class orderService {
     }
   }
 
+  static async getOrders(query, projection) {
+    try {
+      let orders = await order.find(query, projection)
+      return orders
+    } catch (err) {
+      console.log(`Could not fetch order ${err}`);
+    }
+  }
+
   static async getOrdersCount() {
     try {
       const count = await order.find().sort({ "unique_key": -1 });

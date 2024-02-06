@@ -1941,7 +1941,9 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
+        console.log('check_____------------------------------------',returnField)
         if (returnField.customerId && returnField.customerId && returnField.customerId && returnField.customerId) {
+            console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
@@ -2172,14 +2174,24 @@ exports.editOrderDetail = async (req, res) => {
 //     }
 // }
 
-exports.getDashboardData = async(req,res)=>{
-    try{
+exports.getDashboardData = async (req, res) => {
+    try {
         let data = req.body;
-        
-    }catch(err){
+        let checkOrders = await orderService.getOrders({ status: "Active", isDeleted: false })
+        if (!checkOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch order data"
+            })
+            return;
+        }
+
+
+
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
