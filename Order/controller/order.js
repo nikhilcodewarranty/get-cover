@@ -1944,7 +1944,7 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
         console.log('check_____------------------------------------',returnField)
-        if (returnField.customerId && returnField.customerId && returnField.customerId && returnField.customerId) {
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
