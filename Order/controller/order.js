@@ -671,8 +671,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
             // }); 
 
 
-            console.log("data================", data);
-            console.log("files================", req.files);
+            // console.log("data================", data);
+            // console.log("files================", req.files);
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
@@ -773,7 +773,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid number of products"
                             });
-                            return; // Set the return value to false when the condition fails
+                            //return; // Set the return value to false when the condition fails
                         }
                     }
                     else {
@@ -784,10 +784,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid number of products"
                             });
-                            return; // Set the return value to false when the condition fails
+                           // return; // Set the return value to false when the condition fails
                         }
                     }
                 });
+
+
                 if (message.length > 0) {
                     // Handle case where the number of properties in 'data' is not valid
                     res.send({
