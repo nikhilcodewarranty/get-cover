@@ -145,7 +145,7 @@ exports.getAllCustomers = async (req, res, next) => {
       orderAmount: 1,
     }
 
-    let orderQuery = { customerId: { $in: customersOrderId },status: { $ne: "Archieved" }  };
+    let orderQuery = { customerId: { $in: customersOrderId }, status: { $ne: "Archieved" } };
 
     let ordersData = await orderService.getAllOrders(orderQuery, project)
 
@@ -172,7 +172,7 @@ exports.getAllCustomers = async (req, res, next) => {
           ...matchingItem ? matchingItem : {},
           customerData: customer ? customer : {},
           reseller: matchingReseller ? matchingReseller : {},
-          order:order ? order : {}
+          order: order ? order : {}
         };
       }
 
@@ -218,6 +218,32 @@ exports.getDealerCustomers = async (req, res) => {
     };
     const customersId = customers.map(obj => obj._id.toString());
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { customerId: { $in: customersId } };
+
+    //Get Dealer Customer Orders
+
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderQuery = {
+      $and: [
+        { customerId: { $in: customersId } , status: { $ne: "Archieved" } },
+        {
+          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+        },
+      ]
+    }
+    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
 
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
