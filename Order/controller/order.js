@@ -398,16 +398,16 @@ exports.processOrder = async (req, res) => {
             .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
-        if(checkOrder.customerId==''){
+        if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
         }
-        if(checkOrder.paymentStatus!='Paid'){
+        if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('The order payment is not completed yet')
         }
-        if(resultArray.length > 0 ){
+        if (resultArray.length > 0) {
             returnField.push('The coverage start date missing')
         }
-        if(isEmptyOrderFile.length > 0 ){
+        if (isEmptyOrderFile.length > 0) {
             returnField.push('Some contract file is missing')
         }
         // const obj = {
@@ -840,7 +840,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map((file) => ({
                     filePath: file.path,
@@ -852,7 +851,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     if (data1.checkFile) { // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
-                        console.log(fileIndex);
                     }
                     return {
                         products: {
@@ -923,101 +921,103 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     return;
                 }
 
-                const isValidLength1 = allDataComing.map((obj) => {
-                    if (!obj.data || typeof obj.data !== "object") {
-                        return false; // 'data' should be an object
-                    }
+                if (allDataComing.length > 0) {
+                    const isValidLength1 = allDataComing.map((obj) => {
+                        if (!obj.data || typeof obj.data !== "object") {
+                            return false; // 'data' should be an object
+                        }
 
-                    const isValidLength = obj.data.every(
-                        (obj1) => Object.keys(obj1).length === 5
-                    );
-                    if (!isValidLength) {
-                        message.push({
-                            code: constant.errorCode,
-                            key: obj.key,
-                            message: "Invalid fields value",
-                        });
-                    }
-                });
-
-                if (message.length > 0) {
-                    // Handle case where the number of properties in 'data' is not valid
-                    res.send({
-                        message,
-                    });
-                    return;
-                }
-                //Check if csv data length equal to no of products
-                const isValidNumberData = allDataComing.map((obj) => {
-                    if (obj.priceType == "Quantity Pricing") {
-                        if (parseInt(obj.checkNumberProducts) != obj.data.length) {
-                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                        const isValidLength = obj.data.every(
+                            (obj1) => Object.keys(obj1).length === 5
+                        );
+                        if (!isValidLength) {
                             message.push({
                                 code: constant.errorCode,
                                 key: obj.key,
-                                message: "Invalid number of products",
+                                message: "Invalid fields value",
                             });
-                            //return; // Set the return value to false when the condition fails
                         }
-                    } else {
-                        if (parseInt(obj.noOfProducts) != obj.data.length) {
-                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid number of products",
-                            });
-                            // return; // Set the return value to false when the condition fails
-                        }
-                    }
-                });
-
-                if (message.length > 0) {
-                    // Handle case where the number of properties in 'data' is not valid
-                    res.send({
-                        message,
                     });
-                    return;
-                }
 
-                let checkRetailValue = allDataComing.map((obj) => {
-                    if (obj.priceType == "Flat Pricing") {
-                        const priceObj = obj.data.map((item) => {
-                            const keys = Object.keys(item);
-                            return {
-                                key: obj.key,
-                                checkNumberProducts: obj.checkNumberProducts,
-                                noOfProducts: obj.noOfProducts,
-                                rangeStart: obj.rangeStart,
-                                rangeEnd: obj.rangeEnd,
-                                retailValue: item[keys[4]],
-                            };
+                    if (message.length > 0) {
+                        // Handle case where the number of properties in 'data' is not valid
+                        res.send({
+                            message,
                         });
-
-                        if (priceObj.length > 0) {
-                            priceObj.map((obj, index) => {
-                                if (
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        retailPrice: obj.retailValue,
-                                        key: obj.key,
-                                        message: "Invalid Retail Price!",
-                                    });
-                                }
-                            });
-                        }
+                        return;
                     }
-                });
-
-                if (message.length > 0) {
-                    // Handle case where the number of properties in 'data' is not valid
-                    res.send({
-                        message,
+                    //Check if csv data length equal to no of products
+                    const isValidNumberData = allDataComing.map((obj) => {
+                        if (obj.priceType == "Quantity Pricing") {
+                            if (parseInt(obj.checkNumberProducts) != obj.data.length) {
+                                // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid number of products",
+                                });
+                                //return; // Set the return value to false when the condition fails
+                            }
+                        } else {
+                            if (parseInt(obj.noOfProducts) != obj.data.length) {
+                                // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid number of products",
+                                });
+                                // return; // Set the return value to false when the condition fails
+                            }
+                        }
                     });
-                    return;
+
+                    if (message.length > 0) {
+                        // Handle case where the number of properties in 'data' is not valid
+                        res.send({
+                            message,
+                        });
+                        return;
+                    }
+
+                    let checkRetailValue = allDataComing.map((obj) => {
+                        if (obj.priceType == "Flat Pricing") {
+                            const priceObj = obj.data.map((item) => {
+                                const keys = Object.keys(item);
+                                return {
+                                    key: obj.key,
+                                    checkNumberProducts: obj.checkNumberProducts,
+                                    noOfProducts: obj.noOfProducts,
+                                    rangeStart: obj.rangeStart,
+                                    rangeEnd: obj.rangeEnd,
+                                    retailValue: item[keys[4]],
+                                };
+                            });
+
+                            if (priceObj.length > 0) {
+                                priceObj.map((obj, index) => {
+                                    if (
+                                        Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                        Number(obj.retailValue) > Number(obj.rangeEnd)
+                                    ) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            retailPrice: obj.retailValue,
+                                            key: obj.key,
+                                            message: "Invalid Retail Price!",
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    if (message.length > 0) {
+                        // Handle case where the number of properties in 'data' is not valid
+                        res.send({
+                            message,
+                        });
+                        return;
+                    }
                 }
             }
 
@@ -1176,7 +1176,7 @@ exports.multipleFileValidation = async (req, res) => {
                     allDataComing.push({
                         key: productsWithFiles[j].products.key,
                         checkNumberProducts:
-                        productsWithFiles[j].products.checkNumberProducts,
+                            productsWithFiles[j].products.checkNumberProducts,
                         noOfProducts: productsWithFiles[j].products.noOfProducts,
                         priceType: productsWithFiles[j].products.priceType,
                         rangeStart: productsWithFiles[j].products.rangeStart,
@@ -1206,101 +1206,103 @@ exports.multipleFileValidation = async (req, res) => {
                 return;
             }
 
-            const isValidLength1 = allDataComing.map((obj) => {
-                if (!obj.data || typeof obj.data !== "object") {
-                    return false; // 'data' should be an object
-                }
+            if (allDataComing.length > 0) {
+                const isValidLength1 = allDataComing.map((obj) => {
+                    if (!obj.data || typeof obj.data !== "object") {
+                        return false; // 'data' should be an object
+                    }
 
-                const isValidLength = obj.data.every(
-                    (obj1) => Object.keys(obj1).length === 5
-                );
-                if (!isValidLength) {
-                    message.push({
-                        code: constant.errorCode,
-                        key: obj.key,
-                        message: "Invalid fields value",
-                    });
-                }
-            });
-
-            if (message.length > 0) {
-                // Handle case where the number of properties in 'data' is not valid
-                res.send({
-                    message,
-                });
-                return;
-            }
-            //Check if csv data length equal to no of products
-            const isValidNumberData = allDataComing.map((obj) => {
-                if (obj.priceType == "Quantity Pricing") {
-                    if (parseInt(obj.checkNumberProducts) != obj.data.length) {
-                        // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                    const isValidLength = obj.data.every(
+                        (obj1) => Object.keys(obj1).length === 5
+                    );
+                    if (!isValidLength) {
                         message.push({
                             code: constant.errorCode,
                             key: obj.key,
-                            message: "Invalid number of products",
+                            message: "Invalid fields value",
                         });
-                        //return; // Set the return value to false when the condition fails
                     }
-                } else {
-                    if (parseInt(obj.noOfProducts) != obj.data.length) {
-                        // Handle case where 'noOfProducts' doesn't match the length of 'data'
-                        message.push({
-                            code: constant.errorCode,
-                            key: obj.key,
-                            message: "Invalid number of products",
-                        });
-                        // return; // Set the return value to false when the condition fails
-                    }
-                }
-            });
-
-            if (message.length > 0) {
-                // Handle case where the number of properties in 'data' is not valid
-                res.send({
-                    message,
                 });
-                return;
-            }
 
-            let checkRetailValue = allDataComing.map((obj) => {
-                if (obj.priceType == "Flat Pricing") {
-                    const priceObj = obj.data.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            key: obj.key,
-                            checkNumberProducts: obj.checkNumberProducts,
-                            noOfProducts: obj.noOfProducts,
-                            rangeStart: obj.rangeStart,
-                            rangeEnd: obj.rangeEnd,
-                            retailValue: item[keys[4]],
-                        };
+                if (message.length > 0) {
+                    // Handle case where the number of properties in 'data' is not valid
+                    res.send({
+                        message,
                     });
-
-                    if (priceObj.length > 0) {
-                        priceObj.map((obj, index) => {
-                            if (
-                                Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                Number(obj.retailValue) > Number(obj.rangeEnd)
-                            ) {
-                                message.push({
-                                    code: constant.errorCode,
-                                    retailPrice: obj.retailValue,
-                                    key: obj.key,
-                                    message: "Invalid Retail Price!",
-                                });
-                            }
-                        });
-                    }
+                    return;
                 }
-            });
-
-            if (message.length > 0) {
-                // Handle case where the number of properties in 'data' is not valid
-                res.send({
-                    message,
+                //Check if csv data length equal to no of products
+                const isValidNumberData = allDataComing.map((obj) => {
+                    if (obj.priceType == "Quantity Pricing") {
+                        if (parseInt(obj.checkNumberProducts) != obj.data.length) {
+                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                            message.push({
+                                code: constant.errorCode,
+                                key: obj.key,
+                                message: "Invalid number of products",
+                            });
+                            //return; // Set the return value to false when the condition fails
+                        }
+                    } else {
+                        if (parseInt(obj.noOfProducts) != obj.data.length) {
+                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                            message.push({
+                                code: constant.errorCode,
+                                key: obj.key,
+                                message: "Invalid number of products",
+                            });
+                            // return; // Set the return value to false when the condition fails
+                        }
+                    }
                 });
-                return;
+
+                if (message.length > 0) {
+                    // Handle case where the number of properties in 'data' is not valid
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
+
+                let checkRetailValue = allDataComing.map((obj) => {
+                    if (obj.priceType == "Flat Pricing") {
+                        const priceObj = obj.data.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                key: obj.key,
+                                checkNumberProducts: obj.checkNumberProducts,
+                                noOfProducts: obj.noOfProducts,
+                                rangeStart: obj.rangeStart,
+                                rangeEnd: obj.rangeEnd,
+                                retailValue: item[keys[4]],
+                            };
+                        });
+
+                        if (priceObj.length > 0) {
+                            priceObj.map((obj, index) => {
+                                if (
+                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                    Number(obj.retailValue) > Number(obj.rangeEnd)
+                                ) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        retailPrice: obj.retailValue,
+                                        key: obj.key,
+                                        message: "Invalid Retail Price!",
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                if (message.length > 0) {
+                    // Handle case where the number of properties in 'data' is not valid
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
             }
         }
 
