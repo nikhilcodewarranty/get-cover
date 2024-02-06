@@ -396,8 +396,8 @@ exports.processOrder = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
-            // .some(Boolean);
-         console.log("isEmptyOrderFile-----------------------",isEmptyOrderFile);
+        // .some(Boolean);
+        console.log("isEmptyOrderFile-----------------------", isEmptyOrderFile);
         console.log(resultArray)
         if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
@@ -409,7 +409,7 @@ exports.processOrder = async (req, res) => {
             returnField.push('The coverage start date missing')
         }
 
-        if (isEmptyOrderFile.includes(true) ) {
+        if (isEmptyOrderFile.includes(true)) {
             returnField.push('Some contract file is missing')
         }
         // const obj = {
@@ -1695,10 +1695,35 @@ exports.getSingleOrder = async (req, res) => {
             return;
         }
 
+        //Get Dealer Data
+
+        let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
+        //Get customer Data
+        let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
+        //Get Reseller Data
+        let reseller  =  await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
+        //Get Servicer Data
+        let query1 = {
+            $or: [
+                { _id: checkOrder.servicerId },
+                { resellerId: checkOrder.resellerId },
+                { dealerId: checkOrder.dealerId },
+            ],
+        };
+        let checkServicer = await servicerService.getServiceProviderById(query1);
+        let result = {
+            orderData: checkOrder,
+            dealerData: dealer ? dealer : {},
+            customerData: customer ? customer : {},
+            resellerData:reseller ? reseller : {},
+            servicerData:checkServicer ? checkServicer :{}
+        };
+
+
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: checkOrder,
+            result: result,
         });
     } catch (err) {
         res.send({
@@ -1930,9 +1955,9 @@ exports.editOrderDetail = async (req, res) => {
         let isEmptyOrderFile = checkOrder.productsArray
             .map(
                 (item) =>
-                    item.orderFile.fileName === "" 
+                    item.orderFile.fileName === ""
             )
-            // .some(Boolean);
+        // .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
         const obj = {
@@ -1943,7 +1968,7 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
-        console.log('check_____------------------------------------',returnField)
+        console.log('check_____------------------------------------', returnField)
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
