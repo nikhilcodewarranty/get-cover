@@ -1217,6 +1217,7 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
             let data = req.body
+            console.log("data+++++++++++++++++++++",data)
             // let data = {
             //     "_id": "65bbc25251dd969ef08028bd",
             //     "dealerId": "65b20d88d118a81cec6af042",
@@ -1384,7 +1385,7 @@ exports.editOrderDetail = async (req, res) => {
             // }
             
 
-            let savedResponse = await orderService.updateOrder({ _id: req.params.orderId }, {}, { new: true });
+            let savedResponse = await orderService.updateOrder({ _id: req.params.orderId }, data, { new: true });
             if (!savedResponse) {
                 res.send({
                     code: constant.errorCode,
