@@ -1,14 +1,14 @@
 const order = require("../model/order");
 
 module.exports = class orderService {
-  static async getAllOrders(query,project) {
+  static async getAllOrders(query, project) {
     try {
       const allOrders = await order.aggregate([
         {
-          $match:query
+          $match: query
         },
         {
-          $project:project,
+          $project: project,
 
         },
         {
@@ -55,9 +55,9 @@ module.exports = class orderService {
     }
   }
 
-  static async updateOrder(criteria,data,option) {
+  static async updateOrder(criteria, data, option) {
     try {
-      const createOrder = await order.findOneAndUpdate(criteria,data,option);
+      const createOrder = await order.findOneAndUpdate(criteria, data, option);
       return createOrder;
     } catch (error) {
       console.log(`Could not add order ${error}`);
