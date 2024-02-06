@@ -118,8 +118,8 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
-            // console.log("Body=================",hhhhh)
-            //  console.log("productsArray=================",typeof(data.productsArray[0].QuantityPricing))
+             console.log("Body=================",data.productsArray[0].QuantityPricing)
+              console.log("QuantityPricing=================",typeof(data.productsArray[0].QuantityPricing))
 
             for(let i=0; i < data.productsArray.length; i++){
                 if(data.productsArray[i].QuantityPricing){
