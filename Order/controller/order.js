@@ -1168,64 +1168,65 @@ exports.getSingleOrder = async (req, res) => {
 
 exports.editOrderDetail = async (req, res) => {
     try {
-            let data = {
-                "_id": "65bbc25251dd969ef08028bd",
-                "dealerId": "65b20d88d118a81cec6af042",
-                "servicerId": "65b88820b72a6ea6798ea108",
-                "customerId": "65b20f964a29b96c616196ac",
-                "resellerId": "65b20e85d118a81cec6af049",
-                "venderOrder": "vhjvjh120",
-                "serviceCoverageType": "Labour",
-                "coverageType": "Breakdown",
-                "unique_key": 70,
-                "productsArray": [
-                    {
-                        "categoryId": "65af968fc1030ac5a511cacd",
-                        "priceBookId": "65af96c1c1030ac5a511cad7",
-                        "unitPrice": 2000,
-                        "noOfProducts": 1,
-                        "orderFile": {
-                            "fileName": "example.csv",
-                            "originalName": "",
-                            "_id": "65bbc25251dd969ef08028be"
-                        },
-                        "price": 2000,
-                        "additionalNotes": "",
-                        "coverageStartDate": null,
-                        "coverageEndDate": null,
-                        "_id": "65bbc25251dd969ef08028bf"
-                    },
-                    {
-                        "categoryId": "65af968fc1030ac5a511cacd",
-                        "priceBookId": "65af96eec1030ac5a511cae5",
-                        "unitPrice": 1500,
-                        "noOfProducts": 1,
-                        "orderFile": {
-                            "fileName": "",
-                            "originalName": "",
-                            "_id": "65bbc25251dd969ef08028c0"
-                        },
-                        "price": 1500,
-                        "additionalNotes": "",
-                        "coverageStartDate": null,
-                        "coverageEndDate": null,
-                        "_id": "65bbc25251dd969ef08028c1"
-                    }
-                ],
-                "orderAmount": 3500,
-                "sendNotification": true,
-                "paymentStatus": "Unpaid",
-                "status": "Pending",
-                "isDeleted": false,
-                "orderDate": "2024-02-01T13:42:25.209Z",
-                "paidAmount": 3500,
-                "dueAmount": 0,
-                "paymentMethod": "Manually",
-                "canProceed": false,
-                "createdAt": "2024-02-01T16:09:54.843Z",
-                "updatedAt": "2024-02-02T05:18:51.517Z",
-                "__v": 0
-            }
+            let data = req.body
+            // let data = {
+            //     "_id": "65bbc25251dd969ef08028bd",
+            //     "dealerId": "65b20d88d118a81cec6af042",
+            //     "servicerId": "65b88820b72a6ea6798ea108",
+            //     "customerId": "65b20f964a29b96c616196ac",
+            //     "resellerId": "65b20e85d118a81cec6af049",
+            //     "venderOrder": "vhjvjh120",
+            //     "serviceCoverageType": "Labour",
+            //     "coverageType": "Breakdown",
+            //     "unique_key": 70,
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65af968fc1030ac5a511cacd",
+            //             "priceBookId": "65af96c1c1030ac5a511cad7",
+            //             "unitPrice": 2000,
+            //             "noOfProducts": 1,
+            //             "orderFile": {
+            //                 "fileName": "example.csv",
+            //                 "originalName": "",
+            //                 "_id": "65bbc25251dd969ef08028be"
+            //             },
+            //             "price": 2000,
+            //             "additionalNotes": "",
+            //             "coverageStartDate": null,
+            //             "coverageEndDate": null,
+            //             "_id": "65bbc25251dd969ef08028bf"
+            //         },
+            //         {
+            //             "categoryId": "65af968fc1030ac5a511cacd",
+            //             "priceBookId": "65af96eec1030ac5a511cae5",
+            //             "unitPrice": 1500,
+            //             "noOfProducts": 1,
+            //             "orderFile": {
+            //                 "fileName": "",
+            //                 "originalName": "",
+            //                 "_id": "65bbc25251dd969ef08028c0"
+            //             },
+            //             "price": 1500,
+            //             "additionalNotes": "",
+            //             "coverageStartDate": null,
+            //             "coverageEndDate": null,
+            //             "_id": "65bbc25251dd969ef08028c1"
+            //         }
+            //     ],
+            //     "orderAmount": 3500,
+            //     "sendNotification": true,
+            //     "paymentStatus": "Unpaid",
+            //     "status": "Pending",
+            //     "isDeleted": false,
+            //     "orderDate": "2024-02-01T13:42:25.209Z",
+            //     "paidAmount": 3500,
+            //     "dueAmount": 0,
+            //     "paymentMethod": "Manually",
+            //     "canProceed": false,
+            //     "createdAt": "2024-02-01T16:09:54.843Z",
+            //     "updatedAt": "2024-02-02T05:18:51.517Z",
+            //     "__v": 0
+            // }
             let checkId = await orderService.getOrder({ _id: req.params.orderId })
             if (!checkId) {
                 res.send({
