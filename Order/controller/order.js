@@ -118,8 +118,8 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
-             console.log("Body=================",data.productsArray[0].QuantityPricing)
-              console.log("QuantityPricing=================",typeof(data.productsArray[0].QuantityPricing))
+            //  console.log("Body=================",data.productsArray[0].QuantityPricing)
+            //   console.log("QuantityPricing=================",typeof(data.productsArray[0].QuantityPricing))
 
             for(let i=0; i < data.productsArray.length; i++){
                 if(data.productsArray[i].QuantityPricing){
@@ -128,7 +128,6 @@ exports.createOrder = async (req, res) => {
                 }
             }
 
-            console.log("new array=================",data.productsArray);
             
             data.venderOrder = data.dealerPurchaseOrder
             let projection = { isDeleted: 0 }
@@ -218,7 +217,14 @@ exports.createOrder = async (req, res) => {
                         };
                     } else {
                         // If 'file' is null, return the original product without modifications
-                        return product;
+                        return{
+                            ...product,
+                            orderFile: {
+                                fileName: "",
+                                name: "",
+                                size:""
+                            }
+                        };
                     }
                 });
 
