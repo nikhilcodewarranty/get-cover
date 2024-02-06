@@ -1879,6 +1879,48 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
 
+        // check to processed order 
+
+        let returnField = [];
+
+        let checkOrder = await orderService.getOrder(
+            { _id: req.params.orderId },
+            // { isDeleted: 0 }
+        );
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order not found!",
+            });
+            return;
+        }
+
+        let resultArray = checkOrder.productsArray.map(
+            (item) => item.coverageStartDate === null
+        );
+        let isEmptyOrderFile = checkOrder.productsArray
+            .map(
+                (item) =>
+                    item.orderFile.fileName === "" && item.orderFile.originalName === ""
+            )
+            .some(Boolean);
+        //  console.log(isEmptyOrderFile);
+        // console.log(resultArray)
+        const obj = {
+            customerId: checkOrder.customerId ? true : false,
+            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
+            coverageStartDate: resultArray.length == 0 ? true : false,
+            fileName: isEmptyOrderFile.length == 0 ? true : false,
+        };
+
+        returnField.push(obj);
+        if (returnField.customerId && returnField.customerId && returnField.customerId && returnField.customerId) {
+            let savedResponse = await orderService.updateOrder(
+                { _id: req.params.orderId },
+                { status: "Active" },
+                { new: true }
+            );
+        }
         res.send({
             code: constant.successCode,
             message: "Success",
