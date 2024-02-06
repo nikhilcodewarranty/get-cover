@@ -630,7 +630,7 @@ exports.checkFileValidation = async (req, res) => {
                         code: constant.errorCode,
                         retailPrice: obj.retailValue,
                         message: "Invalid Retail Price!",
-                        fileName:file.fileName
+                        fileName:csvName
                     });
                 }
             });
@@ -645,7 +645,7 @@ exports.checkFileValidation = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Verified",
-                fileName:file.fileName
+                fileName:csvName
             })
         })
 
