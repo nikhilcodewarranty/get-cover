@@ -396,8 +396,8 @@ exports.processOrder = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
-            .some(Boolean);
-         console.log(isEmptyOrderFile);
+            // .some(Boolean);
+         console.log("isEmptyOrderFile-----------------------",isEmptyOrderFile);
         console.log(resultArray)
         if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
@@ -408,9 +408,10 @@ exports.processOrder = async (req, res) => {
         if (resultArray.includes(true)) {
             returnField.push('The coverage start date missing')
         }
-        if (isEmptyOrderFile.length > 0) {
+
+        if (isEmptyOrderFile.includes(true) ) {
             returnField.push('Some contract file is missing')
-        }``
+        }
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -1931,14 +1932,14 @@ exports.editOrderDetail = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === "" 
             )
-            .some(Boolean);
+            // .some(Boolean);
         //  console.log(isEmptyOrderFile);
         // console.log(resultArray)
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
             coverageStartDate: resultArray.includes(true) ? false : true,
-            fileName: isEmptyOrderFile.length == 0 ? true : false,
+            fileName: isEmptyOrderFile.includes(true) ? false : true,
         };
 
         returnField.push(obj);
