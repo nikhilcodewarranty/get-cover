@@ -145,7 +145,7 @@ exports.getAllCustomers = async (req, res, next) => {
       orderAmount: 1,
     }
 
-    let orderQuery = { customerId: { $in: customersOrderId } };
+    let orderQuery = { customerId: { $in: customersOrderId },status: { $ne: "Archieved" }  };
 
     let ordersData = await orderService.getAllOrders(orderQuery, project)
 
