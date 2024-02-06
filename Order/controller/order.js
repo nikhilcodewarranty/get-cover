@@ -131,6 +131,7 @@ exports.createOrder = async (req, res) => {
                 }
             }
 
+            data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
             data.venderOrder = data.dealerPurchaseOrder;
             let projection = { isDeleted: 0 };
             let checkDealer = await dealerService.getDealerById(
@@ -1701,7 +1702,7 @@ exports.getSingleOrder = async (req, res) => {
         //Get customer Data
         let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
         //Get Reseller Data
-        let reseller  =  await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
+        let reseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
         //Get Servicer Data
         let query1 = {
             $or: [
@@ -1714,8 +1715,8 @@ exports.getSingleOrder = async (req, res) => {
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
-            resellerData:reseller ? reseller : {},
-            servicerData:checkServicer ? checkServicer :{}
+            resellerData: reseller ? reseller : {},
+            servicerData: checkServicer ? checkServicer : {}
         };
 
 
@@ -1723,7 +1724,7 @@ exports.getSingleOrder = async (req, res) => {
             code: constant.successCode,
             message: "Success!",
             result: checkOrder,
-            orderUserData:userData
+            orderUserData: userData
         });
     } catch (err) {
         res.send({
