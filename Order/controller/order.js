@@ -627,7 +627,8 @@ exports.checkFileValidation = async (req, res) => {
                     message.push({
                         code: constant.errorCode,
                         retailPrice: obj.retailValue,
-                        message: "Invalid Retail Price!"
+                        message: "Invalid Retail Price!",
+                        fileName:file.fileName
                     });
                 }
             });
