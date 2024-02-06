@@ -394,7 +394,7 @@ exports.processOrder = async (req, res) => {
         let isEmptyOrderFile = checkOrder.productsArray
             .map(
                 (item) =>
-                    item.orderFile.fileName === "" && item.orderFile.originalName === ""
+                    item.orderFile.fileName === "" && item.orderFile.name === ""
             )
             .some(Boolean);
          console.log(isEmptyOrderFile);
@@ -410,7 +410,7 @@ exports.processOrder = async (req, res) => {
         }
         if (isEmptyOrderFile.length > 0) {
             returnField.push('Some contract file is missing')
-        }
+        }``
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -1937,7 +1937,7 @@ exports.editOrderDetail = async (req, res) => {
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-            coverageStartDate: resultArray.length == 0 ? true : false,
+            coverageStartDate: resultArray.includes(true) ? true : false,
             fileName: isEmptyOrderFile.length == 0 ? true : false,
         };
 
