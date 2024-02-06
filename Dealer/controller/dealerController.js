@@ -2322,12 +2322,22 @@ exports.getDealerOrders = async (req, res) => {
       orderAmount: 1,
     }
 
-    let query = { dealerId:  new mongoose.Types.ObjectId(req.params.dealerId) ,status: { $ne: "Archieved" } }
+    let query = {
+      $and: [
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) ,status: { $ne: "Archieved" } },
+        // {
+        //   'unique_key': { '$regex': req.body.id ? req.body.id : '', '$options': 'i' },
+        // },
+        {
+          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+        },
+      ]
+    }
     let orders = await orderService.getAllOrders(query, project)
     res.send({
-      code:constant.successCode,
-      message:'Success!',
-      result:orders
+      code: constant.successCode,
+      message: 'Success',
+      result: orders
     })
   }
   catch (err) {
@@ -2337,6 +2347,7 @@ exports.getDealerOrders = async (req, res) => {
     })
   }
 }
+
 
 
 
