@@ -387,6 +387,7 @@ exports.processOrder = async (req, res) => {
             return;
         }
 
+        console.log
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
@@ -396,15 +397,15 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.originalName === ""
             )
             .some(Boolean);
-        //  console.log(isEmptyOrderFile);
-        // console.log(resultArray)
+         console.log(isEmptyOrderFile);
+        console.log(resultArray)
         if (checkOrder.customerId == '') {
             returnField.push('Customer Name is missing')
         }
         if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('The order payment is not completed yet')
         }
-        if (resultArray.length > 0) {
+        if (resultArray.includes(true)) {
             returnField.push('The coverage start date missing')
         }
         if (isEmptyOrderFile.length > 0) {
