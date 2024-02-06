@@ -672,6 +672,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
 
             console.log("data================", data);
+            console.log("files================", req.files);
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
