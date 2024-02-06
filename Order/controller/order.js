@@ -1372,8 +1372,8 @@ exports.editOrderDetail = async (req, res) => {
 
 
             }
-
-            let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
+            if(checkId.venderOrder != data.dealerPurchaseOrder){
+                let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
             if (checkVenderOrder) {
                 res.send({
                     code: constant.errorCode,
@@ -1381,6 +1381,8 @@ exports.editOrderDetail = async (req, res) => {
                 })
                 return;
             }
+            }
+            
 
             let savedResponse = await orderService.updateOrder({ _id: req.params.orderId }, {}, { new: true });
             if (!savedResponse) {
