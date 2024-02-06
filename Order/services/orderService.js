@@ -3,6 +3,7 @@ const order = require("../model/order");
 module.exports = class orderService {
   static async getAllOrders(query, project) {
     try {
+      console.log('query++++++++++++++++++++++',query)
       const allOrders = await order.aggregate([
         {
           $match: query
