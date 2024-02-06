@@ -1711,8 +1711,7 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
-        let result = {
-            orderData: checkOrder,
+        let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData:reseller ? reseller : {},
@@ -1723,7 +1722,8 @@ exports.getSingleOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: result,
+            result: checkOrder,
+            orderUserData:userData
         });
     } catch (err) {
         res.send({
