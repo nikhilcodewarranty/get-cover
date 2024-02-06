@@ -127,7 +127,7 @@ exports.createOrder = async (req, res) => {
             //         data.productsArray[i].QuantityPricing = jsonArray
             //     }
             // }
-            
+
             // console.log("new array=================",data.productsArray);
             // return;
             data.venderOrder = data.dealerPurchaseOrder
@@ -211,8 +211,8 @@ exports.createOrder = async (req, res) => {
                             ...product,
                             file: file.filePath,
                             orderFile: {
-                                fileName: file.filename,
-                                name: file.originalname,
+                                fileName: file.fileName,
+                                name: file.name,
                                 size:file.size
                             }
                         };
