@@ -306,6 +306,54 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+exports.processOrder=async (req,res)=>{
+    try{
+        if(req.role!='Super Admin'){
+            res.send({
+                code:constant.errorCode,
+                message:'Only super admin allow to do this action!'
+            });
+            return;
+        }
+
+        let returnField=[];
+
+        let checkOrder = await orderService.getOrder({_id:req.params.orderId},{isDeleted:0});
+        if(!checkOrder){
+            res.send({
+                code:constant.errorCode,
+                message:'Order not found!'
+            });
+            return;
+        }
+
+        let resultArray = checkOrder.productsArray.map(item => item.coverageStartDate === null);
+        let isEmptyOrderFile = checkOrder.productsArray.map(item => item.orderFile.fileName === "" && item.orderFile.originalName === "").some(Boolean);
+        //  console.log(isEmptyOrderFile);
+        // console.log(resultArray)
+        const obj = {
+            customerId:checkOrder.customerId ? true : false,
+            paymentStatus:checkOrder.paymentStatus=='Paid' ? true:  false,
+            coverageStartDate:resultArray.length == 0 ? true : false,
+            fileName:isEmptyOrderFile.length == 0 ? true : false
+        }
+
+        returnField.push(obj)
+
+        res.send({
+            code:constant.successCode,
+            message:'Success!',
+            result:returnField
+        })
+    }
+    catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+    }
+}
+
 exports.getAllOrders = async (req, res) => {
     let data = req.body
     if (req.role != "Super Admin") {
