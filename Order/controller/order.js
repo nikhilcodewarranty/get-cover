@@ -684,22 +684,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body
-
-            // data.productsArray.forEach(product => {
-            //     console.log("QuantityPricing=======================",typeof(product.QuantityPricing))
-            //     let productEnterQuantitySum = product.QuantityPricing.reduce((sum, quantity) => {
-            //         return sum + parseInt(quantity.enterQuantity);
-            //     }, 0);
-
-            //     // Replace the value of checkNumberProducts with the calculated sum
-            //     product.checkNumberProducts = productEnterQuantitySum;
-
-            // }); 
-
-
-            console.log("data================", data);
-            console.log("files================", req.files);
-
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map(file => ({
                     filePath: file.path
@@ -889,9 +873,9 @@ exports.multipleFileValidation= async(req,res)=>{
                         "priceBookId": "65aba2ad182e38ce2ea76f6b",
                         "unitPrice": "80.00",
                         "noOfProducts": 12,
-                        "checkNumberProducts":12,
+                        "checkNumberProducts":45,
                         "price": 160,
-                        "file": false,
+                        "file": true,
                         "manufacture": "Get-Cover123",
                         "model": "Inverter123",
                         "serial": "S123GHK",
@@ -934,7 +918,7 @@ exports.multipleFileValidation= async(req,res)=>{
                         "categoryId": "65aba24e182e38ce2ea76f6a",
                         "priceBookId": "65aba2ad182e38ce2ea76f6b",
                         "unitPrice": "80.00",
-                        "noOfProducts": 12,
+                        "noOfProducts": 44,
                         "checkNumberProducts":12,
                         "price": 160,
                         "file": true,
@@ -948,7 +932,7 @@ exports.multipleFileValidation= async(req,res)=>{
                         "coverageEndDate": "2025-01-30T00:00:00.000Z",
                         "description": "003",
                         "term": 12,
-                        "priceType": "Regular",
+                        "priceType": "Regular Pricing",
                         "additionalNotes": "this is test ",
                         "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
 
@@ -964,40 +948,185 @@ exports.multipleFileValidation= async(req,res)=>{
                 "dueAmount": 21
             }
 
-    if(req.files.length>0){
-        const uploadedFiles = req.files.map(file => ({
-            filePath: file.path
-        }));
+        if(req.files.length>0){
+            const uploadedFiles = req.files.map(file => ({
+                filePath: file.path
+            }));
 
-        console.log("uploadedFiles",uploadedFiles)
-        let fileIndex = 0;
-        let filePath 
-        const productsWithFiles = data.productsArray.map((data1, index) => {
-          //  console.log(data1); // Logging data1
-          if(data1.file){
-             filePath = uploadedFiles[fileIndex].filePath;
-            fileIndex++
-          }
-            return {         
-                products: {
-                    key: index + 1,
-                    checkNumberProducts: data1.checkNumberProducts,
-                    noOfProducts: data1.noOfProducts,
-                    priceType: data1.priceType,
-                    rangeStart: data1.rangeStart,
-                    rangeEnd: data1.rangeEnd,
-                    flag:data1.file,
-                    file:filePath,
-                   
-                }
-            };
+      
+            let fileIndex = 0;
+            let filePath 
+            const productsWithFiles = data.productsArray.map((data1, index) => {
+                return {         
+                    products: {
+                        key: index + 1,
+                        checkNumberProducts: data1.checkNumberProducts,
+                        noOfProducts: data1.noOfProducts,
+                        priceType: data1.priceType,
+                        rangeStart: data1.rangeStart,
+                        rangeEnd: data1.rangeEnd,
+                        flag:data1.file,
+                        file:data1.file ? uploadedFiles[fileIndex].filePath : undefined
+                    
+                    }
+                };
+            });
+            let allHeaders = [];
+            let allDataComing = [];
+            let message = [];
+            let finalRetailValue = [];
+            //Collect all header length for all csv 
+            for (let j = 0; j < productsWithFiles.length; j++) {
+                if(productsWithFiles[j].products.file!=undefined){
+                    const wb = XLSX.readFile(productsWithFiles[j].products.file);
+                    const sheets = wb.SheetNames;
+                    const sheet = wb.Sheets[sheets[0]];
+                    const headers = [];
+                    for (let cell in sheet) {
+                        // Check if the cell is in the first row and has a non-empty value
+                        if (/^[A-Z]1$/.test(cell) && sheet[cell].v !== undefined && sheet[cell].v !== null && sheet[cell].v.trim() !== '') {
+                            headers.push(sheet[cell].v);
+                        }
+                    }
+                    allDataComing.push({
+                        key: productsWithFiles[j].products.key,
+                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                        noOfProducts: productsWithFiles[j].products.noOfProducts,
+                        priceType: productsWithFiles[j].products.priceType,
+                        rangeStart: productsWithFiles[j].products.rangeStart,
+                        rangeEnd: productsWithFiles[j].products.rangeEnd,
+                        data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]])
+                    });
+                    allHeaders.push({
+                        key: productsWithFiles[j].products.key,
+                        headers: headers,
+                    });
+
+                }       
+
+            }           
+
+            const errorMessages = allHeaders
+            .filter(headerObj => headerObj.headers.length !== 5)
+            .map(headerObj => ({
+                key: headerObj.key,
+                message: "Invalid file format detected. The sheet should contain exactly five columns."
+            }));
+        if (errorMessages.length > 0) {
+            // There are errors, send the error messages
+            res.send({
+                code: constant.errorCode,
+                message: errorMessages
+            });
+            return;
+        }
+
+
+        const isValidLength1 = allDataComing.map(obj => {
+            if (!obj.data || typeof obj.data !== 'object') {
+                return false; // 'data' should be an object
+            }
+
+            const isValidLength = obj.data.every(obj1 => Object.keys(obj1).length === 5);
+            if (!isValidLength) {
+                message.push({
+                    code: constant.errorCode,
+                    key: obj.key,
+                    message: "Invalid fields value"
+                })
+            }
+
         });
-        console.log("productsWithFiles=================",productsWithFiles)
 
 
+        if (message.length > 0) {
+            // Handle case where the number of properties in 'data' is not valid
+            res.send({
+                message
+            });
+            return;
+        }
 
+
+                        //Check if csv data length equal to no of products
+                        const isValidNumberData = allDataComing.map(obj => {
+                            if (obj.priceType == 'Quantity Pricing') {
+                                if (parseInt(obj.checkNumberProducts) != obj.data.length) {
+                                    // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: "Invalid number of products"
+                                    });
+                                    //return; // Set the return value to false when the condition fails
+                                }
+                            }
+                            else {
+                                if (parseInt(obj.noOfProducts) != obj.data.length) {
+                                    // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: "Invalid number of products"
+                                    });
+                                   // return; // Set the return value to false when the condition fails
+                                }
+                            }
+                        });
         
+        
+                        if (message.length > 0) {
+                            // Handle case where the number of properties in 'data' is not valid
+                            res.send({
+                                message
+                            });
+                            return;
+                        }
+
+                        let checkRetailValue = allDataComing.map(obj => {
+                            if (obj.priceType == 'Flat Pricing') {
+                                const priceObj = obj.data.map(item => {
+                                    const keys = Object.keys(item);
+                                    return {
+                                        key: obj.key,
+                                        checkNumberProducts: obj.checkNumberProducts,
+                                        noOfProducts: obj.noOfProducts,
+                                        rangeStart: obj.rangeStart,
+                                        rangeEnd: obj.rangeEnd,
+                                        retailValue: item[keys[4]],
+                                    };
+                                });
+        
+                                if (priceObj.length > 0) {
+                                    priceObj.map((obj, index) => {
+                                        if ((Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd))) {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                retailPrice: obj.retailValue,
+                                                key: obj.key,
+                                                message: "Invalid Retail Price!"
+                                            });
+                                        }
+                                    })
+                                }
+        
+                            }
+                        })
+        
+                        if (message.length > 0) {
+                            // Handle case where the number of properties in 'data' is not valid
+                            res.send({
+                                message
+                            });
+                            return;
+                        }
+            
     }
+
+    res.send({
+        code:constant.successCode,
+        message:'Success!'
+    })
 })
             
 }
