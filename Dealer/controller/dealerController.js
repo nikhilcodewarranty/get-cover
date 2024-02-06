@@ -399,7 +399,7 @@ exports.getDealerById = async (req, res) => {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
           dealerData: matchingItem.toObject(),
-          ordersResult:ordersResult
+          ordersResult: ordersResult
         };
       } else {
         return dealerData.toObject();
@@ -2325,6 +2325,8 @@ exports.getDealerOrders = async (req, res) => {
       return;
     }
 
+    let data = req.body
+
     let checkDealer = await dealerService.getDealerById(req.params.dealerId, { isDeleted: 0 })
     if (!checkDealer) {
       res.send({
@@ -2437,7 +2439,25 @@ exports.getDealerOrders = async (req, res) => {
       }
     });
 
-    const updatedArray = result_Array.map((item) => ({
+    const unique_keyRegex = new RegExp(
+      data.unique_key ? data.unique_key.trim() : "",
+      "i"
+    );
+    const venderOrderRegex = new RegExp(
+      data.venderOrder ? data.venderOrder.trim() : "",
+      "i"
+    );
+    const status = new RegExp(data.status ? data.status.trim() : "", "i");
+
+    let filteredData = result_Array.filter((entry) => {
+      return (
+        unique_keyRegex.test(entry.unique_key) &&
+        venderOrderRegex.test(entry.venderOrder) &&
+        status.test(entry.status)
+      );
+    });
+
+    const updatedArray = filteredData.map((item) => ({
       ...item,
       servicerName: item.dealerName.isServicer
         ? item.dealerName

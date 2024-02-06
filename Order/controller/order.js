@@ -547,7 +547,7 @@ exports.getAllOrders = async (req, res) => {
         data.venderOrder ? data.venderOrder.trim() : "",
         "i"
     );
-    const status = new RegExp(data.phone ? data.phone.trim() : "", "i");
+    const status = new RegExp(data.status ? data.status.trim() : "", "i");
 
     let filteredData = result_Array.filter((entry) => {
         return (
