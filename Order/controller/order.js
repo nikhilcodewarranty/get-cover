@@ -119,13 +119,15 @@ exports.createOrder = async (req, res) => {
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
             // console.log("Body=================",hhhhh)
-             console.log("productsArray=================",typeof(data.productsArray[0].QuantityPricing))
-            for(let i=0; i < data.productsArray.length; i++){
-                if(data.productsArray[i].QuantityPricing){
-                    let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
-                    data.productsArray[i].QuantityPricing = jsonArray
-                }
-            }
+            //  console.log("productsArray=================",typeof(data.productsArray[0].QuantityPricing))
+
+            // for(let i=0; i < data.productsArray.length; i++){
+            //     if(data.productsArray[i].QuantityPricing){
+            //         let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
+            //         data.productsArray[i].QuantityPricing = jsonArray
+            //     }
+            // }
+            
             // console.log("new array=================",data.productsArray);
             // return;
             data.venderOrder = data.dealerPurchaseOrder
