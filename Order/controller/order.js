@@ -1372,16 +1372,16 @@ exports.editOrderDetail = async (req, res) => {
 
 
             }
-            if(checkId.venderOrder != data.dealerPurchaseOrder){
-                let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
-            if (checkVenderOrder) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "dealer purchase order is already exist"
-                })
-                return;
-            }
-            }
+            // if(checkId.venderOrder != data.dealerPurchaseOrder){
+            //     let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
+            // if (checkVenderOrder) {
+            //     res.send({
+            //         code: constant.errorCode,
+            //         message: "dealer purchase order is already exist"
+            //     })
+            //     return;
+            // }
+            // }
             
 
             let savedResponse = await orderService.updateOrder({ _id: req.params.orderId }, {}, { new: true });
