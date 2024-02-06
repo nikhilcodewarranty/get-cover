@@ -1937,7 +1937,7 @@ exports.editOrderDetail = async (req, res) => {
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-            coverageStartDate: resultArray.includes(true) ? true : false,
+            coverageStartDate: resultArray.includes(true) ? false : true,
             fileName: isEmptyOrderFile.length == 0 ? true : false,
         };
 
