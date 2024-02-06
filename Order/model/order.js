@@ -50,15 +50,15 @@ const orderSchema = new mongoose.Schema({
         },
         priceType: {
           type: String,
-          default:''
+          default: ''
         },
         term: {
           type: Number,
-          default:0
+          default: 0
         },
-        description:{
-          type:String,
-          default:''
+        description: {
+          type: String,
+          default: ''
         },
         checkNumberProducts: {
           type: Number,
@@ -73,7 +73,11 @@ const orderSchema = new mongoose.Schema({
             name: {
               type: String,
               default: ''
-            }
+            },
+            size: {
+              type: String,
+              default: ''
+            },
           },
           default: {
             fileName: '',

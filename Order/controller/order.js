@@ -204,12 +204,13 @@ exports.createOrder = async (req, res) => {
 
                     // Check if 'file' is not null
                     if (file && file.filePath) {
+                        console.log('file+++++++++++++++++',file)
                         return {
                             ...product,
                             file: file.filePath,
                             orderFile: {
-                                fileName: file.fileName,
-                                name: file.originalName,
+                                fileName: file.filename,
+                                name: file.originalname,
                                 size:file.size
                             }
                         };
