@@ -604,13 +604,13 @@ exports.checkFileValidation = async (req, res) => {
                 })
                 return;
             }
-            if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Data does not match to the number of orders"
-                })
-                return;
-            }
+            // if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
+            //     res.send({
+            //         code: constant.errorCode,
+            //         message: "Data does not match to the number of orders"
+            //     })
+            //     return;
+            // }
             //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
             const totalDataComing = totalDataComing1.map(item => {
                 const keys = Object.keys(item);
