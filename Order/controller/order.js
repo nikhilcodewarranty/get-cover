@@ -932,7 +932,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             // }
 
             console.log("uploadedFiles==================", uploadedFiles);
-            return;
+            //return;
             let fileIndex = 0;
             const productsWithFiles = data.productsArray.map((data1, index) => {
                 let file1 = undefined;
