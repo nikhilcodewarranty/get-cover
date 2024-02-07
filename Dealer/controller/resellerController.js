@@ -305,7 +305,7 @@ exports.getResellerById = async (req, res) => {
 
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
-        let order = ordersResult.find(order => order.resellerId.toString() === user.accountId.toString())
+        let order = ordersResult.find(order => order._id.toString() === user.accountId.toString())
         if (matchItem || order) {
             return {
                 ...user.toObject(),

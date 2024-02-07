@@ -193,11 +193,9 @@ exports.createOrder = async (req, res) => {
             let contractArrrayData = [];
 
             let count = await orderService.getOrdersCount();
-
-            data.unique_key =
-                Number(
-                    count.length > 0 && count[0].unique_key ? count[0].unique_key : 10000
-                ) + 1;
+            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
+            data.unique_key = "GC-"+"2024"+data.unique_key_number
+            console.log(data,count)
             if (req.files) {
                 const uploadedFiles = req.files.map((file) => ({
                     fileName: file ? file.filename : "",
