@@ -273,7 +273,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let fileLength = req.files ? req.files.length : 0;
-            console.log("customer data ------",data.customerId)
+            console.log("customer data ------", data.customerId)
             if (
                 fileLength === data.productsArray.length &&
                 data.customerId != null &&
@@ -401,7 +401,7 @@ exports.processOrder = async (req, res) => {
         // .some(Boolean);
         console.log("isEmptyOrderFile-----------------------", checkOrder);
         console.log(resultArray)
-        if (checkOrder.customerId == '' || checkOrder.customerId==null) {
+        if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name is missing')
         }
         if (checkOrder.paymentStatus != 'Paid') {
@@ -1696,9 +1696,26 @@ exports.getSingleOrder = async (req, res) => {
             });
             return;
         }
+        checkOrder = checkOrder.toObject();
+        checkOrder.productsArray = await Promise.all(checkOrder.productsArray.map(async (product) => {
+            const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+            const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
+            if (pricebook) {
+                product.name = pricebook.name;
+                console.log('order check +++++===============+++++++++++++', product,pricebook)
+            }
+            if (pricebookCat) {
+                product.catName = pricebookCat.name;
+                console.log('order check +++++===============+++++++++++++', product,pricebook)
+            }
+            // console.log('order check ++++++++++++++++++', checkOrder)
 
-        console.log('order check ++++++++++++++++++',checkOrder)
+            return product;
+        }));
 
+
+        // console.log('order check ++++++++++++++++++', checkOrder)
+        // return
         //Get Dealer Data
 
         let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
