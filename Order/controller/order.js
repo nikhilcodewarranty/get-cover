@@ -399,9 +399,9 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
         // .some(Boolean);
-        console.log("isEmptyOrderFile-----------------------", isEmptyOrderFile);
+        console.log("isEmptyOrderFile-----------------------", checkOrder);
         console.log(resultArray)
-        if (checkOrder.customerId == '') {
+        if (checkOrder.customerId == '' || checkOrder.customerId==null) {
             returnField.push('Customer Name is missing')
         }
         if (checkOrder.paymentStatus != 'Paid') {
