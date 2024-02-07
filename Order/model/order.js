@@ -30,8 +30,11 @@ const orderSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  unique_key: {
+  unique_key_number: {
     type: Number,
+  },
+  unique_key: {
+    type: String,
   },
   productsArray: {
     type: [
