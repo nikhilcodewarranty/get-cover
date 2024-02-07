@@ -194,7 +194,7 @@ exports.createOrder = async (req, res) => {
 
             let count = await orderService.getOrdersCount();
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
-            data.unique_key = "GC-" + "2024" + data.unique_key_number
+            data.unique_key = "GC-" + "2024-" + data.unique_key_number
             console.log(data, count)
             if (req.files) {
                 const uploadedFiles = req.files.map((file) => ({
