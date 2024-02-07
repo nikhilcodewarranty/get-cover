@@ -855,7 +855,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
                     console.log(data1)
-                    if (data1.fileValue) { // Check if data1.file is not blank
+                    if (data1.fileValue=='true') { // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
                     }
