@@ -885,68 +885,68 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body;
-            // let data = {
-            //     "dealerId": "65aba175107144beb95f3bcf",
-            //     "servicerId": "",
-            //     "customerId": "",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Regular Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "true",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "orderFile": {
-            //                 "fileName": "file-1707291159337.xlsx",
-            //                 "name": "file-1707291159337.xlsx"
-            //             }
+            //  let data = req.body;
+            let data = {
+                "dealerId": "65aba175107144beb95f3bcf",
+                "servicerId": "",
+                "customerId": "",
+                "resellerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Regular Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "true",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "orderFile": {
+                            "fileName": "file-1707291159337.xlsx",
+                            "name": "file-1707291159337.xlsx"
+                        }
 
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "true",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123"
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Quantity Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "true",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123"
 
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Flat Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "false",
-            //             "manufacture": "Get-Cover123",
-            //             "rangeStart": 400,
-            //             "rangeEnd": 600,
-            //             "model": "Inverter123"
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Flat Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "false",
+                        "manufacture": "Get-Cover123",
+                        "rangeStart": 400,
+                        "rangeEnd": 600,
+                        "model": "Inverter123"
 
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+                    }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map((file) => ({
@@ -1034,8 +1034,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let serialNumber = allDataComing.map((obj) => {
                     const serialNumberArray = obj.data.map((item) => {
                         const keys = Object.keys(item);
-                        // console.log(keys)
-                        // console.log(item)
                         return {
                             key: obj.key,
                             serialNumber: item[keys[2]]
@@ -1043,30 +1041,27 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
 
                     if (serialNumberArray.length > 0) {
-                        console.log("dassdadsadas");
+                        console.log("dassdadsadas", serialNumberArray);
 
-                        const serialAndKeyPairs = serialNumberArray.map(item => ({ serial: item.serialNumber, key: item.key }));
-                        const uniquePairs = new Set(serialAndKeyPairs.map(pair => `${pair.serial}-${pair.key}`));
+                        const seen = new Set();
+                        const duplicates = [];
 
-                        const uniqueKeys = new Set(serialAndKeyPairs.map(pair => pair.key));
-
-
-                        uniqueKeys.forEach(key => {
-                            const duplicates = serialAndKeyPairs.filter(item => item.key === key);
-                            const serials = new Set(duplicates.map(item => item.serial));
-                            if (serials.size > 1) {
+                        for (const { key, serialNumber } of serialNumberArray) {
+                            const keySerialPair = `${key}-${serialNumber}`;
+                            if (seen.has(keySerialPair)) {
                                 message.push({
-                                    code: constant.errorCode,
+                                    code: 401,
                                     key: key,
-                                    message: "Serial numbers are not unique for this key",
+                                    message: "Serial numbers are not unique for this key"
                                 });
+                                return
+                            } else {
+                                seen.add(keySerialPair);
+
                             }
-                        });
-
-
+                        }
                     }
                 });
-
 
                 if (message.length > 0) {
                     res.send({
