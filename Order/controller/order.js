@@ -1036,7 +1036,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                             key: obj.key,
                                             message: "Invalid Retail Price!",
                                         });
-                                        fileName   }
+                                    }
                                 });
                             }
                         }
