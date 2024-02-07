@@ -1034,7 +1034,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                             key: obj.key,
                                             message: "Invalid Retail Price!",
                                         });
-                                    }
+                                        fileName   }
                                 });
                             }
                         }
@@ -1052,7 +1052,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             res.send({
                 code: constant.successCode,
-                message: "Success!",
+                message: "SuccessfileName!",
             });
         });
     } catch (err) {
@@ -1072,7 +1072,7 @@ exports.editFileCase = async (req, res) => {
                 if (data.productsArray[i].fileValue == 'true') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
                     console.log("product array=====================", data.productsArray[i].orderFile)
-
+                    console.log(fileName)
                     let product = {
                         key: i,
                         checkNumberProducts: data.productsArray[i].checkNumberProducts,
@@ -1238,7 +1238,7 @@ exports.editFileCase = async (req, res) => {
             }
 
             res.send({
-                code: consta.successCode,
+                code: constant.successCode,
                 message: 'Success!'
             })
             console.log("productsWithFiles=====================", productsWithFiles)
