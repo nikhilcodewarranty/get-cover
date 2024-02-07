@@ -194,8 +194,8 @@ exports.createOrder = async (req, res) => {
 
             let count = await orderService.getOrdersCount();
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
-            data.unique_key = "GC-"+"2024"+data.unique_key_number
-            console.log(data,count)
+            data.unique_key = "GC-" + "2024" + data.unique_key_number
+            console.log(data, count)
             if (req.files) {
                 const uploadedFiles = req.files.map((file) => ({
                     fileName: file ? file.filename : "",
@@ -741,8 +741,8 @@ exports.checkFileValidation = async (req, res) => {
                 ],
             });
 
-            console.log("req.file.path==============",req.file.path)
-            const fileUrl = req.file.destination+'/'+req.file.filename
+            console.log("req.file.path==============", req.file.path)
+            const fileUrl = req.file.destination + '/' + req.file.filename
             const wb = XLSX.readFile(fileUrl);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
@@ -845,32 +845,26 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-
-
-            console.log('data+++++++++++++++++++++++++++++++++++++++1',data.productsArray)
-            console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile)
-            console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile.fileName)
-
-
-
-
+            // console.log('data+++++++++++++++++++++++++++++++++++++++1',data.productsArray)
+            // console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile)
+            // console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile.fileName)
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map((file) => ({
-                    filePath: file.destination+'/'+file.filename,
+                    filePath: file.destination + '/' + file.filename,
                 }));
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
-                    console.log(typeof(data1.fileValue))
+                    console.log(typeof (data1.fileValue))
                     console.log(data1.fileValue)
-                    if (data1.fileValue=='true') { 
+                    if (data1.fileValue == 'true') {
                         // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
                     }
                     return {
                         products: {
-                            key: index ,
+                            key: index,
                             checkNumberProducts: data1.checkNumberProducts,
                             noOfProducts: data1.noOfProducts,
                             priceType: data1.priceType,
@@ -934,7 +928,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         code: constant.errorCode,
                         message: errorMessages,
                     });
-                    return; 
+                    return;
                 }
 
                 if (allDataComing.length > 0) {
@@ -1714,11 +1708,11 @@ exports.getSingleOrder = async (req, res) => {
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
                 product.name = pricebook.name;
-                console.log('order check +++++===============+++++++++++++', product,pricebook)
+                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
-                console.log('order check +++++===============+++++++++++++', product,pricebook)
+                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
             // console.log('order check ++++++++++++++++++', checkOrder)
 
