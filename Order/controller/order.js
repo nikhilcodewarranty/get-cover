@@ -276,7 +276,7 @@ exports.createOrder = async (req, res) => {
             console.log("customer data ------",data.customerId)
             if (
                 fileLength === data.productsArray.length &&
-                data.customerId != "" &&
+                data.customerId != null &&
                 data.paymentStatus == "Paid"
             ) {
                 let updateStatus = await orderService.updateOrder(
