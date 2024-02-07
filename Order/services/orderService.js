@@ -14,8 +14,8 @@ module.exports = class orderService {
         },
         {
           "$addFields": {
-            "noOfProducts": {
-              "$sum": "$productsArray.noOfProducts"
+            "checkNumberProducts": {
+              "$sum": "$productsArray.checkNumberProducts"
             }
           }
         },
