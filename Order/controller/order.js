@@ -850,8 +850,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }));
 
                 let fileIndex = 0;
+                console.log("uploadedFiles==============",uploadedFiles)
+                console.log("data.productsArray==================",data.productsArray)
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
+                    console.log(data1)
                     if (data1.fileValue) { // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
