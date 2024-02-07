@@ -1044,10 +1044,23 @@ exports.checkMultipleFileValidation = async (req, res) => {
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
+        let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if(data.productsArray[i].fileValue=='true'){
-                    
+                    let fileName = data.productsArray[i].file.fileName
+                    let product =  {
+                        key: i,
+                        checkNumberProducts: data.productsArray[i].checkNumberProducts,
+                        noOfProducts: data.productsArray[i].noOfProducts,
+                        priceType: data.productsArray[i].priceType,
+                        rangeStart: data.productsArray[i].rangeStart,
+                        rangeEnd: data.productsArray[i].rangeEnd,
+                        flag: data.productsArray[i].fileValue, 
+                        file: fileName
+                    }
+
+                    productsWithFiles.push(product)
                 }
             }
         }

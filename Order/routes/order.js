@@ -16,6 +16,7 @@ router.post('/multipleFileValidation', [verifyToken], orderController.multipleFi
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
 
 router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
+router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
 router.get('/getOrderById/:orderId', [verifyToken], orderController.getSingleOrder)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
