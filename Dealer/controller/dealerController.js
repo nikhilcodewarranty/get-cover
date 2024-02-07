@@ -128,7 +128,7 @@ exports.getAllDealers = async (req, res) => {
 
     //Get Dealer Order Data     
 
-    let orderQuery = { dealerId: { $in: dealerIds }, status: { $ne: "Archieved" } };
+    let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -142,7 +142,7 @@ exports.getAllDealers = async (req, res) => {
       orderAmount: 1,
     }
 
-    let orderData = await orderService.getGroupingOrder(orderQuery, project);
+    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project,"$dealerId");
 
 
     if (!dealers) {
@@ -384,13 +384,11 @@ exports.getDealerById = async (req, res) => {
 
     let query = {
       $and: [
-        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: { $ne: "Archieved" } },
-        {
-          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
-        },
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: "Active" }
       ]
     }
-    let ordersResult = await orderService.getGroupingOrder(query, project);
+
+    let ordersResult = await orderService.getAllOrderInCustomers(query, project,"$dealerId");
 
 
     const result_Array = dealarUser.map(item1 => {

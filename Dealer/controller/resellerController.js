@@ -166,9 +166,9 @@ exports.getAllResellers = async (req, res) => {
             orderAmount: 1,
         }
 
-        let orderQuery = { resellerId: { $in: resellerOrderIds }, status: { $ne: "Archieved" } };
+        let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
 
-        let ordersData = await orderService.getAllOrders(orderQuery, project)
+        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project,"$resellerId")
 
         //console.log("ordersData=================",ordersData);
 
@@ -296,13 +296,10 @@ exports.getResellerById = async (req, res) => {
 
     let orderQuery = {
         $and: [
-            { resellerId: { $in: [checkReseller[0]._id] }, status: { $ne: "Archieved" } },
-            {
-                'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
-            },
+            { resellerId: { $in: [checkReseller[0]._id] }, status: "Active"},
         ]
     }
-    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project,"$resellerId");
 
     console.log("ordersResult================", ordersResult)
 
