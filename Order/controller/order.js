@@ -962,7 +962,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
             console.log("productsWithFiles=================",productsWithFiles);
 
-            return;
+            ;
 
             let allHeaders = [];
             let allDataComing = [];
