@@ -769,6 +769,11 @@ exports.checkFileValidation = async (req, res) => {
                     code: constant.errorCode,
                     message:
                         "Invalid file format detected. The sheet should contain exactly five columns.",
+                    orderFile: {
+                        fileName: csvName,
+                        name: originalName,
+                        size: size,
+                    },
                 });
                 return;
             }
@@ -781,6 +786,11 @@ exports.checkFileValidation = async (req, res) => {
                 res.send({
                     code: constant.errorCode,
                     message: "Invalid fields value",
+                    orderFile: {
+                        fileName: csvName,
+                        name: originalName,
+                        size: size,
+                    },
                 });
                 return;
             }
@@ -813,7 +823,12 @@ exports.checkFileValidation = async (req, res) => {
             if (duplicateSerials.length > 0) {
                 res.send({
                     code: constant.errorCode,
-                    message: "Serial number is not unique in uploaded csv!"
+                    message: "Serial number is not unique in uploaded csv!",
+                    orderFile: {
+                        fileName: csvName,
+                        name: originalName,
+                        size: size,
+                    },
                 })
                 return
             }
@@ -832,6 +847,11 @@ exports.checkFileValidation = async (req, res) => {
                         message: "Invalid Retail Price!",
                         fileName: csvName,
                         name: originalName,
+                        orderFile: {
+                            fileName: csvName,
+                            name: originalName,
+                            size: size,
+                        },
                     });
                 }
             });
@@ -839,6 +859,7 @@ exports.checkFileValidation = async (req, res) => {
             if (message.length > 0) {
                 res.send({
                     data: message,
+                    
                 });
                 return;
             }
@@ -1070,7 +1091,7 @@ exports.editFileCase = async (req, res) => {
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
-                if (data.productsArray[i].orderFile.fileName!='') {
+                if (data.productsArray[i].orderFile.fileName != '') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
                     console.log("product array=====================", data.productsArray[i].orderFile)
                     console.log(fileName)
