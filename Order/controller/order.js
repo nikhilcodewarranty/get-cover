@@ -1020,6 +1020,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 };
                             });
 
+                            console.log("priceObj================",priceObj)
+
                             if (priceObj.length > 0) {
                                 priceObj.map((obj, index) => {
                                     if (

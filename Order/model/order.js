@@ -116,6 +116,14 @@ const orderSchema = new mongoose.Schema({
           type: String,
           default: ''
         },
+        rangeStart: {
+          type: Number,
+          default: ''
+        },
+        rangeEnd: {
+          type: Number,
+          default: ''
+        },
         coverageStartDate: {
           type: Date,
           default: Date.now(),
