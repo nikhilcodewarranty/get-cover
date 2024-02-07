@@ -939,7 +939,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 console.log(typeof (data1.fileValue))
                 console.log(data1.orderFile)
                 if ((data1.orderFile && data1.orderFile.fileName != '') && data1.fileValue == 'true') {
-                    file1 = '/home/codenomad/Downloads/get-cover/uploads/orderFile/' + product.orderFile.fileName
+                    file1 = '/home/codenomad/Downloads/get-cover/uploads/orderFile/' + data1.orderFile.fileName
                 }
                 else if (data1.fileValue == 'true') {
                     // Check if data1.file is not blank
