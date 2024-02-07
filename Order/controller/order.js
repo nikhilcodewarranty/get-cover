@@ -846,7 +846,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body;
+            let data = req.body;
             // let data = {
             //     "dealerId": "65aba175107144beb95f3bcf",
             //     "servicerId": "",
@@ -937,8 +937,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
             const productsWithFiles = data.productsArray.map((data1, index) => {
                 let file1 = undefined;
                 console.log(typeof (data1.fileValue))
-                console.log(data1.fileValue)
-                if (data1.fileValue == 'true') {
+                console.log(data1.orderFile)
+                if ((data1.orderFile && data1.orderFile.fileName != '') && data1.fileValue == 'true') {
+                    file1 = '/home/codenomad/Downloads/get-cover/uploads/orderFile/' + product.orderFile.fileName
+                }
+                else if (data1.fileValue == 'true') {
                     // Check if data1.file is not blank
                     file1 = uploadedFiles[fileIndex].filePath;
                     fileIndex++;
@@ -956,6 +959,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     },
                 };
             });
+
+            console.log("productsWithFiles=================",productsWithFiles);
+
+            return;
 
             let allHeaders = [];
             let allDataComing = [];
