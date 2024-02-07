@@ -974,7 +974,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         return;
                     }
 
-                    console.log("allDataComing=====================",allDataComing);
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
                         if (obj.priceType == "Quantity Pricing") {
@@ -1071,7 +1070,7 @@ exports.editFileCase = async (req, res) => {
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
-                if (data.productsArray[i].fileValue == 'true') {
+                if (data.productsArray[i].orderFile.fileName!='') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
                     console.log("product array=====================", data.productsArray[i].orderFile)
                     console.log(fileName)
