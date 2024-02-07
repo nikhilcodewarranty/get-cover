@@ -27,6 +27,41 @@ module.exports = class orderService {
     }
   }
 
+  static async getAllOrderInCustomers(query, project) {
+    try {
+      console.log('query++++++++++++++++++++++',query)
+      const allOrders = await order.aggregate([
+        {
+          $match: query
+        },
+        {
+          $project: project,
+
+        },
+        {
+          $group: {
+            _id: "$customerId",
+            noOfProducts: { $sum: 1 },
+            orderAmount: {
+                $sum: "$orderAmount"
+            },
+          }
+        },
+        // {
+        //   "$addFields": {
+        //     "noOfProducts": {
+        //       "$sum": "$productsArray.noOfProducts"
+        //     }
+        //   }
+        // },
+        { $sort: { unique_key: -1 } }
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+
   static async getGroupingOrder(query,project) {
     try {
       const allOrders = await order.aggregate([

@@ -147,10 +147,11 @@ exports.getAllCustomers = async (req, res, next) => {
       orderAmount: 1,
     }
 
-    let orderQuery = { customerId: { $in: customersOrderId }, status: { $ne: "Archieved" } };
+    let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
 
-    let ordersData = await orderService.getAllOrders(orderQuery, project)
+    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project)
 
+    console.log('check++++++++++++++++++++++++++++++++++',ordersData)
 
     // const result_Array = getPrimaryUser.map(item1 => {
     //   const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -168,7 +169,7 @@ exports.getAllCustomers = async (req, res, next) => {
     const result_Array = customers.map(customer => {
       const matchingItem = getPrimaryUser.find(user => user.accountId.toString() === customer._id.toString())
       const matchingReseller = customer.resellerId != null ? resellerData.find(reseller => reseller._id.toString() === customer.resellerId.toString()) : ''
-      const order = ordersData.find(order => order.customerId.toString() === customer._id.toString())
+      const order = ordersData.find(order => order._id.toString() === customer._id.toString())
       if (matchingItem || matchingReseller || order) {
         return {
           ...matchingItem ? matchingItem : {},
