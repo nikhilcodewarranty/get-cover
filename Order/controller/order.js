@@ -937,7 +937,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
             const productsWithFiles = data.productsArray.map((data1, index) => {
                 let file1 = undefined;
                 console.log(typeof (data1.fileValue))
-                console.log(data1.orderFile)
+                console.log(data1.orderFile.fileName)
                 if ((data1.orderFile && data1.orderFile.fileName != '') && data1.fileValue == 'true') {
                     file1 = '/home/codenomad/Downloads/get-cover/uploads/orderFile/' + data1.orderFile.fileName
                 }
