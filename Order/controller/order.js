@@ -987,6 +987,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         return;
                     }
 
+
+                    console.log("allDataComing===================",allDataComing)
+
                     let checkRetailValue = allDataComing.map((obj) => {
                         if (obj.priceType == "Flat Pricing") {
                             const priceObj = obj.data.map((item) => {
