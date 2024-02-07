@@ -766,7 +766,7 @@ exports.checkFileValidation = async (req, res) => {
             if (headers.length !== 5) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
-                    code: constant.errorCode,
+                    code: constant.successCode,
                     message:
                         "Invalid file format detected. The sheet should contain exactly five columns.",
                     orderFile: {
@@ -784,7 +784,7 @@ exports.checkFileValidation = async (req, res) => {
             if (!isValidLength) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
-                    code: constant.errorCode,
+                    code: constant.successCode,
                     message: "Invalid fields value",
                     orderFile: {
                         fileName: csvName,
@@ -822,7 +822,7 @@ exports.checkFileValidation = async (req, res) => {
 
             if (duplicateSerials.length > 0) {
                 res.send({
-                    code: constant.errorCode,
+                    code: constant.successCode,
                     message: "Serial number is not unique in uploaded csv!",
                     orderFile: {
                         fileName: csvName,
@@ -842,7 +842,7 @@ exports.checkFileValidation = async (req, res) => {
                     obj.retailValue > Number(data.rangeEnd)
                 ) {
                     message.push({
-                        code: constant.errorCode,
+                        code: constant.successCode,
                         retailPrice: obj.retailValue,
                         message: "Invalid Retail Price!",
                         fileName: csvName,
