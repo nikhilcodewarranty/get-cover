@@ -850,7 +850,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }));
 
                 let fileIndex = 0;
-                //console.log("uploadedFiles==============",uploadedFiles)
+                console.log("uploadedFiles==============",uploadedFiles)
                 console.log("data.productsArray==================",data.productsArray)
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
@@ -862,7 +862,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
                     return {
                         products: {
-                            key: index + 1,
+                            key: index ,
                             checkNumberProducts: data1.checkNumberProducts,
                             noOfProducts: data1.noOfProducts,
                             priceType: data1.priceType,
