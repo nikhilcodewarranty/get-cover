@@ -149,7 +149,7 @@ exports.getAllCustomers = async (req, res, next) => {
 
     let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
 
-    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project)
+    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project,"$customerId")
 
     console.log('check++++++++++++++++++++++++++++++++++',ordersData)
 

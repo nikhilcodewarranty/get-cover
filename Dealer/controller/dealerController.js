@@ -128,7 +128,7 @@ exports.getAllDealers = async (req, res) => {
 
     //Get Dealer Order Data     
 
-    let orderQuery = { dealerId: { $in: dealerIds }, status: { $ne: "Archieved" } };
+    let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -142,7 +142,7 @@ exports.getAllDealers = async (req, res) => {
       orderAmount: 1,
     }
 
-    let orderData = await orderService.getGroupingOrder(orderQuery, project);
+    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project,"$dealerId");
 
 
     if (!dealers) {

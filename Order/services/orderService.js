@@ -27,7 +27,7 @@ module.exports = class orderService {
     }
   }
 
-  static async getAllOrderInCustomers(query, project) {
+  static async getAllOrderInCustomers(query, project,groupBy) {
     try {
       console.log('query++++++++++++++++++++++',query)
       const allOrders = await order.aggregate([
@@ -40,7 +40,7 @@ module.exports = class orderService {
         },
         {
           $group: {
-            _id: "$customerId",
+            _id: groupBy,
             noOfProducts: { $sum: 1 },
             orderAmount: {
                 $sum: "$orderAmount"
