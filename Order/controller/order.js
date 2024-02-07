@@ -848,7 +848,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
 
             console.log('data+++++++++++++++++++++++++++++++++++++++1',data.productsArray)
-            console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[0].orderFile)
+            console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile)
+            console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile.fileName)
 
 
 
