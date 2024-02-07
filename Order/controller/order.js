@@ -856,7 +856,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     let file1 = undefined; // Initialize file to undefined
                     console.log(typeof(data1.fileValue))
                     console.log(data1.fileValue)
-                    if (data1.fileValue=='true') { // Check if data1.file is not blank
+                    console.log("body data=================",data1)
+                    if (data1.fileValue=='true') { 
+                        // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
                         fileIndex++;
                     }
@@ -926,7 +928,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         code: constant.errorCode,
                         message: errorMessages,
                     });
-                    return;
+                    return; 
                 }
 
                 if (allDataComing.length > 0) {
@@ -986,9 +988,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         return;
                     }
-
-
-                    console.log("allDataComing===================",allDataComing)
 
                     let checkRetailValue = allDataComing.map((obj) => {
                         if (obj.priceType == "Flat Pricing") {
