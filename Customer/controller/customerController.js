@@ -621,7 +621,7 @@ exports.customerOrders = async (req, res) => {
       return;
     }
 
-    let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId) }, { isDeleted: 0 })
+    let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
 
     //Get Respective dealer
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
