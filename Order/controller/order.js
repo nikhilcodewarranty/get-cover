@@ -1,4 +1,5 @@
 const { Order } = require("../model/order");
+require("dotenv").config()
 const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
 const dealerService = require("../../Dealer/services/dealerService");
@@ -1047,22 +1048,179 @@ exports.editFileCase = async (req, res) => {
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
-                if(data.productsArray[i].fileValue=='true'){
-                    let fileName = data.productsArray[i].file.fileName
-                    let product =  {
+                if (data.productsArray[i].fileValue == 'true') {
+                    let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
+                    console.log("product array=====================",data.productsArray[i].orderFile)
+
+                    let product = {
                         key: i,
                         checkNumberProducts: data.productsArray[i].checkNumberProducts,
                         noOfProducts: data.productsArray[i].noOfProducts,
                         priceType: data.productsArray[i].priceType,
                         rangeStart: data.productsArray[i].rangeStart,
                         rangeEnd: data.productsArray[i].rangeEnd,
-                        flag: data.productsArray[i].fileValue, 
+                        flag: data.productsArray[i].fileValue,
                         file: fileName
                     }
 
                     productsWithFiles.push(product)
                 }
             }
+            let allHeaders = [];
+            let allDataComing = [];
+            let message = [];
+            let finalRetailValue = [];
+            for (let j = 0; j < productsWithFiles.length; j++) {
+                if (productsWithFiles[j].products.file != undefined) {
+                    const wb = XLSX.readFile(productsWithFiles[j].file);
+                    const sheets = wb.SheetNames;
+                    const sheet = wb.Sheets[sheets[0]];
+                    const headers = [];
+                    for (let cell in sheet) {
+                        if (
+                            /^[A-Z]1$/.test(cell) &&
+                            sheet[cell].v !== undefined &&
+                            sheet[cell].v !== null &&
+                            sheet[cell].v.trim() !== ""
+                        ) {
+                            headers.push(sheet[cell].v);
+                        }
+                    }
+                    allDataComing.push({
+                        key: productsWithFiles[j].key,
+                        checkNumberProducts:
+                            productsWithFiles[j].checkNumberProducts,
+                        noOfProducts: productsWithFiles[j].noOfProducts,
+                        priceType: productsWithFiles[j].priceType,
+                        rangeStart: productsWithFiles[j].rangeStart,
+                        rangeEnd: productsWithFiles[j].rangeEnd,
+                        data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]),
+                    });
+                    allHeaders.push({
+                        key: productsWithFiles[j].key,
+                        headers: headers,
+                    });
+                }
+            }
+            const errorMessages = allHeaders
+                .filter((headerObj) => headerObj.headers.length !== 5)
+                .map((headerObj) => ({
+                    key: headerObj.key,
+                    message:
+                        "Invalid file format detected. The sheet should contain exactly five columns.",
+                }));
+            if (errorMessages.length > 0) {
+                // There are errors, send the error messages
+                res.send({
+                    code: constant.errorCode,
+                    message: errorMessages,
+                });
+                return;
+            }
+
+            if (allDataComing.length > 0) {
+                const isValidLength1 = allDataComing.map((obj) => {
+                    if (!obj.data || typeof obj.data !== "object") {
+                        return false; // 'data' should be an object
+                    }
+
+                    const isValidLength = obj.data.every(
+                        (obj1) => Object.keys(obj1).length === 5
+                    );
+                    if (!isValidLength) {
+                        message.push({
+                            code: constant.errorCode,
+                            key: obj.key,
+                            message: "Invalid fields value",
+                        });
+                    }
+                });
+
+                if (message.length > 0) {
+                    // Handle case where the number of properties in 'data' is not valid
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
+                //Check if csv data length equal to no of products
+                const isValidNumberData = allDataComing.map((obj) => {
+                    if (obj.priceType == "Quantity Pricing") {
+                        if (parseInt(obj.checkNumberProducts) != obj.data.length) {
+                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                            message.push({
+                                code: constant.errorCode,
+                                key: obj.key,
+                                message: "Invalid number of products",
+                            });
+                            //return; // Set the return value to false when the condition fails
+                        }
+                    } else {
+                        if (parseInt(obj.noOfProducts) != obj.data.length) {
+                            // Handle case where 'noOfProducts' doesn't match the length of 'data'
+                            message.push({
+                                code: constant.errorCode,
+                                key: obj.key,
+                                message: "Invalid number of products",
+                            });
+                            // return; // Set the return value to false when the condition fails
+                        }
+                    }
+                });
+
+                if (message.length > 0) {
+                    // Handle case where the number of properties in 'data' is not valid
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
+
+                let checkRetailValue = allDataComing.map((obj) => {
+                    if (obj.priceType == "Flat Pricing") {
+                        const priceObj = obj.data.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                key: obj.key,
+                                checkNumberProducts: obj.checkNumberProducts,
+                                noOfProducts: obj.noOfProducts,
+                                rangeStart: obj.rangeStart,
+                                rangeEnd: obj.rangeEnd,
+                                retailValue: item[keys[4]],
+                            };
+                        });
+
+                        if (priceObj.length > 0) {
+                            priceObj.map((obj, index) => {
+                                if (
+                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                    Number(obj.retailValue) > Number(obj.rangeEnd)
+                                ) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        retailPrice: obj.retailValue,
+                                        key: obj.key,
+                                        message: "Invalid Retail Price!",
+                                    });
+                                }
+                            });
+                        }
+                    }
+                });
+
+                if (message.length > 0) {
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
+            }
+
+            res.send({
+                code:consta.successCode,
+                message:'Success!'
+            })
+            console.log("productsWithFiles=====================", productsWithFiles)
         }
     }
     catch (err) {
