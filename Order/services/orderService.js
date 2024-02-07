@@ -41,7 +41,7 @@ module.exports = class orderService {
         {
           $group: {
             _id: groupBy,
-            noOfProducts: { $sum: 1 },
+            noOfOrders: { $sum: 1 },
             orderAmount: {
                 $sum: "$orderAmount"
             },

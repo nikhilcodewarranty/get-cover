@@ -168,7 +168,7 @@ exports.getAllResellers = async (req, res) => {
 
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: { $ne: "Archieved" } };
 
-        let ordersData = await orderService.getAllOrders(orderQuery, project)
+        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project,"$resellerId")
 
         //console.log("ordersData=================",ordersData);
 
