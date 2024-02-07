@@ -411,7 +411,7 @@ exports.processOrder = async (req, res) => {
         }
 
         if (isEmptyOrderFile.includes(true)) {
-            returnField.push('Some contract file is missing')
+            returnField.push('Product data file is missing')
         }
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
@@ -749,7 +749,7 @@ exports.checkFileValidation = async (req, res) => {
             const ws = wb.Sheets[sheets[0]];
             let message = [];
             const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            // console.log(totalDataComing1); return;
+            console.log(totalDataComing1);
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
@@ -798,6 +798,25 @@ exports.checkFileValidation = async (req, res) => {
                     retailValue: item[keys[4]],
                 };
             });
+
+
+            const serialNumberArray = totalDataComing1.map((item) => {
+                const keys = Object.keys(item);
+                return {
+                    serial: item[keys[2]],
+                };
+            });
+
+            const serialNumbers = serialNumberArray.map(number => number.serial);
+            const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+
+            if (duplicateSerials.length > 0) {
+                res.send({
+                    code:constant.errorCode,
+                    message:"Serial number is not unique in uploaded csv!"
+                })
+                return
+            }
 
             // Check retail price is in between rangeStart and rangeEnd
             const isValidRetailPrice = totalDataComing.map((obj) => {
@@ -1050,7 +1069,7 @@ exports.editFileCase = async (req, res) => {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].fileValue == 'true') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
-                    console.log("product array=====================",data.productsArray[i].orderFile)
+                    console.log("product array=====================", data.productsArray[i].orderFile)
 
                     let product = {
                         key: i,
@@ -1071,7 +1090,7 @@ exports.editFileCase = async (req, res) => {
             let message = [];
             let finalRetailValue = [];
             for (let j = 0; j < productsWithFiles.length; j++) {
-                if (productsWithFiles[j].products.file != undefined) {
+                if (productsWithFiles[j].file != undefined) {
                     const wb = XLSX.readFile(productsWithFiles[j].file);
                     const sheets = wb.SheetNames;
                     const sheet = wb.Sheets[sheets[0]];
@@ -1217,8 +1236,8 @@ exports.editFileCase = async (req, res) => {
             }
 
             res.send({
-                code:consta.successCode,
-                message:'Success!'
+                code: consta.successCode,
+                message: 'Success!'
             })
             console.log("productsWithFiles=====================", productsWithFiles)
         }
