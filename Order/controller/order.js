@@ -273,6 +273,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let fileLength = req.files ? req.files.length : 0;
+            console.log("customer data ------",data.customerId)
             if (
                 fileLength === data.productsArray.length &&
                 data.customerId != "" &&
@@ -1695,6 +1696,8 @@ exports.getSingleOrder = async (req, res) => {
             });
             return;
         }
+
+        console.log('order check ++++++++++++++++++',checkOrder)
 
         //Get Dealer Data
 
