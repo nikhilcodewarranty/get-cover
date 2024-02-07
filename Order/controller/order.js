@@ -1152,10 +1152,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     ) {
                                         message.push({
                                             code: constant.errorCode,
-                                            retailPrice: obj.retailValue,
                                             key: obj.key,
                                             message: "Invalid Retail Price!",
                                         });
+
+                                        return;
                                     }
                                 });
                             }
