@@ -845,9 +845,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-            // console.log('data+++++++++++++++++++++++++++++++++++++++1',data.productsArray)
-            // console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile)
-            // console.log('data+++++++++++++++++++++++++++++++++++++++2',data.productsArray[1].orderFile.fileName)
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map((file) => ({
                     filePath: file.destination + '/' + file.filename,
@@ -1043,6 +1040,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
         });
     }
 };
+
+exports.editFileCase = async (req, res) => {
+    try {
+        let data = req.body;
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 
 exports.multipleFileValidation = async (req, res) => {
     upload(req, res, async (err) => {
