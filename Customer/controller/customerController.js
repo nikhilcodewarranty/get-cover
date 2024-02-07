@@ -149,9 +149,9 @@ exports.getAllCustomers = async (req, res, next) => {
 
     let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
 
-    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project,"$customerId")
+    let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
 
-    console.log('check++++++++++++++++++++++++++++++++++',ordersData)
+    console.log('check++++++++++++++++++++++++++++++++++', ordersData)
 
     // const result_Array = getPrimaryUser.map(item1 => {
     //   const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -526,15 +526,8 @@ exports.getCustomerById = async (req, res) => {
         orderAmount: 1,
       }
 
-      let orderQuery = {
-        $and: [
-          { customerId: { $in: [checkCustomer._id] }, status: { $ne: "Archieved" } },
-          {
-            'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
-          },
-        ]
-      }
-      let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+      let orderQuery = { customerId: { $in: [checkCustomer._id] }, status: "Active" }
+      let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId");
 
 
       res.send({
@@ -544,7 +537,7 @@ exports.getCustomerById = async (req, res) => {
           meta: checkCustomer,
           primary: getPrimaryUser,
           resellerName: checkReseller ? checkReseller.name : '',
-          orderData:ordersResult
+          orderData: ordersResult
         }
       })
 

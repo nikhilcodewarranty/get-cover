@@ -384,13 +384,11 @@ exports.getDealerById = async (req, res) => {
 
     let query = {
       $and: [
-        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: { $ne: "Archieved" } },
-        {
-          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
-        },
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: "Active" }
       ]
     }
-    let ordersResult = await orderService.getGroupingOrder(query, project);
+
+    let ordersResult = await orderService.getAllOrderInCustomers(query, project,"$dealerId");
 
 
     const result_Array = dealarUser.map(item1 => {
