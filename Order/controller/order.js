@@ -1044,6 +1044,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
+        if (data.productsArray.length > 0) {
+            for (let i = 0; i < data.productsArray.length; i++) {
+                if(data.productsArray[i].fileValue=='true'){
+                    
+                }
+            }
+        }
     }
     catch (err) {
         res.send({
