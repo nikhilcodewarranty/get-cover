@@ -859,7 +859,7 @@ exports.checkFileValidation = async (req, res) => {
             if (message.length > 0) {
                 res.send({
                     data: message,
-                    
+
                 });
                 return;
             }
@@ -885,7 +885,69 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body;
+            // let data = req.body;
+            let data = {
+                "dealerId": "65aba175107144beb95f3bcf",
+                "servicerId": "",
+                "customerId": "",
+                "resellerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Regular Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "true",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "orderFile": {
+                            "fileName": "file-1707291159337.xlsx",
+                            "name": "file-1707291159337.xlsx"
+                        }
+
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Quantity Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "true",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123"
+
+                    },
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "unitPrice": "80.00",
+                        "noOfProducts": 12,
+                        "priceType": "Flat Pricing",
+                        "checkNumberProducts": 45,
+                        "price": 160,
+                        "fileValue": "false",
+                        "manufacture": "Get-Cover123",
+                        "rangeStart": 400,
+                        "rangeEnd": 600,
+                        "model": "Inverter123"
+
+                    }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#12345",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
+
             if (req.files.length > 0) {
                 const uploadedFiles = req.files.map((file) => ({
                     filePath: file.destination + '/' + file.filename,
@@ -893,8 +955,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
-                    console.log(typeof (data1.fileValue))
-                    console.log(data1.fileValue)
                     if (data1.fileValue == 'true') {
                         // Check if data1.file is not blank
                         file1 = uploadedFiles[fileIndex].filePath;
@@ -969,6 +1029,54 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     return;
                 }
 
+
+
+                let serialNumber = allDataComing.map((obj) => {
+                    const serialNumberArray = obj.data.map((item) => {
+                        const keys = Object.keys(item);
+                        // console.log(keys)
+                        // console.log(item)
+                        return {
+                            key: obj.key,
+                            serialNumber: item[keys[2]]
+                        };
+                    });
+
+                    if (serialNumberArray.length > 0) {
+                        console.log("dassdadsadas");
+
+                        const serialAndKeyPairs = serialNumberArray.map(item => ({ serial: item.serialNumber, key: item.key }));
+                        const uniquePairs = new Set(serialAndKeyPairs.map(pair => `${pair.serial}-${pair.key}`));
+
+                        const uniqueKeys = new Set(serialAndKeyPairs.map(pair => pair.key));
+
+
+                        uniqueKeys.forEach(key => {
+                            const duplicates = serialAndKeyPairs.filter(item => item.key === key);
+                            const serials = new Set(duplicates.map(item => item.serial));
+                            if (serials.size > 1) {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: key,
+                                    message: "Serial numbers are not unique for this key",
+                                });
+                            }
+                        });
+
+
+                    }
+                });
+
+
+                if (message.length > 0) {
+                    res.send({
+                        message,
+                    });
+                    return;
+                }
+
+
+
                 if (allDataComing.length > 0) {
                     const isValidLength1 = allDataComing.map((obj) => {
                         if (!obj.data || typeof obj.data !== "object") {
@@ -1041,9 +1149,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     retailValue: item[keys[4]],
                                 };
                             });
-
-                            console.log("priceObj================", priceObj)
-
                             if (priceObj.length > 0) {
                                 priceObj.map((obj, index) => {
                                     if (
@@ -1093,7 +1198,6 @@ exports.editFileCase = async (req, res) => {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].orderFile.fileName != '') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
-                    console.log("product array=====================", data.productsArray[i].orderFile)
                     console.log(fileName)
                     let product = {
                         key: i,
