@@ -147,6 +147,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let checkDealerPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBookId, dealerId: data.dealerId })
+            console.log(data,priceBookId,data.dealerId,"66666666666",checkDealerPriceBook)
             if (!checkDealerPriceBook) {
                 res.send({
                     code: constant.errorCode,
