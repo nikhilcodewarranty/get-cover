@@ -251,7 +251,7 @@ exports.createOrder = async (req, res) => {
                 { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
                 {}
             );
-            console.log('vendor order check+++++++++++++++++++++++',checkVenderOrder)
+            console.log('vendor order check+++++++++++++++++++++++', checkVenderOrder)
             if (checkVenderOrder) {
                 res.send({
                     code: constant.errorCode,
@@ -397,7 +397,6 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
         // .some(Boolean);
-        console.log("isEmptyOrderFile-----------------------", checkOrder);
         console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name is missing')
@@ -842,7 +841,7 @@ exports.checkFileValidation = async (req, res) => {
             if (duplicateSerials.length > 0) {
                 res.send({
                     code: constant.successCode,
-                    message: "Serial number is not unique in uploaded csv!",
+                    message: "Serial numbers are not unique for this product",
                     orderFile: {
                         fileName: csvName,
                         name: originalName,
@@ -1047,48 +1046,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                     return;
                 }
-
-
-
-                let serialNumber = allDataComing.map((obj) => {
-                    const serialNumberArray = obj.data.map((item) => {
-                        const keys = Object.keys(item);
-                        return {
-                            key: obj.key,
-                            serialNumber: item[keys[2]].toLowerCase()
-                        };
-                    });
-
-                    if (serialNumberArray.length > 0) {
-                        const seen = new Set();
-                        const duplicates = [];
-
-                        for (const { key, serialNumber } of serialNumberArray) {
-                            const keySerialPair = `${key}-${serialNumber}`;
-                            if (seen.has(keySerialPair)) {
-                                message.push({
-                                    code: 401,
-                                    key: key,
-                                    message: "Serial numbers are not unique for this product"
-                                });
-                                return
-                            } else {
-                                seen.add(keySerialPair);
-
-                            }
-                        }
-                    }
-                });
-
-                if (message.length > 0) {
-                    res.send({
-                        message,
-                    });
-                    return;
-                }
-
-
-
                 if (allDataComing.length > 0) {
                     const isValidLength1 = allDataComing.map((obj) => {
                         if (!obj.data || typeof obj.data !== "object") {
@@ -1114,6 +1071,46 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         return;
                     }
+
+
+
+                    let serialNumber = allDataComing.map((obj) => {
+                        const serialNumberArray = obj.data.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                key: obj.key,
+                                serialNumber: item[keys[2]].toLowerCase()
+                            };
+                        });
+
+                        if (serialNumberArray.length > 0) {
+                            const seen = new Set();
+                            const duplicates = [];
+
+                            for (const { key, serialNumber } of serialNumberArray) {
+                                const keySerialPair = `${key}-${serialNumber}`;
+                                if (seen.has(keySerialPair)) {
+                                    message.push({
+                                        code: 401,
+                                        key: key,
+                                        message: "Serial numbers are not unique for this product"
+                                    });
+                                    return
+                                } else {
+                                    seen.add(keySerialPair);
+
+                                }
+                            }
+                        }
+                    });
+
+                    if (message.length > 0) {
+                        res.send({
+                            message,
+                        });
+                        return;
+                    }
+
 
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
@@ -1281,14 +1278,38 @@ exports.editFileCase = async (req, res) => {
                 }
 
                 if (allDataComing.length > 0) {
+                    const isValidLength1 = allDataComing.map((obj) => {
+                        if (!obj.data || typeof obj.data !== "object") {
+                            return false; // 'data' should be an object
+                        }
+
+                        const isValidLength = obj.data.every(
+                            (obj1) => Object.keys(obj1).length === 5
+                        );
+                        if (!isValidLength) {
+                            message.push({
+                                code: constant.errorCode,
+                                key: obj.key,
+                                message: "Invalid fields value",
+                            });
+                        }
+                    });
+
+                    if (message.length > 0) {
+                        // Handle case where the number of properties in 'data' is not valid
+                        res.send({
+                            message,
+                        });
+                        return;
+                    }
 
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
                             let serials = item[keys[2]].toLowerCase()
-                                return {
-                                    key: obj.key,
-                                    serialNumber:serials
+                            return {
+                                key: obj.key,
+                                serialNumber: serials
                             };
                         });
 
@@ -1314,30 +1335,6 @@ exports.editFileCase = async (req, res) => {
                     });
 
                     if (message.length > 0) {
-                        res.send({
-                            message,
-                        });
-                        return;
-                    }
-                    const isValidLength1 = allDataComing.map((obj) => {
-                        if (!obj.data || typeof obj.data !== "object") {
-                            return false; // 'data' should be an object
-                        }
-
-                        const isValidLength = obj.data.every(
-                            (obj1) => Object.keys(obj1).length === 5
-                        );
-                        if (!isValidLength) {
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid fields value",
-                            });
-                        }
-                    });
-
-                    if (message.length > 0) {
-                        // Handle case where the number of properties in 'data' is not valid
                         res.send({
                             message,
                         });
