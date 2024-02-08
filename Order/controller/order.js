@@ -566,29 +566,32 @@ exports.getAllOrders = async (req, res) => {
     }));
 
 
-    // const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
-    // const venderOrderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
-    // const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-    // const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-    // const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    // const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-    // const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
+    const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
+    const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
+    const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
+    const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+    const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
-    // const filteredData1 = result_Array.filter(entry => {
-    //     return (
-    //         nameRegex.test(entry.resellerData.name) &&
-    //         emailRegex.test(entry.email) &&
-    //         dealerRegex.test(entry.resellerData.dealerId) &&
-    //         phoneRegex.test(entry.phoneNumber)
-    //     );
-    // });
+    const filteredData1 = updatedArray.filter(entry => {
+        return (
+            venderRegex.test(entry.venderOrder) &&
+            orderIdRegex.test(entry.unique_key) &&
+            dealerNameRegex.test(entry.dealerName.name) &&
+            servicerNameRegex.test(entry.servicerName.name) &&
+            customerNameRegex.test(entry.customerName.name)&&
+            resellerNameRegex.test(entry.resellerName.name) &&
+            statusRegex.test(entry.status)
+        );
+    });
 
 
 
     res.send({
         code: constant.successCode,
         message: "Success",
-        result: updatedArray,
+        result: filteredData1,
     });
 };
 
