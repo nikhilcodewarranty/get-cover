@@ -1868,6 +1868,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         const dealerArray = await Promise.all(dealerArrayPromise);
 
+
+
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
@@ -2302,7 +2304,7 @@ exports.getDealerResellers = async (req, res) => {
         },
       ]
     }
-    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project);
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
