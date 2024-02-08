@@ -885,7 +885,7 @@ exports.checkFileValidation = async (req, res) => {
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-              let data = req.body;
+            let data = req.body;
             // let data = {
             //     "dealerId": "65aba175107144beb95f3bcf",
             //     "servicerId": "",
@@ -1052,7 +1052,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 message.push({
                                     code: 401,
                                     key: key,
-                                    message: "Serial numbers are not unique for this key"
+                                    message: "Serial numbers are not unique for this product"
                                 });
                                 return
                             } else {
@@ -1264,6 +1264,45 @@ exports.editFileCase = async (req, res) => {
                 }
 
                 if (allDataComing.length > 0) {
+
+                    // let serialNumber = allDataComing.map((obj) => {
+                    //     const serialNumberArray = obj.data.map((item) => {
+                    //         const keys = Object.keys(item);
+                    //         return {
+                    //             key: obj.key,
+                    //             serialNumber: item[keys[2]]
+                    //         };
+                    //     });
+
+                    //     if (serialNumberArray.length > 0) {
+                    //         console.log("dassdadsadas", serialNumberArray);
+
+                    //         const seen = new Set();
+                    //         const duplicates = [];
+
+                    //         for (const { key, serialNumber } of serialNumberArray) {
+                    //             const keySerialPair = `${key}-${serialNumber}`;
+                    //             if (seen.has(keySerialPair)) {
+                    //                 message.push({
+                    //                     code: 401,
+                    //                     key: key,
+                    //                     message: "Serial numbers are not unique for this product"
+                    //                 });
+                    //                 return
+                    //             } else {
+                    //                 seen.add(keySerialPair);
+
+                    //             }
+                    //         }
+                    //     }
+                    // });
+
+                    // if (message.length > 0) {
+                    //     res.send({
+                    //         message,
+                    //     });
+                    //     return;
+                    // }
                     const isValidLength1 = allDataComing.map((obj) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
