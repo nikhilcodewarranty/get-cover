@@ -1316,7 +1316,7 @@ exports.uploadPriceBook = async (req, res) => {
           return !foundProductData.some(product => product.name.toLowerCase() === lowercaseName);
         });
 
-        console.log("missingProductNames=========================", missingProductNames); return
+        // console.log("missingProductNames=========================", missingProductNames); return
         if (missingProductNames.length > 0) {
           missingProductNames.map(product => {
             let csvData = {
@@ -1461,7 +1461,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', entriesData));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
@@ -1891,6 +1891,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+             console.log("check check 1111111")
               dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
@@ -1900,7 +1901,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              totalDataComing[i].status = "Dealer catalog updated successully"
+              totalDataComing[i].status = "Dealer catalog created successully"
               totalDataComing[i].duplicates.forEach((index, i) => {
                 totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
               })
@@ -1962,7 +1963,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', htmlTableString));
       }
 
       res.send({
