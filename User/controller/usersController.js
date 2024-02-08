@@ -1220,9 +1220,9 @@ exports.createDealer = async (req, res) => {
                 dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
                 await dealerArray[i].save();
 
-                totalDataComing[i].status = "Dealer catalog updated successully";
+                totalDataComing[i].status = "Dealer catalog updated successfully";
                 totalDataComing[i].duplicates.forEach((index) => {
-                  totalDataComing[index].status = "Dealer catalog updated successully";
+                  totalDataComing[index].status = "Dealer catalog updated successfully";
                 })
 
               } else {
@@ -1238,9 +1238,9 @@ exports.createDealer = async (req, res) => {
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
                 })
-                totalDataComing[i].status = "Dealer catalog created successully"
+                totalDataComing[i].status = "Dealer catalog created successfully"
                 totalDataComing[i].duplicates.forEach((index, i) => {
-                  totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+                  totalDataComing[index].status = i == 0 ? "Dealer catalog created successfully" : "Dealer catalog updated successfully";
                 })
               }
             }

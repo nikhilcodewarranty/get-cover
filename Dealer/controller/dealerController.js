@@ -2305,7 +2305,7 @@ exports.getDealerResellers = async (req, res) => {
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order => order.resellerId.toString() === item1.accountId)
+      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
 
       if (matchingItem || order) {
         return {

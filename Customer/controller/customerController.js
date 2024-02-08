@@ -240,22 +240,20 @@ exports.getDealerCustomers = async (req, res) => {
 
     let orderQuery = {
       $and: [
-        { customerId: { $in: orderCustomerId }, status: { $ne: "Archieved" } },
+        { customerId: { $in: orderCustomerId }, status:"Active" },
         {
           'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
         },
       ]
     }
-    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project,'$customerId');
 
-
-    console.log("ordersResult=================", ordersResult);
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const order = ordersResult.find(order => order.customerId.toString() === item1.accountId)
+      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
 
       if (matchingItem || order) {
         return {
