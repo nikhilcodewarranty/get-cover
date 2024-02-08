@@ -142,7 +142,7 @@ exports.getAllDealers = async (req, res) => {
       orderAmount: 1,
     }
 
-    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project,"$dealerId");
+    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
 
 
     if (!dealers) {
@@ -388,7 +388,7 @@ exports.getDealerById = async (req, res) => {
       ]
     }
 
-    let ordersResult = await orderService.getAllOrderInCustomers(query, project,"$dealerId");
+    let ordersResult = await orderService.getAllOrderInCustomers(query, project, "$dealerId");
 
 
     const result_Array = dealarUser.map(item1 => {
@@ -1888,15 +1888,15 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
               console.log('checks for unique key-------------------------------',
-              {
-                dealerId: data.dealerId,
-                priceBook: totalDataComing[i].priceBookDetail._id,
-                unique_key: unique_key,
-                status: true,
-                retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
-                brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
-                wholesalePrice
-              })
+                {
+                  dealerId: data.dealerId,
+                  priceBook: totalDataComing[i].priceBookDetail._id,
+                  unique_key: unique_key,
+                  status: true,
+                  retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                  brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+                  wholesalePrice
+                })
 
 
               dealerPriceService.createDealerPrice({
@@ -2298,13 +2298,10 @@ exports.getDealerResellers = async (req, res) => {
 
     let orderQuery = {
       $and: [
-        { resellerId: { $in: orderResellerId }, status: { $ne: "Archieved" } },
-        {
-          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
-        },
+        { resellerId: { $in: orderResellerId }, status: "Active" },
       ]
     }
-    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project);
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$resellerId');
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());

@@ -748,7 +748,7 @@ exports.createDealer = async (req, res) => {
                 const count = await dealerPriceService.getDealerPriceCount();
                 let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
-                dealerPriceService.createDealerPrice({
+                await dealerPriceService.createDealerPrice({
                   dealerId: req.body.dealerId,
                   priceBook: totalDataComing[i].priceBookDetail._id,
                   unique_key: unique_key,
@@ -1229,7 +1229,7 @@ exports.createDealer = async (req, res) => {
                 const count = await dealerPriceService.getDealerPriceCount();
                 let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
                 let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
-                dealerPriceService.createDealerPrice({
+                await dealerPriceService.createDealerPrice({
                   dealerId: createMetaData._id,
                   priceBook: totalDataComing[i].priceBookDetail._id,
                   unique_key: unique_key,
