@@ -2495,10 +2495,31 @@ exports.getDealerOrders = async (req, res) => {
           ? item.resellerName
           : item.servicerName,
     }));
+
+    const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
+    const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
+    const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
+    const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
+    const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+    const statusRegex = new RegExp(data.status ? data.status : '', 'i')
+
+    const filteredData1 = updatedArray.filter(entry => {
+        return (
+            venderRegex.test(entry.venderOrder) &&
+            orderIdRegex.test(entry.unique_key) &&
+            dealerNameRegex.test(entry.dealerName.name) &&
+            servicerNameRegex.test(entry.servicerName.name) &&
+            customerNameRegex.test(entry.customerName.name)&&
+            resellerNameRegex.test(entry.resellerName.name) &&
+            statusRegex.test(entry.status)
+        );
+    });
+
     res.send({
       code: constant.successCode,
       message: 'Success',
-      result: updatedArray
+      result: filteredData1
     })
   }
   catch (err) {
