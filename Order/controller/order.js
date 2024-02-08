@@ -565,6 +565,26 @@ exports.getAllOrders = async (req, res) => {
                 : item.servicerName,
     }));
 
+
+    // const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
+    // const venderOrderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
+    // const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    // const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    // const nameRegex = new RegExp(data.name ? data.name : '', 'i')
+    // const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+    // const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+
+    // const filteredData1 = result_Array.filter(entry => {
+    //     return (
+    //         nameRegex.test(entry.resellerData.name) &&
+    //         emailRegex.test(entry.email) &&
+    //         dealerRegex.test(entry.resellerData.dealerId) &&
+    //         phoneRegex.test(entry.phoneNumber)
+    //     );
+    // });
+
+
+
     res.send({
         code: constant.successCode,
         message: "Success",
