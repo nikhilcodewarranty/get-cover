@@ -736,7 +736,6 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("file check++++++++++++++++++", req.file);
             // if(!data.rangeStart||!data.rangeEnd){
             //     res.send({
             //         code:constant.errorCode,
@@ -759,8 +758,6 @@ exports.checkFileValidation = async (req, res) => {
                     // Add more headers as needed
                 ],
             });
-
-            console.log("req.file.path==============", req.file.path)
             const fileUrl = req.file.destination + '/' + req.file.filename
             const wb = XLSX.readFile(fileUrl);
             const sheets = wb.SheetNames;
