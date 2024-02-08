@@ -1800,8 +1800,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return
       }
-      // console.log("totalDataComing1+++++++++++",totalDataComing1);
-      // return;
       const totalDataComing = totalDataComing1.map(item => {
         const keys = Object.keys(item);
         return {
@@ -1843,7 +1841,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
           }
         }
 
-        console.log("totalDataComing============================", totalDataComing);
         const pricebookArrayPromise = totalDataComing.map(item => {
           if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
@@ -1963,7 +1960,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
       }
 
       res.send({

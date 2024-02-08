@@ -518,7 +518,7 @@ exports.createDealer = async (req, res) => {
               lastName: allUserData[0].lastName,
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
-              roleId:'656f08041eb1acda244af8c6',
+              roleId: '656f08041eb1acda244af8c6',
               status: allUserData[0].status ? true : false,
             }
           }
@@ -534,7 +534,7 @@ exports.createDealer = async (req, res) => {
           }
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
-            roleId:'656f08041eb1acda244af8c6',
+            roleId: '656f08041eb1acda244af8c6',
             accountId: data.dealerId,
 
             isPrimary: index === 0 ? true : false,
@@ -697,7 +697,7 @@ exports.createDealer = async (req, res) => {
               const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
               totalDataComing[index].duplicates.push(i);
             } else {
-  
+
               repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
               totalDataComing[i].status = null;
             }
@@ -706,7 +706,7 @@ exports.createDealer = async (req, res) => {
             if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
             return null;
           })
-  
+
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
           for (let i = 0; i < totalDataComing.length; i++) {
             if (!pricebooksArray[i]) {
@@ -732,12 +732,12 @@ exports.createDealer = async (req, res) => {
                 dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                 dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
                 await dealerArray[i].save();
-  
+
                 totalDataComing[i].status = "Dealer catalog updated successully";
                 totalDataComing[i].duplicates.forEach((index) => {
                   totalDataComing[index].status = "Dealer catalog updated successully";
                 })
-  
+
               } else {
                 const count = await dealerPriceService.getDealerPriceCount();
                 let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -809,14 +809,14 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
             $set: {
               email: allUserData[0].email,
               firstName: allUserData[0].firstName,
               lastName: allUserData[0].lastName,
-              roleId:'656f08041eb1acda244af8c6',
+              roleId: '656f08041eb1acda244af8c6',
               phoneNumber: allUserData[0].phoneNumber,
               position: allUserData[0].position,
               status: allUserData[0].status ? true : false,
@@ -826,7 +826,7 @@ exports.createDealer = async (req, res) => {
 
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
-            roleId:'656f08041eb1acda244af8c6',
+            roleId: '656f08041eb1acda244af8c6',
             accountId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? true : false
@@ -989,7 +989,7 @@ exports.createDealer = async (req, res) => {
           // Create User for primary dealer
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
-            roleId:'656f08041eb1acda244af8c6',
+            roleId: '656f08041eb1acda244af8c6',
             accountId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
@@ -1098,6 +1098,12 @@ exports.createDealer = async (req, res) => {
             return
           }
           const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          totalDataComing1 = totalDataComing1.map(item => {
+            if (!item.priceBook) {
+              return { priceBook: '', 'RetailP rice': item['RetailP rice'] };
+            }
+            return item;
+          });
           const totalDataComing = totalDataComing1.map(item => {
             const keys = Object.keys(item);
             return {
@@ -1158,8 +1164,9 @@ exports.createDealer = async (req, res) => {
             let createData = await providerService.createServiceProvider(servicerObject)
           }
           const repeatedMap = {};
+
+
           for (let i = totalDataComing.length - 1; i >= 0; i--) {
-            console.log("uniquw", i, totalDataComing[i]);
             if (totalDataComing[i].exit) {
               continue;
             }
@@ -1169,7 +1176,7 @@ exports.createDealer = async (req, res) => {
               const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
               totalDataComing[index].duplicates.push(i);
             } else {
-  
+
               repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
               totalDataComing[i].status = null;
             }
@@ -1179,6 +1186,7 @@ exports.createDealer = async (req, res) => {
             return null;
           })
           const pricebooksArray = await Promise.all(pricebookArrayPromise);
+
           for (let i = 0; i < totalDataComing.length; i++) {
             if (!pricebooksArray[i]) {
               if (!totalDataComing[i].exit) {
@@ -1205,12 +1213,12 @@ exports.createDealer = async (req, res) => {
                 dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
                 dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
                 await dealerArray[i].save();
-  
+
                 totalDataComing[i].status = "Dealer catalog updated successully";
                 totalDataComing[i].duplicates.forEach((index) => {
                   totalDataComing[index].status = "Dealer catalog updated successully";
                 })
-  
+
               } else {
                 const count = await dealerPriceService.getDealerPriceCount();
                 let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -1281,10 +1289,10 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = sgMail.send(emailConstant.sendCsvFile('nikhil@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
-            roleId:'656f08041eb1acda244af8c6',
+            roleId: '656f08041eb1acda244af8c6',
             accountId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
