@@ -1843,7 +1843,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
           }
         }
 
-        console.log("totalDataComing============================", totalDataComing);
         const pricebookArrayPromise = totalDataComing.map(item => {
           if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook}$`, 'i') : '', status: true });
           return null;
@@ -1864,16 +1863,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
             totalDataComing[i].priceBookDetail = pricebooksArray[i];
           }
         }
-        console.log("totalDataComing1", totalDataComing);
         const dealerArrayPromise = totalDataComing.map(item => {
 
           if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
           return false;
         })
-        //  console.log(dealerArrayPromise);return;
         const dealerArray = await Promise.all(dealerArrayPromise);
-        console.log("totalDataComing2", totalDataComing);
-        console.log("dealerArray", dealerArray);
 
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
@@ -1891,7 +1886,19 @@ exports.uploadDealerPriceBook = async (req, res) => {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
-             console.log("check check 1111111")
+
+              console.log('checks for unique key-------------------------------',
+              {
+                dealerId: data.dealerId,
+                priceBook: totalDataComing[i].priceBookDetail._id,
+                unique_key: unique_key,
+                status: true,
+                retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+                wholesalePrice
+              })
+
+
               dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
