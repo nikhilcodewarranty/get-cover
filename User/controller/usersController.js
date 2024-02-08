@@ -664,7 +664,13 @@ exports.createDealer = async (req, res) => {
             })
             return
           }
-          const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          totalDataComing1 = totalDataComing1.map(item => {
+            if (!item.priceBook) {
+              return { priceBook: '', 'RetailP rice': item['RetailP rice'] };
+            }
+            return item;
+          });
           const totalDataComing = totalDataComing1.map(item => {
             const keys = Object.keys(item);
             return {
@@ -1097,7 +1103,7 @@ exports.createDealer = async (req, res) => {
             })
             return
           }
-          const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+          let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
           totalDataComing1 = totalDataComing1.map(item => {
             if (!item.priceBook) {
               return { priceBook: '', 'RetailP rice': item['RetailP rice'] };
@@ -1232,7 +1238,7 @@ exports.createDealer = async (req, res) => {
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
                 })
-                totalDataComing[i].status = "Dealer catalog updated successully"
+                totalDataComing[i].status = "Dealer catalog created successully"
                 totalDataComing[i].duplicates.forEach((index, i) => {
                   totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
                 })
