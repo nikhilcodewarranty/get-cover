@@ -146,6 +146,14 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
+            let checkDealerPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBookId, dealerId: data.dealerId })
+            if (!checkDealerPriceBook) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Price book does not exist for this dealer"
+                })
+                return;
+            }
             if (data.servicerId) {
                 let query = {
                     $or: [
@@ -812,8 +820,8 @@ exports.checkFileValidation = async (req, res) => {
 
             if (duplicateSerials.length > 0) {
                 res.send({
-                    code:constant.errorCode,
-                    message:"Serial number is not unique in uploaded csv!"
+                    code: constant.errorCode,
+                    message: "Serial number is not unique in uploaded csv!"
                 })
                 return
             }
@@ -1020,7 +1028,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 };
                             });
 
-                            console.log("priceObj================",priceObj)
+                            console.log("priceObj================", priceObj)
 
                             if (priceObj.length > 0) {
                                 priceObj.map((obj, index) => {
