@@ -848,8 +848,9 @@ exports.checkFileValidation = async (req, res) => {
 
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
+                const serials = item[keys[2]].toLowerCase()
                 return {
-                    serial: item[keys[2]].toLowerCase(),
+                    serial:serials,
                 };
             });
 
@@ -1095,9 +1096,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
+                           const serials =  item[keys[2]].toLowerCase()
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toLowerCase()
+                                serialNumber:serials
                             };
                         });
 
