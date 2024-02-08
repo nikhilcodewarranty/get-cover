@@ -1897,7 +1897,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               })
 
 
-              dealerPriceService.createDealerPrice({
+              await dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
                 unique_key: unique_key,
