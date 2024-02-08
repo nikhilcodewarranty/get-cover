@@ -76,7 +76,7 @@ exports.createOrder = async (req, res) => {
                         "term": 12,
                         "priceType": "Quantity Pricing",
                         "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
                     },
                     {
@@ -98,7 +98,7 @@ exports.createOrder = async (req, res) => {
                         "term": 12,
                         "priceType": "Regular",
                         "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
 
                         "noOfProducts": 1
                     }
@@ -146,7 +146,7 @@ exports.createOrder = async (req, res) => {
                 });
                 return;
             }
-           
+
             if (data.servicerId) {
                 let query = {
                     $or: [
@@ -195,7 +195,7 @@ exports.createOrder = async (req, res) => {
             let contractArrrayData = [];
 
             let count = await orderService.getOrdersCount();
-      console.log('unique key++++++++++++++++++',count)
+            console.log('unique key++++++++++++++++++', count)
 
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
@@ -260,7 +260,7 @@ exports.createOrder = async (req, res) => {
             }
             data.status = "Pending";
 
-           
+
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
@@ -811,7 +811,7 @@ exports.checkFileValidation = async (req, res) => {
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
-                    serial: item[keys[2]],
+                    serial: item[keys[2]].toLowerCase(),
                 };
             });
 
@@ -1034,13 +1034,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         const keys = Object.keys(item);
                         return {
                             key: obj.key,
-                            serialNumber: item[keys[2]]
+                            serialNumber: item[keys[2]].toLowerCase()
                         };
                     });
 
                     if (serialNumberArray.length > 0) {
-                        console.log("dassdadsadas", serialNumberArray);
-
                         const seen = new Set();
                         const duplicates = [];
 
@@ -1266,15 +1264,14 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            return {
-                                key: obj.key,
-                                serialNumber: item[keys[2]]
+                            let serials = item[keys[2]].toLowerCase()
+                                return {
+                                    key: obj.key,
+                                    serialNumber:serials
                             };
                         });
 
                         if (serialNumberArray.length > 0) {
-                            console.log("dassdadsadas", serialNumberArray);
-
                             const seen = new Set();
                             const duplicates = [];
 
