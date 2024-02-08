@@ -1861,7 +1861,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
             totalDataComing[i].priceBookDetail = pricebooksArray[i];
           }
         }
-        console.log("totalDataComing1", totalDataComing);
         const dealerArrayPromise = totalDataComing.map(item => {
 
           if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
@@ -1869,8 +1868,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         //  console.log(dealerArrayPromise);return;
         const dealerArray = await Promise.all(dealerArrayPromise);
+
+
         console.log("totalDataComing2", totalDataComing);
+
         console.log("dealerArray", dealerArray);
+
+
 
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
@@ -2294,7 +2298,7 @@ exports.getDealerResellers = async (req, res) => {
         },
       ]
     }
-    let ordersResult = await orderService.getGroupingOrder(orderQuery, project);
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project);
 
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
