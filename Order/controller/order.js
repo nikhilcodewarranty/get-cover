@@ -567,8 +567,9 @@ exports.getAllOrders = async (req, res) => {
                 ? item.resellerName
                 : item.servicerName,
     }));
-
-    const stringWithoutHyphen = data.orderId ? data.orderId : ''.replace(/-/g, "")
+    let orderIdSearch = data.orderId ? data.orderId : ''
+    const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
+    console.log('check+++++++++',stringWithoutHyphen)
     const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
     const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
     const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
