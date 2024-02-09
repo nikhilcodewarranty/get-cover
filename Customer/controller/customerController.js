@@ -354,8 +354,8 @@ exports.getResellerCustomers = async (req, res) => {
           orderData: order ? order : {}
         };
       } else {
-        return {};
-      }
+        return {}; 
+      } 
     });
 
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
