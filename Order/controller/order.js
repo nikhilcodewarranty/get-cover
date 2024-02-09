@@ -853,7 +853,7 @@ exports.checkFileValidation = async (req, res) => {
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
-                    serial: item[keys[2]].toLowerCase(),
+                    serial: item[keys[2]],
                 };
             });
 
@@ -1101,7 +1101,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toLowerCase()
+                                serialNumber: item[keys[2]]
                             };
                         });
 
@@ -1328,7 +1328,7 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            let serials = item[keys[2]].toLowerCase()
+                            let serials = item[keys[2]]
                             return {
                                 key: obj.key,
                                 serialNumber: serials
