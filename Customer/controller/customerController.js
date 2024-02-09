@@ -362,7 +362,7 @@ exports.getResellerCustomers = async (req, res) => {
     const nameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-    console.log(result_Array);
+    console.log(result_Array); 
     result_Array = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
