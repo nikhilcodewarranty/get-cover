@@ -164,7 +164,7 @@ exports.createOrder = async (req, res) => {
                     return;
                 }
             }
-            if (data.customerId) {
+            if (data.customerId != "null") {
                 let query = { _id: data.customerId };
                 let checkCustomer = await customerService.getCustomerById(query);
                 if (!checkCustomer) {
