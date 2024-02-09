@@ -1334,8 +1334,8 @@ exports.editFileCase = async (req, res) => {
                                 serialNumber: serials
                             };
                         });
-
-                        if (serialNumberArray.length > 0) {
+ 
+                        if (serialNumberArray.length > 0) { 
                             const seen = new Set();
                             const duplicates = [];
 
