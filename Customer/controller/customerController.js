@@ -240,13 +240,13 @@ exports.getDealerCustomers = async (req, res) => {
 
     let orderQuery = {
       $and: [
-        { customerId: { $in: orderCustomerId }, status:"Active" },
+        { customerId: { $in: orderCustomerId }, status: "Active" },
         {
           'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
         },
       ]
     }
-    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project,'$customerId');
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
@@ -315,18 +315,43 @@ exports.getResellerCustomers = async (req, res) => {
       return;
     };
     const customersId = customers.map(obj => obj._id.toString());
+    const orderCustomerIds = customers.map(obj => obj._id);
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
 
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderQuery = {
+      $and: [
+        { customerId: { $in: orderCustomerIds }, status: "Active" },
+        {
+          'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+        },
+      ]
+    }
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
+
     let result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-      if (matchingItem) {
+      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject()
+          customerData: matchingItem.toObject(),
+          orderData: order ? order : {}
         };
       } else {
         return {};
@@ -738,15 +763,15 @@ exports.customerOrders = async (req, res) => {
     const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
     const filteredData1 = updatedArray.filter(entry => {
-        return (
-            venderRegex.test(entry.venderOrder) &&
-            orderIdRegex.test(entry.unique_key) &&
-            dealerNameRegex.test(entry.dealerName.name) &&
-            servicerNameRegex.test(entry.servicerName.name) &&
-            customerNameRegex.test(entry.customerName.name)&&
-            resellerNameRegex.test(entry.resellerName.name) &&
-            statusRegex.test(entry.status)
-        );
+      return (
+        venderRegex.test(entry.venderOrder) &&
+        orderIdRegex.test(entry.unique_key) &&
+        dealerNameRegex.test(entry.dealerName.name) &&
+        servicerNameRegex.test(entry.servicerName.name) &&
+        customerNameRegex.test(entry.customerName.name) &&
+        resellerNameRegex.test(entry.resellerName.name) &&
+        statusRegex.test(entry.status)
+      );
     });
 
 
