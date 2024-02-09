@@ -568,8 +568,8 @@ exports.getAllOrders = async (req, res) => {
                 : item.servicerName,
     }));
 
-    const stringWithoutHyphen = data.orderId.replace(/-/g, "")
-    const orderIdRegex = new RegExp(data.stringWithoutHyphen ? data.stringWithoutHyphen : '', 'i')
+    const stringWithoutHyphen = data.orderId ? data.orderId : ''.replace(/-/g, "")
+    const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
     const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
     const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
     const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
@@ -583,7 +583,7 @@ exports.getAllOrders = async (req, res) => {
             orderIdRegex.test(entry.unique_key_search) &&
             dealerNameRegex.test(entry.dealerName.name) &&
             servicerNameRegex.test(entry.servicerName.name) &&
-            customerNameRegex.test(entry.customerName.name)&&
+            customerNameRegex.test(entry.customerName.name) &&
             resellerNameRegex.test(entry.resellerName.name) &&
             statusRegex.test(entry.status)
         );
@@ -743,7 +743,7 @@ exports.getAllArchieveOrders = async (req, res) => {
             orderIdRegex.test(entry.unique_key) &&
             dealerNameRegex.test(entry.dealerName.name) &&
             servicerNameRegex.test(entry.servicerName.name) &&
-            customerNameRegex.test(entry.customerName.name)&&
+            customerNameRegex.test(entry.customerName.name) &&
             resellerNameRegex.test(entry.resellerName.name) &&
             statusRegex.test(entry.status)
         );
@@ -851,9 +851,8 @@ exports.checkFileValidation = async (req, res) => {
 
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
-               // const serials = item[keys[2]]
                 return {
-                    serial:item[keys[2]],
+                    serial: item[keys[2]].toLowerCase(),
                 };
             });
 
@@ -1099,10 +1098,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                          // const serials =  item[keys[2]].toLowerCase()
                             return {
                                 key: obj.key,
-                                serialNumber:item[keys[2]]
+                                serialNumber: item[keys[2]].toLowerCase()
                             };
                         });
 
@@ -1316,7 +1314,7 @@ exports.editFileCase = async (req, res) => {
                                 message: "Invalid fields value",
                             });
                         }
-                    }); 
+                    });
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
@@ -1329,10 +1327,10 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            //let serials = item[keys[2]].toLowerCase()
+                            let serials = item[keys[2]].toLowerCase()
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]]
+                                serialNumber: serials
                             };
                         });
 
