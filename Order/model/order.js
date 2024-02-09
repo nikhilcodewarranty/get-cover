@@ -33,6 +33,9 @@ const orderSchema = new mongoose.Schema({
   unique_key_number: {
     type: Number,
   },
+  unique_key_search: {
+    type: String,
+  },
   unique_key: {
     type: String,
   },

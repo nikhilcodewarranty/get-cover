@@ -198,6 +198,7 @@ exports.createOrder = async (req, res) => {
             console.log('unique key++++++++++++++++++', count)
 
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
+            data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (req.files) {
                 const uploadedFiles = req.files.map((file) => ({
@@ -447,6 +448,8 @@ exports.getAllOrders = async (req, res) => {
         productsArray: 1,
         dealerId: 1,
         unique_key: 1,
+        unique_key_number: 1,
+        unique_key_search: 1,
         servicerId: 1,
         customerId: 1,
         resellerId: 1,
@@ -565,8 +568,8 @@ exports.getAllOrders = async (req, res) => {
                 : item.servicerName,
     }));
 
-
-    const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
+    const stringWithoutHyphen = data.orderId.replace(/-/g, "")
+    const orderIdRegex = new RegExp(data.stringWithoutHyphen ? data.stringWithoutHyphen : '', 'i')
     const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
     const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
     const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
@@ -577,7 +580,7 @@ exports.getAllOrders = async (req, res) => {
     const filteredData1 = updatedArray.filter(entry => {
         return (
             venderRegex.test(entry.venderOrder) &&
-            orderIdRegex.test(entry.unique_key) &&
+            orderIdRegex.test(entry.unique_key_search) &&
             dealerNameRegex.test(entry.dealerName.name) &&
             servicerNameRegex.test(entry.servicerName.name) &&
             customerNameRegex.test(entry.customerName.name)&&
