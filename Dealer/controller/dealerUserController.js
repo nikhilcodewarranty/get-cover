@@ -177,6 +177,38 @@ exports.createDealerPriceBook = async (req, res) => {
     }
 }
 
+exports.getDealerPriceBookById = async (req, res) => {
+    try {
+        if (req.role != "Dealer") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only Dealer allow to do this action"
+            })
+            return;
+        }
+        let projection = { isDeleted: 0, __v: 0 }
+        let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
+        let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+        if (!getDealerPrice) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to get the dealer price books"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: getDealerPrice
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
 exports.getPriceBooks = async (req, res) => {
     try {
         let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
@@ -268,6 +300,70 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         })
     }
 };
+
+exports.statusUpdate = async (req, res) => {
+    try {
+      // Check if the user has the required role
+      if (req.role !== "Dealer") {
+        res.send({
+          code: constant.errorCode,
+          message: "Only Dealer is allowed to perform this action"
+        });
+        return
+      }
+  
+      // Fetch existing dealer price book data
+      const criteria = { _id: req.params.dealerPriceBookId };
+      const projection = { isDeleted: 0, __v: 0 };
+      const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+  
+      if (!existingDealerPriceBook) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dealer Price Book not found"
+        });
+        return;
+      }  
+      // Prepare the update data
+      const newValue = {
+        $set: {
+          brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
+          status: req.body.status,
+          retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
+          priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
+        }
+      };
+  
+      const option = { new: true };
+  
+      // Update the dealer price status
+      const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
+  
+      if (!updatedResult) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to update the dealer price status"
+        });
+  
+        return;
+  
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Updated Successfully",
+        data: updatedResult
+      });
+  
+      return
+  
+    } catch (err) {
+      res.send({
+        code: constant.errorCode,
+        message: err.message,
+      });
+      return
+    }
+  };
 
 //servicers api
 
@@ -486,7 +582,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Invalid dealer"
-            }) 
+            })
             return;
         };
 

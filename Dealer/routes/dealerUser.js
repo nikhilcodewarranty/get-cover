@@ -11,8 +11,10 @@ router.post('/getAllPriceBooksByFilter',[verifyToken],dealerUserController.getAl
 router.post('/createCustomer',[verifyToken],dealerUserController.createCustomer)
 router.post('/createDealerPriceBook',[verifyToken],dealerUserController.createDealerPriceBook)
 router.post('/getDealerCustomers',[verifyToken],dealerUserController.getDealerCustomers)
-
+router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], dealerUserController.statusUpdate); 
 router.post('/getDealerResellers',[verifyToken],dealerUserController.getDealerResellers)
+router.get('/getDealerPriceBookById',[verifyToken],dealerUserController.getDealerPriceBookById)
+
 router.post('/createReseller',[verifyToken],dealerUserController.createReseller)
 
 router.post('/getDealerServicers',[verifyToken],dealerUserController.getDealerServicers)
