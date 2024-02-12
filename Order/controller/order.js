@@ -400,18 +400,20 @@ exports.processOrder = async (req, res) => {
         // .some(Boolean);
         console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
-            returnField.push('Customer Name is missing')
+            returnField.push('Customer Name')
         }
         if (checkOrder.paymentStatus != 'Paid') {
-            returnField.push('The order payment is not completed yet')
+            returnField.push('The order payment')
         }
         if (resultArray.includes(true)) {
-            returnField.push('The coverage start date missing')
+            returnField.push('The coverage start date')
         }
 
         if (isEmptyOrderFile.includes(true)) {
-            returnField.push('Product data file is missing')
+            returnField.push('Product data file')
         }
+
+        const combinedString = returnField.join(', ') + ' is missing';
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -424,7 +426,7 @@ exports.processOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: returnField,
+            result: combinedString,
         });
     } catch (err) {
         res.send({
@@ -853,7 +855,7 @@ exports.checkFileValidation = async (req, res) => {
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
-                    serial: item[keys[2]].toLowerCase(),
+                    serial: item[keys[2]].toString().toLowerCase(),
                 };
             });
 
@@ -1101,7 +1103,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toLowerCase()
+                                serialNumber: item[keys[2]].toString().toLowerCase()
                             };
                         });
 
@@ -1328,7 +1330,7 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            let serials = item[keys[2]].toLowerCase()
+                            let serials = item[keys[2]].toString().toLowerCase()
                             return {
                                 key: obj.key,
                                 serialNumber: serials
