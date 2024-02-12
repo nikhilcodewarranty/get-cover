@@ -197,7 +197,7 @@ exports.createOrder = async (req, res) => {
             let count = await orderService.getOrdersCount();
             console.log('unique key++++++++++++++++++', count)
 
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100001
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (req.files) {
@@ -853,7 +853,7 @@ exports.checkFileValidation = async (req, res) => {
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
-                    serial: item[keys[2]],
+                    serial: item[keys[2]].toLowerCase(),
                 };
             });
 
@@ -1101,7 +1101,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]]
+                                serialNumber: item[keys[2]].toLowerCase()
                             };
                         });
 
@@ -1328,7 +1328,7 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            let serials = item[keys[2]]
+                            let serials = item[keys[2]].toLowerCase()
                             return {
                                 key: obj.key,
                                 serialNumber: serials
