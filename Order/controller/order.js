@@ -401,22 +401,20 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
         // .some(Boolean);
-        //console.log(resultArray)
+        console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
-            returnField.push('Customer Name')
+            returnField.push('Customer Name is missing')
         }
         if (checkOrder.paymentStatus != 'Paid') {
-            returnField.push('The order payment')
+            returnField.push('The order payment is not completed yet')
         }
         if (resultArray.includes(true)) {
-            returnField.push('The coverage start date')
+            returnField.push('The coverage start date missing')
         }
 
         if (isEmptyOrderFile.includes(true)) {
-            returnField.push('Product data file')
+            returnField.push('Product data file is missing')
         }
-
-        const combinedString = returnField.join(',') + ' is missing';
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -429,7 +427,7 @@ exports.processOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: combinedString,
+            result: returnField,
         });
     } catch (err) {
         res.send({
@@ -858,7 +856,7 @@ exports.checkFileValidation = async (req, res) => {
             const serialNumberArray = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
-                    serial: item[keys[2]].toString().toLowerCase(),
+                    serial: item[keys[2]].toLowerCase(),
                 };
             });
 
@@ -1106,7 +1104,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toString().toLowerCase()
+                                serialNumber: item[keys[2]].toLowerCase()
                             };
                         });
 
@@ -1333,7 +1331,7 @@ exports.editFileCase = async (req, res) => {
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
-                            let serials = item[keys[2]].toString().toLowerCase()
+                            let serials = item[keys[2]].toLowerCase()
                             return {
                                 key: obj.key,
                                 serialNumber: serials
@@ -2698,8 +2696,8 @@ exports.invoicePdf = async (req, res) => {
 
 
 
-        const doc = new PDFDocument();
 
+<<<<<<< HEAD
         // Pipe the PDF output to a file
         let check = await doc.pipe(fs.createWriteStream('../utils'));
         console.log('check------------', check)
@@ -2707,18 +2705,9 @@ exports.invoicePdf = async (req, res) => {
         // doc.image('logo.png', { width: 100 }); // Replace 'logo.png' with the actual path to your logo
         doc.moveDown();
         doc.text('Dates: 2024-02-12');
+=======
+>>>>>>> 096ff10efd66035f4db49f551b3809fed8012961
 
-        doc.moveDown();
-        doc.take({
-            headers: ['Name', 'Age'],
-            body: array.map(item => [item.name, item.email])
-        });
-
-        // Finalize the PDF and close the stream
-        doc.end();
-
-        console.log('endd')
-        return;
         const htmlTemplate = `
   <html>
   <head>
@@ -2749,6 +2738,20 @@ exports.invoicePdf = async (req, res) => {
   </html>
 `;
 
+
+        var pdf = require('html-pdf');
+        // var html = fs.readFileSync('./test/businesscard.html', 'utf8');
+        // var options = { format: 'Letter' };
+
+        const options = { format: 'Letter' }; // You can adjust format and other options as needed
+
+        // Generate PDF
+        pdf.create(htmlTemplate, options).toFile('../utils/test.html', function (err, res) {
+            if (err) return console.log(err);
+            console.log(res); // Output information about the generated PDF file
+        });
+        console.log("end+++++++++++++")
+        return;
 
         const pdfDoc = createPdf(htmlTemplate);
 
