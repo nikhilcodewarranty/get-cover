@@ -2697,16 +2697,6 @@ exports.invoicePdf = async (req, res) => {
 
 
 
-<<<<<<< HEAD
-        // Pipe the PDF output to a file
-        let check = await doc.pipe(fs.createWriteStream('../utils'));
-        console.log('check------------', check)
-        // Add content to the PDF
-        // doc.image('logo.png', { width: 100 }); // Replace 'logo.png' with the actual path to your logo
-        doc.moveDown();
-        doc.text('Dates: 2024-02-12');
-=======
->>>>>>> 096ff10efd66035f4db49f551b3809fed8012961
 
         const htmlTemplate = `
   <html>
