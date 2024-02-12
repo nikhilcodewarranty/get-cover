@@ -16,6 +16,7 @@ router.put("/getResellerPriceBook/:resellerId", [verifyToken], dealerUserControl
 
 router.post('/getDealerResellers',[verifyToken],dealerUserController.getDealerResellers)
 router.get('/getDealerPriceBookById/:dealerPriceBookId',[verifyToken],dealerUserController.getDealerPriceBookById)
+router.post("/getResellerUsers/:resellerId", [verifyToken], dealerUserController.getResellerUsers);
 
 router.post('/createReseller',[verifyToken],dealerUserController.createReseller)
 

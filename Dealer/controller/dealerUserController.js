@@ -432,6 +432,32 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
 }
+
+exports.getResellerUsers = async (req, res) => {
+    if (req.role != "Dealer") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only Dealer allow to do this action"
+        })
+        return;
+    }
+
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+    const queryUser = { accountId: { $in: checkReseller._id } }
+    let users = await userService.getMembers(queryUser, { isDeleted: 0 });
+    res.send({
+        code: constant.successCode,
+        data: users
+    });
+    return;
+}
 //servicers api
 
 exports.getDealerServicers = async (req, res) => {
