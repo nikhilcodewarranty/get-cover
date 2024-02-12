@@ -20,6 +20,9 @@ const moment = require("moment");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
 
+const PDFDocument = require('pdfkit');
+const { createPdf } = require("pdfmake")
+
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         console.log("file+++++++++++++++++++++", files);
@@ -569,7 +572,7 @@ exports.getAllOrders = async (req, res) => {
     }));
     let orderIdSearch = data.orderId ? data.orderId : ''
     const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
-    console.log('check+++++++++',stringWithoutHyphen)
+    console.log('check+++++++++', stringWithoutHyphen)
     const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
     const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
     const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
@@ -581,7 +584,7 @@ exports.getAllOrders = async (req, res) => {
     const filteredData1 = updatedArray.filter(entry => {
         return (
             venderRegex.test(entry.venderOrder) &&
-            orderIdRegex.test(entry.unique_key_search) &&
+            orderIdRegex.test(entry.unique_key) &&
             dealerNameRegex.test(entry.dealerName.name) &&
             servicerNameRegex.test(entry.servicerName.name) &&
             customerNameRegex.test(entry.customerName.name) &&
@@ -1334,8 +1337,8 @@ exports.editFileCase = async (req, res) => {
                                 serialNumber: serials
                             };
                         });
- 
-                        if (serialNumberArray.length > 0) { 
+
+                        if (serialNumberArray.length > 0) {
                             const seen = new Set();
                             const duplicates = [];
 
@@ -2646,6 +2649,98 @@ exports.getDashboardData = async (req, res) => {
             return;
         }
 
+
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.invoicePdf = async (req, res) => {
+    try {
+        let data = req.body
+        let array = [
+            {
+                name: "test",
+                email: "test@example.com"
+            },
+            {
+                name: "test",
+                email: "test@example.com"
+            },
+            {
+                name: "test",
+                email: "test@example.com"
+            }
+        ]
+
+
+
+        const doc = new PDFDocument();
+
+        // Pipe the PDF output to a file
+        let check = await doc.pipe(fs.createWriteStream('../utils'));
+        console.log('check------------',check)
+        // Add content to the PDF
+        // doc.image('logo.png', { width: 100 }); // Replace 'logo.png' with the actual path to your logo
+        doc.moveDown();
+        doc.text('Dates: 2024-02-12');
+
+        doc.moveDown();
+        doc.take({
+            headers: ['Name', 'Age'],
+            body: array.map(item => [item.name, item.email])
+        });
+
+        // Finalize the PDF and close the stream
+        doc.end();
+
+        console.log('endd')
+        return;
+        const htmlTemplate = `
+  <html>
+  <head>
+    <style>
+      /* Define your CSS styles here */
+    </style>
+  </head>
+  <body>
+    <img src="logo.png" alt="Logo" />
+    <h1>Dates: 2024-02-12</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${array.map(item => `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.age}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </body>
+  </html>
+`;
+
+
+        const pdfDoc = createPdf(htmlTemplate);
+
+        // File path to save the PDF in the project directory
+        const filePath = '../';
+
+        // Save the PDF to the specified file path
+        pdfDoc.getBuffer((buffer) => {
+            fs.writeFileSync(filePath, buffer);
+            console.log('PDF saved successfully at', filePath);
+        });
 
 
     } catch (err) {

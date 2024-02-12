@@ -26,6 +26,7 @@ router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseO
 
 router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInOrder)
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks)
+router.post('/invoicePdf', [verifyToken], orderController.invoicePdf)
 
 
 module.exports = router;
