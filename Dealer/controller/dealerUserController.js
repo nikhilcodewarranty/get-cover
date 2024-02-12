@@ -486,7 +486,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Invalid dealer"
-            })
+            }) 
             return;
         };
 
