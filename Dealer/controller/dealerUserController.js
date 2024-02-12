@@ -460,6 +460,122 @@ exports.getResellerUsers = async (req, res) => {
 }
 //servicers api
 
+exports.getResellerServicers = async (req, res) => {
+    try {
+        let data = req.body
+
+        let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller ID"
+            })
+            return;
+        }
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        }
+        let result_Array = []
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
+        if (!getServicersIds) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicer"
+            })
+            return;
+        }
+        let ids = getServicersIds.map((item) => item.servicerId)
+        var servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers"
+            })
+            return;
+        }
+        if (checkDealer.isServicer) {
+            servicer.unshift(checkDealer);
+        }
+
+        if (checkReseller.isServicer) {
+            //servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
+            servicer.unshift(checkReseller);
+        }
+
+        const servicerIds = servicer.map(obj => obj._id);
+
+        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        let servicerUser = await userService.getMembers(query1, {})
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            });
+            return;
+        };
+
+        result_Array = servicer.map(servicer => {
+            const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            if (matchingItem) {
+                return {
+                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: servicer.toObject()
+                };
+            } else {
+                return servicer.toObject();
+            }
+        })
+
+        const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.servicerData.name) &&
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            data: filteredData
+        });
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+
+
+
+    // result_Array = servicerUser.map(item1 => {
+    //     const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+    //     if (matchingItem) {
+    //         return {
+    //             ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+    //             servicerData: matchingItem.toObject()
+    //         };
+    //     } else {
+    //         return servicerUser.toObject();
+    //     }
+    // });
+
+
+
+
+
+}
+
 exports.getDealerServicers = async (req, res) => {
     try {
         let data = req.body

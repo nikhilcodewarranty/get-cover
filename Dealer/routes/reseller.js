@@ -6,11 +6,6 @@ const validator = require('../config/validation');
 
 router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller)
 router.post('/getAllResellers', [verifyToken], resellerController.getAllResellers)
-
-
-
-
-
 router.post("/getResellerServicers/:resellerId", [verifyToken], resellerController.getResellerServicers)
 router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
 router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
