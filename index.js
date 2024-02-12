@@ -1,5 +1,7 @@
 require("dotenv").config()
 var express = require('express');
+const pdf = require('pdf-creator-node');
+
 var path = require('path');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
@@ -31,6 +33,7 @@ const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const fs = require('fs');
 
 var app = express();
 
@@ -39,6 +42,28 @@ var app = express();
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
+const template = fs.readFileSync('./template/template.html','utf-8')
+const options = {
+    format:'A4',
+    orientation:'portrait',
+    border:'10mm',
+    childProcessOptions: {
+        env: {
+          OPENSSL_CONF: '/dev/null',
+        },
+    }
+}
+const document = {
+    html:template,
+    data:{
+        message:'My First PDF'
+    },
+    path:"./pdfs/test.pdf"
+}
+
+pdf.create(document,options).then((res)=>{
+console.log(res)
+})
 
 //proxy servers
 // app.use('/user', createProxyMiddleware({ target: 'http://localhost:8080/', changeOrigin: true, pathRewrite: { '^/user': '/' }}));
