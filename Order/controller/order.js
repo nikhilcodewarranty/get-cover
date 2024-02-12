@@ -398,7 +398,7 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
         // .some(Boolean);
-        console.log(resultArray)
+        //console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name')
         }
@@ -413,7 +413,7 @@ exports.processOrder = async (req, res) => {
             returnField.push('Product data file')
         }
 
-        const combinedString = returnField.join(', ') + ' is missing';
+        const combinedString = returnField.join(',') + ' is missing';
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -2639,7 +2639,23 @@ exports.editOrderDetail = async (req, res) => {
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
-        let checkOrders = await orderService.getOrders({ status: "Active", isDeleted: false })
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            unique_key_number: 1,
+            unique_key_search: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        };
+    
+        let query = { status: 'Active' };
+        let checkOrders = await orderService.getDashboardData(query,project)
         if (!checkOrders) {
             res.send({
                 code: constant.errorCode,
@@ -2647,6 +2663,10 @@ exports.getDashboardData = async (req, res) => {
             })
             return;
         }
+
+        console.log("checkOrder=============",checkOrders)
+
+
 
 
 

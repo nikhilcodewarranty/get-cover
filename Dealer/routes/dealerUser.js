@@ -8,6 +8,7 @@ router.post('/getDealerUsers',[verifyToken],dealerUserController.getDealerUsers)
 router.post('/getPriceBooks',[verifyToken],dealerUserController.getPriceBooks)
 router.post('/createDealerPriceBook',[verifyToken],dealerUserController.createDealerPriceBook)
 router.post('/getAllPriceBooksByFilter',[verifyToken],dealerUserController.getAllPriceBooksByFilter)
+router.post('createCustomer',[verifyToken],dealerUserController.createCustomer)
 
 router.post('/getDealerCustomers',[verifyToken],dealerUserController.getDealerCustomers)
 
