@@ -8,11 +8,17 @@ router.post('/getDealerUsers',[verifyToken],dealerUserController.getDealerUsers)
 router.post('/getPriceBooks',[verifyToken],dealerUserController.getPriceBooks)
 router.post('/createDealerPriceBook',[verifyToken],dealerUserController.createDealerPriceBook)
 router.post('/getAllPriceBooksByFilter',[verifyToken],dealerUserController.getAllPriceBooksByFilter)
-router.post('createCustomer',[verifyToken],dealerUserController.createCustomer)
-
+router.post('/createCustomer',[verifyToken],dealerUserController.createCustomer)
+router.post('/createDealerPriceBook',[verifyToken],dealerUserController.createDealerPriceBook)
 router.post('/getDealerCustomers',[verifyToken],dealerUserController.getDealerCustomers)
+router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], dealerUserController.statusUpdate); 
+router.put("/getResellerPriceBook/:resellerId", [verifyToken], dealerUserController.getResellerPriceBook); 
 
 router.post('/getDealerResellers',[verifyToken],dealerUserController.getDealerResellers)
+router.get('/getDealerPriceBookById/:dealerPriceBookId',[verifyToken],dealerUserController.getDealerPriceBookById)
+router.post("/getResellerUsers/:resellerId", [verifyToken], dealerUserController.getResellerUsers);
+router.post("/getResellerServicers/:resellerId", [verifyToken], dealerUserController.getResellerServicers)
+router.post("/getResellerCustomers/:resellerId", [verifyToken], dealerUserController.getResellerCustomers);
 router.post('/createReseller',[verifyToken],dealerUserController.createReseller)
 
 router.post('/getDealerServicers',[verifyToken],dealerUserController.getDealerServicers)

@@ -2505,15 +2505,15 @@ exports.getDealerOrders = async (req, res) => {
     const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
     const filteredData1 = updatedArray.filter(entry => {
-        return (
-            venderRegex.test(entry.venderOrder) &&
-            orderIdRegex.test(entry.unique_key) &&
-            dealerNameRegex.test(entry.dealerName.name) &&
-            servicerNameRegex.test(entry.servicerName.name) &&
-            customerNameRegex.test(entry.customerName.name)&&
-            resellerNameRegex.test(entry.resellerName.name) &&
-            statusRegex.test(entry.status)
-        );
+      return (
+        venderRegex.test(entry.venderOrder) &&
+        orderIdRegex.test(entry.unique_key) &&
+        dealerNameRegex.test(entry.dealerName.name) &&
+        servicerNameRegex.test(entry.servicerName.name) &&
+        customerNameRegex.test(entry.customerName.name) &&
+        resellerNameRegex.test(entry.resellerName.name) &&
+        statusRegex.test(entry.status)
+      );
     });
 
     res.send({

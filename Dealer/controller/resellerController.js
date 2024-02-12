@@ -256,13 +256,13 @@ exports.getResellerByDealerId = async (req, res) => {
 }
 
 exports.getResellerById = async (req, res) => {
-    if (req.role != "Super Admin") {
-        res.send({
-            code: constant.errorCode,
-            message: "Only super admin allow to do this action"
-        })
-        return;
-    }
+    // if (req.role != "Super Admin") {
+    //     res.send({
+    //         code: constant.errorCode,
+    //         message: "Only super admin allow to do this action"
+    //     })
+    //     return;
+    // }
     let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
     if (!checkReseller) {
         res.send({

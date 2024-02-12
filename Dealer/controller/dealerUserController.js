@@ -177,6 +177,38 @@ exports.createDealerPriceBook = async (req, res) => {
     }
 }
 
+exports.getDealerPriceBookById = async (req, res) => {
+    try {
+        if (req.role != "Dealer") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only Dealer allow to do this action"
+            })
+            return;
+        }
+        let projection = { isDeleted: 0, __v: 0 }
+        let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
+        let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+        if (!getDealerPrice) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to get the dealer price books"
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: getDealerPrice
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
 exports.getPriceBooks = async (req, res) => {
     try {
         let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
@@ -204,6 +236,96 @@ exports.getPriceBooks = async (req, res) => {
             })
         }
     } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+exports.getResellerCustomers = async (req, res) => {
+    try {
+        if (req.role !== "Dealer") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only Dealer is allowed to perform this action"
+            });
+            return
+        }
+        let data = req.body;
+        let query = { isDeleted: false, resellerId: req.params.resellerId }
+        let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+        const customers = await customerService.getAllCustomers(query, projection);
+        if (!customers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customer"
+            });
+            return;
+        };
+        const customersId = customers.map(obj => obj._id.toString());
+        const orderCustomerIds = customers.map(obj => obj._id);
+        const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = {
+            $and: [
+                { customerId: { $in: orderCustomerIds }, status: "Active" },
+                {
+                    'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+                },
+            ]
+        }
+        let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
+
+        let result_Array = getPrimaryUser.map(item1 => {
+            const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+            if (matchingItem || order) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    customerData: matchingItem.toObject(),
+                    orderData: order ? order : {}
+                };
+            } else {
+                return {};
+            }
+        });
+
+        const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+        const nameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+        console.log(result_Array);
+        result_Array = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.customerData.username) &&
+                emailRegex.test(entry.email) &&
+                dealerRegex.test(entry.customerData.dealerId) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+
+        res.send({
+            code: constant.successCode,
+            result: result_Array
+        })
+    }
+    catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -269,7 +391,280 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     }
 };
 
+exports.statusUpdate = async (req, res) => {
+    try {
+        // Check if the user has the required role
+        if (req.role !== "Dealer") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only Dealer is allowed to perform this action"
+            });
+            return
+        }
+
+        // Fetch existing dealer price book data
+        const criteria = { _id: req.params.dealerPriceBookId };
+        const projection = { isDeleted: 0, __v: 0 };
+        const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+
+        if (!existingDealerPriceBook) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer Price Book not found"
+            });
+            return;
+        }
+        // Prepare the update data
+        const newValue = {
+            $set: {
+                brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
+                status: req.body.status,
+                retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
+                priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
+            }
+        };
+
+        const option = { new: true };
+
+        // Update the dealer price status
+        const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
+
+        if (!updatedResult) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to update the dealer price status"
+            });
+
+            return;
+
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Updated Successfully",
+            data: updatedResult
+        });
+
+        return
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+        return
+    }
+};
+
+exports.getResellerPriceBook = async (req, res) => {
+    if (req.role != "Dealer") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only Dealer allow to do this action"
+        })
+        return;
+    }
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+
+    let checkDealer = await dealerService.getDealerById(checkReseller.dealerId, { isDeleted: false });
+    if (!checkDealer) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Dealer not found of this reseller!'
+        });
+        return;
+    }
+
+    let queryCategories = {
+        $and: [
+            { isDeleted: false },
+            { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchName = req.body.name ? req.body.name : ''
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = {
+        $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': true },
+            {
+                dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+            },
+            {
+                isDeleted: false
+            }
+        ]
+    }
+    //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
+    let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
+    if (!getResellerPriceBook) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Unable to find price books!'
+        });
+        return;
+    }
+
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getResellerPriceBook
+    })
+
+
+}
+
+exports.getResellerUsers = async (req, res) => {
+    if (req.role != "Dealer") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only Dealer allow to do this action"
+        })
+        return;
+    }
+
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+    const queryUser = { accountId: { $in: checkReseller._id } }
+    let users = await userService.getMembers(queryUser, { isDeleted: 0 });
+    res.send({
+        code: constant.successCode,
+        data: users
+    });
+    return;
+}
 //servicers api
+
+exports.getResellerServicers = async (req, res) => {
+    try {
+        let data = req.body
+
+        let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller ID"
+            })
+            return;
+        }
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        }
+        let result_Array = []
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
+        if (!getServicersIds) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicer"
+            })
+            return;
+        }
+        let ids = getServicersIds.map((item) => item.servicerId)
+        var servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers"
+            })
+            return;
+        }
+        if (checkDealer.isServicer) {
+            servicer.unshift(checkDealer);
+        }
+
+        if (checkReseller.isServicer) {
+            //servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
+            servicer.unshift(checkReseller);
+        }
+
+        const servicerIds = servicer.map(obj => obj._id);
+
+        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+        let servicerUser = await userService.getMembers(query1, {})
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            });
+            return;
+        };
+
+        result_Array = servicer.map(servicer => {
+            const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            if (matchingItem) {
+                return {
+                    ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: servicer.toObject()
+                };
+            } else {
+                return servicer.toObject();
+            }
+        })
+
+        const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.servicerData.name) &&
+                emailRegex.test(entry.email) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            data: filteredData
+        });
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+
+
+
+    // result_Array = servicerUser.map(item1 => {
+    //     const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+    //     if (matchingItem) {
+    //         return {
+    //             ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+    //             servicerData: matchingItem.toObject()
+    //         };
+    //     } else {
+    //         return servicerUser.toObject();
+    //     }
+    // });
+
+
+
+
+
+}
 
 exports.getDealerServicers = async (req, res) => {
     try {
