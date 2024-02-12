@@ -3,23 +3,60 @@ const order = require("../model/order");
 module.exports = class orderService {
   static async getAllOrders(query, project) {
     try {
-      console.log('query++++++++++++++++++++++',query)
       const allOrders = await order.aggregate([
         {
           $match: query
         },
         {
           $project: project,
-
         },
+        // {
+        //   $group: {
+        //     _id: null,
+        //     total_count: {
+        //       $sum: "$orderAmount"
+        //     }
+        //   }
+        // },
         {
           "$addFields": {
             "noOfProducts": {
               "$sum": "$productsArray.checkNumberProducts"
+            },
+            totalOrderAmount:   { $sum: "$orderAmount" },
+
+          }
+         },
+        { $sort: { unique_key: -1 } }
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+
+  static async getDashboardData(query, project) {
+    try {
+      const allOrders = await orderaggregate([
+        {
+          $match: query
+        },
+        {
+          $project: project,
+        },
+        { "$group": {
+          "_id": "",
+          "Point": {
+            "$sum": {
+              "$sum": "$orderAmount"
             }
           }
-        },
-        { $sort: { unique_key: -1 } }
+        }},
+        // { "$project": {
+        //   "EmployeeID": "$_id",
+        //   "Point": "$Point",
+        //   "_id": 0
+        // }}
       ])
       return allOrders;
     } catch (error) {
@@ -140,6 +177,8 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
+
+  sta
 
 
 };
