@@ -303,68 +303,135 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 
 exports.statusUpdate = async (req, res) => {
     try {
-      // Check if the user has the required role
-      if (req.role !== "Dealer") {
+        // Check if the user has the required role
+        if (req.role !== "Dealer") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only Dealer is allowed to perform this action"
+            });
+            return
+        }
+
+        // Fetch existing dealer price book data
+        const criteria = { _id: req.params.dealerPriceBookId };
+        const projection = { isDeleted: 0, __v: 0 };
+        const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
+
+        if (!existingDealerPriceBook) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer Price Book not found"
+            });
+            return;
+        }
+        // Prepare the update data
+        const newValue = {
+            $set: {
+                brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
+                status: req.body.status,
+                retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
+                priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
+            }
+        };
+
+        const option = { new: true };
+
+        // Update the dealer price status
+        const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
+
+        if (!updatedResult) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to update the dealer price status"
+            });
+
+            return;
+
+        }
         res.send({
-          code: constant.errorCode,
-          message: "Only Dealer is allowed to perform this action"
+            code: constant.successCode,
+            message: "Updated Successfully",
+            data: updatedResult
+        });
+
+        return
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
         });
         return
-      }
-  
-      // Fetch existing dealer price book data
-      const criteria = { _id: req.params.dealerPriceBookId };
-      const projection = { isDeleted: 0, __v: 0 };
-      const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
-  
-      if (!existingDealerPriceBook) {
-        res.send({
-          code: constant.errorCode,
-          message: "Dealer Price Book not found"
-        });
-        return;
-      }  
-      // Prepare the update data
-      const newValue = {
-        $set: {
-          brokerFee: req.body.brokerFee || existingDealerPriceBook.brokerFee,
-          status: req.body.status,
-          retailPrice: req.body.retailPrice || existingDealerPriceBook.retailPrice,
-          priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
-        }
-      };
-  
-      const option = { new: true };
-  
-      // Update the dealer price status
-      const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
-  
-      if (!updatedResult) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to update the dealer price status"
-        });
-  
-        return;
-  
-      }
-      res.send({
-        code: constant.successCode,
-        message: "Updated Successfully",
-        data: updatedResult
-      });
-  
-      return
-  
-    } catch (err) {
-      res.send({
-        code: constant.errorCode,
-        message: err.message,
-      });
-      return
     }
-  };
+};
 
+exports.getResellerPriceBook = async (req, res) => {
+    if (req.role != "Dealer") {
+        res.send({
+            code: constant.errorCode,
+            message: "Only Dealer allow to do this action"
+        })
+        return;
+    }
+    let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found!'
+        });
+        return;
+    }
+
+    let checkDealer = await dealerService.getDealerById(checkReseller.dealerId, { isDeleted: false });
+    if (!checkDealer) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Dealer not found of this reseller!'
+        });
+        return;
+    }
+
+    let queryCategories = {
+        $and: [
+            { isDeleted: false },
+            { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchName = req.body.name ? req.body.name : ''
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = {
+        $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': true },
+            {
+                dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+            },
+            {
+                isDeleted: false
+            }
+        ]
+    }
+    //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
+    let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
+    if (!getResellerPriceBook) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Unable to find price books!'
+        });
+        return;
+    }
+
+    res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getResellerPriceBook
+    })
+
+
+}
 //servicers api
 
 exports.getDealerServicers = async (req, res) => {
