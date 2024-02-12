@@ -2656,9 +2656,9 @@ exports.getDashboardData = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
         };
-    
+
         let query = { status: 'Active' };
-        let checkOrders = await orderService.getDashboardData(query,project)
+        let checkOrders = await orderService.getDashboardData(query, project)
         if (!checkOrders) {
             res.send({
                 code: constant.errorCode,
@@ -2666,13 +2666,10 @@ exports.getDashboardData = async (req, res) => {
             })
             return;
         }
-
-        console.log("checkOrder=============",checkOrders)
-
-
-
-
-
+        res.send({
+            code: constant.successCode,
+            result: checkOrders
+        })
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -2705,7 +2702,7 @@ exports.invoicePdf = async (req, res) => {
 
         // Pipe the PDF output to a file
         let check = await doc.pipe(fs.createWriteStream('../utils'));
-        console.log('check------------',check)
+        console.log('check------------', check)
         // Add content to the PDF
         // doc.image('logo.png', { width: 100 }); // Replace 'logo.png' with the actual path to your logo
         doc.moveDown();

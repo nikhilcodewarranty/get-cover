@@ -23,10 +23,10 @@ module.exports = class orderService {
             "noOfProducts": {
               "$sum": "$productsArray.checkNumberProducts"
             },
-            totalOrderAmount:   { $sum: "$orderAmount" },
+            totalOrderAmount: { $sum: "$orderAmount" },
 
           }
-         },
+        },
         { $sort: { unique_key: -1 } }
       ])
       return allOrders;
@@ -37,26 +37,27 @@ module.exports = class orderService {
 
   static async getDashboardData(query, project) {
     try {
-      const allOrders = await orderaggregate([
+      const allOrders = await order.aggregate([
         {
           $match: query
         },
         {
           $project: project,
         },
-        { "$group": {
-          "_id": "",
-          "Point": {
-            "$sum": {
-              "$sum": "$orderAmount"
-            }
-          }
-        }},
-        // { "$project": {
-        //   "EmployeeID": "$_id",
-        //   "Point": "$Point",
-        //   "_id": 0
-        // }}
+        {
+          "$group": {
+            "_id": "",
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$orderAmount"
+              }
+            },
+            "totalOrder": { "$sum": 1 } 
+          },
+          
+        },
+       
+    
       ])
       return allOrders;
     } catch (error) {
@@ -64,9 +65,9 @@ module.exports = class orderService {
     }
   }
 
-  static async getAllOrderInCustomers(query, project,groupBy) {
+  static async getAllOrderInCustomers(query, project, groupBy) {
     try {
-      console.log('query++++++++++++++++++++++',query)
+      console.log('query++++++++++++++++++++++', query)
       const allOrders = await order.aggregate([
         {
           $match: query
@@ -80,7 +81,7 @@ module.exports = class orderService {
             _id: groupBy,
             noOfOrders: { $sum: 1 },
             orderAmount: {
-                $sum: "$orderAmount"
+              $sum: "$orderAmount"
             },
           }
         },
@@ -99,7 +100,7 @@ module.exports = class orderService {
     }
   }
 
-  static async getGroupingOrder(query,project) {
+  static async getGroupingOrder(query, project) {
     try {
       const allOrders = await order.aggregate([
         {
@@ -151,7 +152,7 @@ module.exports = class orderService {
 
   static async getOrdersCount() {
     try {
-      const count = await order.find({},{unique_key_number:1}).sort({unique_key_number:-1});
+      const count = await order.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
       console.log(`Could not fetch order count ${error}`);
