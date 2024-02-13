@@ -53,46 +53,46 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // let data = req.body;
-            let data = {
-                "dealerId": "65c32ca30a8dba244cfa1610",
-                "servicerId": "",
-                "customerId": "65c32dbbffc7f8c97a11bff8",
-                "resellerId": "",
-                "productsArray": [
-                    {
-                        "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65c32aec7e54710b7783fdba",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+            let data = req.body;
+            // let data = {
+            //     "dealerId": "65c32ca30a8dba244cfa1610",
+            //     "servicerId": "",
+            //     "customerId": "65c32dbbffc7f8c97a11bff8",
+            //     "resellerId": "",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65aba24e182e38ce2ea76f6a",
+            //             "priceBookId": "65c32aec7e54710b7783fdba",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-                    }
+            //         }
 
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#126334567809",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#126334567809",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
 
             //check for super admin
             if (req.role != "Super Admin") {
@@ -453,6 +453,10 @@ exports.getAllOrders = async (req, res) => {
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
         name: 1,
         isServicer: 1,
+        street: 1,
+        city: 1,
+        state: 1,
+        country: 1
     });
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
     const servicerCreteria = {
@@ -479,7 +483,14 @@ exports.getAllOrders = async (req, res) => {
     const resellerCreteria = { _id: { $in: resellerIdsArray } };
     let respectiveReseller = await resellerService.getResellers(
         resellerCreteria,
-        { name: 1, isServicer: 1 }
+        {
+            name: 1,
+            isServicer: 1,
+            street: 1,
+            city: 1,
+            state: 1,
+            country: 1
+        }
     );
     const result_Array = ordersResult.map((item1) => {
         const dealerName =
@@ -2168,78 +2179,78 @@ exports.getSingleOrder = async (req, res) => {
 
 exports.editOrderDetail = async (req, res) => {
     try {
-        // let data = req.body;
-        let data = {
-            "_id": "65c5f9b57e935a6b4aa10cf9",
-            "dealerId": "65c49fa82e3394537511528e",
-            "servicerId": "65c4f445023c5e533fefc6d0",
-            "customerId": "65c4a2755b49fb821a5aa3b2",
-            "resellerId": "65c4a1132e3394537511529f",
-            "venderOrder": "NIk-001",
-            "serviceCoverageType": "Parts & Labour",
-            "coverageType": "Breakdown & Accidental",
-            "unique_key_number": 100000,
-            "unique_key_search": "GC2024100000",
-            "unique_key": "GC-2024-100000",
-            "productsArray": [
-                {
-                    "categoryId": "65c32a947e54710b7783fdb9",
-                    "priceBookId": "65c32c097e54710b7783fdc1",
-                    "unitPrice": 500,
-                    "noOfProducts": 1,
-                    "priceType": "Quantity Pricing",
-                    "term": 12,
-                    "description": "testing",
-                    "checkNumberProducts": 56,
-                    "orderFile": {
-                        "fileName": "file-1707473332788.xlsx",
-                        "name": "Copy of Copy of Add Product Format.xlsx",
-                        "size": "5987",
-                        "_id": "65c5f9b57e935a6b4aa10cfc"
-                    },
-                    "QuantityPricing": [
-                        {
-                            "name": "panel",
-                            "quantity": 20,
-                            "enterQuantity": 15,
-                            "_id": "65c32c097e54710b7783fdc2"
-                        },
-                        {
-                            "name": "inverter",
-                            "quantity": 40,
-                            "enterQuantity": 40,
-                            "_id": "65c32c097e54710b7783fdc3"
-                        },
-                        {
-                            "name": "battery",
-                            "quantity": 1,
-                            "enterQuantity": 1,
-                            "_id": "65c32c097e54710b7783fdc4"
-                        }
-                    ],
-                    "price": 500,
-                    "additionalNotes": "",
-                    "rangeStart": null,
-                    "rangeEnd": null,
-                    "coverageStartDate": "2024-02-29T00:00:00.000Z",
-                    "coverageEndDate": "2025-02-28T00:00:00.000Z",
-                    "_id": "65c5f9b57e935a6b4aa10cfb"
-                }
-            ],
-            "orderAmount": 500,
-            "sendNotification": true,
-            "paymentStatus": "Paid",
-            "status": "Active",
-            "isDeleted": false,
-            "orderDate": "2024-02-09T10:06:50.134Z",
-            "paidAmount": 500,
-            "dueAmount": 0,
-            "paymentMethod": "Manually",
-            "canProceed": true,
-            "createdAt": "2024-02-09T10:08:53.779Z",
-            "updatedAt": "2024-02-09T10:08:54.248Z",
-            "__v": 0
-        }
+        let data = req.body;
+        // let data = {
+        //     "_id": "65c5f9b57e935a6b4aa10cf9",
+        //     "dealerId": "65c49fa82e3394537511528e",
+        //     "servicerId": "65c4f445023c5e533fefc6d0",
+        //     "customerId": "65c4a2755b49fb821a5aa3b2",
+        //     "resellerId": "65c4a1132e3394537511529f",
+        //     "venderOrder": "NIk-001",
+        //     "serviceCoverageType": "Parts & Labour",
+        //     "coverageType": "Breakdown & Accidental",
+        //     "unique_key_number": 100000,
+        //     "unique_key_search": "GC2024100000",
+        //     "unique_key": "GC-2024-100000",
+        //     "productsArray": [
+        //         {
+        //             "categoryId": "65c32a947e54710b7783fdb9",
+        //             "priceBookId": "65c32c097e54710b7783fdc1",
+        //             "unitPrice": 500,
+        //             "noOfProducts": 1,
+        //             "priceType": "Quantity Pricing",
+        //             "term": 12,
+        //             "description": "testing",
+        //             "checkNumberProducts": 56,
+        //             "orderFile": {
+        //                 "fileName": "file-1707473332788.xlsx",
+        //                 "name": "Copy of Copy of Add Product Format.xlsx",
+        //                 "size": "5987",
+        //                 "_id": "65c5f9b57e935a6b4aa10cfc"
+        //             },
+        //             "QuantityPricing": [
+        //                 {
+        //                     "name": "panel",
+        //                     "quantity": 20,
+        //                     "enterQuantity": 15,
+        //                     "_id": "65c32c097e54710b7783fdc2"
+        //                 },
+        //                 {
+        //                     "name": "inverter",
+        //                     "quantity": 40,
+        //                     "enterQuantity": 40,
+        //                     "_id": "65c32c097e54710b7783fdc3"
+        //                 },
+        //                 {
+        //                     "name": "battery",
+        //                     "quantity": 1,
+        //                     "enterQuantity": 1,
+        //                     "_id": "65c32c097e54710b7783fdc4"
+        //                 }
+        //             ],
+        //             "price": 500,
+        //             "additionalNotes": "",
+        //             "rangeStart": null,
+        //             "rangeEnd": null,
+        //             "coverageStartDate": "2024-02-29T00:00:00.000Z",
+        //             "coverageEndDate": "2025-02-28T00:00:00.000Z",
+        //             "_id": "65c5f9b57e935a6b4aa10cfb"
+        //         }
+        //     ],
+        //     "orderAmount": 500,
+        //     "sendNotification": true,
+        //     "paymentStatus": "Paid",
+        //     "status": "Active",
+        //     "isDeleted": false,
+        //     "orderDate": "2024-02-09T10:06:50.134Z",
+        //     "paidAmount": 500,
+        //     "dueAmount": 0,
+        //     "paymentMethod": "Manually",
+        //     "canProceed": true,
+        //     "createdAt": "2024-02-09T10:08:53.779Z",
+        //     "updatedAt": "2024-02-09T10:08:54.248Z",
+        //     "__v": 0
+        // }
 
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -2737,7 +2748,6 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
-        console.log("fssddfssdf", checkOrders)
         if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
