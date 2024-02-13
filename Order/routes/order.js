@@ -19,6 +19,7 @@ router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
 router.get('/getOrderById/:orderId', [verifyToken], orderController.getSingleOrder)
+router.get('/markAsPaid/:orderId', [verifyToken], orderController.markAsPaid)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
 router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)
