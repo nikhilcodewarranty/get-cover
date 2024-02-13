@@ -781,6 +781,8 @@ exports.statusUpdate = async (req, res) => {
 };
 // All Dealer Books
 
+
+
 exports.getAllDealerPriceBooks = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
