@@ -448,6 +448,18 @@ exports.getAllOrders = async (req, res) => {
 
     let ordersResult = await orderService.getAllOrders(query, project);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
+    let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+    let userResellerIds = ordersResult
+        .filter(result => result.resellerId !== null)
+        .map(result => result.resellerId.toString());
+
+    let mergedArray = userDealerIds.concat(userResellerIds);
+
+    const queryUser = { accountId: { $in: mergedArray }, isPrimary: true };
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -520,6 +532,7 @@ exports.getAllOrders = async (req, res) => {
                     (item2) => item2._id.toString() === item1.resellerId.toString()
                 )
                 : null;
+
         if (dealerName || customerName || servicerName || resellerName) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -556,14 +569,31 @@ exports.getAllOrders = async (req, res) => {
         );
     });
 
-    const updatedArray = filteredData.map((item) => ({
-        ...item,
-        servicerName: item.dealerName.isServicer
-            ? item.dealerName
-            : item.resellerName.isServicer
-                ? item.resellerName
-                : item.servicerName,
-    }));
+    // const updatedArray = filteredData.map((item) => ({
+    //     ...item,
+    //     servicerName: item.dealerName.isServicer
+    //         ? item.dealerName
+    //         : item.resellerName.isServicer
+    //             ? item.resellerName
+    //             : item.servicerName
+    //         username:getPrimaryUser.find(user=>user.accountId.toString()===item.dealerName._id.toString())
+    // }));
+
+    const updatedArray = filteredData.map(item => {
+        let username = null; // Initialize username as null
+        if (item.dealerName) {
+            username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+        }
+        if (item.resellerName) {
+            resellerUsername = item.resellerName._id!=null ?  getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()):[];
+        }
+        return {
+            ...item,
+            servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
+            username: username, // Set username based on the conditional checks
+            resellerUsername:resellerUsername ? resellerUsername : {}
+        };
+    });
     let orderIdSearch = data.orderId ? data.orderId : ''
     const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
     console.log('check+++++++++', stringWithoutHyphen)
@@ -2470,7 +2500,7 @@ exports.editOrderDetail = async (req, res) => {
                     unique_key: contractCount,
                 };
                 console.log("contracts__-------------------{{{{{{{{{{", contractObject)
-            await contractService.createContract(contractObject);
+                await contractService.createContract(contractObject);
 
                 contracts.push(contractObject);
             })
