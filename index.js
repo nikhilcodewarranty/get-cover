@@ -58,12 +58,12 @@ const document = {
     data:{
         message:'My First PDF'
     },
-    path:"./pdfs/test.pdf"
+    path:"./pdfs/teste33r.pdf"
 }
 
-pdf.create(document,options).then((res)=>{
-console.log(res)
-})
+// pdf.create(document,options).then((res)=>{
+// console.log(res)
+// })
 
 //proxy servers
 // app.use('/user', createProxyMiddleware({ target: 'http://localhost:8080/', changeOrigin: true, pathRewrite: { '^/user': '/' }}));
