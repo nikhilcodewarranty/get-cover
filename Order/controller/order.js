@@ -585,7 +585,7 @@ exports.getAllOrders = async (req, res) => {
             username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
         if (item.resellerName) {
-            resellerUsername = item.resellerName._id!=null ?  getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()):[];
+            resellerUsername = item.resellerName._id!=null ?  getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()):{};
         }
         return {
             ...item,
