@@ -471,10 +471,11 @@ exports.getAllOrders = async (req, res) => {
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
         name: 1,
         isServicer: 1,
-        street: 1,
         city: 1,
         state: 1,
-        country: 1
+        country: 1,
+        zip: 1
+
     });
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
     const servicerCreteria = {
@@ -504,10 +505,10 @@ exports.getAllOrders = async (req, res) => {
         {
             name: 1,
             isServicer: 1,
-            street: 1,
             city: 1,
             state: 1,
-            country: 1
+            country: 1,
+            zip: 1
         }
     );
     const result_Array = ordersResult.map((item1) => {
@@ -2145,6 +2146,7 @@ exports.getSingleOrder = async (req, res) => {
         //Get Dealer Data
 
         let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
+
         //Get customer Data
         let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
         //Get Reseller Data
