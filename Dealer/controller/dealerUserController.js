@@ -1036,7 +1036,6 @@ exports.createDeleteRelation = async (req, res) => {
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
-
         let getCount = await customerService.getCustomersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer ID
@@ -1134,6 +1133,13 @@ exports.createCustomer = async (req, res, next) => {
 
 exports.getDealerCustomers = async (req, res) => {
     try {
+        if (req.role != 'Dealer') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only dealer allow to do this action!'
+            });
+            return
+        }
         let data = req.body
         let query = { isDeleted: false, dealerId: req.userId, status: true }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
@@ -1146,18 +1152,37 @@ exports.getDealerCustomers = async (req, res) => {
             return;
         };
         const customersId = customers.map(obj => obj._id.toString());
+        const customersOrderId = customers.map(obj => obj._id);
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
 
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
+
+        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
+
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-            if (matchingItem) {
+            const order = ordersData.find(order => order._id.toString() === customer._id.toString())
+            if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                    customerData: matchingItem.toObject()
+                    customerData: matchingItem.toObject(),
+                    order: order ? order : {}
                 };
             } else {
                 return dealerData.toObject();
@@ -1308,14 +1333,14 @@ exports.createReseller = async (req, res) => {
 
 exports.getResellerOrders = async (req, res) => {
     try {
-        if (req.role != 'Dealer') {
-            res.send({
-                code: constant.errorCode,
-                message: 'Only dealer allow to do this action!'
+        // if (req.role != 'Dealer') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only dealer allow to do this action!'
 
-            })
-            return;
-        }
+        //     })
+        //     return;
+        // }
         let query = { _id: req.params.resellerId };
         let data = req.body
         let projection = { isDeleted: 0 }
@@ -1458,14 +1483,14 @@ exports.getResellerOrders = async (req, res) => {
         const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
         const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
         const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-    
+
         const filteredData1 = updatedArray.filter(entry => {
             return (
                 venderRegex.test(entry.venderOrder) &&
                 orderIdRegex.test(entry.unique_key) &&
                 dealerNameRegex.test(entry.dealerName.name) &&
                 servicerNameRegex.test(entry.servicerName.name) &&
-                customerNameRegex.test(entry.customerName.name)&&
+                customerNameRegex.test(entry.customerName.name) &&
                 resellerNameRegex.test(entry.resellerName.name) &&
                 statusRegex.test(entry.status)
             );
@@ -1490,13 +1515,13 @@ exports.getResellerOrders = async (req, res) => {
 
 exports.getDealerResellers = async (req, res) => {
     try {
-        if (req.role != 'Dealer') {
-            res.send({
-                code: constant.errorCode,
-                message: 'Only dealer allow to do this action!'
-            });
-            return;
-        }
+        // if (req.role != 'Dealer') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only dealer allow to do this action!'
+        //     });
+        //     return;
+        // }
         let data = req.body
         let checkDealer = await dealerService.getDealerById(req.userId, {})
         if (!checkDealer) {
@@ -1587,6 +1612,13 @@ exports.getDealerResellers = async (req, res) => {
 
 exports.getDealerOrders = async (req, res) => {
     try {
+        // if (req.role != 'Dealer') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only dealer allow to do this action'
+        //     });
+        //     return;
+        // }
         let data = req.body
 
         let checkDealer = await dealerService.getDealerById(req.userId, { isDeleted: 0 })
