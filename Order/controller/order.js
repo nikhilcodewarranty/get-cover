@@ -2657,6 +2657,7 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
+        console.log("fssddfssdf",checkOrders)
         if (!checkOrders) {
             res.send({
                 code: constant.errorCode,
