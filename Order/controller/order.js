@@ -2658,7 +2658,7 @@ exports.getDashboardData = async (req, res) => {
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
         console.log("fssddfssdf",checkOrders)
-        if (!checkOrders) {
+        if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data"
@@ -2667,7 +2667,7 @@ exports.getDashboardData = async (req, res) => {
         }
         res.send({
             code: constant.successCode,
-            result: checkOrders
+            result: checkOrders[0]
         })
     } catch (err) {
         res.send({
