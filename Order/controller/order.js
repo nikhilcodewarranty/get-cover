@@ -79,7 +79,7 @@ exports.createOrder = async (req, res) => {
                         "term": 12,
                         "priceType": "Quantity Pricing",
                         "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
                     },
                     {
@@ -101,7 +101,7 @@ exports.createOrder = async (req, res) => {
                         "term": 12,
                         "priceType": "Regular",
                         "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
 
                         "noOfProducts": 1
                     }
@@ -312,7 +312,7 @@ exports.createOrder = async (req, res) => {
                             query,
                             projection
                         );
-                        
+
                         const wb = XLSX.readFile(products.file);
                         const sheets = wb.SheetNames;
                         const ws = wb.Sheets[sheets[0]];
@@ -471,6 +471,10 @@ exports.getAllOrders = async (req, res) => {
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
         name: 1,
         isServicer: 1,
+        street: 1,
+        city: 1,
+        state: 1,
+        country: 1
     });
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
     const servicerCreteria = {
@@ -497,7 +501,14 @@ exports.getAllOrders = async (req, res) => {
     const resellerCreteria = { _id: { $in: resellerIdsArray } };
     let respectiveReseller = await resellerService.getResellers(
         resellerCreteria,
-        { name: 1, isServicer: 1 }
+        {
+            name: 1,
+            isServicer: 1,
+            street: 1,
+            city: 1,
+            state: 1,
+            country: 1
+        }
     );
     const result_Array = ordersResult.map((item1) => {
         const dealerName =
@@ -2439,25 +2450,25 @@ exports.editOrderDetail = async (req, res) => {
     }
 };
 
-exports.markAsPaid = async(req,res)=>{
-    try{
+exports.markAsPaid = async (req, res) => {
+    try {
         let data = req.body
-        let updateOrder =await orderService.updateOrder({_id:req.params.orderId},{paymentStatus:"Paid",status:"Active"},{new:true})
-        if(!updateOrder){
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active" }, { new: true })
+        if (!updateOrder) {
             res.send({
-                code:constant.errorCode,
-                message:"unable to udpate the paytment status"
+                code: constant.errorCode,
+                message: "unable to udpate the paytment status"
             })
             return;
         }
         res.send({
-            code:constant.successCode,
-            message:"Updated Successfully"
+            code: constant.successCode,
+            message: "Updated Successfully"
         })
-    }catch(err){
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
