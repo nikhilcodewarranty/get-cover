@@ -57,12 +57,12 @@ exports.createOrder = async (req, res) => {
             let data = {
                 "dealerId": "65c32ca30a8dba244cfa1610",
                 "servicerId": "",
-                "customerId": "",
+                "customerId": "65c32dbbffc7f8c97a11bff8",
                 "resellerId": "",
                 "productsArray": [
                     {
                         "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
+                        "priceBookId": "65c32aec7e54710b7783fdba",
                         "unitPrice": "80.00",
                         "noOfProducts": "",
                         "price": 160,
@@ -79,36 +79,14 @@ exports.createOrder = async (req, res) => {
                         "term": 12,
                         "priceType": "Quantity Pricing",
                         "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-                    },
-                    {
-                        "categoryId": "65aba24e182e38ce2ea76f6a",
-                        "priceBookId": "65aba2ad182e38ce2ea76f6b",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "",
-                        "price": 160,
-                        "file": null,
-                        "manufacture": "Get-Cover123",
-                        "model": "222222222Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Regular",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing":'[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]',
-
-                        "noOfProducts": 1
                     }
+
                 ],
                 "sendNotification": true,
                 "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#1263345",
+                "dealerPurchaseOrder": "#126334567809",
                 "serviceCoverageType": "Parts",
                 "coverageType": "Breakdown",
                 "orderAmount": 144,
@@ -304,7 +282,7 @@ exports.createOrder = async (req, res) => {
                     let contractArrrayData = [];
                     for (let i = 0; i < data.productsArray.length; i++) {
                         let products = data.productsArray[i];
-
+                        console.log('dassasa', products)
                         let priceBookId = products.priceBookId;
                         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                         let projection = { isDeleted: 0 };
@@ -312,7 +290,7 @@ exports.createOrder = async (req, res) => {
                             query,
                             projection
                         );
-                        
+
                         const wb = XLSX.readFile(products.file);
                         const sheets = wb.SheetNames;
                         const ws = wb.Sheets[sheets[0]];
@@ -337,8 +315,12 @@ exports.createOrder = async (req, res) => {
                                 retailValue: item[keys[4]],
                             };
                         });
+                        // let savedDataOrder = savedResponse.toObject()
+                        const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
+
                         let contractObject = {
                             orderId: savedResponse._id,
+                            orderProductId: matchedObject._id,
                             productName: priceBook[0].name,
                             manufacture: totalDataComing[0]["brand"],
                             model: totalDataComing[0]["model"],
@@ -2186,65 +2168,79 @@ exports.getSingleOrder = async (req, res) => {
 
 exports.editOrderDetail = async (req, res) => {
     try {
-        let data = req.body;
-        // let data = {
-        //     "_id": "65bbc25251dd969ef08028bd",
-        //     "dealerId": "65b20d88d118a81cec6af042",
-        //     "servicerId": "65b88820b72a6ea6798ea108",
-        //     "customerId": "65b20f964a29b96c616196ac",
-        //     "resellerId": "65b20e85d118a81cec6af049",
-        //     "venderOrder": "vhjvjh120",
-        //     "serviceCoverageType": "Labour",
-        //     "coverageType": "Breakdown",
-        //     "unique_key": 70,
-        //     "productsArray": [
-        //         {
-        //             "categoryId": "65af968fc1030ac5a511cacd",
-        //             "priceBookId": "65af96c1c1030ac5a511cad7",
-        //             "unitPrice": 2000,
-        //             "noOfProducts": 1,
-        //             "orderFile": {
-        //                 "fileName": "example.csv",
-        //                 "originalName": "",
-        //                 "_id": "65bbc25251dd969ef08028be"
-        //             },
-        //             "price": 2000,
-        //             "additionalNotes": "",
-        //             "coverageStartDate": null,
-        //             "coverageEndDate": null,
-        //             "_id": "65bbc25251dd969ef08028bf"
-        //         },
-        //         {
-        //             "categoryId": "65af968fc1030ac5a511cacd",
-        //             "priceBookId": "65af96eec1030ac5a511cae5",
-        //             "unitPrice": 1500,
-        //             "noOfProducts": 1,
-        //             "orderFile": {
-        //                 "fileName": "",
-        //                 "originalName": "",
-        //                 "_id": "65bbc25251dd969ef08028c0"
-        //             },
-        //             "price": 1500,
-        //             "additionalNotes": "",
-        //             "coverageStartDate": null,
-        //             "coverageEndDate": null,
-        //             "_id": "65bbc25251dd969ef08028c1"
-        //         }
-        //     ],
-        //     "orderAmount": 3500,
-        //     "sendNotification": true,
-        //     "paymentStatus": "Unpaid",
-        //     "status": "Pending",
-        //     "isDeleted": false,
-        //     "orderDate": "2024-02-01T13:42:25.209Z",
-        //     "paidAmount": 3500,
-        //     "dueAmount": 0,
-        //     "paymentMethod": "Manually",
-        //     "canProceed": false,
-        //     "createdAt": "2024-02-01T16:09:54.843Z",
-        //     "updatedAt": "2024-02-02T05:18:51.517Z",
-        //     "__v": 0
-        // }
+        // let data = req.body;
+        let data = {
+            "_id": "65c5f9b57e935a6b4aa10cf9",
+            "dealerId": "65c49fa82e3394537511528e",
+            "servicerId": "65c4f445023c5e533fefc6d0",
+            "customerId": "65c4a2755b49fb821a5aa3b2",
+            "resellerId": "65c4a1132e3394537511529f",
+            "venderOrder": "NIk-001",
+            "serviceCoverageType": "Parts & Labour",
+            "coverageType": "Breakdown & Accidental",
+            "unique_key_number": 100000,
+            "unique_key_search": "GC2024100000",
+            "unique_key": "GC-2024-100000",
+            "productsArray": [
+                {
+                    "categoryId": "65c32a947e54710b7783fdb9",
+                    "priceBookId": "65c32c097e54710b7783fdc1",
+                    "unitPrice": 500,
+                    "noOfProducts": 1,
+                    "priceType": "Quantity Pricing",
+                    "term": 12,
+                    "description": "testing",
+                    "checkNumberProducts": 56,
+                    "orderFile": {
+                        "fileName": "file-1707473332788.xlsx",
+                        "name": "Copy of Copy of Add Product Format.xlsx",
+                        "size": "5987",
+                        "_id": "65c5f9b57e935a6b4aa10cfc"
+                    },
+                    "QuantityPricing": [
+                        {
+                            "name": "panel",
+                            "quantity": 20,
+                            "enterQuantity": 15,
+                            "_id": "65c32c097e54710b7783fdc2"
+                        },
+                        {
+                            "name": "inverter",
+                            "quantity": 40,
+                            "enterQuantity": 40,
+                            "_id": "65c32c097e54710b7783fdc3"
+                        },
+                        {
+                            "name": "battery",
+                            "quantity": 1,
+                            "enterQuantity": 1,
+                            "_id": "65c32c097e54710b7783fdc4"
+                        }
+                    ],
+                    "price": 500,
+                    "additionalNotes": "",
+                    "rangeStart": null,
+                    "rangeEnd": null,
+                    "coverageStartDate": "2024-02-29T00:00:00.000Z",
+                    "coverageEndDate": "2025-02-28T00:00:00.000Z",
+                    "_id": "65c5f9b57e935a6b4aa10cfb"
+                }
+            ],
+            "orderAmount": 500,
+            "sendNotification": true,
+            "paymentStatus": "Paid",
+            "status": "Active",
+            "isDeleted": false,
+            "orderDate": "2024-02-09T10:06:50.134Z",
+            "paidAmount": 500,
+            "dueAmount": 0,
+            "paymentMethod": "Manually",
+            "canProceed": true,
+            "createdAt": "2024-02-09T10:08:53.779Z",
+            "updatedAt": "2024-02-09T10:08:54.248Z",
+            "__v": 0
+        }
+
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
             res.send({
@@ -2254,10 +2250,10 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
 
+
         if (data.dealerId.toString() != checkId.dealerId.toString()) {
             let checkDealer = await dealerService.getDealerById(
-                data.dealerId,
-                projection
+                data.dealerId
             );
             if (!checkDealer) {
                 res.send({
@@ -2405,6 +2401,8 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
         console.log('check_____------------------------------------', returnField)
+
+
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
@@ -2412,11 +2410,70 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+            let contracts = [];
+
+            await savedResponse.productsArray.map(async (product) => {
+                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let priceBookId = product.priceBookId;
+                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+                let projection = { isDeleted: 0 };
+                let priceBook = await priceBookService.getPriceBookById(
+                    query,
+                    projection
+                );
+                const wb = XLSX.readFile(pathFile);
+                const sheets = wb.SheetNames;
+                const ws = wb.Sheets[sheets[0]];
+                let count1 = await contractService.getContractsCount();
+
+                let contractCount =
+                    Number(
+                        count1.length > 0 && count1[0].unique_key
+                            ? count1[0].unique_key
+                            : 0
+                    ) + 1;
+
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing = totalDataComing1.map((item) => {
+                    const keys = Object.keys(item);
+                    return {
+                        brand: item[keys[0]],
+                        model: item[keys[1]],
+                        serial: item[keys[2]],
+                        condition: item[keys[3]],
+                        retailValue: item[keys[4]],
+                    };
+                });
+                // let savedDataOrder = savedResponse.toObject()
+                let contractObject = {
+                    orderId: savedResponse._id,
+                    orderProductId: product._id,
+                    productName: priceBook[0].name,
+                    manufacture: totalDataComing[0]["brand"],
+                    model: totalDataComing[0]["model"],
+                    serial: totalDataComing[0]["serial"],
+                    condition: totalDataComing[0]["condition"],
+                    productValue: totalDataComing[0]["retailValue"],
+                    unique_key: contractCount,
+                };
+                console.log("contracts__-------------------{{{{{{{{{{", contractObject)
+            await contractService.createContract(contractObject);
+
+                contracts.push(contractObject);
+            })
+            console.log("contracts__-------------++++++------{{{{{{{{{{", contracts)
+            // await contractService.createBulkContracts(contracts);
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
         }
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-        });
+
 
         // if (data.priceBookId!=checkId.) {
         //     let query = { _id: data.priceBookId }
@@ -2439,25 +2496,25 @@ exports.editOrderDetail = async (req, res) => {
     }
 };
 
-exports.markAsPaid = async(req,res)=>{
-    try{
+exports.markAsPaid = async (req, res) => {
+    try {
         let data = req.body
-        let updateOrder =await orderService.updateOrder({_id:req.params.orderId},{paymentStatus:"Paid",status:"Active"},{new:true})
-        if(!updateOrder){
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active" }, { new: true })
+        if (!updateOrder) {
             res.send({
-                code:constant.errorCode,
-                message:"unable to udpate the paytment status"
+                code: constant.errorCode,
+                message: "unable to udpate the paytment status"
             })
             return;
         }
         res.send({
-            code:constant.successCode,
-            message:"Updated Successfully"
+            code: constant.successCode,
+            message: "Updated Successfully"
         })
-    }catch(err){
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
@@ -2680,7 +2737,7 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
-        console.log("fssddfssdf",checkOrders)
+        console.log("fssddfssdf", checkOrders)
         if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
