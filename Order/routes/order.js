@@ -26,7 +26,6 @@ router.post('/getServicerInOrders', [verifyToken], orderController.getServicerIn
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)
 
-
 router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInOrder)
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks)
 router.post('/invoicePdf', [verifyToken], orderController.invoicePdf)
