@@ -2885,3 +2885,88 @@ exports.invoicePdf = async (req, res) => {
         })
     }
 }
+
+exports.getOrderContract = async (req, res) => {
+    try {
+        let data = req.body
+        let query = [
+            {
+                $match: {_id:new mongoose.Types.ObjectId(req.params.orderId)}
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "_id",
+                    foreignField: "orderId",
+                    as: "contract"
+                }
+            },
+            // { $unwind: "$contracts" }
+        ]
+        let checkOrder = await orderService.getOrderWithContract(query)
+        if (!checkOrder[0]) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the order details"
+            })
+            return
+        }
+        // console.log('checkOrder-----------',checkOrder)
+        checkOrder = checkOrder[0];
+        checkOrder.productsArray = await Promise.all(checkOrder.productsArray.map(async (product) => {
+            const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+            const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
+            if (pricebook) {
+                product.name = pricebook.name;
+                console.log('order check +++++===============+++++++++++++', product, pricebook)
+            }
+            if (pricebookCat) {
+                product.catName = pricebookCat.name;
+                console.log('order check +++++===============+++++++++++++', product, pricebook)
+            }
+            // console.log('order check ++++++++++++++++++', checkOrder)
+
+            return product;
+        }));
+
+
+        // console.log('order check ++++++++++++++++++', checkOrder)
+        // return
+        //Get Dealer Data
+
+        let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
+        //Get customer Data
+        let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
+        //Get Reseller Data
+        let reseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
+        //Get Servicer Data
+        let query1 = {
+            $or: [
+                { _id: checkOrder.servicerId },
+                { resellerId: checkOrder.resellerId },
+                { dealerId: checkOrder.dealerId },
+            ],
+        };
+        let checkServicer = await servicerService.getServiceProviderById(query1);
+        let userData = {
+            dealerData: dealer ? dealer : {},
+            customerData: customer ? customer : {},
+            resellerData: reseller ? reseller : {},
+            servicerData: checkServicer ? checkServicer : {}
+        };
+
+
+        res.send({
+            code: constant.successCode,
+            message: "Success!",
+            result: checkOrder,
+            orderUserData: userData
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}

@@ -35,6 +35,16 @@ module.exports = class orderService {
     }
   }
 
+  static async getOrderWithContract(query, project) {
+    try {
+      console.log("lookup query-------------------",query)
+      const allOrders = await order.aggregate(query)
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+
   static async getDashboardData(query, project) {
     try {
       const allOrders = await order.aggregate([
@@ -85,13 +95,6 @@ module.exports = class orderService {
             },
           }
         },
-        // {
-        //   "$addFields": {
-        //     "noOfProducts": {
-        //       "$sum": "$productsArray.noOfProducts"
-        //     }
-        //   }
-        // },
         { $sort: { unique_key: -1 } }
       ])
       return allOrders;
@@ -179,7 +182,6 @@ module.exports = class orderService {
     }
   }
 
-  sta
 
 
 };
