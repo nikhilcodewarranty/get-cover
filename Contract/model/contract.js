@@ -9,6 +9,10 @@ const contractSchema = new mongoose.Schema({
     type: String,
     // required: true,
   },
+  orderProductId: {
+    type: String,
+    // required: true,
+  },
   // description: {
   //   type: String,
   //   // required: true,
@@ -22,7 +26,7 @@ const contractSchema = new mongoose.Schema({
     // required: true,
   },
   productValue: {
-    type: Number,
+    type: String,
     // required: true,
   },
   serial: {
