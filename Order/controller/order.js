@@ -502,9 +502,7 @@ exports.getAllOrders = async (req, res) => {
 
     let mergedArray = userDealerIds.concat(userResellerIds);
 
-    const queryUser = { accountId: { $in: mergedArray }, isPrimary: true };
 
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
 
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -532,7 +530,19 @@ exports.getAllOrders = async (req, res) => {
         { name: 1 }
     );
     let customerIdsArray = ordersResult.map((result) => result.customerId);
+
+    let userCustomerIds = ordersResult
+    .filter(result => result.customerId !== null)
+    .map(result => result.customerId.toString());
     const customerCreteria = { _id: { $in: customerIdsArray } };
+
+    const allUserIds = mergedArray.concat(userCustomerIds);
+
+   // console.log("allUserIds==============",allUserIds);
+
+    const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(
         customerCreteria,
@@ -634,16 +644,19 @@ exports.getAllOrders = async (req, res) => {
         if (item.resellerName) {
             resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
         }
+        if (item.customerName) {
+            customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+        }
         return {
             ...item,
             servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
             username: username, // Set username based on the conditional checks
-            resellerUsername: resellerUsername ? resellerUsername : {}
+            resellerUsername: resellerUsername ? resellerUsername : {},
+            customerUserData:customerUserData ? customerUserData : {}
         };
     });
     let orderIdSearch = data.orderId ? data.orderId : ''
     const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
-    console.log('check+++++++++', stringWithoutHyphen)
     const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
     const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
     const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
