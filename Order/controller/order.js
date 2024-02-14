@@ -531,7 +531,8 @@ exports.getAllOrders = async (req, res) => {
         city: 1,
         state: 1,
         country: 1,
-        zip: 1
+        zip: 1,
+        street:1
 
     });
     let servicerIdArray = ordersResult.map((result) => result.servicerId);
@@ -550,7 +551,8 @@ exports.getAllOrders = async (req, res) => {
             city: 1,
             state: 1,
             country: 1,
-            zip: 1
+            zip: 1,
+            street:1
         }
     );
     let customerIdsArray = ordersResult.map((result) => result.customerId);
@@ -575,7 +577,8 @@ exports.getAllOrders = async (req, res) => {
             city: 1,
             state: 1,
             country: 1,
-            zip: 1
+            zip: 1,
+            street:1
         }
     );
     //Get all Reseller
@@ -589,7 +592,8 @@ exports.getAllOrders = async (req, res) => {
             city: 1,
             state: 1,
             country: 1,
-            zip: 1
+            zip: 1,
+            street:1
         }
     );
     const result_Array = ordersResult.map((item1) => {
