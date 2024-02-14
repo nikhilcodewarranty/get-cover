@@ -1177,7 +1177,7 @@ exports.getDealerCustomers = async (req, res) => {
 
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const order = ordersData.find(order => order._id.toString() === customer._id.toString())
+            const order = ordersData.find(order => order._id.toString() === item1._id.toString())
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
