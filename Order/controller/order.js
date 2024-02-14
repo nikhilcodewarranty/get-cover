@@ -451,7 +451,7 @@ exports.getAllOrders = async (req, res) =>{
                 });
                 return;
             }
-        
+         
             let project = {
                 productsArray: 1,
                 dealerId: 1,
