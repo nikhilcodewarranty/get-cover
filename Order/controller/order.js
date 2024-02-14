@@ -454,6 +454,8 @@ exports.getAllOrders = async (req, res) => {
         unique_key_search: 1,
         servicerId: 1,
         customerId: 1,
+        serviceCoverageType:1,
+        coverageType:1,
         resellerId: 1,
         paymentStatus: 1,
         status: 1,
