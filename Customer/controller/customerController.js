@@ -189,7 +189,7 @@ exports.getAllCustomers = async (req, res, next) => {
       return (
         nameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        dealerRegex.test(entry.customerData.dealerId) &&
+        dealerRegex.test(entry.customerData.dealerName) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
