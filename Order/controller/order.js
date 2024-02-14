@@ -459,14 +459,14 @@ exports.getAllOrders = async (req, res) => {
         status: 1,
         venderOrder: 1,
         orderAmount: 1,
-        contract:"$contract"
+        contract: "$contract"
     };
 
     let query = { status: { $ne: "Archieved" } };
 
     let lookupQuery = [
         {
-          $match: query
+            $match: query
         },
         {
             $lookup: {
@@ -477,19 +477,34 @@ exports.getAllOrders = async (req, res) => {
             }
         },
         {
-          $project: project,
+            $project: project,
         },
         {
-          "$addFields": {
-            "noOfProducts": {
-              "$sum": "$productsArray.checkNumberProducts"
-            },
-            totalOrderAmount: { $sum: "$orderAmount" },
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+                keki: {
+                    $map: {
+                        input: "$contract",
+                        as: "contract",
+                        in: {
+                            $mergeObjects: [
+                                "$$contract",
+                                {
+                                    startRange: "$startRange",
+                                    endRange: "$endRange"
+                                }
+                            ]
+                        }
+                    }
+                }
 
-          }
+            }
         },
         { $sort: { unique_key: -1 } }
-      ]
+    ]
 
 
 
@@ -2990,7 +3005,7 @@ exports.getOrderContract = async (req, res) => {
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
-        let resellerUser = await userService.findUserforCustomer(queryResselerUser)        
+        let resellerUser = await userService.findUserforCustomer(queryResselerUser)
 
         //Get Servicer Data
         let query1 = {
@@ -3006,7 +3021,7 @@ exports.getOrderContract = async (req, res) => {
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
             servicerData: checkServicer ? checkServicer : {},
-            username: dealerUser ? dealerUser[0]: {}, // Set username based on the conditional checks
+            username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
             resellerUsername: resellerUser ? resellerUser[0] : {}
         };
 
