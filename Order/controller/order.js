@@ -318,18 +318,35 @@ exports.createOrder = async (req, res) => {
                         // let savedDataOrder = savedResponse.toObject()
                         const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
 
-                        let contractObject = {
-                            orderId: savedResponse._id,
-                            orderProductId: matchedObject._id,
-                            productName: priceBook[0].name,
-                            manufacture: totalDataComing[0]["brand"],
-                            model: totalDataComing[0]["model"],
-                            serial: totalDataComing[0]["serial"],
-                            condition: totalDataComing[0]["condition"],
-                            productValue: totalDataComing[0]["retailValue"],
-                            unique_key: contractCount,
-                        };
-                        contractArrrayData.push(contractObject);
+                        totalDataComing.forEach(data => {
+                            let contractObject = {
+                                orderId: savedResponse._id,
+                                orderProductId: matchedObject._id,
+                                productName: priceBook[0].name,
+                                manufacture: data.brand,
+                                model: data.model,
+                                serial: data.serial,
+                                condition: data.condition,
+                                productValue: data.retailValue,
+                                unique_key: contractCount++
+                            };
+                            contractsArray.push(contractObject);
+                        });
+
+
+
+                        // let contractObject = {
+                        //     orderId: savedResponse._id,
+                        //     orderProductId: matchedObject._id,
+                        //     productName: priceBook[0].name,
+                        //     manufacture: totalDataComing[0]["brand"],
+                        //     model: totalDataComing[0]["model"],
+                        //     serial: totalDataComing[0]["serial"],
+                        //     condition: totalDataComing[0]["condition"],
+                        //     productValue: totalDataComing[0]["retailValue"],
+                        //     unique_key: contractCount,
+                        // };
+                        // contractArrrayData.push(contractObject);
                     }
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
@@ -2769,92 +2786,92 @@ exports.getDashboardData = async (req, res) => {
     }
 }
 
-exports.invoicePdf = async (req, res) => {
-    try {
-        let data = req.body
-        let array = [
-            {
-                name: "test",
-                email: "test@example.com"
-            },
-            {
-                name: "test",
-                email: "test@example.com"
-            },
-            {
-                name: "test",
-                email: "test@example.com"
-            }
-        ]
+// exports.invoicePdf = async (req, res) => {
+//     try {
+//         let data = req.body
+//         let array = [
+//             {
+//                 name: "test",
+//                 email: "test@example.com"
+//             },
+//             {
+//                 name: "test",
+//                 email: "test@example.com"
+//             },
+//             {
+//                 name: "test",
+//                 email: "test@example.com"
+//             }
+//         ]
 
 
 
 
 
-        const htmlTemplate = `
-  <html>
-  <head>
-    <style>
-      /* Define your CSS styles here */
-    </style>
-  </head>
-  <body>
-    <img src="logo.png" alt="Logo" />
-    <h1>Dates: 2024-02-12</h1>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Age</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${array.map(item => `
-          <tr>
-            <td>${item.name}</td>
-            <td>${item.age}</td>
-          </tr>
-        `).join('')}
-      </tbody>
-    </table>
-  </body>
-  </html>
-`;
+//         const htmlTemplate = `
+//   <html>
+//   <head>
+//     <style>
+//       /* Define your CSS styles here */
+//     </style>
+//   </head>
+//   <body>
+//     <img src="logo.png" alt="Logo" />
+//     <h1>Dates: 2024-02-12</h1>
+//     <table>
+//       <thead>
+//         <tr>
+//           <th>Name</th>
+//           <th>Age</th>
+//         </tr>
+//       </thead>
+//       <tbody>
+//         ${array.map(item => `
+//           <tr>
+//             <td>${item.name}</td>
+//             <td>${item.age}</td>
+//           </tr>
+//         `).join('')}
+//       </tbody>
+//     </table>
+//   </body>
+//   </html>
 
 
-        var pdf = require('html-pdf');
-        // var html = fs.readFileSync('./test/businesscard.html', 'utf8');
-        // var options = { format: 'Letter' };
 
-        const options = { format: 'Letter' }; // You can adjust format and other options as needed
+//         var pdf = require('html-pdf');
+//         // var html = fs.readFileSync('./test/businesscard.html', 'utf8');
+//         // var options = { format: 'Letter' };
 
-        // Generate PDF
-        pdf.create(htmlTemplate, options).toFile('../utils/test.html', function (err, res) {
-            if (err) return console.log(err);
-            console.log(res); // Output information about the generated PDF file
-        });
-        console.log("end+++++++++++++")
-        return;
+//         const options = { format: 'Letter' }; // You can adjust format and other options as needed
 
-        const pdfDoc = createPdf(htmlTemplate);
+//         // Generate PDF
+//         pdf.create(htmlTemplate, options).toFile('../utils/test.html', function (err, res) {
+//             if (err) return console.log(err);
+//             console.log(res); // Output information about the generated PDF file
+//         });
+//         console.log("end+++++++++++++")
+//         return;
 
-        // File path to save the PDF in the project directory
-        const filePath = '../';
+//         const pdfDoc = createPdf(htmlTemplate);
 
-        // Save the PDF to the specified file path
-        pdfDoc.getBuffer((buffer) => {
-            fs.writeFileSync(filePath, buffer);
-            console.log('PDF saved successfully at', filePath);
-        });
+//         // File path to save the PDF in the project directory
+//         const filePath = '../';
+
+//         // Save the PDF to the specified file path
+//         pdfDoc.getBuffer((buffer) => {
+//             fs.writeFileSync(filePath, buffer);
+//             console.log('PDF saved successfully at', filePath);
+//         });
 
 
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-}
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message
+//         })
+//     }
+// }
 
 exports.getOrderContract = async (req, res) => {
     try {
