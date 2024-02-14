@@ -405,7 +405,7 @@ exports.processOrder = async (req, res) => {
             returnField.push('Customer Name')
         }
         if (checkOrder.paymentStatus != 'Paid') {
-            returnField.push('Order payment is not completed yet')
+            returnField.push('Order payment')
         }
         if (resultArray.includes(true)) {
             returnField.push('Coverage start date')
