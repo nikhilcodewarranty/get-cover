@@ -2192,7 +2192,7 @@ exports.getSingleOrder = async (req, res) => {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
-            servicerData: checkServicer ? checkServicer : {}
+            servicerData: checkServicer ? checkServicer : {} 
         };
 
 
