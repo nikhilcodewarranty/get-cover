@@ -402,17 +402,17 @@ exports.processOrder = async (req, res) => {
         // .some(Boolean);
         console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
-            returnField.push('Customer Name is missing')
+            returnField.push('Customer Name')
         }
         if (checkOrder.paymentStatus != 'Paid') {
-            returnField.push('The order payment is not completed yet')
+            returnField.push('Order payment is not completed yet')
         }
         if (resultArray.includes(true)) {
-            returnField.push('The coverage start date missing')
+            returnField.push('Coverage start date')
         }
 
         if (isEmptyOrderFile.includes(true)) {
-            returnField.push('Product data file is missing')
+            returnField.push('Product data file')
         }
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
