@@ -356,7 +356,7 @@ exports.createOrder = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-            }); 
+            });
         });
     } catch (err) {
         res.send({
@@ -602,13 +602,13 @@ exports.getAllOrders = async (req, res) => {
             username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
         if (item.resellerName) {
-            resellerUsername = item.resellerName._id!=null ?  getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()):{};
+            resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
         }
         return {
             ...item,
             servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
             username: username, // Set username based on the conditional checks
-            resellerUsername:resellerUsername ? resellerUsername : {}
+            resellerUsername: resellerUsername ? resellerUsername : {}
         };
     });
     let orderIdSearch = data.orderId ? data.orderId : ''
@@ -2192,7 +2192,7 @@ exports.getSingleOrder = async (req, res) => {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
-            servicerData: checkServicer ? checkServicer : {} 
+            servicerData: checkServicer ? checkServicer : {}
         };
 
 
@@ -2907,7 +2907,7 @@ exports.getOrderContract = async (req, res) => {
         let data = req.body
         let query = [
             {
-                $match: {_id:new mongoose.Types.ObjectId(req.params.orderId)}
+                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
             },
             {
                 $lookup: {
@@ -2934,11 +2934,9 @@ exports.getOrderContract = async (req, res) => {
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
                 product.name = pricebook.name;
-                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
-                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
             // console.log('order check ++++++++++++++++++', checkOrder)
 
@@ -2955,6 +2953,15 @@ exports.getOrderContract = async (req, res) => {
         let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
         //Get Reseller Data
         let reseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
+
+        const queryDealerUser = { accountId: { $in: [checkOrder.dealerId.toString()] }, isPrimary: true };
+
+        const queryResselerUser = { accountId: { $in: [checkOrder.resellerId.toString()] }, isPrimary: true };
+
+        let dealerUser = await userService.findUserforCustomer(queryDealerUser)
+
+        let resellerUser = await userService.findUserforCustomer(queryResselerUser)        
+
         //Get Servicer Data
         let query1 = {
             $or: [
@@ -2968,7 +2975,9 @@ exports.getOrderContract = async (req, res) => {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
-            servicerData: checkServicer ? checkServicer : {}
+            servicerData: checkServicer ? checkServicer : {},
+            username: dealerUser ? dealerUser[0]: {}, // Set username based on the conditional checks
+            resellerUsername: resellerUser ? resellerUser[0] : {}
         };
 
 
