@@ -2,6 +2,7 @@ const { Order } = require("../model/order");
 require("dotenv").config()
 const orderResourceResponse = require("../utils/constant");
 const orderService = require("../services/orderService");
+// const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const resellerService = require("../../Dealer/services/resellerService");
@@ -2696,21 +2697,31 @@ exports.getDashboardData = async (req, res) => {
 exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
+        let skipLimit = data.page > 0 ? ((req.body.page - 1) * 2) : 0
+        let limitData = 2
         let query = [
             {
-                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
+                $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
             },
             {
                 $lookup: {
-                    from: "contracts",
-                    localField: "_id",
-                    foreignField: "orderId",
-                    as: "contract"
+                    from: "orders",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "order"
                 }
             },
+            {
+                $addFields: {
+                  contracts: {
+                    $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+                  }
+                }
+              }
             // { $unwind: "$contracts" }
         ]
-        let checkOrder = await orderService.getOrderWithContract(query)
+      
+        let checkOrder = await contractService.getContractWithOrderId(query,skipLimit,limitData)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.errorCode,
@@ -2718,10 +2729,12 @@ exports.getOrderContract = async (req, res) => {
             })
             return
         }
-        // console.log('checkOrder-----------',checkOrder)
-        checkOrder = checkOrder[0];
-        checkOrder.productsArray = await Promise.all(checkOrder.productsArray.map(async (product) => {
-            const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+       
+        // checkOrder = checkOrder;
+        let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray:[]
+        checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
+        console.log('order check ++++++++++++++++++')
+        const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
                 product.name = pricebook.name;
@@ -2735,33 +2748,43 @@ exports.getOrderContract = async (req, res) => {
         }));
 
 
-        // console.log('order check ++++++++++++++++++', checkOrder)
         // return
         //Get Dealer Data
-
-        let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
+        console.log("check+++++++111+++++++++++++++",checkOrder[0].order)
+        let dealer = await dealerService.getDealerById(checkOrder[0].order[0]?checkOrder[0].order[0].dealerId:'', { isDeleted: 0 });
+        console.log("check++++++++++++++222++++++++")
         //Get customer Data
-        let customer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: 0 });
+        let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0]?checkOrder[0].order[0].customerId:'' }, { isDeleted: 0 });
         //Get Reseller Data
-        let reseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: 0 })
+        console.log("check+++++++++++++++333+++++++")
 
-        const queryDealerUser = { accountId: { $in: [checkOrder.dealerId.toString()] }, isPrimary: true };
+        let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
+        console.log("check++++++++++++++444++++++++")
 
-        const queryResselerUser = { accountId: { $in: [checkOrder.resellerId.toString()] }, isPrimary: true };
+        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0]?checkOrder[0].order[0].dealerId.toString():''] }, isPrimary: true };
+
+        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0]?checkOrder[0].order[0].resellerId.toString():''] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
         let resellerUser = await userService.findUserforCustomer(queryResselerUser)
 
         //Get Servicer Data
+        console.log("check++++++++++++++5555++++++++",checkOrder[0].orderId)
+        console.log("check++++++++++++++5555++++++++",checkOrder[0].orderId[0])
+
         let query1 = {
             $or: [
-                { _id: checkOrder.servicerId },
-                { resellerId: checkOrder.resellerId },
-                { dealerId: checkOrder.dealerId },
+                { _id: checkOrder[0].order[0].servicerId?checkOrder[0].order[0].servicerId:'' },
+                { resellerId: checkOrder[0].order[0].resellerId ?checkOrder[0].order[0].resellerId :''},
+                { dealerId: checkOrder[0].order[0].dealerId?checkOrder[0].order[0].dealerId:'' },
             ],
         };
+        console.log("check++++++++++++++666++++++++")
+
         let checkServicer = await servicerService.getServiceProviderById(query1);
+        console.log("check++++++++++++++777++++++++")
+
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},

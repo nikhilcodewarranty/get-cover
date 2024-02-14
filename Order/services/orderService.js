@@ -27,7 +27,7 @@ module.exports = class orderService {
     }
   }
 
-  static async getOrderWithContract(query, project) {
+  static async getOrderWithContract(query, skipLimit, limitData) {
     try {
       const allOrders = await order.aggregate(query)
       return allOrders;
@@ -53,12 +53,12 @@ module.exports = class orderService {
                 "$sum": "$orderAmount"
               }
             },
-            "totalOrder": { "$sum": 1 } 
+            "totalOrder": { "$sum": 1 }
           },
-          
+
         },
-       
-    
+
+
       ])
       return allOrders;
     } catch (error) {
