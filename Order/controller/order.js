@@ -524,9 +524,7 @@ exports.getAllOrders = async (req, res) =>{
                 .filter(result => result.resellerId !== null)
                 .map(result => result.resellerId.toString());
         
-            let mergedArray = userDealerIds.concat(userResellerIds);
-        
-        
+            let mergedArray = userDealerIds.concat(userResellerIds);      
         
         
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
