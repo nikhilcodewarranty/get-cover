@@ -513,10 +513,8 @@ exports.getAllOrders = async (req, res) =>{
                     }
                 },
                 { $sort: { unique_key: -1 } }
-            ]
-        
-        
-        
+            ] 
+                
             let ordersResult = await orderService.getOrderWithContract(lookupQuery);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
