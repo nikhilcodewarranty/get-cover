@@ -459,11 +459,41 @@ exports.getAllOrders = async (req, res) => {
         status: 1,
         venderOrder: 1,
         orderAmount: 1,
+        contract:"$contract"
     };
 
     let query = { status: { $ne: "Archieved" } };
 
-    let ordersResult = await orderService.getAllOrders(query, project);
+    let lookupQuery = [
+        {
+          $match: query
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "_id",
+                foreignField: "orderId",
+                as: "contract"
+            }
+        },
+        {
+          $project: project,
+        },
+        {
+          "$addFields": {
+            "noOfProducts": {
+              "$sum": "$productsArray.checkNumberProducts"
+            },
+            totalOrderAmount: { $sum: "$orderAmount" },
+
+          }
+        },
+        { $sort: { unique_key: -1 } }
+      ]
+
+
+
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult

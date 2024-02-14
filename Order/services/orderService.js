@@ -10,14 +10,6 @@ module.exports = class orderService {
         {
           $project: project,
         },
-        // {
-        //   $group: {
-        //     _id: null,
-        //     total_count: {
-        //       $sum: "$orderAmount"
-        //     }
-        //   }
-        // },
         {
           "$addFields": {
             "noOfProducts": {
