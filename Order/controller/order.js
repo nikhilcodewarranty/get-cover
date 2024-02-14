@@ -928,7 +928,7 @@ exports.checkFileValidation = async (req, res) => {
                 const keys = Object.keys(item);
                 return {
                     serial: item[keys[2]].toString().toLowerCase(),
-                };
+                }; 
             });
 
             const serialNumbers = serialNumberArray.map(number => number.serial);
