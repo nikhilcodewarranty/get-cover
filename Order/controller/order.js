@@ -414,6 +414,10 @@ exports.processOrder = async (req, res) => {
         if (isEmptyOrderFile.includes(true)) {
             returnField.push('Product data file')
         }
+
+        const combinedString = returnField.join(', ') + ' is missing';
+
+        console.log(combinedString);
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -426,7 +430,7 @@ exports.processOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: returnField,
+            result: combinedString,
         });
     } catch (err) {
         res.send({
