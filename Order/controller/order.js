@@ -495,19 +495,19 @@ exports.getAllOrders = async (req, res) => {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        keki: {
-                            $map: {
-                                input: "$contract",
-                                as: "contract",
-                                in: {
-                                    $mergeObjects: [
-                                        "$$contract",
-                                        {
-                                            startRange: "$startRange",
-                                            endRange: "$endRange"
-                                        }
+                        flag: {
+                            $cond: {
+                                if: {
+                                    $and: [
+                                        // { $eq: ["$payment.status", "paid"] },
+                                        { $ne: ["$productsArray.orderFile.fileName", ''] },
+                                        { $ne: ["$customerId", null] },
+                                        { $ne: ["$paymentStatus", 'Paid'] },
+                                        { $ne: ["$productsArray.coverageStartDate", null] },
                                     ]
-                                }
+                                },
+                                then: true,
+                                else: false
                             }
                         }
 
