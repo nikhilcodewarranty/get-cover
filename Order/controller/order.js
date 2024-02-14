@@ -53,46 +53,46 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body;
-            // let data = {
-            //     "dealerId": "65c32ca30a8dba244cfa1610",
-            //     "servicerId": "",
-            //     "customerId": "65c32dbbffc7f8c97a11bff8",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65c32aec7e54710b7783fdba",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+            // let data = req.body;
+            let data = {
+                "dealerId": "65c32ca30a8dba244cfa1610",
+                "servicerId": "",
+                "customerId": "65c32dbbffc7f8c97a11bff8",
+                "resellerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65aba24e182e38ce2ea76f6a",
+                        "priceBookId": "65c32aec7e54710b7783fdba",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "",
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-            //         }
+                    }
 
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#126334567809",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#134567809",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
             //check for super admin
             if (req.role != "Super Admin") {
@@ -178,7 +178,7 @@ exports.createOrder = async (req, res) => {
             let count = await orderService.getOrdersCount();
             console.log('unique key++++++++++++++++++', count)
 
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100001
+            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (req.files) {
@@ -244,7 +244,7 @@ exports.createOrder = async (req, res) => {
             data.status = "Pending";
 
 
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
+            // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
