@@ -1,9 +1,9 @@
 const contract = require("../model/contract");
 
 module.exports = class contractService {
-  static async getAllContracts() {
+  static async getAllContracts(query) {
     try {
-      const allContracts = await contract.find();
+      const allContracts = await contract.find(query);
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);
@@ -65,6 +65,15 @@ module.exports = class contractService {
     try {
       const deletedResponse = await contract.findOneAndDelete(contractId);
       return deletedResponse;
+    } catch (error) {
+      console.log(`Could  not delete contract ${error}`);
+    }
+  }
+
+  static async getContractWithOrderId(query,pageLimit,page){
+    try {
+      const getResponse = await contract.aggregate(query,pageLimit,page).skip(pageLimit).limit(page);
+      return getResponse;
     } catch (error) {
       console.log(`Could  not delete contract ${error}`);
     }
