@@ -454,12 +454,12 @@ exports.getAllOrders = async (req, res) => {
         unique_key_search: 1,
         servicerId: 1,
         customerId: 1,
-        serviceCoverageType:1,
-        coverageType:1,
+        serviceCoverageType: 1,
+        coverageType: 1,
         resellerId: 1,
         paymentStatus: 1,
         status: 1,
-        createdAt:1,
+        createdAt: 1,
         venderOrder: 1,
         orderAmount: 1,
         contract: "$contract"
@@ -545,18 +545,24 @@ exports.getAllOrders = async (req, res) => {
     //Get Respective Servicer
     let respectiveServicer = await servicerService.getAllServiceProvider(
         servicerCreteria,
-        { name: 1 }
+        {
+            name: 1,
+            city: 1,
+            state: 1,
+            country: 1,
+            zip: 1
+        }
     );
     let customerIdsArray = ordersResult.map((result) => result.customerId);
 
     let userCustomerIds = ordersResult
-    .filter(result => result.customerId !== null)
-    .map(result => result.customerId.toString());
+        .filter(result => result.customerId !== null)
+        .map(result => result.customerId.toString());
     const customerCreteria = { _id: { $in: customerIdsArray } };
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
-   // console.log("allUserIds==============",allUserIds);
+    // console.log("allUserIds==============",allUserIds);
 
     const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
@@ -564,7 +570,13 @@ exports.getAllOrders = async (req, res) => {
     //Get Respective Customer
     let respectiveCustomer = await customerService.getAllCustomers(
         customerCreteria,
-        { username: 1 }
+        {
+            username: 1,
+            city: 1,
+            state: 1,
+            country: 1,
+            zip: 1
+        }
     );
     //Get all Reseller
     let resellerIdsArray = ordersResult.map((result) => result.resellerId);
@@ -670,7 +682,7 @@ exports.getAllOrders = async (req, res) => {
             servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
             username: username, // Set username based on the conditional checks
             resellerUsername: resellerUsername ? resellerUsername : {},
-            customerUserData:customerUserData ? customerUserData : {}
+            customerUserData: customerUserData ? customerUserData : {}
         };
     });
     let orderIdSearch = data.orderId ? data.orderId : ''
@@ -959,7 +971,7 @@ exports.checkFileValidation = async (req, res) => {
                 const keys = Object.keys(item);
                 return {
                     serial: item[keys[2]].toString().toLowerCase(),
-                }; 
+                };
             });
 
             const serialNumbers = serialNumberArray.map(number => number.serial);
@@ -1321,7 +1333,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
         });
     } catch (err) {
         res.send({
-            code: constant.errorCode, 
+            code: constant.errorCode,
             message: err.message,
         });
     }
