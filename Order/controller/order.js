@@ -330,7 +330,7 @@ exports.createOrder = async (req, res) => {
                                 productValue: data.retailValue,
                                 unique_key: contractCount++
                             };
-                            contractsArray.push(contractObject);
+                            contractArrrayData.push(contractObject);
                         });
 
 
