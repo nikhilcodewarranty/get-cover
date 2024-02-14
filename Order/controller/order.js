@@ -2158,7 +2158,6 @@ exports.getSingleOrder = async (req, res) => {
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
                 product.name = pricebook.name;
-                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
