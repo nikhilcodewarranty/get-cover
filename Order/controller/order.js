@@ -356,7 +356,7 @@ exports.createOrder = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-            });
+            }); 
         });
     } catch (err) {
         res.send({
