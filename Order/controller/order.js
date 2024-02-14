@@ -86,7 +86,7 @@ exports.createOrder = async (req, res) => {
             //     ],
             //     "sendNotification": true,
             //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#126334567809",
+            //     "dealerPurchaseOrder": "#134567809",
             //     "serviceCoverageType": "Parts",
             //     "coverageType": "Breakdown",
             //     "orderAmount": 144,
@@ -178,7 +178,7 @@ exports.createOrder = async (req, res) => {
             let count = await orderService.getOrdersCount();
             console.log('unique key++++++++++++++++++', count)
 
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100001
+            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (req.files) {
@@ -244,7 +244,7 @@ exports.createOrder = async (req, res) => {
             data.status = "Pending";
 
 
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 1
+            // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
                 res.send({
