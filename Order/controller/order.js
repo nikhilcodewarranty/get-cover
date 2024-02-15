@@ -2371,9 +2371,9 @@ exports.markAsPaid = async (req, res) => {
             { new: true }
         );
         let contracts = [];
-
-        await updateOrder.productsArray.map(async (product) => {
-            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+        console.log("savedResponse==================",savedResponse)
+        await savedResponse.productsArray.map(async (product) => {
+            const pathFile ='/home/get-cover/uploads/orderFile/' + product.orderFile.fileName
             let priceBookId = product.priceBookId;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
@@ -2419,6 +2419,7 @@ exports.markAsPaid = async (req, res) => {
                 };
                 contracts.push(contractObject);
             });
+            console.log("contracts===================",contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
