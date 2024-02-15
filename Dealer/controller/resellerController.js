@@ -3,6 +3,7 @@ const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const orderService = require("../../Order/services/orderService");
+const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -168,7 +169,7 @@ exports.getAllResellers = async (req, res) => {
 
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
 
-        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project,"$resellerId")
+        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
 
         //console.log("ordersData=================",ordersData);
 
@@ -296,10 +297,10 @@ exports.getResellerById = async (req, res) => {
 
     let orderQuery = {
         $and: [
-            { resellerId: { $in: [checkReseller[0]._id] }, status: "Active"},
+            { resellerId: { $in: [checkReseller[0]._id] }, status: "Active" },
         ]
     }
-    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project,"$resellerId");
+    let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
 
     console.log("ordersResult================", ordersResult)
 
@@ -866,14 +867,14 @@ exports.getResellerOrders = async (req, res) => {
         const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
         const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
         const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-    
+
         const filteredData1 = updatedArray.filter(entry => {
             return (
                 venderRegex.test(entry.venderOrder) &&
                 orderIdRegex.test(entry.unique_key) &&
                 dealerNameRegex.test(entry.dealerName.name) &&
                 servicerNameRegex.test(entry.servicerName.name) &&
-                customerNameRegex.test(entry.customerName.name)&&
+                customerNameRegex.test(entry.customerName.name) &&
                 resellerNameRegex.test(entry.resellerName.name) &&
                 statusRegex.test(entry.status)
             );
@@ -892,5 +893,106 @@ exports.getResellerOrders = async (req, res) => {
             message: err.message
         })
 
+    }
+}
+
+exports.getResellerContract = async (req, res) => {
+    try {
+        let data = req.body
+        let getResellerOrder = await orderService.getOrders({ resellerId: req.params.resellerId ,status:{$in:["Active","Pending"]}}, { _id: 1 })
+        if (!getResellerOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data"
+            })
+            return
+        }
+        let orderIDs = getResellerOrder.map((ID) => ID._id)
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+        let query = [
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "order",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "dealers",
+                                localField: "dealerId",
+                                foreignField: "_id",
+                                as: "dealer",
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "resellers",
+                                localField: "resellerId",
+                                foreignField: "_id",
+                                as: "reseller",
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "customers",
+                                localField: "customerId",
+                                foreignField: "_id",
+                                as: "customer",
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "servicers",
+                                localField: "servicerId",
+                                foreignField: "_id",
+                                as: "servicer",
+                            }
+                        },
+
+                        // { $unwind: "$dealer" },
+                        // { $unwind: "$reseller" },
+                        // { $unwind: "$servicer?$servicer:{}" },
+
+                    ]
+                }
+            },
+            {
+                $match: { isDeleted: false, orderId: { $in: orderIDs } },
+            },
+            // {
+            //   $addFields: {
+            //     contracts: {
+            //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+            //     }
+            //   }
+            // }
+            // { $unwind: "$contracts" }
+        ]
+        console.log(pageLimit, skipLimit, limitData)
+        let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
+        let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
+        if (!getContract) {
+            res.send({
+                code: constants.errorCode,
+                message: err.message
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: getContract,
+            totalCount: totalCount.length
+        })
+
+        console.log(orderIDs)
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
 }

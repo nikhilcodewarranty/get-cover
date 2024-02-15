@@ -16,6 +16,7 @@ router.get("/getDealerByReseller/:resellerId", [verifyToken], resellerController
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], resellerController.getResellerPriceBook);
 router.post("/getResellerUsers/:resellerId", [verifyToken], resellerController.getResellerUsers);
 router.post("/resellerOrders/:resellerId", [verifyToken], resellerController.getResellerOrders);
+router.post("/getResellerContract/:resellerId", [verifyToken], resellerController.getResellerContract);
 
 router.put("/editResellers/:resellerId", [verifyToken], resellerController.editResellers);
 module.exports = router; 

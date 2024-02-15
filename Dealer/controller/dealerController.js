@@ -2754,7 +2754,7 @@ exports.getDealerRequest = async (req, res) => {
 exports.getDealerContract = async (req, res) => {
   try {
     let data = req.body
-    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId }, { _id: 1 })
+    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $ne: ["Archieved"] }}, { _id: 1 })
     if (!getDealerOrder) {
       res.send({
         code: constant.errorCode,
@@ -2828,7 +2828,7 @@ exports.getDealerContract = async (req, res) => {
     ]
     console.log(pageLimit, skipLimit, limitData)
     let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-    let totalCount = await contractService.findContracts({isDeleted:false,orderId : {$in : orderIDs}})
+    let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
     if (!getContract) {
       res.send({
         code: constants.errorCode,
@@ -2839,8 +2839,8 @@ exports.getDealerContract = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result:getContract,
-      totalCount:totalCount.length
+      result: getContract,
+      totalCount: totalCount.length
     })
 
     console.log(orderIDs)
