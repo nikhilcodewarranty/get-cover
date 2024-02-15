@@ -3066,9 +3066,7 @@ exports.generatePDF = async (req, res) => {
                     const order = orderWithContracts[i];
                     for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                         const product = order.productsArray[j];
-                        const pageSize = 10; // Number of contracts per page
-                        const contracts = product.orderContracts; // Retrieve order contracts for the current product
-                        let pageCount = Math.ceil(contracts.length / pageSize);
+                        const orderContract = product.orderContracts; // Retrieve order contract object for the current product
                         htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
                             <tbody>
                                 <tr style='padding-bottom:5px;'>
@@ -3118,16 +3116,15 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${contracts.map((contract, index) => `
                                 <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.model}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.productValue).toFixed(2)}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                </tr>`).join('')}
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">1</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.model}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(orderContract.productValue).toFixed(2)}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(orderContract.claimAmount).toFixed(2)}</td>
+                                </tr>
                             </tbody>
                         </table>
                         `;
