@@ -5,7 +5,7 @@ const { verifyToken } = require("../../middleware/auth");
 
 
 router.post('/getAllContracts',[verifyToken],contractController.getAllContracts)
-router.put('/editContract/:customerId',[verifyToken],contractController.editContract)
+router.put('/editContract/:contractId',[verifyToken],contractController.editContract)
 router.get('/getContractById/:customerId',[verifyToken],contractController.getContractById)
 
 

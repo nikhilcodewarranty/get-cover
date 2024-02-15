@@ -2284,14 +2284,14 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-
+    
                 let contractCount =
                     Number(
                         count1.length > 0 && count1[0].unique_key
                             ? count1[0].unique_key
                             : 0
                     ) + 1;
-
+    
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -2671,24 +2671,24 @@ exports.generatePDF = async (req, res) => {
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
-        let productsData = []
+        let productsData=[]
 
-        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
+        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++){
             const productId = orderWithContracts[0].productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
             const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
             productsData.push(mergedObject)
         }
         orderWithContracts[0].productsArray = productsData
-        //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
-        //         const productId = product._id;
-        //         const contract = await contractService.findContracts({ orderProductId: productId });
-        //         const mergedObject = { ...product, contract }
-        //         console.log("check pushing ++++++++++++++++", mergedObject._id)
+    //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
+    //         const productId = product._id;
+    //         const contract = await contractService.findContracts({ orderProductId: productId });
+    //         const mergedObject = { ...product, contract }
+    //         console.log("check pushing ++++++++++++++++", mergedObject._id)
 
-        //     })
-        //     console.log("sjdhfjsdhfjshf", okokok)
-        //     orderWithContracts[0].productsArray = okokok
+    //     })
+    //     console.log("sjdhfjsdhfjshf", okokok)
+    //     orderWithContracts[0].productsArray = okokok
         // orderWithContracts[0].productsArray.forEach(async(product) => {
         //   const productId = product._id;
         //   const contract = await contractService.findContracts({orderProductId :productId});
@@ -2704,7 +2704,7 @@ exports.generatePDF = async (req, res) => {
         //   } 
         // });
 
-        console.log("++++++++++++++++++orderWithContracts", orderWithContracts.length)
+        console.log("++++++++++++++++++orderWithContracts",orderWithContracts.length)
         let htmlContent;
         console.log("+++++++++111111111+++++++++orderWithContracts")
 
@@ -2771,7 +2771,6 @@ exports.generatePDF = async (req, res) => {
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
-                        <% if (orderWithContracts[0].resellers.length > 0) { %>
                             <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
                             <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
                             <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
@@ -2781,7 +2780,6 @@ exports.generatePDF = async (req, res) => {
                             ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
                             <br/>
                               </small>
-                              <% } %>
                         </td>
                         </tr>
                         </tbody>
@@ -2790,7 +2788,6 @@ exports.generatePDF = async (req, res) => {
                         <tbody>
                             <tr>
                     <td style="text-align: left; margin-top:40px; width: 50%;">
-                    <% if (orderWithContracts[0].customers.length > 0) { %>
                     <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
                     
                     <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].name : ''}</b></h4>
@@ -2800,10 +2797,8 @@ exports.generatePDF = async (req, res) => {
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br/>
                   
                         </small>
-                        <% } %>
                 </td>
                 <td style="text-align: left; width: 50%;">
-                <% if (orderWithContracts[0].servicer.length > 0) { %>
                     <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
                     <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
                     <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
@@ -2812,7 +2807,6 @@ exports.generatePDF = async (req, res) => {
                     ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
                  <br/>
                         </small>
-                        <% } %>
                 </td>
                     </tr>
                 </tbody>
