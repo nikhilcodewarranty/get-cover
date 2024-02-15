@@ -2405,22 +2405,21 @@ exports.markAsPaid = async (req, res) => {
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
-            totalDataComing.forEach(data => {
-                let contractObject = {
-                    orderId: savedResponse._id,
-                    orderProductId: matchedObject._id,
-                    productName: priceBook[0].name,
-                    manufacture: data.brand,
-                    model: data.model,
-                    serial: data.serial,
-                    condition: data.condition,
-                    productValue: data.retailValue,
-                    unique_key: contractCount++
-                };
-                contracts.push(contractObject);
-            });
-            console.log("contracts===================",contracts)
-            let saveData = await contractService.createBulkContracts(contracts)
+            let contractObject = {
+                orderId: savedResponse._id,
+                orderProductId: product._id,
+                productName: priceBook[0].name,
+                manufacture: totalDataComing[0]["brand"],
+                model: totalDataComing[0]["model"],
+                serial: totalDataComing[0]["serial"],
+                condition: totalDataComing[0]["condition"],
+                productValue: totalDataComing[0]["retailValue"],
+                unique_key: contractCount,
+            };
+            console.log("contracts__-------------------{{{{{{{{{{", contractObject)
+            await contractService.createContract(contractObject);
+
+            contracts.push(contractObject);
         })
 
         res.send({
