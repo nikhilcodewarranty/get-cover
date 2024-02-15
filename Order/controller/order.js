@@ -2503,8 +2503,8 @@ exports.getOrderContract = async (req, res) => {
         ]
 
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-        let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) },skipLimit,pageLimit)
-        console.log("get count of order++++++++++++++++",totalContract)
+        let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        console.log("get count of order++++++++++++++++", totalContract)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2545,7 +2545,7 @@ exports.getOrderContract = async (req, res) => {
         console.log("check+++++++++++++++333+++++++")
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
-        console.log("check++++++++++++++444++++++++",new mongoose.Types.ObjectId("65ce1bd2279fab0000000000"))
+        console.log("check++++++++++++++444++++++++", new mongoose.Types.ObjectId("65ce1bd2279fab0000000000"))
 
         const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
@@ -2619,19 +2619,16 @@ exports.generatePDF = async (req, res) => {
                     "as": "category"
                 }
             },
-            {
-                $unwind: "$productsArray" 
-            },
-            {
-                "$lookup": {
-                    "from": "contracts",
-                    "let": { productId: "$productsArray._id" },
-                    "pipeline": [
-                        { $match: { $expr: { $eq: ["$orderProductId", "$$productId"] } } }
-                    ],
-                    "as": "productsArray.orderContracts"
-                }
-            },
+            // {
+            //     "$lookup": {
+            //         "from": "contracts",
+            //         "let": { productId: "$productsArray._id" },
+            //         "pipeline": [
+            //             { $match: { $expr: { $eq: ["$orderProductId", "$$productId"] } } }
+            //         ],
+            //         "as": "productsArray.orderContracts"
+            //     }
+            // },
             {
                 $addFields: {
                     "productsArray.category": { $arrayElemAt: ["$category", 0] },
@@ -2643,16 +2640,6 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
-                    // pipeline:[
-                    //     {
-                    //         $lookup:{
-                    //             from:"users",
-                    //             foreignField:"accountId",
-                    //             localField:"_id",
-                    //             as:"userData"
-                    //         }
-                    //     }
-                    // ]
                 }
             },
             {
@@ -2683,8 +2670,46 @@ exports.generatePDF = async (req, res) => {
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
+        let productsData=[]
 
-        console.log("orderWithContracts=========================",orderWithContracts);
+        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++){
+            const productId = orderWithContracts[0].productsArray[i]._id;
+            const contract = await contractService.findContracts({ orderProductId: productId });
+            const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
+            productsData.push(mergedObject)
+        }
+        orderWithContracts[0].productsArray = productsData
+        // res.send({
+        //     ddddddd: productsData
+        // })
+        // return;
+
+
+    //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
+    //         const productId = product._id;
+    //         const contract = await contractService.findContracts({ orderProductId: productId });
+    //         const mergedObject = { ...product, contract }
+    //         console.log("check pushing ++++++++++++++++", mergedObject._id)
+
+    //     })
+    //     console.log("sjdhfjsdhfjshf", okokok)
+    //     orderWithContracts[0].productsArray = okokok
+        // orderWithContracts[0].productsArray.forEach(async(product) => {
+        //   const productId = product._id;
+        //   const contract = await contractService.findContracts({orderProductId :productId});
+
+        //   if (contract) {
+        //     // Merge product and contract
+        //     const mergedObject = { ...product, contract };
+
+        //     // Do something with merged object
+        //     console.log("mergedObject++++++++++++++++++++",mergedObject);
+        //     orderWithContracts[0].productsArray.push(mergedObject)
+
+        //   } 
+        // });
+
+        console.log("++++++++++++++++++orderWithContracts",typeOf(orderWithContracts))
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
@@ -2796,14 +2821,14 @@ exports.generatePDF = async (req, res) => {
                     for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                         const product = order.productsArray[j];
                         const pageSize = 10; // Number of contracts per page
-                        const contracts = product.orderContracts; 
+                        const contracts = product.orderContracts;
                         console.log(contracts)
                         // Retrieve order contracts for the current product
                         let pageCount = Math.ceil(contracts.length / pageSize);
                         htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
                             <tbody>
                                 <tr style='padding-bottom:5px;'>
-                                    <td><b style="font-size:20px">${j+1}. Product Details:</b></td>
+                                    <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -2865,8 +2890,8 @@ exports.generatePDF = async (req, res) => {
                     }
                 }
             }
-            
-            
+
+
 
         }
 
