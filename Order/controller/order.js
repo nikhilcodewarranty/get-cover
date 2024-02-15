@@ -2889,6 +2889,28 @@ exports.generatePDF = async (req, res) => {
                 }
             },
             {
+                "$lookup": {
+                    "from": "pricecategories",
+                    "localField": "productsArray.categoryId",
+                    "foreignField": "_id",
+                    "as": "category"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "contracts",
+                    "localField": "productsArray._id",
+                    "foreignField": "orderProductId",
+                    "as": "orderContracts"
+                }
+            },
+            {
+                $addFields: {
+                    "productsArray.category": { $arrayElemAt: ["$category", 0] },
+                    "productsArray.orderContracts": { $arrayElemAt: ["$orderContracts", 0] },
+                }
+            },
+            {
                 $lookup: {
                     from: "dealers",
                     localField: "dealerId",
@@ -2996,7 +3018,6 @@ exports.generatePDF = async (req, res) => {
                             ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].state : ''}
                             ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].zip : ''}
                               <br/>
-                              9874563210 | Example@gmail.com
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
@@ -3008,7 +3029,6 @@ exports.generatePDF = async (req, res) => {
                             ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
                             ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
                             <br/>
-                            9874563210 | Example@gmail.com
                               </small>
                         </td>
                         </tr>
@@ -3019,6 +3039,7 @@ exports.generatePDF = async (req, res) => {
                             <tr>
                     <td style="text-align: left; margin-top:40px; width: 50%;">
                     <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                    
                     <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].name : ''}</b></h4>
                                 <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
@@ -3040,44 +3061,78 @@ exports.generatePDF = async (req, res) => {
                     </tr>
                 </tbody>
             </table>`
+            if (orderWithContracts.length > 0) {
+                for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
+                    const order = orderWithContracts[i];
+                    for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
+                        const product = order.productsArray[j];
+                        const orderContract = product.orderContracts; // Retrieve order contract object for the current product
+                        htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
+                            <tbody>
+                                <tr style='padding-bottom:5px;'>
+                                    <td><b style="font-size:20px">1. Product Details:</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
+                            <tbody style="text-align: left;">
+                                <tr>
+                                    <td><b>Product Category:</b> ${product.category.name}</td>
+                                    <td><b>Product Name:</b> ${product.description}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table style="">
+                            <tbody>
+                                <tr>
+                                    <td><b>Product Description:</b> ${product.description}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
+                            <tbody style="text-align: left;">
+                                <tr>
+                                    <td><b>Term:</b> ${product.term}</td>
+                                    <td><b>Unit Price:</b> ${product.unitPrice}</td>
+                                    <td><b># of Products:</b> ${product.noOfProducts}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Price:</b> ${product.price}</td>
+                                    <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
+                                    <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table style="page-break-before:always; width: 100%; border-collapse: collapse;">
+                            <thead style="background-color: #f4f4f4; text-align: left;">
+                                <tr>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
+                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">1</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.model}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(orderContract.productValue).toFixed(2)}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${orderContract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(orderContract.claimAmount).toFixed(2)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        `;
+                    }
+                }
+            }
+            
 
-            htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
-            <tbody>
-               <tr style='padding-bottom:5px;'>
-                  <td> <b style:"font-size:20px"> 1.   Product Details :- </b></td>
-               </tr>
-            </tbody>
-            </table>
-            <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
-              <tbody style="text-align: left;">
-                <tr>
-                  <td><b>Product Category</b> : product-001</td>
-                  <td><b> Product Name </b> : product-001</td>
-                </tr>
-                </tbody>
-                </table>
-                <table style="">
-                <tbody>
-                <tr>
-                <td><b> Product Description </b> : product-001</td>
-                </tr>
-                </tbody>
-                </table>
-                <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
-                <tbody style="text-align: left;">
-                <tr>
-                  <td><b> Term </b>: product-001</td>
-                  <td><b> Unit Price </b> : product-001</td>
-                  <td><b> # of Products </b> : product-001</td>
-                </tr>
-                <tr>
-                  <td><b> Price </b>: product-001</td>
-                  <td><b> Coverage Start Date </b> : 02/14/2024 </td>
-                  <td><b> Coverage End Date </b> : 02/14/2030 </td>
-                </tr>
-              </tbody>
-            </table> 
-           `
         }
 
 
