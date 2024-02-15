@@ -601,6 +601,8 @@ exports.getAllOrders = async (req, res) => {
                     street: 1
                 }
             );
+
+       
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -630,22 +632,29 @@ exports.getAllOrders = async (req, res) => {
                         : null;
 
                 if (dealerName || customerName || servicerName || resellerName) {
+                    // console.log("dealerName==============",dealerName)
+                    // console.log("customerName==============",customerName)
+                    // console.log("servicerName==============",servicerName)
+                    // console.log("resellerName==============",resellerName)
                     return {
                         ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                        dealerName: dealerName ? dealerName.toObject() : dealerName,
+                        dealerName: dealerName ? dealerName.toObject() : {},
                         servicerName: servicerName ? servicerName.toObject() : {},
                         customerName: customerName ? customerName.toObject() : {},
                         resellerName: resellerName ? resellerName.toObject() : {},
                     };
                 } else {
+                    console.log("fddsfsfdsffdsd");
                     return {
-                        dealerName: dealerName.toObject(),
-                        servicerName: servicerName.toObject(),
-                        customerName: customerName.toObject(),
-                        resellerName: resellerName.toObject(),
+                        dealerName: {},
+                        servicerName: {},
+                        customerName: {},
+                        resellerName: {},
                     };
                 }
             });
+
+
 
             const unique_keyRegex = new RegExp(
                 data.unique_key ? data.unique_key.trim() : "",
@@ -665,16 +674,19 @@ exports.getAllOrders = async (req, res) => {
                 ); 
             });
 
-
+    
+            console.log("filteredData================",filteredData)
             const updatedArray = filteredData.map(item => {
                 let username = null; // Initialize username as null
-                if (item.dealerName) {
+                let resellerUsername = null; // Initialize username as null
+                let customerUserData = null; // Initialize username as null
+                if (item.dealerName._id) {
                     username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
                 }
-                if (item.resellerName) {
+                if (item.resellerName._id) {
                     resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
                 }
-                if (item.customerName) {
+                if (item.customerName._id) {
                     customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
                 }
                 return {
@@ -685,6 +697,8 @@ exports.getAllOrders = async (req, res) => {
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
+
+
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
