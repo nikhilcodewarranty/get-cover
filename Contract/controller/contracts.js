@@ -66,12 +66,14 @@ exports.getAllContracts = async (req, res) => {
       // { $unwind: "$contracts" }
     ]
 
-    let getContracts = await contractService.getAllContracts(query)
+    let getContracts = await contractService.getAllContracts(query,skipLimit,pageLimit)
+    let getTotalCount = await contractService.findContracts({_isDeleted:false})
     console.log('contract++++++++++++', getContracts)
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts
+      result: getContracts,
+      totalCount:getTotalCount
     })
 
     // res.send({

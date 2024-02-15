@@ -1,10 +1,10 @@
 const contract = require("../model/contract");
 
 module.exports = class contractService {
-  static async getAllContracts(query) {
+  static async getAllContracts(query,pageLimit,page) {
     try {
       console.log("service get contraCT----------------",query)
-      const allContracts = await contract.aggregate(query);
+      const allContracts = await contract.aggregate(query).skip(pageLimit).limit(page);
       console.log("service get contraCT----------------",allContracts)
       return allContracts;
     } catch (error) {
@@ -24,6 +24,15 @@ module.exports = class contractService {
   static async getContractsCount() {
     try {
       const count = await contract.find().sort({ "unique_key": -1 });
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
+    } catch (error) {
+      console.log(`Could not fetch contract count ${error}`);
+    }
+  }
+
+  static async findContracts(query) {
+    try {
+      const count = await contract.find(query).sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch contract count ${error}`);
