@@ -76,7 +76,6 @@ exports.getAllContracts = async (req, res) => {
 
     let getContracts = await contractService.getAllContracts(query,skipLimit,pageLimit)
     let getTotalCount = await contractService.findContracts({isDeleted:false})
-    console.log('contract++++++++++++', getContracts)
     res.send({
       code: constant.successCode,
       message: "Success",
