@@ -668,7 +668,7 @@ exports.getAllOrders = async (req, res) => {
             // const updatedArray = filteredData.map((item) => ({
             //     ...item,
             //     servicerName: item.dealerName.isServicer 
-            //         ? item.dealerName
+            //         ? item.dealerName 
             //         : item.resellerName.isServicer
             //             ? item.resellerName
             //             : item.servicerName
