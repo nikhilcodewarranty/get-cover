@@ -662,7 +662,7 @@ exports.getAllOrders = async (req, res) => {
                     unique_keyRegex.test(entry.unique_key) &&
                     venderOrderRegex.test(entry.venderOrder) &&
                     status.test(entry.status)
-                );
+                ); 
             });
 
 
