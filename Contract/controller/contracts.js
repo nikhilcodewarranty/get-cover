@@ -44,6 +44,14 @@ exports.getAllContracts = async (req, res) => {
                 as: "customer",
               }
             },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
 
             // { $unwind: "$dealer" },
             // { $unwind: "$reseller" },
@@ -73,7 +81,7 @@ exports.getAllContracts = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getContracts,
-      totalCount:getTotalCount
+      totalCount:getTotalCount.length
     })
 
     // res.send({

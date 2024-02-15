@@ -2751,26 +2751,82 @@ exports.getDealerRequest = async (req, res) => {
   }
 }
 
-exports.getDealerContract =async(req,res)=>{
-  try{
+exports.getDealerContract = async (req, res) => {
+  try {
     let data = req.body
-    let getDealerOrder = await orderService.getOrders({dealerId:req.params.dealerId},{_id:1})
-    if(!getDealerOrder){
+    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId }, { _id: 1 })
+    if (!getDealerOrder) {
       res.send({
-        code:constant.errorCode,
-        message:"Unable to fetch the data"
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
       })
       return
     }
-    let orderIDs = getDealerOrder.map((ID)=>ID._id)
+    let orderIDs = getDealerOrder.map((ID) => ID._id)
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let query = [
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealerId",
+                foreignField: "_id",
+                as: "dealer",
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "resellerId",
+                foreignField: "_id",
+                as: "reseller",
+              }
+            },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+              }
+            },
 
-    let getContract = await contractService.getAllContracts(query)
+            // { $unwind: "$dealer" },
+            // { $unwind: "$reseller" },
+            // { $unwind: "$servicer?$servicer:{}" },
+
+          ]
+        }
+      },
+      // {
+      //   $match: { isDeleted: false,orderId: },
+
+      // },
+      // {
+      //   $addFields: {
+      //     contracts: {
+      //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+      //     }
+      //   }
+      // }
+      // { $unwind: "$contracts" }
+    ]
+    console.log(pageLimit, skipLimit, limitData)
+    let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
 
     console.log(orderIDs)
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
