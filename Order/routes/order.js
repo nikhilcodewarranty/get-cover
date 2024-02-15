@@ -11,7 +11,7 @@ router.post('/archiveOrder/:orderId', [verifyToken], orderController.archiveOrde
 router.post('/processOrder/:orderId', [verifyToken], orderController.processOrder)
 router.post('/checkFileValidation', [verifyToken], orderController.checkFileValidation)
 router.post('/checkMultipleFileValidation', [verifyToken], orderController.checkMultipleFileValidation)
-//router.post('/multipleFileValidation', [verifyToken], orderController.multipleFileValidation)
+router.post('/multipleFileValidation', [verifyToken], orderController.multipleFileValidation)
 
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
 

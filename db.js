@@ -26,11 +26,11 @@ const makeNewConnection = (uri) => {
 
 //db's connection strings
 const userConnection = makeNewConnection(`${process.env.DB_URL}User`); //user database 
-const dealerConnection = makeNewConnection(`${process.env.DB_URL}Dealer`); // dealer database
-const serviceConnection = makeNewConnection(`${process.env.DB_URL}ServiceProvider`); //service provider database
-const orderConnection = makeNewConnection(`${process.env.DB_URL}Order`); // order database
-const claimConnection = makeNewConnection(`${process.env.DB_URL}Claim`); // claim database 
-const CustomerConnection = makeNewConnection(`${process.env.DB_URL}Customer`); // claim database 
+const dealerConnection = makeNewConnection(`${process.env.DB_URL}User`); // dealer database
+const serviceConnection = makeNewConnection(`${process.env.DB_URL}User`); //service provider database
+const orderConnection = makeNewConnection(`${process.env.DB_URL}User`); // order database
+const claimConnection = makeNewConnection(`${process.env.DB_URL}User`); // claim database 
+const CustomerConnection = makeNewConnection(`${process.env.DB_URL}User`); // claim database 
 
 module.exports = {
     userConnection,

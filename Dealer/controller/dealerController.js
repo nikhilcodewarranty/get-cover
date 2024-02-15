@@ -2666,7 +2666,7 @@ const MongoClient = require('mongodb').MongoClient;
 
 // Connection URLs for the two databases
 const url2 = `${process.env.DB_URL}User`;
-const url1 = `${process.env.DB_URL}Dealer`;
+const url1 = `${process.env.DB_URL}User`;
 
 // Common ID
 
