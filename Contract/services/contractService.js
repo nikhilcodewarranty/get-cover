@@ -62,12 +62,9 @@ module.exports = class contractService {
     }
   }
 
-  static async updateContract(data) {
+  static async updateContract(criteria,data,option) {
     try {
-      const updatedResponse = await contract.updateOne(
-        { data },
-        { $set: { date: new Date.now() } }
-      );
+      const updatedResponse = await contract.findOneAndUpdate(criteria,data,option);
 
       return updatedResponse;
     } catch (error) {
