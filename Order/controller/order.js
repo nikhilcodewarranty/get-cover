@@ -2908,6 +2908,14 @@ exports.generatePDF = async (req, res) => {
             },
             {
                 $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicer"
+                }
+            },
+            {
+                $lookup: {
                     from: "resellers",
                     localField: "resellerId",
                     foreignField: "_id",
@@ -2928,8 +2936,7 @@ exports.generatePDF = async (req, res) => {
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
-             htmlContent = `
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <tbody>
                     <tr>
                     <td style="text-align: left; width: 50%;">
@@ -3011,15 +3018,21 @@ exports.generatePDF = async (req, res) => {
                             <tr>
                     <td style="text-align: left; margin-top:40px; width: 50%;">
                     <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                    <h4 style="margin: 0; padding: 0;"><b>Customer details by amit </b></h4>
-                                <small style="margin: 0; padding: 0;"> Customer address <br/>
+                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].name : ''}</b></h4>
+                                <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
+                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
+                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
+                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br/>
                   
                         </small>
                 </td>
                 <td style="text-align: left; width: 50%;">
                     <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                    <h4 style="margin: 0; padding: 0;"><b> SErvicergrteetr </b></h4>
-                    <small style="margin: 0; padding: 0;"> Servicers Address
+                    <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
+                    <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
+                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
+                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
+                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
                  <br/>
                         </small>
                 </td>
