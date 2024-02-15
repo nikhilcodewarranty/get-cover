@@ -2929,14 +2929,15 @@ exports.generatePDF = async (req, res) => {
                     foreignField: "_id",
                     as: "customers"
                 }
-            },
+            }
+
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
-             htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <tbody>
                     <tr>
                     <td style="text-align: left; width: 50%;">
@@ -3039,6 +3040,44 @@ exports.generatePDF = async (req, res) => {
                     </tr>
                 </tbody>
             </table>`
+
+            htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
+            <tbody>
+               <tr style='padding-bottom:5px;'>
+                  <td> <b style:"font-size:20px"> 1.   Product Details :- </b></td>
+               </tr>
+            </tbody>
+            </table>
+            <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
+              <tbody style="text-align: left;">
+                <tr>
+                  <td><b>Product Category</b> : product-001</td>
+                  <td><b> Product Name </b> : product-001</td>
+                </tr>
+                </tbody>
+                </table>
+                <table style="">
+                <tbody>
+                <tr>
+                <td><b> Product Description </b> : product-001</td>
+                </tr>
+                </tbody>
+                </table>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
+                <tbody style="text-align: left;">
+                <tr>
+                  <td><b> Term </b>: product-001</td>
+                  <td><b> Unit Price </b> : product-001</td>
+                  <td><b> # of Products </b> : product-001</td>
+                </tr>
+                <tr>
+                  <td><b> Price </b>: product-001</td>
+                  <td><b> Coverage Start Date </b> : 02/14/2024 </td>
+                  <td><b> Coverage End Date </b> : 02/14/2030 </td>
+                </tr>
+              </tbody>
+            </table> 
+           `
         }
 
 
@@ -3046,7 +3085,7 @@ exports.generatePDF = async (req, res) => {
         res.send({
             code: constant.successCode,
             result: htmlContent,
-            orderWithContracts:orderWithContracts
+            orderWithContracts: orderWithContracts
         })
     }
     catch (err) {
