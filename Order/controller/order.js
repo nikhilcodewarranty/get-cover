@@ -2354,8 +2354,86 @@ exports.editOrderDetail = async (req, res) => {
 };
 
 exports.markAsPaid = async (req, res) => {
-}
+    try {
+        let data = req.body
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active" }, { new: true })
+        if (!updateOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "unable to udpate the paytment status"
+            })
+            return;
+        }
 
+        let savedResponse = await orderService.updateOrder(
+            { _id: req.params.orderId },
+            { status: "Active" },
+            { new: true }
+        );
+        let contracts = [];
+
+        await updateOrder.productsArray.map(async (product) => {
+            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            let priceBookId = product.priceBookId;
+            let orderProductId = product._id;
+            let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+            let projection = { isDeleted: 0 };
+            let priceBook = await priceBookService.getPriceBookById(
+                query,
+                projection
+            );
+            const wb = XLSX.readFile(pathFile);
+            const sheets = wb.SheetNames;
+            const ws = wb.Sheets[sheets[0]];
+            let count1 = await contractService.getContractsCount();
+
+            let contractCount =
+                Number(
+                    count1.length > 0 && count1[0].unique_key
+                        ? count1[0].unique_key
+                        : 0
+                ) + 1;
+
+            const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            const totalDataComing = totalDataComing1.map((item) => {
+                const keys = Object.keys(item);
+                return {
+                    brand: item[keys[0]],
+                    model: item[keys[1]],
+                    serial: item[keys[2]],
+                    condition: item[keys[3]],
+                    retailValue: item[keys[4]],
+                };
+            });
+            // let savedDataOrder = savedResponse.toObject()
+            totalDataComing.forEach(data => {
+                let contractObject = {
+                    orderId: savedResponse._id,
+                    orderProductId: orderProductId,
+                    productName: priceBook[0].name,
+                    manufacture: data.brand,
+                    model: data.model,
+                    serial: data.serial,
+                    condition: data.condition,
+                    productValue: data.retailValue,
+                    unique_key: contractCount++
+                };
+                contracts.push(contractObject);
+            });
+            let saveData = await contractService.createBulkContracts(contracts)
+        })
+
+        res.send({
+            code: constant.successCode,
+            message: "Updated Successfully"
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
