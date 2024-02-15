@@ -602,7 +602,7 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
 
-       
+
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -671,10 +671,10 @@ exports.getAllOrders = async (req, res) => {
                     unique_keyRegex.test(entry.unique_key) &&
                     venderOrderRegex.test(entry.venderOrder) &&
                     status.test(entry.status)
-                ); 
+                );
             });
 
-                const updatedArray = filteredData.map(item => {
+            const updatedArray = filteredData.map(item => {
                 let username = null; // Initialize username as null
                 let resellerUsername = null; // Initialize username as null
                 let customerUserData = null; // Initialize username as null
@@ -692,7 +692,7 @@ exports.getAllOrders = async (req, res) => {
                     servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
                     username: username, // Set username based on the conditional checks
                     resellerUsername: resellerUsername ? resellerUsername : {},
-                    customerUserData: customerUserData ? customerUserData : {} 
+                    customerUserData: customerUserData ? customerUserData : {}
                 };
             });
 
@@ -2597,7 +2597,6 @@ exports.editOrderDetail = async (req, res) => {
 
                 contracts.push(contractObject);
             })
-            console.log("contracts__-------------++++++------{{{{{{{{{{", contracts)
             // await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
@@ -2643,6 +2642,64 @@ exports.markAsPaid = async (req, res) => {
             })
             return;
         }
+
+        let savedResponse = await orderService.updateOrder(
+            { _id: req.params.orderId },
+            { status: "Active" },
+            { new: true }
+        );
+        let contracts = [];
+
+        await updateOrder.productsArray.map(async (product) => {
+            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            let priceBookId = product.priceBookId;
+            let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+            let projection = { isDeleted: 0 };
+            let priceBook = await priceBookService.getPriceBookById(
+                query,
+                projection
+            );
+            const wb = XLSX.readFile(pathFile);
+            const sheets = wb.SheetNames;
+            const ws = wb.Sheets[sheets[0]];
+            let count1 = await contractService.getContractsCount();
+
+            let contractCount =
+                Number(
+                    count1.length > 0 && count1[0].unique_key
+                        ? count1[0].unique_key
+                        : 0
+                ) + 1;
+
+            const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            const totalDataComing = totalDataComing1.map((item) => {
+                const keys = Object.keys(item);
+                return {
+                    brand: item[keys[0]],
+                    model: item[keys[1]],
+                    serial: item[keys[2]],
+                    condition: item[keys[3]],
+                    retailValue: item[keys[4]],
+                };
+            });
+            // let savedDataOrder = savedResponse.toObject()
+            let contractObject = {
+                orderId: savedResponse._id,
+                orderProductId: product._id,
+                productName: priceBook[0].name,
+                manufacture: totalDataComing[0]["brand"],
+                model: totalDataComing[0]["model"],
+                serial: totalDataComing[0]["serial"],
+                condition: totalDataComing[0]["condition"],
+                productValue: totalDataComing[0]["retailValue"],
+                unique_key: contractCount,
+            };
+            console.log("contracts__-------------------{{{{{{{{{{", contractObject)
+            await contractService.createContract(contractObject);
+
+            contracts.push(contractObject);
+        })
+        
         res.send({
             code: constant.successCode,
             message: "Updated Successfully"
@@ -2700,7 +2757,7 @@ exports.getOrderContract = async (req, res) => {
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
-        console.log(pageLimit,skipLimit,limitData)
+        console.log(pageLimit, skipLimit, limitData)
         let query = [
             {
                 $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
@@ -2810,6 +2867,70 @@ exports.getOrderContract = async (req, res) => {
         });
 
     } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.generatePDF = async (req, res) => {
+    try {
+        let query = [
+            {
+                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "_id",
+                    foreignField: "orderId",
+                    as: "contracts"
+                }
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "dealerId",
+                    foreignField: "_id",
+                    as: "dealers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "resellers",
+                    localField: "resellerId",
+                    foreignField: "_id",
+                    as: "resellers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "customerId",
+                    foreignField: "_id",
+                    as: "customers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicers"
+                }
+            },
+            // { $unwind: "$contracts" }
+        ]
+
+        let orderWithContracts = await orderService.getOrderWithContract(query);
+
+        res.send({
+            code:constant.successCode,
+            result:orderWithContracts
+        })
+    }
+    catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
