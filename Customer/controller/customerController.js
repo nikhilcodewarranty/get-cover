@@ -789,6 +789,107 @@ exports.customerOrders = async (req, res) => {
   }
 }
 
+exports.getCustomerContract = async (req, res) => {
+  try {
+    let data = req.body
+    let getCustomerOrder = await orderService.getOrders({ customerId: req.params.customerId, status: { $in: ["Active","Pending"] }}, { _id: 1 })
+    if (!getCustomerOrder) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return
+    }
+    let orderIDs = getCustomerOrder.map((ID) => ID._id)
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let query = [
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealerId",
+                foreignField: "_id",
+                as: "dealer",
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "resellerId",
+                foreignField: "_id",
+                as: "reseller",
+              }
+            },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+              }
+            },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
+
+            // { $unwind: "$dealer" },
+            // { $unwind: "$reseller" },
+            // { $unwind: "$servicer?$servicer:{}" },
+
+          ]
+        }
+      },
+      {
+        $match: { isDeleted: false, orderId: { $in: orderIDs } },
+      },
+      // {
+      //   $addFields: {
+      //     contracts: {
+      //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+      //     }
+      //   }
+      // }
+      // { $unwind: "$contracts" }
+    ]
+    console.log(pageLimit, skipLimit, limitData)
+    let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
+    let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
+    if (!getContract) {
+      res.send({
+        code: constants.errorCode,
+        message: err.message
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getContract,
+      totalCount: totalCount.length
+    })
+
+    console.log(orderIDs)
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 
 
 

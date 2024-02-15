@@ -12,6 +12,7 @@ router.get("/create-customer", [verifyToken], validator('createCustomerValidatio
 router.post('/createCustomer', [verifyToken], validator('createCustomerValidation'), customerController.createCustomer)
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
 router.post('/customerOrders/:customerId', [verifyToken], customerController.customerOrders)
+router.post('/getCustomerContract/:customerId', [verifyToken], customerController.getCustomerContract)
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer)
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById)

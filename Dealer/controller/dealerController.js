@@ -2754,7 +2754,7 @@ exports.getDealerRequest = async (req, res) => {
 exports.getDealerContract = async (req, res) => {
   try {
     let data = req.body
-    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $ne: ["Archieved"] }}, { _id: 1 })
+    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $in: ["Active","Pending"] }}, { _id: 1 })
     if (!getDealerOrder) {
       res.send({
         code: constant.errorCode,
