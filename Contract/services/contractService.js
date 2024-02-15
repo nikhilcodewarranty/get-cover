@@ -18,6 +18,7 @@ module.exports = class contractService {
       console.log(error);
     }
   }
+
   static async getContractsCount() {
     try {
       const count = await contract.find().sort({ "unique_key": -1 });
@@ -26,6 +27,7 @@ module.exports = class contractService {
       console.log(`Could not fetch contract count ${error}`);
     }
   }
+
   static async createBulkContracts(data) {
     try {
       console.log('service inset mny',data)
@@ -37,6 +39,7 @@ module.exports = class contractService {
       console.log(`Contract not found ${error}`)
     }
   }
+
   static async getContractById(contractId) {
     try {
       const singleContractResponse = await contract.findById({
@@ -70,7 +73,7 @@ module.exports = class contractService {
     }
   }
 
-  static async getContractWithOrderId(query,pageLimit,page){
+  static async getContracts(query,pageLimit,page){
     try {
       const getResponse = await contract.aggregate(query,pageLimit,page).skip(pageLimit).limit(page);
       return getResponse;
