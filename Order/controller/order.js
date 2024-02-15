@@ -707,7 +707,7 @@ exports.getAllOrders = async (req, res) => {
             const filteredData1 = updatedArray.filter(entry => {
                 return (
                     venderRegex.test(entry.venderOrder) &&
-                    orderIdRegex.test(entry.unique_key) &&
+                    orderIdRegex.test(entry.unique_key_search) &&
                     dealerNameRegex.test(entry.dealerName.name) &&
                     servicerNameRegex.test(entry.servicerName.name) &&
                     customerNameRegex.test(entry.customerName.name) &&
@@ -2695,7 +2695,7 @@ exports.getDashboardData = async (req, res) => {
 exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
-        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 2
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         console.log(pageLimit,skipLimit,limitData)
@@ -2721,12 +2721,15 @@ exports.getOrderContract = async (req, res) => {
             // { $unwind: "$contracts" }
         ]
 
-        let checkOrder = await contractService.getContractWithOrderId(query, skipLimit, limitData)
+        let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) })
         if (!checkOrder[0]) {
             res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the order details"
+                code: constant.successCode,
+                message: "Success!",
+                result: checkOrder,
+                contractCount: 0,
+                orderUserData: {}
             })
             return
         }
