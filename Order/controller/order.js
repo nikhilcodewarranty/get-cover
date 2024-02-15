@@ -2683,6 +2683,8 @@ exports.generatePDF = async (req, res) => {
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
+
+        console.log("orderWithContracts=========================",orderWithContracts);
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
@@ -2794,7 +2796,9 @@ exports.generatePDF = async (req, res) => {
                     for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                         const product = order.productsArray[j];
                         const pageSize = 10; // Number of contracts per page
-                        const contracts = product.orderContracts; // Retrieve order contracts for the current product
+                        const contracts = product.orderContracts; 
+                        console.log(contracts)
+                        // Retrieve order contracts for the current product
                         let pageCount = Math.ceil(contracts.length / pageSize);
                         htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
                             <tbody>
