@@ -2373,7 +2373,7 @@ exports.markAsPaid = async (req, res) => {
         let contracts = [];
         console.log("savedResponse==================",savedResponse)
         await savedResponse.productsArray.map(async (product) => {
-            const pathFile ='/home/get-cover/uploads/orderFile/' + product.orderFile.fileName
+            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             let priceBookId = product.priceBookId;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
