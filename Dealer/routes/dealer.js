@@ -21,6 +21,7 @@ router.get("/getDealerById/:dealerId", [verifyToken], dealerController.getDealer
 router.post("/getUserByDealerId/:dealerId", [verifyToken], dealerController.getUserByDealerId); //get dealer detail with ID
 router.get("/dealerPriceBooks", [verifyToken], dealerController.getAllDealerPriceBooks);
 router.post("/dealerOrders/:dealerId", [verifyToken], dealerController.getDealerOrders);
+router.post("/getDealerContract/:dealerId", [verifyToken], dealerController.getDealerContract);
 router.put("/changeDealerStatus/:dealerId", [verifyToken], validator('change_status_dealer'), dealerController.changeDealerStatus);
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerController.getDealerPriceBookById);
 router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], dealerController.getDealerPriceBookByDealerId);

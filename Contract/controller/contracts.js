@@ -8,7 +8,7 @@ const constant = require("../../config/constant");
 exports.getAllContracts = async (req, res) => {
   try {
     let data = req.body
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 2
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     console.log(pageLimit, skipLimit, limitData)
@@ -38,12 +38,13 @@ exports.getAllContracts = async (req, res) => {
             },
             {
               $lookup: {
-                from: "servicers",
-                localField: "servicerId",
+                from: "customers",
+                localField: "customerId",
                 foreignField: "_id",
-                as: "servicer",
+                as: "customer",
               }
             },
+
             // { $unwind: "$dealer" },
             // { $unwind: "$reseller" },
             // { $unwind: "$servicer?$servicer:{}" },
