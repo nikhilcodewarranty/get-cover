@@ -32,6 +32,7 @@ module.exports = class contractService {
 
   static async findContracts(query) {
     try {
+      console.log("find query+++++++++++",query)
       const count = await contract.find(query).sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
