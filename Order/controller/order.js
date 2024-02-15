@@ -2781,7 +2781,8 @@ exports.getOrderContract = async (req, res) => {
         ]
 
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-        let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) })
+        let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) },skipLimit,pageLimit)
+        console.log("get count of order++++++++++++++++",totalContract)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2822,11 +2823,11 @@ exports.getOrderContract = async (req, res) => {
         console.log("check+++++++++++++++333+++++++")
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
-        console.log("check++++++++++++++444++++++++")
+        console.log("check++++++++++++++444++++++++",new mongoose.Types.ObjectId("65ce1bd2279fab0000000000"))
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId.toString() : ''] }, isPrimary: true };
+        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].resellerId.toString() : ''] }, isPrimary: true };
+        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
@@ -2838,9 +2839,9 @@ exports.getOrderContract = async (req, res) => {
 
         let query1 = {
             $or: [
-                { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : '' },
-                { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : '' },
-                { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : '' },
+                { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
             ],
         };
         console.log("check++++++++++++++666++++++++")
