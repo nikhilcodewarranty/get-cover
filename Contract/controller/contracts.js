@@ -99,3 +99,29 @@ exports.getAllContracts = async (req, res) => {
     })
   }
 }
+
+exports.editContract = async(req,res)=>{
+  try{
+    let data = req.body
+    let criteria = {_id:req.params.contractId}
+    let option = {new:true}
+    let updateContracts = await contractService.updateContract( criteria,data, option)
+    if(!updateContracts){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to update the contract"
+      })
+      return;
+    }
+    res.send({
+      code:constant.successCode,
+      message:"Successfully updated the contract",
+      result:updateContracts
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
