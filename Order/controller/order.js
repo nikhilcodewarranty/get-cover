@@ -2680,12 +2680,6 @@ exports.generatePDF = async (req, res) => {
             productsData.push(mergedObject)
         }
         orderWithContracts[0].productsArray = productsData
-        res.send({
-            ddddddd: orderWithContracts
-        })
-        return;
-
-
     //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
     //         const productId = product._id;
     //         const contract = await contractService.findContracts({ orderProductId: productId });
@@ -2823,7 +2817,7 @@ exports.generatePDF = async (req, res) => {
                     for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                         const product = order.productsArray[j];
                         const pageSize = 10; // Number of contracts per page
-                        const contracts = product.orderContracts;
+                        const contracts = product.contract;
                         console.log(contracts)
                         // Retrieve order contracts for the current product
                         let pageCount = Math.ceil(contracts.length / pageSize);
