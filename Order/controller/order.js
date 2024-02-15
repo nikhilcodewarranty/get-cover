@@ -2404,6 +2404,8 @@ exports.markAsPaid = async (req, res) => {
                     retailValue: item[keys[4]],
                 };
             });
+
+            console.log("totalDataComing=============================",totalDataComing)
             // let savedDataOrder = savedResponse.toObject()
             let contractObject = {
                 orderId: savedResponse._id,
@@ -2416,11 +2418,13 @@ exports.markAsPaid = async (req, res) => {
                 productValue: totalDataComing[0]["retailValue"],
                 unique_key: contractCount,
             };
-            console.log("contracts__-------------------{{{{{{{{{{", contractObject)
+          
             await contractService.createContract(contractObject);
 
             contracts.push(contractObject);
         })
+
+        console.log("contracts=====================",contracts)
 
         res.send({
             code: constant.successCode,
