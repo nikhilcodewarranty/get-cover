@@ -35,6 +35,8 @@ const { getServicer } = require('../../Provider/controller/serviceAdminControlle
 const resellerService = require('../services/resellerService');
 const orderService = require('../../Order/services/orderService');
 const order = require('../../Order/model/order');
+const { constants } = require('buffer');
+const contractService = require('../../Contract/services/contractService');
 
 
 var StorageP = multer.diskStorage({
@@ -2747,4 +2749,28 @@ exports.getDealerRequest = async (req, res) => {
   } catch (err) {
     console.log("Err in getDealerRequest : ", err);
   }
-}     
+}
+
+exports.getDealerContract =async(req,res)=>{
+  try{
+    let data = req.body
+    let getDealerOrder = await orderService.getOrders({dealerId:req.params.dealerId},{_id:1})
+    if(!getDealerOrder){
+      res.send({
+        code:constant.errorCode,
+        message:"Unable to fetch the data"
+      })
+      return
+    }
+    let orderIDs = getDealerOrder.map((ID)=>ID._id)
+
+    let getContract = await contractService.getAllContracts(query)
+
+    console.log(orderIDs)
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
