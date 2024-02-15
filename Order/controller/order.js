@@ -2273,6 +2273,7 @@ exports.editOrderDetail = async (req, res) => {
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
+                let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
                 let priceBook = await priceBookService.getPriceBookById(
@@ -2283,14 +2284,14 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-
+    
                 let contractCount =
                     Number(
                         count1.length > 0 && count1[0].unique_key
                             ? count1[0].unique_key
                             : 0
                     ) + 1;
-
+    
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -2303,21 +2304,21 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                let contractObject = {
-                    orderId: savedResponse._id,
-                    orderProductId: product._id,
-                    productName: priceBook[0].name,
-                    manufacture: totalDataComing[0]["brand"],
-                    model: totalDataComing[0]["model"],
-                    serial: totalDataComing[0]["serial"],
-                    condition: totalDataComing[0]["condition"],
-                    productValue: totalDataComing[0]["retailValue"],
-                    unique_key: contractCount,
-                };
-                console.log("contracts__-------------------{{{{{{{{{{", contractObject)
-                await contractService.createContract(contractObject);
-
-                contracts.push(contractObject);
+                totalDataComing.forEach(data => {
+                    let contractObject = {
+                        orderId: savedResponse._id,
+                        orderProductId: product._id,
+                        productName: priceBook[0].name,
+                        manufacture: data.brand,
+                        model: data.model,
+                        serial: data.serial,
+                        condition: data.condition,
+                        productValue: data.retailValue,
+                        unique_key: contractCount++
+                    };
+                    contracts.push(contractObject);
+                });
+                let saveData = await contractService.createBulkContracts(contracts)
             })
             // await contractService.createBulkContracts(contracts);
             res.send({
@@ -2375,6 +2376,7 @@ exports.markAsPaid = async (req, res) => {
         await updateOrder.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             let priceBookId = product.priceBookId;
+            let orderProductId = product._id;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
@@ -2408,7 +2410,7 @@ exports.markAsPaid = async (req, res) => {
             totalDataComing.forEach(data => {
                 let contractObject = {
                     orderId: savedResponse._id,
-                    orderProductId: matchedObject._id,
+                    orderProductId: orderProductId,
                     productName: priceBook[0].name,
                     manufacture: data.brand,
                     model: data.model,
@@ -2433,7 +2435,6 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 }
-
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
