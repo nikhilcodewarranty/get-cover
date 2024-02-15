@@ -3,7 +3,9 @@ const contract = require("../model/contract");
 module.exports = class contractService {
   static async getAllContracts(query) {
     try {
-      const allContracts = await contract.find(query);
+      console.log("service get contraCT----------------",query)
+      const allContracts = await contract.aggregate(query);
+      console.log("service get contraCT----------------",allContracts)
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);

@@ -5,7 +5,7 @@ console.log('---------------------------herererererr')
 
 const mongoose = require('mongoose')
 
-const dbUrl = process.env.DB_URL + 'ServiceProvider'
+const dbUrl = process.env.DB_URL + 'User'
 
 
 const connection = {
