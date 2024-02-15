@@ -53,9 +53,7 @@ module.exports = class contractService {
 
   static async getContractById(contractId) {
     try {
-      const singleContractResponse = await contract.findById({
-        _id: contractId,
-      });
+      const singleContractResponse = await contract.findOne(contractId);
       return singleContractResponse;
     } catch (error) {
       console.log(`Contract not found. ${error}`);
