@@ -10,7 +10,7 @@ const contractSchema = new mongoose.Schema({
     // required: true,
   },
   orderProductId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     // required: true,
   },
   // description: {
