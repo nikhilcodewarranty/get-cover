@@ -2798,6 +2798,14 @@ exports.getDealerContract = async (req, res) => {
                 as: "customer",
               }
             },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
 
             // { $unwind: "$dealer" },
             // { $unwind: "$reseller" },
@@ -2806,10 +2814,9 @@ exports.getDealerContract = async (req, res) => {
           ]
         }
       },
-      // {
-      //   $match: { isDeleted: false,orderId: },
-
-      // },
+      {
+        $match: { isDeleted: false, orderId: { $in: orderIDs } },
+      },
       // {
       //   $addFields: {
       //     contracts: {
@@ -2821,6 +2828,20 @@ exports.getDealerContract = async (req, res) => {
     ]
     console.log(pageLimit, skipLimit, limitData)
     let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
+    let totalCount = await contractService.findContracts({isDeleted:false,orderId : {$in : orderIDs}})
+    if (!getContract) {
+      res.send({
+        code: constants.errorCode,
+        message: err.message
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result:getContract,
+      totalCount:totalCount.length
+    })
 
     console.log(orderIDs)
   } catch (err) {
