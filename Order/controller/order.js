@@ -2895,7 +2895,7 @@ exports.generatePDF = async (req, res) => {
                     foreignField: "_id",
                     as: "dealers"
                 }
-            },
+            }, 
             {
                 $lookup: {
                     from: "resellers",
