@@ -674,9 +674,7 @@ exports.getAllOrders = async (req, res) => {
                 ); 
             });
 
-    
-            console.log("filteredData================",filteredData)
-            const updatedArray = filteredData.map(item => {
+                const updatedArray = filteredData.map(item => {
                 let username = null; // Initialize username as null
                 let resellerUsername = null; // Initialize username as null
                 let customerUserData = null; // Initialize username as null
@@ -694,7 +692,7 @@ exports.getAllOrders = async (req, res) => {
                     servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
                     username: username, // Set username based on the conditional checks
                     resellerUsername: resellerUsername ? resellerUsername : {},
-                    customerUserData: customerUserData ? customerUserData : {}
+                    customerUserData: customerUserData ? customerUserData : {} 
                 };
             });
 
