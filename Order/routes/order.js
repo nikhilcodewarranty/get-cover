@@ -14,7 +14,7 @@ router.post('/checkMultipleFileValidation', [verifyToken], orderController.check
 //router.post('/multipleFileValidation', [verifyToken], orderController.multipleFileValidation)
 
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
-
+ 
 router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
@@ -23,7 +23,7 @@ router.get('/markAsPaid/:orderId', [verifyToken], orderController.markAsPaid)
 router.get('/getOrderContract/:orderId', [verifyToken], orderController.getOrderContract)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
-router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)
+router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)  
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)
 

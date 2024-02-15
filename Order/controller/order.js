@@ -665,15 +665,6 @@ exports.getAllOrders = async (req, res) => {
                 );
             });
 
-            // const updatedArray = filteredData.map((item) => ({
-            //     ...item,
-            //     servicerName: item.dealerName.isServicer 
-            //         ? item.dealerName 
-            //         : item.resellerName.isServicer
-            //             ? item.resellerName
-            //             : item.servicerName
-            //         username:getPrimaryUser.find(user=>user.accountId.toString()===item.dealerName._id.toString())
-            // }));
 
             const updatedArray = filteredData.map(item => {
                 let username = null; // Initialize username as null
