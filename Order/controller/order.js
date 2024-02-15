@@ -2699,7 +2699,7 @@ exports.markAsPaid = async (req, res) => {
 
             contracts.push(contractObject);
         })
-        
+
         res.send({
             code: constant.successCode,
             message: "Updated Successfully"
@@ -2893,9 +2893,19 @@ exports.generatePDF = async (req, res) => {
                     from: "dealers",
                     localField: "dealerId",
                     foreignField: "_id",
-                    as: "dealers"
+                    as: "dealers",
+                    // pipeline:[
+                    //     {
+                    //         $lookup:{
+                    //             from:"users",
+                    //             foreignField:"accountId",
+                    //             localField:"_id",
+                    //             as:"userData"
+                    //         }
+                    //     }
+                    // ]
                 }
-            }, 
+            },
             {
                 $lookup: {
                     from: "resellers",
@@ -2912,22 +2922,118 @@ exports.generatePDF = async (req, res) => {
                     as: "customers"
                 }
             },
-            {
-                $lookup: {
-                    from: "serviceproviders",
-                    localField: "servicerId",
-                    foreignField: "_id",
-                    as: "servicers"
-                }
-            },
-            // { $unwind: "$contracts" }
-        ]
+        ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
+        let htmlContent;
+
+        if (orderWithContracts.length > 0) {
+             htmlContent = `
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tbody>
+                    <tr>
+                    <td style="text-align: left; width: 50%;">
+                    <img src="" style="margin-bottom: 20px;"/>
+                    <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
+                    <p style="margin: 0; padding: 0;">13th Street <br/>
+                    47 W 13th St, New York,<br/>
+                    NY 10011, USA</p>
+                </td>
+                <td style=" width: 50%;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"> <b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
+                            </tr>
+                                <tr>
+                                    <td> <b> Order ID : </b> </td> 
+                                    <td>
+                                   ${orderWithContracts[0].unique_key}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td> <b> Dealer P.O. # : </b> </td> 
+                                    <td>
+                                    ${orderWithContracts[0].venderOrder}
+                                    </td>
+                                </tr>
+                                <tr>
+                                  <td> <b>Service Coverage : </b> </td>
+                                  <td>
+                                  ${orderWithContracts[0].serviceCoverageType}
+                                  </td>
+                                  </tr>
+                                  <tr>
+                                  <td> <b> Coverage Type : </b> </td>
+                                  <td> ${orderWithContracts[0].coverageType}</td>
+                                </tr>
+                
+                            </tbody>
+                        </table>
+                                </thead>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <tbody>
+                    <tr>
+                        <td style="text-align: left; width: 50%;">
+                            <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
+                            <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].name : ''}</b></h4>
+                            <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
+                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].street : ''}
+                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].city : ''},
+                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].state : ''}
+                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].zip : ''}
+                              <br/>
+                              9874563210 | Example@gmail.com
+                                </small>
+                        </td>
+                        <td style="text-align: left; width: 50%;">
+                            <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                            <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
+                            <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
+                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
+                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
+                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
+                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
+                            <br/>
+                            9874563210 | Example@gmail.com
+                              </small>
+                        </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                        <tbody>
+                            <tr>
+                    <td style="text-align: left; margin-top:40px; width: 50%;">
+                    <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b>Customer details by amit </b></h4>
+                                <small style="margin: 0; padding: 0;"> Customer address <br/>
+                  
+                        </small>
+                </td>
+                <td style="text-align: left; width: 50%;">
+                    <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b> SErvicergrteetr </b></h4>
+                    <small style="margin: 0; padding: 0;"> Servicers Address
+                 <br/>
+                        </small>
+                </td>
+                    </tr>
+                </tbody>
+            </table>`
+        }
+
+
 
         res.send({
-            code:constant.successCode,
-            result:orderWithContracts
+            code: constant.successCode,
+            result: htmlContent,
+            orderWithContracts:orderWithContracts
         })
     }
     catch (err) {
