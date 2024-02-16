@@ -2848,12 +2848,12 @@ exports.generatePDF = async (req, res) => {
                         <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
                             <tbody style="text-align: left;">
                                 <tr>
-                                    <td><b>Term:</b> ${product.term}</td>
-                                    <td><b>Unit Price:</b> ${product.unitPrice}</td>
-                                    <td><b># of Products:</b> ${product.noOfProducts}</td>
+                                    <td><b>Term:</b> ${product.term} Month</td>
+                                    <td><b>Unit Price:</b> $ ${product.unitPrice}</td>
+                                    <td><b># of Products:</b> ${product.noOfProducts}.00</td>
                                 </tr>
                                 <tr>
-                                    <td><b>Price:</b> ${product.price}</td>
+                                    <td><b>Price:</b> $ ${product.price}.00</td>
                                     <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
                                     <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
                                 </tr>
