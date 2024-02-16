@@ -2176,11 +2176,6 @@ exports.editOrderDetail = async (req, res) => {
                 (product) => product.file === ""
             );
 
-            console.log(
-                "file check------------------",
-                data.productsArray,
-                filteredProducts2
-            );
 
             const productsWithOrderFiles = filteredProducts.map((product, index) => {
                 const file = uploadedFiles[index];
@@ -2253,8 +2248,6 @@ exports.editOrderDetail = async (req, res) => {
                     item.orderFile.fileName === ""
             )
         // .some(Boolean);
-        //  console.log(isEmptyOrderFile);
-        // console.log(resultArray)
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -2263,20 +2256,17 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
-        console.log('check_____------------------------------------', returnField)
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
                 { new: true }
             );
             let contracts = [];
+            console.log("contract saving++++++++++++++++++++++++++++")
 
-
-            console.log("")
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2314,8 +2304,11 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("totalDataComing===================",totalDataComing);
+                console.log("contract saving+++++++++++++111111111+++++++++++++++")
+
                 totalDataComing.forEach((data, index) => {
+                    console.log("contract saving+++++++++++++++++22222+++++++++++", data)
+
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2332,11 +2325,11 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log("contractObject===================",contractObject);
-                   // contracts.push(contractObject);
-                   let saveData =  contractService.createContract(contractObject)
+                    // contracts.push(contractObject);
+                    console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
+                    let saveData = contractService.createContract(contractObject)
                 });
-         
+
             })
             // await contractService.createBulkContracts(contracts);
             res.send({
@@ -2813,7 +2806,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; margin-top:40px; width: 50%;">
                     ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
                     
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username  : ''}</b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
                                 <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
