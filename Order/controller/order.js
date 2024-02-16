@@ -2679,7 +2679,6 @@ exports.generatePDF = async (req, res) => {
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
 
-       console.log("orderWithContracts=====================",orderWithContracts);
         let productsData = []
 
         for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
@@ -2767,12 +2766,12 @@ exports.generatePDF = async (req, res) => {
                             <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
                             <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
                             <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''}
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''}
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''}
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
                             ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}
                               <br/>
-                              ${orderWithContracts[0].dealers ? orderWithContracts[0].dealerUsers.phoneNumber : ''}
+                              ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber : ''} |   ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
@@ -2784,7 +2783,7 @@ exports.generatePDF = async (req, res) => {
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}
                         <br/>
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.phoneNumber : ''}
+                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber : ''} |        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}
                           </small>`) : ''}
                           
                         </td>
