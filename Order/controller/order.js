@@ -2351,6 +2351,8 @@ exports.markAsPaid = async (req, res) => {
 
         await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+
+            console.log("product.orderFile.fileName=========================",product.orderFile.fileName)
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
