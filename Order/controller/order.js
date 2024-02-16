@@ -53,46 +53,46 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            // let data = req.body;
-            let data = {
-                "dealerId": "65ce11c8750ebbaea9330274",
-                "servicerId": "",
-                "customerId": "65cf188810d67d4db2c352a6",
-                "resellerId": "",
-                "productsArray": [
-                    {
-                        "categoryId": "65cf04494e8b028678173521",
-                        "priceBookId": "65cf04ba4e8b028678173522",
-                        "unitPrice": "80.00",
-                        "noOfProducts": "1",
-                        "price": 160,
-                        "file": "",
-                        "manufacture": "Get-Cover123",
-                        "model": "Inverter123",
-                        "serial": "S123GHK",
-                        "condition": "Breakdown",
-                        "productValue": 123,
-                        "regDate": "2024-01-18T00:00:00.000Z",
-                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
-                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
-                        "description": "003",
-                        "term": 12,
-                        "priceType": "Quantity Pricing",
-                        "additionalNotes": "this is test ",
-                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+             let data = req.body;
+            // let data = {
+            //     "dealerId": "65ce11c8750ebbaea9330274",
+            //     "servicerId": "",
+            //     "customerId": "65cf188810d67d4db2c352a6",
+            //     "resellerId": "",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65cf04494e8b028678173521",
+            //             "priceBookId": "65cf04ba4e8b028678173522",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "1",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-                    }
+            //         }
 
-                ],
-                "sendNotification": true,
-                "paymentStatus": "Paid",
-                "dealerPurchaseOrder": "#136789777",
-                "serviceCoverageType": "Parts",
-                "coverageType": "Breakdown",
-                "orderAmount": 144,
-                "paidAmount": 123,
-                "dueAmount": 21
-            }
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#136789777",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
 
             //check for super admin
             if (req.role != "Super Admin") {
@@ -249,13 +249,11 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let fileLength = req.files ? req.files.length : 0;
-            console.log("check++++++++++++++++++++111111111")
             if (
                 fileLength === data.productsArray.length &&
                 data.customerId != null &&
                 data.paymentStatus == "Paid"
             ) {
-                console.log("check++++++++++++++++++++22222222222")
 
                 let updateStatus = await orderService.updateOrder(
                     { _id: savedResponse._id },
@@ -267,7 +265,6 @@ exports.createOrder = async (req, res) => {
                     { canProceed: true },
                     { new: true }
                 );
-                console.log("check++++++++++++++++++++33333333333")
 
                 const isValidDate = data.productsArray.every((product) => {
                     const coverageStartDate =
@@ -280,7 +277,6 @@ exports.createOrder = async (req, res) => {
 
 
                 if (isValidDate) {
-                    console.log("check++++++++++++++++++++444444444444")
 
                     let contractArrrayData = [];
                     for (let i = 0; i < data.productsArray.length; i++) {
@@ -292,8 +288,6 @@ exports.createOrder = async (req, res) => {
                             query,
                             projection
                         );
-                        console.log("check++++++++++++++++++++555555555555")
-
                         const wb = XLSX.readFile(products.file);
                         const sheets = wb.SheetNames;
                         const ws = wb.Sheets[sheets[0]];
@@ -321,14 +315,10 @@ exports.createOrder = async (req, res) => {
                         // let savedDataOrder = savedResponse.toObject()
                         const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
                         let count1 = await contractService.getContractsCount();
-                        console.log("check++++++++++++++++++++666666666666")
-
                         totalDataComing.forEach((data, index) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                            console.log("check++++++++++++++++++++7777777777777777")
-
                             let contractObject = {
                                 orderId: savedResponse._id,
                                 orderProductId: matchedObject._id,
@@ -362,8 +352,6 @@ exports.createOrder = async (req, res) => {
                         // };
                         // contractArrrayData.push(contractObject);
                     }
-            console.log("check++++++++++++++++++++999999999999",contractArrrayData.length)
-
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
                     );
@@ -2247,7 +2235,6 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             let contracts = [];
-            console.log("contract saving++++++++++++++++++++++++++++")
 
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -2263,10 +2250,6 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-
-
-
-
                 let contractCount =
                     Number(
                         count1.length > 0 && count1[0].unique_key
@@ -2286,17 +2269,14 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("contract saving+++++++++++++111111111+++++++++++++++")
 
                 totalDataComing.forEach((data, index) => {
-                    console.log("contract saving+++++++++++++++++22222+++++++++++", data)
-
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let contractObject = {
                         orderId: savedResponse._id,
-                        orderProductId: product._id,
+                        orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2307,15 +2287,15 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    // contracts.push(contractObject);
-                    console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
-                    let saveData = contractService.createContract(contractObject)
+                     contracts.push(contractObject);
+                  //  console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
+                    //let saveData = contractService.createContract(contractObject)
                 });
 
             })
 
             
-            // await contractService.createBulkContracts(contracts);
+             await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -2368,7 +2348,7 @@ exports.markAsPaid = async (req, res) => {
         );
         let contracts = [];
 
-        await updateOrder.productsArray.map(async (product) => {
+        await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
