@@ -2233,7 +2233,7 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
-            let contracts = [];
+            let contractArray = [];
 
             console.log("savedResponse=================",savedResponse)
 
@@ -2288,15 +2288,16 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                     contracts.push(contractObject);
+                    contractArray.push(contractObject);
                    console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
                     //let saveData = contractService.createContract(contractObject)
                 });
 
+                console.log("contracts=======================",contractArray)
+                await contractService.createBulkContracts(contractArray);
+
             })
 
-            console.log("contracts=======================",contracts)
-             await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
                 message: "Success",
