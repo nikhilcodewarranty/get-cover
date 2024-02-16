@@ -2712,114 +2712,95 @@ exports.generatePDF = async (req, res) => {
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
-            htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tbody>
-                    <tr>
-                    <td style="text-align: left; width: 50%;">
-                    <img src="https://fastly.picsum.photos/id/2/200/300.jpg?hmac=HiDjvfge5yCzj935PIMj1qOf4KtvrfqWX3j4z1huDaU" style="margin-bottom: 20px;"/>
-                    <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
-                    <p style="margin: 0; padding: 0;">13th Street <br/>
-                    47 W 13th St, New York,<br/>
-                    NY 10011, USA</p>
+            htmlContent = ` <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+    <tbody>
+      <tr>
+        <td style="text-align: left; width: 50%;">
+          <img src='https://fastly.picsum.photos/id/2/200/300.jpg?hmac=HiDjvfge5yCzj935PIMj1qOf4KtvrfqWX3j4z1huDaU' style="margin-bottom: 20px;" />
+          <h1 style="margin: 0; padding: 0; font-size:20px">
+            <b>Get Cover </b>
+          </h1>
+          <p style="margin: 0; padding: 0;">13th Street <br /> 47 W 13th St, New York, <br /> NY 10011, USA </p>
+        </td>
+        <td style=" width: 50%;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr>
+                <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;">
+                  <b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b>
                 </td>
-                <td style=" width: 50%;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"> <b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
-                            </tr>
-                                <tr>
-                                    <td> <b> Order ID : </b> </td> 
-                                    <td>
-                                   ${orderWithContracts[0].unique_key}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td> <b> Dealer P.O. # : </b> </td> 
-                                    <td>
-                                    ${orderWithContracts[0].venderOrder}
-                                    </td>
-                                </tr>
-                                <tr>
-                                  <td> <b>Service Coverage : </b> </td>
-                                  <td>
-                                  ${orderWithContracts[0].serviceCoverageType}
-                                  </td>
-                                  </tr>
-                                  <tr>
-                                  <td> <b> Coverage Type : </b> </td>
-                                  <td> ${orderWithContracts[0].coverageType}</td>
-                                </tr>
-                
-                            </tbody>
-                        </table>
-                                </thead>
-                            </table>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tbody>
-                    <tr>
-                        <td style="text-align: left; width: 50%;">
-                            <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-                            <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
-                            <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
-                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}
-                              <br/>
-                              ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} |   ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}
-                                </small>
-                        </td>
-                        <td style="text-align: left; width: 50%;">
-                        ${orderWithContracts[0].resellers ? (`  <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName : ''} <br/>
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}
-                        <br/>
-                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} |        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}
-                          </small>`) : ''}
-                          
-                        </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                        <tbody>
-                            <tr>
-                    <td style="text-align: left; margin-top:40px; width: 50%;">
-                    ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                    
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
-                                <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br/>
-                  
-                        </small>`) : ''}
-                  
+              </tr>
+              <tr>
+                <td>
+                  <b> Order ID : </b>
                 </td>
-                <td style="text-align: left; width: 50%;">
-                ${orderWithContracts[0].servicer?.length > 0 ? (`
-                <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
-                <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
-             <br/>
-                    </small>`) : ''}
-                  
+                <td> ${orderWithContracts[0].unique_key} </td>
+              </tr>
+              <tr>
+                <td>
+                  <b> Dealer P.O. # : </b>
                 </td>
-                    </tr>
-                </tbody>
-            </table>`
+                <td> ${orderWithContracts[0].venderOrder} </td>
+              </tr>
+              <tr>
+                <td>
+                  <b>Service Coverage : </b>
+                </td>
+                <td> ${orderWithContracts[0].serviceCoverageType} </td>
+              </tr>
+              <tr>
+                <td>
+                  <b> Coverage Type : </b>
+                </td>
+                <td> ${orderWithContracts[0].coverageType}</td>
+              </tr>
+    </tbody>
+  </table>
+  </thead>
+  </table>
+  </td>
+  </tr>undefined</tbody>undefined</table>undefined<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">undefined<tbody>
+      <tr>
+        <td style="text-align: left; width: 50%;">
+          <h4 style="margin: 0; padding: 0;">
+            <b>Dealer Details: </b>
+          </h4>
+          <h4 style="margin: 0; padding: 0;">
+            <b> ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b>
+          </h4>
+          <small style="margin: 0; padding: 0;">Bill To: UserName <br /> ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''}, ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''}, ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''}, ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''} <br /> ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''} </small>
+        </td>
+        <td style="text-align: left; width: 50%;"> ${orderWithContracts[0].resellers ? (` <h4 style="margin: 0; padding: 0;">
+            <b>Reseller Details:</b>
+          </h4>
+          <h4 style="margin: 0; padding: 0;">
+            <b> ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b>
+          </h4>
+          <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName : ''} <br /> ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''} ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''} ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''} ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''} <br /> ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''} </small>`) : ''}
+        </td>
+      </tr>undefined
+    </tbody>undefined</table>undefined<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">undefined<tbody>
+      <tr>
+        <td style="text-align: left; margin-top:40px; width: 50%;"> ${orderWithContracts[0].customers?.length > 0 ? (` <h4 style="margin: 0; padding: 0;">
+            <b>Customer Details: </b>
+          </h4>
+          <h4 style="margin: 0; padding: 0;">
+            <b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b>
+          </h4>
+          <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''} ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''} ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''} ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br />
+          </small>`) : ''}
+        </td>
+        <td style="text-align: left; width: 50%;"> ${orderWithContracts[0].servicer?.length > 0 ? (` <h4 style="margin: 0; padding: 0;">
+            <b>Servicer Details:</b>
+          </h4>
+          <h4 style="margin: 0; padding: 0;">
+            <b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b>
+          </h4>
+          <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''} ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''} ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''} ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''} <br />
+          </small>`) : ''}
+        </td>
+      </tr>undefined
+    </tbody>undefined</table>`
             if (orderWithContracts.length > 0) {
                 for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
                     const order = orderWithContracts[i];
