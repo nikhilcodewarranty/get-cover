@@ -478,6 +478,7 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
+                { $unwind: '$productsArray' },
                 {
                     $lookup: {
                         from: "contracts",
@@ -500,10 +501,10 @@ exports.getAllOrders = async (req, res) => {
                                 if: {
                                     $and: [
                                         // { $eq: ["$payment.status", "paid"] },
-                                        { $eq: ["$productsArray.orderFile.fileName", ''] },
-                                        { $eq: ["$customerId", null] },
-                                        // { $ne: ["$paymentStatus", 'Paid'] },
-                                        { $eq: ["$productsArray.coverageStartDate", null] },
+                                        { $ne: ["$productsArray.orderFile.fileName", ''] },
+                                        { $ne: ["$customerId", null] },
+                                        { $ne: ["$paymentStatus", 'Paid'] },
+                                        { $ne: ["$productsArray.coverageStartDate", null] },
                                     ]
                                 },
                                 then: true,
