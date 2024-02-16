@@ -478,6 +478,7 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
+              
                 {
                     $lookup: {
                         from: "contracts",
@@ -495,7 +496,7 @@ exports.getAllOrders = async (req, res) => {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        flag: {
+                        flag: {                            
                             $cond: {
                                 if: {
                                     $and: [
@@ -519,6 +520,7 @@ exports.getAllOrders = async (req, res) => {
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+            console.log("ordersResult===================",ordersResult);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -2593,16 +2595,6 @@ exports.generatePDF = async (req, res) => {
                     "as": "category"
                 }
             },
-            // {
-            //     "$lookup": {
-            //         "from": "contracts",
-            //         "let": { productId: "$productsArray._id" },
-            //         "pipeline": [
-            //             { $match: { $expr: { $eq: ["$orderProductId", "$$productId"] } } }
-            //         ],
-            //         "as": "productsArray.orderContracts"
-            //     }
-            // },
             {
                 $addFields: {
                     "productsArray.category": { $arrayElemAt: ["$category", 0] },
@@ -2614,6 +2606,7 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
+                    
                 }
             },
             {
@@ -2639,11 +2632,54 @@ exports.generatePDF = async (req, res) => {
                     foreignField: "_id",
                     as: "customers"
                 }
-            }
+            },
+            {
+                $unwind: "$dealers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "dealerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$dealerUsers" // Unwind dealers array
+            },
+            {
+                $unwind: "$resellers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "resellerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$resellerUsers" // Unwind dealers array
+            },
+            
 
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
+
+      //  console.log("orderWithContracts=====================",orderWithContracts);return;
         let productsData = []
 
         for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
@@ -2681,7 +2717,7 @@ exports.generatePDF = async (req, res) => {
                 <tbody>
                     <tr>
                     <td style="text-align: left; width: 50%;">
-                    <img src="${logo}" style="margin-bottom: 20px;"/>
+                    <img src="http://15.207.221.207:3002/uploads/logo.png" style="margin-bottom: 20px;"/>
                     <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
                     <p style="margin: 0; padding: 0;">13th Street <br/>
                     47 W 13th St, New York,<br/>
@@ -2729,24 +2765,26 @@ exports.generatePDF = async (req, res) => {
                     <tr>
                         <td style="text-align: left; width: 50%;">
                             <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-                            <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].name : ''}</b></h4>
+                            <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
                             <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].street : ''}
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].city : ''},
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].state : ''}
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].zip : ''}
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''}
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''}
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''}
+                            ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}
                               <br/>
+                              ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.phoneNumber : ''}
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
-                        ${orderWithContracts[0].resellers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
+                        ${orderWithContracts[0].resellers ? (`  <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName : ''} <br/>
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].reseller.state : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}
                         <br/>
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.phoneNumber : ''}
                           </small>`) : ''}
                           
                         </td>
