@@ -2857,7 +2857,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </tbody>
                         </table>
-                        <table style="">
+                        <table style=""> 
                             <tbody>
                                 <tr>
                                     <td><b>Product Description:</b> ${product.description}</td>
