@@ -2771,7 +2771,7 @@ exports.generatePDF = async (req, res) => {
                             ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
                             ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}
                               <br/>
-                              ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber : ''} |   ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}
+                              ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} |   ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
@@ -2783,7 +2783,7 @@ exports.generatePDF = async (req, res) => {
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}
                         <br/>
-                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber : ''} |        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}
+                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} |        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}
                           </small>`) : ''}
                           
                         </td>
