@@ -499,10 +499,11 @@ exports.getAllOrders = async (req, res) => {
                             $cond: {
                                 if: {
                                     $and: [
-                                        { $ne: ["$paymentStatus", "Paid"] }, // Check if paymentStatus is not "Paid"
-                                        { $not: { $eq: ["$customerId", null] } }, // Check if customerId is not null
-                                        { $not: { $eq: ["$productsArray.orderFile.fileName", ""] } }, // Check if any orderFile.fileName is not blank
-                                        { $not: { $eq: ["$productsArray.coverageStartDate", null] } } // Check if coverageStartDate is not null
+                                        // { $eq: ["$payment.status", "paid"] },
+                                        { $eq: ["$productsArray.orderFile.fileName", ''] },
+                                        { $eq: ["$customerId", null] },
+                                        // { $ne: ["$paymentStatus", 'Paid'] },
+                                        { $eq: ["$productsArray.coverageStartDate", null] },
                                     ]
                                 },
                                 then: true,
