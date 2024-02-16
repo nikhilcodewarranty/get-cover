@@ -59,6 +59,12 @@ const contractSchema = new mongoose.Schema({
   unique_key: {
     type: Number,
   },
+  unique_key_number: {
+    type: Number,
+  },
+  unique_key_search: {
+    type: Number,
+  },
   status: {
     type: String,
     enum: ['Active', 'Waiting', 'Expired', 'Cancelled', 'Refunded', 'Inactive'],

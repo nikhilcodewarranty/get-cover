@@ -1418,7 +1418,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.accountId, email: user.email, role: getRole.role },
+      { userId: user.accountId, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "356d" }
     );
