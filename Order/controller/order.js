@@ -2383,10 +2383,12 @@ exports.markAsPaid = async (req, res) => {
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
-            totalDataComing.forEach(data => {
+           await totalDataComing.forEach((data,index) => {
                 let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
+
+
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderProductId: orderProductId,
@@ -2400,7 +2402,7 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
-                console.log("contractObject===========================",contractObject)
+                console.log("contractObject===========================")
 
                 contracts.push(contractObject);
             });
