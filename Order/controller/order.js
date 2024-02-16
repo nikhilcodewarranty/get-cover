@@ -2789,7 +2789,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; margin-top:40px; width: 50%;">
                     ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
                     
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username  : ''}</b></h4>
                                 <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
@@ -2799,7 +2799,7 @@ exports.generatePDF = async (req, res) => {
                   
                 </td>
                 <td style="text-align: left; width: 50%;">
-                ${orderWithContracts[0].servicer.length > 0 ? (`
+                ${orderWithContracts[0].servicer?.length > 0 ? (`
                 <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
                 <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
                 <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
