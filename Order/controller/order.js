@@ -2159,7 +2159,6 @@ exports.editOrderDetail = async (req, res) => {
             );
 
 
-
             const productsWithOrderFiles = filteredProducts.map((product, index) => {
                 const file = uploadedFiles[index];
 
@@ -2248,6 +2247,7 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             let contracts = [];
+            console.log("contract saving++++++++++++++++++++++++++++")
 
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -2286,7 +2286,11 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
+                console.log("contract saving+++++++++++++111111111+++++++++++++++")
+
                 totalDataComing.forEach((data, index) => {
+                    console.log("contract saving+++++++++++++++++22222+++++++++++", data)
+
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2303,10 +2307,14 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    contracts.push(contractObject);
+                    // contracts.push(contractObject);
+                    console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
+                    let saveData = contractService.createContract(contractObject)
                 });
-                let saveData = await contractService.createBulkContracts(contracts)
+
             })
+
+            
             // await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
@@ -2815,7 +2823,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </tbody>
                         </table>
-                        <table style="">
+                        <table style=""> 
                             <tbody>
                                 <tr>
                                     <td><b>Product Description:</b> ${product.description}</td>
