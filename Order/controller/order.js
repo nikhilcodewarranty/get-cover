@@ -315,7 +315,7 @@ exports.createOrder = async (req, res) => {
                         // let savedDataOrder = savedResponse.toObject()
                         const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
                         let count1 = await contractService.getContractsCount();
-                      await  totalDataComing.forEach((data, index) => {
+                        totalDataComing.forEach((data, index) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2374,7 +2374,6 @@ exports.markAsPaid = async (req, res) => {
             //     ) + 1;
 
             const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-            console.log("totalDataComing1==================",totalDataComing1)
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
@@ -2390,7 +2389,6 @@ exports.markAsPaid = async (req, res) => {
                 let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                console.log("productId=========================",orderProductId)
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderProductId: orderProductId,
