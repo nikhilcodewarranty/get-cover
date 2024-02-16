@@ -3,6 +3,7 @@ const customerResourceResponse = require("../utils/constant");
 const customerService = require("../services/customerService");
 let dealerService = require('../../Dealer/services/dealerService')
 let resellerService = require('../../Dealer/services/resellerService')
+let contractService = require('../../Contract/services/contractService')
 let userService = require('../../User/services/userService')
 let servicerService = require('../../Provider/services/providerService')
 let orderService = require('../../Order/services/orderService')
