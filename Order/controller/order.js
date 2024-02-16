@@ -499,11 +499,10 @@ exports.getAllOrders = async (req, res) => {
                             $cond: {
                                 if: {
                                     $and: [
-                                        // { $eq: ["$payment.status", "paid"] },
-                                        { $ne: ["$productsArray.orderFile.fileName", ''] },
-                                        { $ne: ["$customerId", null] },
-                                        { $ne: ["$paymentStatus", 'Paid'] },
-                                        { $ne: ["$productsArray.coverageStartDate", null] },
+                                        { $ne: ["$paymentStatus", "Paid"] }, // Check if paymentStatus is not "Paid"
+                                        { $not: { $eq: ["$customerId", null] } }, // Check if customerId is not null
+                                        { $not: { $eq: ["$productsArray.orderFile.fileName", ""] } }, // Check if any orderFile.fileName is not blank
+                                        { $not: { $eq: ["$productsArray.coverageStartDate", null] } } // Check if coverageStartDate is not null
                                     ]
                                 },
                                 then: true,
@@ -2348,6 +2347,8 @@ exports.markAsPaid = async (req, res) => {
         );
         let contracts = [];
 
+        console.log("check1------------------------------------",savedResponse)
+
         await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             let priceBookId = product.priceBookId;
@@ -2399,8 +2400,12 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
+                console.log("contractObject===========================",contractObject)
+
                 contracts.push(contractObject);
             });
+
+            console.log("contracts===========================",contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
