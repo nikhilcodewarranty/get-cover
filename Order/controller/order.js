@@ -2235,6 +2235,8 @@ exports.editOrderDetail = async (req, res) => {
             );
             let contracts = [];
 
+            console.log("savedResponse=================",savedResponse)
+
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2287,13 +2289,13 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_number: unique_key_number1,
                     };
                      contracts.push(contractObject);
-                  //  console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
+                   console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
                     //let saveData = contractService.createContract(contractObject)
                 });
 
             })
 
-            
+            console.log("contracts=======================",contracts)
              await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
