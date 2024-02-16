@@ -26,7 +26,6 @@ const { createPdf } = require("pdfmake")
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
-        console.log("file+++++++++++++++++++++", files);
         cb(null, path.join(__dirname, "../../uploads/orderFile"));
     },
     filename: function (req, files, cb) {
@@ -54,46 +53,46 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body;
-            // let data = {
-            //     "dealerId": "65c32ca30a8dba244cfa1610",
-            //     "servicerId": "",
-            //     "customerId": "65c32dbbffc7f8c97a11bff8",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65c32aec7e54710b7783fdba",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+            // let data = req.body;
+            let data = {
+                "dealerId": "65ce11c8750ebbaea9330274",
+                "servicerId": "",
+                "customerId": "65cf188810d67d4db2c352a6",
+                "resellerId": "",
+                "productsArray": [
+                    {
+                        "categoryId": "65cf04494e8b028678173521",
+                        "priceBookId": "65cf04ba4e8b028678173522",
+                        "unitPrice": "80.00",
+                        "noOfProducts": "1",
+                        "price": 160,
+                        "file": "",
+                        "manufacture": "Get-Cover123",
+                        "model": "Inverter123",
+                        "serial": "S123GHK",
+                        "condition": "Breakdown",
+                        "productValue": 123,
+                        "regDate": "2024-01-18T00:00:00.000Z",
+                        "coverageStartDate": "2024-01-30T00:00:00.000Z",
+                        "coverageEndDate": "2025-01-30T00:00:00.000Z",
+                        "description": "003",
+                        "term": 12,
+                        "priceType": "Quantity Pricing",
+                        "additionalNotes": "this is test ",
+                        "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-            //         }
+                    }
 
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#134567809",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
+                ],
+                "sendNotification": true,
+                "paymentStatus": "Paid",
+                "dealerPurchaseOrder": "#136789777",
+                "serviceCoverageType": "Parts",
+                "coverageType": "Breakdown",
+                "orderAmount": 144,
+                "paidAmount": 123,
+                "dueAmount": 21
+            }
 
             //check for super admin
             if (req.role != "Super Admin") {
@@ -104,8 +103,6 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
-            //  console.log("Body=================",data.productsArray[0].QuantityPricing)
-            //   console.log("QuantityPricing=================",typeof(data.productsArray[0].QuantityPricing))
 
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].QuantityPricing) {
@@ -177,7 +174,6 @@ exports.createOrder = async (req, res) => {
             let contractArrrayData = [];
 
             let count = await orderService.getOrdersCount();
-            console.log('unique key++++++++++++++++++', count)
 
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
@@ -203,7 +199,6 @@ exports.createOrder = async (req, res) => {
 
                         // Check if 'file' is not null
                         if (file && file.filePath) {
-                            console.log("file+++++++++++++++++", file);
                             return {
                                 ...product,
                                 file: file.filePath,
@@ -234,7 +229,6 @@ exports.createOrder = async (req, res) => {
                 { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
                 {}
             );
-            console.log('vendor order check+++++++++++++++++++++++', checkVenderOrder)
             if (checkVenderOrder) {
                 res.send({
                     code: constant.errorCode,
@@ -255,11 +249,14 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let fileLength = req.files ? req.files.length : 0;
+            console.log("check++++++++++++++++++++111111111")
             if (
                 fileLength === data.productsArray.length &&
                 data.customerId != null &&
                 data.paymentStatus == "Paid"
             ) {
+                console.log("check++++++++++++++++++++22222222222")
+
                 let updateStatus = await orderService.updateOrder(
                     { _id: savedResponse._id },
                     { status: "Active" },
@@ -270,20 +267,24 @@ exports.createOrder = async (req, res) => {
                     { canProceed: true },
                     { new: true }
                 );
+                console.log("check++++++++++++++++++++33333333333")
+
                 const isValidDate = data.productsArray.every((product) => {
-                    console.log(product.coverageStartDate);
                     const coverageStartDate =
                         product.coverageStartDate != ""
                             ? moment(product.coverageStartDate).format("YYYY-MM-DD")
                             : product.coverageStartDate;
                     return moment(coverageStartDate, "YYYY-MM-DD", true).isValid();
                 });
+
+
+
                 if (isValidDate) {
-                    console.log("valid date +++++++++++++++++++++++++++++++++++++++");
+                    console.log("check++++++++++++++++++++444444444444")
+
                     let contractArrrayData = [];
                     for (let i = 0; i < data.productsArray.length; i++) {
                         let products = data.productsArray[i];
-                        console.log('dassasa', products)
                         let priceBookId = products.priceBookId;
                         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                         let projection = { isDeleted: 0 };
@@ -291,6 +292,7 @@ exports.createOrder = async (req, res) => {
                             query,
                             projection
                         );
+                        console.log("check++++++++++++++++++++555555555555")
 
                         const wb = XLSX.readFile(products.file);
                         const sheets = wb.SheetNames;
@@ -319,11 +321,14 @@ exports.createOrder = async (req, res) => {
                         // let savedDataOrder = savedResponse.toObject()
                         const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
                         let count1 = await contractService.getContractsCount();
+                        console.log("check++++++++++++++++++++666666666666")
 
                         totalDataComing.forEach((data, index) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                            console.log("check++++++++++++++++++++7777777777777777")
+
                             let contractObject = {
                                 orderId: savedResponse._id,
                                 orderProductId: matchedObject._id,
@@ -334,9 +339,11 @@ exports.createOrder = async (req, res) => {
                                 condition: data.condition,
                                 productValue: data.retailValue,
                                 unique_key: unique_key1,
-                                unique_key_number: unique_key_number,
+                                unique_key_number: unique_key_number1,
                                 unique_key_search: unique_key_search1,
                             };
+                            console.log("check++++++++++++++++++++88888888888")
+
                             contractArrrayData.push(contractObject);
                         });
 
@@ -355,6 +362,8 @@ exports.createOrder = async (req, res) => {
                         // };
                         // contractArrrayData.push(contractObject);
                     }
+            console.log("check++++++++++++++++++++999999999999",contractArrrayData.length)
+
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
                     );
@@ -397,7 +406,6 @@ exports.processOrder = async (req, res) => {
             return;
         }
 
-        console.log
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
@@ -407,7 +415,6 @@ exports.processOrder = async (req, res) => {
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
         // .some(Boolean);
-        console.log(resultArray)
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name')
         }
@@ -424,7 +431,6 @@ exports.processOrder = async (req, res) => {
 
         const combinedString = returnField.join(', ') + ' is missing';
 
-        console.log(combinedString);
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
         //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -575,7 +581,6 @@ exports.getAllOrders = async (req, res) => {
 
             const allUserIds = mergedArray.concat(userCustomerIds);
 
-            // console.log("allUserIds==============",allUserIds);
 
             const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
@@ -638,10 +643,6 @@ exports.getAllOrders = async (req, res) => {
                         : null;
 
                 if (dealerName || customerName || servicerName || resellerName) {
-                    // console.log("dealerName==============",dealerName)
-                    // console.log("customerName==============",customerName)
-                    // console.log("servicerName==============",servicerName)
-                    // console.log("resellerName==============",resellerName)
                     return {
                         ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                         dealerName: dealerName ? dealerName.toObject() : {},
@@ -650,7 +651,6 @@ exports.getAllOrders = async (req, res) => {
                         resellerName: resellerName ? resellerName.toObject() : {},
                     };
                 } else {
-                    console.log("fddsfsfdsffdsd");
                     return {
                         dealerName: {},
                         servicerName: {},
@@ -931,7 +931,6 @@ exports.checkFileValidation = async (req, res) => {
             const ws = wb.Sheets[sheets[0]];
             let message = [];
             const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-            console.log(totalDataComing1);
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
@@ -1018,7 +1017,6 @@ exports.checkFileValidation = async (req, res) => {
             // Check retail price is in between rangeStart and rangeEnd
             const isValidRetailPrice = totalDataComing.map((obj) => {
                 // Check if 'noOfProducts' matches the length of 'data'
-                //console.log(obj);
                 if (
                     obj.retailValue < Number(data.rangeStart) ||
                     obj.retailValue > Number(data.rangeEnd)
@@ -1372,7 +1370,6 @@ exports.editFileCase = async (req, res) => {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].orderFile.fileName != '') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
-                    console.log(fileName)
                     let product = {
                         key: i,
                         checkNumberProducts: data.productsArray[i].checkNumberProducts,
@@ -1679,7 +1676,6 @@ exports.getServicerInOrders = async (req, res) => {
     if (checkDealer && checkDealer.isServicer) {
         servicer.unshift(checkDealer);
     }
-    console.log("3rd-------------------------------", servicer);
 
     const servicerIds = servicer.map((obj) => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
@@ -1692,7 +1688,6 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     }
-    console.log("3rd-------------------------------", servicerUser);
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
@@ -1734,14 +1729,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let query = { _id: { $in: dealerPriceIds } };
-        console.log("getDealerPriceBook", getDealerPriceBook);
         // if(data.priceCatId){
         //     let categories =
         //     query = { _id: { $in: dealerPriceIds } ,}
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
-        console.log("get price book", getPriceBooks);
 
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
@@ -1759,7 +1752,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             };
         });
 
-        console.log("mergedPriceBook", mergedPriceBooks);
 
         //unique categories IDs from price books
         let uniqueCategory = {};
@@ -1829,14 +1821,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             dealerPriceBookDetail: dealerPriceBookDetail,
         };
 
-        console.log("uniqueCategories", uniqueCategories);
-        console.log("checkSelectedCategory", checkSelectedCategory);
-        console.log(
-            "dealer price ids",
-            dealerPriceIds,
-            "getPriceBooks",
-            getPriceBooks
-        );
+
 
         res.send({
             code: constant.successCode,
@@ -1980,15 +1965,12 @@ exports.getSingleOrder = async (req, res) => {
             }
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
-                console.log('order check +++++===============+++++++++++++', product, pricebook)
             }
-            // console.log('order check ++++++++++++++++++', checkOrder)
 
             return product;
         }));
 
 
-        // console.log('order check ++++++++++++++++++', checkOrder)
         // return
         //Get Dealer Data
 
@@ -2176,11 +2158,7 @@ exports.editOrderDetail = async (req, res) => {
                 (product) => product.file === ""
             );
 
-            console.log(
-                "file check------------------",
-                data.productsArray,
-                filteredProducts2
-            );
+
 
             const productsWithOrderFiles = filteredProducts.map((product, index) => {
                 const file = uploadedFiles[index];
@@ -2253,8 +2231,6 @@ exports.editOrderDetail = async (req, res) => {
                     item.orderFile.fileName === ""
             )
         // .some(Boolean);
-        //  console.log(isEmptyOrderFile);
-        // console.log(resultArray)
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -2263,11 +2239,9 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
-        console.log('check_____------------------------------------', returnField)
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("check++++++++++++++++++++++++++processed")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
@@ -2499,7 +2473,6 @@ exports.getOrderContract = async (req, res) => {
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
-        console.log(pageLimit, skipLimit, limitData)
         let query = [
             {
                 $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
@@ -2524,7 +2497,6 @@ exports.getOrderContract = async (req, res) => {
 
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
-        console.log("get count of order++++++++++++++++", totalContract)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2539,7 +2511,6 @@ exports.getOrderContract = async (req, res) => {
         // checkOrder = checkOrder;
         let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
         checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
-            console.log('order check ++++++++++++++++++')
             const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
             const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
             if (pricebook) {
@@ -2548,7 +2519,6 @@ exports.getOrderContract = async (req, res) => {
             if (pricebookCat) {
                 product.catName = pricebookCat.name;
             }
-            // console.log('order check ++++++++++++++++++', checkOrder)
 
             return product;
         }));
@@ -2556,16 +2526,12 @@ exports.getOrderContract = async (req, res) => {
 
         // return
         //Get Dealer Data
-        console.log("check+++++++111+++++++++++++++", checkOrder[0].order)
         let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
-        console.log("check++++++++++++++222++++++++")
         //Get customer Data
         let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
         //Get Reseller Data
-        console.log("check+++++++++++++++333+++++++")
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
-        console.log("check++++++++++++++444++++++++", new mongoose.Types.ObjectId("65ce1bd2279fab0000000000"))
 
         const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
@@ -2576,8 +2542,6 @@ exports.getOrderContract = async (req, res) => {
         let resellerUser = await userService.findUserforCustomer(queryResselerUser)
 
         //Get Servicer Data
-        console.log("check++++++++++++++5555++++++++", checkOrder[0].orderId)
-        console.log("check++++++++++++++5555++++++++", checkOrder[0].orderId[0])
 
         let query1 = {
             $or: [
@@ -2586,10 +2550,8 @@ exports.getOrderContract = async (req, res) => {
                 { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
             ],
         };
-        console.log("check++++++++++++++666++++++++")
 
         let checkServicer = await servicerService.getServiceProviderById(query1);
-        console.log("check++++++++++++++777++++++++")
 
         let userData = {
             dealerData: dealer ? dealer : {},
@@ -2703,10 +2665,8 @@ exports.generatePDF = async (req, res) => {
         //         const productId = product._id;
         //         const contract = await contractService.findContracts({ orderProductId: productId });
         //         const mergedObject = { ...product, contract }
-        //         console.log("check pushing ++++++++++++++++", mergedObject._id)
 
         //     })
-        //     console.log("sjdhfjsdhfjshf", okokok)
         //     orderWithContracts[0].productsArray = okokok
         // orderWithContracts[0].productsArray.forEach(async(product) => {
         //   const productId = product._id;
@@ -2717,7 +2677,6 @@ exports.generatePDF = async (req, res) => {
         //     const mergedObject = { ...product, contract };
 
         //     // Do something with merged object
-        //     console.log("mergedObject++++++++++++++++++++",mergedObject);
         //     orderWithContracts[0].productsArray.push(mergedObject)
 
         //   } 
@@ -2808,7 +2767,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; margin-top:40px; width: 50%;">
                     ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
                     
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username  : ''}</b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
                                 <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
@@ -2839,7 +2798,6 @@ exports.generatePDF = async (req, res) => {
                         const product = order.productsArray[j];
                         const pageSize = 10; // Number of contracts per page
                         const contracts = product.contract;
-                        console.log(contracts)
                         // Retrieve order contracts for the current product
                         let pageCount = Math.ceil(contracts.length / pageSize);
                         htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">

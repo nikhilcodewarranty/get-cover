@@ -176,16 +176,17 @@ exports.getContractById = async (req, res) => {
                 as: "servicer",
               }
             },
-
+           
             // { $unwind: "$dealer" },
             // { $unwind: "$reseller" },
             // { $unwind: "$servicer?$servicer:{}" },
 
-          ]
+          ],
+
         }
       },
     ]
-    let getData = await contractService.getContracts(query,skipLimit,pageLimit)
+    let getData = await contractService.getContracts(query, skipLimit, pageLimit)
     if (!getData) {
       res.send({
         code: constant.errorCode,

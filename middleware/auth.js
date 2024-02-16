@@ -20,21 +20,21 @@ verifyToken = async (req, res, next) => {
         })
       }
 
-      let checkUser = await users.findOne({ _id: decoded.teammateId })
-      if (!checkUser) {
-        res.send({
-          code: 401,
-          message: "Please login again1"
-        })
-        return
-      }
-      if (!checkUser.status) {
-        res.send({
-          code: 401,
-          message: "Please login again2"
-        })
-        return
-      }
+      // let checkUser = await users.findOne({ _id: decoded.teammateId })
+      // if (!checkUser) {
+      //   res.send({
+      //     code: 401,
+      //     message: "Please login again1"
+      //   })
+      //   return
+      // }
+      // if (!checkUser.status) {
+      //   res.send({
+      //     code: 401,
+      //     message: "Please login again2"
+      //   })
+      //   return
+      // }
 
       req.userId = decoded.userId;
       req.email = decoded.email;
