@@ -2275,6 +2275,8 @@ exports.editOrderDetail = async (req, res) => {
             );
             let contracts = [];
 
+
+            console.log("")
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2312,6 +2314,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
+                console.log("totalDataComing===================",totalDataComing);
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -2329,9 +2332,11 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    contracts.push(contractObject);
+                    console.log("contractObject===================",contractObject);
+                   // contracts.push(contractObject);
+                   let saveData =  contractService.createContract(contractObject)
                 });
-                let saveData = await contractService.createBulkContracts(contracts)
+         
             })
             // await contractService.createBulkContracts(contracts);
             res.send({
