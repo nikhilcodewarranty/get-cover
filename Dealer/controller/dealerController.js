@@ -2403,6 +2403,21 @@ exports.getDealerOrders = async (req, res) => {
               "$sum": "$productsArray.checkNumberProducts"
             },
             totalOrderAmount: { $sum: "$orderAmount" },
+            flag: {
+              $cond: {
+                  if: {
+                      $and: [
+                          // { $eq: ["$payment.status", "paid"] },
+                          { $ne: ["$productsArray.orderFile.fileName", ''] },
+                          { $ne: ["$customerId", null] },
+                          { $ne: ["$paymentStatus", 'Paid'] },
+                          { $ne: ["$productsArray.coverageStartDate", null] },
+                      ]
+                  },
+                  then: true,
+                  else: false
+              }
+          }
           }
         },
         { $sort: { unique_key: -1 } }

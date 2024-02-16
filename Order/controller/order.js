@@ -2723,11 +2723,9 @@ exports.generatePDF = async (req, res) => {
         //   } 
         // });
 
-        console.log("++++++++++++++++++orderWithContracts", orderWithContracts.length)
         let htmlContent;
-        console.log("+++++++++111111111+++++++++orderWithContracts")
 
-        if (orderWithContracts) {
+        if (orderWithContracts.length > 0) {
             htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
                 <tbody>
                     <tr>
@@ -2790,15 +2788,16 @@ exports.generatePDF = async (req, res) => {
                                 </small>
                         </td>
                         <td style="text-align: left; width: 50%;">
-                            <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                            <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
-                            <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
-                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
-                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
-                            ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
-                            <br/>
-                              </small>
+                        ${orderWithContracts[0].resellers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
+                        <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
+                        <br/>
+                          </small>`) : ''}
+                          
                         </td>
                         </tr>
                         </tbody>
@@ -2807,25 +2806,28 @@ exports.generatePDF = async (req, res) => {
                         <tbody>
                             <tr>
                     <td style="text-align: left; margin-top:40px; width: 50%;">
-                    <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                    ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
                     
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].name : ''}</b></h4>
+                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username  : ''}</b></h4>
                                 <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
                                 ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br/>
                   
-                        </small>
+                        </small>`) : ''}
+                  
                 </td>
                 <td style="text-align: left; width: 50%;">
-                    <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                    <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
-                    <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
-                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
-                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
-                    ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
-                 <br/>
-                        </small>
+                ${orderWithContracts[0].servicer?.length > 0 ? (`
+                <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
+                <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
+                <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
+                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
+                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
+                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
+             <br/>
+                    </small>`) : ''}
+                  
                 </td>
                     </tr>
                 </tbody>
@@ -2865,12 +2867,12 @@ exports.generatePDF = async (req, res) => {
                         <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
                             <tbody style="text-align: left;">
                                 <tr>
-                                    <td><b>Term:</b> ${product.term}</td>
-                                    <td><b>Unit Price:</b> ${product.unitPrice}</td>
-                                    <td><b># of Products:</b> ${product.noOfProducts}</td>
+                                    <td><b>Term:</b> ${product.term} Month</td>
+                                    <td><b>Unit Price:</b> $ ${product.unitPrice}</td>
+                                    <td><b># of Products:</b> ${product.noOfProducts}.00</td>
                                 </tr>
                                 <tr>
-                                    <td><b>Price:</b> ${product.price}</td>
+                                    <td><b>Price:</b> $ ${product.price}.00</td>
                                     <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
                                     <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
                                 </tr>
