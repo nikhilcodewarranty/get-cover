@@ -645,7 +645,73 @@ exports.customerOrders = async (req, res) => {
       return;
     }
 
-    let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      unique_key_number: 1,
+      unique_key_search: 1,
+      servicerId: 1,
+      customerId: 1,
+      serviceCoverageType: 1,
+      coverageType: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      createdAt: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+      contract: "$contract"
+    };
+
+    let query = { status: { $ne: "Archieved" }, customerId: new mongoose.Types.ObjectId(req.params.customerId) };
+
+    let lookupQuery = [
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "_id",
+          foreignField: "orderId",
+          as: "contract"
+        }
+      },
+      {
+        $project: project,
+      },
+      {
+        "$addFields": {
+          "noOfProducts": {
+            "$sum": "$productsArray.checkNumberProducts"
+          },
+          totalOrderAmount: { $sum: "$orderAmount" },
+          flag: {
+            $cond: {
+                if: {
+                    $and: [
+                        // { $eq: ["$payment.status", "paid"] },
+                        { $ne: ["$productsArray.orderFile.fileName", ''] },
+                        { $ne: ["$customerId", null] },
+                        { $ne: ["$paymentStatus", 'Paid'] },
+                        { $ne: ["$productsArray.coverageStartDate", null] },
+                    ]
+                },
+                then: true,
+                else: false
+            }
+        }
+        }
+      },
+      { $sort: { unique_key: -1 } }
+    ]
+
+
+
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+
+    //let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
 
     //Get Respective dealer
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
