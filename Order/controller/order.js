@@ -2681,7 +2681,7 @@ exports.generatePDF = async (req, res) => {
                 <tbody>
                     <tr>
                     <td style="text-align: left; width: 50%;">
-                    <img src="http://15.207.221.207:3002/uploads/logo.png" style="margin-bottom: 20px;"/>
+                    <img src="${logo}" style="margin-bottom: 20px;"/>
                     <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
                     <p style="margin: 0; padding: 0;">13th Street <br/>
                     47 W 13th St, New York,<br/>
