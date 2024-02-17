@@ -1747,7 +1747,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let file = req.file
       let data = req.body
 
-      let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
+      let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
+
       // Your array of objects
       if (checkDealer.length == 0) {
         res.send({
@@ -1850,8 +1851,11 @@ exports.uploadDealerPriceBook = async (req, res) => {
           return null;
         })
 
+        console.log("pricebookArrayPromise====================",pricebookArrayPromise);
         const pricebooksArray = await Promise.all(pricebookArrayPromise);
+        console.log("pricebooksArray====================",pricebooksArray);
 
+        return
         for (let i = 0; i < totalDataComing.length; i++) {
           if (!pricebooksArray[i]) {
             if (!totalDataComing[i].exit) {
@@ -1871,9 +1875,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
           return false;
         })
         const dealerArray = await Promise.all(dealerArrayPromise);
-
-
-
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {

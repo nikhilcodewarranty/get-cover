@@ -478,6 +478,8 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
+
+                { $unwind: "$productsArray" },
               
                 {
                     $lookup: {
@@ -487,9 +489,9 @@ exports.getAllOrders = async (req, res) => {
                         as: "contract"
                     }
                 },
-                {
-                    $project: project,
-                },
+                // {
+                //     $project: project,
+                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
@@ -514,6 +516,7 @@ exports.getAllOrders = async (req, res) => {
 
                     }
                 },
+                
                 { $sort: { unique_key: -1 } }
             ]
 
@@ -2846,7 +2849,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </tbody>
                         </table>
-                        <table style="page-break-before:always; width: 100%; border-collapse: collapse;">
+                        <table style=" width: 100%; border-collapse: collapse; margin-bottom:50px">
                             <thead style="background-color: #f4f4f4; text-align: left;">
                                 <tr>
                                     <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
@@ -2859,7 +2862,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${contracts.map((contract, index) => `
+                                ${contracts.map((contract, index) =>`
                                 <tr>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
