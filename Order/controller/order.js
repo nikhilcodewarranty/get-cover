@@ -478,8 +478,6 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
-
-                { $unwind: "$productsArray" },
               
                 {
                     $lookup: {
