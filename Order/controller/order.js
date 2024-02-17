@@ -2849,7 +2849,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </tbody>
                         </table>
-                        <table style=" width: 100%; border-collapse: collapse; margin-bottom:50px">
+                        <table style=" width: 100%; border-collapse: collapse; margin-bottom:30px">
                             <thead style="background-color: #f4f4f4; text-align: left;">
                                 <tr>
                                     <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
