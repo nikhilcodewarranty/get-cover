@@ -1820,11 +1820,19 @@ exports.uploadDealerPriceBook = async (req, res) => {
         if (!data.retailPrice) {
           data.status = "Dealer catalog retail price is empty";
           data.exit = true;
+        }else if(isNaN(parseFloat(data.retailPrice))){
+          data.status = "Dealer catalog retail price is not valid";
+          data.exit = true;
+        }
+        else if(parseFloat(data.retailPrice) <= 0){
+          data.status = "Dealer catalog retail price should be greater than 0";
+          data.exit = true;
         }
         else {
           data.status = null
         }
       })
+
       //  console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
@@ -1835,14 +1843,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
             continue;
           }
           if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
-            console.log("=================IF================",repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()])
             totalDataComing[i].status = "not unique";
             totalDataComing[i].exit = true;
             const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
             totalDataComing[index].duplicates.push(i);
           } else {
             repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
-            console.log("=================ELSE================",repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()])
             totalDataComing[i].status = null;
           }
         }
@@ -1852,11 +1858,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
           return null;
         })
 
-        console.log("pricebookArrayPromise====================",pricebookArrayPromise);
         const pricebooksArray = await Promise.all(pricebookArrayPromise);
-        console.log("pricebooksArray====================",pricebooksArray);
 
-        return
         for (let i = 0; i < totalDataComing.length; i++) {
           if (!pricebooksArray[i]) {
             if (!totalDataComing[i].exit) {
@@ -1876,6 +1879,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           return false;
         })
         const dealerArray = await Promise.all(dealerArrayPromise);
+
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
@@ -1902,7 +1906,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
                   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
-                })
+                }
+                )
 
 
               await dealerPriceService.createDealerPrice({
