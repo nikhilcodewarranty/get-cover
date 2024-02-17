@@ -1835,13 +1835,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
             continue;
           }
           if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
+            console.log("=================IF================",repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()])
             totalDataComing[i].status = "not unique";
             totalDataComing[i].exit = true;
             const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
             totalDataComing[index].duplicates.push(i);
           } else {
-
             repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
+            console.log("=================ELSE================",repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()])
             totalDataComing[i].status = null;
           }
         }

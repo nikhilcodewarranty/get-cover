@@ -313,7 +313,7 @@ exports.createOrder = async (req, res) => {
                             };
                         });
                         // let savedDataOrder = savedResponse.toObject()
-                        const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
+                        const matchedObject = await savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
                         let count1 = await contractService.getContractsCount();
                         totalDataComing.forEach((data, index) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
@@ -332,7 +332,7 @@ exports.createOrder = async (req, res) => {
                                 unique_key_number: unique_key_number1,
                                 unique_key_search: unique_key_search1,
                             };
-                            console.log("check++++++++++++++++++++88888888888")
+                            console.log("contractObject++++++++++++++++++++contractObject")
 
                             contractArrrayData.push(contractObject);
                         });
