@@ -2773,7 +2773,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.firstName + " "+ orderWithContracts[0].dealerUsers.lastName: ''} <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.firstName + " " + orderWithContracts[0].dealerUsers.lastName : ''} <br/>
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
@@ -2783,7 +2783,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName+" "+ orderWithContracts[0].resellerUsers.lastName : ''} <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName + " " + orderWithContracts[0].resellerUsers.lastName : ''} <br/>
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
@@ -2818,97 +2818,76 @@ exports.generatePDF = async (req, res) => {
                 </tr>
             </tbody>
         </table>`
-            if (orderWithContracts.length > 0) {
-                for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
-                    const order = orderWithContracts[i];
-                    for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
-                        const product = order.productsArray[j];
-                        const pageSize = 10; // Number of contracts per page
-                        const contracts = product.contract;
-                        // Retrieve order contracts for the current product
-                        let pageCount = Math.ceil(contracts.length / pageSize);
-                        htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
-                            <tbody>
-                                <tr style='padding-bottom:5px;'>
-                                    <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
-                            <tbody style="text-align: left;">
-                                <tr>
-                                    <td><b>Product Category:</b> ${product.category.name}</td>
-                                    <td><b>Product Name:</b> ${product.description}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style=""> 
-                            <tbody>
-                                <tr>
-                                    <td><b>Product Description:</b> ${product.description}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
-                            <tbody style="text-align: left;">
-                                <tr>
-                                    <td><b>Term:</b> ${product.term} Month</td>
-                                    <td><b>Unit Price:</b> $ ${product.unitPrice}</td>
-                                    <td><b># of Products:</b> ${product.noOfProducts}.00</td>
-                                </tr>
-                                <tr>
-                                    <td><b>Price:</b> $ ${product.price}.00</td>
-                                    <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
-                                    <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <table style=" width: 100%; border-collapse: collapse; margin-bottom:30px">
-                            <thead style="background-color: #f4f4f4; text-align: left;">
-                                <tr>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${contracts.map((contract, index) => `
-                                <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.model}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.productValue).toFixed(2)}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                </tr>`).join('')}
-                            </tbody>
-                        </table>
-                        `;
+            for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
+                const order = orderWithContracts[i];
+                for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
+                    const product = order.productsArray[j];
+                    const pageSize = 10; // Number of contracts per page
+                    const contracts = product.contract;
+                    // Retrieve order contracts for the current product
+                    let pageCount = Math.ceil(contracts.length / pageSize);
+                    for (let page = 0; page < pageCount; page++) {
+                        // Start of a new page
+                        htmlContent += `
+                  <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
+                      <thead style="background-color: #f4f4f4; text-align: left;">
+                          <tr>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      ${contracts
+                                ?.slice(page * pageSize, (page + 1) * pageSize)
+                                ?.map(
+                                    (contract, index) => `
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        } </td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
+                                            contract.productValue
+                                        ).toFixed(2)}</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
+                                            contract.claimAmount
+                                        ).toFixed(2)}</td>
+                        </tr>
+                      ` )
+                                .join("")}
+                    </tbody>
+                  </table>
+                  `;
                     }
+
                 }
             }
 
 
-
-        }
-
+                }
 
 
-        res.send({
-            code: constant.successCode,
-            result: htmlContent,
-            orderWithContracts: orderWithContracts
-        })
-    }
+
+                res.send({
+                    code: constant.successCode,
+                    result: htmlContent,
+                    orderWithContracts: orderWithContracts
+                })
+            }
     catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-}
+                res.send({
+                    code: constant.errorCode,
+                    message: err.message
+                })
+            }
+        }
