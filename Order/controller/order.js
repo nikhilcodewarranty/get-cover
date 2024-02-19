@@ -2902,6 +2902,7 @@ exports.generatePDF = async (req, res) => {
                             )
                             .join("") :
                         (() => {
+                            console.log('here-----',startIndex , endIndex)
                             let htmlContent = '';
                             if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
                                 for (let i = startIndex; i < endIndex; i++) {
