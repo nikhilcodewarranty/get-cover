@@ -2905,8 +2905,8 @@ exports.generatePDF = async (req, res) => {
                     </tbody>
                   </table>
                   `;
-                  startIndex = endIndex  + 1
-                  endIndex = endIndex + 19
+                  startIndex = endIndex
+                  endIndex = endIndex + 20
                     }
 
                 }
