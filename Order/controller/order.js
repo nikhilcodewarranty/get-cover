@@ -2825,7 +2825,7 @@ exports.generatePDF = async (req, res) => {
                     const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
-                    htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:0px">
+                    htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
                     <tbody>
                         <tr style='padding-bottom:5px;'>
                             <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
@@ -2865,7 +2865,7 @@ exports.generatePDF = async (req, res) => {
                     for (let page = 0; page < pageCount; page++) {
                         // Start of a new page
                         htmlContent += `
-                        <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
+                  <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
                       <thead style="background-color: #f4f4f4; text-align: left;">
                           <tr>
                               <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
