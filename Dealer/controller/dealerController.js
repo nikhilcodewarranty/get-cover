@@ -1817,17 +1817,18 @@ exports.uploadDealerPriceBook = async (req, res) => {
       //  return;
       // copy to here
       totalDataComing.forEach(data => {
-        if (!data.retailPrice) {
-          data.status = "Dealer catalog retail price is empty";
-          data.exit = true;
-        } else if (isNaN(parseFloat(data.retailPrice))) {
+        if (!data.retailPrice || typeof(data.retailPrice) != 'number' || data.retailPrice <= 0) {
           data.status = "Dealer catalog retail price is not valid";
           data.exit = true;
         }
-        else if (parseFloat(data.retailPrice) <= 0) {
-          data.status = "Dealer catalog retail price should be greater than 0";
-          data.exit = true;
-        }
+        // else if(isNaN(parseFloat(data.retailPrice))){
+        //   data.status = "Dealer catalog retail price is not valid";
+        //   data.exit = true;
+        // }
+        // else if(parseFloat(data.retailPrice) <= 0){
+        //   data.status = "Dealer catalog retail price should be greater than 0";
+        //   data.exit = true;
+        // }
         else {
           data.status = null
         }
@@ -1919,6 +1920,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
+
+              console.log('skdjfklsfjlskjflsfjslkdjf=============')
+
               totalDataComing[i].status = "Dealer catalog created successully"
               totalDataComing[i].duplicates.forEach((index, i) => {
                 totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
@@ -1981,7 +1985,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('anil@codenomad.net', htmlTableString));
       }
 
       res.send({

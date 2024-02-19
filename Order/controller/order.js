@@ -1991,8 +1991,8 @@ exports.getSingleOrder = async (req, res) => {
         let query1 = {
             $or: [
                 { _id: checkOrder.servicerId },
-                { resellerId: checkOrder.resellerId },
-                { dealerId: checkOrder.dealerId },
+                // { resellerId: checkOrder.resellerId },
+                // { dealerId: checkOrder.dealerId },
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
@@ -2507,7 +2507,7 @@ exports.getOrderContract = async (req, res) => {
         ]
 
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-        let totalContract = await contractService.getAllContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        let totalContract = await contractService.findContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2557,8 +2557,8 @@ exports.getOrderContract = async (req, res) => {
         let query1 = {
             $or: [
                 { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
             ],
         };
 
