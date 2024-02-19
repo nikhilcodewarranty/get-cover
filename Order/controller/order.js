@@ -2889,7 +2889,7 @@ exports.generatePDF = async (req, res) => {
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
                                         }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${parseFloat(contract.productValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' }))}</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
