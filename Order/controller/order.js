@@ -2861,8 +2861,11 @@ exports.generatePDF = async (req, res) => {
                         </tr>
                     </tbody>
                 </table>`
+                    let startIndex = 0
+                    let endIndex = 6
                     let pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
+                        
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
@@ -2879,7 +2882,7 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                                ?.slice(page * (page===0 ? 6 : 20) , (page + 1) * (page===0 ? 6 : 20))
+                                ?.slice(startIndex , endIndex)
                                 ?.map(
                                     (contract, index) => `
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * (page===0 ? 6 : 20))}</td>
@@ -2901,6 +2904,8 @@ exports.generatePDF = async (req, res) => {
                     </tbody>
                   </table>
                   `;
+                  startIndex = endIndex  + 1
+                  endIndex = endIndex + 19
                     }
 
                 }
