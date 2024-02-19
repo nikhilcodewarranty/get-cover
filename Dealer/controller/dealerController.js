@@ -1747,7 +1747,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let file = req.file
       let data = req.body
 
-      let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
+      let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
+
       // Your array of objects
       if (checkDealer.length == 0) {
         res.send({
@@ -1819,11 +1820,19 @@ exports.uploadDealerPriceBook = async (req, res) => {
         if (!data.retailPrice) {
           data.status = "Dealer catalog retail price is empty";
           data.exit = true;
+        }else if(isNaN(parseFloat(data.retailPrice))){
+          data.status = "Dealer catalog retail price is not valid";
+          data.exit = true;
+        }
+        else if(parseFloat(data.retailPrice) <= 0){
+          data.status = "Dealer catalog retail price should be greater than 0";
+          data.exit = true;
         }
         else {
           data.status = null
         }
       })
+
       //  console.log("check empty value", totalDataComing)
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
@@ -1839,7 +1848,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
             const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
             totalDataComing[index].duplicates.push(i);
           } else {
-
             repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
             totalDataComing[i].status = null;
           }
@@ -1872,8 +1880,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         const dealerArray = await Promise.all(dealerArrayPromise);
 
-
-
         for (let i = 0; i < totalDataComing.length; i++) {
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
@@ -1900,7 +1906,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
                   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
-                })
+                }
+                )
 
 
               await dealerPriceService.createDealerPrice({

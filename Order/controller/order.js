@@ -53,7 +53,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-            let data = req.body;
+             let data = req.body;
             // let data = {
             //     "dealerId": "65ce11c8750ebbaea9330274",
             //     "servicerId": "",
@@ -249,13 +249,11 @@ exports.createOrder = async (req, res) => {
                 return;
             }
             let fileLength = req.files ? req.files.length : 0;
-            console.log("check++++++++++++++++++++111111111")
             if (
                 fileLength === data.productsArray.length &&
                 data.customerId != null &&
                 data.paymentStatus == "Paid"
             ) {
-                console.log("check++++++++++++++++++++22222222222")
 
                 let updateStatus = await orderService.updateOrder(
                     { _id: savedResponse._id },
@@ -267,7 +265,6 @@ exports.createOrder = async (req, res) => {
                     { canProceed: true },
                     { new: true }
                 );
-                console.log("check++++++++++++++++++++33333333333")
 
                 const isValidDate = data.productsArray.every((product) => {
                     const coverageStartDate =
@@ -280,7 +277,6 @@ exports.createOrder = async (req, res) => {
 
 
                 if (isValidDate) {
-                    console.log("check++++++++++++++++++++444444444444")
 
                     let contractArrrayData = [];
                     for (let i = 0; i < data.productsArray.length; i++) {
@@ -292,8 +288,6 @@ exports.createOrder = async (req, res) => {
                             query,
                             projection
                         );
-                        console.log("check++++++++++++++++++++555555555555")
-
                         const wb = XLSX.readFile(products.file);
                         const sheets = wb.SheetNames;
                         const ws = wb.Sheets[sheets[0]];
@@ -319,16 +313,12 @@ exports.createOrder = async (req, res) => {
                             };
                         });
                         // let savedDataOrder = savedResponse.toObject()
-                        const matchedObject = savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
+                        const matchedObject = await savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
                         let count1 = await contractService.getContractsCount();
-                        console.log("check++++++++++++++++++++666666666666")
-
                         totalDataComing.forEach((data, index) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                            console.log("check++++++++++++++++++++7777777777777777")
-
                             let contractObject = {
                                 orderId: savedResponse._id,
                                 orderProductId: matchedObject._id,
@@ -342,7 +332,7 @@ exports.createOrder = async (req, res) => {
                                 unique_key_number: unique_key_number1,
                                 unique_key_search: unique_key_search1,
                             };
-                            console.log("check++++++++++++++++++++88888888888")
+                            //console.log("contractObject++++++++++++++++++++contractObject")
 
                             contractArrrayData.push(contractObject);
                         });
@@ -362,8 +352,6 @@ exports.createOrder = async (req, res) => {
                         // };
                         // contractArrrayData.push(contractObject);
                     }
-            console.log("check++++++++++++++++++++999999999999",contractArrrayData.length)
-
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
                     );
@@ -490,6 +478,7 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
+              
                 {
                     $lookup: {
                         from: "contracts",
@@ -498,16 +487,16 @@ exports.getAllOrders = async (req, res) => {
                         as: "contract"
                     }
                 },
-                {
-                    $project: project,
-                },
+                // {
+                //     $project: project,
+                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        flag: {
+                        flag: {                            
                             $cond: {
                                 if: {
                                     $and: [
@@ -525,12 +514,14 @@ exports.getAllOrders = async (req, res) => {
 
                     }
                 },
+                
                 { $sort: { unique_key: -1 } }
             ]
 
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+            console.log("ordersResult===================",ordersResult);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -2246,9 +2237,7 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
-            let contracts = [];
-            console.log("contract saving++++++++++++++++++++++++++++")
-
+            let contractArray = [];
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2263,10 +2252,6 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-
-
-
-
                 let contractCount =
                     Number(
                         count1.length > 0 && count1[0].unique_key
@@ -2286,17 +2271,14 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("contract saving+++++++++++++111111111+++++++++++++++")
 
                 totalDataComing.forEach((data, index) => {
-                    console.log("contract saving+++++++++++++++++22222+++++++++++", data)
-
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let contractObject = {
                         orderId: savedResponse._id,
-                        orderProductId: product._id,
+                        orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2307,15 +2289,14 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    // contracts.push(contractObject);
-                    console.log("contract saving+++++++++++++++++22222+++++++++++", contractObject)
-                    let saveData = contractService.createContract(contractObject)
+                    contractArray.push(contractObject);
+                    //let saveData = contractService.createContract(contractObject)
                 });
+
+                await contractService.createBulkContracts(contractArray);
 
             })
 
-            
-            // await contractService.createBulkContracts(contracts);
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -2368,8 +2349,10 @@ exports.markAsPaid = async (req, res) => {
         );
         let contracts = [];
 
-        await updateOrder.productsArray.map(async (product) => {
+
+        await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
@@ -2402,7 +2385,7 @@ exports.markAsPaid = async (req, res) => {
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
-            totalDataComing.forEach(data => {
+            totalDataComing.forEach((data,index) => {
                 let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2419,8 +2402,12 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
+                console.log("contractObject===========================")
+
                 contracts.push(contractObject);
             });
+
+            console.log("contracts===========================",contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
@@ -2609,16 +2596,6 @@ exports.generatePDF = async (req, res) => {
                     "as": "category"
                 }
             },
-            // {
-            //     "$lookup": {
-            //         "from": "contracts",
-            //         "let": { productId: "$productsArray._id" },
-            //         "pipeline": [
-            //             { $match: { $expr: { $eq: ["$orderProductId", "$$productId"] } } }
-            //         ],
-            //         "as": "productsArray.orderContracts"
-            //     }
-            // },
             {
                 $addFields: {
                     "productsArray.category": { $arrayElemAt: ["$category", 0] },
@@ -2630,6 +2607,7 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
+                    
                 }
             },
             {
@@ -2655,11 +2633,53 @@ exports.generatePDF = async (req, res) => {
                     foreignField: "_id",
                     as: "customers"
                 }
-            }
+            },
+            {
+                $unwind: "$dealers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "dealerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$dealerUsers" // Unwind dealers array
+            },
+            {
+                $unwind: "$resellers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "resellerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$resellerUsers" // Unwind dealers array
+            },
+            
 
         ];
 
         let orderWithContracts = await orderService.getOrderWithContract(query);
+
         let productsData = []
 
         for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
@@ -2694,111 +2714,94 @@ exports.generatePDF = async (req, res) => {
 
         if (orderWithContracts.length > 0) {
             htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tbody>
-                    <tr>
+            <tbody>
+                <tr>
                     <td style="text-align: left; width: 50%;">
-                    <img src="" style="margin-bottom: 20px;"/>
-                    <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
-                    <p style="margin: 0; padding: 0;">13th Street <br/>
-                    47 W 13th St, New York,<br/>
-                    NY 10011, USA</p>
-                </td>
-                <td style=" width: 50%;">
-                    <table style="width: 100%; border-collapse: collapse;">
-                        <thead>
-                            <tr>
-                                <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"> <b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
-                            </tr>
+                        <img src='http://15.207.221.207:3002/uploads/logo.png' style="margin-bottom: 20px;"/>
+                        <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
+                        <p style="margin: 0; padding: 0;">13th Street <br/>
+                        47 W 13th St, New York,<br/>
+                        NY 10011, USA</p>
+                    </td>
+                    <td style=" width: 50%;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
                                 <tr>
-                                    <td> <b> Order ID : </b> </td> 
-                                    <td>
-                                   ${orderWithContracts[0].unique_key}
-                                    </td>
+                                    <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
                                 </tr>
                                 <tr>
-                                    <td> <b> Dealer P.O. # : </b> </td> 
-                                    <td>
-                                    ${orderWithContracts[0].venderOrder}
-                                    </td>
+                                    <td><b> Order ID : </b></td> 
+                                    <td>${orderWithContracts[0].unique_key}</td>
                                 </tr>
                                 <tr>
-                                  <td> <b>Service Coverage : </b> </td>
-                                  <td>
-                                  ${orderWithContracts[0].serviceCoverageType}
-                                  </td>
-                                  </tr>
-                                  <tr>
-                                  <td> <b> Coverage Type : </b> </td>
-                                  <td> ${orderWithContracts[0].coverageType}</td>
+                                    <td><b> Dealer P.O. # : </b></td> 
+                                    <td>${orderWithContracts[0].venderOrder}</td>
                                 </tr>
-                
-                            </tbody>
+                                <tr>
+                                    <td><b>Service Coverage : </b></td>
+                                    <td>${orderWithContracts[0].serviceCoverageType}</td>
+                                </tr>
+                                <tr>
+                                    <td><b> Coverage Type : </b></td>
+                                    <td>${orderWithContracts[0].coverageType}</td>
+                                </tr>
+                            </thead>
                         </table>
-                                </thead>
-                            </table>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                <tbody>
-                    <tr>
-                        <td style="text-align: left; width: 50%;">
-                            <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-                            <h4 style="margin: 0; padding: 0;"><b>  ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].name : ''}</b></h4>
-                            <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].street : ''}
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].city : ''},
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].state : ''}
-                            ${orderWithContracts[0].dealers.length > 0 ? orderWithContracts[0].dealers[0].zip : ''}
-                              <br/>
-                                </small>
-                        </td>
-                        <td style="text-align: left; width: 50%;">
-                        ${orderWithContracts[0].resellers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>
+                <tr>
+                    <td style="text-align: left; width: 50%;">
+                        <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
                         <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
-                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}
-                        <br/>
-                          </small>`) : ''}
-                          
-                        </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-                        <tbody>
-                            <tr>
+                        ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
+                        ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
+                        ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
+                        ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}<br/>
+                        ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}</small>
+                    </td>
+                    <td style="text-align: left; width: 50%;">
+                        ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName : ''} <br/>
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
+                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}<br/>
+                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tbody>
+                <tr>
                     <td style="text-align: left; margin-top:40px; width: 50%;">
-                    ${orderWithContracts[0].customers?.length > 0 ? (`  <h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                    
-                    <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
-                                <small style="margin: 0; padding: 0;">      ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
-                                ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''} <br/>
-                  
+                        ${orderWithContracts[0].customers?.length > 0 ? (`<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
+                        <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
+                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
+                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
+                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''}<br/>
                         </small>`) : ''}
-                  
-                </td>
-                <td style="text-align: left; width: 50%;">
-                ${orderWithContracts[0].servicer?.length > 0 ? (`
-                <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                <h4 style="margin: 0; padding: 0;"><b> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''} </b></h4>
-                <small style="margin: 0; padding: 0;"> ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
-                ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}
-             <br/>
-                    </small>`) : ''}
-                  
-                </td>
-                    </tr>
-                </tbody>
-            </table>`
+                    </td>
+                    <td style="text-align: left; width: 50%;">
+                        ${orderWithContracts[0].servicer?.length > 0 ? (`
+                        <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''}</b></h4>
+                        <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
+                        ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
+                        ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
+                        ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}<br/>
+                        </small>`) : ''}
+                    </td>
+                </tr>
+            </tbody>
+        </table>`
             if (orderWithContracts.length > 0) {
                 for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
                     const order = orderWithContracts[i];
@@ -2844,7 +2847,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </tbody>
                         </table>
-                        <table style="page-break-before:always; width: 100%; border-collapse: collapse;">
+                        <table style=" width: 100%; border-collapse: collapse; margin-bottom:30px">
                             <thead style="background-color: #f4f4f4; text-align: left;">
                                 <tr>
                                     <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
@@ -2857,7 +2860,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${contracts.map((contract, index) => `
+                                ${contracts.map((contract, index) =>`
                                 <tr>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
