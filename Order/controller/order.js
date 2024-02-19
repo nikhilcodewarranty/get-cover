@@ -2855,7 +2855,7 @@ exports.generatePDF = async (req, res) => {
                             <td><b># of Products:</b> ${product.noOfProducts}.00</td>
                         </tr>
                         <tr>
-                            <td><b>Price:</b>  ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}.00</td>
+                            <td><b>Price:</b>  ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
                             <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
                             <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
                         </tr>
@@ -2889,9 +2889,9 @@ exports.generatePDF = async (req, res) => {
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
                                         }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${parseInt(
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${
                                             contract.productValue.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
-                                        ).toFixed(2)}</td>
+                            }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
