@@ -2882,7 +2882,7 @@ exports.generatePDF = async (req, res) => {
                           </tr>
                       </thead>
                       <tbody>
-                      ${( startIndex == 0 ) || (endIndex - startIndex > 19) ?
+                      ${( startIndex == 0 ) || (endIndex - startIndex > 19) &&
                         contracts
                                 ?.slice(startIndex, endIndex)
                                 ?.map(
@@ -2897,9 +2897,7 @@ exports.generatePDF = async (req, res) => {
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                 </tr>
                             `
-                                ):(
-                                    <></>
-                                )
+                                ).join("")
                                }
                     `;
                     startIndex = endIndex;
