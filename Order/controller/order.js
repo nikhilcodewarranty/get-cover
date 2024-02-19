@@ -2904,7 +2904,7 @@ exports.generatePDF = async (req, res) => {
                     `;
                     startIndex = endIndex;
                     endIndex = Math.min(endIndex + 20, contracts.length);
-                   let data =()=>{
+                   var data =()=>{
                     if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
                         {
                             for (let i = startIndex; i < endIndex; i++) {
@@ -2925,7 +2925,11 @@ exports.generatePDF = async (req, res) => {
                             htmlContent += `</tbody></table>`
                         }
 
-                    
+                        // if(endIndex > contracts.length){
+                        //     endIndex = contracts.length 
+                        //     pageCount = pageCount + 1
+                        // }
+
                     }
                    }
                        
