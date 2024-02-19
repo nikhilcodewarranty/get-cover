@@ -2822,7 +2822,7 @@ exports.generatePDF = async (req, res) => {
                 const order = orderWithContracts[i];
                 for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                     const product = order.productsArray[j];
-                    const pageSize = 20; // Number of contracts per page
+                    const pageSize = j==0 ? 6 : 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
                     htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
@@ -2889,7 +2889,7 @@ exports.generatePDF = async (req, res) => {
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
                                         }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${product.price}.00</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
                                         }</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
