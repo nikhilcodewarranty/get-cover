@@ -2869,52 +2869,48 @@ exports.generatePDF = async (req, res) => {
 
                         // Start of a new page
                         htmlContent += `
-                        <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
-                            <thead style="background-color: #f4f4f4; text-align: left;">
-                                <tr>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
-                                    <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                    `;
-                   
-                    htmlContent += (startIndex == 0 ) || (endIndex - startIndex > 19) ?
+                  <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
+                      <thead style="background-color: #f4f4f4; text-align: left;">
+                          <tr>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
+                              <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                      ${( startIndex == 0 ) || (endIndex - startIndex > 19) ?
                         contracts
-                            ?.slice(startIndex, endIndex)
-                            ?.map(
-                                (contract, index) => `
+                                ?.slice(startIndex, endIndex)
+                                ?.map(
+                                    (contract, index) => `
+                                <tr>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                </tr>
+                            `
+                                ):(
+                                    ''
+                                )
+                               }
+                    `;
+                    startIndex = endIndex;
+                    endIndex = Math.min(endIndex + 20, contracts.length);
+                        if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
+                            {
+                                for (let i = startIndex; i < endIndex; i++) {
+                                    const contract = contracts[i];
+                                    htmlContent += `
                                     <tr>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                    </tr>
-                                `
-                            )
-                            .join("") :
-                        (() => {
-                      ''
-                        })();
-                
-                        startIndex = endIndex;
-                        endIndex = Math.min(endIndex + 20, contracts.length);
-                        console.log('here-----',startIndex , endIndex)
-                        let htmlContent = '';
-                        if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 19) {
-                            for (let i = startIndex; i < endIndex; i++) {
-                                const contract = contracts[i];
-                                htmlContent += `
-                                    <tr>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${(i - startIndex) + 1}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${(i-startIndex) + 1}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
@@ -2923,19 +2919,21 @@ exports.generatePDF = async (req, res) => {
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                     </tr>
                                 `;
+                                }
+
+                                htmlContent += `</tbody></table>`
                             }
-                            htmlContent += `</tbody></table>`;
+
+                            // if(endIndex > contracts.length){
+                            //     endIndex = contracts.length 
+                            //     pageCount = pageCount + 1
+                            // }
+
                         }
-                        return htmlContent;
-                }
-                
-                    
-               
-               
                        
                     }
                 }
-            
+            }
         }
 
 
