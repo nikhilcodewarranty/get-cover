@@ -755,6 +755,12 @@ exports.getResellerOrders = async (req, res) => {
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
+        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userResellerIds = ordersResult
+            .filter(result => result.resellerId !== null)
+            .map(result => result.resellerId.toString());
+
+        let mergedArray = userDealerIds.concat(userResellerIds);
         //Get Respective Dealers
         let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
             name: 1,
@@ -789,6 +795,17 @@ exports.getResellerOrders = async (req, res) => {
             servicerCreteria,
             { name: 1 }
         );
+
+        let userCustomerIds = ordersResult
+            .filter(result => result.customerId !== null)
+            .map(result => result.customerId.toString());
+
+        const allUserIds = mergedArray.concat(userCustomerIds);
+
+
+        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         const result_Array = ordersResult.map((item1) => {
             const dealerName =
                 item1.dealerId != ""
@@ -851,14 +868,50 @@ exports.getResellerOrders = async (req, res) => {
                 status.test(entry.status)
             );
         });
-        const updatedArray = filteredData.map((item) => ({
-            ...item,
-            servicerName: item.dealerName.isServicer
-                ? item.dealerName
-                : item.resellerName.isServicer
-                    ? item.resellerName
-                    : item.servicerName,
-        }));
+        // const updatedArray = filteredData.map((item) => ({
+        //     ...item,
+        //     servicerName: item.dealerName.isServicer
+        //         ? item.dealerName
+        //         : item.resellerName.isServicer
+        //             ? item.resellerName
+        //             : item.servicerName,
+        // }));
+
+        const updatedArray = filteredData.map(item => {
+            let username = null; // Initialize username as null
+            let resellerUsername = null
+            let customerUserData = null
+            let isEmptyStartDate = item.productsArray.map(
+                (item1) => item1.coverageStartDate === null
+            );
+            let isEmptyOrderFile = item.productsArray
+                .map(
+                    (item1) =>
+                        item1.orderFile.fileName === ""
+                )
+            item.flag = false
+            const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
+            const fileName = isEmptyOrderFile.includes(true) ? false : true
+            if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
+                item.flag = true
+            }
+            if (item.dealerName) {
+                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+            }
+            if (item.resellerName) {
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+            }
+            if (item.customerName) {
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+            }
+            return {
+                ...item,
+                servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
+                username: username, // Set username based on the conditional checks
+                resellerUsername: resellerUsername ? resellerUsername : {},
+                customerUserData: customerUserData ? customerUserData : {}
+            };
+        });
 
         const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
         const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
@@ -899,7 +952,7 @@ exports.getResellerOrders = async (req, res) => {
 exports.getResellerContract = async (req, res) => {
     try {
         let data = req.body
-        let getResellerOrder = await orderService.getOrders({ resellerId: req.params.resellerId ,status:{$in:["Active","Pending"]}}, { _id: 1 })
+        let getResellerOrder = await orderService.getOrders({ resellerId: req.params.resellerId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
         if (!getResellerOrder) {
             res.send({
                 code: constant.errorCode,
