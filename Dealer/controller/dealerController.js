@@ -2557,7 +2557,7 @@ exports.getDealerOrders = async (req, res) => {
             dealerName: dealerName.toObject(),
             servicerName: servicerName.toObject(),
             customerName: customerName.toObject(),
-            resellerName: resellerName.toObject,
+            resellerName: resellerName.toObject(),
           };
         }
       });
