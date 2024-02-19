@@ -2903,7 +2903,7 @@ exports.generatePDF = async (req, res) => {
                     `;
                     
                     // If the difference between startIndex and endIndex is less than 20, use a for loop instead of map
-                    if (startIndex !== 0 && endIndex !== 6)  {
+                    if (startIndex > 6)  {
                         if(endIndex - startIndex < 20  ){
                             for (let i = startIndex; i < endIndex; i++) {
                                 console.log('here',startIndex,endIndex)
