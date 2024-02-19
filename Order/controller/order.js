@@ -2773,7 +2773,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: UserName <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.firstName + " "+ orderWithContracts[0].dealerUsers.lastName: ''} <br/>
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
@@ -2783,7 +2783,7 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName : ''} <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName+" "+ orderWithContracts[0].resellerUsers.lastName : ''} <br/>
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
