@@ -2898,13 +2898,13 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             `
                                 ):(
-                                    data()
+                                    <></>
                                 )
                                }
                     `;
                     startIndex = endIndex;
                     endIndex = Math.min(endIndex + 20, contracts.length);
-                   var data =()=>{
+                 
                     if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
                         {
                             for (let i = startIndex; i < endIndex; i++) {
@@ -2930,7 +2930,7 @@ exports.generatePDF = async (req, res) => {
                         //     pageCount = pageCount + 1
                         // }
 
-                    }
+                 
                    }
                        
                     }
