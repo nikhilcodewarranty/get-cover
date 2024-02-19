@@ -2883,9 +2883,9 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                        ?.slice(startIndex, endIndex)
-                        ?.map(
-                            (contract, index) => `
+                                ?.slice(startIndex, endIndex)
+                                ?.map(
+                                    (contract, index) => `
                                 <tr>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
@@ -2896,46 +2896,17 @@ exports.generatePDF = async (req, res) => {
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                 </tr>
                             `
-                        )
-                        .join("")}
-                    </tbody>
-                    </table>
+                                )
+                                .join("")}
                     `;
-                    
-                    // If the difference between startIndex and endIndex is less than 20, use a for loop instead of map
-                    // if (startIndex > 6)  {
-                    //     if(endIndex - startIndex < 20  ){
-                    //         for (let i = startIndex; i < endIndex; i++) {
-                    //             console.log('here',startIndex,endIndex)
-                    //             const contract = contracts[i];
-                    //             htmlContent += `
-                    //                 <tr>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${i + 1}</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                    //                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                    //                 </tr>
-                    //             `;
-                    //         }
-                    //     }
-                 
-                    // }
-                    
-                    // Update startIndex and endIndex for next pagination
-                    startIndex = endIndex;
-                    endIndex = Math.min(endIndex + 20, contracts.length);
-                    
-                    console.log("startIndex:", startIndex,startIndex !== 0 && endIndex !== 6,endIndex - startIndex < 20);
-                    console.log("endIndex:", endIndex,startIndex !== 0 && endIndex !== 6,endIndex - startIndex < 20);
-                    if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {{
-                       
-                            for (let i = startIndex; i < endIndex; i++) {
-                                console.log('here',startIndex,endIndex)
-                                const contract = contracts[i];
-                                htmlContent += `
+                        // Update startIndex and endIndex for next pagination
+                        startIndex = endIndex;
+                        endIndex = Math.min(endIndex + 20, contracts.length);
+                        if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
+                            {
+                                for (let i = startIndex; i < endIndex; i++) {
+                                    const contract = contracts[i];
+                                    htmlContent += `
                                     <tr>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${i + 1}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
@@ -2946,22 +2917,22 @@ exports.generatePDF = async (req, res) => {
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                     </tr>
                                 `;
+                                }
+
+                                htmlContent += `</tbody></table>`
                             }
-                        
-                 
-                    }
-                    
-                        // if(endIndex > contracts.length){
-                        //     endIndex = contracts.length 
-                        //     pageCount = pageCount + 1
-                        // }
+
+                            // if(endIndex > contracts.length){
+                            //     endIndex = contracts.length 
+                            //     pageCount = pageCount + 1
+                            // }
+
+                        }
 
                     }
-
                 }
             }
         }
-    }
 
 
         res.send({
