@@ -2907,7 +2907,8 @@ exports.generatePDF = async (req, res) => {
                   `;
                         startIndex = endIndex
                         endIndex = endIndex + 20
-                        if (endIndex > pageCount * pageSize) {
+                        const size = pageCount * pageSize
+                        if (endIndex > size) {
                             pageCount = pageCount + 1
                         }
                     }
@@ -2921,6 +2922,7 @@ exports.generatePDF = async (req, res) => {
         res.send({
             code: constant.successCode,
             result: htmlContent,
+            size:size,
             orderWithContracts: orderWithContracts
         })
     }
