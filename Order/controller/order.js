@@ -2863,7 +2863,7 @@ exports.generatePDF = async (req, res) => {
                 </table>`
                     let startIndex = 0
                     let endIndex = 6
-                    let serialNo = 1
+                    let serialNo = 0
                     let pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
                         
@@ -2883,31 +2883,30 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                                ?.slice(startIndex , endIndex)
-                                ?.map(
-                                    (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        } </td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
-                                            contract.claimAmount
-                                        ).toFixed(2)}</td>
-                        </tr>
-                      ` )
-                                .join("")}
+                        ?.slice(startIndex, endIndex)
+                        ?.map(
+                            (contract, index) => {
+                                let serialNo = serialNo + 1; // Initialize and increment serial number
+                                // Your HTML content here
+                                return `
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                `;
+                            }
+                        )
+                        .join("")
+                    }
                     </tbody>
                   </table>
                   `;
                   startIndex = endIndex
                   endIndex = endIndex + 20
-                  serialNo = serialNo + 1
+               
                     }
 
                 }
