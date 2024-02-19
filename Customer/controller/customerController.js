@@ -868,7 +868,7 @@ exports.customerOrders = async (req, res) => {
       }
       return {
         ...item,
-        servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
+        servicerName: item.dealerName.isServicer && item.servicerId != null ? item.dealerName : item.resellerName.isServicer && item.servicerId != null ? item.resellerName : item.servicerName,
         username: username, // Set username based on the conditional checks
         resellerUsername: resellerUsername ? resellerUsername : {},
         customerUserData: customerUserData ? customerUserData : {}
