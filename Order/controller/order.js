@@ -2907,6 +2907,9 @@ exports.generatePDF = async (req, res) => {
                   `;
                   startIndex = endIndex
                   endIndex = endIndex + 20
+                  if (endIndex > (pageCount*pageSize)){
+                    pageCount = pageCount + 1
+                  }
                     }
 
                 }
