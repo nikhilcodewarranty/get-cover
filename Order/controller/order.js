@@ -2961,7 +2961,7 @@ exports.generatePDF = async (req, res) => {
                 }
             }
         }
-
+    }
 
 
         res.send({
