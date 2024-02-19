@@ -2887,17 +2887,17 @@ exports.generatePDF = async (req, res) => {
                         const index = startIndex + i;
                 
                         console.log(index); 
-                        // htmlContent += `
-                        //     <tr>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                        //         <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                        //     </tr>
-                        // `;
+                        htmlContent += `
+                            <tr>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                            </tr>
+                        `;
                     }
                 
                     // Close the table
