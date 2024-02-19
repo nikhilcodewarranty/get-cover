@@ -2822,7 +2822,7 @@ exports.generatePDF = async (req, res) => {
                 const order = orderWithContracts[i];
                 for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                     const product = order.productsArray[j];
-                    const pageSize = 10; // Number of contracts per page
+                    const pageSize = 15; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
                     let pageCount = Math.ceil(contracts.length / pageSize);
