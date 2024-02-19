@@ -2883,7 +2883,8 @@ exports.generatePDF = async (req, res) => {
                             </thead>
                             <tbody>
                     `;
-                
+                    startIndex = endIndex;
+                    endIndex = Math.min(endIndex + 20, contracts.length);
                     htmlContent += (startIndex == 0 && endIndex == 6) || (endIndex - startIndex > 19) ?
                         contracts
                             ?.slice(startIndex, endIndex)
@@ -2924,8 +2925,7 @@ exports.generatePDF = async (req, res) => {
                             return htmlContent;
                         })();
                 
-                    startIndex = endIndex;
-                    endIndex = Math.min(endIndex + 20, contracts.length);
+                   
                 }
                 
                     
