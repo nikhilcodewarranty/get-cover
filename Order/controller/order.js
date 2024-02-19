@@ -2825,6 +2825,42 @@ exports.generatePDF = async (req, res) => {
                     const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
+                    htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
+                    <tbody>
+                        <tr style='padding-bottom:5px;'>
+                            <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
+                    <tbody style="text-align: left;">
+                        <tr>
+                            <td><b>Product Category:</b> ${product.category.name}</td>
+                            <td><b>Product Name:</b> ${product.description}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style=""> 
+                    <tbody>
+                        <tr>
+                            <td><b>Product Description:</b> ${product.description}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
+                    <tbody style="text-align: left;">
+                        <tr>
+                            <td><b>Term:</b> ${product.term} Month</td>
+                            <td><b>Unit Price:</b> $ ${product.unitPrice}</td>
+                            <td><b># of Products:</b> ${product.noOfProducts}.00</td>
+                        </tr>
+                        <tr>
+                            <td><b>Price:</b> $ ${product.price}.00</td>
+                            <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
+                            <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
+                        </tr>
+                    </tbody>
+                </table>`
                     let pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
                         // Start of a new page
