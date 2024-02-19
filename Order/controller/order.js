@@ -2905,7 +2905,7 @@ exports.generatePDF = async (req, res) => {
                     // If the difference between startIndex and endIndex is less than 20, use a for loop instead of map
                     if (endIndex - startIndex < 20) {
                         for (let i = startIndex; i < endIndex; i++) {
-                            cosnole.log(startIndex,endIndex)
+                            console.log(startIndex,endIndex)
                             const contract = contracts[i];
                             htmlContent += `
                                 <tr>
