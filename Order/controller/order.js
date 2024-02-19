@@ -2897,10 +2897,10 @@ exports.generatePDF = async (req, res) => {
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                 </tr>
                             `
-                                ):(
+                                ) .join(""):(
                                     ''
                                 )
-                                .join("")}
+                               }
                     `;
                     startIndex = endIndex;
                     endIndex = Math.min(endIndex + 20, contracts.length);
