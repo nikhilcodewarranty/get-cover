@@ -2907,10 +2907,11 @@ exports.generatePDF = async (req, res) => {
                   `;
                         startIndex = endIndex
                         endIndex = endIndex + 20
-                        // const size = pageCount * pageSize
-                        // if (endIndex > size) {
-                        //     pageCount = pageCount + 1
-                        // }
+                        if(endIndex > contracts.length){
+                            endIndex = contracts.length
+                            pageCount = pageCount + 1
+                        }
+                       
                     }
 
                 }
