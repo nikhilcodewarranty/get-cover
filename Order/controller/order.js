@@ -2902,12 +2902,11 @@ exports.generatePDF = async (req, res) => {
                             )
                             .join("") :
                         (() => {
-                          data()
+                      ''
                         })();
                 
-                }
-                
-                    var data =()=>{
+                        startIndex = endIndex;
+                        endIndex = Math.min(endIndex + 20, contracts.length);
                         console.log('here-----',startIndex , endIndex)
                         let htmlContent = '';
                         if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 19) {
@@ -2928,9 +2927,10 @@ exports.generatePDF = async (req, res) => {
                             htmlContent += `</tbody></table>`;
                         }
                         return htmlContent;
-                    }
-                    startIndex = endIndex;
-                    endIndex = Math.min(endIndex + 20, contracts.length);
+                }
+                
+                    
+               
                
                        
                     }
