@@ -2887,7 +2887,7 @@ exports.generatePDF = async (req, res) => {
                                 ?.map(
                                     (contract, index) => `
                                 <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${startIndex + 1}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
@@ -2899,10 +2899,8 @@ exports.generatePDF = async (req, res) => {
                                 )
                                 .join("")}
                     `;
-                        // Update startIndex and endIndex for next pagination
-                        startIndex = endIndex;
-                        endIndex = Math.min(endIndex + 20, contracts.length);
-                        if ((startIndex !== 0 && endIndex !== 6) && (endIndex - startIndex) < 19) {
+                        
+                        if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 19) {
                             {
                                 for (let i = startIndex; i < endIndex; i++) {
                                     const contract = contracts[i];
@@ -2928,7 +2926,8 @@ exports.generatePDF = async (req, res) => {
                             // }
 
                         }
-
+                        startIndex = endIndex;
+                        endIndex = Math.min(endIndex + 20, contracts.length);
                     }
                 }
             }
