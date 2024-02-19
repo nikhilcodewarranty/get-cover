@@ -2865,7 +2865,7 @@ exports.generatePDF = async (req, res) => {
                     for (let page = 0; page < pageCount; page++) {
                         // Start of a new page
                         htmlContent += `
-                        <table style="page-break-before: always; width: 100%; border-collapse: collapse;">
+                        <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
                       <thead style="background-color: #f4f4f4; text-align: left;">
                           <tr>
                               <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
