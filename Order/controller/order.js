@@ -2908,7 +2908,6 @@ exports.generatePDF = async (req, res) => {
                     if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
                         {
                             for (let i = startIndex; i < endIndex; i++) {
-                                if (i >= contracts.length) break; // Ensure not to exceed contracts length
                                 const contract = contracts[i];
                                 htmlContent += `
                                 <tr>
