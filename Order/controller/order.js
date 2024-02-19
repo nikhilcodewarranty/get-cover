@@ -2822,7 +2822,7 @@ exports.generatePDF = async (req, res) => {
                 const order = orderWithContracts[i];
                 for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                     const product = order.productsArray[j];
-                    const pageSize = 25; // Number of contracts per page
+                    const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
                     htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
@@ -2883,30 +2883,25 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                                ?.slice(startIndex, endIndex)
-                                ?.map(
-                                    (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        } </td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
-                                            contract.claimAmount
-                                        ).toFixed(2)}</td>
-                        </tr>
-                      ` )
-                                .join("")}
+                        ?.slice(startIndex, Math.min(endIndex, contracts.length))
+                        ?.map(
+                            (contract, index) => `
+                                <tr>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                </tr>
+                            ` )
+                        .join("")}
                     </tbody>
                   </table>
                   `;
                         startIndex = endIndex
-                        endIndex = endIndex + 0
+                        endIndex = endIndex + 20
                         // if(endIndex > contracts.length){
                         //     endIndex = contracts.length 
                         //     pageCount = pageCount + 1
