@@ -2908,7 +2908,7 @@ exports.generatePDF = async (req, res) => {
                                     const contract = contracts[i];
                                     htmlContent += `
                                     <tr>
-                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${i + 1}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${(i-startIndex) + 1}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                         <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
