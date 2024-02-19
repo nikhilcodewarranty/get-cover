@@ -2866,9 +2866,7 @@ exports.generatePDF = async (req, res) => {
                     let serialNo = 0
                     var pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
-                        if (page !== 0) {
-                            htmlContent += `<div style="page-break-before: always;"></div>`;
-                        }
+
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
@@ -2884,7 +2882,7 @@ exports.generatePDF = async (req, res) => {
                           </tr>
                       </thead>
                       <tbody>
-                      ${  (startIndex == 0 || (endIndex - startIndex > 19)) &&
+                      ${( startIndex == 0 ) || (endIndex - startIndex > 19) &&
                         contracts
                                 ?.slice(startIndex, endIndex)
                                 ?.map(
@@ -2899,7 +2897,7 @@ exports.generatePDF = async (req, res) => {
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
                                 </tr>
                             `
-                                ).join("")
+                                ).join('')
                                }
                     `;
                     startIndex = endIndex;
