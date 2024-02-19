@@ -2855,7 +2855,7 @@ exports.generatePDF = async (req, res) => {
                             <td><b># of Products:</b> ${product.noOfProducts}.00</td>
                         </tr>
                         <tr>
-                            <td><b>Price:</b>  ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
+                            <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
                             <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
                             <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
                         </tr>
