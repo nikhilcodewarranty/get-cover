@@ -2903,22 +2903,25 @@ exports.generatePDF = async (req, res) => {
                     `;
                     
                     // If the difference between startIndex and endIndex is less than 20, use a for loop instead of map
-                    if (endIndex - startIndex < 20 && startIndex !== 0 && endIndex !== 6)  {
-                        for (let i = startIndex; i < endIndex; i++) {
-                            console.log('here',startIndex,endIndex)
-                            const contract = contracts[i];
-                            htmlContent += `
-                                <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${i + 1}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                </tr>
-                            `;
+                    if (startIndex !== 0 && endIndex !== 6)  {
+                        if(endIndex - startIndex < 20  ){
+                            for (let i = startIndex; i < endIndex; i++) {
+                                console.log('here',startIndex,endIndex)
+                                const contract = contracts[i];
+                                htmlContent += `
+                                    <tr>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${i + 1}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                        <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            }
                         }
+                 
                     }
                     
                     // Update startIndex and endIndex for next pagination
