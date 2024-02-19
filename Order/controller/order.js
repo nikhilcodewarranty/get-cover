@@ -2825,7 +2825,7 @@ exports.generatePDF = async (req, res) => {
                     const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
-                    htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
+                    htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:0px">
                     <tbody>
                         <tr style='padding-bottom:5px;'>
                             <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
