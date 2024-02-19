@@ -2886,7 +2886,7 @@ exports.generatePDF = async (req, res) => {
                         ?.slice(startIndex, endIndex)
                         ?.map(
                             (contract, index) => {
-                                let serialNo = serialNo + 1; // Initialize and increment serial number
+                                serialNo = serialNo + 1; // Initialize and increment serial number
                                 // Your HTML content here
                                 return `
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
