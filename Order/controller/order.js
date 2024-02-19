@@ -2882,7 +2882,8 @@ exports.generatePDF = async (req, res) => {
                           </tr>
                       </thead>
                       <tbody>
-                      ${contracts
+                      ${ endIndex - startIndex < 20 &&
+                        contracts
                                 ?.slice(startIndex, endIndex)
                                 ?.map(
                                     (contract, index) => `
@@ -2899,7 +2900,8 @@ exports.generatePDF = async (req, res) => {
                                 )
                                 .join("")}
                     `;
-                        
+                    startIndex = endIndex;
+                    endIndex = Math.min(endIndex + 20, contracts.length);
                         if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 19) {
                             {
                                 for (let i = startIndex; i < endIndex; i++) {
@@ -2926,8 +2928,7 @@ exports.generatePDF = async (req, res) => {
                             // }
 
                         }
-                        startIndex = endIndex;
-                        endIndex = Math.min(endIndex + 20, contracts.length);
+                       
                     }
                 }
             }
