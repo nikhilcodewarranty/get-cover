@@ -1908,7 +1908,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                   wholesalePrice
                 }
-                )
+              )
 
 
               await dealerPriceService.createDealerPrice({
@@ -2416,19 +2416,19 @@ exports.getDealerOrders = async (req, res) => {
             totalOrderAmount: { $sum: "$orderAmount" },
             flag: {
               $cond: {
-                  if: {
-                      $and: [
-                          // { $eq: ["$payment.status", "paid"] },
-                          { $ne: ["$productsArray.orderFile.fileName", ''] },
-                          { $ne: ["$customerId", null] },
-                          { $ne: ["$paymentStatus", 'Paid'] },
-                          { $ne: ["$productsArray.coverageStartDate", null] },
-                      ]
-                  },
-                  then: true,
-                  else: false
+                if: {
+                  $and: [
+                    // { $eq: ["$payment.status", "paid"] },
+                    { $ne: ["$productsArray.orderFile.fileName", ''] },
+                    { $ne: ["$customerId", null] },
+                    { $ne: ["$paymentStatus", 'Paid'] },
+                    { $ne: ["$productsArray.coverageStartDate", null] },
+                  ]
+                },
+                then: true,
+                else: false
               }
-          }
+            }
           }
         },
         { $sort: { unique_key: -1 } }
@@ -2444,9 +2444,6 @@ exports.getDealerOrders = async (req, res) => {
         .map(result => result.resellerId.toString());
 
       let mergedArray = userDealerIds.concat(userResellerIds);
-
-
-
 
       const dealerCreateria = { _id: { $in: dealerIdsArray } };
       //Get Respective Dealers
@@ -2481,15 +2478,14 @@ exports.getDealerOrders = async (req, res) => {
         }
       );
       let customerIdsArray = ordersResult.map((result) => result.customerId);
+      const customerCreteria = { _id: { $in: customerIdsArray } };
 
       let userCustomerIds = ordersResult
         .filter(result => result.customerId !== null)
         .map(result => result.customerId.toString());
-      const customerCreteria = { _id: { $in: customerIdsArray } };
 
       const allUserIds = mergedArray.concat(userCustomerIds);
 
-      // console.log("allUserIds==============",allUserIds);
 
       const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
@@ -2562,7 +2558,7 @@ exports.getDealerOrders = async (req, res) => {
             dealerName: dealerName.toObject(),
             servicerName: servicerName.toObject(),
             customerName: customerName.toObject(),
-            resellerName: resellerName.toObject,
+            resellerName: resellerName.toObject(),
           };
         }
       });
@@ -2597,6 +2593,25 @@ exports.getDealerOrders = async (req, res) => {
 
       const updatedArray = filteredData.map(item => {
         let username = null; // Initialize username as null
+        let resellerUsername = null
+        let customerUserData = null
+        let isEmptyStartDate = item.productsArray.map(
+          (item1) => item1.coverageStartDate === null
+        );
+        let isEmptyOrderFile = item.productsArray
+          .map(
+            (item1) =>
+              item1.orderFile.fileName === ""
+          )
+        item.flag = false
+        const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
+        const fileName = isEmptyOrderFile.includes(true) ? false : true
+        // console.log("isEmptyStartDate===================",isEmptyStartDate)
+        // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
+        //console.log(hasNullCoverageStartDate)
+        if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
+          item.flag = true
+        }
         if (item.dealerName) {
           username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
@@ -2608,7 +2623,7 @@ exports.getDealerOrders = async (req, res) => {
         }
         return {
           ...item,
-          servicerName: item.dealerName.isServicer ? item.dealerName : item.resellerName.isServicer ? item.resellerName : item.servicerName,
+          servicerName: item.dealerName.isServicer && item.servicerId != null ? item.dealerName : item.resellerName.isServicer && item.servicerId != null ? item.resellerName : item.servicerName,
           username: username, // Set username based on the conditional checks
           resellerUsername: resellerUsername ? resellerUsername : {},
           customerUserData: customerUserData ? customerUserData : {}
@@ -2780,7 +2795,7 @@ exports.getDealerRequest = async (req, res) => {
 exports.getDealerContract = async (req, res) => {
   try {
     let data = req.body
-    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $in: ["Active","Pending"] }}, { _id: 1 })
+    let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
     if (!getDealerOrder) {
       res.send({
         code: constant.errorCode,
