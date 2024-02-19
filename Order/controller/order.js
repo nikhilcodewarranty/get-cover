@@ -2863,6 +2863,7 @@ exports.generatePDF = async (req, res) => {
                 </table>`
                     let startIndex = 0
                     let endIndex = 6
+                    let serialNo = 1
                     let pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
                         
@@ -2885,7 +2886,7 @@ exports.generatePDF = async (req, res) => {
                                 ?.slice(startIndex , endIndex)
                                 ?.map(
                                     (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * (page===0 ? 6 : 20))}</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
                                         } </td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
@@ -2904,8 +2905,9 @@ exports.generatePDF = async (req, res) => {
                     </tbody>
                   </table>
                   `;
-                  startIndex = endIndex  + 1
-                  endIndex = endIndex + 19
+                  startIndex = endIndex
+                  endIndex = endIndex + 20
+                  serialNo = serialNo + 1
                     }
 
                 }
