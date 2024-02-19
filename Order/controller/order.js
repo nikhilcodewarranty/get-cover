@@ -2902,7 +2902,7 @@ exports.generatePDF = async (req, res) => {
                         // Update startIndex and endIndex for next pagination
                         startIndex = endIndex;
                         endIndex = Math.min(endIndex + 20, contracts.length);
-                        if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
+                        if ((startIndex !== 0 && endIndex !== 6) && (endIndex - startIndex) < 19) {
                             {
                                 for (let i = startIndex; i < endIndex; i++) {
                                     const contract = contracts[i];
