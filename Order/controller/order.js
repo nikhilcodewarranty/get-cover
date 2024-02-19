@@ -2883,7 +2883,7 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                                ?.slice(startIndex, endIndex)
+                                ?.slice(0, endIndex)
                                 ?.map(
                                     (contract, index) => 
                                     {
