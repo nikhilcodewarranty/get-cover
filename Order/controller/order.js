@@ -2882,7 +2882,7 @@ exports.generatePDF = async (req, res) => {
                                 ?.slice(page * pageSize, (page + 1) * pageSize)
                                 ?.map(
                                     (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * pageSize)}</td>>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * pageSize)}</td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
                                         } </td>
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
