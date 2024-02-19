@@ -2902,6 +2902,7 @@ exports.generatePDF = async (req, res) => {
                     `;
                     startIndex = endIndex;
                     endIndex = Math.min(endIndex + 20, contracts.length);
+                    var pageCount = Math.ceil(contracts.length / pageSize);
                  
                     if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
                         {
