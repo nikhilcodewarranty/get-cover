@@ -2418,12 +2418,12 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
-                console.log("contractObject===========================")
+                // console.log("contractObject===========================")
 
                 contracts.push(contractObject);
             });
 
-            console.log("contracts===========================", contracts)
+            // console.log("contracts===========================", contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
@@ -2905,7 +2905,7 @@ exports.generatePDF = async (req, res) => {
                     // If the difference between startIndex and endIndex is less than 20, use a for loop instead of map
                     if (endIndex - startIndex < 20 && startIndex !== 0 && endIndex !== 6)  {
                         for (let i = startIndex; i < endIndex; i++) {
-                            console.log(startIndex,endIndex)
+                            console.log('here',startIndex,endIndex)
                             const contract = contracts[i];
                             htmlContent += `
                                 <tr>
@@ -2925,8 +2925,8 @@ exports.generatePDF = async (req, res) => {
                     startIndex = endIndex;
                     endIndex = Math.min(endIndex + 20, contracts.length);
                     
-                    console.log("startIndex:", startIndex);
-                    console.log("endIndex:", endIndex);
+                    // console.log("startIndex:", startIndex);
+                    // console.log("endIndex:", endIndex);
                     
                         // if(endIndex > contracts.length){
                         //     endIndex = contracts.length 
