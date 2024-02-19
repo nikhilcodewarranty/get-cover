@@ -53,7 +53,7 @@ var uploadP = multer({
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
-             let data = req.body;
+            let data = req.body;
             // let data = {
             //     "dealerId": "65ce11c8750ebbaea9330274",
             //     "servicerId": "",
@@ -478,7 +478,7 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
-              
+
                 {
                     $lookup: {
                         from: "contracts",
@@ -496,32 +496,31 @@ exports.getAllOrders = async (req, res) => {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        flag: {                            
-                            $cond: {
-                                if: {
-                                    $and: [
-                                        // { $eq: ["$payment.status", "paid"] },
-                                        { $ne: ["$productsArray.orderFile.fileName", ''] },
-                                        { $ne: ["$customerId", null] },
-                                        { $ne: ["$paymentStatus", 'Paid'] },
-                                        { $ne: ["$productsArray.coverageStartDate", null] },
-                                    ]
-                                },
-                                then: true,
-                                else: false
-                            }
-                        }
+                        // flag: {
+                        //     $cond: {
+                        //         if: {
+                        //             $and: [
+                        //                 // { $eq: ["$payment.status", "paid"] },
+                        //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
+                        //                 { $ne: ["$customerId", null] },
+                        //                 { $ne: ["$paymentStatus", 'Paid'] },
+                        //                 { $ne: ["$productsArray.coverageStartDate", null] },
+                        //             ]
+                        //         },
+                        //         then: true,
+                        //         else: false
+                        //     }
+                        // }
 
                     }
                 },
-                
+
                 { $sort: { unique_key: -1 } }
             ]
 
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery);
-            console.log("ordersResult===================",ordersResult);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -672,6 +671,23 @@ exports.getAllOrders = async (req, res) => {
             });
 
             const updatedArray = filteredData.map(item => {
+                let isEmptyStartDate = item.productsArray.map(
+                    (item1) => item1.coverageStartDate === null
+                );
+                let isEmptyOrderFile = item.productsArray
+                    .map(
+                        (item1) =>
+                            item1.orderFile.fileName === ""
+                    )
+                item.flag = false
+                const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
+                const fileName = isEmptyOrderFile.includes(true) ? false : true
+                // console.log("isEmptyStartDate===================",isEmptyStartDate)
+                // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
+                //console.log(hasNullCoverageStartDate)
+                if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
+                    item.flag = true
+                }
                 let username = null; // Initialize username as null
                 let resellerUsername = null; // Initialize username as null
                 let customerUserData = null; // Initialize username as null
@@ -2385,7 +2401,7 @@ exports.markAsPaid = async (req, res) => {
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
-            totalDataComing.forEach((data,index) => {
+            totalDataComing.forEach((data, index) => {
                 let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2407,7 +2423,7 @@ exports.markAsPaid = async (req, res) => {
                 contracts.push(contractObject);
             });
 
-            console.log("contracts===========================",contracts)
+            console.log("contracts===========================", contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
@@ -2607,7 +2623,7 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
-                    
+
                 }
             },
             {
@@ -2674,7 +2690,7 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$resellerUsers" // Unwind dealers array
             },
-            
+
 
         ];
 
@@ -2762,7 +2778,7 @@ exports.generatePDF = async (req, res) => {
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
                         ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}<br/>
-                        ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}</small>
+                        ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}</small>
                     </td>
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
@@ -2772,7 +2788,7 @@ exports.generatePDF = async (req, res) => {
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
                         ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}<br/>
-                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
+                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
                     </td>
                 </tr>
             </tbody>
@@ -2860,7 +2876,7 @@ exports.generatePDF = async (req, res) => {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${contracts.map((contract, index) =>`
+                                ${contracts.map((contract, index) => `
                                 <tr>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
