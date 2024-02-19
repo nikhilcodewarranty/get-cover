@@ -2883,30 +2883,30 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                        ?.slice(startIndex, endIndex)
-                        ?.map(
-                            (contract, index) => {
-                                serialNo = serialNo + 1; // Initialize and increment serial number
-                                // Your HTML content here
-                                 htmlContent += `
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                `;
-                            }
-                        )
-                        .join("")
-                    }
+                                ?.slice(startIndex , endIndex)
+                                ?.map(
+                                    (contract, index) => `
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        } </td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
+                                            contract.claimAmount
+                                        ).toFixed(2)}</td>
+                        </tr>
+                      ` )
+                                .join("")}
                     </tbody>
                   </table>
                   `;
-                  startIndex = endIndex
-                  endIndex = endIndex + 20
-               
+                  startIndex = endIndex  + 1
+                  endIndex = endIndex + 19
                     }
 
                 }
