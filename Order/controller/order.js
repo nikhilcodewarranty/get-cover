@@ -2888,7 +2888,7 @@ exports.generatePDF = async (req, res) => {
                             (contract, index) => {
                                 serialNo = serialNo + 1; // Initialize and increment serial number
                                 // Your HTML content here
-                                return `
+                                 htmlContent += `
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                     <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
