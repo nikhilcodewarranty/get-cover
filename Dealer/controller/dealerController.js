@@ -2441,9 +2441,6 @@ exports.getDealerOrders = async (req, res) => {
 
       let mergedArray = userDealerIds.concat(userResellerIds);
 
-
-
-
       const dealerCreateria = { _id: { $in: dealerIdsArray } };
       //Get Respective Dealers
       let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -2592,6 +2589,8 @@ exports.getDealerOrders = async (req, res) => {
 
       const updatedArray = filteredData.map(item => {
         let username = null; // Initialize username as null
+        let resellerUsername = null
+        let customerUserData = null
         let isEmptyStartDate = item.productsArray.map(
           (item1) => item1.coverageStartDate === null
         );
