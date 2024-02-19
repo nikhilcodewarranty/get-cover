@@ -2822,7 +2822,7 @@ exports.generatePDF = async (req, res) => {
                 const order = orderWithContracts[i];
                 for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                     const product = order.productsArray[j];
-                    
+                    const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
                     htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
@@ -2861,9 +2861,8 @@ exports.generatePDF = async (req, res) => {
                         </tr>
                     </tbody>
                 </table>`
-                    let page = 0
-                    let pageCount = Math.ceil(contracts.length / page==0 ? 6: 20);
-                    for (page = 0; page < pageCount; page++) {
+                    let pageCount = Math.ceil(contracts.length / pageSize);
+                    for (let page = 0; page < pageCount; page++) {
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
@@ -2880,7 +2879,7 @@ exports.generatePDF = async (req, res) => {
                       </thead>
                       <tbody>
                       ${contracts
-                                ?.slice(page * pageSize, (page + 1) * pageSize)
+                                ?.slice(page * page==0 ? 6 : 20 , (page + 1) * page==0 ? 6 : 20)
                                 ?.map(
                                     (contract, index) => `
                           <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * pageSize)}</td>
