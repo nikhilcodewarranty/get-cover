@@ -4,6 +4,7 @@ const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const orderService = require("../../Order/services/orderService")
 const servicerService = require("../../Provider/services/providerService")
+const contractService = require("../../Contract/services/contractService")
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
@@ -2031,6 +2032,114 @@ exports.getDealerOrders = async (req, res) => {
         };
     }
     catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
+exports.getAllContracts = async (req, res) => {
+    try {
+        if (req.role != 'Dealer') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only dealer allow to do this action!'
+            });
+            return;
+        }
+        
+        let data = req.body
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+        console.log(pageLimit, skipLimit, limitData)
+        let query = [
+           
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "order",
+                    pipeline: [
+                        {
+                          $lookup: {
+                            from: "dealers",
+                            localField: "dealerId",
+                            foreignField: "_id",
+                            as: "dealer",
+                          }
+                        },
+                        {
+                          $lookup: {
+                            from: "resellers",
+                            localField: "resellerId",
+                            foreignField: "_id",
+                            as: "reseller",
+                          }
+                        },
+                        {
+                          $lookup: {
+                            from: "customers",
+                            localField: "customerId",
+                            foreignField: "_id",
+                            as: "customer",
+                          }
+                        },
+                        {
+                          $lookup: {
+                            from: "servicers",
+                            localField: "servicerId",
+                            foreignField: "_id",
+                            as: "servicer",
+                          }
+                        },
+            
+                      ]
+                   
+                }
+            },
+            {$unwind:"$order"},
+
+            {$match:{"order.dealerId":new mongoose.Types.ObjectId('65cf074f38bf1b3dd98a2f3d')}}
+            // {
+            //     isDeleted: false,
+            //     $expr: {
+            //         $eq: ["$orderId", "$order.dealerId"]
+            //     },
+            //     "order.dealerId": new mongoose.Types.ObjectId('65cf074f38bf1b3dd98a2f3d')
+            // }
+            // {
+            //   $addFields: {
+            //     contracts: {
+            //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+            //     }
+            //   }
+            // }
+            // { $unwind: "$contracts" }
+        ]
+
+        let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
+        let getTotalCount = await contractService.findContractCount({ isDeleted: false })
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: getContracts,
+            totalCount: getTotalCount
+        })
+
+        // res.send({
+        //   code: constant.successCode,
+        //   message: "Success!",
+        //   result: checkOrder,
+        //   contractCount: totalContract.length,
+        //   orderUserData: userData
+        // });
+
+
+    } catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message

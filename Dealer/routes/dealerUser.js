@@ -24,6 +24,8 @@ router.post("/getResellerCustomers/:resellerId", [verifyToken], dealerUserContro
 router.post('/createReseller',[verifyToken],dealerUserController.createReseller)
 
 router.post('/getDealerServicers',[verifyToken],dealerUserController.getDealerServicers)
+router.post('/getDealerContracts',[verifyToken],dealerUserController.getAllContracts)
+
 router.get('/getServicersList',[verifyToken],dealerUserController.getServicersList)
 router.post('/createDeleteRelation',[verifyToken],dealerUserController.createDeleteRelation)
 
