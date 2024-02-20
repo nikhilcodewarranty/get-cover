@@ -2397,17 +2397,17 @@ exports.getDealerOrders = async (req, res) => {
         {
           $match: query
         },
-        {
-          $lookup: {
-            from: "contracts",
-            localField: "_id",
-            foreignField: "orderId",
-            as: "contract"
-          }
-        },
         // {
-        //   $project: project,
+        //   $lookup: {
+        //     from: "contracts",
+        //     localField: "_id",
+        //     foreignField: "orderId",
+        //     as: "contract"
+        //   }
         // },
+        {
+          $project: project,
+        },
         {
           "$addFields": {
             "noOfProducts": {
