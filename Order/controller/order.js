@@ -255,11 +255,7 @@ exports.createOrder = async (req, res) => {
                 data.paymentStatus == "Paid"
             ) {
 
-                let updateStatus = await orderService.updateOrder(
-                    { _id: savedResponse._id },
-                    { status: "Active" },
-                    { new: true }
-                );
+            
                 let updateOrder = await orderService.updateOrder(
                     { _id: savedResponse._id },
                     { canProceed: true },
@@ -277,6 +273,11 @@ exports.createOrder = async (req, res) => {
 
 
                 if (isValidDate) {
+                    let updateStatus = await orderService.updateOrder(
+                        { _id: savedResponse._id },
+                        { status: "Active" },
+                        { new: true }
+                    );
 
                     let contractArrrayData = [];
                     for (let i = 0; i < data.productsArray.length; i++) {
@@ -332,12 +333,13 @@ exports.createOrder = async (req, res) => {
                                 unique_key_number: unique_key_number1,
                                 unique_key_search: unique_key_search1,
                             };
-                            //console.log("contractObject++++++++++++++++++++contractObject")
+                            console.log("contractObject++++++++++++++++++++contractObject",matchedObject._id,contractObject)
 
                             contractArrrayData.push(contractObject);
                         });
 
 
+                        console.log("Pushing data==================",contractArrrayData)
 
                         // let contractObject = {
                         //     orderId: savedResponse._id,
