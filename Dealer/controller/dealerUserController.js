@@ -2680,6 +2680,333 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+exports.editOrderDetail = async (req, res) => {
+    try {
+        let data = req.body;
+        // let data = {
+        //     "_id": "65c5f9b57e935a6b4aa10cf9",
+        //     "dealerId": "65c49fa82e3394537511528e",
+        //     "servicerId": "65c4f445023c5e533fefc6d0",
+        //     "customerId": "65c4a2755b49fb821a5aa3b2",
+        //     "resellerId": "65c4a1132e3394537511529f",
+        //     "venderOrder": "NIk-001",
+        //     "serviceCoverageType": "Parts & Labour",
+        //     "coverageType": "Breakdown & Accidental",
+        //     "unique_key_number": 100000,
+        //     "unique_key_search": "GC2024100000",
+        //     "unique_key": "GC-2024-100000",
+        //     "productsArray": [
+        //         {
+        //             "categoryId": "65c32a947e54710b7783fdb9",
+        //             "priceBookId": "65c32c097e54710b7783fdc1",
+        //             "unitPrice": 500,
+        //             "noOfProducts": 1,
+        //             "priceType": "Quantity Pricing",
+        //             "term": 12,
+        //             "description": "testing",
+        //             "checkNumberProducts": 56,
+        //             "orderFile": {
+        //                 "fileName": "file-1707473332788.xlsx",
+        //                 "name": "Copy of Copy of Add Product Format.xlsx",
+        //                 "size": "5987",
+        //                 "_id": "65c5f9b57e935a6b4aa10cfc"
+        //             },
+        //             "QuantityPricing": [
+        //                 {
+        //                     "name": "panel",
+        //                     "quantity": 20,
+        //                     "enterQuantity": 15,
+        //                     "_id": "65c32c097e54710b7783fdc2"
+        //                 },
+        //                 {
+        //                     "name": "inverter",
+        //                     "quantity": 40,
+        //                     "enterQuantity": 40,
+        //                     "_id": "65c32c097e54710b7783fdc3"
+        //                 },
+        //                 {
+        //                     "name": "battery",
+        //                     "quantity": 1,
+        //                     "enterQuantity": 1,
+        //                     "_id": "65c32c097e54710b7783fdc4"
+        //                 }
+        //             ],
+        //             "price": 500,
+        //             "additionalNotes": "",
+        //             "rangeStart": null,
+        //             "rangeEnd": null,
+        //             "coverageStartDate": "2024-02-29T00:00:00.000Z",
+        //             "coverageEndDate": "2025-02-28T00:00:00.000Z",
+        //             "_id": "65c5f9b57e935a6b4aa10cfb"
+        //         }
+        //     ],
+        //     "orderAmount": 500,
+        //     "sendNotification": true,
+        //     "paymentStatus": "Paid",
+        //     "status": "Active",
+        //     "isDeleted": false,
+        //     "orderDate": "2024-02-09T10:06:50.134Z",
+        //     "paidAmount": 500,
+        //     "dueAmount": 0,
+        //     "paymentMethod": "Manually",
+        //     "canProceed": true,
+        //     "createdAt": "2024-02-09T10:08:53.779Z",
+        //     "updatedAt": "2024-02-09T10:08:54.248Z",
+        //     "__v": 0
+        // }
+
+        let checkId = await orderService.getOrder({ _id: req.params.orderId });
+        if (!checkId) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid order ID",
+            });
+            return;
+        }
+
+
+        if (req.userId.toString() != checkId.dealerId.toString()) {
+            let checkDealer = await dealerService.getDealerById(
+                req.userId
+            );
+            if (!checkDealer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Dealer not found",
+                });
+                return;
+            }
+        }
+
+        if (data.servicerId != checkId.servicerId) {
+            let query = {
+                $or: [
+                    { _id: data.servicerId },
+                    { resellerId: data.servicerId },
+                    { dealerId: data.servicerId },
+                ],
+            };
+            let checkServicer = await servicerService.getServiceProviderById(query);
+            if (!checkServicer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Servicer not found",
+                });
+                return;
+            }
+        }
+
+        if (data.customerId != checkId.customerId) {
+            let query = { _id: data.customerId };
+            let checkCustomer = await customerService.getCustomerById(query);
+            if (!checkCustomer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Customer not found",
+                });
+                return;
+            }
+        }
+
+        data.createdBy = req.userId;
+        data.servicerId = data.servicerId != "" ? data.servicerId : null;
+        data.resellerId = data.resellerId != "" ? data.resellerId : null;
+        data.customerId = data.customerId != "" ? data.customerId : null;
+
+        if (req.files) {
+            const uploadedFiles = req.files.map((file) => ({
+                fileName: file.filename,
+                originalName: file.originalname,
+                filePath: file.path,
+            }));
+
+            const filteredProducts = data.productsArray.filter(
+                (product) => product.orderFile.fileName !== ""
+            );
+            const filteredProducts2 = data.productsArray.filter(
+                (product) => product.file === ""
+            );
+
+
+            const productsWithOrderFiles = filteredProducts.map((product, index) => {
+                const file = uploadedFiles[index];
+
+                // Check if 'file' is not null
+                if (file && file.filePath) {
+                    return {
+                        ...product,
+                        file: file.filePath,
+                        orderFile: {
+                            fileName: file.fileName,
+                            originalName: file.originalName,
+                        },
+                    };
+                } else {
+                    // If 'file' is null, return the original product without modifications
+                    return product;
+                }
+            });
+
+            const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
+            data.productsArray = finalOutput;
+        }
+        // if(checkId.venderOrder != data.dealerPurchaseOrder){
+        //     let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
+        // if (checkVenderOrder) {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "dealer purchase order is already exist"
+        //     })
+        //     return;
+        // }
+        // }
+
+        let savedResponse = await orderService.updateOrder(
+            { _id: req.params.orderId },
+            data,
+            { new: true }
+        );
+        if (!savedResponse) {
+            res.send({
+                code: constant.errorCode,
+                message: "unable to create order",
+            });
+            return;
+        }
+
+        // check to processed order 
+
+        let returnField = [];
+
+        let checkOrder = await orderService.getOrder(
+            { _id: req.params.orderId },
+            // { isDeleted: 0 }
+        );
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order not found!",
+            });
+            return;
+        }
+
+        let resultArray = checkOrder.productsArray.map(
+            (item) => item.coverageStartDate === null
+        );
+        let isEmptyOrderFile = checkOrder.productsArray
+            .map(
+                (item) =>
+                    item.orderFile.fileName === ""
+            )
+        // .some(Boolean);
+        const obj = {
+            customerId: checkOrder.customerId ? true : false,
+            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
+            coverageStartDate: resultArray.includes(true) ? false : true,
+            fileName: isEmptyOrderFile.includes(true) ? false : true,
+        };
+
+        returnField.push(obj);
+
+
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+            let savedResponse = await orderService.updateOrder(
+                { _id: req.params.orderId },
+                { status: "Active" },
+                { new: true }
+            );
+            let contractArray = [];
+            await savedResponse.productsArray.map(async (product) => {
+                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let priceBookId = product.priceBookId;
+                let orderProductId = product._id;
+                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+                let projection = { isDeleted: 0 };
+                let priceBook = await priceBookService.getPriceBookById(
+                    query,
+                    projection
+                );
+                const wb = XLSX.readFile(pathFile);
+                const sheets = wb.SheetNames;
+                const ws = wb.Sheets[sheets[0]];
+                let count1 = await contractService.getContractsCount();
+                let contractCount =
+                    Number(
+                        count1.length > 0 && count1[0].unique_key
+                            ? count1[0].unique_key
+                            : 0
+                    ) + 1;
+
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing = totalDataComing1.map((item) => {
+                    const keys = Object.keys(item);
+                    return {
+                        brand: item[keys[0]],
+                        model: item[keys[1]],
+                        serial: item[keys[2]],
+                        condition: item[keys[3]],
+                        retailValue: item[keys[4]],
+                    };
+                });
+                // let savedDataOrder = savedResponse.toObject()
+
+                totalDataComing.forEach((data, index) => {
+                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
+                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let contractObject = {
+                        orderId: savedResponse._id,
+                        orderProductId: orderProductId,
+                        productName: priceBook[0].name,
+                        manufacture: data.brand,
+                        model: data.model,
+                        serial: data.serial,
+                        condition: data.condition,
+                        productValue: data.retailValue,
+                        unique_key: unique_key1,
+                        unique_key_search: unique_key_search1,
+                        unique_key_number: unique_key_number1,
+                    };
+                    contractArray.push(contractObject);
+                    //let saveData = contractService.createContract(contractObject)
+                });
+
+                await contractService.createBulkContracts(contractArray);
+
+            })
+
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        }
+
+
+        // if (data.priceBookId!=checkId.) {
+        //     let query = { _id: data.priceBookId }
+        //     let checkPriceBook = await priceBookService.findByName1(query)
+        //     if (!checkPriceBook) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "PriceBook not found"
+        //         })
+        //         return;
+        //     }
+        // }
+
+        // let data = req.body
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
 
 
 
