@@ -50,6 +50,13 @@ var uploadP = multer({
     storage: StorageP,
 }).single('file');
 
+var upload = multer({
+    storage: StorageP,
+    limits: {
+        fileSize: 500 * 1024 * 1024, // 500 MB limit
+    },
+}).array("file", 100);
+
 //users api
 
 exports.getDealerUsers = async (req, res) => {
@@ -2428,10 +2435,10 @@ exports.createOrder = async (req, res) => {
             // }
 
             //check for super admin
-            if (req.role != "Super Admin") {
+            if (req.role != "Dealer") {
                 res.send({
                     code: constant.errorCode,
-                    message: "Only super admin allow to do this action",
+                    message: "Only dealer allow to do this action",
                 });
                 return;
             }
