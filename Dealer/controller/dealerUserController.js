@@ -2479,7 +2479,7 @@ exports.createOrder = async (req, res) => {
             let count = await orderService.getOrdersCount();
 
             console.log("bodyData=====================",data)
-            console.log("files=====================",reqeq.files)
+            console.log("files=====================",req.files)
 
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
