@@ -2404,9 +2404,10 @@ exports.createOrder = async (req, res) => {
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
 
-           
+            console.log("bodyData=====================",data)
 
             for (let i = 0; i < data.productsArray.length; i++) {
+                console.log("QuantityPricing=================",data.productsArray[i].QuantityPricing)
                 if (data.productsArray[i].QuantityPricing) {
                     let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
                     data.productsArray[i].QuantityPricing = jsonArray;
