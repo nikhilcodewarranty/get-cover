@@ -255,7 +255,7 @@ exports.createOrder = async (req, res) => {
                 data.paymentStatus == "Paid"
             ) {
 
-            
+
                 let updateOrder = await orderService.updateOrder(
                     { _id: savedResponse._id },
                     { canProceed: true },
@@ -333,13 +333,13 @@ exports.createOrder = async (req, res) => {
                                 unique_key_number: unique_key_number1,
                                 unique_key_search: unique_key_search1,
                             };
-                            console.log("contractObject++++++++++++++++++++contractObject",matchedObject._id,contractObject)
+                            console.log("contractObject++++++++++++++++++++contractObject", matchedObject._id, contractObject)
 
                             contractArrrayData.push(contractObject);
                         });
 
 
-                        console.log("Pushing data==================",contractArrrayData)
+                        console.log("Pushing data==================", contractArrrayData)
 
                         // let contractObject = {
                         //     orderId: savedResponse._id,
@@ -1168,7 +1168,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let message = [];
                 let finalRetailValue = [];
                 //Collect all header length for all csv
-                console.log("productsWithFiles=====================",productsWithFiles);
+                console.log("productsWithFiles=====================", productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
                         const wb = XLSX.readFile(productsWithFiles[j].products.file);
@@ -2712,7 +2712,7 @@ exports.generatePDF = async (req, res) => {
                 }
             },
             {
-                $unwind: "$customerUsers" 
+                $unwind: "$customerUsers"
             },
 
 
@@ -2910,25 +2910,23 @@ exports.generatePDF = async (req, res) => {
                       ${contracts
                                 ?.slice(startIndex, endIndex)
                                 ?.map(
-                                    (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        } </td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
-                                            contract.claimAmount
-                                        ).toFixed(2)}</td>
-                        </tr>
-                      `
+                                    (contract, index) => {
+                                        const adjustedSerialNo = serialNo + index; // Adjust serial number
+                                        return `
+                                  <tr>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${adjustedSerialNo}</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                  </tr>
+                                  `;
+                                    }
                                 )
                                 .join("")}
-                    </tbody>
+                  </tbody>
                   </table>
                   `;
 
