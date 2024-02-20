@@ -682,16 +682,8 @@ exports.createDealer = async (req, res) => {
           });
 
           totalDataComing.forEach(data => {
-            if (!data.retailPrice) {
-              data.status = "Dealer catalog retail price is empty";
-              data.exit = true;
-            }
-            else if (isNaN(parseFloat(data.retailPrice))) {
+            if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
               data.status = "Dealer catalog retail price is not valid";
-              data.exit = true;
-            }
-            else if (parseFloat(data.retailPrice) <= 0) {
-              data.status = "Dealer catalog retail price should be greater than 0";
               data.exit = true;
             }
             else {
@@ -1128,16 +1120,8 @@ exports.createDealer = async (req, res) => {
             };
           });
           totalDataComing.forEach(data => {
-            if (!data.retailPrice) {
-              data.status = "Dealer catalog retail price is empty";
-              data.exit = true;
-            }
-            else if (isNaN(parseFloat(data.retailPrice))) {
+            if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
               data.status = "Dealer catalog retail price is not valid";
-              data.exit = true;
-            }
-            else if (parseFloat(data.retailPrice) <= 0) {
-              data.status = "Dealer catalog retail price should be greater than 0";
               data.exit = true;
             }
             else {
