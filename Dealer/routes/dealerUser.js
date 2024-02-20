@@ -22,7 +22,7 @@ router.post("/getResellerUsers/:resellerId", [verifyToken], dealerUserController
 router.post("/getResellerServicers/:resellerId", [verifyToken], dealerUserController.getResellerServicers)
 router.post("/getResellerCustomers/:resellerId", [verifyToken], dealerUserController.getResellerCustomers);
 router.post('/createReseller',[verifyToken],dealerUserController.createReseller)
-
+router.post('/getCategoryAndPriceBooks', [verifyToken], dealerUserController.getCategoryAndPriceBooks)
 router.post('/getDealerServicers',[verifyToken],dealerUserController.getDealerServicers)
 router.post('/getDealerContracts',[verifyToken],dealerUserController.getAllContracts)
 
