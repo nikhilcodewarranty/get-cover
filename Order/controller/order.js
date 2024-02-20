@@ -2889,9 +2889,10 @@ exports.generatePDF = async (req, res) => {
                     let startIndex = 0
                     let endIndex = 6
                     let serialNo = 0;
+                    let flag = true;
                     var pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
-                        
+
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
@@ -2932,13 +2933,19 @@ exports.generatePDF = async (req, res) => {
 
                         startIndex = endIndex;
                         endIndex = endIndex + 20
-                        if(endIndex> contracts.length){
+                        if(!flag){
+                            break;
+                        }
+                        if (endIndex > contracts.length) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
+                            flag = false;
+
+                            console.log("startIndex:", startIndex);
+                            console.log("endIndex:", endIndex);
+                            console.log("contracts.length:", contracts.length);
                         }
 
-                        console.log("startIndex:", startIndex);
-                        console.log("endIndex:", endIndex);
                         // if(endIndex > contracts.length){
                         //     endIndex = contracts.length 
                         //     pageCount = pageCount + 1
