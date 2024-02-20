@@ -81,7 +81,6 @@ exports.getAllContracts = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getContracts,
-      result1: getContracts.length,
       totalCount: getTotalCount.length
     })
 
