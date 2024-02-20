@@ -670,14 +670,14 @@ exports.customerOrders = async (req, res) => {
       {
         $match: query
       },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "_id",
-          foreignField: "orderId",
-          as: "contract"
-        }
-      },
+      // {
+      //   $lookup: {
+      //     from: "contracts",
+      //     localField: "_id",
+      //     foreignField: "orderId",
+      //     as: "contract"
+      //   }
+      // },
       {
         $project: project,
       },
@@ -709,7 +709,12 @@ exports.customerOrders = async (req, res) => {
 
 
 
-    let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+
+
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery,skipLimit,limitData);
 
     //let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
 
