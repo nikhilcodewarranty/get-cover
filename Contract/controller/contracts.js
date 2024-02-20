@@ -81,7 +81,7 @@ exports.getAllContracts = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getContracts,
-      totalCount: getTotalCount.length
+      totalCount: getTotalCount
     })
 
     // res.send({
