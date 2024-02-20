@@ -40,6 +40,16 @@ module.exports = class contractService {
     }
   }
 
+  static async findContractCount(query) {
+    try {
+      console.log("find query+++++++++++",query)
+      const count = await contract.find(query).countDocuments();
+      return count
+    } catch (error) {
+      console.log(`Could not fetch contract count ${error}`);
+    }
+  }
+
   static async createBulkContracts(data) {
     try {
       console.log('service inset mny',data)
