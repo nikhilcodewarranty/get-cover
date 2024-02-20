@@ -481,14 +481,6 @@ exports.getAllOrders = async (req, res) => {
                     $match: query
                 },
 
-                {
-                    $lookup: {
-                        from: "contracts",
-                        localField: "_id",
-                        foreignField: "orderId",
-                        as: "contract"
-                    }
-                },
                 // {
                 //     $project: project,
                 // },
@@ -520,9 +512,12 @@ exports.getAllOrders = async (req, res) => {
                 { $sort: { unique_key: -1 } }
             ]
 
+            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+            let limitData = Number(pageLimit)
 
 
-            let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+            let ordersResult = await orderService.getOrderWithContract(lookupQuery,skipLimit,limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
