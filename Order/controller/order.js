@@ -2694,6 +2694,27 @@ exports.generatePDF = async (req, res) => {
                 $unwind: "$resellerUsers" // Unwind dealers array
             },
 
+            {
+                $unwind: "$customers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "customerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$customerUsers" 
+            },
+
 
         ];
 
@@ -2799,15 +2820,16 @@ exports.generatePDF = async (req, res) => {
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <tbody>
                 <tr>
-                    <td style="text-align: left; margin-top:40px; width: 50%;">
-                        ${orderWithContracts[0].customers?.length > 0 ? (`<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].username : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].street : ''}
-                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].city : ''}
-                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].state : ''}
-                        ${orderWithContracts[0].customers.length > 0 ? orderWithContracts[0].customers[0].zip : ''}<br/>
-                        </small>`) : ''}
-                    </td>
+                <td style="text-align: left; margin-top:40px; width: 50%;">
+                ${orderWithContracts[0].customers ? (`<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers ? orderWithContracts[0].customers.username : ''}</b></h4>
+                <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers ? orderWithContracts[0].customers.street : ''}
+                ${orderWithContracts[0].customers ? orderWithContracts[0].customers.city : ''}
+                ${orderWithContracts[0].customers ? orderWithContracts[0].customers.state : ''}
+                ${orderWithContracts[0].customers ? orderWithContracts[0].customers.zip : ''}<br/>
+                ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.email : ''}</small>`) : ''}
+        
+            </td>
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].servicer?.length > 0 ? (`
                         <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
@@ -2855,7 +2877,7 @@ exports.generatePDF = async (req, res) => {
                         <tr>
                             <td><b>Term:</b> ${product.term} Month</td>
                             <td><b>Unit Price:</b>  ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                            <td><b># of Products:</b> ${product.noOfProducts}</td>
+                            <td><b># of Products:</b> ${product.noOfProducts}.00</td>
                         </tr>
                         <tr>
                             <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
@@ -2885,60 +2907,47 @@ exports.generatePDF = async (req, res) => {
                           </tr>
                       </thead>
                       <tbody>
-                      ${  (startIndex == 0 || (endIndex - startIndex > 19)) &&
-                        contracts
+                      ${contracts
                                 ?.slice(startIndex, endIndex)
                                 ?.map(
                                     (contract, index) => `
-                                <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                </tr>
-                            `
-                                ).join("")
-                               }
-                    `;
-                    startIndex = endIndex;
-                    endIndex = Math.min(endIndex + 20, contracts.length);
-                    var pageCount = Math.ceil(contracts.length / pageSize);
-                 
-                    if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
-                        {
-                            for (let i = startIndex; i < endIndex; i++) {
-                                const contract = contracts[i];
-                                htmlContent += `
-                                <tr>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${(i-startIndex) + 1}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
-                                </tr>
-                            `;
-                            }
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        } </td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
+                                        }</td>
+                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
+                                            contract.claimAmount
+                                        ).toFixed(2)}</td>
+                        </tr>
+                      `
+                                )
+                                .join("")}
+                    </tbody>
+                  </table>
+                  `;
 
-                            htmlContent += `</tbody></table>`
-                        }
+                        startIndex = endIndex;
+                        endIndex = Math.min(endIndex + 20, contracts.length);
 
+                        console.log("startIndex:", startIndex);
+                        console.log("endIndex:", endIndex);
                         // if(endIndex > contracts.length){
                         //     endIndex = contracts.length 
                         //     pageCount = pageCount + 1
                         // }
 
-                 
-                   }
-                       
                     }
+
                 }
             }
         }
+
 
 
         res.send({
