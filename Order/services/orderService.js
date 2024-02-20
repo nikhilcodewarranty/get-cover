@@ -29,7 +29,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract(query, skipLimit, limitData) {
     try {
-      const allOrders = await order.aggregate(query)
+      const allOrders = await order.aggregate(query).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
