@@ -2690,6 +2690,24 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$resellerUsers" // Unwind dealers array
             },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                            }
+                        }
+                    ],
+                    as: "customerUser" // Alias for the result
+                }
+            },
+
+            {
+                $unwind: "$customerUser" // Unwind dealers array
+            },
 
 
         ];
@@ -2852,7 +2870,7 @@ exports.generatePDF = async (req, res) => {
                         <tr>
                             <td><b>Term:</b> ${product.term} Month</td>
                             <td><b>Unit Price:</b>  ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                            <td><b># of Products:</b> ${product.noOfProducts}.00</td>
+                            <td><b># of Products:</b> ${product.noOfProducts}</td>
                         </tr>
                         <tr>
                             <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
