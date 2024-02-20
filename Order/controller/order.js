@@ -2873,7 +2873,7 @@ exports.generatePDF = async (req, res) => {
                         <tr>
                             <td><b>Term:</b> ${product.term} Month</td>
                             <td><b>Unit Price:</b>  ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                            <td><b># of Products:</b> ${product.noOfProducts}.00</td>
+                            <td><b># of Products:</b> ${product.noOfProducts}</td>
                         </tr>
                         <tr>
                             <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
@@ -2915,7 +2915,7 @@ exports.generatePDF = async (req, res) => {
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${'1000000'.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}/td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
                                   </tr>
