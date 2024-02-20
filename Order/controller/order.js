@@ -2958,6 +2958,7 @@ exports.generatePDF = async (req, res) => {
         res.send({
             code: constant.successCode,
             result: htmlContent,
+            index:contracts[startIndex],
             orderWithContracts: orderWithContracts
         })
     }
