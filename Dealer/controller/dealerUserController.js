@@ -2104,21 +2104,6 @@ exports.getAllContracts = async (req, res) => {
             {$unwind:"$order"},
 
             {$match:{"order.dealerId":new mongoose.Types.ObjectId(req.userId)}}
-            // {
-            //     isDeleted: false,
-            //     $expr: {
-            //         $eq: ["$orderId", "$order.dealerId"]
-            //     },
-            //     "order.dealerId": new mongoose.Types.ObjectId('65cf074f38bf1b3dd98a2f3d')
-            // }
-            // {
-            //   $addFields: {
-            //     contracts: {
-            //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-            //     }
-            //   }
-            // }
-            // { $unwind: "$contracts" }
         ]
 
         let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)

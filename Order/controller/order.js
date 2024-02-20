@@ -1944,13 +1944,13 @@ exports.archiveOrder = async (req, res) => {
 
 exports.getSingleOrder = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action",
-            });
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action",
+        //     });
+        //     return;
+        // }
         let projection = { isDeleted: 0 };
         let query = { _id: req.params.orderId };
         let checkOrder = await orderService.getOrder(query, projection);
