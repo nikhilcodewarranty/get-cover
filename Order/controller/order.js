@@ -2884,6 +2884,7 @@ exports.generatePDF = async (req, res) => {
                     let startIndex = 0
                     let endIndex = 6
                     let serialNo = 0;
+                    let flag = true;
                     var pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
 
@@ -2926,10 +2927,20 @@ exports.generatePDF = async (req, res) => {
                   `;
 
                         startIndex = endIndex;
-                        endIndex = Math.min(endIndex + 20, contracts.length);
+                        endIndex = endIndex + 20
+                        if(!flag){
+                            break;
+                        }
+                        if (endIndex > contracts.length) {
+                            endIndex = contracts.length
+                            pageCount = pageCount + 1
+                            flag = false;
 
-                        console.log("startIndex:", startIndex);
-                        console.log("endIndex:", endIndex);
+                            console.log("startIndex:", startIndex);
+                            console.log("endIndex:", endIndex);
+                            console.log("contracts.length:", contracts.length);
+                        }
+
                         // if(endIndex > contracts.length){
                         //     endIndex = contracts.length 
                         //     pageCount = pageCount + 1
@@ -2938,7 +2949,7 @@ exports.generatePDF = async (req, res) => {
                     }
 
                 }
-            } 
+            }
         }
 
 
