@@ -2888,7 +2888,7 @@ exports.generatePDF = async (req, res) => {
                 </table>`
                     let startIndex = 0
                     let endIndex = 6
-                    let serialNo = 0
+                    let serialNo = startIndex + 1;
                     var pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
 
