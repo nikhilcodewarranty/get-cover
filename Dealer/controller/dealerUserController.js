@@ -1240,7 +1240,7 @@ exports.getCustomerInOrder = async (req, res) => {
         let data = req.body;
         let query;
         if (data.resellerId != "") {
-            query = { dealerId: req, userId, resellerId: data.resellerId };
+            query = { dealerId: req.userId, resellerId: data.resellerId };
         } else {
             query = { dealerId: req.userId };
         }
