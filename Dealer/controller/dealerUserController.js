@@ -1766,7 +1766,7 @@ exports.getDealerOrders = async (req, res) => {
                 contract: "$contract"
             };
 
-            let query = { status: { $ne: "Archieved" }, dealerId: new mongoose.Types.ObjectId('65cf8b799447582022e2bfd8') };
+            let query = { status: { $ne: "Archieved" }, dealerId: new mongoose.Types.ObjectId(req.userId) };
 
             let lookupQuery = [
                 {
