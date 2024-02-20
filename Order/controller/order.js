@@ -2892,7 +2892,7 @@ exports.generatePDF = async (req, res) => {
                     var pageCount = Math.ceil(contracts.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
                         startIndex = page * pageSize;
-                        endIndex = Math.min((page + 1) * pageSize, contracts.length);
+                        endIndex = page==0 ? 6 : Math.min((page + 1) * pageSize, contracts.length);
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
