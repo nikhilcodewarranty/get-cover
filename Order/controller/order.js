@@ -2456,12 +2456,12 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
-                console.log("contractObject===========================")
+                // console.log("contractObject===========================")
 
                 contracts.push(contractObject);
             });
 
-            console.log("contracts===========================", contracts)
+            // console.log("contracts===========================", contracts)
             let saveData = await contractService.createBulkContracts(contracts)
         })
 
@@ -2860,7 +2860,7 @@ exports.generatePDF = async (req, res) => {
                 const order = orderWithContracts[i];
                 for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
                     const product = order.productsArray[j];
-
+                    const pageSize = 20; // Number of contracts per page
                     const contracts = product.contract;
                     // Retrieve order contracts for the current product
                     htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
@@ -2899,9 +2899,12 @@ exports.generatePDF = async (req, res) => {
                         </tr>
                     </tbody>
                 </table>`
-                    let page = 0
-                    let pageCount = Math.ceil(contracts.length / page == 0 ? 6 : 20);
-                    for (page = 0; page < pageCount; page++) {
+                    let startIndex = 0
+                    let endIndex = 6
+                    let serialNo = 0
+                    var pageCount = Math.ceil(contracts.length / pageSize);
+                    for (let page = 0; page < pageCount; page++) {
+
                         // Start of a new page
                         htmlContent += `
                   <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
@@ -2917,35 +2920,60 @@ exports.generatePDF = async (req, res) => {
                           </tr>
                       </thead>
                       <tbody>
-                      ${contracts
-                                ?.slice(page * pageSize, (page + 1) * pageSize)
+                      ${  (startIndex == 0 || (endIndex - startIndex > 19)) &&
+                        contracts
+                                ?.slice(startIndex, endIndex)
                                 ?.map(
                                     (contract, index) => `
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1 + (page * pageSize)}</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        } </td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${contract.productValue}.00</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition
-                                        }</td>
-                          <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(
-                                            contract.claimAmount
-                                        ).toFixed(2)}</td>
-                        </tr>
-                      ` )
-                                .join("")}
-                    </tbody>
-                  </table>
-                  `;
-                    }
+                                <tr>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${index + 1}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                </tr>
+                            `
+                                ).join("")
+                               }
+                    `;
+                    startIndex = endIndex;
+                    endIndex = Math.min(endIndex + 20, contracts.length);
+                    var pageCount = Math.ceil(contracts.length / pageSize);
+                 
+                    if (startIndex !== 0 && endIndex !== 6 && endIndex - startIndex < 20) {
+                        {
+                            for (let i = startIndex; i < endIndex; i++) {
+                                const contract = contracts[i];
+                                htmlContent += `
+                                <tr>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${(i-startIndex) + 1}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$ ${parseInt(contract.claimAmount).toFixed(2)}</td>
+                                </tr>
+                            `;
+                            }
 
+                            htmlContent += `</tbody></table>`
+                        }
+
+                        // if(endIndex > contracts.length){
+                        //     endIndex = contracts.length 
+                        //     pageCount = pageCount + 1
+                        // }
+
+                 
+                   }
+                       
+                    }
                 }
             }
         }
-
 
 
         res.send({
@@ -2957,6 +2985,7 @@ exports.generatePDF = async (req, res) => {
     catch (err) {
         res.send({
             code: constant.errorCode,
+            line: err.stack,
             message: err.message
         })
     }
