@@ -36,6 +36,16 @@ module.exports = class orderService {
     }
   }
 
+
+  static async getOrderWithContract1(query, skipLimit, limitData) {
+    try {
+      const allOrders = await order.aggregate(query);
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+
   static async getDashboardData(query, project) {
     try {
       const allOrders = await order.aggregate([

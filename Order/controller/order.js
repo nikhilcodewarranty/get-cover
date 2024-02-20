@@ -2712,9 +2712,10 @@ exports.generatePDF = async (req, res) => {
 
 
         ];
-
-        let orderWithContracts = await orderService.getOrderWithContract(query);
-
+        //console.log("query",query)
+        let orderWithContracts = await orderService.getOrderWithContract1(query);
+        // console.log("orderWithContracts",orderWithContracts)
+        // return
         let productsData = []
 
         for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
