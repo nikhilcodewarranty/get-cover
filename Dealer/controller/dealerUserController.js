@@ -1233,7 +1233,7 @@ exports.getCustomerInOrder = async (req, res) => {
         let data = req.body;
         let query;
         if (data.resellerId != "") {
-            query = { dealerId: req,userId, resellerId: data.resellerId };
+            query = { dealerId: req, userId, resellerId: data.resellerId };
         } else {
             query = { dealerId: req.userId };
         }
@@ -2172,14 +2172,14 @@ exports.getAllContracts = async (req, res) => {
             });
             return;
         }
-        
+
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         console.log(pageLimit, skipLimit, limitData)
         let query = [
-           
+
             {
                 $lookup: {
                     from: "orders",
@@ -2188,45 +2188,45 @@ exports.getAllContracts = async (req, res) => {
                     as: "order",
                     pipeline: [
                         {
-                          $lookup: {
-                            from: "dealers",
-                            localField: "dealerId",
-                            foreignField: "_id",
-                            as: "dealer",
-                          }
+                            $lookup: {
+                                from: "dealers",
+                                localField: "dealerId",
+                                foreignField: "_id",
+                                as: "dealer",
+                            }
                         },
                         {
-                          $lookup: {
-                            from: "resellers",
-                            localField: "resellerId",
-                            foreignField: "_id",
-                            as: "reseller",
-                          }
+                            $lookup: {
+                                from: "resellers",
+                                localField: "resellerId",
+                                foreignField: "_id",
+                                as: "reseller",
+                            }
                         },
                         {
-                          $lookup: {
-                            from: "customers",
-                            localField: "customerId",
-                            foreignField: "_id",
-                            as: "customer",
-                          }
+                            $lookup: {
+                                from: "customers",
+                                localField: "customerId",
+                                foreignField: "_id",
+                                as: "customer",
+                            }
                         },
                         {
-                          $lookup: {
-                            from: "servicers",
-                            localField: "servicerId",
-                            foreignField: "_id",
-                            as: "servicer",
-                          }
+                            $lookup: {
+                                from: "servicers",
+                                localField: "servicerId",
+                                foreignField: "_id",
+                                as: "servicer",
+                            }
                         },
-            
-                      ]
-                   
+
+                    ]
+
                 }
             },
-            {$unwind:"$order"},
+            { $unwind: "$order" },
 
-            {$match:{"order.dealerId":new mongoose.Types.ObjectId(req.userId)}}
+            { $match: { "order.dealerId": new mongoose.Types.ObjectId(req.userId) } }
         ]
 
         let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
@@ -2382,6 +2382,329 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
+
+exports.createOrder = async (req, res) => {
+    try {
+        upload(req, res, async (err) => {
+            let data = req.body;
+            // let data = {
+            //     "dealerId": "65ce11c8750ebbaea9330274",
+            //     "servicerId": "",
+            //     "customerId": "65cf188810d67d4db2c352a6",
+            //     "resellerId": "",
+            //     "productsArray": [
+            //         {
+            //             "categoryId": "65cf04494e8b028678173521",
+            //             "priceBookId": "65cf04ba4e8b028678173522",
+            //             "unitPrice": "80.00",
+            //             "noOfProducts": "1",
+            //             "price": 160,
+            //             "file": "",
+            //             "manufacture": "Get-Cover123",
+            //             "model": "Inverter123",
+            //             "serial": "S123GHK",
+            //             "condition": "Breakdown",
+            //             "productValue": 123,
+            //             "regDate": "2024-01-18T00:00:00.000Z",
+            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
+            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
+            //             "description": "003",
+            //             "term": 12,
+            //             "priceType": "Quantity Pricing",
+            //             "additionalNotes": "this is test ",
+            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
+
+            //         }
+
+            //     ],
+            //     "sendNotification": true,
+            //     "paymentStatus": "Paid",
+            //     "dealerPurchaseOrder": "#136789777",
+            //     "serviceCoverageType": "Parts",
+            //     "coverageType": "Breakdown",
+            //     "orderAmount": 144,
+            //     "paidAmount": 123,
+            //     "dueAmount": 21
+            // }
+
+            //check for super admin
+            if (req.role != "Super Admin") {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Only super admin allow to do this action",
+                });
+                return;
+            }
+            // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
+
+            for (let i = 0; i < data.productsArray.length; i++) {
+                if (data.productsArray[i].QuantityPricing) {
+                    let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
+                    data.productsArray[i].QuantityPricing = jsonArray;
+                }
+            }
+
+            data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
+            data.dealerId = req.userId
+            data.venderOrder = data.dealerPurchaseOrder;
+            let projection = { isDeleted: 0 };
+            let checkDealer = await dealerService.getDealerById(
+                req.userId,
+                projection
+            );
+            if (!checkDealer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Dealer not found",
+                });
+                return;
+            }
+
+            if (data.servicerId) {
+                let query = {
+                    $or: [
+                        { _id: data.servicerId },
+                        { resellerId: data.servicerId },
+                        { dealerId: data.servicerId },
+                    ],
+                };
+                let checkServicer = await servicerService.getServiceProviderById(query);
+                if (!checkServicer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Servicer not found",
+                    });
+                    return;
+                }
+            }
+            if (data.customerId) {
+                let query = { _id: data.customerId };
+                let checkCustomer = await customerService.getCustomerById(query);
+                if (!checkCustomer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Customer not found",
+                    });
+                    return;
+                }
+            }
+            if (data.priceBookId) {
+                let query = { _id: data.priceBookId };
+                let checkPriceBook = await priceBookService.findByName1(query);
+                if (!checkPriceBook) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "PriceBook not found",
+                    });
+                    return;
+                }
+            }
+
+            data.createdBy = req.userId;
+
+            data.servicerId = data.servicerId != "" ? data.servicerId : null;
+            data.resellerId = data.resellerId != "" ? data.resellerId : null;
+            data.customerId = data.customerId != "" ? data.customerId : null;
+            let contractArrrayData = [];
+
+            let count = await orderService.getOrdersCount();
+
+            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+            data.unique_key_search = "GC" + "2024" + data.unique_key_number
+            data.unique_key = "GC-" + "2024-" + data.unique_key_number
+            if (req.files) {
+                const uploadedFiles = req.files.map((file) => ({
+                    fileName: file ? file.filename : "",
+                    name: file ? file.originalname : "",
+                    filePath: file ? file.path : "",
+                    size: file ? file.size : "",
+                }));
+
+                const filteredProducts = data.productsArray.filter(
+                    (product) => product.file !== null
+                );
+                const filteredProducts2 = data.productsArray.filter(
+                    (product) => product.file === null
+                );
+
+                const productsWithOrderFiles = filteredProducts.map(
+                    (product, index) => {
+                        const file = uploadedFiles[index];
+
+                        // Check if 'file' is not null
+                        if (file && file.filePath) {
+                            return {
+                                ...product,
+                                file: file.filePath,
+                                orderFile: {
+                                    fileName: file.fileName,
+                                    name: file.name,
+                                    size: file.size,
+                                },
+                            };
+                        } else {
+                            // If 'file' is null, return the original product without modifications
+                            return {
+                                ...product,
+                                orderFile: {
+                                    fileName: "",
+                                    name: "",
+                                    size: "",
+                                },
+                            };
+                        }
+                    }
+                );
+
+                const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
+                data.productsArray = finalOutput;
+            }
+            let checkVenderOrder = await orderService.getOrder(
+                { venderOrder: data.dealerPurchaseOrder, dealerId: req.userId },
+                {}
+            );
+            if (checkVenderOrder) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "dealer purchase order is already exist",
+                });
+                return;
+            }
+            data.status = "Pending";
+
+
+            // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+            let savedResponse = await orderService.addOrder(data);
+            if (!savedResponse) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "unable to create order",
+                });
+                return;
+            }
+            let fileLength = req.files ? req.files.length : 0;
+            if (
+                fileLength === data.productsArray.length &&
+                data.customerId != null &&
+                data.paymentStatus == "Paid"
+            ) {
+
+
+                let updateOrder = await orderService.updateOrder(
+                    { _id: savedResponse._id },
+                    { canProceed: true },
+                    { new: true }
+                );
+
+                const isValidDate = data.productsArray.every((product) => {
+                    const coverageStartDate =
+                        product.coverageStartDate != ""
+                            ? moment(product.coverageStartDate).format("YYYY-MM-DD")
+                            : product.coverageStartDate;
+                    return moment(coverageStartDate, "YYYY-MM-DD", true).isValid();
+                });
+
+
+
+                if (isValidDate) {
+                    let updateStatus = await orderService.updateOrder(
+                        { _id: savedResponse._id },
+                        { status: "Active" },
+                        { new: true }
+                    );
+
+                    let contractArrrayData = [];
+                    for (let i = 0; i < data.productsArray.length; i++) {
+                        let products = data.productsArray[i];
+                        let priceBookId = products.priceBookId;
+                        let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+                        let projection = { isDeleted: 0 };
+                        let priceBook = await priceBookService.getPriceBookById(
+                            query,
+                            projection
+                        );
+                        const wb = XLSX.readFile(products.file);
+                        const sheets = wb.SheetNames;
+                        const ws = wb.Sheets[sheets[0]];
+
+
+                        // let contractCount =
+                        //     Number(
+                        //         count1.length > 0 && count1[0].unique_key
+                        //             ? count1[0].unique_key
+                        //             : 0
+                        //     ) + 1;
+
+                        const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+
+                        const totalDataComing = totalDataComing1.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]],
+                            };
+                        });
+                        // let savedDataOrder = savedResponse.toObject()
+                        const matchedObject = await savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
+                        let count1 = await contractService.getContractsCount();
+                        totalDataComing.forEach((data, index) => {
+                            let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                            let unique_key_search1 = "OC" + "2024" + unique_key_number1
+                            let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                            let contractObject = {
+                                orderId: savedResponse._id,
+                                orderProductId: matchedObject._id,
+                                productName: priceBook[0].name,
+                                manufacture: data.brand,
+                                model: data.model,
+                                serial: data.serial,
+                                condition: data.condition,
+                                productValue: data.retailValue,
+                                unique_key: unique_key1,
+                                unique_key_number: unique_key_number1,
+                                unique_key_search: unique_key_search1,
+                            };
+                            console.log("contractObject++++++++++++++++++++contractObject", matchedObject._id, contractObject)
+
+                            contractArrrayData.push(contractObject);
+                        });
+
+
+                        console.log("Pushing data==================", contractArrrayData)
+
+                        // let contractObject = {
+                        //     orderId: savedResponse._id,
+                        //     orderProductId: matchedObject._id,
+                        //     productName: priceBook[0].name,
+                        //     manufacture: totalDataComing[0]["brand"],
+                        //     model: totalDataComing[0]["model"],
+                        //     serial: totalDataComing[0]["serial"],
+                        //     condition: totalDataComing[0]["condition"],
+                        //     productValue: totalDataComing[0]["retailValue"],
+                        //     unique_key: contractCount,
+                        // };
+                        // contractArrrayData.push(contractObject);
+                    }
+                    let bulkContracts = await contractService.createBulkContracts(
+                        contractArrrayData
+                    );
+                }
+            }
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
 
 
 
