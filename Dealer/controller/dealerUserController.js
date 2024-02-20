@@ -1228,6 +1228,38 @@ exports.getDealerCustomers = async (req, res) => {
     }
 }
 
+exports.getCustomerInOrder = async (req, res) => {
+    try {
+        let data = req.body;
+        let query;
+        if (data.resellerId != "") {
+            query = { dealerId: req,userId, resellerId: data.resellerId };
+        } else {
+            query = { dealerId: req.userId };
+        }
+        let getCustomers = await customerService.getAllCustomers(query, {});
+        if (!getCustomers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customers",
+            });
+            return;
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Successfully Fetched",
+            result: getCustomers,
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+
 //dealers api
 
 
