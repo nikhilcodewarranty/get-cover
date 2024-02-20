@@ -1817,7 +1817,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       //  return;
       // copy to here
       totalDataComing.forEach(data => {
-        if (!data.retailPrice || typeof(data.retailPrice) != 'number' || data.retailPrice <= 0) {
+        if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
           data.status = "Dealer catalog retail price is not valid";
           data.exit = true;
         }
@@ -2667,6 +2667,7 @@ exports.getDealerOrders = async (req, res) => {
     })
   }
 }
+
 
 
 
