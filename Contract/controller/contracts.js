@@ -20,45 +20,45 @@ exports.getAllContracts = async (req, res) => {
           localField: "orderId",
           foreignField: "_id",
           as: "order",
-          // pipeline: [
-          //   {
-          //     $lookup: {
-          //       from: "dealers",
-          //       localField: "dealerId",
-          //       foreignField: "_id",
-          //       as: "dealer",
-          //     }
-          //   },
-          //   {
-          //     $lookup: {
-          //       from: "resellers",
-          //       localField: "resellerId",
-          //       foreignField: "_id",
-          //       as: "reseller",
-          //     }
-          //   },
-          //   {
-          //     $lookup: {
-          //       from: "customers",
-          //       localField: "customerId",
-          //       foreignField: "_id",
-          //       as: "customer",
-          //     }
-          //   },
-          //   {
-          //     $lookup: {
-          //       from: "servicers",
-          //       localField: "servicerId",
-          //       foreignField: "_id",
-          //       as: "servicer",
-          //     }
-          //   },
+          pipeline: [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealerId",
+                foreignField: "_id",
+                as: "dealer",
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "resellerId",
+                foreignField: "_id",
+                as: "reseller",
+              }
+            },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+              }
+            },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
 
-          //   // { $unwind: "$dealer" },
-          //   // { $unwind: "$reseller" },
-          //   // { $unwind: "$servicer?$servicer:{}" },
+            // { $unwind: "$dealer" },
+            // { $unwind: "$reseller" },
+            // { $unwind: "$servicer?$servicer:{}" },
 
-          // ]
+          ]
         }
       },
       {
