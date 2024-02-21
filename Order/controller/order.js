@@ -50,6 +50,12 @@ var uploadP = multer({
     },
 }).single("file");
 
+
+
+
+
+
+
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
@@ -2001,7 +2007,6 @@ exports.getSingleOrder = async (req, res) => {
             servicerData: checkServicer ? checkServicer : {}
         };
 
-
         res.send({
             code: constant.successCode,
             message: "Success!",
@@ -2542,9 +2547,9 @@ exports.getOrderContract = async (req, res) => {
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId!=null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0] ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId!=null? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 

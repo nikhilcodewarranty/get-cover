@@ -125,8 +125,9 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      let resetPasswordCode = randtoken.generate(4, '123456789')
-      let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id.toString(), isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
+      let resetPasswordCode = randtoken.generate(4, '123456789') 
+      // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
+      let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, approvedStatus: "Approved", status: true }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -196,8 +197,8 @@ exports.approveServicer = async (req, res, next) => {
     }
 
     let teamMembers = data.members
-
-    let getUserId = await userService.findOneUser({ accountId: checkDetail._id.toString(), isPrimary: true }, {})
+    // to string to object 
+    let getUserId = await userService.findOneUser({ accountId: checkDetail._id, isPrimary: true }, {})
     // console.log("getUserId================",getUserId);
     // return;
 
