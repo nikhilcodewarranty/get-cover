@@ -1148,7 +1148,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     let file1 = undefined; // Initialize file to undefined
                     if (data1.fileValue == 'true') {
                         // Check if data1.file is not blank
-                        file1 = process.env.LOCAL_FILE_PATH + "/" + data1.file;
+                        file1 = process.env.LOCAL_FILE_PATH + "/" + data1.file.fileName;
                         fileIndex++;
                     }
                     return {
