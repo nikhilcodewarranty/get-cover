@@ -2807,7 +2807,12 @@ exports.getDealerContract = async (req, res) => {
       })
       return
     }
+
+    console.log("111111111111111")
+
     let orderIDs = getDealerOrder.map((ID) => ID._id)
+    console.log("22222222222222222222222")
+
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -2871,9 +2876,13 @@ exports.getDealerContract = async (req, res) => {
       // }
       // { $unwind: "$contracts" }
     ]
+    console.log("3333333333333333333333")
+
     console.log(pageLimit, skipLimit, limitData)
     let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-    let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
+    console.log("44444444444444444444444")
+
+    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
     if (!getContract) {
       res.send({
         code: constants.errorCode,
@@ -2885,10 +2894,9 @@ exports.getDealerContract = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getContract,
-      totalCount: totalCount.length
+      totalCount: totalCount
     })
 
-    console.log(orderIDs)
   } catch (err) {
     res.send({
       code: constant.errorCode,
