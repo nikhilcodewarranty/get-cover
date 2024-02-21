@@ -2183,7 +2183,7 @@ exports.getDealerArchievedOrders = async (req, res) => {
             }
 
 
-            let query = { status:"Archieved" , dealerId: new mongoose.Types.ObjectId(req.userId) };
+            let query = { status: "Archieved", dealerId: new mongoose.Types.ObjectId(req.userId) };
 
             let lookupQuery = [
                 {
@@ -2702,18 +2702,6 @@ exports.createOrder = async (req, res) => {
             data.dealerId = req.userId
             data.venderOrder = data.dealerPurchaseOrder;
             let projection = { isDeleted: 0 };
-            let checkDealer = await dealerService.getDealerById(
-                req.userId,
-                projection
-            );
-            if (!checkDealer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Dealer not found",
-                });
-                return;
-            }
-
             if (data.servicerId) {
                 let query = {
                     $or: [
@@ -2827,7 +2815,8 @@ exports.createOrder = async (req, res) => {
             }
             data.status = "Pending";
 
-            console.log("Data=====================",data)
+            console.log("BodyData=================",data);
+            return;
             // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
