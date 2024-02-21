@@ -1147,7 +1147,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     let file1 = undefined; // Initialize file to undefined
                     if (data1.fileValue == 'true') {
                         // Check if data1.file is not blank
-                        file1 = uploadedFiles[fileIndex].filePath;
+                        file1 = process.env.LOCAL_FILE_PATH + "/" + data1.file;
                         fileIndex++;
                     }
                     return {
@@ -1169,7 +1169,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let message = [];
                 let finalRetailValue = [];
                 //Collect all header length for all csv
-                console.log("productsWithFiles=====================", productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
                         const wb = XLSX.readFile(productsWithFiles[j].products.file);
