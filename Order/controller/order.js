@@ -2724,12 +2724,17 @@ exports.generatePDF = async (req, res) => {
         // return
         let productsData = []
 
-        console.log("orderWithContracts===================",orderWithContracts[0].productsArray);
+        if(!orderWithContracts[0]){
+            res.send({
+                code:constant.successCode,
+                message:'Contract not found of this order!'
+            })
+            return;
+        }
 
-      //  return;
 
-        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
-            const productId = orderWithContracts[0].productsArray[i]._id;
+        for (let i = 0; i < orderWithContracts[0]?.productsArray.length; i++) {
+            const productId = orderWithContracts[0]?.productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
             const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
             productsData.push(mergedObject)
