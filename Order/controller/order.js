@@ -2739,8 +2739,8 @@ exports.generatePDF = async (req, res) => {
         }
 
 
-        for (let i = 0; i < orderWithContracts[0]?.productsArray.length; i++) {
-            const productId = orderWithContracts[0]?.productsArray[i]._id;
+        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
+            const productId = orderWithContracts[0].productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
             const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
             productsData.push(mergedObject)
