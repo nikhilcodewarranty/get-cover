@@ -34,6 +34,7 @@ router.get('/getServicersList',[verifyToken],dealerUserController.getServicersLi
 router.post('/createDeleteRelation',[verifyToken],dealerUserController.createDeleteRelation)
 
 router.post('/getDealerOrders',[verifyToken],dealerUserController.getDealerOrders)
+router.post('/getDealerArchievedOrders',[verifyToken],dealerUserController.getDealerArchievedOrders)
 
 
 
