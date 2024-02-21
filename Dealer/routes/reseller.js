@@ -10,6 +10,7 @@ router.post("/getResellerServicers/:resellerId", [verifyToken], resellerControll
 router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
 router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
 router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerController.getResselerByCustomer);
+router.post("/changeResellerStatus/:resellerId", [verifyToken], resellerController.changeResellerStatus);
 
 router.get("/getResellerById/:resellerId", [verifyToken], resellerController.getResellerById);
 router.get("/getDealerByReseller/:resellerId", [verifyToken], resellerController.getDealerByReseller);

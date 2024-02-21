@@ -1049,3 +1049,74 @@ exports.getResellerContract = async (req, res) => {
         })
     }
 }
+
+exports.changeResellerStatus = async (req, res) => {
+    try {
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action"
+            })
+            return;
+        }
+        const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
+
+        if (!singleReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Reseller not found"
+            })
+            return;
+        }
+        //Update Reseller User Status if inactive
+        if (!req.body.status) {
+            let resellerUserCreateria = { accountId: req.params.resellerId };
+            let newValue = {
+                $set: {
+                    status: req.body.status
+                }
+            };
+            let option = { new: true };
+            const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
+
+        }
+
+        else {
+            let resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
+            let newValue = {
+                $set: {
+                    status: req.body.status
+                }
+            };
+            let option = { new: true };
+            const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
+        }
+
+        option = { new: true };
+        //Update Reseller Status
+        newValue = {
+            $set: {
+                status: req.body.status
+            }
+        };
+        const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
+        if (changedResellerStatus) {
+            res.send({
+                code: constant.successCode,
+                message: 'Updated Successfully!',
+                data: changedResellerStatus
+            })
+        }
+        else {
+            res.send({
+                code: constant.errorCode,
+                message: 'Unable to update reseller status!',
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
