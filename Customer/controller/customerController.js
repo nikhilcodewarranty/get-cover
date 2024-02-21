@@ -714,7 +714,7 @@ exports.customerOrders = async (req, res) => {
     let limitData = Number(pageLimit)
 
 
-    let ordersResult = await orderService.getOrderWithContract(lookupQuery,skipLimit,limitData);
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
 
     //let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
 
@@ -992,7 +992,9 @@ exports.getCustomerContract = async (req, res) => {
     ]
     console.log(pageLimit, skipLimit, limitData)
     let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-    let totalCount = await contractService.getContractsCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    console.log(orderIDs, skipLimit, limitData)
+    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    console.log(pageLimit, skipLimit, limitData)
     if (!getContract) {
       res.send({
         code: constants.errorCode,
