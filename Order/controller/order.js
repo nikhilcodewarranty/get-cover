@@ -517,7 +517,7 @@ exports.getAllOrders = async (req, res) => {
             let limitData = Number(pageLimit)
 
 
-            let ordersResult = await orderService.getOrderWithContract(lookupQuery,skipLimit,limitData);
+            let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -1994,10 +1994,16 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
+        let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
+        let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
+        let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
+            username:singleDealerUser ? singleDealerUser : {},
+            resellerUsername:singleResellerUser ? singleResellerUser : {},
+            customerUserData:singleCustomerUser ? singleCustomerUser : {},
             servicerData: checkServicer ? checkServicer : {}
         };
 
@@ -2929,7 +2935,7 @@ exports.generatePDF = async (req, res) => {
 
                         startIndex = endIndex;
                         endIndex = endIndex + 20
-                        if(!flag){
+                        if (!flag) {
                             break;
                         }
                         if (endIndex > contracts.length && contracts[startIndex]) {

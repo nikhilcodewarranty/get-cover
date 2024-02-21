@@ -1822,6 +1822,7 @@ exports.getDealerResellers = async (req, res) => {
 
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
 
+
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
             const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
