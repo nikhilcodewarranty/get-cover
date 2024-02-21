@@ -1145,11 +1145,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     console.log("data----------------------------",data1)
-                    console.log("data1.orderFile.fileName----------------------------",data1.orderFile.fileName)
+                    console.log("data1.orderFile.fileName----------------------------",JSON.parse(data1.orderFile))
+               
                     let file1 = undefined; // Initialize file to undefined
                     if (data1.fileValue == 'true') {
+                        let checkFile = JSON.parse(data1.orderFile)
                         // Check if data1.file is not blank
-                        file1 = process.env.LOCAL_FILE_PATH + "/" + data1.orderFile.fileName;
+                        file1 = process.env.LOCAL_FILE_PATH + "/" + checkFile.fileName;
                         fileIndex++;
                     }
                     return {
