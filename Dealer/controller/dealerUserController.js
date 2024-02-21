@@ -2754,6 +2754,7 @@ exports.createOrder = async (req, res) => {
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
+            console.log("req.files==============",req.files);
             if (req.files) {
                 console.log("I am here----------------------")
                 const uploadedFiles = req.files.map((file) => ({
