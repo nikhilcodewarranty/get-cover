@@ -2823,12 +2823,12 @@ exports.generatePDF = async (req, res) => {
                     </td>
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName + " " + orderWithContracts[0].resellerUsers.lastName : ''} <br/>
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}<br/>
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}<br/>
                         ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
                     </td>
                 </tr>
