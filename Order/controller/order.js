@@ -2724,6 +2724,10 @@ exports.generatePDF = async (req, res) => {
         // return
         let productsData = []
 
+        console.log("orderWithContracts===================",orderWithContracts[0].productsArray);
+
+      //  return;
+
         for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
             const productId = orderWithContracts[0].productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
@@ -2892,7 +2896,7 @@ exports.generatePDF = async (req, res) => {
                     let endIndex = 6
                     let serialNo = 0;
                     let flag = true;
-                    var pageCount = Math.ceil(contracts.length / pageSize);
+                    var pageCount = Math.ceil(contracts?.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
 
                         // Start of a new page
@@ -2938,7 +2942,7 @@ exports.generatePDF = async (req, res) => {
                         if (!flag) {
                             break;
                         }
-                        if (endIndex > contracts.length && contracts[startIndex]) {
+                        if (endIndex > contracts?.length && contracts[startIndex]) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;
