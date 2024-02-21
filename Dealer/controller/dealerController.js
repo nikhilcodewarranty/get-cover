@@ -2883,6 +2883,7 @@ exports.getDealerContract = async (req, res) => {
     console.log("44444444444444444444444")
 
     let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    
     if (!getContract) {
       res.send({
         code: constants.errorCode,
