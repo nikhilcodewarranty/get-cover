@@ -2690,10 +2690,8 @@ exports.createOrder = async (req, res) => {
             }
             // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
 
-            console.log("bodyData=====================",data)
 
             for (let i = 0; i < data.productsArray.length; i++) {
-                console.log("QuantityPricing=================",data.productsArray[i].QuantityPricing)
                 if (data.productsArray[i].QuantityPricing) {
                     let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
                     data.productsArray[i].QuantityPricing = jsonArray;
@@ -2765,9 +2763,6 @@ exports.createOrder = async (req, res) => {
 
             let count = await orderService.getOrdersCount();
 
-            console.log("bodyData=====================",data)
-            console.log("files=====================",req.files)
-
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
@@ -2826,7 +2821,7 @@ exports.createOrder = async (req, res) => {
             if (checkVenderOrder) {
                 res.send({
                     code: constant.errorCode,
-                    message: "dealer purchase order is already exist",
+                    message: "Dealer purchase order is already exist",
                 });
                 return;
             }

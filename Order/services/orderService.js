@@ -39,6 +39,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
+
       const allOrders = await order.aggregate(query);
       return allOrders;
     } catch (error) {

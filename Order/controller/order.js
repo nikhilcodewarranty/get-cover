@@ -2007,9 +2007,9 @@ exports.getSingleOrder = async (req, res) => {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
-            username:singleDealerUser ? singleDealerUser : {},
-            resellerUsername:singleResellerUser ? singleResellerUser : {},
-            customerUserData:singleCustomerUser ? singleCustomerUser : {},
+            username: singleDealerUser ? singleDealerUser : {},
+            resellerUsername: singleResellerUser ? singleResellerUser : {},
+            customerUserData: singleCustomerUser ? singleCustomerUser : {},
             servicerData: checkServicer ? checkServicer : {}
         };
 
@@ -2553,9 +2553,9 @@ exports.getOrderContract = async (req, res) => {
 
         let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId!=null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId!=null? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
         let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
@@ -2632,7 +2632,7 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
-
+        
                 }
             },
             {
@@ -2679,9 +2679,8 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$dealerUsers" // Unwind dealers array
             },
-
             {
-                $unwind: "$customers" // Unwind dealers array
+                $unwind: "$customers" // Unwind customers array
             },
             {
                 $lookup: {
@@ -2700,27 +2699,20 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$customerUsers"
             },
-
-
-        ];
+       
+        ];        
+        
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
-        console.log("query",orderWithContracts)
-        // res.send({
-        //     code:constant.successCode,
-        //     message:'Contract not found of this order!',
-        //     data:orderWithContracts
-        // })
 
-        // return;
         // console.log("orderWithContracts",orderWithContracts)
         // return
         let productsData = []
 
-        if(!orderWithContracts[0]){
+        if (!orderWithContracts[0]) {
             res.send({
-                code:constant.successCode,
-                message:'Contract not found of this order!'
+                code: constant.errorCode,
+                message: 'Contract not found of this order!'
             })
             return;
         }
