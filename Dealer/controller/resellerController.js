@@ -717,14 +717,14 @@ exports.getDealerByReseller = async (req, res) => {
 
 exports.getResellerOrders = async (req, res) => {
     try {
-        if (req.role != 'Super Admin') {
-            res.send({
-                code: constant.errorCode,
-                message: 'Only super admin allow to do this action!'
+        // if (req.role != 'Super Admin') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only super admin allow to do this action!'
 
-            })
-            return;
-        }
+        //     })
+        //     return;
+        // }
         let query = { _id: req.params.resellerId };
         let data = req.body
         let projection = { isDeleted: 0 }

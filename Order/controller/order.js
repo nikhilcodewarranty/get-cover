@@ -523,7 +523,7 @@ exports.getAllOrders = async (req, res) => {
             let limitData = Number(pageLimit)
 
 
-            let ordersResult = await orderService.getOrderWithContract(lookupQuery,skipLimit,limitData);
+            let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -1849,13 +1849,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
 exports.checkPurchaseOrder = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action",
-            });
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action",
+        //     });
+        //     return;
+        // }
         let checkPurchaseOrder;
         let data = req.body;
         if (
@@ -1950,13 +1950,13 @@ exports.archiveOrder = async (req, res) => {
 
 exports.getSingleOrder = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action",
-            });
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action",
+        //     });
+        //     return;
+        // }
         let projection = { isDeleted: 0 };
         let query = { _id: req.params.orderId };
         let checkOrder = await orderService.getOrder(query, projection);
@@ -2000,10 +2000,16 @@ exports.getSingleOrder = async (req, res) => {
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
+        let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
+        let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
+        let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
             resellerData: reseller ? reseller : {},
+            username:singleDealerUser ? singleDealerUser : {},
+            resellerUsername:singleResellerUser ? singleResellerUser : {},
+            customerUserData:singleCustomerUser ? singleCustomerUser : {},
             servicerData: checkServicer ? checkServicer : {}
         };
 
@@ -2717,13 +2723,23 @@ exports.generatePDF = async (req, res) => {
 
 
         ];
-
-        let orderWithContracts = await orderService.getOrderWithContract(query);
-
+        //console.log("query",query)
+        let orderWithContracts = await orderService.getOrderWithContract1(query);
+        // console.log("orderWithContracts",orderWithContracts)
+        // return
         let productsData = []
 
-        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
-            const productId = orderWithContracts[0].productsArray[i]._id;
+        if(!orderWithContracts[0]){
+            res.send({
+                code:constant.successCode,
+                message:'Contract not found of this order!'
+            })
+            return;
+        }
+
+
+        for (let i = 0; i < orderWithContracts[0]?.productsArray.length; i++) {
+            const productId = orderWithContracts[0]?.productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
             const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
             productsData.push(mergedObject)
@@ -2877,7 +2893,7 @@ exports.generatePDF = async (req, res) => {
                         <tr>
                             <td><b>Term:</b> ${product.term} Month</td>
                             <td><b>Unit Price:</b>  ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-                            <td><b># of Products:</b> ${product.noOfProducts}.00</td>
+                            <td><b># of Products:</b> ${product.noOfProducts}</td>
                         </tr>
                         <tr>
                             <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
@@ -2890,7 +2906,7 @@ exports.generatePDF = async (req, res) => {
                     let endIndex = 6
                     let serialNo = 0;
                     let flag = true;
-                    var pageCount = Math.ceil(contracts.length / pageSize);
+                    var pageCount = Math.ceil(contracts?.length / pageSize);
                     for (let page = 0; page < pageCount; page++) {
 
                         // Start of a new page
@@ -2919,7 +2935,7 @@ exports.generatePDF = async (req, res) => {
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.productValue}.00</td>
+                                      <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
                                       <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
                                   </tr>
@@ -2933,10 +2949,10 @@ exports.generatePDF = async (req, res) => {
 
                         startIndex = endIndex;
                         endIndex = endIndex + 20
-                        if(!flag){
+                        if (!flag) {
                             break;
                         }
-                        if (endIndex > contracts.length) {
+                        if (endIndex > contracts?.length && contracts[startIndex]) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;

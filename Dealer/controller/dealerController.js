@@ -1817,7 +1817,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       //  return;
       // copy to here
       totalDataComing.forEach(data => {
-        if (!data.retailPrice || typeof(data.retailPrice) != 'number' || data.retailPrice <= 0) {
+        if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
           data.status = "Dealer catalog retail price is not valid";
           data.exit = true;
         }
@@ -2397,14 +2397,14 @@ exports.getDealerOrders = async (req, res) => {
         {
           $match: query
         },
-        {
-          $lookup: {
-            from: "contracts",
-            localField: "_id",
-            foreignField: "orderId",
-            as: "contract"
-          }
-        },
+        // {
+        //   $lookup: {
+        //     from: "contracts",
+        //     localField: "_id",
+        //     foreignField: "orderId",
+        //     as: "contract"
+        //   }
+        // },
         {
           $project: project,
         },
@@ -2434,9 +2434,12 @@ exports.getDealerOrders = async (req, res) => {
         { $sort: { unique_key: -1 } }
       ]
 
+      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+      let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+      let limitData = Number(pageLimit)
 
 
-      let ordersResult = await orderService.getOrderWithContract(lookupQuery);
+      let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
       let dealerIdsArray = ordersResult.map((result) => result.dealerId);
       let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
       let userResellerIds = ordersResult
@@ -2667,6 +2670,7 @@ exports.getDealerOrders = async (req, res) => {
     })
   }
 }
+
 
 
 
