@@ -2827,7 +2827,7 @@ exports.createOrder = async (req, res) => {
             }
             data.status = "Pending";
 
-
+            console.log("Data=====================",data)
             // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             let savedResponse = await orderService.addOrder(data);
             if (!savedResponse) {
