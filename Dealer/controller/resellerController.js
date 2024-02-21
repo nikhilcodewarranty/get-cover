@@ -1065,7 +1065,7 @@ exports.changeResellerStatus = async (req, res) => {
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
-                message: "Reseller not found"
+                message: "Reseller not found" 
             })
             return;
         }
