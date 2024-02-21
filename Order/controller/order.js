@@ -2679,26 +2679,26 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$dealerUsers" // Unwind dealers array
             },
-            {
-                $unwind: "$resellers" // Unwind dealers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-                            }
-                        }
-                    ],
-                    as: "resellerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$resellerUsers" // Unwind dealers array
-            },
+            // {
+            //     $unwind: "$resellers" // Unwind dealers array
+            // },
+            // {
+            //     $lookup: {
+            //         from: "users", // users collection
+            //         let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
+            //         pipeline: [
+            //             {
+            //                 $match: {
+            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+            //                 }
+            //             }
+            //         ],
+            //         as: "resellerUsers" // Alias for the result
+            //     }
+            // },
+            // {
+            //     $unwind: "$resellerUsers" // Unwind dealers array
+            // },
 
             {
                 $unwind: "$customers" // Unwind dealers array
@@ -2725,6 +2725,7 @@ exports.generatePDF = async (req, res) => {
         ];
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
+        console.log("query",orderWithContracts)
         // console.log("orderWithContracts",orderWithContracts)
         // return
         let productsData = []
