@@ -2679,26 +2679,26 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$dealerUsers" // Unwind dealers array
             },
-            {
-                $unwind: "$resellers" // Unwind dealers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-                            }
-                        }
-                    ],
-                    as: "resellerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$resellerUsers" // Unwind dealers array
-            },
+            // {
+            //     $unwind: "$resellers" // Unwind dealers array
+            // },
+            // {
+            //     $lookup: {
+            //         from: "users", // users collection
+            //         let: { accountIdStr: { $toString: "$resellers._id" } }, // Convert accountId to string
+            //         pipeline: [
+            //             {
+            //                 $match: {
+            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+            //                 }
+            //             }
+            //         ],
+            //         as: "resellerUsers" // Alias for the result
+            //     }
+            // },
+            // {
+            //     $unwind: "$resellerUsers" // Unwind dealers array
+            // },
 
             {
                 $unwind: "$customers" // Unwind dealers array
@@ -2725,6 +2725,7 @@ exports.generatePDF = async (req, res) => {
         ];
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
+        console.log("query",orderWithContracts)
         // console.log("orderWithContracts",orderWithContracts)
         // return
         let productsData = []
@@ -2738,8 +2739,8 @@ exports.generatePDF = async (req, res) => {
         }
 
 
-        for (let i = 0; i < orderWithContracts[0]?.productsArray.length; i++) {
-            const productId = orderWithContracts[0]?.productsArray[i]._id;
+        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
+            const productId = orderWithContracts[0].productsArray[i]._id;
             const contract = await contractService.findContracts({ orderProductId: productId });
             const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
             productsData.push(mergedObject)
@@ -2822,12 +2823,12 @@ exports.generatePDF = async (req, res) => {
                     </td>
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.name : ''}</b></h4>
+                        <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName + " " + orderWithContracts[0].resellerUsers.lastName : ''} <br/>
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.street : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.city : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.state : ''}
-                        ${orderWithContracts[0].resellers ? orderWithContracts[0].resellers.zip : ''}<br/>
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
+                        ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}<br/>
                         ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
                     </td>
                 </tr>
