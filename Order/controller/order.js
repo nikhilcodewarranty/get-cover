@@ -184,13 +184,20 @@ exports.createOrder = async (req, res) => {
             data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
             data.unique_key_search = "GC" + "2024" + data.unique_key_number
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
-            if (req.files) {
-                const uploadedFiles = req.files.map((file) => ({
-                    fileName: file ? file.filename : "",
-                    name: file ? file.originalname : "",
-                    filePath: file ? file.path : "",
-                    size: file ? file.size : "",
-                }));
+            if (data.productsArray.length > 0) {
+                const uploadedFiles = data.productsArray.map((fileData) => {
+                    let checkFile = JSON.parse(fileData.orderFile)
+                    const fileName = fileData ? checkFile.filename : "";
+                    const name = fileData ? checkFile.name : "";
+                    const filePath = fileData ? process.env.LOCAL_FILE_PATH + "/" + checkFile.fileName : "";
+                                        //const size = fileData ? fileData.size : "";
+
+                    return {
+                        fileName: fileName,
+                        name: name,
+                        filePath:filePath ,
+                    };
+                });
 
                 const filteredProducts = data.productsArray.filter(
                     (product) => product.file !== null
@@ -1137,16 +1144,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
             //     "paidAmount": 123,
             //     "dueAmount": 21
             // }
-            console.log("data----------------------------",data)
             if (data.productsArray.length > 0) {
                 // const uploadedFiles = req.files.map((file) => ({
                 //     filePath: file.destination + '/' + file.filename,
                 // }));
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
-                    console.log("data----------------------------",data1)
-                    console.log("data1.orderFile.fileName----------------------------",JSON.parse(data1.orderFile))
-               
+
                     let file1 = undefined; // Initialize file to undefined
                     if (data1.fileValue == 'true') {
                         let checkFile = JSON.parse(data1.orderFile)
@@ -2635,7 +2639,7 @@ exports.generatePDF = async (req, res) => {
                     localField: "dealerId",
                     foreignField: "_id",
                     as: "dealers",
-        
+
                 }
             },
             {
@@ -2702,9 +2706,9 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$customerUsers"
             },
-       
-        ];        
-        
+
+        ];
+
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
 

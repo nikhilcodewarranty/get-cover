@@ -26,6 +26,7 @@ const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
 const dealerUserRoutes = require("./Dealer/routes/dealerUser");
 const resellerRoutes = require("./Dealer/routes/reseller");
+const claimRoutes = require("./Claim/routes/claim");
 const contractRoutes = require("./Contract/routes/contract");
 const serviceRoutes = require("./Provider/routes/service");
 const servicePortal = require("./Provider/routes/servicerUserRoute");
@@ -106,6 +107,7 @@ app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
 app.use("/api-v1/order", orderRoutes);
 app.use("/api-v1/customer", customerRoutes);
+app.use("/api-v1/claim", claimRoutes);
 
 
 app.use("/api-v1/servicerPortal", servicePortal);

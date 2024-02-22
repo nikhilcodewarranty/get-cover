@@ -4,5 +4,6 @@ const claimController = require("../controller/claim");
 
 router.get("/claim", claimController.getAllClaims);
 router.get("/claim/create-claim", claimController.createClaim);
+router.post("/searchClaim", claimController.createClaim);
 
 module.exports = router;

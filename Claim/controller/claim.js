@@ -3,6 +3,7 @@ const { claimPart } = require("../model/claimPart");
 const { claimStatus } = require("../model/claimStatus");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
+const constant = require("../../config/constant");
 
 exports.getAllClaims = async (req, res, next) => {
   try {
@@ -72,3 +73,13 @@ exports.deleteClaim = async (req, res, next) => {
       .json({ error: "Internal server error" });
   }
 };
+
+exports.searchClaim = async (req, res, next) => {
+  if (req.role != 'Super Admin') {
+    res.send({
+      code: constant.successCode,
+      message: "Only super admin allow to do this action!"
+    });
+    return;
+  }
+}
