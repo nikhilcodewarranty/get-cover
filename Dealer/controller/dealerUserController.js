@@ -3082,83 +3082,89 @@ exports.createOrder = async (req, res) => {
 
         returnField.push(obj);
 
+        res.send({
+            code:constant.successCode,
+            message:'Success!'
+        })
 
-        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("All condition verify+++++++++++")
-            let savedResponse = await orderService.updateOrder(
-                { _id: checkOrder._id },
-                { status: "Active" },
-                { new: true }
-            );
-            console.log("order status update+++++++++++")
+        return;
 
-            let contractArray = [];
-            await savedResponse.productsArray.map(async (product) => {
-                console.log("map on products array++++++++++")
+        // if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+        //     console.log("All condition verify+++++++++++")
+        //     let savedResponse = await orderService.updateOrder(
+        //         { _id: checkOrder._id },
+        //         { status: "Active" },
+        //         { new: true }
+        //     );
+        //     console.log("order status update+++++++++++")
 
-                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-                let priceBookId = product.priceBookId;
-                let orderProductId = product._id;
-                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };
-                let priceBook = await priceBookService.getPriceBookById(
-                    query,
-                    projection
-                );
-                const wb = XLSX.readFile(pathFile);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                let count1 = await contractService.getContractsCount();
-                console.log("count getting+++++++++++", count1[0].unique_key)
+        //     let contractArray = [];
+        //     await savedResponse.productsArray.map(async (product) => {
+        //         console.log("map on products array++++++++++")
 
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                const totalDataComing = totalDataComing1.map((item) => {
-                    const keys = Object.keys(item);
-                    return {
-                        brand: item[keys[0]],
-                        model: item[keys[1]],
-                        serial: item[keys[2]],
-                        condition: item[keys[3]],
-                        retailValue: item[keys[4]],
-                    };
-                });
-                // let savedDataOrder = savedResponse.toObject()
-                console.log("converted to json from csv")
-                totalDataComing.forEach((data, index) => {
-                    console.log("cmaping on csv data")
-                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
-                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                    let contractObject = {
-                        orderId: savedResponse._id,
-                        orderProductId: orderProductId,
-                        productName: priceBook[0].name,
-                        manufacture: data.brand,
-                        model: data.model,
-                        serial: data.serial,
-                        condition: data.condition,
-                        productValue: data.retailValue,
-                        unique_key: unique_key1,
-                        unique_key_search: unique_key_search1,
-                        unique_key_number: unique_key_number1,
-                    };
-                    console.log("makin contract object")
+        //         const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+        //         let priceBookId = product.priceBookId;
+        //         let orderProductId = product._id;
+        //         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+        //         let projection = { isDeleted: 0 };
+        //         let priceBook = await priceBookService.getPriceBookById(
+        //             query,
+        //             projection
+        //         );
+        //         const wb = XLSX.readFile(pathFile);
+        //         const sheets = wb.SheetNames;
+        //         const ws = wb.Sheets[sheets[0]];
+        //         let count1 = await contractService.getContractsCount();
+        //         console.log("count getting+++++++++++", count1[0].unique_key)
 
-                    contractArray.push(contractObject);
-                    //let saveData = contractService.createContract(contractObject)
-                });
-                console.log("saving bulk contract ", contractArray)
+        //         const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+        //         const totalDataComing = totalDataComing1.map((item) => {
+        //             const keys = Object.keys(item);
+        //             return {
+        //                 brand: item[keys[0]],
+        //                 model: item[keys[1]],
+        //                 serial: item[keys[2]],
+        //                 condition: item[keys[3]],
+        //                 retailValue: item[keys[4]],
+        //             };
+        //         });
+        //         // let savedDataOrder = savedResponse.toObject()
+        //         console.log("converted to json from csv")
+        //         totalDataComing.forEach((data, index) => {
+        //             console.log("cmaping on csv data")
+        //             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+        //             let unique_key_search1 = "OC" + "2024" + unique_key_number1
+        //             let unique_key1 = "OC-" + "2024-" + unique_key_number1
+        //             let contractObject = {
+        //                 orderId: savedResponse._id,
+        //                 orderProductId: orderProductId,
+        //                 productName: priceBook[0].name,
+        //                 manufacture: data.brand,
+        //                 model: data.model,
+        //                 serial: data.serial,
+        //                 condition: data.condition,
+        //                 productValue: data.retailValue,
+        //                 unique_key: unique_key1,
+        //                 unique_key_search: unique_key_search1,
+        //                 unique_key_number: unique_key_number1,
+        //             };
+        //             console.log("makin contract object")
 
-                let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("saving bulk contract ", saveContracts)
+        //             contractArray.push(contractObject);
+        //             //let saveData = contractService.createContract(contractObject)
+        //         });
+        //         console.log("saving bulk contract ", contractArray)
 
-            })
+        //         let saveContracts = await contractService.createBulkContracts(contractArray);
+        //         console.log("saving bulk contract ", saveContracts)
 
-            res.send({
-                code: constant.successCode,
-                message: "Success",
-            });
-        }
+        //     })
+
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: "Success",
+        //     });
+        // }
 
         // })
     } catch (err) {
