@@ -2930,6 +2930,14 @@ exports.generatePDF = async (req, res) => {
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
 
+        // res.send({
+        //     code: constant.errorCode,
+        //     message: 'Contract not found of this order!',
+        //     data:orderWithContracts
+        // })
+
+        // return;
+
         // console.log("orderWithContracts",orderWithContracts)
         // return
         let productsData = []

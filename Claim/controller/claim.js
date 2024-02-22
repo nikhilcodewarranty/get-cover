@@ -4,6 +4,8 @@ const { claimStatus } = require("../model/claimStatus");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
+const contractService = require("../../Contract/services/contractService");
+
 
 
 
@@ -87,82 +89,170 @@ exports.searchClaim = async (req, res, next) => {
     });
     return;
   }
+  let lookupCondition = []
+  if (data.serial) {
+    lookupCondition.push({ "serial": data.serial },)
+  }
+  if (data.contractId) {
+    lookupCondition.push({ "unique_key": data.contractId })
+  }
+  if (data.venderOrder) {
+    lookupCondition.push({ "order.venderOrder": data.venderOrder })
+  }
+  if (data.orderId) {
+    lookupCondition.push({ "order.unique_key": data.orderId },)
+  }
+  if (data.customerName) {
+    lookupCondition.push({ "order.customer.username": data.customerName })
+  }
+  //   // {
+  //   //   $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
+  //   // },
+  //   {
+  //     $lookup: {
+  //       from: "contracts",
+  //       localField: "_id",
+  //       foreignField: "orderId",
+  //       as: "contracts"
+  //     }
+  //   },
+  //   {
+  //     $unwind: "$contracts"
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "dealers",
+  //       localField: "dealerId",
+  //       foreignField: "_id",
+  //       as: "dealers",
+
+  //     }
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "serviceproviders",
+  //       localField: "servicerId",
+  //       foreignField: "_id",
+  //       as: "servicer"
+  //     }
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "resellers",
+  //       localField: "resellerId",
+  //       foreignField: "_id",
+  //       as: "resellers"
+  //     }
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "customers",
+  //       localField: "customerId",
+  //       foreignField: "_id",
+  //       as: "customers"
+  //     }
+  //   },
+  //   {
+  //     $unwind: "$customers"
+  //   },
+  //   {
+  //     $match:
+  //     {
+  //       $and: [
+  //         // { "customers.username": data.customerName },
+  //         { "contracts.serial": data.serial },
+  //         // { "venderOrder": data.venderOrder },
+  //         // { "unique_key": data.orderId },
+  //         // { "contracts.unique_key": data.contractId },
+  //       ],
+
+  //     }
+  //   },
+
+  // ];
 
   let query = [
-    // {
-    //   $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
-    // },
     {
       $lookup: {
-        from: "contracts",
-        localField: "_id",
-        foreignField: "orderId",
-        as: "contracts"
-      }
-    },
-    {
-      $unwind: "$contracts"
-    },
-    {
-      $lookup: {
-        from: "dealers",
-        localField: "dealerId",
+        from: "orders",
+        localField: "orderId",
         foreignField: "_id",
-        as: "dealers",
+        as: "order",
+        pipeline: [
+          {
+            $lookup: {
+              from: "dealers",
+              localField: "dealerId",
+              foreignField: "_id",
+              as: "dealer",
+            }
+          },
+          {
+            $lookup: {
+              from: "resellers",
+              localField: "resellerId",
+              foreignField: "_id",
+              as: "reseller",
+            }
+          },
+          {
+            $lookup: {
+              from: "customers",
+              localField: "customerId",
+              foreignField: "_id",
+              as: "customer",
+            }
+          },
+          {
+            $lookup: {
+              as: "customer",
+              from: "customer",
+              let: { fruitId: "$id" },
+              pipeline: [
+                {
+                  $match: {
+                    $and: [
+                      { $expr: { $eq: [ "$item_id", "$$fruitId" ] } },
+                      { "branch": { $eq: "main" } },
+                      { "branch": { $exists: true } }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            $lookup: {
+              from: "servicers",
+              localField: "servicerId",
+              foreignField: "_id",
+              as: "servicer",
+            }
+          },
+        ]
 
       }
     },
     {
-      $lookup: {
-        from: "serviceproviders",
-        localField: "servicerId",
-        foreignField: "_id",
-        as: "servicer"
-      }
-    },
-    {
-      $lookup: {
-        from: "resellers",
-        localField: "resellerId",
-        foreignField: "_id",
-        as: "resellers"
-      }
-    },
-    {
-      $lookup: {
-        from: "customers",
-        localField: "customerId",
-        foreignField: "_id",
-        as: "customers"
-      }
-    },
-    {
-      $unwind: "$customers"
+      $unwind:"$order"
     },
     {
       $match:
       {
-        $and: [
-          // { "customers.username": data.customerName },
-          { "contracts.serial": data.serial },
-          // { "venderOrder": data.venderOrder },
-          // { "unique_key": data.orderId },
-          // { "contracts.unique_key": data.contractId },
-        ],
+        $and: lookupCondition.length > 0 ?  lookupCondition : [{isDeleted:false}]
+      },
 
-      }
     },
-
-  ];
+  ]
 
   let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10
   let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
   let limitData = Number(pageLimit)
-  let ordersResult = await orderService.getOrderWithContract(query, skipLimit, limitData);
+  let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
 
   res.send({
     code: constant.successCode,
-    result: ordersResult
+    result: getContracts
   })
 
 }
