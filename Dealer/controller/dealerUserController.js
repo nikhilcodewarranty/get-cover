@@ -194,7 +194,7 @@ exports.getDealerPriceBookById = async (req, res) => {
             })
             return;
         }
-        let projection = { isDeleted: 0, __v: 0 }
+        let projection = { isDeleted: 0, __v: 0,wholesalePrice:0 }
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
