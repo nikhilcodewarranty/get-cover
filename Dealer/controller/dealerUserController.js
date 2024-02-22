@@ -194,7 +194,7 @@ exports.getDealerPriceBookById = async (req, res) => {
             })
             return;
         }
-        let projection = { isDeleted: 0, __v: 0 }
+        let projection = { isDeleted: 0, __v: 0,wholesalePrice:0 }
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -1367,7 +1367,7 @@ exports.createReseller = async (req, res) => {
         let getCount = await resellerService.getResellersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer for existing 
-        let checkDealer = await dealerService.getDealerByName({ _id: req.userId }, {});
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId ,status:true}, {});
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -3274,6 +3274,9 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
+
+
 
 
 

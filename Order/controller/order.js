@@ -386,6 +386,7 @@ exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
+        //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
         // if (data.productsArray[i].QuantityPricing) {
 
@@ -589,7 +590,7 @@ exports.createOrder1 = async (req, res) => {
                 code: constant.successCode,
                 message: "Success",
             });
-        } 
+        }
 
         // })
     } catch (err) {
@@ -602,13 +603,13 @@ exports.createOrder1 = async (req, res) => {
 
 exports.processOrder = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action!",
-            });
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action!",
+        //     });
+        //     return;
+        // }
 
         let returnField = [];
 
@@ -980,22 +981,50 @@ exports.getAllArchieveOrders = async (req, res) => {
         return;
     }
 
-    let project = {
-        productsArray: 1,
-        dealerId: 1,
-        unique_key: 1,
-        servicerId: 1,
-        customerId: 1,
-        resellerId: 1,
-        paymentStatus: 1,
-        status: 1,
-        venderOrder: 1,
-        orderAmount: 1,
-    };
-
     let query = { status: { $eq: "Archieved" } };
 
-    let ordersResult = await orderService.getAllOrders(query, project);
+    let lookupQuery = [
+        {
+            $match: query
+        },
+
+        // {
+        //     $project: project,
+        // },
+        {
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+                // flag: {
+                //     $cond: {
+                //         if: {
+                //             $and: [
+                //                 // { $eq: ["$payment.status", "paid"] },
+                //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
+                //                 { $ne: ["$customerId", null] },
+                //                 { $ne: ["$paymentStatus", 'Paid'] },
+                //                 { $ne: ["$productsArray.coverageStartDate", null] },
+                //             ]
+                //         },
+                //         then: true,
+                //         else: false
+                //     }
+                // }
+
+            }
+        },
+
+        { $sort: { unique_key: -1 } }
+    ]
+
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+
+
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers
@@ -2733,7 +2762,7 @@ exports.getOrderContract = async (req, res) => {
         //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
-        let totalContract = await contractService.findContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2804,7 +2833,7 @@ exports.getOrderContract = async (req, res) => {
             code: constant.successCode,
             message: "Success!",
             result: checkOrder,
-            contractCount: totalContract.length,
+            totalCount: totalContract,
             orderUserData: userData
         });
 
@@ -2886,7 +2915,10 @@ exports.generatePDF = async (req, res) => {
                     pipeline: [
                         {
                             $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
                             }
                         }
                     ],
@@ -2902,11 +2934,15 @@ exports.generatePDF = async (req, res) => {
             {
                 $lookup: {
                     from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
+                    let: { accountIdStr: { $toString: "$customers._id" } }, 
+                    // Convert accountId to string
                     pipeline: [
                         {
                             $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
                             }
                         }
                     ],
@@ -2921,6 +2957,15 @@ exports.generatePDF = async (req, res) => {
 
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
+
+        console.log(orderWithContracts);
+        // res.send({
+        //     code: constant.errorCode,
+        //     message: 'Contract not found of this order!',
+        //     data:orderWithContracts
+        // })
+
+        // return;
 
         // console.log("orderWithContracts",orderWithContracts)
         // return
@@ -2942,26 +2987,12 @@ exports.generatePDF = async (req, res) => {
             productsData.push(mergedObject)
         }
         orderWithContracts[0].productsArray = productsData
-        //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
-        //         const productId = product._id;
-        //         const contract = await contractService.findContracts({ orderProductId: productId });
-        //         const mergedObject = { ...product, contract }
+        if (orderWithContracts[0].resellerId != null) {
+            let resellerUserId = orderWithContracts[0].resellerId
+            orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
+        }
 
-        //     })
-        //     orderWithContracts[0].productsArray = okokok
-        // orderWithContracts[0].productsArray.forEach(async(product) => {
-        //   const productId = product._id;
-        //   const contract = await contractService.findContracts({orderProductId :productId});
 
-        //   if (contract) {
-        //     // Merge product and contract
-        //     const mergedObject = { ...product, contract };
-
-        //     // Do something with merged object
-        //     orderWithContracts[0].productsArray.push(mergedObject)
-
-        //   } 
-        // });
 
         let htmlContent;
 
@@ -3020,12 +3051,12 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName + " " + orderWithContracts[0].resellerUsers.lastName : ''} <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.firstName + " " + orderWithContracts[0].resellerUser.lastName : ''} <br/>
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}<br/>
-                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
+                        ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.email : ''}</small>`) : ''}
                     </td>
                 </tr>
             </tbody>
@@ -3146,9 +3177,14 @@ exports.generatePDF = async (req, res) => {
 
                         startIndex = endIndex;
                         endIndex = endIndex + 20
+
                         if (!flag) {
                             break;
                         }
+
+                        // console.log("startInde============",startIndex)
+                        // console.log("endIndex============",endIndex)
+
                         if (endIndex > contracts?.length && contracts[startIndex]) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
