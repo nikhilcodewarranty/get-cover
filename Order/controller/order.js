@@ -390,7 +390,7 @@ exports.createOrder = async (req, res) => {
 
 exports.createOrder1 = async (req, res) => {
     try {
-        upload(req, res, async (err) => {
+        // upload(req, res, async (err) => {
             let data = req.body;
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].QuantityPricing) {
@@ -588,7 +588,7 @@ exports.createOrder1 = async (req, res) => {
                 });
             }
 
-        })
+        // })
     } catch (err) {
 
     }
@@ -2734,9 +2734,9 @@ exports.getOrderContract = async (req, res) => {
             }
             // { $unwind: "$contracts" }
         ]
-        console.log.log('before--------------', Date.now())
+      //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-        console.log.log('after+++++++++++++++++++++', Date.now())
+      //  console.log.log('after+++++++++++++++++++++', Date.now())
         let totalContract = await contractService.findContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
             res.send({
