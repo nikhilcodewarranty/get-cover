@@ -2916,49 +2916,50 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$dealers" // Unwind dealers array
             },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-                            }
-                        }
-                    ],
-                    as: "dealerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$dealerUsers" // Unwind dealers array
-            },
+            // {
+            //     $lookup: {
+            //         from: "users", // users collection
+            //         let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
+            //         pipeline: [
+            //             {
+            //                 $match: {
+            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+            //                 }
+            //             }
+            //         ],
+            //         as: "dealerUsers" // Alias for the result
+            //     }
+            // },
+            // {
+            //     $unwind: "$dealerUsers" // Unwind dealers array
+            // },
             {
                 $unwind: "$customers" // Unwind customers array
             },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-                            }
-                        }
-                    ],
-                    as: "customerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$customerUsers"
-            },
+            // {
+            //     $lookup: {
+            //         from: "users", // users collection
+            //         let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
+            //         pipeline: [
+            //             {
+            //                 $match: {
+            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
+            //                 }
+            //             }
+            //         ],
+            //         as: "customerUsers" // Alias for the result
+            //     }
+            // },
+            // {
+            //     $unwind: "$customerUsers"
+            // },
 
         ];
 
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
 
+        console.log(orderWithContracts);
         // res.send({
         //     code: constant.errorCode,
         //     message: 'Contract not found of this order!',
@@ -2990,6 +2991,14 @@ exports.generatePDF = async (req, res) => {
         if (orderWithContracts[0].resellerId != null) {
             let resellerUserId = orderWithContracts[0].resellerId
             orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
+        }
+        if (orderWithContracts[0].dealerId != null) {
+            let dealerId = orderWithContracts[0].dealerId
+            orderWithContracts[0].dealerUsers = await userService.getUserById1({ accountId: dealerId.toString() })
+        }
+        if (orderWithContracts[0].customerId != null) {
+            let customerId = orderWithContracts[0].customerId
+            orderWithContracts[0].customerUsers = await userService.getUserById1({ accountId: customerId.toString() })
         }
 
 
@@ -3199,12 +3208,14 @@ exports.generatePDF = async (req, res) => {
                         startIndex = endIndex;
                         endIndex = endIndex + 20
 
+                        if (!flag) {
+                            break;
+                        }
+
                         // console.log("startInde============",startIndex)
                         // console.log("endIndex============",endIndex)
-                        // if (!flag) {
-                        //     break;
-                        // }
-                        if (endIndex > contracts?.length) {
+
+                        if (endIndex > contracts?.length && contracts[startIndex]) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;
