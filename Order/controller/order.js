@@ -392,6 +392,7 @@ exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
+        console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
         // if (data.productsArray[i].QuantityPricing) {
 
@@ -3162,10 +3163,13 @@ exports.generatePDF = async (req, res) => {
 
                         startIndex = endIndex;
                         endIndex = endIndex + 20
+
+                        // console.log("startInde============",startIndex)
+                        // console.log("endIndex============",endIndex)
                         if (!flag) {
                             break;
                         }
-                        if (endIndex > contracts?.length && contracts[startIndex]) {
+                        if (endIndex > contracts?.length) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;
