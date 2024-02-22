@@ -988,22 +988,50 @@ exports.getAllArchieveOrders = async (req, res) => {
         return;
     }
 
-    let project = {
-        productsArray: 1,
-        dealerId: 1,
-        unique_key: 1,
-        servicerId: 1,
-        customerId: 1,
-        resellerId: 1,
-        paymentStatus: 1,
-        status: 1,
-        venderOrder: 1,
-        orderAmount: 1,
-    };
+    let query = { status: { $ne: "Archieved" } };
 
-    let query = { status: { $eq: "Archieved" } };
+    let lookupQuery = [
+        {
+            $match: query
+        },
 
-    let ordersResult = await orderService.getAllOrders(query, project);
+        // {
+        //     $project: project,
+        // },
+        {
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+                // flag: {
+                //     $cond: {
+                //         if: {
+                //             $and: [
+                //                 // { $eq: ["$payment.status", "paid"] },
+                //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
+                //                 { $ne: ["$customerId", null] },
+                //                 { $ne: ["$paymentStatus", 'Paid'] },
+                //                 { $ne: ["$productsArray.coverageStartDate", null] },
+                //             ]
+                //         },
+                //         then: true,
+                //         else: false
+                //     }
+                // }
+
+            }
+        },
+
+        { $sort: { unique_key: -1 } }
+    ]
+
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+
+
+    let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
     //Get Respective Dealers
