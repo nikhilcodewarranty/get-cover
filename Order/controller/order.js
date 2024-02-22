@@ -988,7 +988,7 @@ exports.getAllArchieveOrders = async (req, res) => {
         return;
     }
 
-    let query = { status: { $ne: "Archieved" } };
+    let query = { status: { $eq: "Archieved" } };
 
     let lookupQuery = [
         {
