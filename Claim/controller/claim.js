@@ -3,6 +3,10 @@ const { claimPart } = require("../model/claimPart");
 const { claimStatus } = require("../model/claimStatus");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
+const orderService = require("../../Order/services/orderService");
+
+
+
 const constant = require("../../config/constant");
 
 exports.getAllClaims = async (req, res, next) => {
@@ -75,11 +79,77 @@ exports.deleteClaim = async (req, res, next) => {
 };
 
 exports.searchClaim = async (req, res, next) => {
-  if (req.role != 'Super Admin') {
+  let data = req.body
+  if (req.role != "Super Admin") {
     res.send({
-      code: constant.successCode,
-      message: "Only super admin allow to do this action!"
+      code: constant.errorCode,
+      message: "Only super admin allow to do this action",
     });
     return;
   }
+
+  let query = [
+    // {
+    //   $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
+    // },
+    {
+      $lookup: {
+        from: "contracts",
+        localField: "_id",
+        foreignField: "orderId",
+        as: "contracts"
+      }
+    },
+    {
+      $lookup: {
+        from: "dealers",
+        localField: "dealerId",
+        foreignField: "_id",
+        as: "dealers",
+
+      }
+    },
+    {
+      $lookup: {
+        from: "serviceproviders",
+        localField: "servicerId",
+        foreignField: "_id",
+        as: "servicer"
+      }
+    },
+    {
+      $lookup: {
+        from: "resellers",
+        localField: "resellerId",
+        foreignField: "_id",
+        as: "resellers"
+      }
+    },
+    {
+      $lookup: {
+        from: "customers",
+        localField: "customerId",
+        foreignField: "_id",
+        as: "customers"
+      }
+    },
+    {
+      $unwind: "$customers"
+    },
+    {
+      $match: { username:"C.A.N.-aoKx0053" }
+    },
+
+  ];
+
+  let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10
+  let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+  let limitData = Number(pageLimit)
+  let ordersResult = await orderService.getOrderWithContract(query, skipLimit, limitData);
+
+  res.send({
+    code: constant.successCode,
+    result: ordersResult
+  })
+
 }
