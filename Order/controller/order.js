@@ -610,13 +610,13 @@ exports.createOrder1 = async (req, res) => {
 
 exports.processOrder = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action!",
-            });
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action!",
+        //     });
+        //     return;
+        // }
 
         let returnField = [];
 
