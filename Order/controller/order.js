@@ -51,11 +51,6 @@ var uploadP = multer({
 }).single("file");
 
 
-
-
-
-
-
 exports.createOrder = async (req, res) => {
     try {
         upload(req, res, async (err) => {
@@ -387,7 +382,6 @@ exports.createOrder = async (req, res) => {
     }
 };
 
-
 exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
@@ -605,7 +599,6 @@ exports.createOrder1 = async (req, res) => {
         })
     }
 }
-
 
 exports.processOrder = async (req, res) => {
     try {
@@ -1824,7 +1817,6 @@ exports.editFileCase = async (req, res) => {
         })
     }
 }
-
 
 exports.getCustomerInOrder = async (req, res) => {
     try {

@@ -21,6 +21,10 @@ const userSchema = new mongoose.Schema({
   accountId: {
     type: String,
   },
+  metaId: {
+    type: mongoose.Schema.Types.ObjectId,
+    default:null
+  },
   resetPasswordCode:{ 
     type:String,
     default:null

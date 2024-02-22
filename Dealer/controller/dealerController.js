@@ -652,6 +652,7 @@ exports.registerDealer = async (req, res) => {
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
       accountId: createdDealer._id,
+      metaId: createdDealer._id,
     };
 
     // Create the user
@@ -1712,6 +1713,7 @@ exports.addDealerUser = async (req, res) => {
       return;
     }
     data.accountId = checkDealer._id
+    data.metaId = checkDealer._id
     data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
     if (!checkDealer.accountStatus) {

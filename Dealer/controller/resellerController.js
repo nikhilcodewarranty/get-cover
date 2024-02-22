@@ -93,7 +93,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -491,6 +491,7 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
         data.accountId = checkReseller._id
+        data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
 
         let statusCheck;
@@ -1065,7 +1066,7 @@ exports.changeResellerStatus = async (req, res) => {
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
-                message: "Reseller not found" 
+                message: "Reseller not found"
             })
             return;
         }

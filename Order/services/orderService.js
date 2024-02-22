@@ -20,7 +20,7 @@ module.exports = class orderService {
           }
         },
         { $sort: { unique_key: -1 } }
-      ])
+      ]).sort({createdAt:-1})
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -29,7 +29,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract(query, skipLimit, limitData) {
     try {
-      const allOrders = await order.aggregate(query).skip(skipLimit).limit(limitData)
+      const allOrders = await order.aggregate(query).sort({createdAt:-1}).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -40,7 +40,7 @@ module.exports = class orderService {
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
 
-      const allOrders = await order.aggregate(query);
+      const allOrders = await order.aggregate(query).sort({createdAt:-1});
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);

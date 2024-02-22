@@ -3,6 +3,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const randtoken = require('rand-token').generator()
+
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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 ');
@@ -10,6 +11,7 @@ const XLSX = require("xlsx");
 const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const userService = require("../services/userService");
+const userMetaService = require("../services/userMetaService");
 const dealerService = require('../../Dealer/services/dealerService')
 const resellerService = require('../../Dealer/services/resellerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
@@ -42,7 +44,9 @@ exports.createUser = async (req, res) => {
       })
       return;
     };
-    const createdUser = await userService.createUser(req.body);
+    let data = req.body
+    
+    const createdUser = await userService.createUser(data);
     if (!createdUser) {
       res.send({
         code: constant.errorCode,
@@ -106,6 +110,8 @@ exports.createServiceProvider = async (req, res) => {
 
     // Create the service provider
     const createMetaData = await providerService.createServiceProvider(providerMeta);
+    providerMeta.role = "Servicer"
+    const createMetaData1 = await userMetaService.createMeta(providerMeta);
     if (!createMetaData) {
       return res.send({
         code: constant.errorCode,
@@ -118,11 +124,11 @@ exports.createServiceProvider = async (req, res) => {
     const resultProviderData = accountCreationFlag
       ? await Promise.all(resultProvider.map(async (obj) => {
         const hashedPassword = await bcrypt.hash(obj.password, 10);
-        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, status: true, password: hashedPassword };
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, status: true, password: hashedPassword };
       }))
       : await Promise.all(resultProvider.map(async (obj) => {
         const hashedPassword = await bcrypt.hash(obj.password, 10);
-        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, password: hashedPassword };
+        return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, password: hashedPassword };
       }));
 
     // Map provider data
@@ -536,6 +542,7 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
             accountId: data.dealerId,
+            metaId: data.dealerId,
 
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? obj.status : false
@@ -834,6 +841,7 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
             accountId: req.body.dealerId,
+            metaId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? true : false
           }));
@@ -997,6 +1005,7 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
             accountId: createMetaData._id,
+            metaId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? obj.status : false,
@@ -1300,6 +1309,7 @@ exports.createDealer = async (req, res) => {
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
             accountId: createMetaData._id,
+            metaId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
             status: req.body.isAccountCreate ? obj.status : false,
