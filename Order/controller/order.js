@@ -3201,10 +3201,10 @@ exports.generatePDF = async (req, res) => {
 
                         // console.log("startInde============",startIndex)
                         // console.log("endIndex============",endIndex)
-                        if (!flag) {
-                            break;
-                        }
-                        if (endIndex > contracts?.length && contracts[startIndex]) {
+                        // if (!flag) {
+                        //     break;
+                        // }
+                        if (endIndex > contracts?.length) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;
