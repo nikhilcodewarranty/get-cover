@@ -32,7 +32,7 @@ router.post('/getDealerContracts',[verifyToken],dealerUserController.getAllContr
 
 router.get('/getServicersList',[verifyToken],dealerUserController.getServicersList)
 router.post('/createDeleteRelation',[verifyToken],dealerUserController.createDeleteRelation)
-router.post('/getArchieveOrder', [verifyToken], dealerUserController.getAllArchieveOrders)
+//router.post('/getArchieveOrder', [verifyToken], dealerUserController.getAllArchieveOrders)
 router.post('/getDealerOrders',[verifyToken],dealerUserController.getDealerOrders)
 router.post('/getDealerArchievedOrders',[verifyToken],dealerUserController.getDealerArchievedOrders)
 
