@@ -125,10 +125,10 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      let resetPasswordCode = randtoken.generate(4, '123456789') 
+      let resetPasswordCode = randtoken.generate(4, '123456789')
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, approvedStatus: "Approved", status: true }));
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id,metaId: updateServicer._id ,approvedStatus: "Approved", status: true }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
@@ -661,6 +661,7 @@ exports.registerServiceProvider = async (req, res) => {
       phoneNumber: data.phoneNumber,
       roleId: "65719c8368a8a86ef8e1ae4d",
       accountId: createMetaData._id,
+      metaId: createMetaData._id,
     };
 
     // Create the user
@@ -840,6 +841,7 @@ exports.addServicerUser = async (req, res) => {
     } else {
       data.isPrimary = false
       data.accountId = checkServicer._id
+      data.metaId = checkServicer._id
       let statusCheck;
       if (!checkServicer.accountStatus) {
         statusCheck = false
