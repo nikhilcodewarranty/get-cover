@@ -395,9 +395,9 @@ exports.createOrder1 = async (req, res) => {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].QuantityPricing) {
                     let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
-                    let jsonFile = JSON.parse(data.productsArray[i].orderFile);
+                   // let jsonFile = JSON.parse(data.productsArray[i].orderFile);
                     data.productsArray[i].QuantityPricing = jsonArray;
-                    data.productsArray[i].file = jsonFile;
+                   // data.productsArray[i].file = jsonFile;
                 }
             }
 
