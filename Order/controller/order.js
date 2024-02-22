@@ -2742,7 +2742,7 @@ exports.getOrderContract = async (req, res) => {
         //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
-        let totalContract = await contractService.findContracts({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -2813,7 +2813,7 @@ exports.getOrderContract = async (req, res) => {
             code: constant.successCode,
             message: "Success!",
             result: checkOrder,
-            contractCount: totalContract.length,
+            totalCount: totalContract,
             orderUserData: userData
         });
 
