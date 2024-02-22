@@ -89,7 +89,7 @@ exports.searchClaim = async (req, res, next) => {
     });
     return;
   }
-  let lookupCondition = []
+  let lookupCondition = [{isDeleted:false}]
   if (data.serial) {
     lookupCondition.push({ "serial": data.serial },)
   }
@@ -102,9 +102,9 @@ exports.searchClaim = async (req, res, next) => {
   if (data.orderId) {
     lookupCondition.push({ "order.unique_key": data.orderId },)
   }
-  if (data.customerName) {
-    lookupCondition.push({ "order.customer.username": data.customerName })
-  }
+  // if (data.customerName) {
+  //   lookupCondition.push({ "order.customer.username": data.customerName })
+  // }
   //   // {
   //   //   $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
   //   // },
@@ -170,7 +170,6 @@ exports.searchClaim = async (req, res, next) => {
   //   },
 
   // ];
-
   let query = [
     {
       $lookup: {
@@ -198,27 +197,13 @@ exports.searchClaim = async (req, res, next) => {
           {
             $lookup: {
               from: "customers",
-              localField: "customerId",
-              foreignField: "_id",
-              as: "customer",
-            }
-          },
-          {
-            $lookup: {
-              as: "customer",
-              from: "customer",
-              let: { fruitId: "$id" },
+              "let": { "id": "$_id" },
               pipeline: [
-                {
-                  $match: {
-                    $and: [
-                      { $expr: { $eq: [ "$item_id", "$$fruitId" ] } },
-                      { "branch": { $eq: "main" } },
-                      { "branch": { $exists: true } }
-                    ]
-                  }
-                }
-              ]
+                // { $match: { $expr: { $eq: ["$_id", "$$id"] } } },
+                { $match: { username: data.customerName } }, // Filter by username
+                { $project: { _id: 1, username: 1 } }
+              ],
+              as: "customers"
             }
           },
           {
@@ -234,18 +219,18 @@ exports.searchClaim = async (req, res, next) => {
       }
     },
     {
-      $unwind:"$order"
+      $unwind: "$order"
     },
     {
       $match:
       {
-        $and: lookupCondition.length > 0 ?  lookupCondition : [{isDeleted:false}]
+        $and: lookupCondition
       },
 
     },
   ]
 
-  let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10
+  let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
   let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
   let limitData = Number(pageLimit)
   let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
