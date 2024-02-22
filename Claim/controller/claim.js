@@ -101,6 +101,9 @@ exports.searchClaim = async (req, res, next) => {
       }
     },
     {
+      $unwind: "$contracts"
+    },
+    {
       $lookup: {
         from: "dealers",
         localField: "dealerId",
@@ -137,7 +140,17 @@ exports.searchClaim = async (req, res, next) => {
       $unwind: "$customers"
     },
     {
-      $match: { username:"C.A.N.-aoKx0053" }
+      $match:
+      {
+        $and: [
+          // { "customers.username": data.customerName },
+          { "contracts.serial": data.serial },
+          // { "venderOrder": data.venderOrder },
+          // { "unique_key": data.orderId },
+          // { "contracts.unique_key": data.contractId },
+        ],
+
+      }
     },
 
   ];
