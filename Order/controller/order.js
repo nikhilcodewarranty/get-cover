@@ -648,7 +648,7 @@ exports.processOrder = async (req, res) => {
             returnField.push('Product data file')
         }
 
-        const combinedString = returnField.join(', ') + ' is missing';
+        const combinedString = returnField.length > 0 ? returnField.join(', ') + ' is missing' :'';
 
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
@@ -2934,7 +2934,7 @@ exports.generatePDF = async (req, res) => {
             {
                 $lookup: {
                     from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$customers._id" } }, 
+                    let: { accountIdStr: { $toString: "$customers._id" } },
                     // Convert accountId to string
                     pipeline: [
                         {

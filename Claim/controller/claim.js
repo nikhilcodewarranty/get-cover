@@ -89,7 +89,7 @@ exports.searchClaim = async (req, res, next) => {
     });
     return;
   }
-  let lookupCondition = [{isDeleted:false}]
+  let lookupCondition = [{ isDeleted: false }]
   if (data.serial) {
     lookupCondition.push({ "serial": data.serial },)
   }
@@ -102,74 +102,6 @@ exports.searchClaim = async (req, res, next) => {
   if (data.orderId) {
     lookupCondition.push({ "order.unique_key": data.orderId },)
   }
-  // if (data.customerName) {
-  //   lookupCondition.push({ "order.customer.username": data.customerName })
-  // }
-  //   // {
-  //   //   $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
-  //   // },
-  //   {
-  //     $lookup: {
-  //       from: "contracts",
-  //       localField: "_id",
-  //       foreignField: "orderId",
-  //       as: "contracts"
-  //     }
-  //   },
-  //   {
-  //     $unwind: "$contracts"
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "dealers",
-  //       localField: "dealerId",
-  //       foreignField: "_id",
-  //       as: "dealers",
-
-  //     }
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "serviceproviders",
-  //       localField: "servicerId",
-  //       foreignField: "_id",
-  //       as: "servicer"
-  //     }
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "resellers",
-  //       localField: "resellerId",
-  //       foreignField: "_id",
-  //       as: "resellers"
-  //     }
-  //   },
-  //   {
-  //     $lookup: {
-  //       from: "customers",
-  //       localField: "customerId",
-  //       foreignField: "_id",
-  //       as: "customers"
-  //     }
-  //   },
-  //   {
-  //     $unwind: "$customers"
-  //   },
-  //   {
-  //     $match:
-  //     {
-  //       $and: [
-  //         // { "customers.username": data.customerName },
-  //         { "contracts.serial": data.serial },
-  //         // { "venderOrder": data.venderOrder },
-  //         // { "unique_key": data.orderId },
-  //         // { "contracts.unique_key": data.contractId },
-  //       ],
-
-  //     }
-  //   },
-
-  // ];
   let query = [
     {
       $lookup: {
