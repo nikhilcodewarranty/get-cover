@@ -1788,7 +1788,7 @@ exports.getDealerResellers = async (req, res) => {
             return;
         };
 
-        let query = { isDeleted: false, dealerId: req.userId, status: true }
+        let query = { isDeleted: false, dealerId: req.userId}
         let projection = { __v: 0 }
         const resellers = await resellerService.getResellers(query, projection);
         if (!resellers) {
