@@ -2916,43 +2916,50 @@ exports.generatePDF = async (req, res) => {
             {
                 $unwind: "$dealers" // Unwind dealers array
             },
-            // {
-            //     $lookup: {
-            //         from: "users", // users collection
-            //         let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
-            //         pipeline: [
-            //             {
-            //                 $match: {
-            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-            //                 }
-            //             }
-            //         ],
-            //         as: "dealerUsers" // Alias for the result
-            //     }
-            // },
-            // {
-            //     $unwind: "$dealerUsers" // Unwind dealers array
-            // },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
+                            }
+                        }
+                    ],
+                    as: "dealerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$dealerUsers" // Unwind dealers array
+            },
             {
                 $unwind: "$customers" // Unwind customers array
             },
-            // {
-            //     $lookup: {
-            //         from: "users", // users collection
-            //         let: { accountIdStr: { $toString: "$customers._id" } }, // Convert accountId to string
-            //         pipeline: [
-            //             {
-            //                 $match: {
-            //                     $expr: { $eq: ["$accountId", "$$accountIdStr"] } // Match _id in users with accountId converted to string
-            //                 }
-            //             }
-            //         ],
-            //         as: "customerUsers" // Alias for the result
-            //     }
-            // },
-            // {
-            //     $unwind: "$customerUsers"
-            // },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$customers._id" } }, 
+                    // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
+                            }
+                        }
+                    ],
+                    as: "customerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$customerUsers"
+            },
 
         ];
 
@@ -2992,37 +2999,8 @@ exports.generatePDF = async (req, res) => {
             let resellerUserId = orderWithContracts[0].resellerId
             orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
         }
-        if (orderWithContracts[0].dealerId != null) {
-            let dealerId = orderWithContracts[0].dealerId
-            orderWithContracts[0].dealerUsers = await userService.getUserById1({ accountId: dealerId.toString() })
-        }
-        if (orderWithContracts[0].customerId != null) {
-            let customerId = orderWithContracts[0].customerId
-            orderWithContracts[0].customerUsers = await userService.getUserById1({ accountId: customerId.toString() })
-        }
 
 
-
-        //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
-        //         const productId = product._id;
-        //         const contract = await contractService.findContracts({ orderProductId: productId });
-        //         const mergedObject = { ...product, contract }
-
-        //     })
-        //     orderWithContracts[0].productsArray = okokok
-        // orderWithContracts[0].productsArray.forEach(async(product) => {
-        //   const productId = product._id;
-        //   const contract = await contractService.findContracts({orderProductId :productId});
-
-        //   if (contract) {
-        //     // Merge product and contract
-        //     const mergedObject = { ...product, contract };
-
-        //     // Do something with merged object
-        //     orderWithContracts[0].productsArray.push(mergedObject)
-
-        //   } 
-        // });
 
         let htmlContent;
 
