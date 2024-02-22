@@ -596,7 +596,7 @@ exports.createOrder1 = async (req, res) => {
                 code: constant.successCode,
                 message: "Success",
             });
-        } 
+        }
 
         // })
     } catch (err) {
@@ -2987,6 +2987,13 @@ exports.generatePDF = async (req, res) => {
             productsData.push(mergedObject)
         }
         orderWithContracts[0].productsArray = productsData
+        if (orderWithContracts[0].resellerId != null) {
+            let resellerUserId = orderWithContracts[0].resellerId
+            orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
+        }
+
+
+
         //    let okokok =   orderWithContracts[0].productsArray.map(async (product) => {
         //         const productId = product._id;
         //         const contract = await contractService.findContracts({ orderProductId: productId });
@@ -3065,12 +3072,12 @@ exports.generatePDF = async (req, res) => {
                     <td style="text-align: left; width: 50%;">
                         ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
-                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.firstName + " " + orderWithContracts[0].resellerUsers.lastName : ''} <br/>
+                        <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.firstName + " " + orderWithContracts[0].resellerUser.lastName : ''} <br/>
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
                         ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}<br/>
-                        ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUsers ? orderWithContracts[0].resellerUsers.email : ''}</small>`) : ''}
+                        ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.email : ''}</small>`) : ''}
                     </td>
                 </tr>
             </tbody>
