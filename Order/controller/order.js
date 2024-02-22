@@ -392,6 +392,8 @@ exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
             let data = req.body;
+
+            console.log("I am in the try bloack===================")
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (data.productsArray[i].QuantityPricing) {
                     let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
