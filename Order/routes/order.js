@@ -5,7 +5,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 
 
 
-router.post('/createOrder', [verifyToken], orderController.createOrder)
+router.post('/createOrder', [verifyToken], orderController.createOrder1)
 router.post('/editOrderDetail/:orderId', [verifyToken], orderController.editOrderDetail)
 router.post('/archiveOrder/:orderId', [verifyToken], orderController.archiveOrder)
 router.post('/processOrder/:orderId', [verifyToken], orderController.processOrder)
