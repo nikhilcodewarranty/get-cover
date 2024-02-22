@@ -2952,6 +2952,8 @@ exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
+
+        console.log("data=================",data)
         //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
         // if (data.productsArray[i].QuantityPricing) {
