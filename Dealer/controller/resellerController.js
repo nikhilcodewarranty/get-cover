@@ -93,7 +93,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -1053,13 +1053,7 @@ exports.getResellerContract = async (req, res) => {
 
 exports.changeResellerStatus = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action"
-            })
-            return;
-        }
+       
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
 
         if (!singleReseller) {
