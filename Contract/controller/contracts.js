@@ -65,6 +65,7 @@ exports.getAllContracts = async (req, res) => {
         $match: { isDeleted: false },
 
       },
+      {$sort:{createdAt:-1}}
       // {
       //   $addFields: {
       //     contracts: {
