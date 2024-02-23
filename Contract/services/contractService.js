@@ -3,13 +3,17 @@ const contract = require("../model/contract");
 module.exports = class contractService {
   static async getAllContracts(query,pageLimit,page) {
     try {
-      const allContracts = await contract.aggregate(query).skip(pageLimit).limit(page);
+      const allContracts = await contract.aggregate(query).sort({createdAt:-1}).skip(pageLimit).limit(page);
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);
     }
   }
 
+
+
+
+  
   static async createContract(data) {
     try {
       const response = await new contract(data).save();

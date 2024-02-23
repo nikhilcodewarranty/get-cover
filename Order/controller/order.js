@@ -526,7 +526,7 @@ exports.createOrder1 = async (req, res) => {
 
             let contractArray = [];
             await savedResponse.productsArray.map(async (product) => {
-                console.log("map on products array++++++++++")
+                console.log("map on products array++++++++++",product)
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -541,7 +541,7 @@ exports.createOrder1 = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-                console.log("count getting+++++++++++", count1[0].unique_key)
+               // console.log("count getting+++++++++++", count1[0].unique_key)
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
@@ -590,7 +590,7 @@ exports.createOrder1 = async (req, res) => {
                 code: constant.successCode,
                 message: "Success",
             });
-        }else{
+        } else {
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -653,7 +653,7 @@ exports.processOrder = async (req, res) => {
             returnField.push('Product data file')
         }
 
-        const combinedString = returnField.length > 0 ? returnField.join(', ') + ' is missing' :'';
+        const combinedString = returnField.length > 0 ? returnField.join(', ') + ' is missing' : '';
 
         // const obj = {
         //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
@@ -2727,12 +2727,18 @@ exports.getDashboardData = async (req, res) => {
         if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
-                message: "Unable to fetch order data"
+                message: "Unable to fetch order data",
+                result: {
+                    "_id": "",
+                    "totalAmount": 0,
+                    "totalOrder": 0
+                }
             })
             return;
         }
         res.send({
             code: constant.successCode,
+            message: "Success",
             result: checkOrders[0]
         })
     } catch (err) {

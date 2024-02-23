@@ -3,6 +3,7 @@ const contractResourceResponse = require("../utils/constant");
 const contractService = require("../services/contractService");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
+const contract = require("../model/contract");
 
 // get all contracts api
 
@@ -65,6 +66,7 @@ exports.getAllContracts = async (req, res) => {
         $match: { isDeleted: false },
 
       },
+      {$sort:{createdAt:-1}}
       // {
       //   $addFields: {
       //     contracts: {
@@ -203,6 +205,21 @@ exports.getContractById = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
+    })
+  }
+}
+exports.deleteOrdercontractbulk =async(req,res)=>{
+  try{
+    let deleteContract = await contract.deleteMany({orderId:"65d86f0372b2ed718d3271b1"})
+    res.send({
+      code:constant.successCode,
+      message:"Success",
+      result:deleteContract
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
     })
   }
 }
