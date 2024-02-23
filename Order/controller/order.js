@@ -526,7 +526,7 @@ exports.createOrder1 = async (req, res) => {
 
             let contractArray = [];
             await savedResponse.productsArray.map(async (product) => {
-                console.log("map on products array++++++++++")
+                console.log("map on products array++++++++++",product)
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -541,7 +541,7 @@ exports.createOrder1 = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-                console.log("count getting+++++++++++", count1[0].unique_key)
+               // console.log("count getting+++++++++++", count1[0].unique_key)
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
