@@ -60,7 +60,7 @@ const contractSchema = new mongoose.Schema({
     type: String,
     index:true
   },
-  unique_key_number: {
+  unique_key_number: { 
     type: Number,
     index:true
   },
