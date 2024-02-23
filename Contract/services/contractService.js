@@ -25,7 +25,7 @@ module.exports = class contractService {
 
   static async getContractsCount() {
     try {
-      const count = await contract.find().sort({ "unique_key_number": -1 });
+      const count = await contract.find();
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
       console.log(`Could not fetch contract count ${error}`);
