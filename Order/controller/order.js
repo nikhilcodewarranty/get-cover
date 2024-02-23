@@ -542,6 +542,7 @@ exports.createOrder1 = async (req, res) => {
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
                // console.log("count getting+++++++++++", count1[0].unique_key)
+               
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
