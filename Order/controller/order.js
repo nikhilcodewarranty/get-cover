@@ -753,6 +753,7 @@ exports.getAllOrders = async (req, res) => {
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
+            console.log('check--------------------------11111111111')
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
@@ -760,6 +761,7 @@ exports.getAllOrders = async (req, res) => {
 
             let mergedArray = userDealerIds.concat(userResellerIds);
 
+            console.log('check--------------------------2222222222')
 
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
             //Get Respective Dealers
@@ -794,6 +796,7 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
             let customerIdsArray = ordersResult.map((result) => result.customerId);
+            console.log('check--------------------------333333333333')
 
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
@@ -802,6 +805,7 @@ exports.getAllOrders = async (req, res) => {
 
             const allUserIds = mergedArray.concat(userCustomerIds);
 
+            console.log('check--------------------------4444444444444')
 
             const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
@@ -834,6 +838,7 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
 
+            console.log('check--------------------------55555555555')
 
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
@@ -881,6 +886,7 @@ exports.getAllOrders = async (req, res) => {
                 }
             });
 
+            console.log('check--------------------------666666666666')
 
 
             const unique_keyRegex = new RegExp(

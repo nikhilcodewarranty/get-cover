@@ -194,7 +194,7 @@ exports.getDealerPriceBookById = async (req, res) => {
             })
             return;
         }
-        let projection = { isDeleted: 0, __v: 0,wholesalePrice:0 }
+        let projection = { isDeleted: 0, __v: 0, wholesalePrice: 0 }
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -1367,7 +1367,7 @@ exports.createReseller = async (req, res) => {
         let getCount = await resellerService.getResellersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer for existing 
-        let checkDealer = await dealerService.getDealerByName({ _id: req.userId ,status:true}, {});
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId, status: true }, {});
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -1788,7 +1788,7 @@ exports.getDealerResellers = async (req, res) => {
             return;
         };
 
-        let query = { isDeleted: false, dealerId: req.userId}
+        let query = { isDeleted: false, dealerId: req.userId }
         let projection = { __v: 0 }
         const resellers = await resellerService.getResellers(query, projection);
         if (!resellers) {
@@ -2953,7 +2953,7 @@ exports.createOrder = async (req, res) => {
         // upload(req, res, async (err) => {
         let data = req.body;
 
-        console.log("data=================",data)
+        console.log("data=================", data)
         //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
         // if (data.productsArray[i].QuantityPricing) {
@@ -3025,6 +3025,7 @@ exports.createOrder = async (req, res) => {
         }
 
         data.createdBy = req.userId;
+        data.dealerId = req.userId;
 
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
@@ -3036,7 +3037,7 @@ exports.createOrder = async (req, res) => {
         data.unique_key = "GC-" + "2024-" + data.unique_key_number
 
         let checkVenderOrder = await orderService.getOrder(
-            { venderOrder: data.dealerPurchaseOrder, dealerId:  req.userId },
+            { venderOrder: data.dealerPurchaseOrder, dealerId: req.userId },
             {}
         );
         if (checkVenderOrder) {
@@ -3056,121 +3057,16 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
-        let returnField = [];
-
-        let checkOrder = await orderService.getOrder(
-            { _id: savedResponse._id },
-        );
-
-        let resultArray = checkOrder.productsArray.map(
-            (item) => item.coverageStartDate === null
-        );
-
-        let isEmptyOrderFile = checkOrder.productsArray
-            .map(
-                (item) =>
-                    item.orderFile.fileName === ""
-            )
-
-        // .some(Boolean);
-        const obj = {
-            customerId: checkOrder.customerId ? true : false,
-            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-            coverageStartDate: resultArray.includes(true) ? false : true,
-            fileName: isEmptyOrderFile.includes(true) ? false : true,
-        };
-
-        returnField.push(obj);
 
         res.send({
-            code:constant.successCode,
-            message:'Success!'
+            code: constant.successCode,
+            message: 'Success!'
         })
 
-        return;
-
-        // if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-        //     console.log("All condition verify+++++++++++")
-        //     let savedResponse = await orderService.updateOrder(
-        //         { _id: checkOrder._id },
-        //         { status: "Active" },
-        //         { new: true }
-        //     );
-        //     console.log("order status update+++++++++++")
-
-        //     let contractArray = [];
-        //     await savedResponse.productsArray.map(async (product) => {
-        //         console.log("map on products array++++++++++")
-
-        //         const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-        //         let priceBookId = product.priceBookId;
-        //         let orderProductId = product._id;
-        //         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-        //         let projection = { isDeleted: 0 };
-        //         let priceBook = await priceBookService.getPriceBookById(
-        //             query,
-        //             projection
-        //         );
-        //         const wb = XLSX.readFile(pathFile);
-        //         const sheets = wb.SheetNames;
-        //         const ws = wb.Sheets[sheets[0]];
-        //         let count1 = await contractService.getContractsCount();
-        //         console.log("count getting+++++++++++", count1[0].unique_key)
-
-        //         const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-        //         const totalDataComing = totalDataComing1.map((item) => {
-        //             const keys = Object.keys(item);
-        //             return {
-        //                 brand: item[keys[0]],
-        //                 model: item[keys[1]],
-        //                 serial: item[keys[2]],
-        //                 condition: item[keys[3]],
-        //                 retailValue: item[keys[4]],
-        //             };
-        //         });
-        //         // let savedDataOrder = savedResponse.toObject()
-        //         console.log("converted to json from csv")
-        //         totalDataComing.forEach((data, index) => {
-        //             console.log("cmaping on csv data")
-        //             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
-        //             let unique_key_search1 = "OC" + "2024" + unique_key_number1
-        //             let unique_key1 = "OC-" + "2024-" + unique_key_number1
-        //             let contractObject = {
-        //                 orderId: savedResponse._id,
-        //                 orderProductId: orderProductId,
-        //                 productName: priceBook[0].name,
-        //                 manufacture: data.brand,
-        //                 model: data.model,
-        //                 serial: data.serial,
-        //                 condition: data.condition,
-        //                 productValue: data.retailValue,
-        //                 unique_key: unique_key1,
-        //                 unique_key_search: unique_key_search1,
-        //                 unique_key_number: unique_key_number1,
-        //             };
-        //             console.log("makin contract object")
-
-        //             contractArray.push(contractObject);
-        //             //let saveData = contractService.createContract(contractObject)
-        //         });
-        //         console.log("saving bulk contract ", contractArray)
-
-        //         let saveContracts = await contractService.createBulkContracts(contractArray);
-        //         console.log("saving bulk contract ", saveContracts)
-
-        //     })
-
-        //     res.send({
-        //         code: constant.successCode,
-        //         message: "Success",
-        //     });
-        // }
-
-        // })
     } catch (err) {
         res.send({
             code: constant.errorCode,
-            message: err.message 
+            message: err.message
         })
     }
 }
