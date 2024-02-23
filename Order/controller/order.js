@@ -590,6 +590,11 @@ exports.createOrder1 = async (req, res) => {
                 code: constant.successCode,
                 message: "Success",
             });
+        }else{
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
         }
 
         // })
