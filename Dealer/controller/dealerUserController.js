@@ -3399,6 +3399,53 @@ exports.editOrderDetail = async (req, res) => {
 };
 
 
+exports.getDashboardData = async (req, res) => {
+    try {
+        let data = req.body;
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            unique_key_number: 1,
+            unique_key_search: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        };
+
+        let query = { status: 'Active', dealerId: new mongoose.Types.ObjectId(req.userId) };
+        let checkOrders = await orderService.getDashboardData(query, project)
+        if (!checkOrders[0]) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch order data",
+                result: {
+                    "_id": "",
+                    "totalAmount": 0,
+                    "totalOrder": 0
+                }
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: checkOrders[0]
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
+
 
 
 
