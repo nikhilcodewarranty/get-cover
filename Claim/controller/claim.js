@@ -27,13 +27,13 @@ var uploadP = multer({
 }).single("file");
 exports.searchClaim = async (req, res, next) => {
   let data = req.body
-  if (req.role != "Super Admin") {
-    res.send({
-      code: constant.errorCode,
-      message: "Only super admin allow to do this action",
-    });
-    return;
-  }
+  // if (req.role != "Super Admin") {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: "Only super admin allow to do this action",
+  //   });
+  //   return;
+  // }
   let lookupCondition = [{ isDeleted: false }]
   if (data.serial) {
     lookupCondition.push({ "serial": data.serial },)
@@ -47,94 +47,89 @@ exports.searchClaim = async (req, res, next) => {
   if (data.orderId) {
     lookupCondition.push({ "order.unique_key": data.orderId },)
   }
-  let query = [
-    {
-      $match: {
-        $and: lookupCondition
-      },
-    },
-
-
-    {
-      $lookup: {
-        from: "contracts",
-        localField: "_id",
-        foreignField: "orderId",
-        as: "contracts"
-      }
-    }
-    // {
-    //   $lookup: {
-    //     from: "orders",
-    //     localField: "orderId",
-    //     foreignField: "_id",
-    //     as: "order",
-    //     pipeline: [
-    //       // {
-    //       //   $lookup: {
-    //       //     from: "dealers",
-    //       //     localField: "dealerId",
-    //       //     foreignField: "_id",
-    //       //     as: "dealer",
-    //       //   }
-    //       // },
-    //       // {
-    //       //   $lookup: {
-    //       //     from: "resellers",
-    //       //     localField: "resellerId",
-    //       //     foreignField: "_id",
-    //       //     as: "reseller",
-    //       //   }
-    //       // },
-    //       {
-    //         $lookup: {
-    //           from: "customers",
-    //           let: { customerId: '$order.customerId' },
-    //           pipeline: [
-    //             {
-    //               $match: {
-    //                 $expr: {
-    //                   $and: [
-    //                     { $eq: ['$_id', '$$customerId'] },
-    //                     { $eq: ['$username', 'testtttttt'] },
-    //                   ]
-    //                 }
-    //               }
-    //             }
-    //           ],
-    //           as: "customers"
-    //         }
-    //       },
-    //       // {
-    //       //   $lookup: {
-    //       //     from: "servicers",
-    //       //     localField: "servicerId",
-    //       //     foreignField: "_id",
-    //       //     as: "servicer",
-    //       //   }
-    //       // },
-    //     ]
-
-    //   }
-    // },
-    // {
-    //   $unwind: "$order"
-    // },
-    // {
-    //   $match:
-    //   {
-    //     $and: lookupCondition
-    //   },
-
-    // },
-  ]
 
   let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
   let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+  let query = [
+    {
+      $match:
+      {
+        $and: [
+          { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+          { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        ]
+      },
+    },
+   
+    {
+      $lookup: {
+        from: "orders",
+        localField: "orderId",
+        foreignField: "_id",
+        as: "order",
+        pipeline: [
+          // {
+          //   $lookup: {
+          //     from: "dealers",
+          //     localField: "dealerId",
+          //     foreignField: "_id",
+          //     as: "dealer",
+          //   }
+          // },
+          // {
+          //   $lookup: {
+          //     from: "resellers",
+          //     localField: "resellerId",
+          //     foreignField: "_id",
+          //     as: "reseller",
+          //   }
+          // },
+          {
+            $lookup: {
+              from: "customers",
+              localField:"customerId",
+              foreignField:"_id",
+              // let: { customerId: '$order.customerId' },
+              // pipeline: [
+              //   {
+              //     $match:{ $eq: ['$username', `${data.customerName}`] },
+              //   }
+              // ],
+              as: "customers",
+            }
+          },
+          {$unwind:"$customers"},
+          // {
+          //   $lookup: {
+          //     from: "servicers",
+          //     localField: "servicerId",
+          //     foreignField: "_id",
+          //     as: "servicer",
+          //   }
+          // },
+        ]
+
+      }
+    },
+    {
+      $unwind: "$order"
+    },
+    {
+      $match:
+      {
+        $and: [
+          { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+          { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+          { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
+        ]
+      },
+    },
+    { $skip: skipLimit },
+    { $limit: pageLimit },
+  ]
+
   let limitData = Number(pageLimit)
-  console.log("check+++++++++++++++++=")
-  let getContracts = await orderService.getOrderWithContract(query, skipLimit, pageLimit)
-  console.log("check+++++++++++++++++=", getContracts[0])
+  let getContracts = await contractService.getAllContracts2(query)
 
   res.send({
     code: constant.successCode,
