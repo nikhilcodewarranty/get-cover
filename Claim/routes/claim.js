@@ -3,6 +3,6 @@ const router = express.Router();
 const claimController = require("../controller/claim");
 const { verifyToken } = require("../../middleware/auth");
 
-router.post("/searchClaim", [verifyToken],claimController.searchClaim);
+router.get("/searchClaim",claimController.searchClaim);
 
 module.exports = router;
