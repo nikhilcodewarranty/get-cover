@@ -91,7 +91,7 @@ exports.searchClaim = async (req, res, next) => {
   }
   let lookupCondition = [{ isDeleted: false }]
   if (data.serial) {
-    lookupCondition.push({ "serial": data.serial },)
+    lookupCondition.push({ 'serial': { '$regex': data.serial ? data.serial.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } })
   }
   if (data.contractId) {
     lookupCondition.push({ "unique_key": data.contractId })
@@ -132,7 +132,7 @@ exports.searchClaim = async (req, res, next) => {
               "let": { "id": "$_id" },
               pipeline: [
                 // { $match: { $expr: { $eq: ["$_id", "$$id"] } } },
-                { $match: { username: data.customerName } }, // Filter by username
+                { $match: { 'username': { '$regex': data.customerName ? data.customerName.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }}, // Filter by username
                 { $project: { _id: 1, username: 1 } }
               ],
               as: "customers"
