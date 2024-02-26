@@ -3104,7 +3104,7 @@ const renderContractsChunked = async (
 
 
 exports.generatePDF = async (req, res) => {
-    try {
+    try { 
         let query = [
             {
                 $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
