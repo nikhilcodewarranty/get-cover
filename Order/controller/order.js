@@ -2768,13 +2768,13 @@ exports.getOrderContract = async (req, res) => {
                     as: "order"
                 }
             },
-            {
-                $addFields: {
-                    contracts: {
-                        $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-                    }
-                }
-            }
+            // {
+            //     $addFields: {
+            //         contracts: {
+            //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+            //         }
+            //     }
+            // }
             // { $unwind: "$contracts" }
         ]
         //  console.log.log('before--------------', Date.now())
@@ -2852,6 +2852,114 @@ exports.getOrderContract = async (req, res) => {
             message: "Success!",
             result: checkOrder,
             totalCount: totalContract,
+            orderUserData: userData
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+exports.getOrderPdf = async (req, res) => {
+    try {
+        let data = req.body
+        let query = [
+            {
+                $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "orderId",
+                    foreignField: "_id",
+                    as: "order"
+                }
+            },
+            // {
+            //     $addFields: {
+            //         contracts: {
+            //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+            //         }
+            //     }
+            // }
+            // { $unwind: "$contracts" }
+        ]
+        //  console.log.log('before--------------', Date.now())
+        let checkOrder = await contractService.getContractForPDF(query)
+        //  console.log.log('after+++++++++++++++++++++', Date.now())
+        //let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        if (!checkOrder[0]) {
+            res.send({
+                code: constant.successCode,
+                message: "Success!",
+                result: checkOrder,
+                contractCount: 0,
+                orderUserData: {}
+            })
+            return
+        }
+
+        // checkOrder = checkOrder;
+        let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
+        checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
+            const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+            const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
+            if (pricebook) {
+                product.name = pricebook.name;
+            }
+            if (pricebookCat) {
+                product.catName = pricebookCat.name;
+            }
+
+            return product;
+        }));
+
+
+        // return
+        //Get Dealer Data
+        let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
+        //Get customer Data
+        let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
+        //Get Reseller Data
+
+        let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
+
+        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+
+        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+
+        let dealerUser = await userService.findUserforCustomer(queryDealerUser)
+
+        let resellerUser = await userService.findUserforCustomer(queryResselerUser)
+
+        //Get Servicer Data
+
+        let query1 = {
+            $or: [
+                { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+                // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+            ],
+        };
+
+        let checkServicer = await servicerService.getServiceProviderById(query1);
+
+        let userData = {
+            dealerData: dealer ? dealer : {},
+            customerData: customer ? customer : {},
+            resellerData: reseller ? reseller : {},
+            servicerData: checkServicer ? checkServicer : {},
+            username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
+            resellerUsername: resellerUser ? resellerUser[0] : {}
+        };
+
+
+        res.send({
+            code: constant.successCode,
+            message: "Success!",
+            result: checkOrder,
             orderUserData: userData
         });
 
@@ -2975,8 +3083,6 @@ exports.generatePDF = async (req, res) => {
 
         //console.log("query",query)
         let orderWithContracts = await orderService.getOrderWithContract1(query);
-
-        console.log(orderWithContracts);
         // res.send({
         //     code: constant.errorCode,
         //     message: 'Contract not found of this order!',
@@ -3200,17 +3306,10 @@ exports.generatePDF = async (req, res) => {
                             break;
                         }
 
-                        // console.log("startInde============",startIndex)
-                        // console.log("endIndex============",endIndex)
-
                         if (endIndex > contracts?.length && contracts[startIndex]) {
                             endIndex = contracts.length
                             pageCount = pageCount + 1
                             flag = false;
-
-                            console.log("startIndex:", startIndex);
-                            console.log("endIndex:", endIndex);
-                            console.log("contracts.length:", contracts.length);
                         }
 
                         // if(endIndex > contracts.length){
@@ -3223,9 +3322,6 @@ exports.generatePDF = async (req, res) => {
                 }
             }
         }
-
-
-
         res.send({
             code: constant.successCode,
             result: htmlContent,

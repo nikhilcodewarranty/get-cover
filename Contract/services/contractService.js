@@ -100,4 +100,13 @@ module.exports = class contractService {
       console.log(`Could  not delete contract ${error}`);
     }
   }
+
+  static async getContractForPDF(query){
+    try {
+      const getResponse = await contract.aggregate(query);
+      return getResponse;
+    } catch (error) {
+      console.log(`Could  not delete contract ${error}`);
+    }
+  }
 };

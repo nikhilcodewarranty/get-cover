@@ -23,6 +23,7 @@ router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOr
 router.get('/getOrderById/:orderId', [verifyToken], orderController.getSingleOrder)
 router.get('/markAsPaid/:orderId', [verifyToken], orderController.markAsPaid)
 router.post('/getOrderContract/:orderId', [verifyToken], orderController.getOrderContract)
+router.post('/getOrderPdf/:orderId', [verifyToken], orderController.getOrderPdf)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
 router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)  

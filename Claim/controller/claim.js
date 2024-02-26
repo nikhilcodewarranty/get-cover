@@ -91,7 +91,7 @@ exports.searchClaim = async (req, res, next) => {
   }
   let lookupCondition = [{ isDeleted: false }]
   if (data.serial) {
-    lookupCondition.push({ 'serial': { '$regex': data.serial ? data.serial.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } })
+    lookupCondition.push({ "serial": data.serial },)
   }
   if (data.contractId) {
     lookupCondition.push({ "unique_key": data.contractId })
@@ -103,6 +103,7 @@ exports.searchClaim = async (req, res, next) => {
     lookupCondition.push({ "order.unique_key": data.orderId },)
   }
   let query = [
+    
     {
       $lookup: {
         from: "orders",
@@ -129,11 +130,18 @@ exports.searchClaim = async (req, res, next) => {
           {
             $lookup: {
               from: "customers",
-              "let": { "id": "$_id" },
+              let: { customerId: '$order.customerId' },
               pipeline: [
-                // { $match: { $expr: { $eq: ["$_id", "$$id"] } } },
-                { $match: { 'username': { '$regex': data.customerName ? data.customerName.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }}, // Filter by username
-                { $project: { _id: 1, username: 1 } }
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$_id', '$$customerId'] },
+                        { $eq: ['$username', 'testtttttt'] },
+                      ]
+                    }
+                  }
+                }
               ],
               as: "customers"
             }
