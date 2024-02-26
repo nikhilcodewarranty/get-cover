@@ -89,12 +89,6 @@ exports.searchClaim = async (req, res, next) => {
               from: "customers",
               localField:"customerId",
               foreignField:"_id",
-              // let: { customerId: '$order.customerId' },
-              // pipeline: [
-              //   {
-              //     $match:{ $eq: ['$username', `${data.customerName}`] },
-              //   }
-              // ],
               as: "customers",
             }
           },
@@ -183,6 +177,9 @@ exports.addClaim = async (req, res, next) => {
       });
       return;
     }
+
+    
+
    }
   catch (err) { }
 }

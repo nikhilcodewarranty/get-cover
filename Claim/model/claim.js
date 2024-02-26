@@ -15,6 +15,7 @@ const claimSchema = new mongoose.Schema({
   },
   bdAdh: {
     type: String,
+    default:''
     // required: true,
   },
   diagnosis: {
@@ -22,8 +23,25 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   receiptImage: {
-    type: String,
-    // required: true,
+    type: {
+      fileName: {
+        type: String,
+        default: ''
+      },
+      name: {
+        type: String,
+        default: ''
+      },
+      size: {
+        type: String,
+        default: ''
+      },
+    },
+    default: {
+      fileName: '',
+      originalName: '',
+      size:''
+    }
   },
   shippingCarrier: {
     type: String,

@@ -3051,7 +3051,7 @@ const renderContractsChunked = async (
 ) => {
     try {
         console.log('Rendering contracts chunk...'); // Ensure function is being called
-
+        console.log("contracts-------------------",contracts)
         let htmlContent = `
             <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
                 <thead style="background-color: #f4f4f4; text-align: left;">
@@ -3247,9 +3247,6 @@ exports.generatePDF = async (req, res) => {
             let resellerUserId = orderWithContracts[0].resellerId
             orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
         }
-
-
-
         let htmlContent;
 
         if (orderWithContracts.length > 0) {
@@ -3465,6 +3462,7 @@ exports.generatePDF = async (req, res) => {
                 let serialNo = 0;
         
                 // Start of the first page
+              //  console.log("here is rendering first------------------");
                 htmlContent += await renderContractsChunked(
                     contracts,
                     initialPageSize,
@@ -3476,7 +3474,6 @@ exports.generatePDF = async (req, res) => {
                 // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
                 startIndex = endIndex;
                 while (startIndex < contracts?.length) {
-                    console.log('here')
                     endIndex = startIndex + subsequentPageSize;
                     endIndex = Math.min(endIndex, contracts?.length);
         
@@ -3494,7 +3491,6 @@ exports.generatePDF = async (req, res) => {
                 }
             }
         }
-            // console.log("html check ++++++++++++++++++++++++++++++++++++++",htmlContent)
             //  return htmlContent;
             res.send({
                 code: constant.successCode,
