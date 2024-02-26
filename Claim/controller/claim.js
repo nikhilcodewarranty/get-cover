@@ -6,10 +6,6 @@ const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
 const constant = require("../../config/constant");
-
-
-
-
 exports.searchClaim = async (req, res, next) => {
   let data = req.body
   if (req.role != "Super Admin") {
@@ -34,10 +30,20 @@ exports.searchClaim = async (req, res, next) => {
   }
   let query = [
     {
-      $match:{
+      $match: {
         $and: lookupCondition
       },
     },
+
+
+    {
+      $lookup: {
+        from: "contracts",
+        localField: "_id",
+        foreignField: "orderId",
+        as: "contracts"
+      }
+    }
     // {
     //   $lookup: {
     //     from: "orders",
@@ -108,8 +114,8 @@ exports.searchClaim = async (req, res, next) => {
   let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
   let limitData = Number(pageLimit)
   console.log("check+++++++++++++++++=")
-  let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
-  console.log("check+++++++++++++++++=",getContracts[0])
+  let getContracts = await orderService.getOrderWithContract(query, skipLimit, pageLimit)
+  console.log("check+++++++++++++++++=", getContracts[0])
 
   res.send({
     code: constant.successCode,
