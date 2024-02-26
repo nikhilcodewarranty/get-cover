@@ -3042,6 +3042,67 @@ exports.getOrderPdf = async (req, res) => {
     }
 }
 
+const renderContractsChunked = async (
+    contracts,
+    pageSize,
+    startIndex,
+    endIndex,
+    product
+) => {
+    try {
+        console.log('Rendering contracts chunk...'); // Ensure function is being called
+
+        let htmlContent = `
+            <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
+                <thead style="background-color: #f4f4f4; text-align: left;">
+                    <tr>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
+                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        const unitPriceString = product.unitPrice.toLocaleString("en-US", {
+            style: "currency",
+            currency: "USD",
+        });
+
+        for (let i = startIndex; i < endIndex && i < contracts.length; i++) {
+            const contract = contracts[i];
+            console.log('contract')
+            const serialNo = i + 1; // Adjust serial number
+            htmlContent += `
+                <tr>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${unitPriceString}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
+                </tr>
+            `;
+        }
+
+        htmlContent += `
+                </tbody>
+            </table>
+        `;
+
+        return htmlContent;
+    } catch (error) {
+        console.error('Error rendering contracts chunk:', error);
+        throw error; // Rethrow the error to be caught by the caller
+    }
+};
+
+
 exports.generatePDF = async (req, res) => {
     try {
         let query = [
@@ -3189,215 +3250,259 @@ exports.generatePDF = async (req, res) => {
 
 
 
-        // let htmlContent;
+        let htmlContent;
 
-        // if (orderWithContracts.length > 0) {
-        //     htmlContent = `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-        //     <tbody>
-        //         <tr>
-        //             <td style="text-align: left; width: 50%;">
-        //                 <img src='http://15.207.221.207/static/media/logo.642c96aed42bd8a1d454.png' style="margin-bottom: 20px;"/>
-        //                 <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
-        //                 <p style="margin: 0; padding: 0;">13th Street <br/>
-        //                 47 W 13th St, New York,<br/>
-        //                 NY 10011, USA</p>
-        //             </td>
-        //             <td style=" width: 50%;">
-        //                 <table style="width: 100%; border-collapse: collapse;">
-        //                     <thead>
-        //                         <tr>
-        //                             <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
-        //                         </tr>
-        //                         <tr>
-        //                             <td><b> Order ID : </b></td> 
-        //                             <td>${orderWithContracts[0].unique_key}</td>
-        //                         </tr>
-        //                         <tr>
-        //                             <td><b> Dealer P.O. # : </b></td> 
-        //                             <td>${orderWithContracts[0].venderOrder}</td>
-        //                         </tr>
-        //                         <tr>
-        //                             <td><b>Service Coverage : </b></td>
-        //                             <td>${orderWithContracts[0].serviceCoverageType}</td>
-        //                         </tr>
-        //                         <tr>
-        //                             <td><b> Coverage Type : </b></td>
-        //                             <td>${orderWithContracts[0].coverageType}</td>
-        //                         </tr>
-        //                     </thead>
-        //                 </table>
-        //             </td>
-        //         </tr>
-        //     </tbody>
-        // </table>
-        // <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-        //     <tbody>
-        //         <tr>
-        //             <td style="text-align: left; width: 50%;">
-        //                 <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-        //                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.name : ''}</b></h4>
-        //                 <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.firstName + " " + orderWithContracts[0].dealerUsers.lastName : ''} <br/>
-        //                 ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.street : ''},
-        //                 ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.city : ''},
-        //                 ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.state : ''},
-        //                 ${orderWithContracts[0].dealers ? orderWithContracts[0].dealers.zip : ''}<br/>
-        //                 ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].dealerUsers ? orderWithContracts[0].dealerUsers.email : ''}</small>
-        //             </td>
-        //             <td style="text-align: left; width: 50%;">
-        //                 ${orderWithContracts[0].resellers ? (`<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-        //                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].name : ''}</b></h4>
-        //                 <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.firstName + " " + orderWithContracts[0].resellerUser.lastName : ''} <br/>
-        //                 ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].street : ''}
-        //                 ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].city : ''}
-        //                 ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].state : ''}
-        //                 ${orderWithContracts[0].resellers.length > 0 ? orderWithContracts[0].resellers[0].zip : ''}<br/>
-        //                 ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].resellerUser ? orderWithContracts[0].resellerUser.email : ''}</small>`) : ''}
-        //             </td>
-        //         </tr>
-        //     </tbody>
-        // </table>
-        // <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-        //     <tbody>
-        //         <tr>
-        //         <td style="text-align: left; margin-top:40px; width: 50%;">
-        //         ${orderWithContracts[0].customers ? (`<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-        //         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers ? orderWithContracts[0].customers.username : ''}</b></h4>
-        //         <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers ? orderWithContracts[0].customers.street : ''}
-        //         ${orderWithContracts[0].customers ? orderWithContracts[0].customers.city : ''}
-        //         ${orderWithContracts[0].customers ? orderWithContracts[0].customers.state : ''}
-        //         ${orderWithContracts[0].customers ? orderWithContracts[0].customers.zip : ''}<br/>
-        //         ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.email : ''}</small>`) : ''}
+        if (orderWithContracts.length > 0) {
+            htmlContent = await `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                     <td style="text-align: left; width: 50%;">
+                         <img src='http://15.207.221.207/static/media/logo.642c96aed42bd8a1d454.png' style="margin-bottom: 20px;"/>
+                         <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
+                         <p style="margin: 0; padding: 0;">13th Street <br/>
+                         47 W 13th St, New York,<br/>
+                         NY 10011, USA</p>
+                     </td>
+                     <td style=" width: 50%;">
+                         <table style="width: 100%; border-collapse: collapse;">
+                             <thead>
+                                 <tr>
+                                     <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Order ID : </b></td> 
+                                     <td>${orderWithContracts[0].unique_key}</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Dealer P.O. # : </b></td> 
+                                     <td>${orderWithContracts[0].venderOrder}</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b>Service Coverage : </b></td>
+                                     <td>${orderWithContracts[0].serviceCoverageType
+                }</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Coverage Type : </b></td>
+                                     <td>${orderWithContracts[0].coverageType}</td>
+                                 </tr>
+                             </thead>
+                         </table>
+                     </td>
+                 </tr>
+             </tbody>
+           </table>
+           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                     <td style="text-align: left; width: 50%;">
+                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.name
+                    : ""
+                }</b></h4>
+                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.firstName +
+                    " " +
+                    orderWithContracts[0].dealerUsers.lastName
+                    : ""
+                } <br/>
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.street
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.city
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.state
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.zip
+                    : ""
+                }<br/>
+                         ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.phoneNumber.replace(
+                        /(\d{3})(\d{3})(\d{4})/,
+                        "($1)$2-$3"
+                    )
+                    : ""
+                } | ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.email
+                    : ""
+                }</small>
+                     </td>
+                     <td style="text-align: left; width: 50%;">
+                         ${orderWithContracts[0].resellers
+                    ? `<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].name
+                        : ""
+                    }</b></h4>
+                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.firstName +
+                        " " +
+                        orderWithContracts[0].resellerUser.lastName
+                        : ""
+                    } <br/>
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].street
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].city
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].state
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].zip
+                        : ""
+                    }<br/>
+                         ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.phoneNumber.replace(
+                            /(\d{3})(\d{3})(\d{4})/,
+                            "($1)$2-$3"
+                        )
+                        : ""
+                    } | ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.email
+                        : ""
+                    }</small>`
+                    : ""
+                }
+                     </td>
+                 </tr>
+             </tbody>
+           </table>
+           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                 <td style="text-align: left; margin-top:40px; width: 50%;">
+                 ${orderWithContracts[0].customers
+                    ? `<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.username
+                        : ""
+                    }</b></h4>
+                 <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.street
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.city
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.state
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.zip
+                        : ""
+                    }<br/>
+                 ${orderWithContracts[0].customerUsers
+                        ? orderWithContracts[0].customerUsers.phoneNumber.replace(
+                            /(\d{3})(\d{3})(\d{4})/,
+                            "($1)$2-$3"
+                        )
+                        : ""
+                    } | ${orderWithContracts[0].customerUsers
+                        ? orderWithContracts[0].customerUsers.email
+                        : ""
+                    }</small>`
+                    : ""
+                }
+           
+             </td>
+                     <td style="text-align: left; width: 50%;">
+                         ${orderWithContracts[0].servicer?.length > 0
+                    ? `
+                         <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].name
+                        : ""
+                    }</b></h4>
+                         <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].street
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].city
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].state
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].zip
+                        : ""
+                    }<br/>
+                         </small>`
+                    : ""
+                }
+                     </td>
+                 </tr>
+             </tbody>
+           </table>`;
 
-        //     </td>
-        //             <td style="text-align: left; width: 50%;">
-        //                 ${orderWithContracts[0].servicer?.length > 0 ? (`
-        //                 <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-        //                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].name : ''}</b></h4>
-        //                 <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].street : ''}
-        //                 ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].city : ''}
-        //                 ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].state : ''}
-        //                 ${orderWithContracts[0].servicer.length > 0 ? orderWithContracts[0].servicer[0].zip : ''}<br/>
-        //                 </small>`) : ''}
-        //             </td>
-        //         </tr>
-        //     </tbody>
-        // </table>`
-        //     for (let i = 0; i < orderWithContracts.length; i++) { // Iterate through each order
-        //         const order = orderWithContracts[i];
-        //         for (let j = 0; j < order.productsArray.length; j++) { // Iterate through each product in the order
-        //             const product = order.productsArray[j];
-        //             const pageSize = 20; // Number of contracts per page
-        //             const contracts = product.contract;
-        //             // Retrieve order contracts for the current product
-        //             htmlContent += `<table style="width: 100%; border-collapse: collapse; margin-bottom:5px">
-        //             <tbody>
-        //                 <tr style='padding-bottom:5px;'>
-        //                     <td><b style="font-size:20px">${j + 1}. Product Details:</b></td>
-        //                 </tr>
-        //             </tbody>
-        //         </table>
-        //         <table style="width: 100%; border-collapse: collapse; border-top: 1px solid #f4f4f4; margin-top:0px">
-        //             <tbody style="text-align: left;">
-        //                 <tr>
-        //                     <td><b>Product Category:</b> ${product.category.name}</td>
-        //                     <td><b>Product Name:</b> ${product.description}</td>
-        //                 </tr>
-        //             </tbody>
-        //         </table>
-        //         <table style=""> 
-        //             <tbody>
-        //                 <tr>
-        //                     <td><b>Product Description:</b> ${product.description}</td>
-        //                 </tr>
-        //             </tbody>
-        //         </table>
-        //         <table style="width: 100%; border-collapse: collapse; margin-bottom:40px">
-        //             <tbody style="text-align: left;">
-        //                 <tr>
-        //                     <td><b>Term:</b> ${product.term} Month</td>
-        //                     <td><b>Unit Price:</b>  ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-        //                     <td><b># of Products:</b> ${product.noOfProducts}</td>
-        //                 </tr>
-        //                 <tr>
-        //                     <td><b>Price:</b> ${product.price.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-        //                     <td><b>Coverage Start Date:</b> ${new Date(product.coverageStartDate).toLocaleDateString()}</td>
-        //                     <td><b>Coverage End Date:</b> ${new Date(product.coverageEndDate).toLocaleDateString()}</td>
-        //                 </tr>
-        //             </tbody>
-        //         </table>`
-        //             let startIndex = 0
-        //             let endIndex = 6
-        //             let serialNo = 0;
-        //             let flag = true;
-        //             var pageCount = Math.ceil(contracts?.length / pageSize);
-        //             for (let page = 0; page < pageCount; page++) {
-
-        //                 // Start of a new page
-        //                 htmlContent += `
-        //           <table style="page-break-before: ${page === 0 ? 'auto' : 'always'}; width: 100%; border-collapse: collapse;">
-        //               <thead style="background-color: #f4f4f4; text-align: left;">
-        //                   <tr>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
-        //                       <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
-        //                   </tr>
-        //               </thead>
-        //               <tbody>
-        //               ${contracts
-        //                         ?.slice(startIndex, endIndex)
-        //                         ?.map(
-        //                             (contract, index) => {
-        //                                 serialNo = serialNo + 1; // Adjust serial number
-        //                                 return `
-        //                           <tr>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;"> ${product.unitPrice.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-        //                               <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
-        //                           </tr>
-        //                           `;
-        //                             }
-        //                         )
-        //                         .join("")}
-        //           </tbody>
-        //           </table>
-        //           `;
-
-        //                 startIndex = endIndex;
-        //                 endIndex = endIndex + 20
-
-        //                 if (!flag) {
-        //                     break;
-        //                 }
-
-        //                 if (endIndex > contracts?.length && contracts[startIndex]) {
-        //                     endIndex = contracts.length
-        //                     pageCount = pageCount + 1
-        //                     flag = false;
-        //                 }
-
-        //                 // if(endIndex > contracts.length){
-        //                 //     endIndex = contracts.length 
-        //                 //     pageCount = pageCount + 1
-        //                 // }
-
-        //             }
-
-        //         }
-        //     }
-        // }
-        res.send({
-            code: constant.successCode,
-            result: orderWithContracts,
-            orderWithContracts: orderWithContracts,
-        })
+           for (let i = 0; i < orderWithContracts.length; i++) {
+            const order = orderWithContracts[i];
+            for (let j = 0; j < order.productsArray.length; j++) {
+                const product = order.productsArray[j];
+                const contracts = product.contract;
+                const initialPageSize = 6;
+                const subsequentPageSize = 20;
+        
+                // Display 6 contracts on the first page
+                let startIndex = 0;
+                let endIndex = Math.min(initialPageSize, contracts?.length);
+                let serialNo = 0;
+        
+                // Start of the first page
+                htmlContent += await renderContractsChunked(
+                    contracts,
+                    initialPageSize,
+                    startIndex,
+                    endIndex,
+                    product
+                );
+        
+                // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
+                startIndex = endIndex;
+                while (startIndex < contracts?.length) {
+                    console.log('here')
+                    endIndex = startIndex + subsequentPageSize;
+                    endIndex = Math.min(endIndex, contracts?.length);
+        
+                    // Await the result before concatenating
+                    const chunkedHtml = await renderContractsChunked(
+                        contracts,
+                        subsequentPageSize,
+                        startIndex,
+                        endIndex,
+                        product
+                    );
+                    htmlContent += chunkedHtml;
+        
+                    startIndex = endIndex;
+                }
+            }
+        }
+            // console.log("html check ++++++++++++++++++++++++++++++++++++++",htmlContent)
+            //  return htmlContent;
+            res.send({
+                code: constant.successCode,
+                result: orderWithContracts,
+                html: htmlContent,
+                orderWithContracts: orderWithContracts,
+            })
+        }
     }
     catch (err) {
         res.send({
