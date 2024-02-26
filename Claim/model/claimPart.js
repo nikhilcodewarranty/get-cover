@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 const claimPartSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "claim",
+    ref: "claims",
     // required: true,
   },
   serviceproId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "serviceProvider",
+    ref: "serviceproviders",
     // required: true,
   },
   name: {
