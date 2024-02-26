@@ -526,7 +526,7 @@ exports.createOrder1 = async (req, res) => {
 
             let contractArray = [];
             await savedResponse.productsArray.map(async (product) => {
-                console.log("map on products array++++++++++",product)
+                console.log("map on products array++++++++++", product)
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -541,8 +541,8 @@ exports.createOrder1 = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-               // console.log("count getting+++++++++++", count1[0].unique_key)
-               
+                // console.log("count getting+++++++++++", count1[0].unique_key)
+
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
@@ -1907,13 +1907,6 @@ exports.getServicerInOrders = async (req, res) => {
         let getServicersIds = await dealerRelationService.getDealerRelations({
             dealerId: data.dealerId,
         });
-        // if (!getServicersIds) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Unable to fetch the servicer"
-        //     })
-        //     return;
-        // }
         let ids = getServicersIds.map((item) => item.servicerId);
         servicer = await servicerService.getAllServiceProvider(
             { _id: { $in: ids }, status: true },
@@ -1931,13 +1924,6 @@ exports.getServicerInOrders = async (req, res) => {
         var checkReseller = await resellerService.getReseller({
             _id: data.resellerId,
         });
-        // if (!checkReseller) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Invalid Reseller ID"
-        //     })
-        //     return;
-        // }
     }
     if (checkReseller && checkReseller.isServicer) {
         servicer.unshift(checkReseller);
@@ -1979,6 +1965,91 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+
+exports.getServicerByOrderId = async (req, res) => {
+    try {
+        let query = { _id: req.params.orderId }
+        let checkOrder = await orderService.getOrder(query, { isDeleted: 0 })
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Order not found!'
+            });
+            return;
+        }
+
+        let checkDealer = await dealerService.getDealerById(checkOrder.dealerId, {
+            isDeleted: 0,
+        })
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found!",
+            });
+            return;
+        }
+        let getServicersIds = await dealerRelationService.getDealerRelations({
+            dealerId: checkOrder.dealerId,
+        });
+        let ids = getServicersIds.map((item) => item.servicerId);
+        servicer = await servicerService.getAllServiceProvider(
+            { _id: { $in: ids }, status: true },
+            {}
+        );
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers",
+            });
+            return;
+        }
+        if (checkOrder.resellerId != null) {
+            var checkReseller = await resellerService.getReseller({
+                _id: checkOrder.resellerId,
+            });
+        }
+        if (checkReseller && checkReseller.isServicer) {
+            servicer.unshift(checkReseller);
+        }
+
+        if (checkDealer && checkDealer.isServicer) {
+            servicer.unshift(checkDealer);
+        }
+        const servicerIds = servicer.map((obj) => obj._id);
+        const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+        let servicerUser = await userService.getMembers(query1, {});
+        if (!servicerUser) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data",
+            });
+            return;
+        }
+
+        const result_Array = servicer.map((item1) => {
+            const matchingItem = servicerUser.find(
+                (item2) => item2.accountId.toString() === item1._id.toString()
+            );
+
+            if (matchingItem) {
+                return {
+                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: matchingItem.toObject(),
+                };
+            } else {
+                return servicer.toObject();
+            }
+        });
+
+        res.send({
+            code: constant.successCode,
+            result: result_Array,
+        });
+
+    }
+    catch (err) { }
+}
 
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
@@ -3196,7 +3267,7 @@ exports.generatePDF = async (req, res) => {
         //         ${orderWithContracts[0].customers ? orderWithContracts[0].customers.state : ''}
         //         ${orderWithContracts[0].customers ? orderWithContracts[0].customers.zip : ''}<br/>
         //         ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''} | ${orderWithContracts[0].customerUsers ? orderWithContracts[0].customerUsers.email : ''}</small>`) : ''}
-        
+
         //     </td>
         //             <td style="text-align: left; width: 50%;">
         //                 ${orderWithContracts[0].servicer?.length > 0 ? (`
@@ -3324,7 +3395,7 @@ exports.generatePDF = async (req, res) => {
         // }
         res.send({
             code: constant.successCode,
-            result:orderWithContracts,
+            result: orderWithContracts,
             orderWithContracts: orderWithContracts,
         })
     }
