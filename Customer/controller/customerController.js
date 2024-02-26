@@ -1019,18 +1019,6 @@ exports.getCustomerContract = async (req, res) => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 exports.updateCustomer = async (req, res, next) => {
   try {
     const updatedCustomer = await customerService.updateCustomer(req.body);
