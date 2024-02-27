@@ -171,25 +171,9 @@ exports.searchClaim = async (req, res, next) => {
           ]
         },
       },
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            }
-          ]
-        }
-      }
-      // { $skip: skipLimit },
-      // { $limit: pageLimit },
+      
+      { $skip: skipLimit },
+      { $limit: pageLimit },
     ]
 
     let query2 = [
