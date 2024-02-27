@@ -558,6 +558,9 @@ exports.createOrder1 = async (req, res) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
+                    claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                    let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -565,6 +568,8 @@ exports.createOrder1 = async (req, res) => {
                         manufacture: data.brand,
                         model: data.model,
                         serial: data.serial,
+                        status: claimStatus,
+                        eligibilty: eligibilty,
                         condition: data.condition,
                         productValue: data.retailValue,
                         unique_key: unique_key1,
@@ -602,7 +607,7 @@ exports.createOrder1 = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.processOrder = async (req, res) => {
     try {
@@ -3153,7 +3158,6 @@ const renderContractsChunked = async (
         throw error; // Rethrow the error to be caught by the caller
     }
 };
-
 
 exports.generatePDF = async (req, res) => {
     try {
