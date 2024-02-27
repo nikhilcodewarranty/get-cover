@@ -7,7 +7,7 @@ const claimSchema = new mongoose.Schema({
   },
   claimStatus: {
     type: String,
-    default:''
+    default: ''
     // required: true,
   },
   action: {
@@ -16,7 +16,7 @@ const claimSchema = new mongoose.Schema({
   },
   bdAdh: {
     type: String,
-    default:''
+    default: ''
     // required: true,
   },
   diagnosis: {
@@ -24,7 +24,7 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   receiptImage: {
-    type: {
+    type: [{
       fileName: {
         type: String,
         default: ''
@@ -37,48 +37,53 @@ const claimSchema = new mongoose.Schema({
         type: String,
         default: ''
       },
-    },
-    default: {
+    }],
+    default: [{
       fileName: '',
       originalName: '',
-      size:''
-    }
+      size: ''
+    }]
   },
   shippingCarrier: {
     type: String,
+    default: ''
     // required: true,
   },
   shippingLabel: {
     type: String,
+    default: ''
     // required: true,
   },
   claimDate: {
     type: Date,
+    default: Date.now()
     // required: true,
   },
   claimType: {
     type: String,
+    default: ''
   },
   servicePaymentStatus: {
     type: String,
-    default:'Pending'
+    default: 'Pending'
   },
   shippingAmount: {
     type: Number,
-    default:0
+    default: 0
   },
-  status:{
-    type:Boolean,
-    default:true
+  status: {
+    type: Boolean,
+    default: true
   },
-  isDeleted:{
-    type:Boolean,
-    default:false
+  isDeleted: {
+    type: Boolean,
+    default: false
   },
   totalAmount: {
     type: Number,
+    default: 0
     // required: true,
   },
-},{timestamps:true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("claim", claimSchema);

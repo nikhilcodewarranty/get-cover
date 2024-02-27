@@ -194,6 +194,9 @@ exports.addClaim = async (req, res, next) => {
       return;
     }
 
+    let data = req.body;
+
+   let claimResponse = await claimService.createClaim(data)
 
 
   }
