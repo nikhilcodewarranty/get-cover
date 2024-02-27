@@ -372,6 +372,8 @@ exports.createOrder = async (req, res) => {
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
                     );
+                    contractArrrayData = []
+
                 }
             }
             res.send({
@@ -391,17 +393,6 @@ exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
-        //console.log("bodyData=================",data)
-        // for (let i = 0; i < data.productsArray.length; i++) {
-        // if (data.productsArray[i].QuantityPricing) {
-
-        //         let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing[0]);
-        //        // let jsonFile = JSON.parse(data.productsArray[i].orderFile);
-        //         data.productsArray[i].QuantityPricing = jsonArray;
-        //        // data.productsArray[i].file = jsonFile;
-        //     }
-        // }
-
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
@@ -588,7 +579,8 @@ exports.createOrder1 = async (req, res) => {
                 console.log("saving bulk contract ", contractArray)
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("saving bulk contract ", saveContracts)
+                contractArray =[]
+                // console.log("saving bulk contract ", saveContracts)
 
             })
 
@@ -2701,7 +2693,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 await contractService.createBulkContracts(contractArray);
-
+                contractArray = []
             })
 
             res.send({
@@ -2819,6 +2811,8 @@ exports.markAsPaid = async (req, res) => {
             });
 
             let saveData = await contractService.createBulkContracts(contracts)
+            contracts = []
+
         })
 
         res.send({
