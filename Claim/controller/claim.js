@@ -129,7 +129,25 @@ exports.searchClaim = async (req, res, next) => {
         },
       },
       {
-        $count: "totalDocuments" // Count the grouped documents
+        $facet: {
+          // paginatedResult: [
+          //   { $match: query },
+          //   { $skip: skip },
+          //   { $limit: limit }
+          // ],
+          totalCount: [
+            { $match: {
+              $and: [
+                { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+                { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+                { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
+              ]
+            } },
+            { $count: 'totalCount' }
+          ]
+        }
       },
       { $skip: skipLimit },
       { $limit: pageLimit },
@@ -283,7 +301,7 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let checkServicer = await servicerService.getServiceProviderById({ _id: data.servicerId })
+    let checkServicer = await servicerService.getContractById({ _id: data.servicerId })
 
     if (!checkServicer) {
       res.send({
@@ -292,79 +310,13 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let count = await claimService.getClaimCount();
-    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-    data.unique_key_search = "CC" + "2024" + data.unique_key_number
-    data.unique_key = "CC-" + "2024-" + data.unique_key_number
-    let claimResponse = await claimService.createClaim(data);
+    return;
 
-    if (!claimResponse) {
-      res.send({
-        code: constant.errorCode,
-        message: "Some error while create!"
-      })
-      return
-    }
-    res.send({
-      code: constant.successCode,
-      message: 'Success!',
-      result: claimResponse
-    })
+    let claimResponse = await claimService.createClaim(data)
 
 
   }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-exports.getAllClaims = async (req, res, next) => {
-  try {
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      })
-      return;
-    }
-    let data = req.body
-    let query = { isDeleted: false };
-    let lookupQuery = [
-      // {
-      //   $match: { isDeleted: 0 }
-      // },
-      {
-        $match: query
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts"
-        }
-      },
-    ]
-
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let limitData = Number(pageLimit)
-
-    let allClaims = await claimService.getAllClaims(lookupQuery,skipLimit, limitData);
-    res.send({
-      code: constant.successCode,
-      result: allClaims
-    })
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
+  catch (err) { }
 }
 
 exports.getContractById = async (req, res) => {
