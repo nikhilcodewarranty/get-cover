@@ -9,6 +9,7 @@ const dbUrl = process.env.DB_URL + 'User'
 const connection = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    // allowDiskUse:true 
 }
 
 mongoose

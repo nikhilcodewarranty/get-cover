@@ -34,32 +34,48 @@ const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const mongoose = require('mongoose')
 const fs = require('fs');
 
 var app = express();
 
 
 
+// mongoose.Promise = global.Promise;
+
+// // Connecting to the database
+// mongoose.connect("mongodb://localhost:27017/getCover", {
+//   useNewUrlParser: true,
+//   // useUnifiedTopology: true,
+//   // useFindAndModify: false
+// }).then(() => {
+//   console.log("Successfully connected to the database");
+// }).catch(err => {
+//   console.log('Could not connect to the database. Exiting now...', err);
+//   process.exit();
+// });
+
+
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
-const template = fs.readFileSync('./template/template.html','utf-8')
+const template = fs.readFileSync('./template/template.html', 'utf-8')
 const options = {
-    format:'A4',
-    orientation:'portrait',
-    border:'10mm',
-    childProcessOptions: {
-        env: {
-          OPENSSL_CONF: '/dev/null',
-        },
-    }
+  format: 'A4',
+  orientation: 'portrait',
+  border: '10mm',
+  childProcessOptions: {
+    env: {
+      OPENSSL_CONF: '/dev/null',
+    },
+  }
 }
 const document = {
-    html:template,
-    data:{
-        message:'My First PDF'
-    },
-    path:"./pdfs/teste33r.pdf"
+  html: template,
+  data: {
+    message: 'My First PDF'
+  },
+  path: "./pdfs/teste33r.pdf"
 }
 
 // pdf.create(document,options).then((res)=>{
@@ -71,15 +87,15 @@ const document = {
 // app.use('/dealer', createProxyMiddleware({ target: 'http://localhost:8082/', changeOrigin: true, pathRewrite: { '^/dealer': '/' }}));
 // app.use('/price', createProxyMiddleware({ target: 'http://localhost:8083/', changeOrigin: true, pathRewrite: { '^/price': '/' }}));
 // app.use('/servicer', createProxyMiddleware({ target: 'http://localhost:8084/', changeOrigin: true, pathRewrite: { '^/servicer': '/' }}));
-app.use('/customer', createProxyMiddleware({ target: 'http://localhost:8085/', changeOrigin: true, pathRewrite: { '^/customer': '/' }}));
+app.use('/customer', createProxyMiddleware({ target: 'http://localhost:8085/', changeOrigin: true, pathRewrite: { '^/customer': '/' } }));
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors())
-const httpServer = http.createServer(app) 
-  
+const httpServer = http.createServer(app)
+
 // view engine setup  
 app.use(logger('dev'));
 app.use(express.json());
@@ -96,6 +112,14 @@ app.get('/download/:filename', (req, res) => {
   res.setHeader('Content-Disposition', 'attachment; filename=' + process.env.DUMMY_CSV_FILE);
   res.download(filePath, process.env.DUMMY_CSV_FILE);
 });
+
+
+// var cron = require('node-cron');
+
+// cron.schedule(' * * * * * *', () => {
+//   console.log('running a task every minute');
+// });
+
 
 //common routing for server
 app.use("/api-v1/user", userRoutes);

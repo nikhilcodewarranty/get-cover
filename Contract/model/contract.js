@@ -44,29 +44,26 @@ const contractSchema = new mongoose.Schema({
   claimStatus: {
     type: String,
     default: ''
-    // required: true,
   },
   claimAmount: {
     type: Number,
-    // required: true,
     default: 0
   },
   eligibilty: {
-    type: String,
-    // required: true,
-    default: ''
+    type: Boolean,
+    default: false
   },
   unique_key: {
     type: String,
-    index:true
+    index: true
   },
-  unique_key_number: { 
+  unique_key_number: {
     type: Number,
-    index:true
+    index: true
   },
   unique_key_search: {
     type: String,
-    index:true
+    index: true
   },
   status: {
     type: String,
@@ -79,7 +76,7 @@ const contractSchema = new mongoose.Schema({
   },
   deductible: {
     type: Number,
-    default:0
+    default: 0
     // required: true,
   },
 }, { timestamps: true });
