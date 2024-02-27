@@ -213,6 +213,10 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
+    let count = await claimService.getClaimCount();
+    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+    data.unique_key_search = "CC" + "2024" + data.unique_key_number
+    data.unique_key = "CC-" + "2024-" + data.unique_key_number
     let claimResponse = await claimService.createClaim(data);
 
     if (!claimResponse) {
@@ -264,6 +268,8 @@ exports.getAllClaims = async (req, res, next) => {
         }
       },
     ]
+
+
 
     let allClaims = await claimService.getAllClaims(lookupQuery);
     res.send({

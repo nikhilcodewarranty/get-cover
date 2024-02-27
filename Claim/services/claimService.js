@@ -9,7 +9,15 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
-
+  static async getClaimCount() {
+    try {
+      const count = await claim.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
+      return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
+    } catch (error) {
+      console.log(`Could not fetch order count ${error}`);
+    }
+  }
+  
   static async createClaim(data) {
     try {
       const response = await new claim(data).save();
