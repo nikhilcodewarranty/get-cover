@@ -7,6 +7,7 @@ const claimSchema = new mongoose.Schema({
   },
   claimStatus: {
     type: String,
+    default:''
     // required: true,
   },
   action: {
@@ -57,15 +58,14 @@ const claimSchema = new mongoose.Schema({
   },
   claimType: {
     type: String,
-    // required: true,
   },
   servicePaymentStatus: {
     type: String,
-    // required: true,
+    default:'Pending'
   },
   shippingAmount: {
     type: Number,
-    // required: true,
+    default:0
   },
   status:{
     type:Boolean,

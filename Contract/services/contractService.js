@@ -117,4 +117,13 @@ module.exports = class contractService {
       console.log(`Could  not delete contract ${error}`);
     }
   }
+  static async allUpdate(query){
+    try {
+      const getResponse = await contract.bulkWrite(query);
+      return getResponse;
+    } catch (error) {
+      console.log(`Could  not delete contract ${error}`);
+    }
+  }
+  
 };

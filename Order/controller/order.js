@@ -2333,6 +2333,47 @@ exports.getSingleOrder = async (req, res) => {
         let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
         let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
         let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
+
+
+        // ------------------------------------Get Dealer Servicer -----------------------------
+        let getServicersIds = await dealerRelationService.getDealerRelations({
+            dealerId: checkOrder.dealerId,
+        });
+        let ids = getServicersIds.map((item) => item.servicerId);
+        servicer = await servicerService.getAllServiceProvider(
+            { _id: { $in: ids }, status: true },
+            {}
+        );
+        if (checkOrder.resellerId != null) {
+            var checkReseller = await resellerService.getReseller({
+                _id: checkOrder.resellerId,
+            });
+        }
+        if (reseller && reseller.isServicer) {
+            servicer.unshift(reseller);
+        }
+
+        if (dealer && dealer.isServicer) {
+            servicer.unshift(dealer);
+        }
+        const servicerIds = servicer.map((obj) => obj._id);
+        const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
+
+        let servicerUser = await userService.getMembers(servicerQuery, {});
+        const result_Array = servicer.map((item1) => {
+            const matchingItem = servicerUser.find(
+                (item2) => item2.accountId.toString() === item1._id.toString()
+            );
+
+            if (matchingItem) {
+                return {
+                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    servicerData: matchingItem.toObject(),
+                };
+            } else {
+                return servicer.toObject();
+            }
+        });
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
@@ -2340,14 +2381,15 @@ exports.getSingleOrder = async (req, res) => {
             username: singleDealerUser ? singleDealerUser : {},
             resellerUsername: singleResellerUser ? singleResellerUser : {},
             customerUserData: singleCustomerUser ? singleCustomerUser : {},
-            servicerData: checkServicer ? checkServicer : {}
+            servicerData: checkServicer ? checkServicer : {},
         };
 
         res.send({
             code: constant.successCode,
             message: "Success!",
             result: checkOrder,
-            orderUserData: userData
+            orderUserData: userData,
+            servicers: result_Array
         });
     } catch (err) {
         res.send({
@@ -3546,5 +3588,90 @@ exports.updateServicerByOrder = async (req, res) => {
             message: err.message
         })
         return;
+    }
+}
+
+exports.cronJobStatus = async (req, res) => {
+    try {
+        let query = { status: { $ne: "Archieved" } };
+        let data = req.body;
+        let currentDate = new Date();
+
+        let lookupQuery = [
+            {
+                $match: query // Your match condition here
+            },
+            {
+                $addFields: {
+                    productsArray: {
+                        $map: {
+                            input: "$productsArray", // Input array
+                            as: "product",
+                            in: {
+                                $mergeObjects: [
+                                    "$$product",
+                                    {
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
+                                        WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
+                                        ActiveCondition: {
+                                            $and: [
+                                                { $lte: ["$$product.coverageStartDate", currentDate] }, // Current date is greater than or equal to coverageStartDate
+                                                { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $sort: { unique_key: -1 } // Sorting if required
+            },
+            {
+                $project: {
+                    productsArray: 1,
+                    _id: 0 // Exclude the _id field if necessary
+                }
+            }
+        ];
+        let ordersResult = await orderService.getAllOrders1(lookupQuery);
+        bulk = []
+        for (let i = 0; i < ordersResult.length; i++) {
+            for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
+                let status = ''
+                let product = ordersResult[i].productsArray[j];
+                let orderProductId = product._id
+                if (product.ExpiredCondition) {
+                    status = 'Expired'
+                }
+                if (product.WaitingCondition) {
+                    status = 'Waiting'
+                }
+                if (product.ActiveCondition) {
+                    status = 'Active'
+                }
+                let updateDoc = {
+                    'updateMany': {
+                        'filter': { '_id': orderProductId },
+                        update: { $set: { status: status } },
+                        'upsert': false
+                    }
+                }
+                bulk.push(updateDoc)
+            }
+        }
+        const result = await contractService.allUpdate(bulk);
+
+        res.send({
+            code: constant.successCode
+        })
+
+    }
+    catch (err) {
+        res.send({
+            message: err.message
+        })
     }
 }
