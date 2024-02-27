@@ -183,6 +183,7 @@ exports.createOrder = async (req, res) => {
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (data.productsArray.length > 0) {
                 const uploadedFiles = data.productsArray.map((fileData) => {
+                    
                     let checkFile = JSON.parse(fileData.orderFile)
                     const fileName = fileData ? checkFile.filename : "";
                     const name = fileData ? checkFile.name : "";

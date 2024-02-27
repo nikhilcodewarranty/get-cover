@@ -10,7 +10,7 @@ const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
-
+const priceBookService = require("../../PriceBook/services/priceBookService");
 
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
@@ -63,7 +63,7 @@ exports.getAllClaims = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
 
-    let allClaims = await claimService.getAllClaims(lookupQuery,skipLimit, limitData);
+    let allClaims = await claimService.getAllClaims(lookupQuery, skipLimit, limitData);
     res.send({
       code: constant.successCode,
       result: allClaims
@@ -259,7 +259,7 @@ exports.searchClaim = async (req, res, next) => {
       result: getContracts,
       // count: getContracts2.length
     })
-  } catch (err) { 
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -354,7 +354,7 @@ exports.getContractById = async (req, res) => {
       },
       {
         $lookup: {
-          from: "orders", 
+          from: "orders",
           localField: "orderId",
           foreignField: "_id",
           as: "order",
@@ -401,11 +401,13 @@ exports.getContractById = async (req, res) => {
     let orderId = getData[0].orderProductId
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
-     getData[0].order[i].productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-    
+      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
+      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId)})
+        getData[0].order[i].productsArray = productsArray
+
     }
 
-   // console.log(getData);
+    // console.log(getData);
 
     if (!getData) {
       res.send({
