@@ -171,9 +171,25 @@ exports.searchClaim = async (req, res, next) => {
           ]
         },
       },
-      
-      { $skip: skipLimit },
-      { $limit: pageLimit },
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            }
+          ]
+        }
+      }, 
+      // { $skip: skipLimit },
+      // { $limit: pageLimit },
     ]
 
     let query2 = [
