@@ -18,6 +18,7 @@ swaggerDocumentDealer = require('./dealer.json');
 const user = require('./User/userServer')
 const service = require('./Provider/serviceServer')
 const customer = require('./Customer/customerServer')
+const claimServer = require('./Claim/claimServer')
 const dealer = require('./Dealer/dealerServer')
 const contract = require('./Contract/contractServer')
 const order = require('./Order/orderServer')

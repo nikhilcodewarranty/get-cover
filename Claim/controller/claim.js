@@ -204,7 +204,7 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let checkServicer = await servicerService.getContractById({ _id: data.servicerId })
+    let checkServicer = await servicerService.getServiceProviderById({ _id: data.servicerId })
 
     if (!checkServicer) {
       res.send({
@@ -213,11 +213,27 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    return;
+    let claimResponse = await claimService.createClaim(data);
 
-    let claimResponse = await claimService.createClaim(data)
+    if (!claimResponse) {
+      res.send({
+        code: constant.errorCode,
+        message: "Some error while create!"
+      })
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result: claimResponse
+    })
 
 
   }
-  catch (err) { }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
 }

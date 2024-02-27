@@ -63,6 +63,11 @@ const claimSchema = new mongoose.Schema({
     default: Date.now()
     // required: true,
   },
+  lossDate: {
+    type: Date,
+    default: Date.now()
+    // required: true,
+  },
   claimType: {
     type: String,
     default: ''
