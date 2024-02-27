@@ -15,7 +15,7 @@ router.post('/generatePDF/:orderId', [verifyToken], orderController.generatePDF)
 //router.post('/multipleFileValidation', [verifyToken], orderController.multipleFileValidation)
 
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
- 
+
 router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
 //router.post('/getOrder', [verifyToken], orderController.getOrder)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
@@ -26,10 +26,10 @@ router.post('/getOrderContract/:orderId', [verifyToken], orderController.getOrde
 router.post('/getOrderPdf/:orderId', [verifyToken], orderController.getOrderPdf)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
-router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)  
+router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)
 router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.getServicerByOrderId)
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder)
-
+router.post('/cronJobStatus', [verifyToken], orderController.cronJobStatus)
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)
