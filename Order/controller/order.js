@@ -330,6 +330,9 @@ exports.createOrder = async (req, res) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                            let claimStatus = new Date(products.coverageStartDate) > new Date() ? "Active" : "Waiting"
+                            claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                            let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
                                 orderId: savedResponse._id,
                                 orderProductId: matchedObject._id,
@@ -337,6 +340,8 @@ exports.createOrder = async (req, res) => {
                                 manufacture: data.brand,
                                 model: data.model,
                                 serial: data.serial,
+                                status: claimStatus,
+                                eligibilty: eligibilty,
                                 condition: data.condition,
                                 productValue: data.retailValue,
                                 unique_key: unique_key1,
@@ -2631,12 +2636,17 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
+                    claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                    let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
+                        status: claimStatus,
+                        eligibilty: eligibilty,
                         serial: data.serial,
                         condition: data.condition,
                         productValue: data.retailValue,
@@ -2744,12 +2754,17 @@ exports.markAsPaid = async (req, res) => {
                 let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
+                claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderProductId: orderProductId,
                     productName: priceBook[0].name,
                     manufacture: data.brand,
                     model: data.model,
+                    status: claimStatus,
+                    eligibilty: eligibilty,
                     serial: data.serial,
                     condition: data.condition,
                     productValue: data.retailValue,
@@ -2933,6 +2948,7 @@ exports.getOrderContract = async (req, res) => {
         })
     }
 }
+
 exports.getOrderPdf = async (req, res) => {
     try {
         let data = req.body

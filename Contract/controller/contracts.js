@@ -64,8 +64,8 @@ exports.getAllContracts = async (req, res) => {
       },
       {
         $match: { isDeleted: false },
-
       },
+
       {$sort:{createdAt:-1}}
       // {
       //   $addFields: {
@@ -178,7 +178,7 @@ exports.getContractById = async (req, res) => {
                 as: "servicer",
               }
             },
-            
+
             // { $unwind: "$dealer" },
             // { $unwind: "$reseller" },
             // { $unwind: "$servicer?$servicer:{}" },
@@ -208,18 +208,18 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
-exports.deleteOrdercontractbulk =async(req,res)=>{
-  try{
-    let deleteContract = await contract.deleteMany({orderId:"65d86f0372b2ed718d3271b1"})
+exports.deleteOrdercontractbulk = async (req, res) => {
+  try {
+    let deleteContract = await contract.deleteMany({ orderId: "65d86f0372b2ed718d3271b1" })
     res.send({
-      code:constant.successCode,
-      message:"Success",
-      result:deleteContract
+      code: constant.successCode,
+      message: "Success",
+      result: deleteContract
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
