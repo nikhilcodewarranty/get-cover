@@ -8,3 +8,4 @@ router.post("/createClaim",[verifyToken],claimController.addClaim)
 router.post("/getAllClaims",[verifyToken],claimController.getAllClaims)
 router.get('/getContractById/:contractId',[verifyToken],claimController.getContractById)
 module.exports = router;
+ 

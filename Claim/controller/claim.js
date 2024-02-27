@@ -31,7 +31,51 @@ var uploadP = multer({
   },
 }).single("file");
 
+exports.getAllClaims = async (req, res, next) => {
+  try {
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      })
+      return;
+    }
+    let data = req.body
+    let query = { isDeleted: false };
+    let lookupQuery = [
+      // {
+      //   $match: { isDeleted: 0 }
+      // },
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts"
+        }
+      },
+    ]
 
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+
+    let allClaims = await claimService.getAllClaims(lookupQuery,skipLimit, limitData);
+    res.send({
+      code: constant.successCode,
+      result: allClaims
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 exports.searchClaim = async (req, res, next) => {
   try {
@@ -331,7 +375,7 @@ exports.getContractById = async (req, res) => {
       },
       {
         $lookup: {
-          from: "orders",
+          from: "orders", 
           localField: "orderId",
           foreignField: "_id",
           as: "order",
