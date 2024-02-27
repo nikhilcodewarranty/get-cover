@@ -128,16 +128,95 @@ exports.searchClaim = async (req, res, next) => {
           ]
         },
       },
+      {
+        $count: "totalDocuments" // Count the grouped documents
+      },
       { $skip: skipLimit },
       { $limit: pageLimit },
     ]
 
+    let query2 = [
+      {
+        $match:
+        {
+          $and: [
+            { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+            { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            // { eligibility: true },
+          ]
+        },
+      },
+
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            // {
+            //   $lookup: {
+            //     from: "dealers",
+            //     localField: "dealerId",
+            //     foreignField: "_id",
+            //     as: "dealer",
+            //   }
+            // },
+            // {
+            //   $lookup: {
+            //     from: "resellers",
+            //     localField: "resellerId",
+            //     foreignField: "_id",
+            //     as: "reseller",
+            //   }
+            // },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customers",
+              }
+            },
+            { $unwind: "$customers" },
+            // {
+            //   $lookup: {
+            //     from: "servicers",
+            //     localField: "servicerId",
+            //     foreignField: "_id",
+            //     as: "servicer",
+            //   }
+            // },
+          ]
+
+        }
+      },
+      {
+        $unwind: "$order"
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
+          ]
+        },
+      },
+      {
+        $count: "totalDocuments" // Count the grouped documents
+      }
+    ]
+
     let limitData = Number(pageLimit)
     let getContracts = await contractService.getAllContracts2(query)
+    // let getContracts2 = await contractService.getAllContracts2(query2)
 
     res.send({
       code: constant.successCode,
-      result: getContracts
+      result: getContracts,
+      // count: getContracts2.length
     })
   } catch (err) {
     res.send({
