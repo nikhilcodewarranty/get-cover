@@ -10,6 +10,15 @@ const claimSchema = new mongoose.Schema({
     default: ''
     // required: true,
   },
+  unique_key_number: {
+    type: Number,
+  },
+  unique_key_search: {
+    type: String,
+  },
+  unique_key: {
+    type: String,
+  },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceproviders"
@@ -59,6 +68,11 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   claimDate: {
+    type: Date,
+    default: Date.now()
+    // required: true,
+  },
+  lossDate: {
     type: Date,
     default: Date.now()
     // required: true,

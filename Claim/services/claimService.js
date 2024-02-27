@@ -1,15 +1,23 @@
 const claim = require("../model/claim");
 
 module.exports = class claimService {
-  static async getAllClaims() {
+  static async getAllClaims(query,skipLimit,limitData) {
     try {
-      const allClaims = await claim.find();
+      const allClaims = await claim.aggregate(query).sort({createdAt:-1}).skip(skipLimit).limit(limitData);
       return allClaims;
     } catch (error) { 
       console.log(`Could not fetch claims ${error}`);
     }
   }
-
+  static async getClaimCount() {
+    try {
+      const count = await claim.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
+      return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
+    } catch (error) {
+      console.log(`Could not fetch order count ${error}`);
+    }
+  }
+  
   static async createClaim(data) {
     try {
       const response = await new claim(data).save();

@@ -56,7 +56,7 @@ app.use((req, res, next) => {
   next(createHttpError(404));
 })
 
-const PORT =  8087
+const PORT =  8089
 httpServer.listen(PORT, () => console.log(`Contract server is running on port ${PORT}`))
 
 module.exports = app;
