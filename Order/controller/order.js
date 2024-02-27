@@ -2706,6 +2706,8 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 await contractService.createBulkContracts(contractArray);
+                contractArray=[]
+
 
             })
 
@@ -2824,6 +2826,8 @@ exports.markAsPaid = async (req, res) => {
             });
 
             let saveData = await contractService.createBulkContracts(contracts)
+            contracts=[]
+
         })
 
         res.send({
