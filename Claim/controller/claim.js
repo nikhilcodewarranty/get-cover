@@ -237,3 +237,44 @@ exports.addClaim = async (req, res, next) => {
     })
   }
 }
+
+exports.getAllClaims = async (req, res, next) => {
+  try {
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      })
+      return;
+    }
+    let query = { isDeleted: false };
+    let lookupQuery = [
+      // {
+      //   $match: { isDeleted: 0 }
+      // },
+      {
+        $match: query
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts"
+        }
+      },
+    ]
+
+    let allClaims = await claimService.getAllClaims(lookupQuery);
+    res.send({
+      code: constant.successCode,
+      result: allClaims
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

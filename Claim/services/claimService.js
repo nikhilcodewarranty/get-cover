@@ -1,9 +1,9 @@
 const claim = require("../model/claim");
 
 module.exports = class claimService {
-  static async getAllClaims() {
+  static async getAllClaims(query) {
     try {
-      const allClaims = await claim.find();
+      const allClaims = await claim.aggregate(query);
       return allClaims;
     } catch (error) { 
       console.log(`Could not fetch claims ${error}`);
