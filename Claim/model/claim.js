@@ -2,13 +2,17 @@ const mongoose = require("mongoose");
 const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "contract",
+    ref: "contracts",
     // required: true,
   },
   claimStatus: {
     type: String,
     default: ''
     // required: true,
+  },
+  servicerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "serviceproviders"
   },
   action: {
     type: String,

@@ -6,6 +6,7 @@ const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
+const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
 const constant = require("../../config/constant");
 
@@ -193,10 +194,28 @@ exports.addClaim = async (req, res, next) => {
       });
       return;
     }
-
     let data = req.body;
+    let checkContract = await contractService.getContractById({ _id: data.contractId })
 
-   let claimResponse = await claimService.createClaim(data)
+    if (!checkContract) {
+      res.send({
+        code: constant.errorCode,
+        message: "Contract not found!"
+      })
+      return;
+    }
+    let checkServicer = await servicerService.getContractById({ _id: data.servicerId })
+
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Servicer not found!"
+      })
+      return;
+    }
+    return;
+
+    let claimResponse = await claimService.createClaim(data)
 
 
   }
