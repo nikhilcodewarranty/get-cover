@@ -251,6 +251,7 @@ exports.getAllClaims = async (req, res, next) => {
       })
       return;
     }
+    let data = req.body
     let query = { isDeleted: false };
     let lookupQuery = [
       // {
@@ -269,9 +270,11 @@ exports.getAllClaims = async (req, res, next) => {
       },
     ]
 
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
 
-
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getAllClaims(lookupQuery,skipLimit, limitData);
     res.send({
       code: constant.successCode,
       result: allClaims
