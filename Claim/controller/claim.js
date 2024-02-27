@@ -218,7 +218,7 @@ exports.searchClaim = async (req, res, next) => {
       result: getContracts,
       // count: getContracts2.length
     })
-  } catch (err) {
+  } catch (err) { 
     res.send({
       code: constant.errorCode,
       message: err.message
