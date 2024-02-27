@@ -66,7 +66,7 @@ exports.getAllContracts = async (req, res) => {
         $match: { isDeleted: false },
       },
 
-      {$sort:{createdAt:-1}}
+      { $sort: { createdAt: -1 } }
       // {
       //   $addFields: {
       //     contracts: {
@@ -137,7 +137,7 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     let query = [
       {
-        $match: { _id: new mongoose.Types.ObjectId(req.params.customerId) },
+        $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
       },
       {
         $lookup: {
@@ -179,16 +179,22 @@ exports.getContractById = async (req, res) => {
               }
             },
 
-            // { $unwind: "$dealer" },
-            // { $unwind: "$reseller" },
-            // { $unwind: "$servicer?$servicer:{}" },
-
           ],
 
         }
       },
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    // let orderId = getData[0].orderProductId
+    // let order = getData[0].order
+    // for (let i = 0; i < order.length; i++) {
+    //   console.log(orderId)
+    //  const productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
+    //  console.log(productsArray)
+    // }
+
+   // console.log(getData);
+
     if (!getData) {
       res.send({
         code: constant.errorCode,
