@@ -186,7 +186,6 @@ exports.uploadReceipt = async (req, res, next) => {
 
 exports.addClaim = async (req, res, next) => {
   try {
-    let data = req.body
     if (req.role != 'Super Admin') {
       res.send({
         code: constant.errorCode,
@@ -195,7 +194,9 @@ exports.addClaim = async (req, res, next) => {
       return;
     }
 
-    let
+    let data = req.body;
+
+   let claimResponse = await claimService.createClaim(data)
 
 
   }
