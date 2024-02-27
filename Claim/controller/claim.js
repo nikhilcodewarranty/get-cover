@@ -9,7 +9,7 @@ const contractService = require("../../Contract/services/contractService");
 const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
 const constant = require("../../config/constant");
-
+const { default: mongoose } = require("mongoose");
 
 
 var StorageP = multer.diskStorage({
@@ -360,6 +360,91 @@ exports.getAllClaims = async (req, res, next) => {
     })
   }
   catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getContractById = async (req, res) => {
+  try {
+    let data = req.body
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let query = [
+      {
+        $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealerId",
+                foreignField: "_id",
+                as: "dealer",
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "resellerId",
+                foreignField: "_id",
+                as: "reseller",
+              }
+            },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+              }
+            },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
+
+          ],
+
+        }
+      },
+    ]
+    let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    let orderId = getData[0].orderProductId
+    let order = getData[0].order
+    for (let i = 0; i < order.length; i++) {
+     getData[0].order[i].productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
+    
+    }
+
+   // console.log(getData);
+
+    if (!getData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to get contract"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getData[0]
+    })
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
