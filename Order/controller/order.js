@@ -372,6 +372,8 @@ exports.createOrder = async (req, res) => {
                     let bulkContracts = await contractService.createBulkContracts(
                         contractArrrayData
                     );
+                    contractArrrayData = []
+
                 }
             }
             res.send({
@@ -391,17 +393,6 @@ exports.createOrder1 = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
-        //console.log("bodyData=================",data)
-        // for (let i = 0; i < data.productsArray.length; i++) {
-        // if (data.productsArray[i].QuantityPricing) {
-
-        //         let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing[0]);
-        //        // let jsonFile = JSON.parse(data.productsArray[i].orderFile);
-        //         data.productsArray[i].QuantityPricing = jsonArray;
-        //        // data.productsArray[i].file = jsonFile;
-        //     }
-        // }
-
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
@@ -593,7 +584,8 @@ exports.createOrder1 = async (req, res) => {
                 console.log("saving bulk contract ", contractArray)
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("saving bulk contract ", saveContracts)
+                contractArray = []
+                // console.log("saving bulk contract ", saveContracts)
 
             })
 
@@ -2678,8 +2670,10 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-
+                console.log("total data in file ---------------", totalDataComing.length)
                 totalDataComing.forEach((data, index) => {
+                    console.log("total data index ---------------", index)
+
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2701,12 +2695,15 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+                    console.log("push data into array ---------------", contractObject)
+
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
+                console.log("push data into array ---------------", contractArray.length)
 
                 await contractService.createBulkContracts(contractArray);
-
+                contractArray = []
             })
 
             res.send({
@@ -2824,6 +2821,8 @@ exports.markAsPaid = async (req, res) => {
             });
 
             let saveData = await contractService.createBulkContracts(contracts)
+            contracts = []
+
         })
 
         res.send({
