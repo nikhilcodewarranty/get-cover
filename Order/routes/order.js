@@ -27,7 +27,9 @@ router.post('/getOrderPdf/:orderId', [verifyToken], orderController.getOrderPdf)
 // router.get('/checkOrderToProcessed/:orderId',[verifyToken],orderController.checkOrderToProcessed)
 
 router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)  
-router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.getServicerByOrderId)  
+router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.getServicerByOrderId)
+router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder)
+
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)

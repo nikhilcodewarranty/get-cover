@@ -3051,7 +3051,7 @@ const renderContractsChunked = async (
 ) => {
     try {
         console.log('Rendering contracts chunk...'); // Ensure function is being called
-        console.log("contracts-------------------",contracts)
+        console.log("contracts-------------------", contracts)
         let htmlContent = `
             <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
                 <thead style="background-color: #f4f4f4; text-align: left;">
@@ -3104,7 +3104,7 @@ const renderContractsChunked = async (
 
 
 exports.generatePDF = async (req, res) => {
-    try { 
+    try {
         let query = [
             {
                 $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
@@ -3448,49 +3448,49 @@ exports.generatePDF = async (req, res) => {
              </tbody>
            </table>`;
 
-           for (let i = 0; i < orderWithContracts.length; i++) {
-            const order = orderWithContracts[i];
-            for (let j = 0; j < order.productsArray.length; j++) {
-                const product = order.productsArray[j];
-                const contracts = product.contract;
-                const initialPageSize = 6;
-                const subsequentPageSize = 20;
-        
-                // Display 6 contracts on the first page
-                let startIndex = 0;
-                let endIndex = Math.min(initialPageSize, contracts?.length);
-                let serialNo = 0;
-        
-                // Start of the first page
-              //  console.log("here is rendering first------------------");
-                htmlContent += await renderContractsChunked(
-                    contracts,
-                    initialPageSize,
-                    startIndex,
-                    endIndex,
-                    product
-                );
-        
-                // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
-                startIndex = endIndex;
-                while (startIndex < contracts?.length) {
-                    endIndex = startIndex + subsequentPageSize;
-                    endIndex = Math.min(endIndex, contracts?.length);
-        
-                    // Await the result before concatenating
-                    const chunkedHtml = await renderContractsChunked(
+            for (let i = 0; i < orderWithContracts.length; i++) {
+                const order = orderWithContracts[i];
+                for (let j = 0; j < order.productsArray.length; j++) {
+                    const product = order.productsArray[j];
+                    const contracts = product.contract;
+                    const initialPageSize = 6;
+                    const subsequentPageSize = 20;
+
+                    // Display 6 contracts on the first page
+                    let startIndex = 0;
+                    let endIndex = Math.min(initialPageSize, contracts?.length);
+                    let serialNo = 0;
+
+                    // Start of the first page
+                    //  console.log("here is rendering first------------------");
+                    htmlContent += await renderContractsChunked(
                         contracts,
-                        subsequentPageSize,
+                        initialPageSize,
                         startIndex,
                         endIndex,
                         product
                     );
-                    htmlContent += chunkedHtml;
-        
+
+                    // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
                     startIndex = endIndex;
+                    while (startIndex < contracts?.length) {
+                        endIndex = startIndex + subsequentPageSize;
+                        endIndex = Math.min(endIndex, contracts?.length);
+
+                        // Await the result before concatenating
+                        const chunkedHtml = await renderContractsChunked(
+                            contracts,
+                            subsequentPageSize,
+                            startIndex,
+                            endIndex,
+                            product
+                        );
+                        htmlContent += chunkedHtml;
+
+                        startIndex = endIndex;
+                    }
                 }
             }
-        }
             //  return htmlContent;
             res.send({
                 code: constant.successCode,
@@ -3506,5 +3506,45 @@ exports.generatePDF = async (req, res) => {
             line: err.stack,
             message: err.message
         })
+    }
+}
+
+exports.updateServicerByOrder = async (req, res) => {
+    try {
+        if (req.role != 'Super Admin') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only super allow to do this action!'
+            })
+            return;
+        }
+
+        let query = { _id: req.params.orderId }
+        const projection = { isDeleted: 0 }
+        let checkOrder = await orderService.getOrder(query, projection)
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Order not found!'
+            });
+            return;
+        }
+        let creteria = { _id: req.params.orderId }
+        let update = await orderService.updateOrder(creteria, { servicerId: req.body.servicerId }, { new: true })
+        if (update) {
+            res.send({
+                code: constant.successCode,
+                message: 'Updated Successfully!'
+            });
+            return
+        }
+
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+        return;
     }
 }
