@@ -172,27 +172,6 @@ exports.searchClaim = async (req, res, next) => {
           ]
         },
       },
-      {
-        $facet: {
-          // paginatedResult: [
-          //   { $match: query },
-          //   { $skip: skip },
-          //   { $limit: limit }
-          // ],
-          totalCount: [
-            { $match: {
-              $and: [
-                { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-                { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-                { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
-              ]
-            } },
-            { $count: 'totalCount' }
-          ]
-        }
-      },
       { $skip: skipLimit },
       { $limit: pageLimit },
     ]
