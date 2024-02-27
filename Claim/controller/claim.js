@@ -65,7 +65,7 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
             { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { eligibility: true },
+            // { eligibility: true },
           ]
         },
       },
@@ -186,6 +186,7 @@ exports.uploadReceipt = async (req, res, next) => {
 
 exports.addClaim = async (req, res, next) => {
   try {
+    let data = req.body
     if (req.role != 'Super Admin') {
       res.send({
         code: constant.errorCode,
@@ -194,6 +195,7 @@ exports.addClaim = async (req, res, next) => {
       return;
     }
 
+    let
 
 
   }
