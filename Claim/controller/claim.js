@@ -188,8 +188,6 @@ exports.searchClaim = async (req, res, next) => {
           ]
         }
       },
-      // { $skip: skipLimit },
-      // { $limit: pageLimit },
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
