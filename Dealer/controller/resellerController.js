@@ -449,7 +449,11 @@ exports.editResellers = async (req, rs) => {
                 return;
             };
         }
+        data.name = data.accountName
         let updateReseller = await resellerService.updateReseller(criteria, data)
+        if (checkReseller.isServicer) {
+            const updateServicerMeta = await servicerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
+        }
         if (!updateReseller) {
             res.send({
                 code: constant.errorCode,
@@ -463,7 +467,8 @@ exports.editResellers = async (req, rs) => {
             result: updateReseller
         })
 
-    } catch (err) {
+    }
+    catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -1054,7 +1059,7 @@ exports.getResellerContract = async (req, res) => {
 
 exports.changeResellerStatus = async (req, res) => {
     try {
-       
+
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
 
         if (!singleReseller) {
