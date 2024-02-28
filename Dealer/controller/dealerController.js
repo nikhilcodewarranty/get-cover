@@ -1845,13 +1845,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
           if (totalDataComing[i].exit) {
             continue;
           }
-          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] >= 0) {
+          if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase().replace(/\s+/g, ' ').trim()] >= 0) {
             totalDataComing[i].status = "not unique";
             totalDataComing[i].exit = true;
-            const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()];
+            const index = repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase().replace(/\s+/g, ' ').trim()];
             totalDataComing[index].duplicates.push(i);
           } else {
-            repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase()] = i;
+            repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase().replace(/\s+/g, ' ').trim()] = i;
             totalDataComing[i].status = null;
           }
         }
