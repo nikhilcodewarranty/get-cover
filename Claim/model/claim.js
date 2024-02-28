@@ -8,7 +8,6 @@ const claimSchema = new mongoose.Schema({
   claimStatus: {
     type: String,
     default: ''
-    // required: true,
   },
   unique_key_number: {
     type: Number,
@@ -37,25 +36,8 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   receiptImage: {
-    type: [{
-      fileName: {
-        type: String,
-        default: ''
-      },
-      name: {
-        type: String,
-        default: ''
-      },
-      size: {
-        type: String,
-        default: ''
-      },
-    }],
-    default: [{
-      fileName: '',
-      originalName: '',
-      size: ''
-    }]
+    type: [],
+    default: []
   },
   shippingCarrier: {
     type: String,

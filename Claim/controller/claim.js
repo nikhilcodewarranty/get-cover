@@ -29,7 +29,7 @@ var uploadP = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).single("file");
+}).array("file", 100);
 
 exports.getAllClaims = async (req, res, next) => {
   try {
@@ -218,19 +218,19 @@ exports.uploadReceipt = async (req, res, next) => {
         });
         return;
       }
-      let file = req.file;
-      let filename = file.filename;
-      let originalName = file.originalname;
-      let size = file.size;
+      let file = req.files;
+
+      console.log('file++++++++++++++++++++++++=', file)
+
+      // let filename = file.filename;
+      // let originalName = file.originalname;
+      // let size = file.size;
+      // let files = []
+
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        result: {
-          fileName: filename,
-          name: originalName,
-          size: size,
-        }
-
+        file
       })
     })
   }
