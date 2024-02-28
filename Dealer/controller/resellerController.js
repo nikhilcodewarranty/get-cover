@@ -425,7 +425,7 @@ exports.getResellerPriceBook = async (req, res) => {
 
 }
 
-exports.editResellers = async (req, rs) => {
+exports.editResellers = async (req, res) => {
     try {
         let data = req.body
         let criteria = { _id: req.params.resellerId }
