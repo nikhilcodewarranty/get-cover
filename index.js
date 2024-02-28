@@ -35,6 +35,7 @@ const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const axios = require('axios');
 const mongoose = require('mongoose')
 const fs = require('fs');
 
@@ -122,17 +123,18 @@ var cronOptions = {
   'url': 'http://15.207.221.207:3002/api-v1/order/cronJobStatus',
 };
 
-var job = new cron('* * * * * *', function() {    //* * * * * *
-  request(cronOptions, function (error, response) {
-    });
-}, null, true, 'America/Los_Angeles');
-job.start();
+// var job =  cron.schedule('* * * * * *', function() {    //* * * * * *
+//   axios
+//   .post("http://15.207.221.207:3002/api-v1/order/cronJobStatus", {})
+// }, null, true, 'America/Los_Angeles');
 
 
-// cron.schedule(' * * * * * *', () => {
 
-//   console.log('running a task every minute');
-// });
+cron.schedule(' 5 0 * * *', () => {
+  console.log('running a task every minute before');
+  axios.get("http://15.207.221.207:3002/api-v1/order/cronJobStatus")   //live
+  // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
+});
 
 
 //common routing for server

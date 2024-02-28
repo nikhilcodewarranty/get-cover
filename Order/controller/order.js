@@ -3690,7 +3690,8 @@ exports.cronJobStatus = async (req, res) => {
         const result = await contractService.allUpdate(bulk);
 
         res.send({
-            code: constant.successCode
+            code: constant.successCode,
+            result
         })
 
     }
