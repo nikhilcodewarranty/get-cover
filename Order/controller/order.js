@@ -562,9 +562,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("converted to json from csv")
                 totalDataComing.forEach((data, index) => {
-                    console.log("cmaping on csv data")
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -586,13 +584,9 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log("makin contract object++++++++++++++++++++++++++++++",contractObject)
-
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-                console.log("saving bulk contract ", contractArray)
-
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 contractArray=[]
 

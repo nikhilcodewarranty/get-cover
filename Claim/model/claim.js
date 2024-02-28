@@ -6,8 +6,9 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   claimStatus: {
-    type: String,
-    default: ''
+    type: 'String',
+    enum: ['Open', 'Completed', 'Rejected'],
+    default: 'Open'
     // required: true,
   },
   unique_key_number: {

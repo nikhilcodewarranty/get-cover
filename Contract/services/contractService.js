@@ -122,7 +122,7 @@ module.exports = class contractService {
       const getResponse = await contract.bulkWrite(query);
       return getResponse;
     } catch (error) {
-      console.log(`Could  not delete contract ${error}`);
+      console.log(`Could  not update contract ${error}`);
     }
   }
   
