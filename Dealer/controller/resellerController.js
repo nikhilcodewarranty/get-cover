@@ -101,7 +101,7 @@ exports.createReseller = async (req, res) => {
             const CountServicer = await providerService.getServicerCount();
 
             let servicerObject = {
-                name: data.name,
+                name: data.accountName,
                 street: data.street,
                 city: data.city,
                 zip: data.zip,
