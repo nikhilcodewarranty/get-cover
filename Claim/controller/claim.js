@@ -179,10 +179,10 @@ exports.searchClaim = async (req, res, next) => {
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
-    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total  : 0
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
-      result: getContracts[0]?.data?getContracts[0]?.data:[],
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
       totalCount
       // count: getContracts2.length
     })
@@ -347,6 +347,39 @@ exports.getContractById = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getData[0]
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.editClaim = async (req, res) => {
+  try {
+    let data = req.body
+    let criteria = { _id: req.params.claimId }
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+    let option = {new:true}
+    let updateData = await claimService.updateClaim(criteria,data,option)
+    if(!updateData){
+      res.send({
+        code:constant.errorCode,
+        message:"Failed to process your request."
+      })
+      return;
+    }
+    res.send({
+      code:constant.successCode,
+      message:"Updated successfully"
     })
   } catch (err) {
     res.send({

@@ -29,7 +29,7 @@ module.exports = class claimService {
 
   static async getClaimById(claimId) {
     try {
-      const singleClaimResponse = await claim.findById({ _id: claimId });
+      const singleClaimResponse = await claim.findOne(claimId);
       return singleClaimResponse;
     } catch (error) {
       console.log(`claim not found. ${error}`);
