@@ -115,9 +115,22 @@ app.get('/download/:filename', (req, res) => {
 });
 
 
-// var cron = require('node-cron');
+var cron = require('node-cron');
+
+var cronOptions = {
+  'method': 'POST',
+  'url': 'http://15.207.221.207:3002/api-v1/order/cronJobStatus',
+};
+
+var job = new cron('* * * * * *', function() {    //* * * * * *
+  request(cronOptions, function (error, response) {
+    });
+}, null, true, 'America/Los_Angeles');
+job.start();
+
 
 // cron.schedule(' * * * * * *', () => {
+
 //   console.log('running a task every minute');
 // });
 
