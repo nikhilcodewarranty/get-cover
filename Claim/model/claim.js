@@ -38,25 +38,8 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   receiptImage: {
-    type: [{
-      fileName: {
-        type: String,
-        default: ''
-      },
-      name: {
-        type: String,
-        default: ''
-      },
-      size: {
-        type: String,
-        default: ''
-      },
-    }],
-    default: [{
-      fileName: '',
-      originalName: '',
-      size: ''
-    }]
+    type: [],
+    default: []
   },
   shippingCarrier: {
     type: String,
