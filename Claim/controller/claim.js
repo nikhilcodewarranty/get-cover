@@ -192,10 +192,11 @@ exports.searchClaim = async (req, res, next) => {
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
-
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total  : 0
     res.send({
       code: constant.successCode,
-      result: getContracts,
+      result: getContracts[0]?.data?getContracts[0]?.data:[],
+      totalCount
       // count: getContracts2.length
     })
   } catch (err) {
