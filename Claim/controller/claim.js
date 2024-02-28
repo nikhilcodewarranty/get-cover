@@ -88,19 +88,6 @@ exports.searchClaim = async (req, res, next) => {
       return;
     }
     let lookupCondition = [{ isDeleted: false }]
-    // if (data.serial) {
-    //   lookupCondition.push({ "serial": data.serial },)
-    // }
-    // if (data.contractId) {
-    //   lookupCondition.push({ "unique_key": data.contractId })
-    // }
-    // if (data.venderOrder) {
-    //   lookupCondition.push({ "order.venderOrder": data.venderOrder })
-    // }
-    // if (data.orderId) {
-    //   lookupCondition.push({ "order.unique_key": data.orderId },)
-    // }
-
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let query = [
