@@ -260,13 +260,23 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    return;
-
+    data.receiptImage = data.file
     let claimResponse = await claimService.createClaim(data)
+
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result: claimResponse
+    })
 
 
   }
-  catch (err) { }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message,
+    })
+  }
 }
 
 exports.getContractById = async (req, res) => {
