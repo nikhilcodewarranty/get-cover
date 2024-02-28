@@ -1922,9 +1922,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-
-              console.log('skdjfklsfjlskjflsfjslkdjf=============')
-
               totalDataComing[i].status = "Dealer catalog created successully"
               totalDataComing[i].duplicates.forEach((index, i) => {
                 totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
@@ -1963,7 +1960,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                   <style>
                       table {
                           border-collapse: collapse;
-                          width: 100%;
+                          width: 100%; 
                       }
                       th, td {
                           border: 1px solid #dddddd;
@@ -1978,7 +1975,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               <body>
                   <table>
                       <thead><tr>${header}</tr></thead>
-                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                      <tbody>${rows.map(row =>`<tr>${row}</tr>`).join('')}</tbody>
                   </table>
               </body>
           </html>`;
@@ -1989,7 +1986,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const htmlTableString = convertArrayToHTMLTable(csvArray);
         const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
       }
-
       res.send({
         code: constant.successCode,
         message: "Added successfully"
