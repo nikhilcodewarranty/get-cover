@@ -1672,6 +1672,7 @@ exports.updateDealerMeta = async (req, res) => {
     let option = { new: true }
     data.name = data.accountName
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
+
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
@@ -1683,6 +1684,10 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
+      //Update Meta in servicer also 
+      if(checkDealer.isServicer){
+        const updateServicerMeta = await servicerService.updateServiceProvider(criteria,data)
+      }
       res.send({
         code: constant.successCode,
         message: "Success",
