@@ -251,7 +251,14 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let checkServicer = await servicerService.getServiceProviderById({ _id: data.servicerId })
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or:[
+        { _id: data.servicerId },
+        { resellerId: data.servicerId },
+        { dealerId: data.servicerId },
+
+      ]
+    })
 
     if (!checkServicer) {
       res.send({
