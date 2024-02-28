@@ -452,7 +452,7 @@ exports.editResellers = async (req, res) => {
         data.name = data.accountName
         let updateReseller = await resellerService.updateReseller(criteria, data)
         if (checkReseller.isServicer) {
-            const updateServicerMeta = await servicerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
+            const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         }
         if (!updateReseller) {
             res.send({
