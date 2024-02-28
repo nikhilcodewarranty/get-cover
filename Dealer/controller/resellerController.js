@@ -440,7 +440,7 @@ exports.editResellers = async (req, res) => {
             return;
         }
         if (data.oldName != data.accountName) {
-            let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.name}$`, 'i'), dealerId: data.dealerName }, {})
+            let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName }, {})
             if (checkName) {
                 res.send({
                     code: constant.errorCode,
