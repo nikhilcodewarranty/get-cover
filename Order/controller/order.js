@@ -3679,7 +3679,7 @@ exports.cronJobStatus = async (req, res) => {
                 }
                 let updateDoc = {
                     'updateMany': {
-                        'filter': { '_id': orderProductId },
+                        'filter': { 'orderProductId': orderProductId },
                         update: { $set: { status: status } },
                         'upsert': false
                     }
@@ -3687,10 +3687,13 @@ exports.cronJobStatus = async (req, res) => {
                 bulk.push(updateDoc)
             }
         }
+
+      //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
         res.send({
             code: constant.successCode,
+            //result:bulk
             result
         })
 
