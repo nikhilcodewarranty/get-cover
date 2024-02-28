@@ -1981,7 +1981,7 @@ exports.getServicerByOrderId = async (req, res) => {
                 message: 'Order not found!'
             });
             return;
-        }
+        } 
 
         let checkDealer = await dealerService.getDealerById(checkOrder.dealerId, {
             isDeleted: 0,
