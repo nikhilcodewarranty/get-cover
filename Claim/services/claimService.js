@@ -1,11 +1,11 @@
 const claim = require("../model/claim");
 
 module.exports = class claimService {
-  static async getAllClaims(query,skipLimit,limitData) {
+  static async getAllClaims(query, skipLimit, limitData) {
     try {
-      const allClaims = await claim.aggregate(query).sort({createdAt:-1}).skip(skipLimit).limit(limitData);
+      const allClaims = await claim.aggregate(query).sort({ createdAt: -1 }).skip(skipLimit).limit(limitData);
       return allClaims;
-    } catch (error) { 
+    } catch (error) {
       console.log(`Could not fetch claims ${error}`);
     }
   }
@@ -17,7 +17,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
-  
+
   static async createClaim(data) {
     try {
       const response = await new claim(data).save();
@@ -36,13 +36,9 @@ module.exports = class claimService {
     }
   }
 
-  static async updateClaim(title, body, articleImage) {
+  static async updateClaim(criteria, data, option) {
     try {
-      const updatedResponse = await claim.updateOne(
-        { title, body, articleImage },
-        { $set: { date: new Date.now() } }
-      );
-
+      let updatedResponse = await claim.findOneAndUpdate(criteria, data, option)
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update claim ${error}`);
