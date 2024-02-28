@@ -81,6 +81,10 @@ const claimSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  repairParts:{
+    type:[],
+    default:[]
+  },
   totalAmount: {
     type: Number,
     default: 0

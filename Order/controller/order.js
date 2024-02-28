@@ -2330,8 +2330,8 @@ exports.getSingleOrder = async (req, res) => {
         let query1 = {
             $or: [
                 { _id: checkOrder.servicerId },
-                // { resellerId: checkOrder.resellerId },
-                // { dealerId: checkOrder.dealerId },
+                { resellerId: checkOrder.servicerId },
+                { dealerId: checkOrder.servicerId },
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
