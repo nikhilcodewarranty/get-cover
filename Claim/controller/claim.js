@@ -251,7 +251,7 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let checkServicer = await servicerService.getContractById({ _id: data.servicerId })
+    let checkServicer = await servicerService.getServiceProviderById({ _id: data.servicerId })
 
     if (!checkServicer) {
       res.send({
