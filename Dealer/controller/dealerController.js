@@ -854,6 +854,10 @@ exports.changeDealerStatus = async (req, res) => {
         }
       }, option);
 
+      //Archeive All orders when dealer inactive
+      // let dealerId = { dealerId: req.params.dealerId, };
+      // await orderService.getOrders(dealerId,)
+
       // // Inactive Dealer Customer
       // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
       //   $set: {
