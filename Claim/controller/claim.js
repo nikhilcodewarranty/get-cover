@@ -315,6 +315,11 @@ exports.addClaim = async (req, res, next) => {
     }
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
+    let count = await claimService.getClaimCount();
+
+    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+    data.unique_key_search = "CC" + "2024" + data.unique_key_number
+    data.unique_key = "CC-" + "2024-" + data.unique_key_number
 
     let claimResponse = await claimService.createClaim(data)
 
