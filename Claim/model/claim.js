@@ -86,7 +86,7 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
-  notes: {
+  note: {
     type: String,
     default: ''
   },
