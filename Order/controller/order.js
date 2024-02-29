@@ -568,7 +568,7 @@ exports.createOrder1 = async (req, res) => {
                     let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let eligibilty = claimStatus == "Active" ? true : false
-                    console.leg("unique_key_number1",unique_key_number1)
+                    console.log("unique_key_number1",unique_key_number1)
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
