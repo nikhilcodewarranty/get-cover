@@ -86,6 +86,29 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
+  repairParts: {
+    type: [
+      {
+        commentedBy:{
+          type:String,
+        },
+        commentedTo:{
+          type:String,
+        },
+        content:{
+          type:String,
+        },
+        file:{
+          type:String
+        },
+        date:{
+          type:Date,
+          default:Date.now()
+        }
+      }
+    ],
+    default: []
+  },
   totalAmount: {
     type: Number,
     default: 0
