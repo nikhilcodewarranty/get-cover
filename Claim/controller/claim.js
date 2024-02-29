@@ -305,6 +305,7 @@ exports.addClaim = async (req, res, next) => {
     }
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
+    console.log(claimTotal)
     if (checkContract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: consta.errorCode,

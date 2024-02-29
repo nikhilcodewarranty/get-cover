@@ -855,8 +855,8 @@ exports.changeDealerStatus = async (req, res) => {
       }, option);
 
       //Archeive All orders when dealer inactive
-      // let dealerId = { dealerId: req.params.dealerId, };
-      // await orderService.getOrders(dealerId,)
+      let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
+      let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
 
       // // Inactive Dealer Customer
       // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
@@ -1685,8 +1685,8 @@ exports.updateDealerMeta = async (req, res) => {
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       //Update Meta in servicer also 
-      if(checkDealer.isServicer){
-        const updateServicerMeta = await servicerService.updateServiceProvider(criteria,data)
+      if (checkDealer.isServicer) {
+        const updateServicerMeta = await servicerService.updateServiceProvider(criteria, data)
       }
       res.send({
         code: constant.successCode,
@@ -1984,7 +1984,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               <body>
                   <table>
                       <thead><tr>${header}</tr></thead>
-                      <tbody>${rows.map(row =>`<tr>${row}</tr>`).join('')}</tbody>
+                      <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
                   </table>
               </body>
           </html>`;
@@ -2890,7 +2890,7 @@ exports.getDealerContract = async (req, res) => {
     console.log("44444444444444444444444")
 
     let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
-    
+
     if (!getContract) {
       res.send({
         code: constants.errorCode,
