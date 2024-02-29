@@ -560,6 +560,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
+                // let newUnique;
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -587,9 +588,7 @@ exports.createOrder1 = async (req, res) => {
                 });
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 contractArray=[]
-
             })
-
             res.send({
                 code: constant.successCode,
                 message: "Success",
