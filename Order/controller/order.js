@@ -528,7 +528,7 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
 
-            let mapOnProducts =  savedResponse.productsArray.map(async (product) => {
+            let mapOnProducts = savedResponse.productsArray.map(async (product) => {
                 console.log("map on products array++++++++++", product)
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -561,7 +561,7 @@ exports.createOrder1 = async (req, res) => {
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
                 var contractArray = [];
-                 totalDataComing.forEach((data, index) => {
+                totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -2641,7 +2641,6 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
-            let contractArray = [];
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2676,8 +2675,9 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 // let savedDataOrder = savedResponse.toObject()
 
+                var contractArray = [];
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -2703,8 +2703,6 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 await contractService.createBulkContracts(contractArray);
-                contractArray = []
-
 
             })
 
@@ -2758,9 +2756,6 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
-        let contracts = [];
-
-
         await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
 
@@ -2796,8 +2791,9 @@ exports.markAsPaid = async (req, res) => {
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
+            var contractArray = [];
             totalDataComing.forEach((data, index) => {
-                let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+               let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
@@ -2819,12 +2815,10 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_number: unique_key_number1,
                 };
 
-                contracts.push(contractObject);
+                contractArray.push(contractObject);
             });
 
             let saveData = await contractService.createBulkContracts(contracts)
-            contracts = []
-
         })
 
         res.send({
