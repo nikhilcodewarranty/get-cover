@@ -253,7 +253,7 @@ exports.addClaim = async (req, res, next) => {
       return;
     }
     let checkServicer = await servicerService.getServiceProviderById({
-      $or:[
+      $or: [
         { _id: data.servicerId },
         { resellerId: data.servicerId },
         { dealerId: data.servicerId },
@@ -386,18 +386,18 @@ exports.editClaim = async (req, res) => {
       })
       return
     }
-    let option = {new:true}
-    let updateData = await claimService.updateClaim(criteria,data,option)
-    if(!updateData){
+    let option = { new: true }
+    let updateData = await claimService.updateClaim(criteria, data, option)
+    if (!updateData) {
       res.send({
-        code:constant.errorCode,
-        message:"Failed to process your request."
+        code: constant.errorCode,
+        message: "Failed to process your request."
       })
       return;
     }
     res.send({
-      code:constant.successCode,
-      message:"Updated successfully"
+      code: constant.successCode,
+      message: "Updated successfully"
     })
   } catch (err) {
     res.send({
