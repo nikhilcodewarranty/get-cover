@@ -562,7 +562,7 @@ exports.createOrder1 = async (req, res) => {
                 // let newUnique;
                 var contractArray = [];
                  totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
