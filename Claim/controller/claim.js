@@ -66,6 +66,7 @@ exports.getAllClaims = async (req, res, next) => {
     let allClaims = await claimService.getAllClaims(lookupQuery, skipLimit, limitData);
     res.send({
       code: constant.successCode,
+      message:"Success",
       result: allClaims
     })
   }
