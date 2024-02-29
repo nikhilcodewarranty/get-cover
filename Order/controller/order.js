@@ -584,7 +584,7 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1++,
                     };
-                    console.leg("unique_key_number1",contractObject)
+                    console.log("unique_key_number1",contractObject)
                     console.log('--------------------------------------------------------------------------------')
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
