@@ -26,6 +26,19 @@ module.exports = class claimService {
       console.log(error);
     }
   }
+  static async checkTotalAmount(query) {
+    try {
+      const response = await claim.aggregate([
+        { $match: query },
+        { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+        
+      ])
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
 
   static async getClaimById(claimId) {
     try {

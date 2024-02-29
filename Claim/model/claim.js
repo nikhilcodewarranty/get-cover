@@ -22,7 +22,8 @@ const claimSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "serviceproviders"
+    ref: "serviceproviders",
+    default: null
   },
   action: {
     type: String,
@@ -81,9 +82,9 @@ const claimSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  repairParts:{
-    type:[],
-    default:[]
+  repairParts: {
+    type: [],
+    default: []
   },
   totalAmount: {
     type: Number,

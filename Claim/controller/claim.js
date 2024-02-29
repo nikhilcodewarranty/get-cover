@@ -79,7 +79,6 @@ exports.getAllClaims = async (req, res, next) => {
       },
     ]
 
-
     let allClaims = await claimService.getAllClaims(lookupQuery);
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
@@ -271,23 +270,51 @@ exports.addClaim = async (req, res, next) => {
       })
       return;
     }
-    let checkServicer = await servicerService.getServiceProviderById({
-      $or: [
-        { _id: data.servicerId },
-        { resellerId: data.servicerId },
-        { dealerId: data.servicerId },
+    if (data.servicerId) {
+      let checkServicer = await servicerService.getServiceProviderById({
+        $or: [
+          { _id: data.servicerId },
+          { resellerId: data.servicerId },
+          { dealerId: data.servicerId },
 
-      ]
-    })
+        ]
+      })
+      if (!checkServicer) {
+        res.send({
+          code: constant.errorCode,
+          message: "Servicer not found!"
+        })
+        return;
+      }
+    }
 
-    if (!checkServicer) {
+    if (checkContract.status != 'Active') {
       res.send({
         code: constant.errorCode,
-        message: "Servicer not found!"
-      })
+        message: 'The contract is not active!'
+      });
+      return;
+    }
+    let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimStatus: 'Open' })
+    if (checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: 'The previous claim is still open!'
+      });
+      return
+    }
+    const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(query);
+    if (checkContract.productValue < claimTotal[0]?.amount) {
+      res.send({
+        code: consta.errorCode,
+        message: 'Claim Amount Exceeds Contract Retail Price'
+      });
       return;
     }
     data.receiptImage = data.file
+    data.servicerId = data.servicerId ? data.servicerId : null
+
     let claimResponse = await claimService.createClaim(data)
 
     res.send({
