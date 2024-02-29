@@ -584,7 +584,7 @@ exports.createOrder1 = async (req, res) => {
                         productValue: data.retailValue,
                         unique_key: unique_key1,
                         unique_key_search: unique_key_search1,
-                        unique_key_number: unique_key_number1,
+                        unique_key_number: contractIncrease,
                     };
                     contractArray.push(contractObject);
                     contractIncrease = 0
