@@ -324,6 +324,9 @@ exports.addClaim = async (req, res, next) => {
     data.unique_key_search = "CC" + "2024" + data.unique_key_number
     data.unique_key = "CC-" + "2024-" + data.unique_key_number
 
+
+    console.log("ffdgfdggddgd============",data)
+
     let claimResponse = await claimService.createClaim(data)
 
     res.send({
