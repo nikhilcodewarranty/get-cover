@@ -42,6 +42,9 @@ exports.getAllClaims = async (req, res, next) => {
     }
     let data = req.body
     let query = { isDeleted: false };
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
     let lookupQuery = [
       // {
       //   $match: { isDeleted: 0 }
@@ -57,17 +60,33 @@ exports.getAllClaims = async (req, res, next) => {
           as: "contracts"
         }
       },
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            }
+          ]
+        }
+      },
     ]
 
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let limitData = Number(pageLimit)
 
-    let allClaims = await claimService.getAllClaims(lookupQuery, skipLimit, limitData);
+    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
-      message:"Success",
-      result: allClaims
+      message: "Success",
+      result: allClaims[0]?.data ? allClaims[0]?.data : [],
+      totalCount
     })
   }
   catch (err) {
