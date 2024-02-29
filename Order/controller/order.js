@@ -559,17 +559,16 @@ exports.createOrder1 = async (req, res) => {
                         retailValue: item[keys[4]],
                     };
                 });
-                let contractIncrease = 0
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
-                totalDataComing.forEach((data, index) => {
+                await totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
-                    contractIncrease = contractIncrease == 0 ? unique_key_number1 : contractIncrease
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let eligibilty = claimStatus == "Active" ? true : false
+                    console.leg("unique_key_number1",unique_key_number1)
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -585,10 +584,13 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1++,
                     };
+                    console.leg("unique_key_number1",contractObject)
+                    console.log('--------------------------------------------------------------------------------')
                     contractArray.push(contractObject);
-                    contractIncrease = 0
                     //let saveData = contractService.createContract(contractObject)
                 });
+                console.log('-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------')
+
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 contractArray = []
 
