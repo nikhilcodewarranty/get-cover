@@ -61,6 +61,9 @@ exports.getAllClaims = async (req, res, next) => {
         }
       },
       {
+        $unwind: "$contracts"
+      },
+      {
         $facet: {
           totalRecords: [
             {
