@@ -183,7 +183,7 @@ exports.createOrder = async (req, res) => {
             data.unique_key = "GC-" + "2024-" + data.unique_key_number
             if (data.productsArray.length > 0) {
                 const uploadedFiles = data.productsArray.map((fileData) => {
-                    
+
                     let checkFile = JSON.parse(fileData.orderFile)
                     const fileName = fileData ? checkFile.filename : "";
                     const name = fileData ? checkFile.name : "";
@@ -561,9 +561,11 @@ exports.createOrder1 = async (req, res) => {
                         retailValue: item[keys[4]],
                     };
                 });
+                let contractIncrease = 0
                 // let savedDataOrder = savedResponse.toObject()
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    contractIncrease = contractIncrease == 0 ? unique_key_number1 : contractIncrease
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Active" : "Waiting"
@@ -585,10 +587,11 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_number: unique_key_number1,
                     };
                     contractArray.push(contractObject);
+                    contractIncrease = 0
                     //let saveData = contractService.createContract(contractObject)
                 });
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                contractArray=[]
+                contractArray = []
 
             })
 
@@ -1981,7 +1984,7 @@ exports.getServicerByOrderId = async (req, res) => {
                 message: 'Order not found!'
             });
             return;
-        } 
+        }
 
         let checkDealer = await dealerService.getDealerById(checkOrder.dealerId, {
             isDeleted: 0,
@@ -2701,7 +2704,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 await contractService.createBulkContracts(contractArray);
-                contractArray=[]
+                contractArray = []
 
 
             })
@@ -2821,7 +2824,7 @@ exports.markAsPaid = async (req, res) => {
             });
 
             let saveData = await contractService.createBulkContracts(contracts)
-            contracts=[]
+            contracts = []
 
         })
 
@@ -3682,7 +3685,7 @@ exports.cronJobStatus = async (req, res) => {
             }
         }
 
-      //  console.log("bulk==================",bulk);return;
+        //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
         res.send({
