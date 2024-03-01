@@ -193,7 +193,7 @@ exports.getContractById = async (req, res) => {
     //  console.log(productsArray)
     // }
 
-   // console.log(getData);
+    // console.log(getData);
 
     if (!getData) {
       res.send({
@@ -223,6 +223,62 @@ exports.deleteOrdercontractbulk = async (req, res) => {
       result: deleteContract
     })
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+exports.cronJobEligible = async (req, res) => {
+  try {
+    let query = { status: 'Active' };
+    let claimQuery = { 'claims.claimStatus': 'Open' };
+    let data = req.body;
+
+    let lookupQuery = [
+      {
+        $match: query // Your match condition here
+      },
+      {
+        $lookup: {
+          from: "claims",
+          localField: "_id",
+          foreignField: "contractId",
+          as: "claims"
+        }
+      },
+      {
+        $match: claimQuery // Your match condition here
+      },
+      {
+        $sort: { unique_key: -1 } // Sorting if required
+      },
+    ];
+    let result = await contractService.getAllContracts2(lookupQuery);
+    let bulk = [];
+    for (let i = 0; i < result.length; i++) {
+      let contractId = result[i]._id;
+      let updateDoc = {
+        'updateMany': {
+          'filter': { '_id': contractId },
+          update: { $set: { eligibilty: false } },
+          'upsert': false
+        }
+      }
+      bulk.push(updateDoc)
+
+    }
+    const updatedData = await contractService.allUpdate(bulk);
+
+
+    res.send({
+      code: constant.successCode,
+    })
+
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message

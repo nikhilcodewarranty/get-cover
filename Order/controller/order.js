@@ -3653,18 +3653,13 @@ exports.cronJobStatus = async (req, res) => {
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
 
-        // res.send({
-        //     ordersResult
-        // });
-
-        // return;
-
-        bulk = []
+        let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
                 let status = ''
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
+
                 if (product.ExpiredCondition) {
                     status = 'Expired'
                 }

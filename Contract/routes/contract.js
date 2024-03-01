@@ -8,6 +8,6 @@ router.post('/getAllContracts',[verifyToken],contractController.getAllContracts)
 router.put('/editContract/:contractId',[verifyToken],contractController.editContract)
 router.get('/getContractById/:contractId',[verifyToken],contractController.getContractById)
 router.get('/deleteOrdercontractbulk',[verifyToken],contractController.deleteOrdercontractbulk)
-
+router.get('/cronJobEligible',contractController.cronJobEligible)
 
 module.exports = router;

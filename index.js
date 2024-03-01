@@ -135,6 +135,11 @@ cron.schedule(' 5 0 * * *', () => {
   axios.get("http://15.207.221.207:3002/api-v1/order/cronJobStatus")   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
+cron.schedule(' 25 0 * * *', () => {
+  console.log('running a task every minute before');
+  axios.get("http://15.207.221.207:3002/api-v1/contract/cronJobEligible")   //live
+  // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
+});
 
 
 //common routing for server
