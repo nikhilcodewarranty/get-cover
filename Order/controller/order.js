@@ -3653,6 +3653,12 @@ exports.cronJobStatus = async (req, res) => {
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
 
+        // res.send({
+        //     ordersResult
+        // });
+
+        // return;
+
         bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
@@ -3678,7 +3684,12 @@ exports.cronJobStatus = async (req, res) => {
                 bulk.push(updateDoc)
             }
         }
-
+        // res.send({
+        //     code: constant.successCode,
+        //     //result:bulk
+        //     bulk
+        // })
+        // return;
         //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
