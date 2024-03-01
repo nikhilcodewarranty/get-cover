@@ -331,7 +331,7 @@ exports.createOrder = async (req, res) => {
                             let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                             let unique_key_search1 = "OC" + "2024" + unique_key_number1
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                            let claimStatus = new Date(products.coverageStartDate) > new Date() ? "Active" : "Waiting"
+                            let claimStatus = new Date(products.coverageStartDate) < new Date() ? "Active" : "Waiting"
                             claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
                             let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
