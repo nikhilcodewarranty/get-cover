@@ -55,10 +55,6 @@ exports.getAllContracts = async (req, res) => {
               }
             },
 
-            // { $unwind: "$dealer" },
-            // { $unwind: "$reseller" },
-            // { $unwind: "$servicer?$servicer:{}" },
-
           ]
         }
       },
@@ -271,8 +267,6 @@ exports.cronJobEligible = async (req, res) => {
 
     }
     const updatedData = await contractService.allUpdate(bulk);
-
-
     res.send({
       code: constant.successCode,
     })
