@@ -2332,8 +2332,8 @@ exports.getSingleOrder = async (req, res) => {
         let query1 = {
             $or: [
                 { _id: checkOrder.servicerId },
-                { resellerId: checkOrder.servicerId },
-                { dealerId: checkOrder.servicerId },
+                { resellerId: checkOrder.servicerId != null ? checkOrder.servicerId : '' },
+                { dealerId: checkOrder.servicerId != null ? checkOrder.servicerId : '' },
             ],
         };
         let checkServicer = await servicerService.getServiceProviderById(query1);
@@ -2793,7 +2793,7 @@ exports.markAsPaid = async (req, res) => {
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
             totalDataComing.forEach((data, index) => {
-               let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -3652,6 +3652,7 @@ exports.cronJobStatus = async (req, res) => {
             }
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
+
         bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {

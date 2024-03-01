@@ -1,3 +1,4 @@
+const { string } = require("joi");
 const mongoose = require("mongoose");
 const claimSchema = new mongoose.Schema({
   contractId: {
@@ -117,6 +118,46 @@ const claimSchema = new mongoose.Schema({
   note:{
     type:String,
     default:''
+  },
+  customerStatus:{
+    type:[
+      {
+        value:{
+          type:String,
+        },
+        date:{
+          type:Date,
+          default:Date.now()
+        }
+      },
+    ]
+  },
+  claimStatus:{
+    type:[
+      {
+        value:{
+          type:String,
+        },
+        date:{
+          type:Date,
+          default:Date.now()
+
+        }
+      },
+    ]
+  },
+  repairStatus:{
+    type:[
+      {
+        value:{
+          type:String,
+        },
+        date:{
+          type:Date,
+          default:Date.now()
+        }
+      },
+    ]
   }
 }, { timestamps: true });
 
