@@ -76,7 +76,8 @@ exports.getAllClaims = async (req, res, next) => {
                   },
                   {
                     $unwind:"$customer"
-                  }
+                  },
+                  
                 ]
               },
               
