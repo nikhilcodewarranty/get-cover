@@ -86,10 +86,6 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
-  note: {
-    type: String,
-    default: ''
-  },
   comments: {
     type: [
       {
