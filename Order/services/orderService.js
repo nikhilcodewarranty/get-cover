@@ -191,7 +191,14 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
-
+  static async updateManyOrder(criteria, data, option) {
+    try {
+      const createOrder = await order.updateMany(criteria, data, option);
+      return createOrder;
+    } catch (error) {
+      console.log(`Could not add order ${error}`);
+    }
+  }
 
 
 };

@@ -57,9 +57,39 @@ exports.getAllClaims = async (req, res, next) => {
           from: "contracts",
           localField: "contractId",
           foreignField: "_id",
-          as: "contracts"
+          as: "contracts",
+          pipeline: [
+            {
+              $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "orders",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customer",
+                    }
+                  },
+                  {
+                    $unwind:"$customer"
+                  }
+                ]
+              },
+              
+            },
+            {
+              $unwind:"$orders"
+            },
+          ]
         }
       },
+      {
+        $unwind: "$contracts"
+      },     
       {
         $facet: {
           totalRecords: [
@@ -305,6 +335,7 @@ exports.addClaim = async (req, res, next) => {
     }
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
+    console.log(claimTotal)
     if (checkContract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: consta.errorCode,
@@ -314,7 +345,11 @@ exports.addClaim = async (req, res, next) => {
     }
     data.receiptImage = data.file
     data.servicerId = data.servicerId ? data.servicerId : null
+    let count = await claimService.getClaimCount();
 
+    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+    data.unique_key_search = "CC" + "2024" + data.unique_key_number
+    data.unique_key = "CC-" + "2024-" + data.unique_key_number
     let claimResponse = await claimService.createClaim(data)
 
     res.send({

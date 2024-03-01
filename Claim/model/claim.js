@@ -86,24 +86,28 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
-  repairParts: {
+  note: {
+    type: String,
+    default: ''
+  },
+  comments: {
     type: [
       {
-        commentedBy:{
-          type:String,
+        commentedBy: {
+          type: String,
         },
-        commentedTo:{
-          type:String,
+        commentedTo: {
+          type: String,
         },
-        content:{
-          type:String,
+        content: {
+          type: String,
         },
-        file:{
-          type:String
+        file: {
+          type: String
         },
-        date:{
-          type:Date,
-          default:Date.now()
+        date: {
+          type: Date,
+          default: Date.now()
         }
       }
     ],
