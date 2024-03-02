@@ -68,9 +68,6 @@ exports.getAllContracts = async (req, res) => {
         }
       },
       {
-        $unwind: "$order"
-      },
-      {
         $match:
         {
           $and: [
@@ -98,7 +95,7 @@ exports.getAllContracts = async (req, res) => {
         }
       },
 
-      { $sort: { createdAt: -1 } }
+      { $sort: { createdAt: -1 } } 
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
