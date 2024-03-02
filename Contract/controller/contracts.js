@@ -15,6 +15,7 @@ exports.getAllContracts = async (req, res) => {
     let limitData = Number(pageLimit)
     console.log(pageLimit, skipLimit, limitData)
     let query = [
+      { $sort: { createdAt: -1 } } ,
       {
         $match:
         {
@@ -102,7 +103,7 @@ exports.getAllContracts = async (req, res) => {
         }
       },
 
-      { $sort: { createdAt: -1 } } 
+    
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
