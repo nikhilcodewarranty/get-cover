@@ -3631,8 +3631,8 @@ exports.cronJobStatus = async (req, res) => {
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
-                                                { $lte: ["$$product.coverageStartDate", currentDate] }, // Current date is greater than or equal to coverageStartDate
-                                                { $gte: ["$$product.coverageEndDate", endOfDay] }    // Current date is less than or equal to coverageEndDate
+                                                { $lte: ["$$product.coverageStartDate", endOfDay] }, // Current date is greater than or equal to coverageStartDate
+                                                { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
                                             ]
                                         }
                                     }
