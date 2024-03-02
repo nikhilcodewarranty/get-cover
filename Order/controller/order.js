@@ -3612,7 +3612,6 @@ exports.cronJobStatus = async (req, res) => {
         let data = req.body;
         let currentDate = new Date();
         let endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
         let lookupQuery = [
             {
                 $match: query // Your match condition here
@@ -3627,12 +3626,12 @@ exports.cronJobStatus = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
+                                        ExpiredCondition: { $lte: ["$$product.coverageEndDate", endOfDay] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
                                                 { $lte: ["$$product.coverageStartDate", currentDate] }, // Current date is greater than or equal to coverageStartDate
-                                                { $gte: ["$$product.coverageEndDate", endOfDay] }    // Current date is less than or equal to coverageEndDate
+                                                { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
                                             ]
                                         }
                                     }
