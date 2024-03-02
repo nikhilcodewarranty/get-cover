@@ -16,6 +16,14 @@ exports.getAllContracts = async (req, res) => {
     console.log(pageLimit, skipLimit, limitData)
     let query = [
       {
+        $match:
+        {
+          $and: [
+            { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+          ]
+        },
+      },
+      {
         $lookup: {
           from: "orders",
           localField: "orderId",
@@ -59,9 +67,31 @@ exports.getAllContracts = async (req, res) => {
         }
       },
       {
-        $match: { isDeleted: false },
+        $match:
+        {
+          $and: [
+            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+          ]
+        },
       },
-
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            }
+          ]
+        }
+      },
       { $sort: { createdAt: -1 } }
       // {
       //   $addFields: {
@@ -73,13 +103,14 @@ exports.getAllContracts = async (req, res) => {
       // { $unwind: "$contracts" }
     ]
 
-    let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
-    let getTotalCount = await contractService.findContractCount({ isDeleted: false })
+    let getContracts = await contractService.getAllContracts2(query)
+    let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+   // let getTotalCount = await contractService.findContractCount({ isDeleted: false })
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts,
-      totalCount: getTotalCount
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      totalCount
     })
 
     // res.send({
