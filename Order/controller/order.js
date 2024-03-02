@@ -3611,6 +3611,8 @@ exports.cronJobStatus = async (req, res) => {
         let query = { status: { $ne: "Archieved" } };
         let data = req.body;
         let currentDate = new Date();
+        let endOfDay = new Date();
+        endOfDay.setHours(23, 59, 59, 999);
 
         let lookupQuery = [
             {
@@ -3626,7 +3628,7 @@ exports.cronJobStatus = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
