@@ -89,7 +89,7 @@ exports.getAllContracts = async (req, res) => {
             {
               $limit: pageLimit
             },
-            { $sort: { createdAt: -1 } }
+            
           ]
         }
       },
