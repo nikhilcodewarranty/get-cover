@@ -12,7 +12,7 @@ module.exports = class contractService {
 
   static async getAllContracts2(query, pageLimit, page) {
     try {
-      const allContracts = await contract.aggregate(query).sort({ "createdAt": -1 })
+      const allContracts = await contract.aggregate(query)
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);
