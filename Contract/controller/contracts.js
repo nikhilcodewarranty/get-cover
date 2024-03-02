@@ -20,6 +20,11 @@ exports.getAllContracts = async (req, res) => {
         {
           $and: [
             { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { productName: { $regex: `^${data.productName ? data.productName : ''}` } },
+            { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+            { manufacture: { $regex: `^${data.manufacture ? data.manufacture : ''}` } },
+            { model: { $regex: `^${data.model ? data.model : ''}` } },
+            { status: { $regex: `^${data.status ? data.status : ''}` } },
             // { eligibility: true },
           ]
         },
@@ -73,6 +78,8 @@ exports.getAllContracts = async (req, res) => {
           $and: [
             { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
             { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "order.dealer.name": { $regex: `^${data.dealerName ? data.dealerName : ''}` } },
+            { "order.customer.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
           ]
         },
       },

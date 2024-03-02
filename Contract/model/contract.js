@@ -7,6 +7,7 @@ const contractSchema = new mongoose.Schema({
   },
   productName: {
     type: String,
+    index: true,
     // required: true,
   },
   orderProductId: {
@@ -19,10 +20,12 @@ const contractSchema = new mongoose.Schema({
   // },
   model: {
     type: String,
+    index: true,
     // required: true,
   },
   manufacture: {
     type: String,
+    index: true,
     // required: true,
   },
   productValue: {
@@ -31,6 +34,7 @@ const contractSchema = new mongoose.Schema({
   },
   serial: {
     type: String,
+    index: true,
     // required: true,
   },
   regDate: {
