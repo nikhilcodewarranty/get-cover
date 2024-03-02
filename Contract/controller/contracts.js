@@ -103,11 +103,13 @@ exports.getAllContracts = async (req, res) => {
 
     let getContracts = await contractService.getAllContracts2(query)
    // let getTotalCount = await contractService.findContractCount({ isDeleted: false, })
+   let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts,
-      totalCount: 1
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      totalCount
+      // count: getCo
     })
 
     // res.send({
