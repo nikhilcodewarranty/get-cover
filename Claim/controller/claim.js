@@ -196,7 +196,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
       return {
         ...item1,
-        contracts: { 
+        contracts: {
           ...item1.contracts,
           allServicer: servicer
         }
@@ -620,4 +620,56 @@ exports.editClaimStatus = async (req, res) => {
   } catch (err) {
 
   }
+}
+exports.editServicer = async (req, res) => {
+  let data = req.body
+  if (req.role != 'Super Admin') {
+    res.send({
+      code: constant.errorCode,
+      message: 'Only super admin allow to do this action!'
+    });
+    return
+  }
+  let criteria = { _id: req.params.claimId }
+  let checkClaim = await claimService.getClaimById(criteria)
+  if (!checkClaim) {
+    res.send({
+      code: constant.errorCode,
+      message: "Invalid claim ID"
+    })
+    return
+  }
+
+  criteria = { _id: req.body.servicerId }
+  let checkServicer = await servicerService.getServiceProviderById({
+    $or: [
+      { _id: req.body.servicerId },
+      { dealerId: req.body.servicerId },
+      { resellerId: req.body.servicerId },
+    ]
+  })
+  if (!checkServicer) {
+    res.send({
+      code: constant.errorCode,
+      message: "Servicer not found!"
+    })
+    return
+  }
+
+  let updateServicer = await claimService.updateClaim( { _id: req.params.claimId }, { servicerId: req.body.servicerId }, { new: true })
+  if (!updateServicer) {
+    res.send({
+      code: constant.errorCode,
+      message: 'Unable to update servicer!'
+    })
+    return;
+  }
+
+  res.send({
+    code: constant.successCode,
+    message: 'Success!',
+    result: updateServicer
+  })
+
+
 }

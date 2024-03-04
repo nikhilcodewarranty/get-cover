@@ -34,11 +34,6 @@ exports.getAllContracts = async (req, res) => {
     
       {
         $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
           data: [
             {
               $skip: skipLimit
@@ -128,7 +123,12 @@ exports.getAllContracts = async (req, res) => {
                 ]
               }
             },
-          ]         
+          ],
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],           
         },
         
       },
