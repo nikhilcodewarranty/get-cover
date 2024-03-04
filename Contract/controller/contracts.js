@@ -14,8 +14,7 @@ exports.getAllContracts = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-    let query = [
-      { $sort: { createdAt: -1 } },
+    let query = [    
       {
         $match:
         {
@@ -28,8 +27,9 @@ exports.getAllContracts = async (req, res) => {
             { status: { $regex: `^${data.status ? data.status : ''}` } },
             // { eligibility: true },
           ]
-        },
+        },        
       },
+      { $sort: { createdAt: -1 } },
       {
         $facet: {
           totalRecords: [
@@ -110,14 +110,25 @@ exports.getAllContracts = async (req, res) => {
                       localField: "servicerId",
                       foreignField: "_id",
                       as: "servicer",
+                      pipeline: [
+                        {
+                          $match:
+                          {
+                            $and: [
+                              { "name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+                            ]
+                          },
+                        }
+                      ]
                     }
                   },
 
                 ]
               }
             },
-          ]
-        }
+          ]         
+        },
+        
       },
     ]
 
