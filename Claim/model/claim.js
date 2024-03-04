@@ -131,13 +131,18 @@ const claimSchema = new mongoose.Schema({
           default:Date.now()
         }
       },
-    ]
+    ],
+    default: [{
+      status:'Request Submitted',
+      date:Date.now()
+    }]
   },
   claimStatus:{
     type:[
       {
-        value:{
+        status:{
           type:String,
+          default:'Open'
         },
         date:{
           type:Date,
@@ -145,12 +150,16 @@ const claimSchema = new mongoose.Schema({
 
         }
       },
-    ]
+    ],
+    default: [{
+      status:'Open',
+      date:Date.now()
+    }]
   },
   repairStatus:{
     type:[
       {
-        value:{
+        status:{
           type:String,
           default:'Request Approved'
         },
@@ -159,7 +168,11 @@ const claimSchema = new mongoose.Schema({
           default:Date.now()
         }
       },
-    ]
+    ],
+    default: [{
+      status:'Request Approved',
+      date:Date.now()
+    }]
   }
 }, { timestamps: true });
 

@@ -89,6 +89,14 @@ exports.getAllClaims = async (req, res, next) => {
         }
       },
       {
+        $lookup: {
+          from: "serviceproviders",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "servicers",
+        }
+      },
+      {
         $unwind: "$contracts"
       },
       {
@@ -111,6 +119,14 @@ exports.getAllClaims = async (req, res, next) => {
     ]
 
     let allClaims = await claimService.getAllClaims(lookupQuery);
+    let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
+    const mixServicer = resultFiter.map(result => result.servicerId.toString());
+    const properServicer = resultFiter.map(result => result.servicerId);
+
+
+    //Get servicer 
+
+    await servicerService.getAllServiceProvider
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
@@ -483,29 +499,29 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
-    
+
     let status = []
     if (data.hasOwnProperty("customerStatus")) {
-       data.customerStatus = [
+      data.customerStatus = [
         {
-          status:data.customerStatus
+          status: data.customerStatus
         }
-       ]
+      ]
     }
     if (data.hasOwnProperty("repairStatus")) {
       data.repairStatus = [
-       {
-         status:data.repairStatus
-       }
+        {
+          status: data.repairStatus
+        }
       ]
-   }
-   if (data.hasOwnProperty("claimStatus")) {
-    data.claimStatus = [
-     {
-       status:data.claimStatus
-     }
-    ]
- }
+    }
+    if (data.hasOwnProperty("claimStatus")) {
+      data.claimStatus = [
+        {
+          status: data.claimStatus
+        }
+      ]
+    }
 
     let updateStatus = await claimService.updateClaim(criteria, data, { new: true })
     if (!updateStatus) {
