@@ -29,60 +29,18 @@ exports.getAllContracts = async (req, res) => {
           ]
         },
       },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
-            {
-              $lookup: {
-                from: "dealers",
-                localField: "dealerId",
-                foreignField: "_id",
-                as: "dealer",
-              }
-            },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "resellerId",
-                foreignField: "_id",
-                as: "reseller",
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customer",
-              }
-            },
-            {
-              $lookup: {
-                from: "servicers",
-                localField: "servicerId",
-                foreignField: "_id",
-                as: "servicer",
-              }
-            },
-
-          ]
-        }
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { "order.dealer.name": { $regex: `^${data.dealerName ? data.dealerName : ''}` } },
-            { "order.customer.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
-          ]
-        },
-      },
+     
+      // {
+      //   $match:
+      //   {
+      //     $and: [
+      //       { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+      //       { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+      //       // { "order.dealer.name": { $regex: `^${data.dealerName ? data.dealerName : ''}` } },
+      //       // { "order.customer.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
+      //     ]
+      //   },
+      // },
 
       {
         $facet: {
@@ -97,7 +55,75 @@ exports.getAllContracts = async (req, res) => {
             },
             {
               $limit: pageLimit
-            }
+            },
+            {
+              $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+                pipeline: [
+                  {
+                    $match:
+                    {
+                        "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } ,
+                        "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } ,
+                    },
+                  },
+            
+                  {
+                    $lookup: {
+                      from: "dealers",
+                      localField: "dealerId",
+                      foreignField: "_id",
+                      as: "dealer",
+                    }
+                  },
+                  {
+                    $match:
+                    {
+                      $and: [      
+                        { "dealer.name": { '$regex': data.dealerName ? data.dealerName: '', '$options': 'i' }},
+                      ]
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: "resellers",
+                      localField: "resellerId",
+                      foreignField: "_id",
+                      as: "reseller",
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customer",
+                    }
+                  },
+                  {
+                    $match:
+                    {
+                      $and: [      
+      
+                        { "customer.username": { '$regex': data.customerName ? data.customerName: '', '$options': 'i' }},
+                      ]
+                    },
+                  },
+                  {
+                    $lookup: {
+                      from: "servicers",
+                      localField: "servicerId",
+                      foreignField: "_id",
+                      as: "servicer",
+                    }
+                  },
+      
+                ]
+              }
+            },
           ]
         }
       },    
