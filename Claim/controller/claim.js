@@ -5,6 +5,7 @@ const { claimStatus } = require("../model/claimStatus");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
+const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const contractService = require("../../Contract/services/contractService");
 const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
@@ -46,9 +47,6 @@ exports.getAllClaims = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let lookupQuery = [
-      // {
-      //   $match: { isDeleted: 0 }
-      // },
       {
         $match: query
       },
@@ -77,6 +75,34 @@ exports.getAllClaims = async (req, res, next) => {
                   {
                     $unwind: "$customer"
                   },
+                  {
+                    $lookup: {
+                      from: "dealers",
+                      localField: "dealerId",
+                      foreignField: "_id",
+                      as: "dealers",
+                    }
+                  },
+                  {
+                    $unwind: "$dealers"
+                  },
+                  {
+                    $lookup: {
+                      from: "resellers",
+                      localField: "resellerId",
+                      foreignField: "_id",
+                      as: "resellers",
+                    }
+                  },
+
+                  {
+                    $lookup: {
+                      from: "serviceproviders",
+                      localField: "servicerId",
+                      foreignField: "_id",
+                      as: "servicers",
+                    }
+                  },
 
                 ]
               },
@@ -88,33 +114,39 @@ exports.getAllClaims = async (req, res, next) => {
           ]
         }
       },
-      {
-        $lookup: {
-          from: "serviceproviders",
-          localField: "servicerId",
-          foreignField: "_id",
-          as: "servicers",
-        }
-      },
-      {
-        $lookup: {
-          from: "dealers",
-          localField: "dealerId",
-          foreignField: "_id",
-          as: "dealerServicer",
-        }
-      },
-      {
-        $lookup: {
-          from: "resellers",
-          localField: "servicerId",
-          foreignField: "_id",
-          as: "resellerServicer",
-        }
-      },
+      // {
+      //   $lookup: {
+      //     from: "serviceproviders",
+      //     localField: "servicerId",
+      //     foreignField: "_id",
+      //     as: "servicers",
+      //   }
+      // },
+      // {
+      //   $lookup: {
+      //     from: "dealers",
+      //     localField: "dealerId",
+      //     foreignField: "_id",
+      //     as: "dealerServicer",
+      //   }
+      // },
+      // {
+      //   $lookup: {
+      //     from: "resellers",
+      //     localField: "servicerId",
+      //     foreignField: "_id",
+      //     as: "resellerServicer",
+      //   }
+      // },
       {
         $unwind: "$contracts"
       },
+      // {
+      //   $project: {
+      //     combinedServicers: { $concatArrays: ["$servicers", "$dealerServicer", "$resellerServicer"] },
+
+      //   }
+      // },
       {
         $facet: {
           totalRecords: [
@@ -136,18 +168,45 @@ exports.getAllClaims = async (req, res, next) => {
 
     let allClaims = await claimService.getAllClaims(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-    const mixServicer = resultFiter.map(result => result.servicerId.toString());
-    const properServicer = resultFiter.map(result => result.servicerId);
 
+    //Get Dealer and Reseller Servicers
+    const dealerIds = resultFiter.map(data => data.contracts.orders.dealerId)
+    const resellerIds = resultFiter.map(data => data.contracts.orders.resellerId)
 
-    //Get servicer 
+    let getServicersIds = await dealerRelationService.getDealerRelations(
+      { _id: { $in: dealerIds } },
+      {}
+    );
+    let servicer;
+    let ids = getServicersIds.map((item) => item.servicerId);
+    servicer = await servicerService.getAllServiceProvider(
+      { _id: { $in: ids }, status: true },
+      {}
+    );
 
-    await servicerService.getAllServiceProvider
+    const result_Array = resultFiter.map((item1) => {
+      if (item1.contracts.orders.servicers[0]?.length > 0) {
+        servicer.unshift(item1.contracts.orders.servicers[0])
+      }
+      if (item1.contracts.orders.resellers[0]?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers[0])
+      }
+      if (item1.contracts.orders.dealers.isServicer) {
+        servicer.unshift(item1.contracts.orders.dealers)
+      }
+      return {
+        ...item1,
+        allServicer: servicer
+      }
+    })
+
+    // console.log("servicer====================",servicer);return;
+
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: allClaims[0]?.data ? allClaims[0]?.data : [],
+      result: result_Array,
       totalCount
     })
   }

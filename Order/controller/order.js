@@ -761,7 +761,6 @@ exports.getAllOrders = async (req, res) => {
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-            console.log('check--------------------------11111111111')
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
@@ -769,7 +768,6 @@ exports.getAllOrders = async (req, res) => {
 
             let mergedArray = userDealerIds.concat(userResellerIds);
 
-            console.log('check--------------------------2222222222')
 
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
             //Get Respective Dealers
