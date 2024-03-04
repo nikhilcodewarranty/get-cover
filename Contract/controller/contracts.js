@@ -14,7 +14,7 @@ exports.getAllContracts = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let query = [
-      { $sort: { createdAt: -1 } } ,
+      { $sort: { createdAt: -1 } },
       {
         $match:
         {
@@ -29,19 +29,6 @@ exports.getAllContracts = async (req, res) => {
           ]
         },
       },
-     
-      // {
-      //   $match:
-      //   {
-      //     $and: [
-      //       { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-      //       { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-      //       // { "order.dealer.name": { $regex: `^${data.dealerName ? data.dealerName : ''}` } },
-      //       // { "order.customer.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
-      //     ]
-      //   },
-      // },
-
       {
         $facet: {
           totalRecords: [
@@ -66,26 +53,28 @@ exports.getAllContracts = async (req, res) => {
                   {
                     $match:
                     {
-                        "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } ,
-                        "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } ,
+                      "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` },
+                      "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` },
                     },
                   },
-            
+
                   {
                     $lookup: {
                       from: "dealers",
                       localField: "dealerId",
                       foreignField: "_id",
                       as: "dealer",
-                    }
-                  },
-                  {
-                    $match:
-                    {
-                      $and: [      
-                        { "dealer.name": { '$regex': data.dealerName ? data.dealerName: '', '$options': 'i' }},
+                      pipeline: [
+                        {
+                          $match:
+                          {
+                            $and: [
+                              { "name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+                            ]
+                          },
+                        }
                       ]
-                    },
+                    }
                   },
                   {
                     $lookup: {
@@ -101,16 +90,18 @@ exports.getAllContracts = async (req, res) => {
                       localField: "customerId",
                       foreignField: "_id",
                       as: "customer",
-                    }
-                  },
-                  {
-                    $match:
-                    {
-                      $and: [      
+                      pipeline: [
+                        {
+                          $match:
+                          {
+                            $and: [
       
-                        { "customer.username": { '$regex': data.customerName ? data.customerName: '', '$options': 'i' }},
+                              { "username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+                            ]
+                          },
+                        },
                       ]
-                    },
+                    }
                   },
                   {
                     $lookup: {
@@ -120,18 +111,18 @@ exports.getAllContracts = async (req, res) => {
                       as: "servicer",
                     }
                   },
-      
+
                 ]
               }
             },
           ]
         }
-      },    
+      },
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
-   // let getTotalCount = await contractService.findContractCount({ isDeleted: false, })
-   let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    // let getTotalCount = await contractService.findContractCount({ isDeleted: false, })
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
