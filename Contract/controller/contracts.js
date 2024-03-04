@@ -14,7 +14,7 @@ exports.getAllContracts = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-    let query = [    
+    let query = [  
       {
         $match:
         {
@@ -29,7 +29,9 @@ exports.getAllContracts = async (req, res) => {
           ]
         },        
       },
-      { $sort: { createdAt: -1 } },
+
+      { $sort: { unique_key_number: -1 } },
+    
       {
         $facet: {
           totalRecords: [
