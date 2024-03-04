@@ -97,6 +97,22 @@ exports.getAllClaims = async (req, res, next) => {
         }
       },
       {
+        $lookup: {
+          from: "dealers",
+          localField: "dealerId",
+          foreignField: "_id",
+          as: "dealerServicer",
+        }
+      },
+      {
+        $lookup: {
+          from: "resellers",
+          localField: "servicerId",
+          foreignField: "_id",
+          as: "resellerServicer",
+        }
+      },
+      {
         $unwind: "$contracts"
       },
       {
