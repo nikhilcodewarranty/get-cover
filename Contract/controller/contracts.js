@@ -1,6 +1,7 @@
 const { Contracts } = require("../model/contract");
 const contractResourceResponse = require("../utils/constant");
 const contractService = require("../services/contractService");
+const priceBookService = require("../../PriceBook/services/priceBookService");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const contract = require("../model/contract");
@@ -319,7 +320,7 @@ exports.getContractById = async (req, res) => {
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
+      productsArray[0].priceBook = await price.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
       getData[0].order[i].productsArray = productsArray
 
     }
