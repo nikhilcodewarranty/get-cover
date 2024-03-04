@@ -122,8 +122,9 @@ const claimSchema = new mongoose.Schema({
   customerStatus:{
     type:[
       {
-        value:{
+        status:{
           type:String,
+          default:'Request Submitted'
         },
         date:{
           type:Date,
@@ -151,6 +152,7 @@ const claimSchema = new mongoose.Schema({
       {
         value:{
           type:String,
+          default:'Request Approved'
         },
         date:{
           type:Date,

@@ -75,22 +75,22 @@ exports.getAllClaims = async (req, res, next) => {
                     }
                   },
                   {
-                    $unwind:"$customer"
+                    $unwind: "$customer"
                   },
-                  
+
                 ]
               },
-              
+
             },
             {
-              $unwind:"$orders"
+              $unwind: "$orders"
             },
           ]
         }
       },
       {
         $unwind: "$contracts"
-      },     
+      },
       {
         $facet: {
           totalRecords: [
@@ -172,7 +172,7 @@ exports.searchClaim = async (req, res, next) => {
         }
       },
       {
-        $unwind: "$order" 
+        $unwind: "$order"
       },
       {
         $match:
@@ -462,5 +462,68 @@ exports.editClaim = async (req, res) => {
       code: constant.errorCode,
       message: err.message
     })
+  }
+}
+exports.editClaimStatus = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      });
+      return
+    }
+    let criteria = { _id: req.params.claimId }
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+    
+    let status = []
+    if (data.hasOwnProperty("customerStatus")) {
+       data.customerStatus = [
+        {
+          status:data.customerStatus
+        }
+       ]
+    }
+    if (data.hasOwnProperty("repairStatus")) {
+      data.repairStatus = [
+       {
+         status:data.repairStatus
+       }
+      ]
+   }
+   if (data.hasOwnProperty("claimStatus")) {
+    data.claimStatus = [
+     {
+       status:data.claimStatus
+     }
+    ]
+ }
+
+    let updateStatus = await claimService.updateClaim(criteria, data, { new: true })
+    if (!updateStatus) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to update status!'
+      })
+      return;
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result: updateStatus
+    })
+
+
+  } catch (err) {
+
   }
 }
