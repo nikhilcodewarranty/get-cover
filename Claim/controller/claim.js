@@ -196,7 +196,10 @@ exports.getAllClaims = async (req, res, next) => {
       }
       return {
         ...item1,
-        allServicer: servicer
+        contracts: { 
+          ...item1.contracts,
+          allServicer: servicer
+        }
       }
     })
 
