@@ -12,7 +12,8 @@ const multer = require("multer");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const priceBookService = require("../../PriceBook/services/priceBookService");
-
+const XLSX = require("xlsx");
+const fs = require("fs");
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -241,7 +242,7 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
             { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            // { eligibility: true },
+            { status: 'Active' }
           ]
         },
       },
@@ -252,6 +253,14 @@ exports.searchClaim = async (req, res, next) => {
           foreignField: "_id",
           as: "order",
           pipeline: [
+            {
+              $match: {
+                $and: [
+                  { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+                  { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                ]
+              }
+            },
             {
               $lookup: {
                 from: "customers",
@@ -272,8 +281,8 @@ exports.searchClaim = async (req, res, next) => {
         $match:
         {
           $and: [
-            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
           ]
         },
@@ -656,7 +665,7 @@ exports.editServicer = async (req, res) => {
     return
   }
 
-  let updateServicer = await claimService.updateClaim( { _id: req.params.claimId }, { servicerId: req.body.servicerId }, { new: true })
+  let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, { servicerId: req.body.servicerId }, { new: true })
   if (!updateServicer) {
     res.send({
       code: constant.errorCode,
@@ -673,3 +682,105 @@ exports.editServicer = async (req, res) => {
 
 
 }
+
+
+exports.saveBulkClaim = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      });
+      return
+    }
+
+    const fileUrl = '/home/codenomad/Downloads/get-cover/uploads/claimFile/file-1709639122605.xlsx'
+    const wb = XLSX.readFile(fileUrl);
+    const sheets = wb.SheetNames;
+    const ws = wb.Sheets[sheets[0]];
+    let message = [];
+    const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+
+    // const totalDataComing = totalDataComing1.map((item) => {
+    //   const keys = Object.keys(item);
+    //   return {
+    //     contractId: item[keys[0]],
+    //     servicerName: item[keys[1]],
+    //     lossDate: item[keys[2]],
+    //     diagnosis: item[keys[3]],
+    //   };
+    // });
+
+    const totalDataComing = [
+      {
+        contractId: 'OC-2024-100000',
+        servicerName: '3122',
+        lossDate: '03-03-2024',
+        diagnosis: 'new'
+      },
+      {
+        contractId: 'OC-2024-100000',
+        servicerName: 'yashDealer',
+        lossDate: '03-03-2024',
+        diagnosis: 'dsdsdfs'
+      }
+    ]
+
+    var today = new Date();
+    totalDataComing.map((data, index) => {
+      var compareDate = new Date(data.lossDate)
+      if (data.contractId == '' || data.lossDate == '' || data.diagnosis == '') {
+        let obj = {
+          code: constant.errorCode,
+          message: 'Contract Id, loss date and diagnosis should not empty!'
+        }
+        message.push(obj)
+        return;
+      }
+      else if (compareDate > today) {
+        let obj = {
+          code: constant.errorCode,
+          message: 'Loss date should not be future'
+        }
+        message.push(obj)
+        return;
+      }
+    })
+    if (message.length > 0) {
+      res.send({
+        message
+      })
+      return
+    }
+
+    //filter Data with servicer
+    let dataWithServicer = totalDataComing.filter(data => data.servicerName != '')
+    const allServicer = dataWithServicer.map(contracts => contracts.servicerName)
+    //Get Servicer from table 
+    const servicer = await servicerService.getAllServiceProvider(
+      { name: { $in: allServicer } }
+    );
+    //Get Contracts
+    let allContractIds = totalDataComing.map(data => data.contractId)
+    const allContracts = await contractService.findContracts({ unique_key: { $in: allContractIds } })
+
+
+    console.log("totalDataComing=================", totalDataComing)
+    let count = await claimService.getClaimCount();
+
+    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+    data.unique_key_search = "CC" + "2024" + data.unique_key_number
+    data.unique_key = "CC-" + "2024-" + data.unique_key_number
+
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+
+
+} 

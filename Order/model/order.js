@@ -8,19 +8,22 @@ const orderSchema = new mongoose.Schema({
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: ''
+    default: '',
   },
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: ''
+    default: '',
+    index:true
   },
   resellerId: {
     type: mongoose.Schema.Types.ObjectId,
-    default: ''
+    default: '',
+    index:true
   },
   venderOrder: {
     type: String,
-    default: ''
+    default: '',
+    index:true
   },
   serviceCoverageType: {
     type: String,
@@ -32,12 +35,14 @@ const orderSchema = new mongoose.Schema({
   },
   unique_key_number: {
     type: Number,
+    index:true
   },
   unique_key_search: {
     type: String,
   },
   unique_key: {
     type: String,
+    index:true
   },
   productsArray: {
     type: [
