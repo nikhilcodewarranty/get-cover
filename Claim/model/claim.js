@@ -6,7 +6,7 @@ const claimSchema = new mongoose.Schema({
     ref: "contracts",
     // required: true,
   },
-  claimStatus: {
+  claimFile: {
     type: 'String',
     enum: ['Open', 'Completed', 'Rejected'],
     default: 'Open'

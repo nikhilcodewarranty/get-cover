@@ -447,7 +447,7 @@ exports.addClaim = async (req, res, next) => {
       });
       return;
     }
-    let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimStatus: 'Open' })
+    let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
     if (checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -637,7 +637,8 @@ exports.editClaimStatus = async (req, res) => {
         }
       ]
       if (data.customerStatus == 'Product Received') {
-        data.claimStatus = 'Completed'
+        let option = { new: true }
+        let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
         data.claimStatus = [
           {
             status: data.customerStatus
@@ -661,7 +662,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
 
-    let updateStatus = await claimService.updateClaim(criteria, data, { new: true })
+    let updateStatus = await claimService.updateClaim(criteria, { $push: data }, { new: true })
     if (!updateStatus) {
       res.send({
         code: constant.errorCode,
@@ -990,4 +991,66 @@ exports.sendMessages = async (req, res) => {
       messages: err.message
     })
   };
+}
+
+exports.statusClaim = async (req, res) => {
+  try {
+    const result = await claimService.getClaims({
+      'repairStatus.status': 'Servicer Shipped',
+    });
+    for (let i = 0; i < result.length; i++) {
+      let messageData = {};
+      const repairStatus = result[i].repairStatus;
+      const claimId = result[i]._id;
+      const customerStatus = result[i].customerStatus;
+      //Get latest Servicer Shipped Status
+      const latestServicerShipped = repairStatus.reduce((latest, current) => {
+        if (current.status === "Servicer Shipped" && new Date(current.date) > new Date(latest.date)) {
+          return current;
+        }
+        return latest;
+      }, repairStatus[0]);
+      //Get Customer last response
+      const customerLastResponseDate = customerStatus.reduce((latest, current) => {
+        if (new Date(current.date) > new Date(latest.date)) {
+          return current;
+        }
+        return latest;
+      }, customerStatus[0]);
+
+      console.log("customerLastResponseDate===================", customerLastResponseDate)
+
+      const latestServicerShippedDate = new Date(latestServicerShipped.date);
+      const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
+      if (
+        customerLastResponseDate > latestServicerShippedDate &&
+        customerLastResponseDate < sevenDaysAfterShippedDate
+      ) {
+        console.log("Customer response is within 7 days after the last servicer shipped date.");
+      } else {
+        messageData.claimStatus = [
+          {
+            status: 'Completed'
+          }
+        ]
+      }
+      let updateStatus = await claimService.updateClaim({_id:claimId}, { 
+        $push: messageData, 
+        $set: { claimFile: 'Completed' } 
+      }, { new: true })
+    }
+
+
+    res.send({
+      code: constant.successCode,
+      result
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
 }

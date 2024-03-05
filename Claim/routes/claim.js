@@ -12,6 +12,7 @@ router.put("/editClaim/:claimId",[verifyToken],claimController.editClaim)
 router.put("/editClaimStatus/:claimId",[verifyToken],claimController.editClaimStatus)
 router.put("/editServicer/:claimId",[verifyToken],claimController.editServicer)
 router.get("/getContractById/:contractId",[verifyToken],claimController.getContractById)
+router.get("/statusClaim",claimController.statusClaim)
 
 
 module.exports = router;
