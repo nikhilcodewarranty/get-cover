@@ -69,6 +69,7 @@ exports.getAllClaims = async (req, res, next) => {
             { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatus ? data.customerStatus : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+            { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
           ]
         },
       },
@@ -113,17 +114,17 @@ exports.getAllClaims = async (req, res, next) => {
                       localField: "customerId",
                       foreignField: "_id",
                       as: "customer",
-                      // pipeline: [
-                      //   {
-                      //     $match:
-                      //     {
-                      //       $and: [
-                      //         { username: { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-                      //         { isDeleted: false },
-                      //       ]
-                      //     },
-                      //   },
-                      // ]
+                      pipeline: [
+                        {
+                          $match:
+                          {
+                            $and: [
+                              { username: { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+                              { isDeleted: false },
+                            ]
+                          },
+                        },
+                      ]
                     }
                   },
                   {
@@ -637,6 +638,11 @@ exports.editClaimStatus = async (req, res) => {
       ]
       if (data.customerStatus == 'Product Received') {
         data.claimStatus = 'Completed'
+        data.claimStatus = [
+          {
+            status: data.customerStatus
+          }
+        ]
       }
 
     }
