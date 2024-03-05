@@ -67,8 +67,8 @@ exports.getAllClaims = async (req, res, next) => {
           $and: [
             { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { isDeleted: false },
-           { 'customerStatus.status': data.customerStatus } ,
-           { 'repairStatus.status': data.repairStatus } 
+            { 'customerStatus.status': { '$regex': data.customerStatus ? data.customerStatus : '', '$options': 'i' } },
+            { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
           ]
         },
       },
@@ -84,6 +84,8 @@ exports.getAllClaims = async (req, res, next) => {
               {
                 $and: [
                   { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                  { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+                  { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
                   { isDeleted: false },
                 ]
               },
@@ -96,11 +98,32 @@ exports.getAllClaims = async (req, res, next) => {
                 as: "orders",
                 pipeline: [
                   {
+                    $match:
+                    {
+                      $and: [
+                        { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+                        { isDeleted: false },
+                      ]
+                    },
+                  },
+                  {
                     $lookup: {
                       from: "customers",
                       localField: "customerId",
                       foreignField: "_id",
                       as: "customer",
+                      // pipeline: [
+                      //   {
+                      //     $match:
+                      //     {
+                      //       $and: [
+                      //         { username: { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+                      //         { isDeleted: false },
+                      //       ]
+                      //     },
+                      //   },
+                      // ]
                     }
                   },
                   {
@@ -113,6 +136,15 @@ exports.getAllClaims = async (req, res, next) => {
                       foreignField: "_id",
                       as: "dealers",
                       pipeline: [
+                        // {
+                        //   $match:
+                        //   {
+                        //     $and: [
+                        //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+                        //       { isDeleted: false },
+                        //     ]
+                        //   },
+                        // },
                         {
                           $lookup: {
                             from: "servicer_dealer_relations",
@@ -603,6 +635,10 @@ exports.editClaimStatus = async (req, res) => {
           status: data.customerStatus
         }
       ]
+      if (data.customerStatus == 'Product Received') {
+        data.claimStatus = 'Completed'
+      }
+
     }
     if (data.hasOwnProperty("repairStatus")) {
       data.repairStatus = [
