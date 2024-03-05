@@ -82,6 +82,16 @@ exports.getAllClaims = async (req, res, next) => {
                       localField: "dealerId",
                       foreignField: "_id",
                       as: "dealers",
+                      pipeline: [
+                        {
+                          $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "_id",
+                            foreignField: "dealerId",
+                            as: "dealerServicer",
+                          }
+                        },
+                      ]
                     }
                   },
                   {
@@ -95,7 +105,6 @@ exports.getAllClaims = async (req, res, next) => {
                       as: "resellers",
                     }
                   },
-
                   {
                     $lookup: {
                       from: "serviceproviders",
@@ -171,21 +180,21 @@ exports.getAllClaims = async (req, res, next) => {
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     //Get Dealer and Reseller Servicers
-    const dealerIds = resultFiter.map(data => data.contracts.orders.dealerId)
-    const resellerIds = resultFiter.map(data => data.contracts.orders.resellerId)
-
-    let getServicersIds = await dealerRelationService.getDealerRelations(
-      { _id: { $in: dealerIds } },
-      {}
-    );
+    const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
-    let ids = getServicersIds.map((item) => item.servicerId);
-    servicer = await servicerService.getAllServiceProvider(
-      { _id: { $in: ids }, status: true },
+    allServicer = await servicerService.getAllServiceProvider(
+      { _id: { $in: servicerIds }, status: true },
       {}
     );
-
     const result_Array = resultFiter.map((item1) => {
+      servicer = []
+      if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
+        const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
+        let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
+
+        // console.log("fsdfdsfdsffsdfs",foundServicer);
+        servicer.push(foundServicer)
+      }
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
