@@ -62,7 +62,15 @@ exports.getAllClaims = async (req, res, next) => {
     let limitData = Number(pageLimit)
     let lookupQuery = [
       {
-        $match: query
+        $match:
+        {
+          $and: [
+            { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
+            { isDeleted: false },
+           { 'customerStatus.status': data.customerStatus } ,
+           { 'repairStatus.status': data.repairStatus } 
+          ]
+        },
       },
       {
         $lookup: {
@@ -71,6 +79,15 @@ exports.getAllClaims = async (req, res, next) => {
           foreignField: "_id",
           as: "contracts",
           pipeline: [
+            {
+              $match:
+              {
+                $and: [
+                  { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                  { isDeleted: false },
+                ]
+              },
+            },
             {
               $lookup: {
                 from: "orders",
@@ -137,39 +154,9 @@ exports.getAllClaims = async (req, res, next) => {
           ]
         }
       },
-      // {
-      //   $lookup: {
-      //     from: "serviceproviders",
-      //     localField: "servicerId",
-      //     foreignField: "_id",
-      //     as: "servicers",
-      //   }
-      // },
-      // {
-      //   $lookup: {
-      //     from: "dealers",
-      //     localField: "dealerId",
-      //     foreignField: "_id",
-      //     as: "dealerServicer",
-      //   }
-      // },
-      // {
-      //   $lookup: {
-      //     from: "resellers",
-      //     localField: "servicerId",
-      //     foreignField: "_id",
-      //     as: "resellerServicer",
-      //   }
-      // },
       {
         $unwind: "$contracts"
       },
-      // {
-      //   $project: {
-      //     combinedServicers: { $concatArrays: ["$servicers", "$dealerServicer", "$resellerServicer"] },
-
-      //   }
-      // },
       {
         $facet: {
           totalRecords: [
@@ -886,11 +873,11 @@ exports.sendMessages = async (req, res) => {
       commentedBy = dealerData.name
     }
     if (req.role == 'Customer') {
-      const customerData = await customerService.getCustomerById({ _id: req.userId}, { isDeleted: false })
+      const customerData = await customerService.getCustomerById({ _id: req.userId }, { isDeleted: false })
       commentedBy = customerData.username
     }
     if (req.role == 'Servicer') {
-      const servicerData = await servicerService.getServiceProviderById({ _id: req.userId}, { isDeleted: false })
+      const servicerData = await servicerService.getServiceProviderById({ _id: req.userId }, { isDeleted: false })
       commentedBy = servicerData.name
     }
     if (req.role == 'Reseller') {
@@ -919,7 +906,7 @@ exports.sendMessages = async (req, res) => {
     let messages = [
       {
         type: data.type,
-        commentedBy:commentedBy,
+        commentedBy: commentedBy,
         commentedTo: commentedTo,
         content: data.content ? data.content : '',
         messageFile: {
