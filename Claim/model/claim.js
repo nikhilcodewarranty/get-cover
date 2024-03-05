@@ -93,14 +93,34 @@ const claimSchema = new mongoose.Schema({
         commentedBy: {
           type: String,
         },
+        type:{
+          type:String
+        },
         commentedTo: {
           type: String,
         },
         content: {
           type: String,
         },
-        file: {
-          type: String
+        messageFile: {
+          type: {
+            fileName: {
+              type: String,
+              default: ''
+            },
+            originalname: {
+              type: String,
+              default: ''
+            },
+            size: {
+              type: String,
+              default: ''
+            },
+          },
+          default: {
+            fileName: '',
+            originalName: '',
+          }
         },
         date: {
           type: Date,
@@ -108,7 +128,7 @@ const claimSchema = new mongoose.Schema({
         }
       }
     ],
-    default: []
+    default: [ ]
   },
   totalAmount: {
     type: Number,

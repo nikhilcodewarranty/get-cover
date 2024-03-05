@@ -5,6 +5,7 @@ const { claimStatus } = require("../model/claimStatus");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
+const userService = require("../../User/services/userService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const contractService = require("../../Contract/services/contractService");
 const servicerService = require("../../Provider/services/providerService");
@@ -14,6 +15,9 @@ const { default: mongoose } = require("mongoose");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const XLSX = require("xlsx");
 const fs = require("fs");
+const dealerService = require("../../Dealer/services/dealerService");
+const resellerService = require("../../Dealer/services/resellerService");
+const customerService = require("../../Customer/services/customerService");
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -26,12 +30,21 @@ var StorageP = multer.diskStorage({
   },
 });
 
+var imageUpload = multer({
+  storage: StorageP,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).single("file");
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).array("file", 100);
+
+
 
 exports.getAllClaims = async (req, res, next) => {
   try {
@@ -346,7 +359,7 @@ exports.uploadReceipt = async (req, res, next) => {
       }
       let file = req.files;
 
-      console.log('file++++++++++++++++++++++++=', file)
+      console.log('ile++++++++++++++++++++++++=', file)
 
       // let filename = file.filename;
       // let originalName = file.originalname;
@@ -792,4 +805,160 @@ exports.saveBulkClaim = async (req, res) => {
   }
 
 
-} 
+}
+
+exports.sendMessages = async (req, res) => {
+  try {
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   });
+    //   return
+    // }
+    let data = req.body
+    let criteria = { _id: req.params.claimId }
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let query = [
+      {
+        $match: { _id: new mongoose.Types.ObjectId(checkClaim.contractId) },
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            {
+              $lookup: {
+                from: "dealers",
+                localField: "dealerId",
+                foreignField: "_id",
+                as: "dealer",
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "resellerId",
+                foreignField: "_id",
+                as: "reseller",
+              }
+            },
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customer",
+              }
+            },
+            {
+              $lookup: {
+                from: "servicers",
+                localField: "servicerId",
+                foreignField: "_id",
+                as: "servicer",
+              }
+            },
+
+          ],
+
+        }
+      },
+    ]
+    let commentedBy = 'Admin';
+    let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    if (req.role == 'Dealer') {
+      const dealerData = await dealerService.getDealerById(req.userId, { isDeleted: false })
+      commentedBy = dealerData.name
+    }
+    if (req.role == 'Customer') {
+      const customerData = await customerService.getCustomerById({ _id: req.userId}, { isDeleted: false })
+      commentedBy = customerData.username
+    }
+    if (req.role == 'Servicer') {
+      const servicerData = await servicerService.getServiceProviderById({ _id: req.userId}, { isDeleted: false })
+      commentedBy = servicerData.name
+    }
+    if (req.role == 'Reseller') {
+      const resellerData = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+      commentedBy = resellerData.name
+    }
+    let commentedTo = 'Admin';
+    if (getData.length > 0) {
+      if (data.type == 'Reseller') {
+        commentedTo = getData[0]?.order[0]?.reseller[0]?.name
+      }
+      else if (data.type == 'Dealer') {
+        commentedTo = getData[0]?.order[0]?.dealer[0]?.name
+      }
+      else if (data.type == 'Customer') {
+        commentedTo = getData[0]?.order[0]?.customer[0]?.username
+      }
+      else if (data.type == 'Servicer') {
+        commentedTo = getData[0]?.order[0]?.servicer[0]?.name
+      }
+      else if (data.type == 'Dealer') {
+        commentedTo = getData[0]?.order[0]?.dealer[0]?.name
+      }
+    }
+    let messageData = {};
+    let messages = [
+      {
+        type: data.type,
+        commentedBy:commentedBy,
+        commentedTo: commentedTo,
+        content: data.content ? data.content : '',
+        messageFile: {
+          "originalname": "Add Product Format - Sheet1 (another copy).csv",
+          "fileName": "file-1709656484491.csv",
+          "size": 180
+        },
+        content: data.content
+
+      }
+    ]
+
+
+    messageData.comments = messages
+
+    // console.log(messageData); return
+
+
+
+    let updateMessage = await claimService.updateClaim(criteria, { $push: messageData }, { new: true })
+    if (!updateMessage) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to send message!'
+      });
+      return;
+    }
+
+    res.send({
+      code: constant.successCode,
+      messages: 'Message Sent!',
+      result: updateMessage
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      messages: err.message
+    })
+  };
+}

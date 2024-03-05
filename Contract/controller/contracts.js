@@ -36,25 +36,9 @@ exports.getAllContracts = async (req, res) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-            //       { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            //     ]
-            //   },
-            // },
-           
-            
-            
-
-          ]
+          as: "order",     
         }
-      },
-      
+      },      
       {
         $unwind:{
           path:"$order",
@@ -68,8 +52,7 @@ exports.getAllContracts = async (req, res) => {
               { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             ]
           },
-        },
-     
+        },     
       {
         $lookup: {
           from: "dealers",
