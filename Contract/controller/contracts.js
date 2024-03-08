@@ -567,7 +567,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
 exports.cronJobEligible = async (req, res) => {
   try {
     let query = { status: 'Active' };
-    let claimQuery = { 'claims.claimStatus': 'Open' };
+    // let claimQuery = { 'claims.claimStatus': 'Open' };
     let data = req.body;
 
     let lookupQuery = [
@@ -582,9 +582,9 @@ exports.cronJobEligible = async (req, res) => {
           as: "claims"
         }
       },
-      {
-        $match: claimQuery // Your match condition here
-      },
+      // {
+      //   $match: claimQuery // Your match condition here
+      // },
       {
         $sort: { unique_key: -1 } // Sorting if required
       },

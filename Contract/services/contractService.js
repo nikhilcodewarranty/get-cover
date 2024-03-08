@@ -71,9 +71,9 @@ module.exports = class contractService {
     }
   }
 
-  static async getContractById(contractId) {
+  static async getContractById(contractId, projection = {}) {
     try {
-      const singleContractResponse = await contract.findOne(contractId);
+      const singleContractResponse = await contract.findOne(contractId, projection);
       return singleContractResponse;
     } catch (error) {
       console.log(`Contract not found. ${error}`);
@@ -116,7 +116,7 @@ module.exports = class contractService {
       console.log(`Could  not delete contract ${error}`);
     }
   }
-  static async allUpdate(query){
+  static async allUpdate(query) {
     try {
       const getResponse = await contract.bulkWrite(query);
       return getResponse;
@@ -124,5 +124,5 @@ module.exports = class contractService {
       console.log(`Could  not update contract ${error}`);
     }
   }
-  
+
 };

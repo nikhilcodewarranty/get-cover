@@ -925,14 +925,14 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
 
-    //  console.log(req.files); return;
+      //  console.log(req.files); return;
       const fileUrl = req.files[0].path
       const wb = XLSX.readFile(fileUrl);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let message = [];
       let checkDuplicate = [];
-      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],{defval:""});
+      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       const totalDataComing = totalDataComing1.map((item) => {
         const keys = Object.keys(item);
         return {
@@ -946,20 +946,20 @@ exports.saveBulkClaim = async (req, res) => {
       });
       //check Contract Id exist or not in the array
       for (let i = 0; i < totalDataComing.length; i++) {
-        if (totalDataComing[i].contractId == '' || totalDataComing[i].contractId==undefined) {
+        if (totalDataComing[i].contractId == '' || totalDataComing[i].contractId == undefined) {
           totalDataComing[i].exit = true;
           totalDataComing[i].status = 'The Contract id is empty'
         }
-        if (totalDataComing[i].lossDate == '' || totalDataComing[i].contractId==undefined) {
+        if (totalDataComing[i].lossDate == '' || totalDataComing[i].contractId == undefined) {
           totalDataComing[i].exit = true;
           totalDataComing[i].status = 'The last date is empty'
         }
-        if (totalDataComing[i].diagnosis == '' || totalDataComing[i].contractId==undefined ) {
+        if (totalDataComing[i].diagnosis == '' || totalDataComing[i].contractId == undefined) {
           totalDataComing[i].exit = true;
           totalDataComing[i].status = 'The dignosis is empty'
         }
 
-      } 
+      }
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -1250,6 +1250,25 @@ exports.saveBulkData = async (req, res) => {
     res.send({
       code: constant.successCode,
       result
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getMaxClaimAmount = async (req, res) => {
+  try {
+    const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(query);
+    const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
+    res.send({
+      code:constant.successCode,
+      message:'Success!',
+      result: contract.productValue - claimTotal[0]?.amount
     })
   }
   catch (err) {
