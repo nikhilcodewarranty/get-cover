@@ -452,7 +452,8 @@ exports.searchClaim = async (req, res, next) => {
         $match:
         {
           $and: [
-            { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+            // { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+            { 'serial': { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
             { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { status: 'Active' }
           ]
