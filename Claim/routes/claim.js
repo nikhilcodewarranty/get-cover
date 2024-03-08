@@ -13,7 +13,7 @@ router.put("/editClaimStatus/:claimId",[verifyToken],claimController.editClaimSt
 router.put("/editServicer/:claimId",[verifyToken],claimController.editServicer)
 router.get("/getContractById/:contractId",[verifyToken],claimController.getContractById)
 router.get("/statusClaim",claimController.statusClaim)
-
+router.post("/bulKDataUpload",[verifyToken],claimController.saveBulkData)
 
 module.exports = router;
  
