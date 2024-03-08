@@ -334,7 +334,7 @@ exports.getAllClaims = async (req, res, next) => {
         }
 
       },
-      
+
       {
         $facet: {
           totalRecords: [
@@ -358,21 +358,21 @@ exports.getAllClaims = async (req, res, next) => {
               }
             },
             {
-                $lookup: {
-                  from: "resellers",
-                  localField: "contracts.orders.resellerId",
-                  foreignField: "_id",
-                  as: "contracts.orders.resellers",
-                }
-              },
-              {
-                $lookup: {
-                  from: "serviceproviders",
-                  localField: "contracts.orders.servicerId",
-                  foreignField: "_id",
-                  as: "contracts.orders.servicers",
-                }
-              },
+              $lookup: {
+                from: "resellers",
+                localField: "contracts.orders.resellerId",
+                foreignField: "_id",
+                as: "contracts.orders.resellers",
+              }
+            },
+            {
+              $lookup: {
+                from: "serviceproviders",
+                localField: "contracts.orders.servicerId",
+                foreignField: "_id",
+                as: "contracts.orders.servicers",
+              }
+            },
           ]
         }
       },
@@ -497,7 +497,8 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : ''}` } },
+            { 'order.customers.username': { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
           ]
         },
       },
@@ -889,6 +890,10 @@ exports.editServicer = async (req, res) => {
     return
   }
 
+  // console.log('claimId',req.params.claimId)
+  // console.log('servicerId',req.body.servicerId);
+  // return
+
   let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, { servicerId: req.body.servicerId }, { new: true })
   if (!updateServicer) {
     res.send({
@@ -909,103 +914,116 @@ exports.editServicer = async (req, res) => {
 
 
 exports.saveBulkClaim = async (req, res) => {
-  try {
-    let data = req.body
-    if (req.role != 'Super Admin') {
+  uploadP(req, res, async (err) => {
+    try {
+      let data = req.body
+      if (req.role != 'Super Admin') {
+        res.send({
+          code: constant.errorCode,
+          message: 'Only super admin allow to do this action!'
+        });
+        return
+      }
+
+    //  console.log(req.files); return;
+      const fileUrl = req.files[0].path
+      const wb = XLSX.readFile(fileUrl);
+      const sheets = wb.SheetNames;
+      const ws = wb.Sheets[sheets[0]];
+      let message = [];
+      let checkDuplicate = [];
+      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],{defval:""});
+      const totalDataComing = totalDataComing1.map((item) => {
+        const keys = Object.keys(item);
+        return {
+          contractId: item[keys[0]],
+          servicerName: item[keys[1]],
+          lossDate: item[keys[2]],
+          diagnosis: item[keys[3]],
+          duplicate: [],
+          exit: false
+        };
+      });
+      //check Contract Id exist or not in the array
+      for (let i = 0; i < totalDataComing.length; i++) {
+        if (totalDataComing[i].contractId == '' || totalDataComing[i].contractId==undefined) {
+          totalDataComing[i].exit = true;
+          totalDataComing[i].status = 'The Contract id is empty'
+        }
+        if (totalDataComing[i].lossDate == '' || totalDataComing[i].contractId==undefined) {
+          totalDataComing[i].exit = true;
+          totalDataComing[i].status = 'The last date is empty'
+        }
+        if (totalDataComing[i].diagnosis == '' || totalDataComing[i].contractId==undefined ) {
+          totalDataComing[i].exit = true;
+          totalDataComing[i].status = 'The dignosis is empty'
+        }
+
+      } 
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        totalDataComing
+      })
+
+      return;
+
+      // const totalDataComing = [
+      //   {
+      //     contractId: 'OC-2024-100000',
+      //     servicerName: '3122',
+      //     lossDate: '03-03-2024',
+      //     diagnosis: 'new'
+      //   },
+      //   {
+      //     contractId: 'OC-2024-100000',
+      //     servicerName: 'yashDealer',
+      //     lossDate: '03-03-2024',
+      //     diagnosis: 'dsdsdfs'
+      //   }
+      // ]
+
+      var today = new Date();
+      totalDataComing.map((data, index) => {
+        var compareDate = new Date(data.lossDate)
+        if (data.contractId == '' || data.lossDate == '' || data.diagnosis == '') {
+          let obj = {
+            code: constant.errorCode,
+            message: 'Contract Id, loss date and diagnosis should not empty!'
+          }
+          message.push(obj)
+          return;
+        }
+        else if (compareDate > today) {
+          let obj = {
+            code: constant.errorCode,
+            message: 'Loss date should not be future'
+          }
+          message.push(obj)
+          return;
+        }
+      })
+      if (message.length > 0) {
+        res.send({
+          message
+        })
+        return
+      }
+
+
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+      })
+
+    }
+    catch (err) {
       res.send({
         code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      });
-      return
-    }
-
-    const fileUrl = '/home/codenomad/Downloads/get-cover/uploads/claimFile/file-1709639122605.xlsx'
-    const wb = XLSX.readFile(fileUrl);
-    const sheets = wb.SheetNames;
-    const ws = wb.Sheets[sheets[0]];
-    let message = [];
-    const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-
-    // const totalDataComing = totalDataComing1.map((item) => {
-    //   const keys = Object.keys(item);
-    //   return {
-    //     contractId: item[keys[0]],
-    //     servicerName: item[keys[1]],
-    //     lossDate: item[keys[2]],
-    //     diagnosis: item[keys[3]],
-    //   };
-    // });
-
-    const totalDataComing = [
-      {
-        contractId: 'OC-2024-100000',
-        servicerName: '3122',
-        lossDate: '03-03-2024',
-        diagnosis: 'new'
-      },
-      {
-        contractId: 'OC-2024-100000',
-        servicerName: 'yashDealer',
-        lossDate: '03-03-2024',
-        diagnosis: 'dsdsdfs'
-      }
-    ]
-
-    var today = new Date();
-    totalDataComing.map((data, index) => {
-      var compareDate = new Date(data.lossDate)
-      if (data.contractId == '' || data.lossDate == '' || data.diagnosis == '') {
-        let obj = {
-          code: constant.errorCode,
-          message: 'Contract Id, loss date and diagnosis should not empty!'
-        }
-        message.push(obj)
-        return;
-      }
-      else if (compareDate > today) {
-        let obj = {
-          code: constant.errorCode,
-          message: 'Loss date should not be future'
-        }
-        message.push(obj)
-        return;
-      }
-    })
-    if (message.length > 0) {
-      res.send({
-        message
+        message: err.message
       })
-      return
     }
-
-    //filter Data with servicer
-    let dataWithServicer = totalDataComing.filter(data => data.servicerName != '')
-    const allServicer = dataWithServicer.map(contracts => contracts.servicerName)
-    //Get Servicer from table 
-    const servicer = await servicerService.getAllServiceProvider(
-      { name: { $in: allServicer } }
-    );
-    //Get Contracts
-    let allContractIds = totalDataComing.map(data => data.contractId)
-    const allContracts = await contractService.findContracts({ unique_key: { $in: allContractIds } })
-
-
-    console.log("totalDataComing=================", totalDataComing)
-    let count = await claimService.getClaimCount();
-
-    data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-    data.unique_key_search = "CC" + "2024" + data.unique_key_number
-    data.unique_key = "CC-" + "2024-" + data.unique_key_number
-
-
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-
+  })
 
 }
 
@@ -1228,8 +1246,6 @@ exports.statusClaim = async (req, res) => {
 }
 exports.saveBulkData = async (req, res) => {
   try {
-    
-    
 
     res.send({
       code: constant.successCode,
