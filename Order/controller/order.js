@@ -388,18 +388,7 @@ exports.createOrder = async (req, res) => {
 
 exports.createOrder1 = async (req, res) => {
     try {
-        // upload(req, res, async (err) => {
         let data = req.body;
-        //console.log("bodyData=================",data)
-        // for (let i = 0; i < data.productsArray.length; i++) {
-        // if (data.productsArray[i].QuantityPricing) {
-
-        //         let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing[0]);
-        //        // let jsonFile = JSON.parse(data.productsArray[i].orderFile);
-        //         data.productsArray[i].QuantityPricing = jsonArray;
-        //        // data.productsArray[i].file = jsonFile;
-        //     }
-        // }
 
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
@@ -529,8 +518,6 @@ exports.createOrder1 = async (req, res) => {
             console.log("order status update+++++++++++")
 
             let mapOnProducts = savedResponse.productsArray.map(async (product) => {
-                console.log("map on products array++++++++++", product)
-
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
@@ -544,9 +531,6 @@ exports.createOrder1 = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-                // console.log("count getting+++++++++++", count1[0].unique_key)
-
-
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -560,6 +544,7 @@ exports.createOrder1 = async (req, res) => {
                 });
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
+                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                 var contractArray = [];
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
@@ -584,13 +569,12 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1++,
                     };
+                    unique_key_number1++
                     console.log("unique_key_number1", contractObject)
                     console.log('--------------------------------------------------------------------------------')
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-                console.log('-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------')
-
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
             })
