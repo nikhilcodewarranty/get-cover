@@ -1266,7 +1266,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     let claimTotal = await claimService.checkTotalAmount(query);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
-    const product = contract.productValue ? contract.productValue : 0
+    const product = contract ? contract.productValue : 0
     res.send({
       code:constant.successCode,
       message:'Success!',
