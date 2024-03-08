@@ -1265,10 +1265,11 @@ exports.getMaxClaimAmount = async (req, res) => {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
+    const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     res.send({
       code:constant.successCode,
       message:'Success!',
-      result: contract.productValue - claimTotal[0]?.amount
+      result: contract.productValue - claimAmount
     })
   }
   catch (err) {
