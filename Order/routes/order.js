@@ -30,6 +30,7 @@ router.post('/getServicerInOrders', [verifyToken], orderController.getServicerIn
 router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.getServicerByOrderId)
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder)
 router.get('/cronJobStatus', orderController.cronJobStatus)
+router.post('/cronJobStatusWithDate', orderController.cronJobStatusWithDate)
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)

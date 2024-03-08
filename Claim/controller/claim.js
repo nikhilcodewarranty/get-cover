@@ -537,7 +537,7 @@ exports.searchClaim = async (req, res, next) => {
     })
   }
 
-
+ 
 }
 
 exports.uploadReceipt = async (req, res, next) => {

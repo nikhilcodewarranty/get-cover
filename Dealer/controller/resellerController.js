@@ -69,12 +69,12 @@ exports.createReseller = async (req, res) => {
             state: data.state,
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
-            status: data.status,
+            status: true,
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
         }
-
+        data.members[0].status = true
         let teamMembers = data.members
         // let emailsToCheck = teamMembers.map(member => member.email);
         // let queryEmails = { email: { $in: emailsToCheck } };

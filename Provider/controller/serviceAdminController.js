@@ -26,7 +26,7 @@ exports.createServiceProvider = async (req, res, next) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
-      status: data.status,
+      status: true,
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
@@ -50,7 +50,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       }
-
+      data.members[0].status = true
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);

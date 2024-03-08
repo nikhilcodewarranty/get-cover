@@ -3699,3 +3699,120 @@ exports.cronJobStatus = async (req, res) => {
         })
     }
 }
+
+exports.cronJobStatusWithDate = async (req, res) => {
+    try {
+        const startDate = new Date(req.body.startDate)
+        const endDate = new Date(req.body.endDate)
+        const orderID = req.body.orderId;
+        const newValue = {
+            $set: {
+                "productsArray.$.coverageStartDate": startDate,
+                "productsArray.$.coverageEndDate": endDate,
+            }
+        };
+        console.log(startDate)
+        console.log(endDate)
+        console.log(orderID)
+        let update = await orderService.updateManyOrder({ "productsArray.$._id": '65e03723ec5ae3d75b94f806', _id: orderID }, {
+            $set: {
+                "productsArray.$.coverageStartDate": startDate,
+                "productsArray.$.coverageEndDate": endDate,
+            }
+        }, { multi: true })
+        console.log(update)
+        return;
+        let query = { status: { $ne: "Archieved" } };
+        let data = req.body;
+        let currentDate = new Date();
+        let endOfDay = new Date();
+        let lookupQuery = [
+            {
+                $match: query // Your match condition here
+            },
+            {
+                $addFields: {
+                    productsArray: {
+                        $map: {
+                            input: "$productsArray", // Input array
+                            as: "product",
+                            in: {
+                                $mergeObjects: [
+                                    "$$product",
+                                    {
+                                        ExpiredCondition: { $lte: ["$$product.coverageEndDate", endOfDay] },
+                                        WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
+                                        ActiveCondition: {
+                                            $and: [
+                                                { $lte: ["$$product.coverageStartDate", currentDate] }, // Current date is greater than or equal to coverageStartDate
+                                                { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $sort: { unique_key: -1 } // Sorting if required
+            },
+            {
+                $project: {
+                    productsArray: 1,
+                    _id: 0 // Exclude the _id field if necessary
+                }
+            }
+        ];
+        let ordersResult = await orderService.getAllOrders1(lookupQuery);
+
+        let bulk = []
+        for (let i = 0; i < ordersResult.length; i++) {
+            for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
+                let status = ''
+                let product = ordersResult[i].productsArray[j];
+                let orderProductId = product._id
+
+                if (product.ExpiredCondition) {
+                    status = 'Expired'
+                }
+                if (product.WaitingCondition) {
+                    status = 'Waiting'
+                }
+                if (product.ActiveCondition) {
+                    status = 'Active'
+                }
+                let updateDoc = {
+                    'updateMany': {
+                        'filter': { 'orderProductId': orderProductId },
+                        update: { $set: { status: status } },
+                        'upsert': false
+                    }
+                }
+                bulk.push(updateDoc)
+            }
+        }
+        // res.send({
+        //     code: constant.successCode,
+        //     //result:bulk
+        //     bulk
+        // })
+        // return;
+        //  console.log("bulk==================",bulk);return;
+        const result = await contractService.allUpdate(bulk);
+
+        res.send({
+            code: constant.successCode,
+            //result:bulk
+            result
+        })
+
+    }
+    catch (err) {
+        res.send({
+            message: err.message
+        })
+    }
+}
+

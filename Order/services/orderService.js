@@ -200,5 +200,15 @@ module.exports = class orderService {
     }
   }
 
+  static async changeDate(criteria, data, option) {
+    try {
+      const createOrder = await order.updateMany(criteria, data, option);
+      return createOrder;
+    } catch (error) {
+      console.log(`Could not add order ${error}`);
+    }
+  }
+  
+
 
 };

@@ -130,7 +130,7 @@ var cronOptions = {
 
 
 
-cron.schedule(' 5 0 * * *', () => {
+cron.schedule(' 2 0 * * *', () => {
   console.log('running a task every minute before');
   axios.get("http://15.207.221.207:3002/api-v1/order/cronJobStatus")   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 

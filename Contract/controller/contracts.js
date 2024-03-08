@@ -2,6 +2,7 @@ const { Contracts } = require("../model/contract");
 const contractResourceResponse = require("../utils/constant");
 const contractService = require("../services/contractService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
+const claimService = require("../../Claim/services/claimService");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const contract = require("../model/contract");
@@ -14,6 +15,12 @@ exports.getAllContracts = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let newQuery = [];
+    if(data.contractId){
+      newQuery.push({
+        
+      })
+    }
     let query = [
       // { $sort: { unique_key_number: -1 } },
       {
@@ -36,23 +43,25 @@ exports.getAllContracts = async (req, res) => {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
-          as: "order",     
+          as: "order",
         }
-      },      
+      },
       {
-        $unwind:{
-          path:"$order",
+        $unwind: {
+          path: "$order",
           preserveNullAndEmptyArrays: true,
-        }},
+        }
+      },
+      {
+        $match:
         {
-          $match:
-          {
-            $and: [
-              { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-              { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            ]
-          },
-        },     
+          $and: [
+            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+          ]
+        },
+        
+      },
       {
         $lookup: {
           from: "dealers",
@@ -593,14 +602,34 @@ exports.cronJobEligible = async (req, res) => {
     let bulk = [];
     for (let i = 0; i < result.length; i++) {
       let contractId = result[i]._id;
-      let updateDoc = {
-        'updateMany': {
-          'filter': { '_id': contractId },
-          update: { $set: { eligibilty: false } },
-          'upsert': false
+      let productValue = result[i].productValue;
+      let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
+      if (result[i].claims.length > 0 & !checkClaim) {
+        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+        let claimTotal = await claimService.checkTotalAmount(query);
+        if (productValue < claimTotal[0]?.amount) {
+          let updateDoc = {
+            'updateMany': {
+              'filter': { '_id': contractId },
+              update: { $set: { eligibilty: true } },
+              'upsert': false
+            }
+          }
+          bulk.push(updateDoc)
         }
       }
-      bulk.push(updateDoc)
+
+      else {
+        let updateDoc = {
+          'updateMany': {
+            'filter': { '_id': contractId },
+            update: { $set: { eligibilty: false } },
+            'upsert': false
+          }
+        }
+        bulk.push(updateDoc)
+      }
+
 
     }
     const updatedData = await contractService.allUpdate(bulk);
