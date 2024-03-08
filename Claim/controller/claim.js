@@ -379,7 +379,7 @@ exports.getAllClaims = async (req, res, next) => {
     ]
 
     let allClaims = await claimService.getAllClaims(lookupQuery);
-    return res.send(allClaims)
+    //return res.send(allClaims)
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     //Get Dealer and Reseller Servicers
