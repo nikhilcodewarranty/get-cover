@@ -1256,6 +1256,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, option)
       data.claimStatus = [
         {
           status: data.claimStatus
