@@ -574,7 +574,7 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
+                    console.log('-----------------------------Increament Number---------------------------------------------------', contractObject)
                     increamentNumber++
                     //unique_key_number1++
                     // console.log("unique_key_number1", contractObject)
