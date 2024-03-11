@@ -2820,77 +2820,7 @@ exports.getDealerContract = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
 
-    let newQuery = [];
-      newQuery.push(
-        {
-          $lookup: {
-            from: "dealers",
-            localField: "order.dealerId",
-            foreignField: "_id",
-            as: "order.dealer"
-          }
-        },
-        {
-          $match: {
-            $and: [
-              { "order.dealer._id": req.params.dealerId },
-            ]
-          },
-        }
-      );
- 
-
-    if (data.customerName) {
-      newQuery.push(
-        {
-          $lookup: {
-            from: "customers",
-            localField: "order.customerId",
-            foreignField: "_id",
-            as: "order.customer"
-          }
-        },
-        {
-          $match: {
-            $and: [
-              { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-            ]
-          },
-        }
-      );
-    }
-
-    newQuery.push(
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "order.resellerId",
-                foreignField: "_id",
-                as: "order.reseller",
-              }
-            },
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-
-          ],
-        },
-
-      })
-    console.log(newQuery)
     let query = [
-      // { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -2930,6 +2860,48 @@ exports.getDealerContract = async (req, res) => {
           ]
         },
 
+      },
+      {
+        $lookup: {
+          from: "dealers",
+          localField: "order.dealerId",
+          foreignField: "_id",
+          as: "order.dealer"
+        }
+      },
+      {
+        $match: {
+          $and: [
+            { "order.dealer._id": new mongoose.Types.ObjectId(req.params.dealerId) },
+          ]
+        },
+      },
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "order.resellerId",
+                foreignField: "_id",
+                as: "order.reseller",
+              }
+            },
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+
+          ],
+        },
+
       }
       // { 
       //   $match:
@@ -2941,9 +2913,10 @@ exports.getDealerContract = async (req, res) => {
       // },
     ]
 
-    if (newQuery.length > 0) {
-      query = query.concat(newQuery);
-    }
+    // if (newQuery.length > 0) {
+    //   query = query.concat(newQuery);
+    // }
+
     // let query = [
     //   {
     //     $match:
