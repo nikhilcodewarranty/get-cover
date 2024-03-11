@@ -517,10 +517,10 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCount();
-            var contractArray = [];
+            var increamentNumber = 1000001;
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-                let increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 1000001 + contractArray.length + 1
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : increamentNumber
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
@@ -532,7 +532,7 @@ exports.createOrder1 = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                console.log("Increamentalcount1==================", count1)
+                // console.log("Increamentalcount1==================", count1)
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -544,6 +544,7 @@ exports.createOrder1 = async (req, res) => {
                         retailValue: item[keys[4]],
                     };
                 });
+
 
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
@@ -557,7 +558,7 @@ exports.createOrder1 = async (req, res) => {
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let eligibilty = claimStatus == "Active" ? true : false
-                    console.log("unique_key_number1", unique_key_number1)
+                    console.log("increamentNumber", unique_key_number1)
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -575,8 +576,8 @@ exports.createOrder1 = async (req, res) => {
                     };
                     increamentNumber++
                     //unique_key_number1++
-                    console.log("unique_key_number1", contractObject)
-                    console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
+                    // console.log("unique_key_number1", contractObject)
+                    // console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
