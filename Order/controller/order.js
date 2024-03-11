@@ -519,7 +519,7 @@ exports.createOrder1 = async (req, res) => {
             let count1 = await contractService.getContractsCount();
             var contractArray = [];
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-                let increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 1000001 + productsArray.length + 1
+                let increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 1000001 + contractArray.length + 1
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
