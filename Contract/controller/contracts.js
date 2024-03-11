@@ -16,15 +16,51 @@ exports.getAllContracts = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let newQuery = [];
-    if (data.contractId) {
-      newQuery.push({
-
-      })
+    if (data.dealerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "order.dealerId",
+            foreignField: "_id",
+            as: "order.dealer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
     }
+    
+    if (data.customerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "customers",
+            localField: "order.customerId",
+            foreignField: "_id",
+            as: "order.customer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    
+
+    console.log(newQuery)
     let query = [
       // { $sort: { unique_key_number: -1 } },
       {
-
         $match:
         {
           $and: [
@@ -62,81 +98,7 @@ exports.getAllContracts = async (req, res) => {
         },
 
       },
-      {
-        $lookup: {
-          from: "dealers",
-          localField: "order.dealerId",
-          foreignField: "_id",
-          as: "order.dealer",
-          // pipeline: [
-          //   {
-          //     $match:
-          //     {
-          //       $and: [
-          //         { "name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-          //       ]
-          //     },
-          //   }
-          // ]
-        }
-      },
-      // {
-      // $unwind:{
-      //   path:"$order.dealer",
-      //   preserveNullAndEmptyArrays: true,
-      // }},
-      {
-        $match:
-        {
-          $and: [
-            { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "order.customerId",
-          foreignField: "_id",
-          as: "order.customer",
-          // pipeline: [
-          //   {
-          //     $match:
-          //     {
-          //       $and: [
-          //         { "username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-          //       ]
-          //     },
-          //   },
-          // ]
-        }
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "servicers",
-          localField: "order.servicerId",
-          foreignField: "_id",
-          as: "order.servicer",
-          // pipeline: [
-          //   {
-          //     $match:
-          //     {
-          //       $and: [
-          //         { "name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-          //       ]
-          //     },
-          //   }
-          // ]
-        }
-      },
+
       // {
       //   $match:
       //   {
