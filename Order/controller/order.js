@@ -531,8 +531,6 @@ exports.createOrder1 = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                console.log("Increamentalcount1==================", count1)
-
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -558,7 +556,6 @@ exports.createOrder1 = async (req, res) => {
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let eligibilty = claimStatus == "Active" ? true : false
-                    console.log("increamentNumber", increamentNumber)
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
