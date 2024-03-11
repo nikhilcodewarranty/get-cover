@@ -543,13 +543,14 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-                increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : increamentNumber
+
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
                 //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
 
                 totalDataComing.forEach((data, index1) => {
-                   // increamentNumber = index == 0 ? increamentNumber : increamentNumber;
+                    increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : increamentNumber
+                    console.log("I am in--------------------------------", count1[0].unique_key_number)
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -574,7 +575,7 @@ exports.createOrder1 = async (req, res) => {
                     increamentNumber++
                     //unique_key_number1++
                     // console.log("unique_key_number1", contractObject)
-                    // console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
+                    console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
