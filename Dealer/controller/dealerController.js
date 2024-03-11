@@ -2814,80 +2814,343 @@ exports.getDealerContract = async (req, res) => {
       })
       return
     }
-
-    console.log("111111111111111")
-
     let orderIDs = getDealerOrder.map((ID) => ID._id)
-    console.log("22222222222222222222222")
 
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+
+    let newQuery = [];
+      newQuery.push(
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "order.dealerId",
+            foreignField: "_id",
+            as: "order.dealer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.dealer._id": req.params.dealerId },
+            ]
+          },
+        }
+      );
+ 
+
+    if (data.customerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "customers",
+            localField: "order.customerId",
+            foreignField: "_id",
+            as: "order.customer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "order.resellerId",
+                foreignField: "_id",
+                as: "order.reseller",
+              }
+            },
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+
+          ],
+        },
+
+      })
+    console.log(newQuery)
     let query = [
+      // { $sort: { unique_key_number: -1 } },
+      {
+        $match:
+        {
+          $and: [
+            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+            // { eligibility: true },
+          ]
+        },
+      },
       {
         $lookup: {
           from: "orders",
           localField: "orderId",
           foreignField: "_id",
           as: "order",
-          pipeline: [
-            {
-              $lookup: {
-                from: "dealers",
-                localField: "dealerId",
-                foreignField: "_id",
-                as: "dealer",
-              }
-            },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "resellerId",
-                foreignField: "_id",
-                as: "reseller",
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customer",
-              }
-            },
-            {
-              $lookup: {
-                from: "servicers",
-                localField: "servicerId",
-                foreignField: "_id",
-                as: "servicer",
-              }
-            },
-
-            // { $unwind: "$dealer" },
-            // { $unwind: "$reseller" },
-            // { $unwind: "$servicer?$servicer:{}" },
-
-          ]
         }
       },
       {
-        $match: { isDeleted: false, orderId: { $in: orderIDs } },
+        $unwind: {
+          path: "$order",
+          preserveNullAndEmptyArrays: true,
+        }
       },
-      // {
-      //   $addFields: {
-      //     contracts: {
-      //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-      //     }
-      //   }
-      // }
-      // { $unwind: "$contracts" }
-    ]
-    console.log("3333333333333333333333")
+      {
+        $match:
+        {
+          $and: [
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+          ]
+        },
 
-    console.log(pageLimit, skipLimit, limitData)
-    let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-    console.log("44444444444444444444444")
+      }
+      // { 
+      //   $match:
+      //   {
+      //     $and: [
+      //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+      //     ]
+      //   },
+      // },
+    ]
+
+    if (newQuery.length > 0) {
+      query = query.concat(newQuery);
+    }
+    // let query = [
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+    //         { productName: { $regex: `^${data.productName ? data.productName : ''}` } },
+    //         { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+    //         { manufacture: { $regex: `^${data.manufacture ? data.manufacture : ''}` } },
+    //         { model: { $regex: `^${data.model ? data.model : ''}` } },
+    //         { status: { $regex: `^${data.status ? data.status : ''}` } },
+    //         // { eligibility: true },
+    //       ]
+    //     },
+    //   },
+
+    //   {
+    //     $lookup: {
+    //       from: "orders",
+    //       localField: "orderId",
+    //       foreignField: "_id",
+    //       as: "order",
+    //       pipeline: [
+    //         {
+    //           $lookup: {
+    //             from: "dealers",
+    //             localField: "dealerId",
+    //             foreignField: "_id",
+    //             as: "dealer",
+    //             pipeline: [
+    //               {
+    //                 $match:
+    //                 {
+    //                   $and: [
+    //                     { "name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+    //                   ]
+    //                 },
+    //               }
+    //             ]
+    //           }
+    //         },
+    //         // {
+
+    //         //   $match:
+    //         //   {
+    //         //     $and: [
+    //         //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+    //         //     ]
+    //         //   },
+
+    //         // },
+    //         {
+    //           $lookup: {
+    //             from: "resellers",
+    //             localField: "resellerId",
+    //             foreignField: "_id",
+    //             as: "reseller",
+    //           }
+    //         },
+    //         {
+    //           $lookup: {
+    //             from: "customers",
+    //             localField: "customerId",
+    //             foreignField: "_id",
+    //             as: "customer",
+    //             pipeline: [
+    //               {
+    //                 $match:
+    //                 {
+    //                   $and: [
+
+    //                     { "username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+    //                   ]
+    //                 },
+    //               },
+    //             ]
+    //           }
+    //         },
+    //         // {
+    //         //   $match:
+    //         //   {
+    //         //     $and: [
+
+    //         //       { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+    //         //     ]
+    //         //   },
+    //         // },
+    //         {
+    //           $lookup: {
+    //             from: "servicers",
+    //             localField: "servicerId",
+    //             foreignField: "_id",
+    //             as: "servicer",
+    //             pipeline: [
+    //               {
+    //                 $match:
+    //                 {
+    //                   $and: [
+    //                     { "name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+    //                   ]
+    //                 },
+    //               }
+    //             ]
+    //           }
+    //         },
+    //         // {
+    //         //   $match:
+    //         //   {
+    //         //     $and: [
+    //         //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+    //         //     ]
+    //         //   },
+    //         // }
+
+    //       ]
+    //     }
+    //   },
+
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+    //         { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+    //         { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+    //         { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+    //         { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+    //       ]
+
+    //     },
+    //   },
+
+    //   { $sort: { unique_key_number: -1 } },
+
+    //   {
+    //     $facet: {
+    //       totalRecords: [
+    //         {
+    //           $count: "total"
+    //         }
+    //       ],
+    //       data: [
+    //         {
+    //           $skip: skipLimit
+    //         },
+    //         {
+    //           $limit: pageLimit
+    //         },
+    //       ]
+    //     },
+
+    //   },
+    // ]
+    let getContracts = await contractService.getAllContracts2(query)
+    // let query = [
+    //   {
+    //     $lookup: {
+    //       from: "orders",
+    //       localField: "orderId",
+    //       foreignField: "_id",
+    //       as: "order",
+    //       pipeline: [
+    //         {
+    //           $lookup: {
+    //             from: "dealers",
+    //             localField: "dealerId",
+    //             foreignField: "_id",
+    //             as: "dealer",
+    //           }
+    //         },
+    //         {
+    //           $lookup: {
+    //             from: "resellers",
+    //             localField: "resellerId",
+    //             foreignField: "_id",
+    //             as: "reseller",
+    //           }
+    //         },
+    //         {
+    //           $lookup: {
+    //             from: "customers",
+    //             localField: "customerId",
+    //             foreignField: "_id",
+    //             as: "customer",
+    //           }
+    //         },
+    //         {
+    //           $lookup: {
+    //             from: "servicers",
+    //             localField: "servicerId",
+    //             foreignField: "_id",
+    //             as: "servicer",
+    //           }
+    //         },
+
+    //         // { $unwind: "$dealer" },
+    //         // { $unwind: "$reseller" },
+    //         // { $unwind: "$servicer?$servicer:{}" },
+
+    //       ]
+    //     }
+    //   },
+    //   {
+    //     $match: { isDeleted: false, orderId: { $in: orderIDs } },
+    //   },
+    // ]  
+    //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
 
     let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
 
@@ -2901,7 +3164,7 @@ exports.getDealerContract = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContract,
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
       totalCount: totalCount
     })
 
