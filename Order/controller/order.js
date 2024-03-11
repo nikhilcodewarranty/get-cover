@@ -517,7 +517,7 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCount();
-            var increamentNumber = 100001
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -551,8 +551,7 @@ exports.createOrder1 = async (req, res) => {
 
                 totalDataComing.forEach((data, index1) => {
                     console.log('I am showing')
-                    increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : increamentNumber
-                    console.log("I am in--------------------------------",  count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : 0 )
+                    console.log("I am in--------------------------------",  increamentNumber )
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
