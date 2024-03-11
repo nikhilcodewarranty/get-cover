@@ -2659,7 +2659,8 @@ exports.editOrderDetail = async (req, res) => {
 
                 var contractArray = [];
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                    //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -2775,7 +2776,7 @@ exports.markAsPaid = async (req, res) => {
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
             totalDataComing.forEach((data, index) => {
-                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"

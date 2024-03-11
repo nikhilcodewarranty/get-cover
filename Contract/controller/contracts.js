@@ -170,9 +170,6 @@ exports.getAllContracts = async (req, res) => {
             },
 
           ],
-
-
-
         },
 
       },
