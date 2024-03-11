@@ -543,12 +543,13 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-
+                console.log('I am looping')
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
                 //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
 
                 totalDataComing.forEach((data, index1) => {
+                    console.log('I am showing')
                     increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : increamentNumber
                     console.log("I am in--------------------------------",  count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : 0 )
                     let unique_key_number1 = increamentNumber
@@ -580,6 +581,8 @@ exports.createOrder1 = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
                 let saveContracts = await contractService.createBulkContracts(contractArray);
+
+                console.log("saveContracts==================",saveContracts)
 
             })
             res.send({

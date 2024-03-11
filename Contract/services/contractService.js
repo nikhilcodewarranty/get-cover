@@ -61,9 +61,9 @@ module.exports = class contractService {
 
   static async createBulkContracts(data) {
     try {
-      console.log('service inset mny', data)
-      const bulkContract = await contract.insertMany(data);
-      console.log('service inset mny', data, bulkContract)
+     // console.log('service inset mny', data)
+      let bulkContract = await contract.insertMany(data);
+    //  console.log('service inset mny', data, bulkContract)
       return bulkContract;
     }
     catch (error) {
