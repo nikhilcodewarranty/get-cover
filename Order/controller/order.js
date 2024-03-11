@@ -544,6 +544,7 @@ exports.createOrder1 = async (req, res) => {
                 });
                 var contractArray = [];
                 console.log('I am looping')
+                console.log(totalDataComing)
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
                 //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
