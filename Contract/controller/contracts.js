@@ -16,9 +16,9 @@ exports.getAllContracts = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let newQuery = [];
-    if(data.contractId){
+    if (data.contractId) {
       newQuery.push({
-        
+
       })
     }
     let query = [
@@ -29,11 +29,11 @@ exports.getAllContracts = async (req, res) => {
         {
           $and: [
             { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { productName: { $regex: `^${data.productName ? data.productName : ''}` } },
-            { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-            { manufacture: { $regex: `^${data.manufacture ? data.manufacture : ''}` } },
-            { model: { $regex: `^${data.model ? data.model : ''}` } },
-            { status: { $regex: `^${data.status ? data.status : ''}` } },
+            { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
             // { eligibility: true },
           ]
         },
@@ -56,11 +56,11 @@ exports.getAllContracts = async (req, res) => {
         $match:
         {
           $and: [
-            { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
             { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
           ]
         },
-        
+
       },
       {
         $lookup: {

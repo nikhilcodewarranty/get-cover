@@ -544,10 +544,10 @@ exports.createOrder1 = async (req, res) => {
                 });
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
-                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                 var contractArray = [];
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -567,9 +567,9 @@ exports.createOrder1 = async (req, res) => {
                         productValue: data.retailValue,
                         unique_key: unique_key1,
                         unique_key_search: unique_key_search1,
-                        unique_key_number: unique_key_number1++,
+                        unique_key_number: unique_key_number1,
                     };
-                    unique_key_number1++
+                    //unique_key_number1++
                     console.log("unique_key_number1", contractObject)
                     console.log('--------------------------------------------------------------------------------')
                     contractArray.push(contractObject);
