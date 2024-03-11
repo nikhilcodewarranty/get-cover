@@ -516,8 +516,9 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
             console.log("order status update+++++++++++")
-
-            let mapOnProducts = savedResponse.productsArray.map(async (product) => {
+            let count1 = await contractService.getContractsCount();
+            let increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 1000001
+            let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
@@ -530,9 +531,7 @@ exports.createOrder1 = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                let count1 = await contractService.getContractsCount();
-
-                console.log("Increamentalcount1==================",count1)
+                console.log("Increamentalcount1==================", count1)
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -544,12 +543,14 @@ exports.createOrder1 = async (req, res) => {
                         retailValue: item[keys[4]],
                     };
                 });
+
                 // let savedDataOrder = savedResponse.toObject()
                 // let newUnique;
                 //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                 var contractArray = [];
-                totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
+                totalDataComing.forEach((data, index1) => {
+                    increamentNumber = index == 0 ? increamentNumber : contractArray.length + index1 + 1
+                    let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -571,9 +572,10 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+                    increamentNumber++
                     //unique_key_number1++
                     console.log("unique_key_number1", contractObject)
-                    console.log('--------------------------------------------------------------------------------')
+                    console.log('-----------------------------Increament Number---------------------------------------------------', increamentNumber)
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
@@ -2662,7 +2664,7 @@ exports.editOrderDetail = async (req, res) => {
                 var contractArray = [];
                 totalDataComing.forEach((data, index) => {
                     //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
-                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
+                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index + 1
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -2778,7 +2780,7 @@ exports.markAsPaid = async (req, res) => {
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
             totalDataComing.forEach((data, index) => {
-                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index +1
+                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index + 1
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
