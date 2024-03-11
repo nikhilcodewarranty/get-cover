@@ -461,81 +461,97 @@ exports.searchClaim = async (req, res, next) => {
       },
       {
         $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
-            {
-              $match: {
-                $and: [
-                  // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                  { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                ]
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customers",
-              }
-            },
-            { $unwind: "$customers" },
-          ]
-
+          from: "claims",
+          localField: "_id",
+          foreignField: "contractId",
+          as: "claims",
         }
-      },
-      {
-        $unwind: "$order"
       },
       {
         $match:
         {
           $and: [
-            // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-            // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { 'order.customers.username': { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-            // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
+            { "claims.claimFile": { "$ne": "Open" } }      
           ]
-        },
-      },
+  },
+},
+{
+  $lookup: {
+    from: "orders",
+    localField: "orderId",
+    foreignField: "_id",
+    as: "order",
+    pipeline: [
       {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            }
+        $match: {
+          $and: [
+            // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+            { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
           ]
         }
       },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customerId",
+          foreignField: "_id",
+          as: "customers",
+        }
+      },
+      { $unwind: "$customers" },
     ]
 
-    let getContracts = await contractService.getAllContracts2(query)
-    // let getContracts2 = await contractService.getAllContracts2(query2)
-    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-    res.send({
-      code: constant.successCode,
-      result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      totalCount
-      // count: getContracts2.length
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
   }
+},
+{
+  $unwind: "$order"
+},
+{
+  $match:
+  {
+    $and: [
+      // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+      // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+      { 'order.customers.username': { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+      // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
+    ]
+  },
+},
+{
+  $facet: {
+    totalRecords: [
+      {
+        $count: "total"
+      }
+    ],
+    data: [
+      {
+        $skip: skipLimit
+      },
+      {
+        $limit: pageLimit
+      }
+    ]
+  }
+},
+    ]
+
+let getContracts = await contractService.getAllContracts2(query)
+// let getContracts2 = await contractService.getAllContracts2(query2)
+let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+res.send({
+  code: constant.successCode,
+  result: getContracts[0]?.data ? getContracts[0]?.data : [],
+  totalCount
+  // count: getContracts2.length
+})
+  } catch (err) {
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
 
  
 }
@@ -1268,8 +1284,8 @@ exports.getMaxClaimAmount = async (req, res) => {
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     const product = contract ? contract.productValue : 0
     res.send({
-      code:constant.successCode,
-      message:'Success!',
+      code: constant.successCode,
+      message: 'Success!',
       result: product - claimAmount
     })
   }
