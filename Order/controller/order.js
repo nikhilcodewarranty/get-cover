@@ -551,7 +551,7 @@ exports.createOrder1 = async (req, res) => {
                 //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
 
                 totalDataComing.forEach((data, index1) => {
-                    increamentNumber = index == 0 ? increamentNumber : increamentNumber + index1 + 1
+                   // increamentNumber = index == 0 ? increamentNumber : increamentNumber;
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
