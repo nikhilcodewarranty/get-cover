@@ -91,7 +91,8 @@ newQuery.push(
         $match:
         {
           $and: [
-            { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
             { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
             { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
             { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
@@ -120,7 +121,8 @@ newQuery.push(
         {
           $and: [
             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-            { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
           ]
         },
 
