@@ -517,7 +517,7 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCount();
-            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + index1 + 1 : 100000
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number  + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
