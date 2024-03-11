@@ -184,7 +184,8 @@ exports.getAllClaims = async (req, res, next) => {
         $match:
         {
           $and: [
-            { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
             { "contracts.isDeleted": false },
@@ -267,7 +268,8 @@ exports.getAllClaims = async (req, res, next) => {
         $match:
         {
           $and: [
-            { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
             { "contracts.orders.isDeleted": false },
           ]
@@ -454,7 +456,8 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             // { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
             { 'serial': { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { 'unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { status: 'Active' }
           ]
         },
