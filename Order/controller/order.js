@@ -517,7 +517,7 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCount();
-            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number  + 1 : 100000
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -577,13 +577,13 @@ exports.createOrder1 = async (req, res) => {
                     increamentNumber++
                     //unique_key_number1++
                     // console.log("unique_key_number1", contractObject)
-                  
+
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
-                console.log("saveContracts==================",saveContracts)
+                console.log("saveContracts==================", saveContracts)
 
             })
             res.send({
@@ -1333,67 +1333,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-            // let data = {
-            //     "dealerId": "65aba175107144beb95f3bcf",
-            //     "servicerId": "",
-            //     "customerId": "",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Regular Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "true",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "orderFile": {
-            //                 "fileName": "file-1707291159337.xlsx",
-            //                 "name": "file-1707291159337.xlsx"
-            //             }
-
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "true",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123"
-
-            //         },
-            //         {
-            //             "categoryId": "65aba24e182e38ce2ea76f6a",
-            //             "priceBookId": "65aba2ad182e38ce2ea76f6b",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": 12,
-            //             "priceType": "Flat Pricing",
-            //             "checkNumberProducts": 45,
-            //             "price": 160,
-            //             "fileValue": "false",
-            //             "manufacture": "Get-Cover123",
-            //             "rangeStart": 400,
-            //             "rangeEnd": 600,
-            //             "model": "Inverter123"
-
-            //         }
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#12345",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
             if (data.productsArray.length > 0) {
                 // const uploadedFiles = req.files.map((file) => ({
                 //     filePath: file.destination + '/' + file.filename,
@@ -1501,9 +1440,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         return;
                     }
-
-
-
                     let serialNumber = allDataComing.map((obj) => {
                         const serialNumberArray = obj.data.map((item) => {
                             const keys = Object.keys(item);
@@ -1540,8 +1476,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         return;
                     }
-
-
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
                         if (obj.priceType == "Quantity Pricing") {
@@ -1590,7 +1524,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             });
                             if (priceObj.length > 0) {
                                 priceObj.map((obj, index) => {
-                                    if (
+                                    if (isNaN(obj.retailValue)) {
+                                        {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                key: obj.key,
+                                                message: "Retail Price should be integer!!",
+                                            });
+
+                                            return;
+                                        }
+                                    }
+                                    else if (
                                         Number(obj.retailValue) < Number(obj.rangeStart) ||
                                         Number(obj.retailValue) > Number(obj.rangeEnd)
                                     ) {
