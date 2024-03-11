@@ -35,7 +35,7 @@ exports.getAllContracts = async (req, res) => {
         }
       );
     }
-    
+
     if (data.customerName) {
       newQuery.push(
         {
@@ -55,8 +55,35 @@ exports.getAllContracts = async (req, res) => {
         }
       );
     }
-    
 
+newQuery.push(
+  {
+    $facet: {
+      totalRecords: [
+        {
+          $count: "total"
+        }
+      ],
+      data: [
+        {
+          $lookup: {
+            from: "resellers",
+            localField: "order.resellerId",
+            foreignField: "_id",
+            as: "order.reseller",
+          }
+        },
+        {
+          $skip: skipLimit
+        },
+        {
+          $limit: pageLimit
+        },
+
+      ],
+    },
+
+  })
     console.log(newQuery)
     let query = [
       // { $sort: { unique_key_number: -1 } },
@@ -97,9 +124,8 @@ exports.getAllContracts = async (req, res) => {
           ]
         },
 
-      },
-
-      // {
+      }
+      // { 
       //   $match:
       //   {
       //     $and: [
@@ -107,35 +133,11 @@ exports.getAllContracts = async (req, res) => {
       //     ]
       //   },
       // },
-
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "order.resellerId",
-                foreignField: "_id",
-                as: "order.reseller",
-              }
-            },
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-
-          ],
-        },
-
-      },
     ]
+
+    if (newQuery.length > 0) {
+      query = query.concat(newQuery);
+    }
     // let query = [
     //   {
     //     $match:
