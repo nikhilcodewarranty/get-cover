@@ -1,4 +1,5 @@
 const claim = require("../model/claim");
+const comments = require("../model/comments");
 
 module.exports = class claimService {
   static async getAllClaims(query) {
@@ -34,6 +35,15 @@ module.exports = class claimService {
       console.log(error);
     }
   }
+  static async addMessage(data) {
+    try {
+      const response = await new comments(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+ 
   static async checkTotalAmount(query) {
     try {
       const response = await claim.aggregate([

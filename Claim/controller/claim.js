@@ -2,6 +2,7 @@ const { claim } = require("../model/claim");
 const { claimPart } = require("../model/claimPart");
 const path = require("path");
 const { claimStatus } = require("../model/claimStatus");
+const { comments } = require("../model/comments");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
@@ -1475,121 +1476,27 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
 
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-    let limitData = Number(pageLimit)
-    let query = [
-      {
-        $match: { _id: new mongoose.Types.ObjectId(checkClaim.contractId) },
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
-            {
-              $lookup: {
-                from: "dealers",
-                localField: "dealerId",
-                foreignField: "_id",
-                as: "dealer",
-              }
-            },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "resellerId",
-                foreignField: "_id",
-                as: "reseller",
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customer",
-              }
-            },
-            {
-              $lookup: {
-                from: "servicers",
-                localField: "servicerId",
-                foreignField: "_id",
-                as: "servicer",
-              }
-            },
-
-          ],
-
-        }
-      },
-    ]
-    let commentedBy = 'Admin';
-    let getData = await contractService.getContracts(query, skipLimit, pageLimit)
-    if (req.role == 'Dealer') {
-      const dealerData = await dealerService.getDealerById(req.userId, { isDeleted: false })
-      commentedBy = dealerData.name
-    }
-    if (req.role == 'Customer') {
-      const customerData = await customerService.getCustomerById({ _id: req.userId }, { isDeleted: false })
-      commentedBy = customerData.username
-    }
-    if (req.role == 'Servicer') {
-      const servicerData = await servicerService.getServiceProviderById({ _id: req.userId }, { isDeleted: false })
-      commentedBy = servicerData.name
-    }
-    if (req.role == 'Reseller') {
-      const resellerData = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
-      commentedBy = resellerData.name
-    }
-    let commentedTo = 'Admin';
+    data.commentedBy = req.userId
+    data.commentedTo = 'Admin';
     if (getData.length > 0) {
       if (data.type == 'Reseller') {
-        commentedTo = getData[0]?.order[0]?.reseller[0]?.name
+        data.commentedTo = orderData[0]?.order[0]?.resellerId
       }
       else if (data.type == 'Dealer') {
-        commentedTo = getData[0]?.order[0]?.dealer[0]?.name
+        data.commentedTo = orderData[0]?.order[0]?.dealerId
       }
       else if (data.type == 'Customer') {
-        commentedTo = getData[0]?.order[0]?.customer[0]?.username
+        data.commentedTo = orderData[0]?.order[0]?.customerId
       }
       else if (data.type == 'Servicer') {
-        commentedTo = getData[0]?.order[0]?.servicer[0]?.name
-      }
-      else if (data.type == 'Dealer') {
-        commentedTo = getData[0]?.order[0]?.dealer[0]?.name
+        data.commentedTo = orderData[0]?.order[0]?.servicerId
       }
     }
-    let messageData = {};
-    let messages = [
-      {
-        type: data.type,
-        commentedBy: commentedBy,
-        commentedTo: commentedTo,
-        content: data.content ? data.content : '',
-        messageFile: {
-          "originalname": "Add Product Format - Sheet1 (another copy).csv",
-          "fileName": "file-1709656484491.csv",
-          "size": 180
-        },
-        content: data.content
+    let sendMessage = await claimService.addMessage(data)
 
-      }
-    ]
-
-
-    messageData.comments = messages
-
-    // console.log(messageData); return
-
-
-
-    let updateMessage = await claimService.updateClaim(criteria, { $push: messageData }, { new: true })
-    if (!updateMessage) {
+    if (!sendMessage) {
       res.send({
         code: constant.errorCode,
         message: 'Unable to send message!'
@@ -1600,7 +1507,7 @@ exports.sendMessages = async (req, res) => {
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
-      result: updateMessage
+      result: sendMessage
     })
 
   }

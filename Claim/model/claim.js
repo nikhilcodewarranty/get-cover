@@ -87,49 +87,49 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
-  comments: {
-    type: [
-      {
-        commentedBy: {
-          type: String,
-        },
-        type:{
-          type:String
-        },
-        commentedTo: {
-          type: String,
-        },
-        content: {
-          type: String,
-        },
-        messageFile: {
-          type: {
-            fileName: {
-              type: String,
-              default: ''
-            },
-            originalname: {
-              type: String,
-              default: ''
-            },
-            size: {
-              type: String,
-              default: ''
-            },
-          },
-          default: {
-            fileName: '',
-            originalName: '',
-          }
-        },
-        date: {
-          type: Date,
-          default: Date.now()
-        }
-      }
-    ],
-    default: [ ]
-  },
+  // comments: {
+  //   type: [
+  //     {
+  //       commentedBy: {
+  //         type: String,
+  //       },
+  //       type:{
+  //         type:String
+  //       },
+  //       commentedTo: {
+  //         type: String,
+  //       },
+  //       content: {
+  //         type: String,
+  //       },
+  //       messageFile: {
+  //         type: {
+  //           fileName: {
+  //             type: String,
+  //             default: ''
+  //           },
+  //           originalname: {
+  //             type: String,
+  //             default: ''
+  //           },
+  //           size: {
+  //             type: String,
+  //             default: ''
+  //           },
+  //         },
+  //         default: {
+  //           fileName: '',
+  //           originalName: '',
+  //         }
+  //       },
+  //       date: {
+  //         type: Date,
+  //         default: Date.now()
+  //       }
+  //     }
+  //   ],
+  //   default: [ ]
+  // },
   totalAmount: {
     type: Number,
     default: 0

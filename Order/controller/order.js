@@ -543,12 +543,6 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-                console.log('I am looping')
-                console.log(totalDataComing.length)
-                // let savedDataOrder = savedResponse.toObject()
-                // let newUnique;
-                //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
-
                 totalDataComing.forEach((data, index1) => {
                     // console.log('I am showing')
                     // console.log("I am in--------------------------------",  increamentNumber )
@@ -1445,14 +1439,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toString().toLowerCase()
+                                serialNumber: item[keys[2]].toString().toLowerCase(),
+                                retailValue: item[keys[4]]
                             };
                         });
 
                         if (serialNumberArray.length > 0) {
                             const seen = new Set();
                             const duplicates = [];
-
                             for (const { key, serialNumber } of serialNumberArray) {
                                 const keySerialPair = `${key}-${serialNumber}`;
                                 if (seen.has(keySerialPair)) {
@@ -1510,46 +1504,75 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     }
 
                     let checkRetailValue = allDataComing.map((obj) => {
-                        if (obj.priceType == "Flat Pricing") {
-                            const priceObj = obj.data.map((item) => {
-                                const keys = Object.keys(item);
-                                return {
-                                    key: obj.key,
-                                    checkNumberProducts: obj.checkNumberProducts,
-                                    noOfProducts: obj.noOfProducts,
-                                    rangeStart: obj.rangeStart,
-                                    rangeEnd: obj.rangeEnd,
-                                    retailValue: item[keys[4]],
-                                };
-                            });
-                            if (priceObj.length > 0) {
-                                priceObj.map((obj, index) => {
-                                    if (isNaN(obj.retailValue)) {
-                                        {
-                                            message.push({
-                                                code: constant.errorCode,
-                                                key: obj.key,
-                                                message: "Retail Price should be integer!!",
-                                            });
-
-                                            return;
-                                        }
-                                    }
-                                    else if (
-                                        Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                        Number(obj.retailValue) > Number(obj.rangeEnd)
-                                    ) {
+                        const priceObj = obj.data.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                key: obj.key,
+                                checkNumberProducts: obj.checkNumberProducts,
+                                noOfProducts: obj.noOfProducts,
+                                rangeStart: obj.rangeStart,
+                                rangeEnd: obj.rangeEnd,
+                                retailValue: item[keys[4]],
+                            };
+                        });
+                        if (priceObj.length > 0) {
+                            priceObj.map((obj, index) => {
+                                if (isNaN(obj.retailValue)) {
+                                    {
                                         message.push({
                                             code: constant.errorCode,
                                             key: obj.key,
-                                            message: "Invalid Retail Price!",
+                                            message: "Retail Price should be integer!!",
                                         });
 
                                         return;
                                     }
-                                });
-                            }
+                                }
+
+                                else if (
+                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                    Number(obj.retailValue) > Number(obj.rangeEnd)
+                                ) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: "Invalid Retail Price!",
+                                    });
+
+                                    return;
+                                }
+                            });
                         }
+                        // else if (obj.priceType == "Flat Pricing") {
+                        //     if (priceObj.length > 0) {
+                        //         priceObj.map((obj, index) => {
+                        //             if (isNaN(obj.retailValue)) {
+                        //                 {
+                        //                     message.push({
+                        //                         code: constant.errorCode,
+                        //                         key: obj.key,
+                        //                         message: "Retail Price should be integer!!",
+                        //                     });
+
+                        //                     return;
+                        //                 }
+                        //             }
+                        //             else if (
+                        //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
+                        //                 Number(obj.retailValue) > Number(obj.rangeEnd)
+                        //             ) {
+                        //                 message.push({
+                        //                     code: constant.errorCode,
+                        //                     key: obj.key,
+                        //                     message: "Invalid Retail Price!",
+                        //                 });
+
+                        //                 return;
+                        //             }
+                        //         });
+                        //     }
+                        // }
+
                     });
 
                     if (message.length > 0) {
@@ -2576,6 +2599,9 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+
+            let count1 = await contractService.getContractsCount();
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -2613,7 +2639,7 @@ exports.editOrderDetail = async (req, res) => {
                 var contractArray = [];
                 totalDataComing.forEach((data, index) => {
                     //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
-                    let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index + 1
+                    let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -2635,6 +2661,7 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_number: unique_key_number1,
                     };
                     contractArray.push(contractObject);
+                    increamentNumber++;
                     //let saveData = contractService.createContract(contractObject)
                 });
 
@@ -2692,6 +2719,8 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
+        let count1 = await contractService.getContractsCount();
+        var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         await savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
 
@@ -2706,7 +2735,7 @@ exports.markAsPaid = async (req, res) => {
             const wb = XLSX.readFile(pathFile);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
-            let count1 = await contractService.getContractsCount();
+
 
             // let contractCount =
             //     Number(
@@ -2729,7 +2758,7 @@ exports.markAsPaid = async (req, res) => {
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
             totalDataComing.forEach((data, index) => {
-                let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000 + index + 1
+                let unique_key_number1 = increamentNumber
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
@@ -2750,7 +2779,7 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_search: unique_key_search1,
                     unique_key_number: unique_key_number1,
                 };
-
+                increamentNumber++;
                 contractArray.push(contractObject);
             });
 
