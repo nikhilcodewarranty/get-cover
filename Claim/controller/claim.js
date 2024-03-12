@@ -499,9 +499,6 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     })
-
-
-
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -719,7 +716,6 @@ exports.getAllClaims = async (req, res, next) => {
           ]
         },
       },
-
       {
         $lookup: {
           from: "dealers",
@@ -756,7 +752,6 @@ exports.getAllClaims = async (req, res, next) => {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
           // "contracts.orders.dealers.isDeleted": false,
         }
-
       },
 
       {
@@ -787,8 +782,6 @@ exports.getAllClaims = async (req, res, next) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-
-
     let allClaims = await claimService.getAllClaims(lookupQuery);
     //return res.send(allClaims)
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []

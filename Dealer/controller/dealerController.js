@@ -2574,7 +2574,7 @@ exports.getDealerOrders = async (req, res) => {
       });
 
       const unique_keyRegex = new RegExp(
-        data.unique_key ? data.unique_key.trim() : "",
+        data.orderId ? data.orderId.trim() : "",
         "i"
       );
       const venderOrderRegex = new RegExp(
@@ -2582,7 +2582,6 @@ exports.getDealerOrders = async (req, res) => {
         "i"
       );
       const status = new RegExp(data.status ? data.status.trim() : "", "i");
-
       let filteredData = result_Array.filter((entry) => {
         return (
           unique_keyRegex.test(entry.unique_key) &&
@@ -2591,7 +2590,7 @@ exports.getDealerOrders = async (req, res) => {
         );
       });
 
-      // const updatedArray = filteredData.map((item) => ({
+     // const updatedArray = filteredData.map((item) => ({
       //     ...item,
       //     servicerName: item.dealerName.isServicer 
       //         ? item.dealerName
