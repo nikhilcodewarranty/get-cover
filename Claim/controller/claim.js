@@ -1588,6 +1588,16 @@ exports.getMessages = async (req, res) => {
         localField: "commentedTo",
         foreignField: "metaId",
         as: "commentTo",
+        pipeline: [
+          {
+            $match:
+            {
+              $and: [
+                { isPrimary: true }
+              ]
+            },
+          }
+        ]
 
       }
     },
@@ -1600,7 +1610,16 @@ exports.getMessages = async (req, res) => {
         localField: "commentedBy",
         foreignField: "metaId",
         as: "commentBy",
-
+        pipeline: [
+          {
+            $match:
+            {
+              $and: [
+                { isPrimary: true }
+              ]
+            },
+          }
+        ]
       }
     },
     {

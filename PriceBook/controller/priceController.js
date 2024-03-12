@@ -1,6 +1,7 @@
 const { PriceBook } = require("../model/priceBook");
 const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
+const orderService = require("../../Order/services/orderService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
@@ -307,7 +308,6 @@ exports.updatePriceBook = async (req, res, next) => {
 exports.updatePriceBookById = async (req, res, next) => {
   try {
     const { body, params, role } = req;
-
     // Check if the user is a Super Admin
     if (!isSuperAdmin(role)) {
       res.send({
@@ -325,7 +325,6 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-
 
     // Check if the priceId is a valid ObjectId
     const isValidPriceId = await checkObjectId(params.priceBookId);
@@ -413,6 +412,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       if (body.status == false) {
         const newValue = { status: body.status };
         const option = { new: true };
+        let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId }, { status: 'Archieved' }, option)
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
