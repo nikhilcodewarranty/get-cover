@@ -28,7 +28,7 @@ const commentSchema = new mongoose.Schema({
                 type: String,
                 default: ''
             },
-            originalname: {
+            originalName: {
                 type: String,
                 default: ''
             },

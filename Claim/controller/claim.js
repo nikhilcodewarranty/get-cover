@@ -980,9 +980,6 @@ exports.uploadReceipt = async (req, res, next) => {
         return;
       }
       let file = req.files;
-
-      console.log('ile++++++++++++++++++++++++=', file)
-
       // let filename = file.filename;
       // let originalName = file.originalname;
       // let size = file.size;
@@ -992,6 +989,38 @@ exports.uploadReceipt = async (req, res, next) => {
         code: constant.successCode,
         message: 'Success!',
         file
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
+
+}
+
+exports.uploadCommentImage = async (req, res, next) => {
+  try {
+    imageUpload(req, res, async (err) => {
+      if (req.role != 'Super Admin') {
+        res.send({
+          code: constant.errorCode,
+          message: 'Only suoer admin allow to do this action!'
+        });
+        return;
+      }
+      let file = req.file;
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        messageFile:{
+          fileName:file.filename,
+          originalName:file.originalname,
+          size:file.size
+        }
       })
     })
   }
@@ -1233,20 +1262,21 @@ exports.editClaimStatus = async (req, res) => {
 
     let status = []
     if (data.hasOwnProperty("customerStatus")) {
-      data.customerStatus = [
-        {
-          status: data.customerStatus
-        }
-      ]
       if (data.customerStatus == 'Product Received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
         data.claimStatus = [
           {
-            status: data.customerStatus
+            status: 'Completed'
           }
         ]
       }
+      data.customerStatus = [
+        {
+          status: data.customerStatus
+        }
+      ]
+
 
     }
     if (data.hasOwnProperty("repairStatus")) {
@@ -1459,13 +1489,13 @@ exports.saveBulkClaim = async (req, res) => {
 
 exports.sendMessages = async (req, res) => {
   try {
-    // if (req.role != 'Super Admin') {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Only super admin allow to do this action!'
-    //   });
-    //   return
-    // }
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      });
+      return
+    }
     let data = req.body
     let criteria = { _id: req.params.claimId }
     let checkClaim = await claimService.getClaimById(criteria)
@@ -1477,22 +1507,27 @@ exports.sendMessages = async (req, res) => {
       return
     }
     let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
-
-    data.commentedBy = req.userId
-    data.commentedTo = 'Admin';
-    if (getData.length > 0) {
-      if (data.type == 'Reseller') {
-        data.commentedTo = orderData[0]?.order[0]?.resellerId
-      }
-      else if (data.type == 'Dealer') {
-        data.commentedTo = orderData[0]?.order[0]?.dealerId
-      }
-      else if (data.type == 'Customer') {
-        data.commentedTo = orderData[0]?.order[0]?.customerId
-      }
-      else if (data.type == 'Servicer') {
-        data.commentedTo = orderData[0]?.order[0]?.servicerId
-      }
+    if (!orderData) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Order is not found for this claim!'
+      })
+      return
+    }
+    // console.log(" req.userId==================", req.role);return;
+    data.commentedBy = req.userId ? req.userId : '656f0550d0d6e08fc82379dc'
+    data.commentedTo = '656f0550d0d6e08fc82379dc';
+    if (data.type == 'Reseller') {
+      data.commentedTo = orderData.resellerId
+    }
+    else if (data.type == 'Dealer') {
+      data.commentedTo = orderData.dealerId
+    }
+    else if (data.type == 'Customer') {
+      data.commentedTo = orderData.customerId
+    }
+    else if (data.type == 'Servicer') {
+      data.commentedTo = orderData.servicerId
     }
     let sendMessage = await claimService.addMessage(data)
 
