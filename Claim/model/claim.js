@@ -135,63 +135,91 @@ const claimSchema = new mongoose.Schema({
     default: 0
     // required: true,
   },
-  note:{
-    type:String,
-    default:''
+  note: {
+    type: String,
+    default: ''
   },
-  customerStatus:{
-    type:[
+  customerStatus: {
+    type: [
       {
-        status:{
-          type:String,
-          default:'Request Submitted'
+        status: {
+          type: String,
+          default: 'Request Submitted'
         },
-        date:{
-          type:Date,
-          default:Date.now()
+        date: {
+          type: Date,
+          default: Date.now()
         }
       },
     ],
     default: [{
-      status:'Request Submitted',
-      date:Date.now()
+      status: 'Request Submitted',
+      date: Date.now()
     }]
   },
-  claimStatus:{
-    type:[
+  trackStatus: {
+    type: [
       {
-        status:{
-          type:String,
-          default:'Open'
+        status: {
+          type: String,
+          default: 'Request Submitted'
         },
-        date:{
-          type:Date,
-          default:Date.now()
+        date: {
+          type: Date,
+          default: Date.now()
+        }
+      },
+    ],
+    default: [
+      {
+        status: 'Open',
+        date: Date.now()
+      },
+      {
+        status: 'Request Submitted',
+        date: Date.now()
+      },
+      {
+        status: 'Request Approved',
+        date: Date.now()
+      },
+    ]
+  },
+  claimStatus: {
+    type: [
+      {
+        status: {
+          type: String,
+          default: 'Open'
+        },
+        date: {
+          type: Date,
+          default: Date.now()
 
         }
       },
     ],
     default: [{
-      status:'Open',
-      date:Date.now()
+      status: 'Open',
+      date: Date.now()
     }]
   },
-  repairStatus:{
-    type:[
+  repairStatus: {
+    type: [
       {
-        status:{
-          type:String,
-          default:'Request Approved'
+        status: {
+          type: String,
+          default: 'Request Approved'
         },
-        date:{
-          type:Date,
-          default:Date.now()
+        date: {
+          type: Date,
+          default: Date.now()
         }
       },
     ],
     default: [{
-      status:'Request Approved',
-      date:Date.now()
+      status: 'Request Approved',
+      date: Date.now()
     }]
   }
 }, { timestamps: true });

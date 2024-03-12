@@ -1258,13 +1258,18 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
-
     let status = {};
+    let allStatus = {}
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'Product Received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
         status.claimStatus = [
+          {
+            status: 'Completed'
+          }
+        ]
+        data.trackStatus = [
           {
             status: 'Completed'
           }
@@ -1276,11 +1281,21 @@ exports.editClaimStatus = async (req, res) => {
           status: data.customerStatus
         }
       ]
-
+      data.trackStatus = [
+        {
+          status: data.customerStatus
+        }
+      ]
 
     }
     if (data.hasOwnProperty("repairStatus")) {
       data.repairStatus = [
+        {
+          status: data.repairStatus
+        }
+      ]
+
+      data.trackStatus = [
         {
           status: data.repairStatus
         }
@@ -1291,6 +1306,11 @@ exports.editClaimStatus = async (req, res) => {
       data.claimStatus = [
         {
           status: data.claimStatus
+        }
+      ]
+      data.trackStatus = [
+        {
+          status: data.repairStatus
         }
       ]
     }
