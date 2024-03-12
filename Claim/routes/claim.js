@@ -6,6 +6,7 @@ router.post("/searchClaim", [verifyToken],claimController.searchClaim);
 router.post("/saveBulkClaim", [verifyToken],claimController.saveBulkClaim);
 router.post("/uploadReceipt", [verifyToken],claimController.uploadReceipt);
 router.post("/sendMessages/:claimId", [verifyToken],claimController.sendMessages);
+router.get("/getMessages/:claimId", [verifyToken],claimController.getMessages);
 router.post("/uploadCommentImage", [verifyToken],claimController.uploadCommentImage);
 router.post("/createClaim",[verifyToken],claimController.addClaim)
 router.post("/getAllClaims",[verifyToken],claimController.getAllClaims)

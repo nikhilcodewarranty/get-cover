@@ -10,6 +10,14 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
+  static async getAllMessages(query) {
+    try {
+      const allMessages = await comments.aggregate(query);
+      return allMessages;
+    } catch (error) {
+      console.log(`Could not fetch claims ${error}`);
+    }
+  }
   static async getClaims(query) {
     try {
       const allClaims = await claim.find(query);
@@ -43,13 +51,13 @@ module.exports = class claimService {
       console.log(error);
     }
   }
- 
+
   static async checkTotalAmount(query) {
     try {
       const response = await claim.aggregate([
         { $match: query },
         { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-        
+
       ])
       return response;
     } catch (error) {
@@ -58,9 +66,9 @@ module.exports = class claimService {
   }
 
 
-  static async getClaimById(claimId) {
+  static async getClaimById(claimId, projection = {}) {
     try {
-      const singleClaimResponse = await claim.findOne(claimId);
+      const singleClaimResponse = await claim.findOne(claimId,projection);
       return singleClaimResponse;
     } catch (error) {
       console.log(`claim not found. ${error}`);

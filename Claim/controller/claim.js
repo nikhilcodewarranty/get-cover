@@ -1016,10 +1016,10 @@ exports.uploadCommentImage = async (req, res, next) => {
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        messageFile:{
-          fileName:file.filename,
-          originalName:file.originalname,
-          size:file.size
+        messageFile: {
+          fileName: file.filename,
+          originalName: file.originalname,
+          size: file.size
         }
       })
     })
@@ -1506,6 +1506,7 @@ exports.sendMessages = async (req, res) => {
       })
       return
     }
+    data.claimId = req.params.claimId
     let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
     if (!orderData) {
       res.send({
@@ -1515,8 +1516,8 @@ exports.sendMessages = async (req, res) => {
       return
     }
     // console.log(" req.userId==================", req.role);return;
-    data.commentedBy = req.userId ? req.userId : '656f0550d0d6e08fc82379dc'
-    data.commentedTo = '656f0550d0d6e08fc82379dc';
+    data.commentedBy = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+    data.commentedTo = '65f01eed2f048cac854daaa5';
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
     }
@@ -1553,6 +1554,78 @@ exports.sendMessages = async (req, res) => {
     })
   };
 }
+exports.getMessages = async (req, res) => {
+  if (req.role != 'Super Admin') {
+    res.send({
+      code: constant.errorCode,
+      message: 'Only super admin allow to do this action'
+    })
+    return
+  }
+  const checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { isDeleted: false })
+  if (!checkClaim) {
+    res.send({
+      code: constant.errorCode,
+      message: 'Invalid Claim id!'
+    })
+    return;
+  }
+  let lookupQuery = [
+    {
+      $match:
+      {
+        $and: [
+          { claimId: new mongoose.Types.ObjectId(req.params.claimId) }
+        ]
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "commentedTo",
+        foreignField: "metaId",
+        as: "commentTo",
+
+      }
+    },
+    {
+      $unwind: "$commentTo"
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "commentedBy",
+        foreignField: "metaId",
+        as: "commentBy",
+
+      }
+    },
+    {
+      $unwind: "$commentBy"
+    },
+    {
+      $project: {
+        _id: 1,
+        date: 1,
+        type: 1,
+        messageFile: 1,
+        content:1,
+        "commentBy.firstName": 1,
+        "commentBy.lastName": 1,
+        "commentTo.firstName": 1,
+        "commentTo.lastName": 1,
+      }
+    }
+  ]
+
+  let allMessages = await claimService.getAllMessages(lookupQuery);
+  res.send({
+    code: constant.successCode,
+    messages: 'Success!',
+    result: allMessages
+  })
+}
+
 
 exports.statusClaim = async (req, res) => {
   try {
