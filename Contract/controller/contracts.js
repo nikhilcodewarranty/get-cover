@@ -474,7 +474,7 @@ exports.getContractById = async (req, res) => {
             },
             {
               $lookup: {
-                from: "servicers",
+                from: "serviceproviders",
                 localField: "servicerId",
                 foreignField: "_id",
                 as: "servicer",
