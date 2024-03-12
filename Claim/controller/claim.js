@@ -500,10 +500,10 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
 
-    console.log("newQuery==========================", newQuery);
 
 
     let lookupQuery = [
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -788,7 +788,6 @@ exports.getAllClaims = async (req, res, next) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    console.log("lookupQuery==========================", lookupQuery);
 
     let allClaims = await claimService.getAllClaims(lookupQuery);
     //return res.send(allClaims)
