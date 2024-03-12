@@ -56,37 +56,36 @@ exports.getAllContracts = async (req, res) => {
       );
     }
 
-newQuery.push(
-  {
-    $facet: {
-      totalRecords: [
-        {
-          $count: "total"
-        }
-      ],
-      data: [
-        {
-          $lookup: {
-            from: "resellers",
-            localField: "order.resellerId",
-            foreignField: "_id",
-            as: "order.reseller",
-          }
-        },
-        {
-          $skip: skipLimit
-        },
-        {
-          $limit: pageLimit
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "order.resellerId",
+                foreignField: "_id",
+                as: "order.reseller",
+              }
+            },
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+
+          ],
         },
 
-      ],
-    },
-
-  })
-    console.log(newQuery)
+      })
     let query = [
-      // { $sort: { unique_key_number: -1 } },
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -294,7 +293,6 @@ newQuery.push(
     //   },
     // ]
     let getContracts = await contractService.getAllContracts2(query)
-    // let getTotalCount = await contractService.findContractCount({ isDeleted: false, })
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
