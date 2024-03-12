@@ -1260,16 +1260,17 @@ exports.editClaimStatus = async (req, res) => {
       return
     }
 
-    let status = []
+    let status = {};
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'Product Received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
-        data.claimStatus = [
+        status.claimStatus = [
           {
             status: 'Completed'
           }
         ]
+        let statusClaim = await claimService.updateClaim(criteria, { $push: status }, { new: true })
       }
       data.customerStatus = [
         {
@@ -1296,6 +1297,7 @@ exports.editClaimStatus = async (req, res) => {
     }
 
     let updateStatus = await claimService.updateClaim(criteria, { $push: data }, { new: true })
+
     if (!updateStatus) {
       res.send({
         code: constant.errorCode,
@@ -1310,9 +1312,11 @@ exports.editClaimStatus = async (req, res) => {
       result: updateStatus
     })
 
-
   } catch (err) {
-
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 }
 exports.editServicer = async (req, res) => {
@@ -1609,7 +1613,7 @@ exports.getMessages = async (req, res) => {
         date: 1,
         type: 1,
         messageFile: 1,
-        content:1,
+        content: 1,
         "commentBy.firstName": 1,
         "commentBy.lastName": 1,
         "commentTo.firstName": 1,
@@ -1632,6 +1636,7 @@ exports.statusClaim = async (req, res) => {
     const result = await claimService.getClaims({
       'repairStatus.status': 'Servicer Shipped',
     });
+    let updateStatus
     for (let i = 0; i < result.length; i++) {
       let messageData = {};
       const repairStatus = result[i].repairStatus;
@@ -1652,8 +1657,6 @@ exports.statusClaim = async (req, res) => {
         return latest;
       }, customerStatus[0]);
 
-      console.log("customerLastResponseDate===================", customerLastResponseDate)
-
       const latestServicerShippedDate = new Date(latestServicerShipped.date);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
@@ -1669,16 +1672,14 @@ exports.statusClaim = async (req, res) => {
           }
         ]
       }
-      let updateStatus = await claimService.updateClaim({ _id: claimId }, {
+      updateStatus = await claimService.updateClaim({ _id: claimId }, {
         $push: messageData,
         $set: { claimFile: 'Completed' }
       }, { new: true })
     }
-
-
     res.send({
       code: constant.successCode,
-      result
+      updateStatus
     })
   }
   catch (err) {
