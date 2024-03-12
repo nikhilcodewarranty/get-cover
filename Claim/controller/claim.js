@@ -1080,7 +1080,6 @@ exports.addClaim = async (req, res, next) => {
     }
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    console.log(claimTotal)
     if (checkContract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: consta.errorCode,
@@ -1096,7 +1095,15 @@ exports.addClaim = async (req, res, next) => {
     data.unique_key_search = "CC" + "2024" + data.unique_key_number
     data.unique_key = "CC-" + "2024-" + data.unique_key_number
     let claimResponse = await claimService.createClaim(data)
-
+    if (!claimResponse) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to add claim of this contract!'
+      });
+      return
+    }
+    // Eligibility false when claim open
+    const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
     res.send({
       code: constant.successCode,
       message: 'Success!',
