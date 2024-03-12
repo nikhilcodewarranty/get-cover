@@ -1289,13 +1289,12 @@ exports.editClaimStatus = async (req, res) => {
 
     }
     if (data.hasOwnProperty("repairStatus")) {
-      data.repairStatus = [
+      data.trackStatus = [
         {
           status: data.repairStatus
         }
       ]
-
-      data.trackStatus = [
+      data.repairStatus = [
         {
           status: data.repairStatus
         }
@@ -1303,16 +1302,17 @@ exports.editClaimStatus = async (req, res) => {
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, option)
+      data.trackStatus = [
+        {
+          status: data.claimStatus
+        }
+      ]
       data.claimStatus = [
         {
           status: data.claimStatus
         }
       ]
-      data.trackStatus = [
-        {
-          status: data.repairStatus
-        }
-      ]
+
     }
 
     let updateStatus = await claimService.updateClaim(criteria, { $push: data }, { new: true })
