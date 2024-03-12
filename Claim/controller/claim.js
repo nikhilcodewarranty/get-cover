@@ -1638,6 +1638,17 @@ exports.getMessages = async (req, res) => {
                 { isPrimary: true }
               ]
             },
+          },
+          {
+            $lookup:{
+              from:'roles',
+              localField:'roleId',
+              foreignField:'_id',
+              as:'roles'
+            }
+          },
+          {
+            $unwind:"$roles"
           }
         ]
       }
@@ -1656,6 +1667,7 @@ exports.getMessages = async (req, res) => {
         "commentBy.lastName": 1,
         "commentTo.firstName": 1,
         "commentTo.lastName": 1,
+        "commentBy.roles.role":1
       }
     }
   ]
