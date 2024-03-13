@@ -1503,15 +1503,15 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         return;
                     }
 
-                    let checkRetailValue = allDataComing.map((obj) => {
-                        const priceObj = obj.data.map((item) => {
+                    let checkRetailValue = allDataComing.map((obj1) => {
+                        const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
                             return {
-                                key: obj.key,
-                                checkNumberProducts: obj.checkNumberProducts,
-                                noOfProducts: obj.noOfProducts,
-                                rangeStart: obj.rangeStart,
-                                rangeEnd: obj.rangeEnd,
+                                key: obj1.key,
+                                checkNumberProducts: obj1.checkNumberProducts,
+                                noOfProducts: obj1.noOfProducts,
+                                rangeStart: obj1.rangeStart,
+                                rangeEnd: obj1.rangeEnd,
                                 retailValue: item[keys[4]],
                             };
                         });
@@ -1529,7 +1529,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
 
-                                else if (
+                                else if (obj1.priceType('Flat Pricing') &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
                                 ) {
@@ -1770,36 +1770,107 @@ exports.editFileCase = async (req, res) => {
                         return;
                     }
 
-                    let checkRetailValue = allDataComing.map((obj) => {
-                        if (obj.priceType == "Flat Pricing") {
-                            const priceObj = obj.data.map((item) => {
-                                const keys = Object.keys(item);
-                                return {
-                                    key: obj.key,
-                                    checkNumberProducts: obj.checkNumberProducts,
-                                    noOfProducts: obj.noOfProducts,
-                                    rangeStart: obj.rangeStart,
-                                    rangeEnd: obj.rangeEnd,
-                                    retailValue: item[keys[4]],
-                                };
-                            });
+                    // let checkRetailValue = allDataComing.map((obj) => {
+                    //     if (obj.priceType == "Flat Pricing") {
+                    //         const priceObj = obj.data.map((item) => {
+                    //             const keys = Object.keys(item);
+                    //             return {
+                    //                 key: obj.key,
+                    //                 checkNumberProducts: obj.checkNumberProducts,
+                    //                 noOfProducts: obj.noOfProducts,
+                    //                 rangeStart: obj.rangeStart,
+                    //                 rangeEnd: obj.rangeEnd,
+                    //                 retailValue: item[keys[4]],
+                    //             };
+                    //         });
 
-                            if (priceObj.length > 0) {
-                                priceObj.map((obj, index) => {
-                                    if (
-                                        Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                        Number(obj.retailValue) > Number(obj.rangeEnd)
-                                    ) {
+                    //         if (priceObj.length > 0) {
+                    //             priceObj.map((obj, index) => {
+                    //                 if (
+                    //                     Number(obj.retailValue) < Number(obj.rangeStart) ||
+                    //                     Number(obj.retailValue) > Number(obj.rangeEnd)
+                    //                 ) {
+                    //                     message.push({
+                    //                         code: constant.errorCode,
+                    //                         retailPrice: obj.retailValue,
+                    //                         key: obj.key,
+                    //                         message: "Invalid Retail Price!",
+                    //                     });
+                    //                 }
+                    //             });
+                    //         }
+                    //     }
+                    // });
+
+                    let checkRetailValue = allDataComing.map((obj1) => {
+                        const priceObj = obj1.data.map((item) => {
+                            const keys = Object.keys(item);
+                            return {
+                                key: obj1.key,
+                                checkNumberProducts: obj1.checkNumberProducts,
+                                noOfProducts: obj1.noOfProducts,
+                                rangeStart: obj1.rangeStart,
+                                rangeEnd: obj1.rangeEnd,
+                                retailValue: item[keys[4]],
+                            };
+                        });
+                        if (priceObj.length > 0) {
+                            priceObj.map((obj, index) => {
+                                if (isNaN(obj.retailValue)) {
+                                    {
                                         message.push({
                                             code: constant.errorCode,
-                                            retailPrice: obj.retailValue,
                                             key: obj.key,
-                                            message: "Invalid Retail Price!",
+                                            message: "Retail Price should be integer!!",
                                         });
+                                        return;
                                     }
-                                });
-                            }
+                                }
+
+                                else if (obj1.priceType('Flat Pricing') &&
+                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                    Number(obj.retailValue) > Number(obj.rangeEnd)
+                                ) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: "Retail price should be between start and end range!",
+                                    });
+
+                                    return;
+                                }
+                            });
                         }
+                        // else if (obj.priceType == "Flat Pricing") {
+                        //     if (priceObj.length > 0) {
+                        //         priceObj.map((obj, index) => {
+                        //             if (isNaN(obj.retailValue)) {
+                        //                 {
+                        //                     message.push({
+                        //                         code: constant.errorCode,
+                        //                         key: obj.key,
+                        //                         message: "Retail Price should be integer!!",
+                        //                     });
+
+                        //                     return;
+                        //                 }
+                        //             }
+                        //             else if (
+                        //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
+                        //                 Number(obj.retailValue) > Number(obj.rangeEnd)
+                        //             ) {
+                        //                 message.push({
+                        //                     code: constant.errorCode,
+                        //                     key: obj.key,
+                        //                     message: "Invalid Retail Price!",
+                        //                 });
+
+                        //                 return;
+                        //             }
+                        //         });
+                        //     }
+                        // }
+
                     });
 
                     if (message.length > 0) {
