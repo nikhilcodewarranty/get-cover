@@ -15,6 +15,9 @@ exports.getAllContracts = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    // const index = await contractService.makeIndexForCollection();
+    // console.log(index)
+    // return;
     let newQuery = [];
     if (data.dealerName) {
       newQuery.push(
@@ -79,7 +82,19 @@ exports.getAllContracts = async (req, res) => {
             {
               $limit: pageLimit
             },
-
+            {
+              $project:{
+                productName:1,
+                model:1,
+                serial:1,
+                unique_key:1,
+                status:1,
+                manufacture:1,
+                eligibilty:1,
+                "order.unique_key":1,
+                "order.venderOrder":1
+              }
+            }
           ],
         },
 
@@ -101,6 +116,7 @@ exports.getAllContracts = async (req, res) => {
           ]
         },
       },
+      {$limit: pageLimit},
       {
         $lookup: {
           from: "orders",

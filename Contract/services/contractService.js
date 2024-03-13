@@ -19,6 +19,16 @@ module.exports = class contractService {
     }
   }
 
+  static async makeIndexForCollection() {
+    try {
+      const index = await contract.index({ orderId: 1 } )
+      return index;
+    } catch (error) {
+      console.log(`Could not fetch contracts ${error}`);
+    }
+  }
+
+  
 
 
 
