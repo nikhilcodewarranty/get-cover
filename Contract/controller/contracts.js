@@ -116,7 +116,7 @@ exports.getAllContracts = async (req, res) => {
           ]
         },
       },
-      {$limit: pageLimit},
+      // {$limit: pageLimit},
       {
         $lookup: {
           from: "orders",
