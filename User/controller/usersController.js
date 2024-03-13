@@ -1448,7 +1448,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.accountId, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
+      { userId: user.accountId, firstName: user.firstName, lastName: user.lastName, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "356d" }
     );
@@ -1502,6 +1502,7 @@ exports.createSuperAdmin = async (req, res) => {
       email: data.email,
       password: hashedPassword,
       accountId: data.accountId,
+      metaId: data.accountId,
       phoneNumber: data.phoneNumber,
       roleId: superRole._id, //Assign super role
       isPrimary: data.isPrimary,

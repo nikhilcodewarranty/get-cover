@@ -1394,7 +1394,6 @@ exports.editServicer = async (req, res) => {
 
 }
 
-
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
@@ -1406,7 +1405,6 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return
       }
-
       //  console.log(req.files); return;
       const fileUrl = req.files[0].path
       const wb = XLSX.readFile(fileUrl);
@@ -1422,26 +1420,46 @@ exports.saveBulkClaim = async (req, res) => {
           servicerName: item[keys[1]],
           lossDate: item[keys[2]],
           diagnosis: item[keys[3]],
-          duplicate: [],
+          duplicate: false,
           exit: false
         };
       });
-      //check Contract Id exist or not in the array
-      for (let i = 0; i < totalDataComing.length; i++) {
-        if (totalDataComing[i].contractId == '' || totalDataComing[i].contractId == undefined) {
-          totalDataComing[i].exit = true;
-          totalDataComing[i].status = 'The Contract id is empty'
+      console.log("totalDataComing==============",totalDataComing);
+      totalDataComing.forEach(data => {
+        if (!data.contractId || data.contractId == "") {
+          data.status = "ContractId cannot be empty"
+          data.exit = true
         }
-        if (totalDataComing[i].lossDate == '' || totalDataComing[i].contractId == undefined) {
-          totalDataComing[i].exit = true;
-          totalDataComing[i].status = 'The last date is empty'
+        if (!data.lossDate || data.lossDate == "") {
+          data.status = "Loss date cannot be empty"
+          data.exit = true
         }
-        if (totalDataComing[i].diagnosis == '' || totalDataComing[i].contractId == undefined) {
-          totalDataComing[i].exit = true;
-          totalDataComing[i].status = 'The dignosis is empty'
+        if (new Date(data.lossDate) == 'Invalid Date') {
+          data.status = "Date is not valid format"
+          data.exit = true
         }
+        if (new Date(data.lossDate) > new Date()) {
+          data.status = "Date can not greater than today"
+          data.exit = true
+        }
+        if (!data.diagnosis || data.diagnosis == "") {
+          data.status = "Diagnosis can not be empty"
+          data.exit = true
+        }
+      })
 
-      }
+      let cache = {};
+      totalDataComing.forEach((data, i) => {
+        if (!data.exit) {
+          if (cache[data.contractId?.toLowerCase()]) {
+            data.status = "duplicate contract id"
+            data.exit = true;
+          } else {
+            cache[data.contractId?.toLowerCase()] = true;
+          }
+        }
+      })
+
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -1449,49 +1467,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       return;
-
-      // const totalDataComing = [
-      //   {
-      //     contractId: 'OC-2024-100000',
-      //     servicerName: '3122',
-      //     lossDate: '03-03-2024',
-      //     diagnosis: 'new'
-      //   },
-      //   {
-      //     contractId: 'OC-2024-100000',
-      //     servicerName: 'yashDealer',
-      //     lossDate: '03-03-2024',
-      //     diagnosis: 'dsdsdfs'
-      //   }
-      // ]
-
-      var today = new Date();
-      totalDataComing.map((data, index) => {
-        var compareDate = new Date(data.lossDate)
-        if (data.contractId == '' || data.lossDate == '' || data.diagnosis == '') {
-          let obj = {
-            code: constant.errorCode,
-            message: 'Contract Id, loss date and diagnosis should not empty!'
-          }
-          message.push(obj)
-          return;
-        }
-        else if (compareDate > today) {
-          let obj = {
-            code: constant.errorCode,
-            message: 'Loss date should not be future'
-          }
-          message.push(obj)
-          return;
-        }
-      })
-      if (message.length > 0) {
-        res.send({
-          message
-        })
-        return
-      }
-
 
       res.send({
         code: constant.successCode,
@@ -1639,15 +1614,15 @@ exports.getMessages = async (req, res) => {
             },
           },
           {
-            $lookup:{
-              from:'roles',
-              localField:'roleId',
-              foreignField:'_id',
-              as:'roles'
+            $lookup: {
+              from: 'roles',
+              localField: 'roleId',
+              foreignField: '_id',
+              as: 'roles'
             }
           },
           {
-            $unwind:"$roles"
+            $unwind: "$roles"
           }
         ]
       }
@@ -1666,7 +1641,7 @@ exports.getMessages = async (req, res) => {
         "commentBy.lastName": 1,
         "commentTo.firstName": 1,
         "commentTo.lastName": 1,
-        "commentBy.roles.role":1
+        "commentBy.roles.role": 1
       }
     }
   ]
@@ -1678,8 +1653,6 @@ exports.getMessages = async (req, res) => {
     result: allMessages
   })
 }
-
-
 exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
