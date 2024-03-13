@@ -316,7 +316,6 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-
     // Check if the request body is empty
     if (Object.keys(body).length === 0) {
       res.send({
@@ -412,7 +411,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       if (body.status == false) {
         const newValue = { status: body.status };
         const option = { new: true };
-        let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId }, { status: 'Archieved' }, option)
+        let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId, status: 'Pending' }, { status: 'Archieved' }, option)
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }

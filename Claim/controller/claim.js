@@ -753,7 +753,6 @@ exports.getAllClaims = async (req, res, next) => {
           // "contracts.orders.dealers.isDeleted": false,
         }
       },
-
       {
         $lookup: {
           from: "customers",

@@ -561,15 +561,16 @@ exports.cronJobEligible = async (req, res) => {
     ];
     let result = await contractService.getAllContracts2(lookupQuery);
     let bulk = [];
+    let updateDoc;
     for (let i = 0; i < result.length; i++) {
       let contractId = result[i]._id;
       let productValue = result[i].productValue;
       let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
-      if (result[i].claims.length > 0 & !checkClaim) {
+      if (!checkClaim) {
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
         let claimTotal = await claimService.checkTotalAmount(query);
-        if (productValue < claimTotal[0]?.amount) {
-          let updateDoc = {
+        if (productValue > claimTotal[0]?.amount) {
+           updateDoc = {
             'updateMany': {
               'filter': { '_id': contractId },
               update: { $set: { eligibilty: true } },
@@ -578,10 +579,20 @@ exports.cronJobEligible = async (req, res) => {
           }
           bulk.push(updateDoc)
         }
+        else {
+           updateDoc = {
+            'updateMany': {
+              'filter': { '_id': contractId },
+              update: { $set: { eligibilty: false } },
+              'upsert': false
+            }
+          }
+          bulk.push(updateDoc)
+        }
       }
 
       else {
-        let updateDoc = {
+         updateDoc = {
           'updateMany': {
             'filter': { '_id': contractId },
             update: { $set: { eligibilty: false } },
