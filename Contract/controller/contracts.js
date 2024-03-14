@@ -83,16 +83,16 @@ exports.getAllContracts = async (req, res) => {
               $limit: pageLimit
             },
             {
-              $project:{
-                productName:1,
-                model:1,
-                serial:1,
-                unique_key:1,
-                status:1,
-                manufacture:1,
-                eligibilty:1,
-                "order.unique_key":1,
-                "order.venderOrder":1
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1
               }
             }
           ],
@@ -576,51 +576,100 @@ exports.cronJobEligible = async (req, res) => {
       },
     ];
     let result = await contractService.getAllContracts2(lookupQuery);
+    // res.send({
+    //   code: constant.successCode,
+    //   result
+    // })
+    // return;
     let bulk = [];
+    let contractIds = []
     let updateDoc;
     for (let i = 0; i < result.length; i++) {
       let contractId = result[i]._id;
+      contractIds.push(contractId)
       let productValue = result[i].productValue;
-      let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
-      if (!checkClaim) {
-        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
-        let claimTotal = await claimService.checkTotalAmount(query);
-        if (productValue > claimTotal[0]?.amount) {
-           updateDoc = {
+      updateDoc = {
+        'updateMany': {
+          'filter': { '_id': contractId },
+          update: { $set: { eligibilty: true } },
+          'upsert': false
+        }
+      }
+      bulk.push(updateDoc)
+    }
+    // Update when not any claim right now for active contract
+    const firstUpdate = await contractService.allUpdate(bulk);
+    bulk = [];
+    let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } })
+    const openContractIds = checkClaim.filter(claim => claim.claimFile === 'Open').map(claim => claim.contractId);
+    let updateDocument = openContractIds.map((openContract) => {
+      updateDoc = {
+        'updateMany': {
+          'filter': { '_id': openContract },
+          update: { $set: { eligibilty: false } },
+          'upsert': false
+        }
+      }
+      bulk.push(updateDoc)
+    })
+      // Update when claim is open for contract
+    const update = await contractService.allUpdate(bulk);
+    bulk = [];
+     const updatedData = await contractService.allUpdate(bulk);
+    const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
+    if (notOpenContractIds.length > 0) {
+      for (let j = 0; j < notOpenContractIds.length; j++) {
+        let claimTotal = await claimService.checkTotalAmount({ contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) });
+        let obj = result.filter(el => el._id.toString() === notOpenContractIds[j].toString())
+        if (obj[0]?.productValue > claimTotal[0]?.amount) {
+          updateDoc = {
             'updateMany': {
-              'filter': { '_id': contractId },
+              'filter': { '_id': notOpenContractIds[j] },
               update: { $set: { eligibilty: true } },
               'upsert': false
             }
           }
           bulk.push(updateDoc)
         }
-        else {
-           updateDoc = {
-            'updateMany': {
-              'filter': { '_id': contractId },
-              update: { $set: { eligibilty: false } },
-              'upsert': false
-            }
-          }
-          bulk.push(updateDoc)
-        }
       }
-
-      else {
-         updateDoc = {
-          'updateMany': {
-            'filter': { '_id': contractId },
-            update: { $set: { eligibilty: false } },
-            'upsert': false
-          }
-        }
-        bulk.push(updateDoc)
-      }
-
-
     }
-    const updatedData = await contractService.allUpdate(bulk);
+     // Update when claim is not open but completed claim and product value still less than claim value
+    const updatedData1 = await contractService.allUpdate(bulk);
+
+    // if (!checkClaim) {
+    //   const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+    //   let claimTotal =  claimService.checkTotalAmount(query);
+    //   if (productValue > claimTotal[0]?.amount) {
+    //      updateDoc = {
+    //       'updateMany': {
+    //         'filter': { '_id': contractId },
+    //         update: { $set: { eligibilty: true } },
+    //         'upsert': false
+    //       }
+    //     }
+    //     bulk.push(updateDoc)
+    //   }
+    //   else {
+    //      updateDoc = {
+    //       'updateMany': {
+    //         'filter': { '_id': contractId },
+    //         update: { $set: { eligibilty: false } },
+    //         'upsert': false
+    //       }
+    //     }
+    //     bulk.push(updateDoc)
+    //   }
+    // }
+    // else {
+    //    updateDoc = {
+    //     'updateMany': {
+    //       'filter': { '_id': contractId },
+    //       update: { $set: { eligibilty: false } },
+    //       'upsert': false
+    //     }
+    //   }
+    //   bulk.push(updateDoc)
+    // }
     res.send({
       code: constant.successCode,
     })
