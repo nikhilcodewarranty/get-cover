@@ -1423,8 +1423,8 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return
       }
-      //  console.log(req.files); return;
-      const fileUrl = req.file.path
+    // console.log(req.files[0].path); return;
+      const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
         defval: '',
@@ -1452,7 +1452,7 @@ exports.saveBulkClaim = async (req, res) => {
       if (headers.length !== 4) {
         res.send({
           code: constant.errorCode,
-          message: "Invalid file format detected. The sheet should contain exactly two columns."
+          message: "Invalid file format detected. The sheet should contain exactly four columns."
         })
         return
       }
