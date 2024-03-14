@@ -1423,6 +1423,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return
       }
+      console.log(req.files)
     // console.log(req.files[0].path); return;
       const fileUrl = req.files[0].path
       const jsonOpts = {
@@ -1456,6 +1457,8 @@ exports.saveBulkClaim = async (req, res) => {
         })
         return
       }
+
+      console.log(req.files)
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
