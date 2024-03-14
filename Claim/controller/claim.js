@@ -1441,6 +1441,21 @@ exports.saveBulkClaim = async (req, res) => {
       });
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
+      const headers = [];
+      for (let cell in ws) {
+        // Check if the cell is in the first row and has a non-empty value
+        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
+          headers.push(ws[cell].v);
+        }
+      }
+
+      if (headers.length !== 4) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid file format detected. The sheet should contain exactly two columns."
+        })
+        return
+      }
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
