@@ -183,7 +183,7 @@ exports.getAllCustomers = async (req, res, next) => {
     }).filter(item => item !== undefined);
     //console.log("result_Array----------------0",result_Array)
     const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
     const filteredData = result_Array.filter(entry => {

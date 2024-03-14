@@ -820,7 +820,7 @@ exports.getAllClaims = async (req, res, next) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getAllClaims(lookupQuery, skipLimit, pageLimit);
-    return res.send(allClaims)
+   
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     //Get Dealer and Reseller Servicers
