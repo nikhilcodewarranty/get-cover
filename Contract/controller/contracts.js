@@ -635,41 +635,6 @@ exports.cronJobEligible = async (req, res) => {
     }
      // Update when claim is not open but completed claim and product value still less than claim value
     const updatedData1 = await contractService.allUpdate(bulk);
-
-    // if (!checkClaim) {
-    //   const query = { contractId: new mongoose.Types.ObjectId(contractId) }
-    //   let claimTotal =  claimService.checkTotalAmount(query);
-    //   if (productValue > claimTotal[0]?.amount) {
-    //      updateDoc = {
-    //       'updateMany': {
-    //         'filter': { '_id': contractId },
-    //         update: { $set: { eligibilty: true } },
-    //         'upsert': false
-    //       }
-    //     }
-    //     bulk.push(updateDoc)
-    //   }
-    //   else {
-    //      updateDoc = {
-    //       'updateMany': {
-    //         'filter': { '_id': contractId },
-    //         update: { $set: { eligibilty: false } },
-    //         'upsert': false
-    //       }
-    //     }
-    //     bulk.push(updateDoc)
-    //   }
-    // }
-    // else {
-    //    updateDoc = {
-    //     'updateMany': {
-    //       'filter': { '_id': contractId },
-    //       update: { $set: { eligibilty: false } },
-    //       'upsert': false
-    //     }
-    //   }
-    //   bulk.push(updateDoc)
-    // }
     res.send({
       code: constant.successCode,
     })
