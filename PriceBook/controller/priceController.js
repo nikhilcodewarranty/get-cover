@@ -411,7 +411,9 @@ exports.updatePriceBookById = async (req, res, next) => {
       if (body.status == false) {
         const newValue = { status: body.status };
         const option = { new: true };
+        console.log(body.status)
         let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId, status: 'Pending' }, { status: 'Archieved' }, option)
+        console.log("updateOrder================",updateOrder);
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
@@ -757,6 +759,8 @@ exports.updatePriceBookCat = async (req, res) => {
       if (data.status == false) {
         let updatePriceBook = await priceBookService.updatePriceBook({ category: updateCatResult._id }, { status: data.status }, { new: true })
         let projection = { isDeleted: 0, __v: 0 }
+        let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, option)
+
         const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
         const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
         if (priceIdsToUpdate) {
