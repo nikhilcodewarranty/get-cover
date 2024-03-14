@@ -520,6 +520,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.manufacture": 1,
               "contracts.serial": 1,
               "contracts.orders.dealerId": 1,
+              "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
               "contracts.orders.customerId": 1,
               "contracts.orders.resellerId": 1,
@@ -1852,7 +1853,6 @@ exports.getMessages = async (req, res) => {
       }
     }
   ]
-
   let allMessages = await claimService.getAllMessages(lookupQuery);
   res.send({
     code: constant.successCode,
@@ -1933,7 +1933,6 @@ exports.saveBulkData = async (req, res) => {
     })
   }
 }
-
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
