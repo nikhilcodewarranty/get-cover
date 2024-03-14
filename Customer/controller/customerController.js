@@ -609,6 +609,8 @@ exports.getCustomerUsers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
+
+    console.log("filteredData=================",filteredData)
     let checkCustomer = await customerService.getCustomerByName({ _id: req.params.customerId }, { status: 1 })
     if (!checkCustomer) {
       res.send({
