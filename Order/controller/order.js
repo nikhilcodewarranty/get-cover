@@ -1829,6 +1829,7 @@ exports.editFileCase = async (req, res) => {
                                 Number(obj.retailValue) < Number(obj.rangeStart) ||
                                 Number(obj.retailValue) > Number(obj.rangeEnd)
                             ) {
+                                console.log(obj1.priceType);
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
