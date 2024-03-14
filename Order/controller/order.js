@@ -1603,7 +1603,7 @@ exports.editFileCase = async (req, res) => {
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
-                if (data.productsArray[i]?.orderFile && data.productsArray[i]?.orderFile.fileName != '') {
+                if (data.productsArray[i]?.orderFile.length != 0) {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
                     let product = {
                         key: i,
@@ -1825,7 +1825,7 @@ exports.editFileCase = async (req, res) => {
                                     return;
                                 }
                             }
-                            else if (obj1.priceType === 'Flat Pricing' ) {
+                            else if (obj1.priceType === 'Flat Pricing') {
                                 if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
                                     console.log(obj1.priceType);
                                     message.push({
@@ -1833,7 +1833,7 @@ exports.editFileCase = async (req, res) => {
                                         key: obj.key,
                                         message: "Retail price should be between start and end range!",
                                     });
-                            
+
                                     return;
                                 }
                             }
@@ -2612,9 +2612,6 @@ exports.editOrderDetail = async (req, res) => {
         //     return;
         // }
         // }
-
-
-        console.log("data====================",data);
 
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
