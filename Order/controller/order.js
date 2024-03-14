@@ -1517,18 +1517,17 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         });
                         if (priceObj.length > 0) {
                             priceObj.map((obj, index) => {
-                                if (isNaN(obj.retailValue)) {
+                                if (isNaN(obj.retailValue) || obj.retailValue < 0) {
                                     {
                                         message.push({
                                             code: constant.errorCode,
                                             key: obj.key,
-                                            message: "Retail Price should be integer!!",
+                                            message: "Retail Price should be integer and positive!!",
                                         });
 
                                         return;
                                     }
                                 }
-
                                 else if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
