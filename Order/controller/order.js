@@ -1603,7 +1603,7 @@ exports.editFileCase = async (req, res) => {
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
-                if (data.productsArray[i].orderFile.fileName != '') {
+                if (data.productsArray[i]?.orderFile && data.productsArray[i]?.orderFile.fileName != '') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
                     let product = {
                         key: i,
