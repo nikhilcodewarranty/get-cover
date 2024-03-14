@@ -6,6 +6,9 @@ const { comments } = require("../model/comments");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.sendgrid_key);
+const emailConstant = require('../../config/emailConstant');
 const userService = require("../../User/services/userService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const contractService = require("../../Contract/services/contractService");
@@ -1395,7 +1398,7 @@ exports.editServicer = async (req, res) => {
 }
 
 exports.saveBulkClaim = async (req, res) => {
-  uploadP(req, res, async (err) => {
+  // uploadP(req, res, async (err) => {
     try {
       let data = req.body
       if (req.role != 'Super Admin') {
@@ -1406,14 +1409,27 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
       //  console.log(req.files); return;
-      const fileUrl = req.files[0].path
-      const wb = XLSX.readFile(fileUrl);
+      const fileUrl = data.file[0].path
+      const jsonOpts = {
+        header: 1,
+        defval: '',
+        blankrows: true,
+        raw: false,
+        dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+      }
+
+      const wb = XLSX.readFile(fileUrl, {
+        type: 'binary',
+        cellDates: true,
+        cellNF: false,
+        cellText: false
+      });
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
-      const totalDataComing = totalDataComing1.map((item) => {
+      const totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         return {
           contractId: item[keys[0]],
@@ -1424,7 +1440,6 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      console.log("totalDataComing==============",totalDataComing);
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
@@ -1452,18 +1467,137 @@ exports.saveBulkClaim = async (req, res) => {
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
-            data.status = "duplicate contract id"
+            data.status = "Duplicate contract id"
             data.exit = true;
           } else {
             cache[data.contractId?.toLowerCase()] = true;
           }
         }
       })
+      const contractArrayPromise = totalDataComing.map(item => {
+        if (!item.exit) return contractService.getContractById({
+          unique_key: item.contractId
+        });
+        else {
+          return null;
+        }
+      })
+      const contractArray = await Promise.all(contractArrayPromise);
+
+      const servicerArrayPromise = totalDataComing.map(item => {
+        if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
+          name: item.servicerName
+        });
+        else {
+          return null;
+        }
+      })
+      //console.log(servicerArrayPromise);return;
+      const servicerArray = await Promise.all(servicerArrayPromise);
+      //Filter data which is contract , servicer and not active
+
+
+      totalDataComing.forEach((item, i) => {
+        if (!item.exit) {
+          const contractData = contractArray[i];
+          const servicerData = servicerArray[i]
+          item.contractData = contractData;
+          item.servicerData = servicerData
+          if (!contractData) {
+            item.status = "Contract not found"
+            item.exit = true;
+          }
+          if (!servicerData && item.servicerName != '') {
+            item.status = "Servicer not found"
+            item.exit = true;
+          }
+          if (contractData.status != "Active") {
+            item.status = "Contract is not active";
+            item.exit = true;
+          }
+        } else {
+          item.contractData = null
+          item.servicerData = null
+        }
+      })
+      let finalArray = []
+      //Save bulk claim
+      let count = await claimService.getClaimCount();
+      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+      // unique_key_search = "CC" + "2024" + data.unique_key_number
+      // unique_key = "CC-" + "2024-" + data.unique_key_number
+      totalDataComing.map((data, index) => {
+        if (!data.exit) {
+          let obj = {
+            contractId: data.contractData._id,
+            servicerId: data.servicerData._id,
+            unique_key_number: unique_key_number,
+            unique_key_search: "CC" + "2024" + unique_key_number,
+            unique_key: "CC-" + "2024-" + unique_key_number,
+            diagnosis: data.diagnosis,
+            lossDate: data.lossDate,
+            claimFile: 'Open',
+          }
+          unique_key_number++
+          finalArray.push(obj)
+          data.status = 'Add claim successfully!'
+        }
+      })
+      //save bulk claim
+      const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      //send email to receipient
+      const csvArray = totalDataComing.map((item, i) => {
+        return {
+          contractId: item.contractId ? item.contractId : "",
+          servicerName: item.servicerName ? item.servicerName : "",
+          lossDate: item.lossDate ? item.lossDate : '',
+          diagnosis: item.diagnosis ? item.diagnosis : '',
+          status: item.status ? item.status : '',
+        }
+      })
+      function convertArrayToHTMLTable(array) {
+        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+        const rows = array.map(obj => {
+          const values = Object.values(obj).map(value => `<td>${value}</td>`);
+          values[2] = `${values[2]}`;
+          return values.join('');
+        });
+
+        const htmlContent = `<html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%; 
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>
+            <body>
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
+        </html>`;
+
+        return htmlContent;
+      }
+
+      const htmlTableString = convertArrayToHTMLTable(csvArray);
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        totalDataComing
+        result: saveBulkClaim
       })
 
       return;
@@ -1480,7 +1614,7 @@ exports.saveBulkClaim = async (req, res) => {
         message: err.message
       })
     }
-  })
+  // })
 
 }
 

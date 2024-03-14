@@ -92,4 +92,13 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
+
+  static async saveBulkClaim(data){
+    try {
+      const bulkResponse = await claim.insertMany(data);
+      return bulkResponse;
+    } catch (error) {
+      console.log(`Could  not delete claim ${error}`);
+    }
+  }
 };

@@ -28,6 +28,7 @@ const claimSchema = new mongoose.Schema({
   },
   action: {
     type: String,
+    default: ''
     // required: true,
   },
   bdAdh: {
@@ -65,7 +66,7 @@ const claimSchema = new mongoose.Schema({
   },
   claimType: {
     type: String,
-    default: ''
+    default: 'New'
   },
   servicePaymentStatus: {
     type: String,
