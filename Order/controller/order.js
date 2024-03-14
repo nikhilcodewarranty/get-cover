@@ -1825,18 +1825,17 @@ exports.editFileCase = async (req, res) => {
                                     return;
                                 }
                             }
-                            else if (obj1.priceType == 'Flat Pricing' &&
-                                Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                Number(obj.retailValue) > Number(obj.rangeEnd)
-                            ) {
-                                console.log(obj1.priceType);
-                                message.push({
-                                    code: constant.errorCode,
-                                    key: obj.key,
-                                    message: "Retail price should be between start and end range!",
-                                });
-
-                                return;
+                            else if (obj1.priceType === 'Flat Pricing' ) {
+                                if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
+                                    console.log(obj1.priceType);
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: "Retail price should be between start and end range!",
+                                    });
+                            
+                                    return;
+                                }
                             }
                         });
                         // else if (obj.priceType == "Flat Pricing") {
