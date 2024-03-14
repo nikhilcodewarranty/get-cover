@@ -90,11 +90,7 @@ const orderSchema = new mongoose.Schema({
               default: ''
             },
           },
-          default: {
-            fileName: '',
-            originalName: '',
-            size:''
-          }
+          default: {}
         },
         QuantityPricing: {
           type: [
