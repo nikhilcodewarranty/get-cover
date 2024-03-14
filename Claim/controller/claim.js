@@ -722,7 +722,7 @@ exports.getAllClaims = async (req, res, next) => {
     console.log("lookupQuery-------", lookupQuery)
     let allClaims = await claimService.getAllClaims(lookupQuery);
 
-    return res.json(allClaims);
+    // return res.json(allClaims);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
