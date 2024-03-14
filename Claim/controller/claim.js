@@ -524,9 +524,38 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.customer.username": 1,
-              "contracts.orders.dealers.dealerServicer": 1,
-              "contracts.orders.servicers": 1,
-              "contracts.orders.resellers": 1,
+              // "contracts.orders.dealers.dealerServicer": 1,
+              "contracts.orders.dealers.dealerServicer": {
+                $map: {
+                  input: "$contracts.orders.dealers.dealerServicer",
+                  as: "dealerServicer",
+                  in: {
+                    "_id": "$$dealerServicer._id",
+                    "servicerId": "$$dealerServicer.servicerId",
+                  }
+                }
+              },
+              "contracts.orders.servicers": {
+                $map: {
+                  input: "$contracts.orders.servicers",
+                  as: "servicer",
+                  in: {
+                    "_id": "$$servicer._id",
+                    "name": "$$servicer.name",
+                  }
+                }
+              },
+              "contracts.orders.resellers": {
+                $map: {
+                  input: "$contracts.orders.resellers",
+                  as: "reseller",
+                  in: {
+                    "_id": "$$reseller._id",
+                    "name": "$$reseller.name",
+                    "isServicer":"$$reseller.isServicer"
+                  }
+                }
+              }
             }
           }
         ]
@@ -718,11 +747,7 @@ exports.getAllClaims = async (req, res, next) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-
-    console.log("lookupQuery-------", lookupQuery)
     let allClaims = await claimService.getAllClaims(lookupQuery);
-
-    // return res.json(allClaims);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -738,8 +763,6 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
         const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
         let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
-
-        // console.log("fsdfdsfdsffsdfs",foundServicer);
         servicer.push(foundServicer)
       }
       if (item1.contracts.orders.servicers[0]?.length > 0) {
