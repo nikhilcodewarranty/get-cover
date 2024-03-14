@@ -1813,33 +1813,31 @@ exports.editFileCase = async (req, res) => {
                                 retailValue: item[keys[4]],
                             };
                         });
-                        if (priceObj.length > 0) {
-                            priceObj.map((obj, index) => {
-                                if (isNaN(obj.retailValue)) {
-                                    {
-                                        message.push({
-                                            code: constant.errorCode,
-                                            key: obj.key,
-                                            message: "Retail Price should be integer!!",
-                                        });
-                                        return;
-                                    }
-                                }
-
-                                else if (obj1.priceType('Flat Pricing') &&
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
+                        priceObj.map((obj, index) => {
+                            if (isNaN(obj.retailValue) || obj.retailValue < 0) {
+                                {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
-                                        message: "Retail price should be between start and end range!",
+                                        message: "Retail Price should be integer and positive!!",
                                     });
 
                                     return;
                                 }
-                            });
-                        }
+                            }
+                            else if (obj1.priceType == 'Flat Pricing' &&
+                                Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                Number(obj.retailValue) > Number(obj.rangeEnd)
+                            ) {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Retail price should be between start and end range!",
+                                });
+
+                                return;
+                            }
+                        });
                         // else if (obj.priceType == "Flat Pricing") {
                         //     if (priceObj.length > 0) {
                         //         priceObj.map((obj, index) => {
