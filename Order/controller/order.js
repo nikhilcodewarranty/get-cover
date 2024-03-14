@@ -2613,6 +2613,10 @@ exports.editOrderDetail = async (req, res) => {
         // }
         // }
 
+
+        console.log("data====================",data);
+        return;
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
