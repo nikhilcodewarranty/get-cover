@@ -498,6 +498,21 @@ exports.getAllClaims = async (req, res, next) => {
               as: "contracts.orders.servicers",
             }
           },
+          // {
+          //   $project: {
+          //     "contractId": 1,
+          //     "claimFile": 1,
+          //     "unique_key_number": 1,
+          //     "unique_key_search": 1,
+          //     "unique_key": 1,
+          //     "contracts.orderId": 1,
+          //     "contracts.productName": 1,
+          //     "orders.dealerId": 1,
+          //     "orders.servicerId": 1,
+          //     "orders.customerId": 1,
+          //     "orders.resellerId": 1,
+          //   }
+          // }
 
         ]
       }
@@ -784,7 +799,7 @@ exports.getAllClaims = async (req, res, next) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getAllClaims(lookupQuery, skipLimit, pageLimit);
     //return res.send(allClaims)
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -1398,7 +1413,7 @@ exports.editServicer = async (req, res) => {
 }
 
 exports.saveBulkClaim = async (req, res) => {
-  // uploadP(req, res, async (err) => {
+  uploadP(req, res, async (err) => {
     try {
       let data = req.body
       if (req.role != 'Super Admin') {
@@ -1409,13 +1424,13 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
       //  console.log(req.files); return;
-      const fileUrl = data.file[0].path
+      const fileUrl = req.file.path
       const jsonOpts = {
         header: 1,
         defval: '',
         blankrows: true,
         raw: false,
-        dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+        dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
 
       const wb = XLSX.readFile(fileUrl, {
@@ -1474,6 +1489,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
+      //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
           unique_key: item.contractId
@@ -1483,6 +1499,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractArray = await Promise.all(contractArrayPromise);
+
+      //Check servicer is exist or not using contract id
 
       const servicerArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
@@ -1494,18 +1512,42 @@ exports.saveBulkClaim = async (req, res) => {
       })
       //console.log(servicerArrayPromise);return;
       const servicerArray = await Promise.all(servicerArrayPromise);
+      // console.log(servicerArray);return;
+      //check claim is already open by contract id
+      const claimArrayPromise = totalDataComing.map(item => {
+        if (!item.exit) return claimService.getClaims({
+          claimFile: 'Open'
+
+        });
+        else {
+          return null;
+        }
+      })
+
+      const claimArray = await Promise.all(claimArrayPromise)
+
       //Filter data which is contract , servicer and not active
-
-
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
           const servicerData = servicerArray[i]
+          const claimData = claimArray[i]
           item.contractData = contractData;
           item.servicerData = servicerData
+          // console.log(claimData.contractId.toString())
+          // console.log(item.contractData)
           if (!contractData) {
             item.status = "Contract not found"
             item.exit = true;
+          }
+          if (claimData != null && claimData.length > 0) {
+            const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
+            if (filter.length > 0) {
+              item.status = "Claim is already open of this contract"
+              item.exit = true;
+            }
+            // item.status = "Claim is already open of this contract"
+            // item.exit = true;
           }
           if (!servicerData && item.servicerName != '') {
             item.status = "Servicer not found"
@@ -1550,7 +1592,7 @@ exports.saveBulkClaim = async (req, res) => {
         return {
           contractId: item.contractId ? item.contractId : "",
           servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? item.lossDate : '',
+          lossDate: item.lossDate ? new Date(item.lossDate) : '',
           diagnosis: item.diagnosis ? item.diagnosis : '',
           status: item.status ? item.status : '',
         }
@@ -1600,12 +1642,6 @@ exports.saveBulkClaim = async (req, res) => {
         result: saveBulkClaim
       })
 
-      return;
-
-      res.send({
-        code: constant.successCode,
-        message: 'Success!',
-      })
 
     }
     catch (err) {
@@ -1614,7 +1650,7 @@ exports.saveBulkClaim = async (req, res) => {
         message: err.message
       })
     }
-  // })
+  })
 
 }
 
