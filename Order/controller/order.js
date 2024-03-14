@@ -2435,6 +2435,7 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
+        data.venderOrder = data.dealerPurchaseOrder
         // let data = {
         //     "_id": "65c5f9b57e935a6b4aa10cf9",
         //     "dealerId": "65c49fa82e3394537511528e",
