@@ -491,9 +491,6 @@ exports.getAllClaims = async (req, res, next) => {
             }
           },
           {
-            $unwind: "$contracts.orders.resellers"
-          },
-          {
             $lookup: {
               from: "serviceproviders",
               localField: "contracts.orders.servicerId",
@@ -529,11 +526,9 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.customer.username": 1,
               "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.servicers": 1,
-              "contracts.orders.resellers.name": 1,
-              "contracts.orders.resellers.isServicer": 1,
+              "contracts.orders.resellers": 1,
             }
           }
-
         ]
       }
     })
@@ -558,102 +553,6 @@ exports.getAllClaims = async (req, res, next) => {
           localField: "contractId",
           foreignField: "_id",
           as: "contracts",
-          // pipeline: [
-
-          //   {
-          //     $lookup: {
-          //       from: "orders",
-          //       localField: "orderId",
-          //       foreignField: "_id",
-          //       as: "orders",
-          //       pipeline: [
-          //         {
-          //           $match:
-          //           {
-          //             $and: [
-          //               { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-          //               { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-          //               { isDeleted: false },
-          //             ]
-          //           },
-          //         },
-          //         {
-          //           $lookup: {
-          //             from: "customers",
-          //             localField: "customerId",
-          //             foreignField: "_id",
-          //             as: "customer",
-          //             pipeline: [
-          //               {
-          //                 $match:
-          //                 {
-          //                   $and: [
-          //                     { username: { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-          //                     { isDeleted: false },
-          //                   ]
-          //                 },
-          //               },
-          //             ]
-          //           }
-          //         },
-          //         {
-          //           $unwind: "$customer"
-          //         },
-          //         {
-          //           $lookup: {
-          //             from: "dealers",
-          //             localField: "dealerId",
-          //             foreignField: "_id",
-          //             as: "dealers",
-          //             pipeline: [
-          //               // {
-          //               //   $match:
-          //               //   {
-          //               //     $and: [
-          //               //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-          //               //       { isDeleted: false },
-          //               //     ]
-          //               //   },
-          //               // },
-          //               {
-          //                 $lookup: {
-          //                   from: "servicer_dealer_relations",
-          //                   localField: "_id",
-          //                   foreignField: "dealerId",
-          //                   as: "dealerServicer",
-          //                 }
-          //               },
-          //             ]
-          //           }
-          //         },
-          //         {
-          //           $unwind: "$dealers"
-          //         },
-          //         {
-          //           $lookup: {
-          //             from: "resellers",
-          //             localField: "resellerId",
-          //             foreignField: "_id",
-          //             as: "resellers",
-          //           }
-          //         },
-          //         {
-          //           $lookup: {
-          //             from: "serviceproviders",
-          //             localField: "servicerId",
-          //             foreignField: "_id",
-          //             as: "servicers",
-          //           }
-          //         },
-
-          //       ]
-          //     },
-
-          //   },
-          //   {
-          //     $unwind: "$orders"
-          //   },
-          // ]
         }
       },
       {
@@ -667,7 +566,7 @@ exports.getAllClaims = async (req, res, next) => {
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
-            { "contracts.isDeleted": false },
+            // { "contracts.isDeleted": false },
           ]
         },
       },
@@ -822,6 +721,8 @@ exports.getAllClaims = async (req, res, next) => {
 
     console.log("lookupQuery-------", lookupQuery)
     let allClaims = await claimService.getAllClaims(lookupQuery);
+
+    return res.json(allClaims);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
