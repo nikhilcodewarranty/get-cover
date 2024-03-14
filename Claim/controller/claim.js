@@ -491,6 +491,9 @@ exports.getAllClaims = async (req, res, next) => {
             }
           },
           {
+            $unwind:"$contracts.orders.resellers"
+          },
+          {
             $lookup: {
               from: "serviceproviders",
               localField: "contracts.orders.servicerId",
@@ -498,21 +501,35 @@ exports.getAllClaims = async (req, res, next) => {
               as: "contracts.orders.servicers",
             }
           },
-          // {
-          //   $project: {
-          //     "contractId": 1,
-          //     "claimFile": 1,
-          //     "unique_key_number": 1,
-          //     "unique_key_search": 1,
-          //     "unique_key": 1,
-          //     "contracts.orderId": 1,
-          //     "contracts.productName": 1,
-          //     "orders.dealerId": 1,
-          //     "orders.servicerId": 1,
-          //     "orders.customerId": 1,
-          //     "orders.resellerId": 1,
-          //   }
-          // }
+          {
+            $project: {
+              "contractId": 1,
+              "claimFile": 1,
+              "lossDate": 1,
+              "unique_key": 1,
+              totalAmount:1,
+              servicerId:1,
+              customerStatus:1,
+              diagnosis:1,
+              claimStatus:1,
+              repairStatus:1,
+              "contracts.productName": 1,
+              "contracts.model": 1,
+              "contracts.manufacture": 1,
+              "contracts.serial": 1,
+              "contracts.orders.dealerId": 1,
+              "contracts.orders.servicerId": 1,
+              "contracts.orders.customerId": 1,
+              "contracts.orders.resellerId": 1,
+              "contracts.orders.dealers.name": 1,
+              "contracts.orders.dealers.isServicer": 1,
+              "contracts.orders.customer.username": 1,
+              "contracts.orders.dealers.dealerServicer": 1,
+              "contracts.orders.servicers": 1,
+              "contracts.orders.resellers.name": 1,
+              "contracts.orders.resellers.isServicer": 1,
+            }
+          }
 
         ]
       }
@@ -822,8 +839,8 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers[0]?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers[0])
+      if (item1.contracts.orders.resellers?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers)
       }
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
@@ -1424,7 +1441,7 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
       console.log(req.files)
-    // console.log(req.files[0].path); return;
+      // console.log(req.files[0].path); return;
       const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
