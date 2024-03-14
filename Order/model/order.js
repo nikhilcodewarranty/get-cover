@@ -93,6 +93,7 @@ const orderSchema = new mongoose.Schema({
           default: {
             fileName: '',
             originalName: '',
+            size:''
           }
         },
         QuantityPricing: {
