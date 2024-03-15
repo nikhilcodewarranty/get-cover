@@ -1195,7 +1195,7 @@ exports.editClaim = async (req, res) => {
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
       });
-      return;
+      return; 
     }
     let option = { new: true }
     let updateData = await claimService.updateClaim(criteria, data, option)
