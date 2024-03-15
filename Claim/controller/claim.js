@@ -1190,10 +1190,10 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    console.log("claimTotal--------------------",claimTotal);
-    console.log("contract--------------------",contract.productValue);
-    console.log("totalAmount--------------------",data.totalAmount);
-    if (contract.productValue < claimTotal[0]?.amount && data.totalAmount > claimTotal[0]?.amount ) {
+    // console.log("claimTotal--------------------",claimTotal);
+    // console.log("contract--------------------",contract.productValue);
+    // console.log("totalAmount--------------------",data.totalAmount);
+    if (contract.productValue < claimTotal[0]?.amount && data.totalAmount >= claimTotal[0]?.amount ) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'

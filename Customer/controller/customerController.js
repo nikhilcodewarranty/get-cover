@@ -610,7 +610,7 @@ exports.getCustomerUsers = async (req, res) => {
       );
     });
 
-    console.log("filteredData=================",filteredData)
+    console.log("filteredData=================", filteredData)
     let checkCustomer = await customerService.getCustomerByName({ _id: req.params.customerId }, { status: 1 })
     if (!checkCustomer) {
       res.send({
@@ -996,78 +996,92 @@ exports.getCustomerContract = async (req, res) => {
 
     let query = [
       {
-          $match:
-          {
-              $and: [
-                  // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                  { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-                  { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
-                  { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-                  { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
-                  { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
-                  { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
-              ]
-          },
+        $match:
+        {
+          $and: [
+            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+          ]
+        },
       },
       {
-          $lookup: {
-              from: "orders",
-              localField: "orderId",
-              foreignField: "_id",
-              as: "order",
-          }
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+        }
       },
       {
-          $unwind: {
-              path: "$order",
-              preserveNullAndEmptyArrays: true,
-          }
+        $unwind: {
+          path: "$order",
+          preserveNullAndEmptyArrays: true,
+        }
       },
       {
-          $match:
-          {
-              $and: [
-                  { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                  { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-              ]
-          },
+        $match:
+        {
+          $and: [
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+          ]
+        },
 
       },
       {
-          $lookup: {
-              from: "customers",
-              localField: "order.customerId",
-              foreignField: "_id",
-              as: "order.customer"
-          }
+        $lookup: {
+          from: "customers",
+          localField: "order.customerId",
+          foreignField: "_id",
+          as: "order.customer"
+        }
       },
       {
-          $match: {
-              $and: [
-                  { "order.customer._id": new mongoose.Types.ObjectId(req.params.customerId) },
-              ]
-          },
+        $match: {
+          $and: [
+            { "order.customer._id": new mongoose.Types.ObjectId(req.params.customerId) },
+          ]
+        },
       },
       {
-          $facet: {
-              totalRecords: [
-                  {
-                      $count: "total"
-                  }
-              ],
-              data: [
-                  {
-                      $skip: skipLimit
-                  },
-                  {
-                      $limit: pageLimit
-                  },
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1
+              }
+            }
 
-              ],
-          },
+          ],
+
+        },
 
       }
-  ]
+    ]
     console.log(pageLimit, skipLimit, limitData)
     let getContracts = await contractService.getAllContracts2(query)
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
