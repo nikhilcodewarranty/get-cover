@@ -49,7 +49,6 @@ var uploadP = multer({
 }).array("file", 100);
 
 
-
 exports.getAllClaims = async (req, res, next) => {
   try {
     if (req.role != 'Super Admin') {
@@ -510,7 +509,8 @@ exports.getAllClaims = async (req, res, next) => {
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
-              repairStatus: 1,
+              repairStatus:1,
+              // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.model": 1,
@@ -552,12 +552,17 @@ exports.getAllClaims = async (req, res, next) => {
                   in: {
                     "_id": "$$reseller._id",
                     "name": "$$reseller.name",
-                    "isServicer":"$$reseller.isServicer"
+                    "isServicer": "$$reseller.isServicer"
                   }
                 }
               }
             }
-          }
+          },
+          // {
+          //   $addFields: {
+          //     lastRepairStatus: { $arrayElemAt: ["$repairStatus", -1] }
+          //   }
+          // },
         ]
       }
     })
@@ -570,7 +575,7 @@ exports.getAllClaims = async (req, res, next) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId : '', '$options': 'i' } },
             // { isDeleted: false },
-            { 'customerStatus.status': { '$regex': data.customerStatus ? data.customerStatus : '', '$options': 'i' } },
+            { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
           ]
@@ -1169,7 +1174,7 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
-
+// Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {
     let data = req.body
@@ -1185,7 +1190,7 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    if (contract.productValue < claimTotal[0]?.amount) {
+    if (contract.productValue < claimTotal[0]?.amount && data.totalAmount > claimTotal[0]?.amount ) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1232,29 +1237,29 @@ exports.editClaimStatus = async (req, res) => {
       return
     }
     let status = {};
-    let allStatus = {}
+    let updateData = {};
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'Product Received') {
         let option = { new: true }
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
-        status.claimStatus = [
+        updateData.claimStatus = [
           {
             status: 'Completed'
           }
         ]
-        data.trackStatus = [
+        status.trackStatus = [
           {
             status: 'Completed'
           }
         ]
-        let statusClaim = await claimService.updateClaim(criteria, { $push: status }, { new: true })
+        let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
       }
-      data.customerStatus = [
+      updateData.customerStatus = [
         {
           status: data.customerStatus
         }
       ]
-      data.trackStatus = [
+      status.trackStatus = [
         {
           status: data.customerStatus
         }
@@ -1262,12 +1267,12 @@ exports.editClaimStatus = async (req, res) => {
 
     }
     if (data.hasOwnProperty("repairStatus")) {
-      data.trackStatus = [
+      status.trackStatus = [
         {
           status: data.repairStatus
         }
       ]
-      data.repairStatus = [
+      updateData.repairStatus = [
         {
           status: data.repairStatus
         }
@@ -1275,21 +1280,21 @@ exports.editClaimStatus = async (req, res) => {
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, option)
-      data.trackStatus = [
+      status.trackStatus = [
         {
           status: data.claimStatus
         }
       ]
-      data.claimStatus = [
+      updateData.claimStatus = [
         {
           status: data.claimStatus
         }
       ]
-
     }
-
-    let updateStatus = await claimService.updateClaim(criteria, { $push: data }, { new: true })
-
+    // Keep history of status in mongodb
+    let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
+    // Update every status 
+    let updateBodyStatus = await claimService.updateClaim(criteria,  updateData , { new: true })
     if (!updateStatus) {
       res.send({
         code: constant.errorCode,
@@ -1297,11 +1302,10 @@ exports.editClaimStatus = async (req, res) => {
       })
       return;
     }
-
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: updateStatus
+      result: updateBodyStatus
     })
 
   } catch (err) {
@@ -1329,7 +1333,6 @@ exports.editServicer = async (req, res) => {
     })
     return
   }
-
   criteria = { _id: req.body.servicerId }
   let checkServicer = await servicerService.getServiceProviderById({
     $or: [
@@ -1379,7 +1382,6 @@ exports.saveBulkClaim = async (req, res) => {
         });
         return
       }
-      console.log(req.files)
       // console.log(req.files[0].path); return;
       const fileUrl = req.files[0].path
       const jsonOpts = {
@@ -1845,21 +1847,6 @@ exports.statusClaim = async (req, res) => {
     res.send({
       code: constant.successCode,
       updateStatus
-    })
-  }
-  catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-exports.saveBulkData = async (req, res) => {
-  try {
-
-    res.send({
-      code: constant.successCode,
-      result
     })
   }
   catch (err) {

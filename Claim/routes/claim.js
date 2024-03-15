@@ -15,7 +15,7 @@ router.put("/editClaimStatus/:claimId",[verifyToken],claimController.editClaimSt
 router.put("/editServicer/:claimId",[verifyToken],claimController.editServicer)
 router.get("/getContractById/:contractId",[verifyToken],claimController.getContractById)
 router.get("/statusClaim",claimController.statusClaim)
-router.post("/bulKDataUpload",[verifyToken],claimController.saveBulkData)
+// router.post("/bulKDataUpload",[verifyToken],claimController.saveBulkData)
 router.get("/getMaxClaimAmount/:contractId",[verifyToken],claimController.getMaxClaimAmount)
 
 module.exports = router;
