@@ -1098,7 +1098,19 @@ exports.getResellerContract = async (req, res) => {
                         {
                             $limit: pageLimit
                         },
-
+                        {
+                            $project: {
+                              productName: 1,
+                              model: 1,
+                              serial: 1,
+                              unique_key: 1,
+                              status: 1,
+                              manufacture: 1,
+                              eligibilty: 1,
+                              "order.unique_key": 1,
+                              "order.venderOrder": 1
+                            }
+                          }
                     ],
                 },
 
