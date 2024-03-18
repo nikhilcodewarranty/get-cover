@@ -34,7 +34,6 @@ module.exports = class claimService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
-
   static async createClaim(data) {
     try {
       const response = await new claim(data).save();
@@ -51,7 +50,6 @@ module.exports = class claimService {
       console.log(error);
     }
   }
-
   static async checkTotalAmount(query) {
     try {
       const response = await claim.aggregate([
@@ -64,8 +62,6 @@ module.exports = class claimService {
       console.log(error);
     }
   }
-
-
   static async getClaimById(claimId, projection = {}) {
     try {
       const singleClaimResponse = await claim.findOne(claimId,projection);
@@ -74,7 +70,6 @@ module.exports = class claimService {
       console.log(`claim not found. ${error}`);
     }
   }
-
   static async updateClaim(criteria, data, option) {
     try {
       let updatedResponse = await claim.findOneAndUpdate(criteria, data, option)
@@ -83,7 +78,6 @@ module.exports = class claimService {
       console.log(`Could not update claim ${error}`);
     }
   }
-
   static async deleteClaim(claimId) {
     try {
       const deletedResponse = await claim.findOneAndDelete(claimId);
@@ -92,7 +86,6 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
-
   static async saveBulkClaim(data){
     try {
       const bulkResponse = await claim.insertMany(data);
