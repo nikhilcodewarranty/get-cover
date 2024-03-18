@@ -11,6 +11,7 @@ const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 //-------------------- get api's endpoints--------------------------//
 router.get("/users/:role", [verifyToken], userController.getAllUsers); // get all users 
 router.get("/getUserById/:userId", [verifyToken], userController.getUserById); // get all users 
+router.get("/getUserByToken", [verifyToken], userController.getUserByToken); // get all users 
 router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // get all users 
 router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
 router.post("/approveDealers", [verifyToken], validator("filter_dealer"),dealerController.getAllDealers); //get all dealers
@@ -33,6 +34,7 @@ router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate)
 router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); //Update Status
 router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
 router.post("/updateProfile", [verifyToken],userController.updateProfile); //Update Profile
+router.put("/updatePassword", [verifyToken],userController.updatePassword); //Update Password
 
 
 
