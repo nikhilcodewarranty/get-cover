@@ -2183,8 +2183,10 @@ exports.addMembers = async (req, res) => {
       return;
     };
     data.isPrimary = false;
-    let getRole = await userService.getRoleById({ role: data.role })
-    data.roleId = getRole.role ? getRole.role : "Admin"
+    let getRole = await userService.getRoleById({ role: req.role })
+    data.metaId = req.userId
+    data.accountId = req.userId
+    data.roleId = getRole._id ? getRole._id : "65f01eed2f048cac854daaa5"
     let saveData = await userService.createUser(data)
     if (!saveData) {
       res.send({
@@ -2196,6 +2198,26 @@ exports.addMembers = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Created Successfully"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getMembers = async (req, res) => {
+  try {
+    let data = req.body
+    data.isPrimary = false;
+    let userMembers = await userService.getMembers({ accountId: req.userId }, { isDeleted: false })
+
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: userMembers ? userMembers : []
     })
 
   } catch (err) {
