@@ -1030,6 +1030,13 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
+    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Loss date should be in between coverage start date and present date!'
+      });
+      return;
+    }
     if (checkContract.status != 'Active') {
       res.send({
         code: constant.errorCode,
@@ -1843,7 +1850,7 @@ exports.statusClaim = async (req, res) => {
       }
       updateStatus = await claimService.updateClaim({ _id: claimId }, {
         $push: messageData,
-        $set: { claimFile: 'Completed',claimStatus:[{status:'Completed'}] }
+        $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed' }] }
       }, { new: true })
     }
     res.send({
