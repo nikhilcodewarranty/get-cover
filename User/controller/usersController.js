@@ -367,8 +367,6 @@ exports.validateData = async (req, res) => {
     message: 'Success',
   });
 }
-
-
 function uniqByKeepLast(data, key) {
 
   return [
@@ -1448,7 +1446,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.accountId, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
+      { userId: user.accountId ? user.accountId : user._id, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "356d" }
     );
