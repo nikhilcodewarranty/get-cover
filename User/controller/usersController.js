@@ -2171,3 +2171,38 @@ exports.getUserByToken = async (req, res) => {
   }
 };
 
+exports.addMembers = async (req, res) => {
+  try {
+    let data = req.body
+    let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
+    if (checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "User already exists with this email"
+      })
+      return;
+    };
+    data.isPrimary = false;
+    let getRole = await userService.getRoleById({ role: data.role })
+    data.roleId = getRole.role ? getRole.role : "Admin"
+    let saveData = await userService.createUser(data)
+    if (!saveData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the member"
+      })
+      return;
+    };
+    res.send({
+      code: constant.successCode,
+      message: "Created Successfully"
+    })
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+

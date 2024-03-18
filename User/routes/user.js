@@ -25,6 +25,7 @@ router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.noti
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
+router.post("/addMember", userController.addMembers); //to create the super admin credentials
 router.post("/createTerms", userController.createTerms); //to create the super admin credentials
 router.post("/login", validator('login_validation'), userController.login); //login api for all users
 router.post("/addRole", [verifyToken], validator("add_role_validation"), userController.addRole); //add role api
