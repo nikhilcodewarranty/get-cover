@@ -181,7 +181,7 @@ const claimSchema = new mongoose.Schema({
         date: Date.now()
       },
       {
-        status: 'Request Approved',
+        status: 'Request Sent',
         date: Date.now()
       },
     ]
@@ -219,7 +219,7 @@ const claimSchema = new mongoose.Schema({
       },
     ],
     default: [{
-      status: 'Request Approved',
+      status: 'Request Sent',
       date: Date.now()
     }]
   }
