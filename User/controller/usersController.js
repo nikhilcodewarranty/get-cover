@@ -2084,7 +2084,7 @@ exports.updateProfile = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result:updateProfile
+      result: updateProfile
     })
 
   }
@@ -2096,5 +2096,78 @@ exports.updateProfile = async (req, res) => {
   }
 }
 
+exports.updatePassword = async (req, res) => {
+  try {
+    let data = req.body
+    let checkId = await userService.getSingleUserByEmail({ _id: req.userId })
+    if (!checkId) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid user ID"
+      })
+      return;
+    };
+    let comparePassword = await bcrypt.compare(data.oldPassword, checkId.password)
+    if (!comparePassword) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid Old Password"
+      })
+      return
+    };
+    data.password = bcrypt.hashSync(data.newPassword, 10)
+    let updatePassword = await userService.updateSingleUser({ _id: checkId._id }, data, { new: true })
+    if (!updatePassword) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to update the password"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Successfully updated the password",
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
+exports.getUserByToken = async (req, res) => {
+  try {
+    let projection = { __v: 0 }
+    let userId = req.userId
+    const singleUser = await userService.findOneUser({ _id: userId, }, projection);
+    if (!singleUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the user detail"
+      })
+      return;
+    };
+
+    let mainStatus;
+    let criteria = { _id: singleUser.accountId }
+    let checkStatus = await providerService.getServiceProviderById(criteria)
+    let checkDealer = await dealerService.getDealerById(criteria)
+    let checkReseller = await resellerService.getReseller(criteria, {})
+    let checkCustomer = await customerService.getCustomerByName(criteria)
+    mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
+    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: singleUser,
+      mainStatus: mainStatus
+    })
+  } catch (error) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
 
