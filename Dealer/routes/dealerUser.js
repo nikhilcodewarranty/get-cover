@@ -37,7 +37,8 @@ router.post('/createDeleteRelation',[verifyToken],dealerUserController.createDel
 router.post('/getDealerOrders',[verifyToken],dealerUserController.getDealerOrders)
 router.post('/getDealerArchievedOrders',[verifyToken],dealerUserController.getDealerArchievedOrders)
 
+router.post("/createClaim",[verifyToken],dealerUserController.addClaim)
 
-
+router.post("/getAllClaims",[verifyToken],dealerUserController.getAllClaims)
 
 module.exports = router; 

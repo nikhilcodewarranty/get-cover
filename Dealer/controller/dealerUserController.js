@@ -4,6 +4,7 @@ const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const orderService = require("../../Order/services/orderService")
 const servicerService = require("../../Provider/services/providerService")
+const claimService = require("../../Claim/services/claimService")
 const contractService = require("../../Contract/services/contractService")
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -3433,6 +3434,835 @@ exports.getDashboardData = async (req, res) => {
             result: checkOrders[0]
         })
     } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+exports.addClaim = async (req, res, next) => {
+    try {
+        if (req.role != 'Dealer') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only dealer allow to do this action!'
+            });
+            return;
+        }
+        let data = req.body;
+        let checkContract = await contractService.getContractById({ _id: data.contractId })
+
+        if (!checkContract) {
+            res.send({
+                code: constant.errorCode,
+                message: "Contract not found!"
+            })
+            return;
+        }
+        if (data.servicerId) {
+            let checkServicer = await servicerService.getServiceProviderById({
+                $or: [
+                    { _id: data.servicerId },
+                    { resellerId: data.servicerId },
+                    { dealerId: data.servicerId },
+
+                ]
+            })
+            if (!checkServicer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Servicer not found!"
+                })
+                return;
+            }
+        }
+        if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Loss date should be in between coverage start date and present date!'
+            });
+            return;
+        }
+        if (checkContract.status != 'Active') {
+            res.send({
+                code: constant.errorCode,
+                message: 'The contract is not active!'
+            });
+            return;
+        }
+        let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
+        if (checkClaim) {
+            res.send({
+                code: constant.errorCode,
+                message: 'The previous claim is still open!'
+            });
+            return
+        }
+        const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
+        let claimTotal = await claimService.checkTotalAmount(query);
+        if (checkContract.productValue < claimTotal[0]?.amount) {
+            res.send({
+                code: consta.errorCode,
+                message: 'Claim Amount Exceeds Contract Retail Price'
+            });
+            return;
+        }
+        data.receiptImage = data.file
+        data.servicerId = data.servicerId ? data.servicerId : null
+        let count = await claimService.getClaimCount();
+
+        data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+        data.unique_key_search = "CC" + "2024" + data.unique_key_number
+        data.unique_key = "CC-" + "2024-" + data.unique_key_number
+        let claimResponse = await claimService.createClaim(data)
+        if (!claimResponse) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Unable to add claim of this contract!'
+            });
+            return
+        }
+        // Eligibility false when claim open
+        const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
+        res.send({
+            code: constant.successCode,
+            message: 'Success!',
+            result: claimResponse
+        })
+
+
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        })
+    }
+}
+
+exports.getAllClaims = async (req, res, next) => {
+    try {
+        if (req.role != 'Dealer') {
+            res.send({
+                code: constant.errorCode,
+                message: 'Only dealer allow to do this action!'
+            })
+            return;
+        }
+        let data = req.body
+        let query = { isDeleted: false };
+        console.log(req.userId);
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+        let newQuery = [];
+        // if (data.orderId) {
+        //   newQuery.push({
+        //     $lookup: {
+        //       from: "orders",
+        //       localField: "contracts.orderId",
+        //       foreignField: "_id",
+        //       as: "contracts.orders",
+        //       pipeline: [
+        //         // {
+        //         //   $match:
+        //         //   {
+        //         //     $and: [
+        //         //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //         //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //         //       { isDeleted: false },
+        //         //     ]
+        //         //   },
+        //         // },
+
+        //         // {
+        //         //   $lookup: {
+        //         //     from: "dealers",
+        //         //     localField: "dealerId",
+        //         //     foreignField: "_id",
+        //         //     as: "dealers",
+        //         //     pipeline: [
+        //         //       // {
+        //         //       //   $match:
+        //         //       //   {
+        //         //       //     $and: [
+        //         //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+        //         //       //       { isDeleted: false },
+        //         //       //     ]
+        //         //       //   },
+        //         //       // },
+        //         //       {
+        //         //         $lookup: {
+        //         //           from: "servicer_dealer_relations",
+        //         //           localField: "_id",
+        //         //           foreignField: "dealerId",
+        //         //           as: "dealerServicer",
+        //         //         }
+        //         //       },
+        //         //     ]
+        //         //   }
+        //         // },
+        //         // {
+        //         //   $unwind: "$dealers"
+        //         // },
+        //         // {
+        //         //   $lookup: {
+        //         //     from: "resellers",
+        //         //     localField: "resellerId",
+        //         //     foreignField: "_id",
+        //         //     as: "resellers",
+        //         //   }
+        //         // },
+        //         // {
+        //         //   $lookup: {
+        //         //     from: "serviceproviders",
+        //         //     localField: "servicerId",
+        //         //     foreignField: "_id",
+        //         //     as: "servicers",
+        //         //   }
+        //         // },
+
+        //       ]
+        //     },
+
+        //   },
+        //     {
+        //       $unwind: "$contracts.orders"
+        //     },
+        //     {
+        //       $match:
+        //       {
+        //         $and: [
+        //           // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //           { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+        //           { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //           { "contracts.orders.isDeleted": false },
+        //         ]
+        //       },
+        //     })
+        // }
+        // if (data.dealerName) {
+        //   if (data.orderId) {
+        //     newQuery.push(
+        //       {
+        //         $lookup: {
+        //           from: "dealers",
+        //           localField: "contracts.orders.dealerId",
+        //           foreignField: "_id",
+        //           as: "contracts.orders.dealers",
+        //           pipeline: [
+        //             // {
+        //             //   $match:
+        //             //   {
+        //             //     $and: [
+        //             //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+        //             //       { isDeleted: false },
+        //             //     ]
+        //             //   },
+        //             // },
+        //             // {
+        //             //   $lookup: {
+        //             //     from: "servicer_dealer_relations",
+        //             //     localField: "_id",
+        //             //     foreignField: "dealerId",
+        //             //     as: "dealerServicer",
+        //             //   }
+        //             // },
+        //           ]
+        //         }
+        //       },
+        //       {
+        //         $unwind: "$contracts.orders.dealers"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
+        //           // "contracts.orders.dealers.isDeleted": false,
+        //         }
+
+        //       },
+        //     );
+        //   }
+        //   else {
+        //     newQuery.push(
+        //       {
+        //         $lookup: {
+        //           from: "orders",
+        //           localField: "contracts.orderId",
+        //           foreignField: "_id",
+        //           as: "contracts.orders",
+        //           pipeline: [
+        //             // {
+        //             //   $match:
+        //             //   {
+        //             //     $and: [
+        //             //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //             //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //             //       { isDeleted: false },
+        //             //     ]
+        //             //   },
+        //             // },
+
+        //             // {
+        //             //   $lookup: {
+        //             //     from: "dealers",
+        //             //     localField: "dealerId",
+        //             //     foreignField: "_id",
+        //             //     as: "dealers",
+        //             //     pipeline: [
+        //             //       // {
+        //             //       //   $match:
+        //             //       //   {
+        //             //       //     $and: [
+        //             //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+        //             //       //       { isDeleted: false },
+        //             //       //     ]
+        //             //       //   },
+        //             //       // },
+        //             //       {
+        //             //         $lookup: {
+        //             //           from: "servicer_dealer_relations",
+        //             //           localField: "_id",
+        //             //           foreignField: "dealerId",
+        //             //           as: "dealerServicer",
+        //             //         }
+        //             //       },
+        //             //     ]
+        //             //   }
+        //             // },
+        //             // {
+        //             //   $unwind: "$dealers"
+        //             // },
+        //             // {
+        //             //   $lookup: {
+        //             //     from: "resellers",
+        //             //     localField: "resellerId",
+        //             //     foreignField: "_id",
+        //             //     as: "resellers",
+        //             //   }
+        //             // },
+        //             // {
+        //             //   $lookup: {
+        //             //     from: "serviceproviders",
+        //             //     localField: "servicerId",
+        //             //     foreignField: "_id",
+        //             //     as: "servicers",
+        //             //   }
+        //             // },
+
+        //           ]
+        //         },
+
+        //       },
+        //       {
+        //         $unwind: "$contracts.orders"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           $and: [
+        //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+        //             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //             { "contracts.orders.isDeleted": false },
+        //           ]
+        //         },
+        //       },
+        //       {
+        //         $lookup: {
+        //           from: "dealers",
+        //           localField: "contracts.orders.dealerId",
+        //           foreignField: "_id",
+        //           as: "contracts.orders.dealers",
+        //           pipeline: [
+        //             // {
+        //             //   $match:
+        //             //   {
+        //             //     $and: [
+        //             //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+        //             //       { isDeleted: false },
+        //             //     ]
+        //             //   },
+        //             // },
+        //             // {
+        //             //   $lookup: {
+        //             //     from: "servicer_dealer_relations",
+        //             //     localField: "_id",
+        //             //     foreignField: "dealerId",
+        //             //     as: "dealerServicer",
+        //             //   }
+        //             // },
+        //           ]
+        //         }
+        //       },
+        //       {
+        //         $unwind: "$contracts.orders.dealers"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
+        //           // "contracts.orders.dealers.isDeleted": false,
+        //         }
+
+        //       },
+        //     )
+        //   }
+        // }
+
+        // if (data.customerName) {
+        //   if (data.orderId) {
+        //     newQuery.push(
+        //       {
+        //         $lookup: {
+        //           from: "customers",
+        //           localField: "contracts.orders.customerId",
+        //           foreignField: "_id",
+        //           as: "contracts.orders.customer",
+        //           // pipeline: [
+
+        //           // ]
+        //         }
+        //       },
+        //       {
+        //         $unwind: "$contracts.orders.customer"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           $and: [
+        //             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+        //             { "contracts.orders.customer.isDeleted": false },
+        //           ]
+        //         },
+        //       },
+        //     );
+        //   }
+        //   else {
+        //     newQuery.push({
+        //       $lookup: {
+        //         from: "orders",
+        //         localField: "contracts.orderId",
+        //         foreignField: "_id",
+        //         as: "contracts.orders",
+        //         pipeline: [
+        //           // {
+        //           //   $match:
+        //           //   {
+        //           //     $and: [
+        //           //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //           //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //           //       { isDeleted: false },
+        //           //     ]
+        //           //   },
+        //           // },
+
+        //           // {
+        //           //   $lookup: {
+        //           //     from: "dealers",
+        //           //     localField: "dealerId",
+        //           //     foreignField: "_id",
+        //           //     as: "dealers",
+        //           //     pipeline: [
+        //           //       // {
+        //           //       //   $match:
+        //           //       //   {
+        //           //       //     $and: [
+        //           //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+        //           //       //       { isDeleted: false },
+        //           //       //     ]
+        //           //       //   },
+        //           //       // },
+        //           //       {
+        //           //         $lookup: {
+        //           //           from: "servicer_dealer_relations",
+        //           //           localField: "_id",
+        //           //           foreignField: "dealerId",
+        //           //           as: "dealerServicer",
+        //           //         }
+        //           //       },
+        //           //     ]
+        //           //   }
+        //           // },
+        //           // {
+        //           //   $unwind: "$dealers"
+        //           // },
+        //           // {
+        //           //   $lookup: {
+        //           //     from: "resellers",
+        //           //     localField: "resellerId",
+        //           //     foreignField: "_id",
+        //           //     as: "resellers",
+        //           //   }
+        //           // },
+        //           // {
+        //           //   $lookup: {
+        //           //     from: "serviceproviders",
+        //           //     localField: "servicerId",
+        //           //     foreignField: "_id",
+        //           //     as: "servicers",
+        //           //   }
+        //           // },
+
+        //         ]
+        //       },
+
+        //     },
+        //       {
+        //         $unwind: "$contracts.orders"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           $and: [
+        //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+        //             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+        //             { "contracts.orders.isDeleted": false },
+        //           ]
+        //         },
+        //       },
+
+        //       {
+        //         $lookup: {
+        //           from: "customers",
+        //           localField: "contracts.orders.customerId",
+        //           foreignField: "_id",
+        //           as: "contracts.orders.customer",
+        //           // pipeline: [
+
+        //           // ]
+        //         }
+        //       },
+        //       {
+        //         $unwind: "$contracts.orders.customer"
+        //       },
+        //       {
+        //         $match:
+        //         {
+        //           $and: [
+        //             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+        //             { "contracts.orders.customer.isDeleted": false },
+        //           ]
+        //         },
+        //       },
+
+        //     )
+        //   }
+        // }
+        newQuery.push({
+            $facet: {
+                totalRecords: [
+                    {
+                        $count: "total"
+                    }
+                ],
+                data: [
+                    {
+                        $skip: skipLimit
+                    },
+                    {
+                        $limit: pageLimit
+                    },
+                    {
+                        $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "contracts.orders.dealers._id",
+                            foreignField: "dealerId",
+                            as: "contracts.orders.dealers.dealerServicer",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "resellers",
+                            localField: "contracts.orders.resellerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.resellers",
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "serviceproviders",
+                            localField: "contracts.orders.servicerId",
+                            foreignField: "_id",
+                            as: "contracts.orders.servicers",
+                        }
+                    },
+                    {
+                        $project: {
+                            "contractId": 1,
+                            "claimFile": 1,
+                            "lossDate": 1,
+                            "unique_key": 1,
+                            totalAmount: 1,
+                            servicerId: 1,
+                            customerStatus: 1,
+                            repairParts: 1,
+                            diagnosis: 1,
+                            claimStatus: 1,
+                            repairStatus: 1,
+                            // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
+                            "contracts.unique_key": 1,
+                            "contracts.productName": 1,
+                            "contracts.model": 1,
+                            "contracts.manufacture": 1,
+                            "contracts.serial": 1,
+                            "contracts.orders.dealerId": 1,
+                            "contracts.orders._id": 1,
+                            "contracts.orders.servicerId": 1,
+                            "contracts.orders.customerId": 1,
+                            "contracts.orders.resellerId": 1,
+                            "contracts.orders.dealers.name": 1,
+                            "contracts.orders.dealers.isServicer": 1,
+                            "contracts.orders.customer.username": 1,
+                            // "contracts.orders.dealers.dealerServicer": 1,
+                            "contracts.orders.dealers.dealerServicer": {
+                                $map: {
+                                    input: "$contracts.orders.dealers.dealerServicer",
+                                    as: "dealerServicer",
+                                    in: {
+                                        "_id": "$$dealerServicer._id",
+                                        "servicerId": "$$dealerServicer.servicerId",
+                                    }
+                                }
+                            },
+                            "contracts.orders.servicers": {
+                                $map: {
+                                    input: "$contracts.orders.servicers",
+                                    as: "servicer",
+                                    in: {
+                                        "_id": "$$servicer._id",
+                                        "name": "$$servicer.name",
+                                    }
+                                }
+                            },
+                            "contracts.orders.resellers": {
+                                $map: {
+                                    input: "$contracts.orders.resellers",
+                                    as: "reseller",
+                                    in: {
+                                        "_id": "$$reseller._id",
+                                        "name": "$$reseller.name",
+                                        "isServicer": "$$reseller.isServicer"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    // {
+                    //   $addFields: {
+                    //     lastRepairStatus: { $arrayElemAt: ["$repairStatus", -1] }
+                    //   }
+                    // },
+                ]
+            }
+        })
+        let lookupQuery = [
+            { $sort: { unique_key_number: -1 } },
+            {
+                $match:
+                {
+                    $and: [
+                        // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
+                        { unique_key: { '$regex': data.claimId ? data.claimId : '', '$options': 'i' } },
+                        // { isDeleted: false },
+                        { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
+                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                        { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+                        { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+                        { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+                        // { "contracts.isDeleted": false },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                    pipeline: [
+                        // {
+                        //   $match:
+                        //   {
+                        //     $and: [
+                        //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                        //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+                        //       { isDeleted: false },
+                        //     ]
+                        //   },
+                        // },
+
+                        // {
+                        //   $lookup: {
+                        //     from: "dealers",
+                        //     localField: "dealerId",
+                        //     foreignField: "_id",
+                        //     as: "dealers",
+                        //     pipeline: [
+                        //       // {
+                        //       //   $match:
+                        //       //   {
+                        //       //     $and: [
+                        //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+                        //       //       { isDeleted: false },
+                        //       //     ]
+                        //       //   },
+                        //       // },
+                        //       {
+                        //         $lookup: {
+                        //           from: "servicer_dealer_relations",
+                        //           localField: "_id",
+                        //           foreignField: "dealerId",
+                        //           as: "dealerServicer",
+                        //         }
+                        //       },
+                        //     ]
+                        //   }
+                        // },
+                        // {
+                        //   $unwind: "$dealers"
+                        // },
+                        // {
+                        //   $lookup: {
+                        //     from: "resellers",
+                        //     localField: "resellerId",
+                        //     foreignField: "_id",
+                        //     as: "resellers",
+                        //   }
+                        // },
+                        // {
+                        //   $lookup: {
+                        //     from: "serviceproviders",
+                        //     localField: "servicerId",
+                        //     foreignField: "_id",
+                        //     as: "servicers",
+                        //   }
+                        // },
+
+                    ]
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                        { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+                        { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+                        { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
+                        { "contracts.orders.isDeleted": false },
+                    ]
+                },
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "contracts.orders.dealerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.dealers",
+                }
+            },
+            {
+                $unwind: "$contracts.orders.dealers"
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "contracts.orders.customerId",
+                    foreignField: "_id",
+                    as: "contracts.orders.customer",
+                }
+            },
+            {
+                $unwind: "$contracts.orders.customer"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+                        // { "contracts.orders.customer.isDeleted": false },
+                    ]
+                },
+            },
+
+        ]
+        if (newQuery.length > 0) {
+            lookupQuery = lookupQuery.concat(newQuery);
+        }
+        let allClaims = await claimService.getAllClaims(lookupQuery);
+
+        let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
+
+        //Get Dealer and Reseller Servicers
+        const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
+        let servicer;
+        allServicer = await servicerService.getAllServiceProvider(
+            { _id: { $in: servicerIds }, status: true },
+            {}
+        );
+        const result_Array = resultFiter.map((item1) => {
+            servicer = []
+            if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
+                const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
+                let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
+                servicer.push(foundServicer)
+            }
+            if (item1.contracts.orders.servicers[0]?.length > 0) {
+                servicer.unshift(item1.contracts.orders.servicers[0])
+            }
+            if (item1.contracts.orders.resellers?.isServicer) {
+                servicer.unshift(item1.contracts.orders.resellers)
+            }
+            if (item1.contracts.orders.dealers.isServicer) {
+                servicer.unshift(item1.contracts.orders.dealers)
+            }
+            return {
+                ...item1,
+                contracts: {
+                    ...item1.contracts,
+                    allServicer: servicer
+                }
+            }
+        })
+
+        // console.log("servicer====================",servicer);return;
+
+        let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result_Array,
+            totalCount
+        })
+    }
+    catch (err) {
         res.send({
             code: constant.errorCode,
             message: err.message
