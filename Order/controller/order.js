@@ -521,6 +521,8 @@ exports.createOrder1 = async (req, res) => {
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
+                let coverageStartDate = product.coverageStartDate;
+                let coverageEndDate = product.coverageEndDate;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -555,6 +557,8 @@ exports.createOrder1 = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
+                        coverageStartDate:coverageStartDate,
+                        coverageEndDate:coverageEndDate,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2674,6 +2678,8 @@ exports.editOrderDetail = async (req, res) => {
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
+                let coverageStartDate = product.coverageStartDate;
+                let coverageEndDate = product.coverageEndDate;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -2717,6 +2723,8 @@ exports.editOrderDetail = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
+                        coverageStartDate:coverageStartDate,
+                        coverageEndDate:coverageEndDate,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2795,6 +2803,8 @@ exports.markAsPaid = async (req, res) => {
 
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
+            let coverageStartDate = product.coverageStartDate;
+            let coverageEndDate = product.coverageEndDate;
             let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
             let projection = { isDeleted: 0 };
             let priceBook = await priceBookService.getPriceBookById(
@@ -2836,6 +2846,8 @@ exports.markAsPaid = async (req, res) => {
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderProductId: orderProductId,
+                    coverageStartDate:coverageStartDate,
+                    coverageEndDate:coverageEndDate,
                     productName: priceBook[0].name,
                     manufacture: data.brand,
                     model: data.model,

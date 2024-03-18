@@ -61,6 +61,14 @@ const contractSchema = new mongoose.Schema({
     type: String,
     index: true
   },
+  coverageStartDate: {
+    type: Date,
+    default: Date.now(),
+  },
+  coverageEndDate: {
+    type: Date,
+    default: '',
+  },
   unique_key_number: {
     type: Number,
     index: true

@@ -1443,7 +1443,6 @@ exports.login = async (req, res) => {
     let roleQuery = { _id: user.roleId }
     let roleProjection = { __v: 0 }
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
-
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.accountId ? user.accountId : user._id, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },

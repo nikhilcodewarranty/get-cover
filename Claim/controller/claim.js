@@ -509,7 +509,7 @@ exports.getAllClaims = async (req, res, next) => {
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
-              repairStatus:1,
+              repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
@@ -1030,7 +1030,13 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
-
+    if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Loss date should be in between coverage start date and present date!'
+      });
+      return;
+    }
     if (checkContract.status != 'Active') {
       res.send({
         code: constant.errorCode,
@@ -1190,16 +1196,16 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    // console.log("claimTotal--------------------",claimTotal);
-    // console.log("contract--------------------",contract.productValue);
-    // console.log("totalAmount--------------------",data.totalAmount);
-    if (contract.productValue < claimTotal[0]?.amount && data.totalAmount >= claimTotal[0]?.amount ) {
+    // console.log("contract========", contract.productValue)
+    // console.log("totalAmount========", data.totalAmount)
+    // console.log("amount========", claimTotal[0]?.amount)
+    if (contract.productValue < data.totalAmount && contract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
       });
-      return; 
-    } 
+      return;
+    }
     let option = { new: true }
     let updateData = await claimService.updateClaim(criteria, data, option)
     if (!updateData) {
@@ -1297,7 +1303,7 @@ exports.editClaimStatus = async (req, res) => {
     // Keep history of status in mongodb
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
     // Update every status 
-    let updateBodyStatus = await claimService.updateClaim(criteria,  updateData , { new: true })
+    let updateBodyStatus = await claimService.updateClaim(criteria, updateData, { new: true })
     if (!updateStatus) {
       res.send({
         code: constant.errorCode,
@@ -1836,7 +1842,7 @@ exports.statusClaim = async (req, res) => {
       ) {
         console.log("Customer response is within 7 days after the last servicer shipped date.");
       } else {
-        messageData.claimStatus = [
+        messageData.trackStatus = [
           {
             status: 'Completed'
           }
@@ -1844,7 +1850,7 @@ exports.statusClaim = async (req, res) => {
       }
       updateStatus = await claimService.updateClaim({ _id: claimId }, {
         $push: messageData,
-        $set: { claimFile: 'Completed' }
+        $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed' }] }
       }, { new: true })
     }
     res.send({
