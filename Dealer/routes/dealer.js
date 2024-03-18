@@ -12,9 +12,6 @@ const uploadMiddleware = require('../middleware/uploadMiddleware');
 router.post("/register", validator('register_dealer'), dealerController.registerDealer)
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser)
 router.post("/uploadsDealerPriceBook", [verifyToken], uploadMiddleware.singleFileUpload, dealerController.uploadPriceBook)
-
-
-
 //--------------- get api's endpoints ---------------------------//
 router.post("/dealers", [verifyToken], dealerController.getAllDealers); // get dealers list
 router.get("/getDealerById/:dealerId", [verifyToken], dealerController.getDealerById); //get dealer detail with ID

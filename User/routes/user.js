@@ -32,6 +32,7 @@ router.post("/resetPassword/:userId/:code", userController.resetPassword); //res
 router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); //Update Status
 router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); //Update Status
 router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
+router.post("/updateProfile", [verifyToken],userController.updateProfile); //Update Status
 
 
 

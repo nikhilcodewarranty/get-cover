@@ -1459,8 +1459,8 @@ exports.login = async (req, res) => {
       result: {
         token: token,
         email: user.email,
-        userInfo:{
-          firstName: user.firstName, 
+        userInfo: {
+          firstName: user.firstName,
           lastName: user.lastName
         },
         role: getRole.role
@@ -2058,6 +2058,40 @@ exports.checkEmailForSingle = async (req, res) => {
       })
     }
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.updateProfile = async (req, res) => {
+  try {
+    if (req.role != 'Super Admin') {
+      res.send({
+        code: constant.errorCode,
+        message: 'Only super admin allow to do this action!'
+      });
+      return
+    }
+    const data = req.body
+    let email = data.email
+    let updateProfile = await userService.updateSingleUser({ email: email }, data, { new: true })
+    if (!updateProfile) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unabe to update profile!'
+      })
+      return
+    }
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result:updateProfile
+    })
+
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
