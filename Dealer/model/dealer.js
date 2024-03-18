@@ -55,6 +55,18 @@ const dealarSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isShippingAllowed: {
+    type: Boolean,
+    default: false
+  },
+  serviceCoverageType: {
+    type: String,
+    default: ''
+  },
+  coverageType: {
+    type: String,
+    default: ''
+  },
   isDeleted: {
     type: String,
     default: false
