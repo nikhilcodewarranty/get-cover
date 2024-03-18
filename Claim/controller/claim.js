@@ -1030,7 +1030,6 @@ exports.addClaim = async (req, res, next) => {
         return;
       }
     }
-
     if (checkContract.status != 'Active') {
       res.send({
         code: constant.errorCode,
@@ -1836,7 +1835,7 @@ exports.statusClaim = async (req, res) => {
       ) {
         console.log("Customer response is within 7 days after the last servicer shipped date.");
       } else {
-        messageData.claimStatus = [
+        messageData.trackStatus = [
           {
             status: 'Completed'
           }
@@ -1844,7 +1843,7 @@ exports.statusClaim = async (req, res) => {
       }
       updateStatus = await claimService.updateClaim({ _id: claimId }, {
         $push: messageData,
-        $set: { claimFile: 'Completed' }
+        $set: { claimFile: 'Completed',claimStatus:[{status:'Completed'}] }
       }, { new: true })
     }
     res.send({
