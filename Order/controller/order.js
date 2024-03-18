@@ -2531,7 +2531,7 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
 
-        if (data.servicerId != checkId.servicerId) {
+        if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
             let query = {
                 $or: [
                     { _id: data.servicerId },
