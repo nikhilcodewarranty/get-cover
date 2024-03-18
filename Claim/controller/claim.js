@@ -1190,9 +1190,9 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    // console.log("claimTotal--------------------",claimTotal);
-    // console.log("contract--------------------",contract.productValue);
-    // console.log("totalAmount--------------------",data.totalAmount);
+    console.log("contract========",contract.productValue)
+    console.log("totalAmount========",data.totalAmount)
+    console.log("amount========",claimTotal[0]?.amount)
     if (contract.productValue < claimTotal[0]?.amount && data.totalAmount >= claimTotal[0]?.amount ) {
       res.send({
         code: constant.errorCode,
