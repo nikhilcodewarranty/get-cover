@@ -2240,13 +2240,13 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
     let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
-    if (!updateLastPrimary) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to change tha primary"
-      })
-      return;
-    };
+    // if (!updateLastPrimary) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Unable to change tha primary"
+    //   })
+    //   return;
+    // };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
     if (!updatePrimary) {
       res.send({
