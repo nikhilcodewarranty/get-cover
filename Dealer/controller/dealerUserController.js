@@ -127,7 +127,6 @@ exports.getDealerUsers = async (req, res) => {
 }
 
 //price api
-
 exports.createDealerPriceBook = async (req, res) => {
     try {
         let data = req.body
@@ -251,6 +250,7 @@ exports.getPriceBooks = async (req, res) => {
         })
     }
 }
+
 exports.getResellerCustomers = async (req, res) => {
     try {
         if (req.role !== "Dealer") {
@@ -1041,7 +1041,6 @@ exports.createDeleteRelation = async (req, res) => {
 }
 
 //customers api
-
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
@@ -1357,11 +1356,7 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
-
-
 //dealers api
-
-
 exports.createReseller = async (req, res) => {
     try {
         let data = req.body
@@ -1769,7 +1764,6 @@ exports.getResellerOrders = async (req, res) => {
     }
 }
 
-
 exports.getDealerResellers = async (req, res) => {
     try {
         // if (req.role != 'Dealer') {
@@ -1865,9 +1859,7 @@ exports.getDealerResellers = async (req, res) => {
     }
 }
 
-
 //order api
-
 exports.getDealerOrders = async (req, res) => {
     try {
         {
@@ -2456,7 +2448,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
     }
 }
 
-
 exports.getAllContracts = async (req, res) => {
     try {
         if (req.role != 'Dealer') {
@@ -2982,7 +2973,6 @@ exports.getAllContracts = async (req, res) => {
     }
 }
 
-
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -3108,7 +3098,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
-
 
 // exports.createOrder = async (req, res) => {
 //     try {
@@ -3381,7 +3370,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 //     }
 // };
 
-
 exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
@@ -3502,6 +3490,7 @@ exports.createOrder = async (req, res) => {
         })
     }
 }
+
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3829,6 +3818,7 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
@@ -3873,6 +3863,7 @@ exports.getDashboardData = async (req, res) => {
         })
     }
 }
+
 exports.addClaim = async (req, res, next) => {
     try {
         if (req.role != 'Dealer') {

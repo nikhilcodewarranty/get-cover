@@ -34,6 +34,7 @@ const servicePortal = require("./Provider/routes/servicerUserRoute");
 const orderRoutes = require("./Order/routes/order");
 const priceRoutes = require("./PriceBook/routes/price");
 const customerRoutes = require("./Customer/routes/customer");
+const customerUserRoutes = require("./Customer/routes/customerUser");
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const axios = require('axios');
 const mongoose = require('mongoose')
@@ -161,6 +162,7 @@ app.use("/api-v1/claim", claimRoutes);
 
 app.use("/api-v1/servicerPortal", servicePortal);
 app.use("/api-v1/dealerPortal", dealerUserRoutes);
+app.use("/api-v1/customerPortal", customerUserRoutes);
 
 
 // catch 404 and forward to error handler

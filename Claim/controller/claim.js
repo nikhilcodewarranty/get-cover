@@ -9,8 +9,8 @@ const orderService = require("../../Order/services/orderService");
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
-const userService = require("../../User/services/userService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
+const userService = require("../../User/services/userService");
 const contractService = require("../../Contract/services/contractService");
 const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
@@ -22,6 +22,8 @@ const fs = require("fs");
 const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
+
+
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -1180,6 +1182,7 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
 // Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {
@@ -1226,6 +1229,7 @@ exports.editClaim = async (req, res) => {
     })
   }
 }
+
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
@@ -1324,6 +1328,7 @@ exports.editClaimStatus = async (req, res) => {
     })
   }
 }
+
 exports.editServicer = async (req, res) => {
   let data = req.body
   if (req.role != 'Super Admin') {
@@ -1626,8 +1631,6 @@ exports.saveBulkClaim = async (req, res) => {
         message: 'Success!',
         result: saveBulkClaim
       })
-
-
     }
     catch (err) {
       res.send({
@@ -1706,6 +1709,7 @@ exports.sendMessages = async (req, res) => {
     })
   };
 }
+
 exports.getMessages = async (req, res) => {
   if (req.role != 'Super Admin') {
     res.send({
@@ -1807,6 +1811,7 @@ exports.getMessages = async (req, res) => {
     result: allMessages
   })
 }
+
 exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
@@ -1865,6 +1870,7 @@ exports.statusClaim = async (req, res) => {
     })
   }
 }
+
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
