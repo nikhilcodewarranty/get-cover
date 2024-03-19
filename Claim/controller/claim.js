@@ -1245,6 +1245,9 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
+    const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+    let claimTotal = await claimService.checkTotalAmount(query);
     let status = {};
     let updateData = {};
     if (data.hasOwnProperty("customerStatus")) {
@@ -1299,6 +1302,11 @@ exports.editClaimStatus = async (req, res) => {
           status: data.claimStatus
         }
       ]
+      if (data.claimStatus == 'Completed') {
+        if (checkContract.productValue < claimTotal[0]?.amount) {
+             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        }
+      }
     }
     // Keep history of status in mongodb
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
