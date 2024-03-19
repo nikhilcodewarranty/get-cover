@@ -557,8 +557,8 @@ exports.createOrder1 = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
-                        coverageStartDate:coverageStartDate,
-                        coverageEndDate:coverageEndDate,
+                        coverageStartDate: coverageStartDate,
+                        coverageEndDate: coverageEndDate,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2723,8 +2723,8 @@ exports.editOrderDetail = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
-                        coverageStartDate:coverageStartDate,
-                        coverageEndDate:coverageEndDate,
+                        coverageStartDate: coverageStartDate,
+                        coverageEndDate: coverageEndDate,
                         productName: priceBook[0].name,
                         manufacture: data.brand,
                         model: data.model,
@@ -2846,8 +2846,8 @@ exports.markAsPaid = async (req, res) => {
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderProductId: orderProductId,
-                    coverageStartDate:coverageStartDate,
-                    coverageEndDate:coverageEndDate,
+                    coverageStartDate: coverageStartDate,
+                    coverageEndDate: coverageEndDate,
                     productName: priceBook[0].name,
                     manufacture: data.brand,
                     model: data.model,
@@ -3703,22 +3703,26 @@ exports.cronJobStatus = async (req, res) => {
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
                 let status = ''
+                let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
                 if (product.ExpiredCondition) {
+                    eligibilty = false;
                     status = 'Expired'
                 }
                 if (product.WaitingCondition) {
+                    eligibilty = false;
                     status = 'Waiting'
                 }
                 if (product.ActiveCondition) {
                     status = 'Active'
+                    eligibilty = true;
                 }
                 let updateDoc = {
                     'updateMany': {
                         'filter': { 'orderProductId': orderProductId },
-                        update: { $set: { status: status } },
+                        update: { $set: { status: status, eligibilty: eligibilty } },
                         'upsert': false
                     }
                 }
@@ -3753,23 +3757,19 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         const orderID = req.body.orderId;
+        const orderProductId = req.body.orderProductId;
         const newValue = {
             $set: {
                 "productsArray.$.coverageStartDate": startDate,
                 "productsArray.$.coverageEndDate": endDate,
             }
         };
-        console.log(startDate)
-        console.log(endDate)
-        console.log(orderID)
-        let update = await orderService.updateManyOrder({ "productsArray.$._id": '65e03723ec5ae3d75b94f806', _id: orderID }, {
+        let update = await orderService.updateOrder({ _id: orderID, "productsArray._id": orderProductId }, {
             $set: {
                 "productsArray.$.coverageStartDate": startDate,
                 "productsArray.$.coverageEndDate": endDate,
             }
         }, { multi: true })
-        console.log(update)
-        return;
         let query = { status: { $ne: "Archieved" } };
         let data = req.body;
         let currentDate = new Date();
@@ -3819,22 +3819,26 @@ exports.cronJobStatusWithDate = async (req, res) => {
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
                 let status = ''
+                let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
                 if (product.ExpiredCondition) {
+                    eligibilty = false;
                     status = 'Expired'
                 }
                 if (product.WaitingCondition) {
+                    eligibilty = false;
                     status = 'Waiting'
                 }
                 if (product.ActiveCondition) {
                     status = 'Active'
+                    eligibilty = true;
                 }
                 let updateDoc = {
                     'updateMany': {
                         'filter': { 'orderProductId': orderProductId },
-                        update: { $set: { status: status } },
+                        update: { $set: { status: status, eligibilty: eligibilty } },
                         'upsert': false
                     }
                 }

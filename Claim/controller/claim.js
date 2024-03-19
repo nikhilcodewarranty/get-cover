@@ -1199,10 +1199,10 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    // console.log("contract========", contract.productValue)
-    // console.log("totalAmount========", data.totalAmount)
-    // console.log("amount========", claimTotal[0]?.amount)
-    if (contract.productValue < data.totalAmount && contract.productValue < claimTotal[0]?.amount) {
+    console.log("contract========", contract.productValue)
+    console.log("totalAmount========", data.totalAmount)
+    console.log("amount========", claimTotal[0]?.amount)
+    if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1249,6 +1249,9 @@ exports.editClaimStatus = async (req, res) => {
       })
       return
     }
+    const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+    let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+    let claimTotal = await claimService.checkTotalAmount(query);
     let status = {};
     let updateData = {};
     if (data.hasOwnProperty("customerStatus")) {
@@ -1292,7 +1295,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, option)
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, { new: true })
       status.trackStatus = [
         {
           status: data.claimStatus
@@ -1303,6 +1306,11 @@ exports.editClaimStatus = async (req, res) => {
           status: data.claimStatus
         }
       ]
+      if (data.claimStatus == 'Completed') {
+        if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        }
+      }
     }
     // Keep history of status in mongodb
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
