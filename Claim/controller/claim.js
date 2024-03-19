@@ -1291,7 +1291,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, option)
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, { new: true })
       status.trackStatus = [
         {
           status: data.claimStatus
@@ -1304,7 +1304,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
       if (data.claimStatus == 'Completed') {
         if (checkContract.productValue < claimTotal[0]?.amount) {
-             const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
         }
       }
     }
