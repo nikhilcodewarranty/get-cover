@@ -67,11 +67,13 @@ exports.getAllClaims = async (req, res, next) => {
     let limitData = Number(pageLimit)
     let match = {}; 
     if (req.role == 'Dealer') {
-      match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
+      match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
     }
     if (req.role == 'Customer') {
-      match = { 'customerId': new mongoose.Types.ObjectId(req.userId)}
+      match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId)}
     }
+
+    console.log("match==============",match)
     let newQuery = [];
     // if (data.orderId) {
     //   newQuery.push({
