@@ -615,7 +615,7 @@ exports.cronJobEligible = async (req, res) => {
       // Update when claim is open for contract
     const update = await contractService.allUpdate(bulk);
     bulk = [];
-     const updatedData = await contractService.allUpdate(bulk);
+     //const updatedData = await contractService.allUpdate(bulk);
     const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
     if (notOpenContractIds.length > 0) {
       for (let j = 0; j < notOpenContractIds.length; j++) {
