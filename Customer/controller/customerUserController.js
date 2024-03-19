@@ -15,6 +15,7 @@ const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
 
 
+// orders API's
 exports.customerOrders = async (req, res) => {
   try {
     let data = req.body
@@ -420,3 +421,285 @@ exports.getSingleOrder = async (req, res) => {
 };
 
 
+// contracts api
+exports.getCustomerContract = async (req, res) => {
+  try {
+    let data = req.body
+    let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
+    if (!getCustomerOrder) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return
+    }
+    let orderIDs = getCustomerOrder.map((ID) => ID._id)
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+
+    let query = [
+      {
+        $match:
+        {
+          $and: [
+            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+            { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+          ]
+        },
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+        }
+      },
+      {
+        $unwind: {
+          path: "$order",
+          preserveNullAndEmptyArrays: true,
+        }
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+          ]
+        },
+
+      },
+      {
+        $lookup: {
+          from: "customers",
+          localField: "order.customerId",
+          foreignField: "_id",
+          as: "order.customer"
+        }
+      },
+      {
+        $match: {
+          $and: [
+            { "order.customer._id": new mongoose.Types.ObjectId(req.userId) },
+          ]
+        },
+      },
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1
+              }
+            }
+
+          ],
+
+        },
+
+      }
+    ]
+    console.log(pageLimit, skipLimit, limitData)
+    let getContracts = await contractService.getAllContracts2(query)
+    //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
+    console.log(orderIDs, skipLimit, limitData)
+    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    console.log(pageLimit, skipLimit, limitData)
+    // if (!getContract) {
+    //   res.send({
+    //     code: constants.errorCode,
+    //     message: err.message
+    //   })
+    //   return;
+    // }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      totalCount: totalCount
+    })
+
+    console.log(orderIDs)
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//users api's
+exports.addCustomerUser = async (req, res) => {
+  try {
+    let data = req.body
+
+    let checkCustomer = await customerService.getCustomerByName({ _id: req.userId })
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid customer"
+      })
+      return;
+    }
+    let checkEmail = await userService.findOneUser({ email: data.email })
+    if (checkEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "User already added with this email"
+      })
+      return;
+    };
+
+    data.accountId = checkCustomer._id
+    data.metaId = checkCustomer._id
+    data.roleId = '656f080e1eb1acda244af8c7'
+    let saveData = await userService.createUser(data)
+    if (!saveData) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to add the user"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "User added successfully",
+        result: saveData
+      })
+    }
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getCustomerUsers = async (req, res) => {
+  try {
+    let data = req.body
+    let getCustomerUsers = await userService.findUser({ accountId: req.userId, isDeleted: false }, { isPrimary: -1 })
+    if (!getCustomerUsers) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the customers"
+      })
+      return;
+    }
+
+    let name = data.firstName ? data.firstName : ""
+    let nameArray = name.split(" ");
+
+    // Create new keys for first name and last name
+    let newObj = {
+      f_name: nameArray[0],  // First name
+      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+    };
+
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+
+    const filteredData = getCustomerUsers.filter(entry => {
+      return (
+        firstNameRegex.test(entry.firstName) &&
+        lastNameRegex.test(entry.lastName) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    console.log("filteredData=================", filteredData)
+    let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
+    if (!checkCustomer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid customer ID"
+      })
+      return;
+    };
+
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData,
+      customerStatus: checkCustomer.status
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.changePrimaryUser = async (req, res) => {
+  try {
+    let data = req.body
+    let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
+    if (!checkUser) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to find the user"
+      })
+      return;
+    };
+    let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+    if (!updateLastPrimary) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to change tha primary"
+      })
+      return;
+    };
+    let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+    if (!updatePrimary) {
+      res.send({
+        code: constant.errorCode,
+        message: "Something went wrong"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Updated successfully",
+        result: updatePrimary
+      })
+    }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

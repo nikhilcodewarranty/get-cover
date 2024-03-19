@@ -8,6 +8,10 @@ console.log('sdnfksdfksjfksdjf')
 
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders)
 router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingleOrder)
+router.post('/getCustomerContract', [verifyToken], customerController.getCustomerContract)
+router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
+router.post('/getCustomerUsers', [verifyToken], customerController.getCustomerUsers)
+router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 
 
 module.exports = router; 
