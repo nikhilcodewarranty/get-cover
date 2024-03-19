@@ -3703,22 +3703,26 @@ exports.cronJobStatus = async (req, res) => {
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
                 let status = ''
+                let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
                 if (product.ExpiredCondition) {
+                    eligibilty = false;
                     status = 'Expired'
                 }
                 if (product.WaitingCondition) {
+                    eligibilty = false;
                     status = 'Waiting'
                 }
                 if (product.ActiveCondition) {
                     status = 'Active'
+                    eligibilty = true;
                 }
                 let updateDoc = {
                     'updateMany': {
                         'filter': { 'orderProductId': orderProductId },
-                        update: { $set: { status: status } },
+                        update: { $set: { status: status, eligibilty: eligibilty } },
                         'upsert': false
                     }
                 }
@@ -3760,7 +3764,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                 "productsArray.$.coverageEndDate": endDate,
             }
         };
-        let update = await orderService.updateOrder({ _id: orderID,"productsArray._id": orderProductId }, {
+        let update = await orderService.updateOrder({ _id: orderID, "productsArray._id": orderProductId }, {
             $set: {
                 "productsArray.$.coverageStartDate": startDate,
                 "productsArray.$.coverageEndDate": endDate,
