@@ -914,6 +914,15 @@ exports.searchClaim = async (req, res, next) => {
             },
             {
               $limit: pageLimit
+            },
+            {
+              $project:{
+                unique_key:1,
+                serial:1,
+                "order.customers.username":1,
+                "order.unique_key":1,
+                "order.venderOrder":1,
+              }
             }
           ]
         }

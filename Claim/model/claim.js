@@ -4,12 +4,14 @@ const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "contracts",
+    index:true
     // required: true,
   },
   claimFile: {
     type: 'String',
     enum: ['Open', 'Completed', 'Rejected'],
-    default: 'Open'
+    default: 'Open',
+    index:true
     // required: true,
   },
   unique_key_number: {
@@ -20,11 +22,13 @@ const claimSchema = new mongoose.Schema({
   },
   unique_key: {
     type: String,
+    index:true
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceproviders",
-    default: null
+    default: null,
+    index:true
   },
   action: {
     type: String,
