@@ -811,12 +811,19 @@ exports.getAllClaims = async (req, res, next) => {
 exports.searchClaim = async (req, res, next) => {
   try {
     let data = req.body
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action",
-      });
-      return;
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action",
+    //   });
+    //   return;
+    // }
+    let match = {}; 
+    if (req.role == 'Dealer') {
+      match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
+    }
+    if (req.role == 'Customer') {
+      match = { 'customerId': new mongoose.Types.ObjectId(req.userId)}
     }
     let lookupCondition = [{ isDeleted: false }]
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -863,6 +870,7 @@ exports.searchClaim = async (req, res, next) => {
                   // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
                   { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
                   { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                  match
                 ]
               }
             },
@@ -911,6 +919,9 @@ exports.searchClaim = async (req, res, next) => {
         }
       },
     ]
+
+    console.log(query)
+
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
@@ -1855,6 +1866,7 @@ exports.statusClaim = async (req, res) => {
       ) {
         console.log("Customer response is within 7 days after the last servicer shipped date.");
       } else {
+        // Update status for track status
         messageData.trackStatus = [
           {
             status: 'Completed'
