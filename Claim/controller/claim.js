@@ -53,18 +53,25 @@ var uploadP = multer({
 
 exports.getAllClaims = async (req, res, next) => {
   try {
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      })
-      return;
-    }
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   })
+    //   return;
+    // }
     let data = req.body
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let match = {}; 
+    if (req.role == 'Dealer') {
+      match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
+    }
+    if (req.role == 'Customer') {
+      match = { 'customerId': new mongoose.Types.ObjectId(req.userId)}
+    }
     let newQuery = [];
     // if (data.orderId) {
     //   newQuery.push({
@@ -686,6 +693,7 @@ exports.getAllClaims = async (req, res, next) => {
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
             { "contracts.orders.isDeleted": false },
+            match
           ]
         },
       },
