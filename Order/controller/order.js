@@ -3819,22 +3819,26 @@ exports.cronJobStatusWithDate = async (req, res) => {
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
                 let status = ''
+                let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
                 if (product.ExpiredCondition) {
+                    eligibilty = false;
                     status = 'Expired'
                 }
                 if (product.WaitingCondition) {
+                    eligibilty = false;
                     status = 'Waiting'
                 }
                 if (product.ActiveCondition) {
                     status = 'Active'
+                    eligibilty = true;
                 }
                 let updateDoc = {
                     'updateMany': {
                         'filter': { 'orderProductId': orderProductId },
-                        update: { $set: { status: status } },
+                        update: { $set: { status: status, eligibilty: eligibilty } },
                         'upsert': false
                     }
                 }
