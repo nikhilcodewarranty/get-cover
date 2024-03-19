@@ -3823,7 +3823,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
-                if (product.ExpiredCondition) {
+                 if (product.ExpiredCondition) {
                     eligibilty = false;
                     status = 'Expired'
                 }
