@@ -1026,13 +1026,13 @@ exports.uploadCommentImage = async (req, res, next) => {
 
 exports.addClaim = async (req, res, next) => {
   try {
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only suoer admin allow to do this action!'
-      });
-      return;
-    }
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only suoer admin allow to do this action!'
+    //   });
+    //   return;
+    // }
     let data = req.body;
     let checkContract = await contractService.getContractById({ _id: data.contractId })
 
