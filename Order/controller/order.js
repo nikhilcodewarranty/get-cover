@@ -3776,7 +3776,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
         let endOfDay = new Date();
         let lookupQuery = [
             {
-                $match: query // Your match condition here
+                $match: query // Your match condition here 
             },
             {
                 $addFields: {
