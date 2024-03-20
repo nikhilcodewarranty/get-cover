@@ -790,6 +790,7 @@ exports.getAllClaims = async (req, res, next) => {
     );
     const result_Array = resultFiter.map((item1) => {
       servicer = []
+      let servicerName = '';
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
@@ -814,7 +815,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
       return {
         ...item1,
-        servicerName:servicerName.name,
+        servicerData:servicerName,
         contracts: {
           ...item1.contracts,
           allServicer: servicer
