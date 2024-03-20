@@ -1487,8 +1487,6 @@ exports.saveBulkClaim = async (req, res) => {
         })
         return
       }
-
-      console.log(req.files)
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
@@ -1503,6 +1501,7 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
+      console.log("totalDataComing--------------------------", totalDataComing);
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
@@ -1512,20 +1511,22 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
+
         if (new Date(data.lossDate) == 'Invalid Date') {
           data.status = "Date is not valid format"
           data.exit = true
         }
+
         if (new Date(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
           data.exit = true
         }
+        data.lossDate = data.lossDate
         if (!data.diagnosis || data.diagnosis == "") {
           data.status = "Diagnosis can not be empty"
           data.exit = true
         }
       })
-
       let cache = {};
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -1565,15 +1566,12 @@ exports.saveBulkClaim = async (req, res) => {
       const claimArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return claimService.getClaims({
           claimFile: 'Open'
-
         });
         else {
           return null;
         }
       })
-
       const claimArray = await Promise.all(claimArrayPromise)
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1582,8 +1580,6 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray[i]
           item.contractData = contractData;
           item.servicerData = servicerData
-          // console.log(claimData.contractId.toString())
-          // console.log(item.contractData)
           if (!contractData) {
             item.status = "Contract not found"
             item.exit = true;
@@ -1649,7 +1645,7 @@ exports.saveBulkClaim = async (req, res) => {
         return {
           contractId: item.contractId ? item.contractId : "",
           servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? new Date(item.lossDate) : '',
+          lossDate: item.lossDate ? item.lossDate : '',
           diagnosis: item.diagnosis ? item.diagnosis : '',
           status: item.status ? item.status : '',
         }
@@ -1691,7 +1687,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
