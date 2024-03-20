@@ -758,7 +758,7 @@ exports.changePrimaryUser = async (req, res) => {
 exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
-    console.log("id---------------------",req.userId,req.teammateId)
+    console.log("id---------------------", req.userId, req.teammateId)
     let checkCustomer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkCustomer) {
       res.send({
@@ -807,114 +807,114 @@ exports.getCustomerById = async (req, res) => {
 
 exports.getOrderContract = async (req, res) => {
   try {
-      let data = req.body
-      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-      let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-      let limitData = Number(pageLimit)
-      let query = [
-          {
-              $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
-          },
-          {
-              $lookup: {
-                  from: "orders",
-                  localField: "orderId",
-                  foreignField: "_id",
-                  as: "order"
-              }
-          },
-          // {
-          //     $addFields: {
-          //         contracts: {
-          //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-          //         }
-          //     }
-          // }
-          // { $unwind: "$contracts" }
-      ]
-      //  console.log.log('before--------------', Date.now())
-      let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-      //  console.log.log('after+++++++++++++++++++++', Date.now())
-      let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
-      if (!checkOrder[0]) {
-          res.send({
-              code: constant.successCode,
-              message: "Success!",
-              result: checkOrder,
-              contractCount: 0,
-              orderUserData: {}
-          })
-          return
+    let data = req.body
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let query = [
+      {
+        $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order"
+        }
+      },
+      // {
+      //     $addFields: {
+      //         contracts: {
+      //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
+      //         }
+      //     }
+      // }
+      // { $unwind: "$contracts" }
+    ]
+    //  console.log.log('before--------------', Date.now())
+    let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+    //  console.log.log('after+++++++++++++++++++++', Date.now())
+    let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+    if (!checkOrder[0]) {
+      res.send({
+        code: constant.successCode,
+        message: "Success!",
+        result: checkOrder,
+        contractCount: 0,
+        orderUserData: {}
+      })
+      return
+    }
+
+    // checkOrder = checkOrder;
+    let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
+    checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
+      const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+      const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
+      if (pricebook) {
+        product.name = pricebook.name;
+      }
+      if (pricebookCat) {
+        product.catName = pricebookCat.name;
       }
 
-      // checkOrder = checkOrder;
-      let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
-      checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
-          const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
-          const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
-          if (pricebook) {
-              product.name = pricebook.name;
-          }
-          if (pricebookCat) {
-              product.catName = pricebookCat.name;
-          }
-
-          return product;
-      }));
+      return product;
+    }));
 
 
-      // return
-      //Get Dealer Data
-      let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
-      //Get customer Data
-      let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
-      //Get Reseller Data
+    // return
+    //Get Dealer Data
+    let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
+    //Get customer Data
+    let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
+    //Get Reseller Data
 
-      let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
+    let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-      const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+    const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-      const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+    const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-      let dealerUser = await userService.findUserforCustomer(queryDealerUser)
+    let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
-      let resellerUser = await userService.findUserforCustomer(queryResselerUser)
+    let resellerUser = await userService.findUserforCustomer(queryResselerUser)
 
-      //Get Servicer Data
+    //Get Servicer Data
 
-      let query1 = {
-          $or: [
-              { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-              // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-              // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-          ],
-      };
+    let query1 = {
+      $or: [
+        { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+        // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+        // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+      ],
+    };
 
-      let checkServicer = await servicerService.getServiceProviderById(query1);
+    let checkServicer = await servicerService.getServiceProviderById(query1);
 
-      let userData = {
-          dealerData: dealer ? dealer : {},
-          customerData: customer ? customer : {},
-          resellerData: reseller ? reseller : {},
-          servicerData: checkServicer ? checkServicer : {},
-          username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
-          resellerUsername: resellerUser ? resellerUser[0] : {}
-      };
+    let userData = {
+      dealerData: dealer ? dealer : {},
+      customerData: customer ? customer : {},
+      resellerData: reseller ? reseller : {},
+      servicerData: checkServicer ? checkServicer : {},
+      username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
+      resellerUsername: resellerUser ? resellerUser[0] : {}
+    };
 
 
-      res.send({
-          code: constant.successCode,
-          message: "Success!",
-          result: checkOrder,
-          totalCount: totalContract,
-          orderUserData: userData
-      });
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: checkOrder,
+      totalCount: totalContract,
+      orderUserData: userData
+    });
 
   } catch (err) {
-      res.send({
-          code: constant.errorCode,
-          message: err.message
-      })
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 }
 
@@ -996,6 +996,41 @@ exports.getContractById = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: getData[0]
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getDashboardData = async (req, res) => {
+  try {
+    let data = req.body
+    let query = { status: { $ne: "Archieved" }, customerId: new mongoose.Types.ObjectId(req.userId) };
+
+    let ordersCount = await orderService.getOrdersCount1(query)
+    let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
+    if (!getCustomerOrder) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return
+    }
+    let orderIDs = getCustomerOrder.map((ID) => ID._id)
+    // let contractCount = await contractService.findContractCount({ customerId: req.userId, status: { $in: ["Active", "Pending"] } })
+    let contractCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+
+    console.log("check------------", ordersCount)
+    res.send({
+      code: constant.errorCode,
+      message: "Success",
+      result: {
+        ordersCount: ordersCount,
+        contractCount:contractCount
+      }
     })
   } catch (err) {
     res.send({

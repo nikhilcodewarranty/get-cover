@@ -172,6 +172,15 @@ module.exports = class orderService {
     }
   }
 
+
+  static async getOrdersCount1(query) {
+    try {
+      const count = await order.find(query).countDocuments();
+      return count;
+    } catch (error) {
+      console.log(`Could not fetch order count ${error}`);
+    }
+  }
   //Add order
 
   static async addOrder(data) {
