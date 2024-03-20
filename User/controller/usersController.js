@@ -2185,7 +2185,7 @@ exports.addMembers = async (req, res) => {
       return;
     };
     data.isPrimary = false;
-    let getRole = await userService.getRoleById({ role: data.role })
+    let getRole = await userService.getRoleById({ role: data.role ? data.role :"Admin" })
     data.metaId = req.userId
     data.accountId = req.userId
     data.roleId = getRole._id ? getRole._id : "65f01eed2f048cac854daaa5"
