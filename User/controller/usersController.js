@@ -1443,7 +1443,7 @@ exports.login = async (req, res) => {
     let roleQuery = { _id: user.roleId }
     let roleProjection = { __v: 0 }
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
-    console.log("user data +++++++++++++", user, user.accountId ? user.accountId : user._id)
+    console.log("user data +++++++++++++",user,user.accountId ? user.accountId : user._id)
 
     // Generate JWT token
     const token = jwt.sign(
@@ -2185,10 +2185,10 @@ exports.addMembers = async (req, res) => {
       return;
     };
     data.isPrimary = false;
-    let getRole = await userService.getRoleById({ role: req.role })
+    let getRole = await userService.getRoleById({ role: req.role  })
     data.metaId = req.userId
     data.accountId = req.userId
-    data.roleId = getRole._id
+    data.roleId = getRole._id 
     let saveData = await userService.createUser(data)
     if (!saveData) {
       res.send({
@@ -2272,3 +2272,7 @@ exports.changePrimaryUser = async (req, res) => {
     })
   }
 }
+
+
+
+

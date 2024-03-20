@@ -15,6 +15,7 @@ router.get('/changePrimaryUser/:userId', [verifyToken], customerController.chang
 router.get('/getCustomerById', [verifyToken], customerController.getCustomerById)
 router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract)
 router.get('/getContractById/:contractId',[verifyToken],customerController.getContractById)
+router.get('/getDashboardData',[verifyToken],customerController.getDashboardData)
 
 
 
