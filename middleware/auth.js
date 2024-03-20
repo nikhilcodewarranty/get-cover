@@ -35,11 +35,13 @@ verifyToken = async (req, res, next) => {
       //   })
       //   return
       // }
+      console.log("auth decoded values ++++++++++++++++++++++++++",decoded)
 
       req.userId = decoded.userId;
       req.email = decoded.email;
       req.role = decoded.role;
       req.status = decoded.status;
+      req.teammateId = decoded.teammateId;
       next();
     })
   }
