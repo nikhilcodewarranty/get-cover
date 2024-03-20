@@ -768,9 +768,6 @@ exports.getAllClaims = async (req, res, next) => {
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
-
-    console.log(resultFiter)
-
     // Iterate over the data array
     resultFiter.forEach(item => {
       // Iterate over the dealerServicer array in each item
@@ -783,6 +780,7 @@ exports.getAllClaims = async (req, res, next) => {
     //Get Dealer and Reseller Servicers
     // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
+    let servicerName = '';
     // console.log("servicerIds=================", allServicerIds);
     // res.json(resultFiter)
     // return
@@ -811,8 +809,12 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
+      if (item1.servicerId != null) {
+        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+      }
       return {
         ...item1,
+        servicerName:servicerName.name,
         contracts: {
           ...item1.contracts,
           allServicer: servicer
