@@ -1283,13 +1283,13 @@ exports.editClaim = async (req, res) => {
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      });
-      return
-    }
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   });
+    //   return
+    // }
     let criteria = { _id: req.params.claimId }
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
@@ -1389,13 +1389,13 @@ exports.editClaimStatus = async (req, res) => {
 
 exports.editServicer = async (req, res) => {
   let data = req.body
-  if (req.role != 'Super Admin') {
-    res.send({
-      code: constant.errorCode,
-      message: 'Only super admin allow to do this action!'
-    });
-    return
-  }
+  // if (req.role != 'Super Admin') {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: 'Only super admin allow to do this action!'
+  //   });
+  //   return
+  // }
   let criteria = { _id: req.params.claimId }
   let checkClaim = await claimService.getClaimById(criteria)
   if (!checkClaim) {
@@ -1447,13 +1447,13 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
-          message: 'Only super admin allow to do this action!'
-        });
-        return
-      }
+      // if (req.role != 'Super Admin') {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: 'Only super admin allow to do this action!'
+      //   });
+      //   return
+      // }
       // console.log(req.files[0].path); return;
       const fileUrl = req.files[0].path
       const jsonOpts = {
