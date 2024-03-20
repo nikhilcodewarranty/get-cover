@@ -12,6 +12,11 @@ router.post('/getCustomerContract', [verifyToken], customerController.getCustome
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
 router.post('/getCustomerUsers', [verifyToken], customerController.getCustomerUsers)
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
+router.get('/getCustomerById', [verifyToken], customerController.getCustomerById)
+router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract)
+router.get('/getContractById/:contractId',[verifyToken],customerController.getContractById)
+
+
 
 
 module.exports = router; 
