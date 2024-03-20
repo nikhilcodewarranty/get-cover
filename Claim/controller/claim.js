@@ -864,8 +864,8 @@ exports.searchClaim = async (req, res, next) => {
         {
           $and: [
             // { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-            { 'serial': { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { 'unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { status: 'Active' }
           ]
@@ -898,8 +898,8 @@ exports.searchClaim = async (req, res, next) => {
               $match: {
                 $and: [
                   // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                  { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  { "unique_key": { $regex: `^${data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''}` } },
                   match
                 ]
               }
@@ -926,7 +926,7 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { 'order.customers.username': { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            { 'order.customers.username': { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
           ]
         },
