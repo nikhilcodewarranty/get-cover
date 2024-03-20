@@ -65,15 +65,14 @@ exports.getAllClaims = async (req, res, next) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-    let match = {}; 
+    let match = {};
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
     }
     if (req.role == 'Customer') {
-      match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId)}
+      match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
 
-    console.log("match==============",match)
     let newQuery = [];
     // if (data.orderId) {
     //   newQuery.push({
@@ -768,20 +767,41 @@ exports.getAllClaims = async (req, res, next) => {
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
+    let allServicerIds = [];
+
+    console.log(resultFiter)
+
+    // Iterate over the data array
+    resultFiter.forEach(item => {
+      // Iterate over the dealerServicer array in each item
+      item.contracts.orders.dealers.dealerServicer.forEach(dealer => {
+        // Push the servicerId to the allServicerIds array
+        allServicerIds.push(dealer.servicerId);
+      });
+    });
+
     //Get Dealer and Reseller Servicers
-    const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
+    // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
+    // console.log("servicerIds=================", allServicerIds);
+    // res.json(resultFiter)
+    // return
     allServicer = await servicerService.getAllServiceProvider(
-      { _id: { $in: servicerIds }, status: true },
+      { _id: { $in: allServicerIds }, status: true },
       {}
     );
     const result_Array = resultFiter.map((item1) => {
       servicer = []
-      if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
-        const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
-        let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
-        servicer.push(foundServicer)
-      }
+      let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+        servicer.push(dealerOfServicer)
+    });
+
+      // if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
+      //   const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
+      //   let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
+      //   servicer.push(foundServicer)
+      // }
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
@@ -828,12 +848,12 @@ exports.searchClaim = async (req, res, next) => {
     //   });
     //   return;
     // }
-    let match = {}; 
+    let match = {};
     if (req.role == 'Dealer') {
       match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
     }
     if (req.role == 'Customer') {
-      match = { 'customerId': new mongoose.Types.ObjectId(req.userId)}
+      match = { 'customerId': new mongoose.Types.ObjectId(req.userId) }
     }
     let lookupCondition = [{ isDeleted: false }]
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -926,12 +946,12 @@ exports.searchClaim = async (req, res, next) => {
               $limit: pageLimit
             },
             {
-              $project:{
-                unique_key:1,
-                serial:1,
-                "order.customers.username":1,
-                "order.unique_key":1,
-                "order.venderOrder":1,
+              $project: {
+                unique_key: 1,
+                serial: 1,
+                "order.customers.username": 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
               }
             }
           ]
@@ -1662,7 +1682,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
