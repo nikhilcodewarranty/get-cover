@@ -791,16 +791,11 @@ exports.getAllClaims = async (req, res, next) => {
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
+      let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
       });
-
-      // if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
-      //   const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
-      //   let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
-      //   servicer.push(foundServicer)
-      // }
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
@@ -812,10 +807,13 @@ exports.getAllClaims = async (req, res, next) => {
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+        console.log("req.userId-------",req.userId)
+        selfServicer = item1.servicerId.toString() === req.userId.toString() ? true : false
       }
       return {
         ...item1,
-        servicerData:servicerName,
+        servicerData: servicerName,
+        selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
           allServicer: servicer
