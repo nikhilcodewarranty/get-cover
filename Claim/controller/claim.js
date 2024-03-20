@@ -864,8 +864,8 @@ exports.searchClaim = async (req, res, next) => {
         {
           $and: [
             // { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-            { 'serial': { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { 'unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+            { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { status: 'Active' }
           ]
@@ -898,8 +898,8 @@ exports.searchClaim = async (req, res, next) => {
               $match: {
                 $and: [
                   // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                  { "unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  { "unique_key": { $regex: `^${data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''}` } },
                   match
                 ]
               }
@@ -926,7 +926,7 @@ exports.searchClaim = async (req, res, next) => {
           $and: [
             // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { 'order.customers.username': { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            { 'order.customers.username': { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
           ]
         },
@@ -1540,7 +1540,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
-          unique_key: item.contractId
+          unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' }
         });
         else {
           return null;
@@ -1548,22 +1548,11 @@ exports.saveBulkClaim = async (req, res) => {
       })
       const contractArray = await Promise.all(contractArrayPromise);
 
-      //update eligibility to false when clam open this contract id
-
-      //Check contract is exist or not using contract id
-      const updateArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.updateContract({ unique_key: item.contractId }, { eligibilty: false }, { new: true });
-        else {
-          return null;
-        }
-      })
-      const updateArray = await Promise.all(updateArrayPromise);
-
       //Check servicer is exist or not using contract id
 
       const servicerArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.servicerName != '') return servicerService.getServiceProviderById({
-          name: item.servicerName
+          name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' }
         });
         else {
           return null;
@@ -1627,6 +1616,15 @@ exports.saveBulkClaim = async (req, res) => {
       let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
       // unique_key_search = "CC" + "2024" + data.unique_key_number
       // unique_key = "CC-" + "2024-" + data.unique_key_number
+
+      //Update eligibility when contract is open
+      const updateArrayPromise = totalDataComing.map(item => {
+        if (!item.exit) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+        else {
+          return null;
+        }
+      })
+      const updateArray = await Promise.all(updateArrayPromise);
       totalDataComing.map((data, index) => {
         if (!data.exit) {
           let obj = {
