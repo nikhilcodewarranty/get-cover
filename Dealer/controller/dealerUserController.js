@@ -2430,9 +2430,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
                     statusRegex.test(entry.status)
                 );
             });
-
-
-
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -2523,10 +2520,7 @@ exports.getAllContracts = async (req, res) => {
                         }
                     ],
                 },
-
             })
-
-
         let query = [
             { $sort: { unique_key_number: -1 } },
             {
@@ -2655,323 +2649,323 @@ exports.getAllContracts = async (req, res) => {
     }
 }
 
-exports.getAllContracts = async (req, res) => {
-    try {
-        let data = req.body
-        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-        let limitData = Number(pageLimit)
-        // const index = await contractService.makeIndexForCollection();
-        // console.log(index)
-        // return;
-        let newQuery = [];
-        if (data.dealerName) {
-            newQuery.push(
-                {
-                    $lookup: {
-                        from: "dealers",
-                        localField: "order.dealerId",
-                        foreignField: "_id",
-                        as: "order.dealer"
-                    }
-                },
-                {
-                    $match: {
-                        $and: [
-                            { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-                        ]
-                    },
-                }
-            );
-        }
+// exports.getAllContracts = async (req, res) => {
+//     try {
+//         let data = req.body
+//         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+//         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+//         let limitData = Number(pageLimit)
+//         // const index = await contractService.makeIndexForCollection();
+//         // console.log(index)
+//         // return;
+//         let newQuery = [];
+//         if (data.dealerName) {
+//             newQuery.push(
+//                 {
+//                     $lookup: {
+//                         from: "dealers",
+//                         localField: "order.dealerId",
+//                         foreignField: "_id",
+//                         as: "order.dealer"
+//                     }
+//                 },
+//                 {
+//                     $match: {
+//                         $and: [
+//                             { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+//                         ]
+//                     },
+//                 }
+//             );
+//         }
 
-        if (data.customerName) {
-            newQuery.push(
-                {
-                    $lookup: {
-                        from: "customers",
-                        localField: "order.customerId",
-                        foreignField: "_id",
-                        as: "order.customer"
-                    }
-                },
-                {
-                    $match: {
-                        $and: [
-                            { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-                        ]
-                    },
-                }
-            );
-        }
+//         if (data.customerName) {
+//             newQuery.push(
+//                 {
+//                     $lookup: {
+//                         from: "customers",
+//                         localField: "order.customerId",
+//                         foreignField: "_id",
+//                         as: "order.customer"
+//                     }
+//                 },
+//                 {
+//                     $match: {
+//                         $and: [
+//                             { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+//                         ]
+//                     },
+//                 }
+//             );
+//         }
 
-        newQuery.push(
-            {
-                $facet: {
-                    totalRecords: [
-                        {
-                            $count: "total"
-                        }
-                    ],
-                    data: [
-                        {
-                            $lookup: {
-                                from: "resellers",
-                                localField: "order.resellerId",
-                                foreignField: "_id",
-                                as: "order.reseller",
-                            }
-                        },
-                        {
-                            $skip: skipLimit
-                        },
-                        {
-                            $limit: pageLimit
-                        },
-                        {
-                            $project: {
-                                productName: 1,
-                                model: 1,
-                                serial: 1,
-                                unique_key: 1,
-                                status: 1,
-                                manufacture: 1,
-                                eligibilty: 1,
-                                "order.unique_key": 1,
-                                "order.venderOrder": 1
-                            }
-                        }
-                    ],
-                },
+//         newQuery.push(
+//             {
+//                 $facet: {
+//                     totalRecords: [
+//                         {
+//                             $count: "total"
+//                         }
+//                     ],
+//                     data: [
+//                         {
+//                             $lookup: {
+//                                 from: "resellers",
+//                                 localField: "order.resellerId",
+//                                 foreignField: "_id",
+//                                 as: "order.reseller",
+//                             }
+//                         },
+//                         {
+//                             $skip: skipLimit
+//                         },
+//                         {
+//                             $limit: pageLimit
+//                         },
+//                         {
+//                             $project: {
+//                                 productName: 1,
+//                                 model: 1,
+//                                 serial: 1,
+//                                 unique_key: 1,
+//                                 status: 1,
+//                                 manufacture: 1,
+//                                 eligibilty: 1,
+//                                 "order.unique_key": 1,
+//                                 "order.venderOrder": 1
+//                             }
+//                         }
+//                     ],
+//                 },
 
-            })
-        let query = [
-            { $sort: { unique_key_number: -1 } },
-            {
-                $match:
-                {
-                    $and: [
-                        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                        { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-                        { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
-                        { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-                        { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
-                        { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
-                        { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
-                        // { eligibility: true },
-                    ]
-                },
-            },
-            // {$limit: pageLimit},
-            {
-                $lookup: {
-                    from: "orders",
-                    localField: "orderId",
-                    foreignField: "_id",
-                    as: "order",
-                }
-            },
-            {
-                $unwind: {
-                    path: "$order",
-                    preserveNullAndEmptyArrays: true,
-                }
-            },
-            {
-                $match:
-                {
-                    $and: [
-                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                        // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                        { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-                    ]
-                },
+//             })
+//         let query = [
+//             { $sort: { unique_key_number: -1 } },
+//             {
+//                 $match:
+//                 {
+//                     $and: [
+//                         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+//                         { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
+//                         { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+//                         { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
+//                         { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
+//                         { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+//                         { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+//                         // { eligibility: true },
+//                     ]
+//                 },
+//             },
+//             // {$limit: pageLimit},
+//             {
+//                 $lookup: {
+//                     from: "orders",
+//                     localField: "orderId",
+//                     foreignField: "_id",
+//                     as: "order",
+//                 }
+//             },
+//             {
+//                 $unwind: {
+//                     path: "$order",
+//                     preserveNullAndEmptyArrays: true,
+//                 }
+//             },
+//             {
+//                 $match:
+//                 {
+//                     $and: [
+//                         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+//                         // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+//                         { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+//                     ]
+//                 },
 
-            }
-            // { 
-            //   $match:
-            //   {
-            //     $and: [
-            //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-            //     ]
-            //   },
-            // },
-        ]
+//             }
+//             // { 
+//             //   $match:
+//             //   {
+//             //     $and: [
+//             //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+//             //     ]
+//             //   },
+//             // },
+//         ]
 
-        if (newQuery.length > 0) {
-            query = query.concat(newQuery);
-        }
-        // let query = [
-        //   {
-        //     $match:
-        //     {
-        //       $and: [
-        //         { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-        //         { productName: { $regex: `^${data.productName ? data.productName : ''}` } },
-        //         { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-        //         { manufacture: { $regex: `^${data.manufacture ? data.manufacture : ''}` } },
-        //         { model: { $regex: `^${data.model ? data.model : ''}` } },
-        //         { status: { $regex: `^${data.status ? data.status : ''}` } },
-        //         // { eligibility: true },
-        //       ]
-        //     },
-        //   },
+//         if (newQuery.length > 0) {
+//             query = query.concat(newQuery);
+//         }
+//         // let query = [
+//         //   {
+//         //     $match:
+//         //     {
+//         //       $and: [
+//         //         { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+//         //         { productName: { $regex: `^${data.productName ? data.productName : ''}` } },
+//         //         { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
+//         //         { manufacture: { $regex: `^${data.manufacture ? data.manufacture : ''}` } },
+//         //         { model: { $regex: `^${data.model ? data.model : ''}` } },
+//         //         { status: { $regex: `^${data.status ? data.status : ''}` } },
+//         //         // { eligibility: true },
+//         //       ]
+//         //     },
+//         //   },
 
-        //   {
-        //     $lookup: {
-        //       from: "orders",
-        //       localField: "orderId",
-        //       foreignField: "_id",
-        //       as: "order",
-        //       pipeline: [
-        //         {
-        //           $lookup: {
-        //             from: "dealers",
-        //             localField: "dealerId",
-        //             foreignField: "_id",
-        //             as: "dealer",
-        //             pipeline: [
-        //               {
-        //                 $match:
-        //                 {
-        //                   $and: [
-        //                     { "name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //                   ]
-        //                 },
-        //               }
-        //             ]
-        //           }
-        //         },
-        //         // {
+//         //   {
+//         //     $lookup: {
+//         //       from: "orders",
+//         //       localField: "orderId",
+//         //       foreignField: "_id",
+//         //       as: "order",
+//         //       pipeline: [
+//         //         {
+//         //           $lookup: {
+//         //             from: "dealers",
+//         //             localField: "dealerId",
+//         //             foreignField: "_id",
+//         //             as: "dealer",
+//         //             pipeline: [
+//         //               {
+//         //                 $match:
+//         //                 {
+//         //                   $and: [
+//         //                     { "name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+//         //                   ]
+//         //                 },
+//         //               }
+//         //             ]
+//         //           }
+//         //         },
+//         //         // {
 
-        //         //   $match:
-        //         //   {
-        //         //     $and: [
-        //         //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //         //     ]
-        //         //   },
+//         //         //   $match:
+//         //         //   {
+//         //         //     $and: [
+//         //         //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+//         //         //     ]
+//         //         //   },
 
-        //         // },
-        //         {
-        //           $lookup: {
-        //             from: "resellers",
-        //             localField: "resellerId",
-        //             foreignField: "_id",
-        //             as: "reseller",
-        //           }
-        //         },
-        //         {
-        //           $lookup: {
-        //             from: "customers",
-        //             localField: "customerId",
-        //             foreignField: "_id",
-        //             as: "customer",
-        //             pipeline: [
-        //               {
-        //                 $match:
-        //                 {
-        //                   $and: [
+//         //         // },
+//         //         {
+//         //           $lookup: {
+//         //             from: "resellers",
+//         //             localField: "resellerId",
+//         //             foreignField: "_id",
+//         //             as: "reseller",
+//         //           }
+//         //         },
+//         //         {
+//         //           $lookup: {
+//         //             from: "customers",
+//         //             localField: "customerId",
+//         //             foreignField: "_id",
+//         //             as: "customer",
+//         //             pipeline: [
+//         //               {
+//         //                 $match:
+//         //                 {
+//         //                   $and: [
 
-        //                     { "username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-        //                   ]
-        //                 },
-        //               },
-        //             ]
-        //           }
-        //         },
-        //         // {
-        //         //   $match:
-        //         //   {
-        //         //     $and: [
+//         //                     { "username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+//         //                   ]
+//         //                 },
+//         //               },
+//         //             ]
+//         //           }
+//         //         },
+//         //         // {
+//         //         //   $match:
+//         //         //   {
+//         //         //     $and: [
 
-        //         //       { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-        //         //     ]
-        //         //   },
-        //         // },
-        //         {
-        //           $lookup: {
-        //             from: "servicers",
-        //             localField: "servicerId",
-        //             foreignField: "_id",
-        //             as: "servicer",
-        //             pipeline: [
-        //               {
-        //                 $match:
-        //                 {
-        //                   $and: [
-        //                     { "name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-        //                   ]
-        //                 },
-        //               }
-        //             ]
-        //           }
-        //         },
-        //         // {
-        //         //   $match:
-        //         //   {
-        //         //     $and: [
-        //         //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-        //         //     ]
-        //         //   },
-        //         // }
+//         //         //       { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+//         //         //     ]
+//         //         //   },
+//         //         // },
+//         //         {
+//         //           $lookup: {
+//         //             from: "servicers",
+//         //             localField: "servicerId",
+//         //             foreignField: "_id",
+//         //             as: "servicer",
+//         //             pipeline: [
+//         //               {
+//         //                 $match:
+//         //                 {
+//         //                   $and: [
+//         //                     { "name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+//         //                   ]
+//         //                 },
+//         //               }
+//         //             ]
+//         //           }
+//         //         },
+//         //         // {
+//         //         //   $match:
+//         //         //   {
+//         //         //     $and: [
+//         //         //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+//         //         //     ]
+//         //         //   },
+//         //         // }
 
-        //       ]
-        //     }
-        //   },
+//         //       ]
+//         //     }
+//         //   },
 
-        //   {
-        //     $match:
-        //     {
-        //       $and: [
-        //         { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-        //         { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-        //         { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //         { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-        //         { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //       ]
+//         //   {
+//         //     $match:
+//         //     {
+//         //       $and: [
+//         //         { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
+//         //         { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
+//         //         { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+//         //         { "customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+//         //         { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+//         //       ]
 
-        //     },
-        //   },
+//         //     },
+//         //   },
 
-        //   { $sort: { unique_key_number: -1 } },
+//         //   { $sort: { unique_key_number: -1 } },
 
-        //   {
-        //     $facet: {
-        //       totalRecords: [
-        //         {
-        //           $count: "total"
-        //         }
-        //       ],
-        //       data: [
-        //         {
-        //           $skip: skipLimit
-        //         },
-        //         {
-        //           $limit: pageLimit
-        //         },
-        //       ]
-        //     },
+//         //   {
+//         //     $facet: {
+//         //       totalRecords: [
+//         //         {
+//         //           $count: "total"
+//         //         }
+//         //       ],
+//         //       data: [
+//         //         {
+//         //           $skip: skipLimit
+//         //         },
+//         //         {
+//         //           $limit: pageLimit
+//         //         },
+//         //       ]
+//         //     },
 
-        //   },
-        // ]
-        let getContracts = await contractService.getAllContracts2(query)
-        let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: getContracts[0]?.data ? getContracts[0]?.data : [],
-            totalCount
-            // count: getCo
-        })
+//         //   },
+//         // ]
+//         let getContracts = await contractService.getAllContracts2(query)
+//         let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+//         res.send({
+//             code: constant.successCode,
+//             message: "Success",
+//             result: getContracts[0]?.data ? getContracts[0]?.data : [],
+//             totalCount
+//             // count: getCo
+//         })
 
-    } catch (err) {
-        console.log(err)
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-}
+//     } catch (err) {
+//         console.log(err)
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message
+//         })
+//     }
+// }
 
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
