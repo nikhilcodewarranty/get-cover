@@ -1142,7 +1142,7 @@ exports.deleteCustomer = async (req, res, next) => {
   }
 };
 
-exports.getCustomerClaims = async (req, res) => {
+exports.customerClaims = async (req, res) => {
   try {
     if (req.role != 'Super Admin') {
       res.send({

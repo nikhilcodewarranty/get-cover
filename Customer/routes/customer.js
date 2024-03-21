@@ -17,6 +17,6 @@ router.put('/editCustomer/:customerId', [verifyToken], customerController.editCu
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById)
 router.post('/getCustomerUsers/:customerId', [verifyToken], customerController.getCustomerUsers)
-router.post('/getCustomerClaims/:customerId', [verifyToken], customerController.getCustomerClaims)
+router.post('/customerClaims/:customerId', [verifyToken], customerController.getCustomerClaims)
 
 module.exports = router; 
