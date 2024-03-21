@@ -538,6 +538,7 @@ exports.getCustomerById = async (req, res) => {
     } else {
       let getPrimaryUser = await userService.findOneUser({ accountId: checkCustomer._id.toString(), isPrimary: true }, {})
       let checkReseller = await resellerService.getReseller({ _id: checkCustomer.resellerId }, { isDeleted: 0 });
+      let checkDealer = await dealerService.getDealerByName({ _id: checkCustomer.dealerId }, { isDeleted: 0 });
       let project = {
         productsArray: 1,
         dealerId: 1,
@@ -562,6 +563,7 @@ exports.getCustomerById = async (req, res) => {
           meta: checkCustomer,
           primary: getPrimaryUser,
           resellerName: checkReseller ? checkReseller.name : '',
+          dealerStatus:checkDealer.accountStatus,
           orderData: ordersResult
         }
       })
