@@ -848,11 +848,11 @@ exports.changeDealerStatus = async (req, res) => {
       const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
 
       //Inactive dealer price Books
-      const changeDealerPriceBookStatus = await dealerPriceService.updateDealerPrice({ dealerId: req.params.dealerId }, {
-        $set: {
-          status: req.body.status
-        }
-      }, option);
+      // const changeDealerPriceBookStatus = await dealerPriceService.updateDealerPrice({ dealerId: req.params.dealerId }, {
+      //   $set: {
+      //     status: req.body.status
+      //   }
+      // }, option);
 
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
