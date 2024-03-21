@@ -808,13 +808,13 @@ exports.getAllClaims = async (req, res, next) => {
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
-        const userId = req.userId  ? req.userId : '65f01eed2f048cac854daaa5'
-         selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+        selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
       }
       return {
         ...item1,
         servicerData: servicerName,
-       selfServicer: selfServicer,
+        selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
           allServicer: servicer
@@ -1814,6 +1814,12 @@ exports.getMessages = async (req, res) => {
                 { isPrimary: true }
               ]
             },
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+            }
           }
         ]
 
@@ -1847,6 +1853,13 @@ exports.getMessages = async (req, res) => {
           },
           {
             $unwind: "$roles"
+          },
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              "roles.role": 1,
+            }
           }
         ]
       }
@@ -1861,11 +1874,10 @@ exports.getMessages = async (req, res) => {
         type: 1,
         messageFile: 1,
         content: 1,
-        "commentBy.firstName": 1,
-        "commentBy.lastName": 1,
-        "commentTo.firstName": 1,
-        "commentTo.lastName": 1,
-        "commentBy.roles.role": 1
+        // "commentBy.firstName": 1,
+        // "commentBy.lastName": 1
+        "commentBy": 1,
+        "commentTo": 1
       }
     }
   ]

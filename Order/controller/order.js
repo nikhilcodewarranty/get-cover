@@ -22,7 +22,8 @@ const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
 
 const PDFDocument = require('pdfkit');
-const { createPdf } = require("pdfmake")
+const { createPdf } = require("pdfmake");
+const claimService = require("../../Claim/services/claimService");
 
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
@@ -2911,10 +2912,24 @@ exports.getDashboardData = async (req, res) => {
             })
             return;
         }
+        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
+        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim[0].totalAmount
+        }
+        // res.send({
+        //     code: constant.successCode,
+        //     message: 'Success!',
+        //     result:checkOrders[0]
+        // })
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: checkOrders[0]
+            result: {
+                claimData:claimData,
+                orderData:checkOrders[0]
+            }
         })
     } catch (err) {
         res.send({
@@ -3823,7 +3838,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
 
-                 if (product.ExpiredCondition) {
+                if (product.ExpiredCondition) {
                     eligibilty = false;
                     status = 'Expired'
                 }
