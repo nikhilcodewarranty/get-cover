@@ -64,7 +64,7 @@ module.exports = class claimService {
   }
   static async getClaimById(claimId, projection = {}) {
     try {
-      const singleClaimResponse = await claim.findOne(claimId,projection);
+      const singleClaimResponse = await claim.findOne(claimId, projection);
       return singleClaimResponse;
     } catch (error) {
       console.log(`claim not found. ${error}`);
@@ -86,12 +86,37 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
-  static async saveBulkClaim(data){
+  static async saveBulkClaim(data) {
     try {
       const bulkResponse = await claim.insertMany(data);
       return bulkResponse;
     } catch (error) {
       console.log(`Could  not delete claim ${error}`);
+    }
+  }
+  static async getDashboardData(query, project = {}) {
+    try {
+      const allOrders = await claim.aggregate([
+        {
+          $match: query
+        },
+        {
+          "$group": {
+            "_id": "",
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$totalAmount"
+              }
+            },
+          },
+
+        },
+
+
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
     }
   }
 };
