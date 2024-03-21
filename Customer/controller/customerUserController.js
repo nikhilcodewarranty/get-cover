@@ -1029,7 +1029,7 @@ exports.getDashboardData = async (req, res) => {
       message: "Success",
       result: {
         ordersCount: ordersCount,
-        contractCount:contractCount
+        contractCount: contractCount
       }
     })
   } catch (err) {
@@ -1040,30 +1040,30 @@ exports.getDashboardData = async (req, res) => {
   }
 }
 
-exports.getCustomerDetails = async (req,res)=>{
-  try{
+exports.getCustomerDetails = async (req, res) => {
+  try {
     let data = req.body
-    let mid  = new mongoose.Types.ObjectId("65f025a1dcc98904ac068548")
+    let mid = new mongoose.Types.ObjectId("65f025a1dcc98904ac068548")
     let query = [
       {
-        $match:{
-          _id:mid
+        $match: {
+          _id: mid
         }
       },
       {
-        $lookup:{
-          from:"dealers",
-          foreignField:"_id",
-          localField:"dealerId",
-          as:"dealer"
+        $lookup: {
+          from: "dealers",
+          foreignField: "_id",
+          localField: "dealerId",
+          as: "dealer"
         }
       },
       {
-        $lookup:{
-          from:"resellers",
-          foreignField:"_id",
-          localField:"resellerId",
-          as:"reseller"
+        $lookup: {
+          from: "resellers",
+          foreignField: "_id",
+          localField: "resellerId",
+          as: "reseller"
         }
       },
       { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
@@ -1071,14 +1071,14 @@ exports.getCustomerDetails = async (req,res)=>{
     ]
     let getCustomer = await customerService.getCustomerByAggregate(query)
     res.send({
-      code:constant.successCode,
-      message:"Successfully fetched user details.",
-      result:getCustomer[0]
+      code: constant.successCode,
+      message: "Successfully fetched user details.",
+      result: getCustomer[0]
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
