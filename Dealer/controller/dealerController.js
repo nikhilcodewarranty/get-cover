@@ -2828,12 +2828,12 @@ exports.getDealerContract = async (req, res) => {
         {
           $and: [
             // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-            { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
-            { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
-            { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
-            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+            { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { eligibility: true },
           ]
         },
@@ -2856,9 +2856,9 @@ exports.getDealerContract = async (req, res) => {
         $match:
         {
           $and: [
-            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           ]
         },
 
@@ -3085,6 +3085,8 @@ exports.getDealerContract = async (req, res) => {
     //   },
     // ]
     let getContracts = await contractService.getAllContracts2(query)
+
+  
     // let query = [
     //   {
     //     $lookup: {
@@ -3139,7 +3141,6 @@ exports.getDealerContract = async (req, res) => {
     // ]  
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
 
-    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
 
     // if (!getContracts) {
     //   res.send({
@@ -3148,11 +3149,12 @@ exports.getDealerContract = async (req, res) => {
     //   })
     //   return;
     // }
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      totalCount: totalCount
+      totalCount
     })
 
   } catch (err) {

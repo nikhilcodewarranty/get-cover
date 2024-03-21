@@ -32,7 +32,7 @@ exports.getAllContracts = async (req, res) => {
         {
           $match: {
             $and: [
-              { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
+              { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             ]
           },
         }
@@ -52,7 +52,7 @@ exports.getAllContracts = async (req, res) => {
         {
           $match: {
             $and: [
-              { "order.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+              { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             ]
           },
         }
@@ -561,8 +561,6 @@ exports.deleteOrdercontractbulk = async (req, res) => {
     })
   }
 }
-
-
 exports.cronJobEligible = async (req, res) => {
   try {
     let query = { status: 'Active' };
