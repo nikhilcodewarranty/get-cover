@@ -14,6 +14,10 @@ const claimSchema = new mongoose.Schema({
     index:true
     // required: true,
   },
+  reason: {
+    type: 'String',
+    default: '',
+  },
   unique_key_number: {
     type: Number,
   },
