@@ -1040,3 +1040,45 @@ exports.getDashboardData = async (req, res) => {
   }
 }
 
+exports.getCustomerDetails = async (req,res)=>{
+  try{
+    let data = req.body
+    let mid  = new mongoose.Types.ObjectId("65f025a1dcc98904ac068548")
+    let query = [
+      {
+        $match:{
+          _id:mid
+        }
+      },
+      {
+        $lookup:{
+          from:"dealers",
+          foreignField:"_id",
+          localField:"dealerId",
+          as:"dealer"
+        }
+      },
+      {
+        $lookup:{
+          from:"resellers",
+          foreignField:"_id",
+          localField:"resellerId",
+          as:"reseller"
+        }
+      },
+      { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
+      { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
+    ]
+    let getCustomer = await customerService.getCustomerByAggregate(query)
+    res.send({
+      code:constant.successCode,
+      message:"Successfully fetched user details.",
+      result:getCustomer[0]
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}

@@ -7,15 +7,17 @@ const validator = require('../config/validation');
 console.log('sdnfksdfksjfksdjf')
 
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders)
-router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingleOrder)
 router.post('/getCustomerContract', [verifyToken], customerController.getCustomerContract)
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)
 router.post('/getCustomerUsers', [verifyToken], customerController.getCustomerUsers)
+router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract)
+
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 router.get('/getCustomerById', [verifyToken], customerController.getCustomerById)
-router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract)
 router.get('/getContractById/:contractId',[verifyToken],customerController.getContractById)
+router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingleOrder)
 router.get('/getDashboardData',[verifyToken],customerController.getDashboardData)
+router.get('/getCustomerDetails',[verifyToken],customerController.getCustomerDetails)
 
 
 

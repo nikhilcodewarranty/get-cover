@@ -53,8 +53,8 @@ const customerSchema = new mongoose.Schema({
     ref: "dealers",
   },
   resellerId: {
-    type: String,
-    default:"",
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"resellers",
   },
   dealerName: {
     type: String,

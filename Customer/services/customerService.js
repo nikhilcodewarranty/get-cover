@@ -46,6 +46,15 @@ module.exports = class customerService {
     }
   }
 
+  static async getCustomerByAggregate(query) {
+    try {
+      const singleCustomerResponse = await customer.aggregate(query);
+      return singleCustomerResponse;
+    } catch (error) {
+      console.log(`Customer not found. ${error}`);
+    }
+  }
+
   static async updateCustomer(criteria, data, option) {
     try {
       const updatedResponse = await customer.updateOne(criteria, data, option);
