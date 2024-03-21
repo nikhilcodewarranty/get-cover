@@ -56,10 +56,10 @@ const customerSchema = new mongoose.Schema({
     type: String,
     default:''
   },
-  // resellerId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref:"resellers",
-  // },
+  resellerId1: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref:"resellers",
+  },
   dealerName: {
     type: String,
     default: ''
