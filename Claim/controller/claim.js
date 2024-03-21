@@ -533,6 +533,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
+              "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
               // "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.dealers.dealerServicer": {
@@ -768,9 +769,6 @@ exports.getAllClaims = async (req, res, next) => {
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
-
-    console.log(resultFiter)
-
     // Iterate over the data array
     resultFiter.forEach(item => {
       // Iterate over the dealerServicer array in each item
@@ -783,6 +781,7 @@ exports.getAllClaims = async (req, res, next) => {
     //Get Dealer and Reseller Servicers
     // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
+    let servicerName = '';
     // console.log("servicerIds=================", allServicerIds);
     // res.json(resultFiter)
     // return
@@ -792,16 +791,12 @@ exports.getAllClaims = async (req, res, next) => {
     );
     const result_Array = resultFiter.map((item1) => {
       servicer = []
+      let servicerName = '';
+      let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
         servicer.push(dealerOfServicer)
       });
-
-      // if (item1.contracts.orders.dealers.dealerServicer[0]?.servicerId) {
-      //   const servicerId = item1.contracts.orders.dealers.dealerServicer[0]?.servicerId.toString()
-      //   let foundServicer = allServicer.find(item => item._id.toString() === servicerId);
-      //   servicer.push(foundServicer)
-      // }
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
@@ -811,8 +806,15 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
+      if (item1.servicerId != null) {
+        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+        const userId = req.userId  ? req.userId : '65f01eed2f048cac854daaa5'
+         selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+      }
       return {
         ...item1,
+        servicerData: servicerName,
+       selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
           allServicer: servicer
@@ -1017,13 +1019,13 @@ exports.uploadReceipt = async (req, res, next) => {
 exports.uploadCommentImage = async (req, res, next) => {
   try {
     imageUpload(req, res, async (err) => {
-      if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
-          message: 'Only suoer admin allow to do this action!'
-        });
-        return;
-      }
+      // if (req.role != 'Super Admin') {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: 'Only suoer admin allow to do this action!'
+      //   });
+      //   return;
+      // }
       let file = req.file;
       res.send({
         code: constant.successCode,
@@ -1283,13 +1285,13 @@ exports.editClaim = async (req, res) => {
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      });
-      return
-    }
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   });
+    //   return
+    // }
     let criteria = { _id: req.params.claimId }
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
@@ -1389,13 +1391,13 @@ exports.editClaimStatus = async (req, res) => {
 
 exports.editServicer = async (req, res) => {
   let data = req.body
-  if (req.role != 'Super Admin') {
-    res.send({
-      code: constant.errorCode,
-      message: 'Only super admin allow to do this action!'
-    });
-    return
-  }
+  // if (req.role != 'Super Admin') {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: 'Only super admin allow to do this action!'
+  //   });
+  //   return
+  // }
   let criteria = { _id: req.params.claimId }
   let checkClaim = await claimService.getClaimById(criteria)
   if (!checkClaim) {
@@ -1447,13 +1449,13 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
-          message: 'Only super admin allow to do this action!'
-        });
-        return
-      }
+      // if (req.role != 'Super Admin') {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: 'Only super admin allow to do this action!'
+      //   });
+      //   return
+      // }
       // console.log(req.files[0].path); return;
       const fileUrl = req.files[0].path
       const jsonOpts = {
@@ -1487,8 +1489,6 @@ exports.saveBulkClaim = async (req, res) => {
         })
         return
       }
-
-      console.log(req.files)
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
@@ -1503,6 +1503,7 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
+      console.log("totalDataComing--------------------------", totalDataComing);
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
@@ -1512,20 +1513,22 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
+
         if (new Date(data.lossDate) == 'Invalid Date') {
           data.status = "Date is not valid format"
           data.exit = true
         }
+
         if (new Date(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
           data.exit = true
         }
+        data.lossDate = data.lossDate
         if (!data.diagnosis || data.diagnosis == "") {
           data.status = "Diagnosis can not be empty"
           data.exit = true
         }
       })
-
       let cache = {};
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -1565,15 +1568,12 @@ exports.saveBulkClaim = async (req, res) => {
       const claimArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return claimService.getClaims({
           claimFile: 'Open'
-
         });
         else {
           return null;
         }
       })
-
       const claimArray = await Promise.all(claimArrayPromise)
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -1582,8 +1582,6 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray[i]
           item.contractData = contractData;
           item.servicerData = servicerData
-          // console.log(claimData.contractId.toString())
-          // console.log(item.contractData)
           if (!contractData) {
             item.status = "Contract not found"
             item.exit = true;
@@ -1649,7 +1647,7 @@ exports.saveBulkClaim = async (req, res) => {
         return {
           contractId: item.contractId ? item.contractId : "",
           servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? new Date(item.lossDate) : '',
+          lossDate: item.lossDate ? item.lossDate : '',
           diagnosis: item.diagnosis ? item.diagnosis : '',
           status: item.status ? item.status : '',
         }
@@ -1691,7 +1689,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
@@ -1711,13 +1709,13 @@ exports.saveBulkClaim = async (req, res) => {
 
 exports.sendMessages = async (req, res) => {
   try {
-    if (req.role != 'Super Admin') {
-      res.send({
-        code: constant.errorCode,
-        message: 'Only super admin allow to do this action!'
-      });
-      return
-    }
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   });
+    //   return
+    // }
     let data = req.body
     let criteria = { _id: req.params.claimId }
     let checkClaim = await claimService.getClaimById(criteria)
@@ -1778,13 +1776,13 @@ exports.sendMessages = async (req, res) => {
 }
 
 exports.getMessages = async (req, res) => {
-  if (req.role != 'Super Admin') {
-    res.send({
-      code: constant.errorCode,
-      message: 'Only super admin allow to do this action'
-    })
-    return
-  }
+  // if (req.role != 'Super Admin') {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: 'Only super admin allow to do this action'
+  //   })
+  //   return
+  // }
   const checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { isDeleted: false })
   if (!checkClaim) {
     res.send({

@@ -509,10 +509,17 @@ exports.getContractById = async (req, res) => {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
       productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
       getData[0].order[i].productsArray = productsArray
-
     }
-
-    // console.log(getData);
+    getData.map((data, index) => {
+      if (data.order[0]?.dealer[0]?.isServicer && data.order[0]?.dealerId.toString()===data.order[0]?.servicerId.toString()) {
+        data.order[0]?.servicer.push(data.order[0]?.dealer[0])
+        getData[index] = data
+      }
+      if (data.order[0]?.reseller[0]?.isServicer && data.order[0]?.resellerId.toString()===data.order[0]?.servicerId.toString()) {
+        data.order[0]?.servicer.push(data.order[0]?.reseller[0])
+        getData[index] = data
+      }
+    })
 
     if (!getData) {
       res.send({
@@ -612,10 +619,10 @@ exports.cronJobEligible = async (req, res) => {
       }
       bulk.push(updateDoc)
     })
-      // Update when claim is open for contract
+    // Update when claim is open for contract
     const update = await contractService.allUpdate(bulk);
     bulk = [];
-     //const updatedData = await contractService.allUpdate(bulk);
+    //const updatedData = await contractService.allUpdate(bulk);
     const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
     if (notOpenContractIds.length > 0) {
       for (let j = 0; j < notOpenContractIds.length; j++) {
@@ -633,7 +640,7 @@ exports.cronJobEligible = async (req, res) => {
         }
       }
     }
-     // Update when claim is not open but completed claim and product value still less than claim value
+    // Update when claim is not open but completed claim and product value still less than claim value
     const updatedData1 = await contractService.allUpdate(bulk);
     res.send({
       code: constant.successCode,
