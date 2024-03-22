@@ -1876,7 +1876,7 @@ exports.getMessages = async (req, res) => {
         content: 1,
         // "commentBy.firstName": 1,
         // "commentBy.lastName": 1
-        "commentBy": 1,
+        "commentBy": 1, 
         "commentTo": 1
       }
     }

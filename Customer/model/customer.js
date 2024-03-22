@@ -53,6 +53,10 @@ const customerSchema = new mongoose.Schema({
     ref: "dealers",
   },
   resellerId: {
+    type: String,
+    default:''
+  },
+  resellerId1: {
     type: mongoose.Schema.Types.ObjectId,
     ref:"resellers",
   },
