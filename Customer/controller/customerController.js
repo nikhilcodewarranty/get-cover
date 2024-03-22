@@ -66,6 +66,7 @@ exports.createCustomer = async (req, res, next) => {
       city: data.city,
       dealerId: checkDealer._id,
       resellerId: checkReseller ? checkReseller._id : null,
+      resellerId1: checkReseller ? checkReseller._id : null,
       zip: data.zip,
       state: data.state,
       country: data.country,
