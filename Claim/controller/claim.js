@@ -576,7 +576,6 @@ exports.getAllClaims = async (req, res, next) => {
     let servicerMatch = {}
 
     const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
-    console.log("checkServicer", checkServicer);
     if (checkServicer) {
       servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
     }
@@ -1646,7 +1645,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //Update eligibility when contract is open
       const updateArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+        if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
           return null;
         }
