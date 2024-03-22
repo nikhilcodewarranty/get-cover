@@ -50,7 +50,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       }
-      data.members[0].status = true
+    //  data.members[0].status = true
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
