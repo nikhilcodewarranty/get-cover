@@ -2986,7 +2986,7 @@ exports.getDealerContract = async (req, res) => {
     // ]  
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
 
-    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    // let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
 
     // if (!getContracts) {
     //   res.send({
@@ -2995,13 +2995,12 @@ exports.getDealerContract = async (req, res) => {
     //   })
     //   return;
     // }
-    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    // let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
       totalCount: getContracts[0].totalRecords[0].total?getContracts[0].totalRecords[0].total:0
-      totalCount
     })
 
   } catch (err) {
