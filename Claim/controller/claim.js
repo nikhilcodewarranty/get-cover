@@ -1198,7 +1198,7 @@ exports.getContractById = async (req, res) => {
               }
             },
 
-          ],
+          ], 
 
         }
       },
