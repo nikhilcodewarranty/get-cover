@@ -61,9 +61,9 @@ module.exports = class orderService {
         {
           $match: query
         },
-        {
-          $project: project,
-        },
+        // {
+        //   $project: project,
+        // },
         {
           "$group": {
             "_id": "",

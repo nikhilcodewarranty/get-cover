@@ -74,7 +74,7 @@ exports.createReseller = async (req, res) => {
             accountStatus: "Approved",
             dealerName: checkDealer.name,
         }
-        data.members[0].status = true
+       // data.members[0].status = true
         let teamMembers = data.members
         // let emailsToCheck = teamMembers.map(member => member.email);
         // let queryEmails = { email: { $in: emailsToCheck } };
