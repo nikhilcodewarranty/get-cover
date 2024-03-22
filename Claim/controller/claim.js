@@ -1848,12 +1848,7 @@ exports.getMessages = async (req, res) => {
 
       }
     },
-    {
-      $unwind: {
-        path: "$commentedTo",
-        preserveNullAndEmptyArrays: true,
-      }
-    },
+    { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
         from: "users",
@@ -1890,12 +1885,7 @@ exports.getMessages = async (req, res) => {
         ]
       }
     },
-    {
-      $unwind: {
-        path: "$commentedBy",
-        preserveNullAndEmptyArrays: true,
-      }
-    },
+    { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
     {
       $project: {
         _id: 1,
@@ -1911,7 +1901,6 @@ exports.getMessages = async (req, res) => {
     }
   ]
   let allMessages = await claimService.getAllMessages(lookupQuery);
-  console.log("allMessages==============", allMessages)
   res.send({
     code: constant.successCode,
     messages: 'Success!',
