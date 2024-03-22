@@ -22,6 +22,7 @@ const fs = require("fs");
 const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
+const providerService = require("../../Provider/services/providerService");
 
 
 var StorageP = multer.diskStorage({
@@ -499,14 +500,7 @@ exports.getAllClaims = async (req, res, next) => {
               as: "contracts.orders.resellers",
             }
           },
-          {
-            $lookup: {
-              from: "serviceproviders",
-              localField: "contracts.orders.servicerId",
-              foreignField: "_id",
-              as: "contracts.orders.servicers",
-            }
-          },
+
           {
             $project: {
               "contractId": 1,
@@ -579,6 +573,13 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     })
+    let servicerMatch = {}
+
+    const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+    console.log("checkServicer", checkServicer);
+    if (checkServicer) {
+      servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
+    }
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -591,6 +592,7 @@ exports.getAllClaims = async (req, res, next) => {
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+            servicerMatch
           ]
         },
       },
@@ -740,13 +742,18 @@ exports.getAllClaims = async (req, res, next) => {
       },
       {
         $lookup: {
+          from: "serviceproviders",
+          localField: "contracts.orders.servicerId",
+          foreignField: "_id",
+          as: "contracts.orders.servicers",
+        }
+      },
+      {
+        $lookup: {
           from: "customers",
           localField: "contracts.orders.customerId",
           foreignField: "_id",
           as: "contracts.orders.customer",
-          // pipeline: [
-
-          // ]
         }
       },
       {
@@ -761,7 +768,6 @@ exports.getAllClaims = async (req, res, next) => {
           ]
         },
       },
-
     ]
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
