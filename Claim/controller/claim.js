@@ -1533,7 +1533,6 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      console.log("totalDataComing--------------------------", totalDataComing);
       totalDataComing.forEach(data => {
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
@@ -1616,7 +1615,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (claimData != null && claimData.length > 0) {
+          if (item.contractData && claimData != null && claimData.length > 0) {
             const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
             if (filter.length > 0) {
               item.status = "Claim is already open of this contract"
@@ -1629,7 +1628,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Servicer not found"
             item.exit = true;
           }
-          if (contractData.status != "Active") {
+          if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
           }
@@ -1646,6 +1645,7 @@ exports.saveBulkClaim = async (req, res) => {
       // unique_key = "CC-" + "2024-" + data.unique_key_number
 
       //Update eligibility when contract is open
+
       const updateArrayPromise = totalDataComing.map(item => {
         if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
