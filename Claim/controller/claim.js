@@ -512,6 +512,8 @@ exports.getAllClaims = async (req, res, next) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
@@ -1198,7 +1200,7 @@ exports.getContractById = async (req, res) => {
               }
             },
 
-          ], 
+          ],
 
         }
       },
@@ -1757,8 +1759,8 @@ exports.sendMessages = async (req, res) => {
       return
     }
     // console.log(" req.userId==================", req.role);return;
-    data.commentedBy = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-    data.commentedTo = '65f01eed2f048cac854daaa5';
+    data.commentedBy = req.userId
+    data.commentedTo = req.userId;
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
     }
@@ -1847,7 +1849,10 @@ exports.getMessages = async (req, res) => {
       }
     },
     {
-      $unwind: "$commentTo"
+      $unwind: {
+        path: "$commentedTo",
+        preserveNullAndEmptyArrays: true,
+      }
     },
     {
       $lookup: {
@@ -1886,7 +1891,10 @@ exports.getMessages = async (req, res) => {
       }
     },
     {
-      $unwind: "$commentBy"
+      $unwind: {
+        path: "$commentedBy",
+        preserveNullAndEmptyArrays: true,
+      }
     },
     {
       $project: {
@@ -1897,12 +1905,13 @@ exports.getMessages = async (req, res) => {
         content: 1,
         // "commentBy.firstName": 1,
         // "commentBy.lastName": 1
-        "commentBy": 1, 
+        "commentBy": 1,
         "commentTo": 1
       }
     }
   ]
   let allMessages = await claimService.getAllMessages(lookupQuery);
+  console.log("allMessages==============", allMessages)
   res.send({
     code: constant.successCode,
     messages: 'Success!',
