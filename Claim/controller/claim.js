@@ -1534,6 +1534,8 @@ exports.saveBulkClaim = async (req, res) => {
         };
       });
       totalDataComing.forEach(data => {
+        data.diagnosis.replace(/\s+/g, ' ').trim();
+        data.servicerName.replace(/\s+/g, ' ').trim();
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
           data.exit = true
