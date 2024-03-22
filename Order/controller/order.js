@@ -2865,7 +2865,7 @@ exports.markAsPaid = async (req, res) => {
                 contractArray.push(contractObject);
             });
 
-            let saveData = await contractService.createBulkContracts(contracts)
+            let saveData = await contractService.createBulkContracts(contractArray)
         })
 
         res.send({
