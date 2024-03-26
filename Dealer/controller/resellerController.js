@@ -532,7 +532,6 @@ exports.addResellerUser = async (req, res) => {
     }
 }
 
-
 exports.getResellerServicers = async (req, res) => {
     try {
         let data = req.body
