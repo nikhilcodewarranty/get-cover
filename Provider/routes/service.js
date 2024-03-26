@@ -17,7 +17,7 @@ router.get("/getServiceProviderById/:servicerId", [verifyToken], servicerAdminCo
 router.delete("/rejectServicer/:servicerId", [verifyToken], servicerAdminController.rejectServicer); //get all dealers
 
 router.get("/serviceProvider/create-serviceProvider", servicerAdminController.createServiceProvider);
-
+router.post("/getServicerClaims/:servicerId", [verifyToken], servicerAdminController.getServicerClaims);
 
 router.post("/createRelationWithDealer/:servicerId",[verifyToken],servicerAdminController.createDeleteRelation)
 router.post("/getServicerDealers/:servicerId",[verifyToken],servicerAdminController.getServicerDealers)

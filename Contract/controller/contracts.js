@@ -534,7 +534,6 @@ exports.getContractById = async (req, res) => {
       }
 
     })
-
     if (!getData) {
       res.send({
         code: constant.errorCode,
