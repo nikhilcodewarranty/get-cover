@@ -507,7 +507,7 @@ exports.getContractById = async (req, res) => {
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
     getData[0].claimAmount = 0;
-    if (claimTotal.length > 0) {
+    if (claimTotal.length > 0) { 
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
