@@ -266,15 +266,14 @@ exports.getResellerById = async (req, res) => {
     // }
     let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
 
-    if (!checkReseller) {
+    if (!checkReseller[0]) {
         res.send({
             code: constant.errorCode,
             message: 'Reseller not found'
         })
         return;
     }
-    let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
-
+    let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
     const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
     let resellerUser = await userService.getMembers(query1, { isDeleted: false })
     if (!resellerUser) {
@@ -329,7 +328,7 @@ exports.getResellerById = async (req, res) => {
         code: constant.successCode,
         message: "Success",
         reseller: result_Array,
-        dealerStatus: checkDealerStatus.status
+        dealerStatus: checkDealerStatus.accountStatus
     })
 
 
