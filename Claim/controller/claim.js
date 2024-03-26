@@ -910,7 +910,7 @@ exports.searchClaim = async (req, res, next) => {
                 $and: [
                   // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
                   { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  { "unique_key": { $regex: `^${data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''}` } },
+                  { "unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                   match
                 ]
               }
