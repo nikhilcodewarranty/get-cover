@@ -5,6 +5,8 @@ const dealerService = require("../services/dealerService");
 const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
+let claimService = require('../../Claim/services/claimService')
+
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
@@ -1347,7 +1349,6 @@ exports.getResellerClaims = async (req, res) => {
                         { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-                        { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) },
                     ]
                 },
             },
@@ -1391,6 +1392,7 @@ exports.getResellerClaims = async (req, res) => {
                         // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
                         // { "contracts.orders.isDeleted": false },
                     ]
                 },
