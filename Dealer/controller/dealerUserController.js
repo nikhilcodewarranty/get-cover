@@ -3829,62 +3829,134 @@ exports.getDashboardData = async (req, res) => {
             orderAmount: 1,
         };
 
+        console.log("userId------------------------", req.userId)
+
         let query = { status: 'Active', dealerId: new mongoose.Types.ObjectId(req.userId) };
+        const claimQuery = { claimFile: 'Completed' }
         let checkOrders = await orderService.getDashboardData(query, project);
         //Get claims data
-        // let lookupQuery = [
-        //     {
-        //         $lookup: {
-        //             from: "contracts",
-        //             localField: "contractId",
-        //             foreignField: "_id",
-        //             as: "contracts",
-        //         }
-        //     },
-        //     {
-        //         $unwind: "$contracts"
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "orders",
-        //             localField: "contracts.orderId",
-        //             foreignField: "_id",
-        //             as: "contracts.orders",
-        //         },
+        let lookupQuery = [
+            {
+                $match: claimQuery
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
 
-        //     },
-        //     {
-        //         $unwind: "$contracts.orders"
-        //     },
-        //     {
-        //         $match:
-        //         {
-        //             $and: [
-        //                 // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //                 { "contracts.orders.dealerId": req.userId },
-        //             ]
-        //         },
-        //     },
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                        { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
+                    ]
+                },
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
 
-        // ]
-        // let valueClaim = await claimService.countCompletedClaims({ claimFile: 'Completed' });
-        // let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
-        if (!checkOrders[0]) {
+            },
+        ]
+        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+
+        const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+        //Get number of claims
+        let numberOfCompleletedClaims = [
+            {
+                $match: rejectedQuery
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contracts",
+                }
+            },
+            {
+                $unwind: "$contracts"
+            },
+            {
+                $lookup: {
+                    from: "orders",
+                    localField: "contracts.orderId",
+                    foreignField: "_id",
+                    as: "contracts.orders",
+                },
+
+            },
+            {
+                $unwind: "$contracts.orders"
+            },
+            {
+                $match:
+                {
+                    $and: [
+                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                        { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
+                    ]
+                },
+            },
+        ]
+        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim[0]?.totalAmount
+        }
+
+        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
                 result: {
-                    "_id": "",
-                    "totalAmount": 0,
-                    "totalOrder": 0
+                    claimData: claimData,
+                    orderData: {
+                        "_id": "",
+                        "totalAmount": 0,
+                        "totalOrder": 0
+                    }
                 }
+                // result: {
+                //     "_id": "",
+                //     "totalAmount": 0,
+                //     "totalOrder": 0
+                // }
             })
             return;
         }
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: checkOrders[0]
+            result: {
+                claimData: claimData,
+                orderData: checkOrders[0]
+            }
         })
     } catch (err) {
         res.send({

@@ -2900,23 +2900,51 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
-        if (!checkOrders[0]) {
+        // if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Unable to fetch order data",
+        //         result: {
+        //             claimData: claimData,
+        //             orderData: {
+        //                 "_id": "",
+        //                 "totalAmount": 0,
+        //                 "totalOrder": 0
+        //             }
+        //         }
+        //         // result: {
+        //         //     "_id": "",
+        //         //     "totalAmount": 0,
+        //         //     "totalOrder": 0
+        //         // }
+        //     })
+        //     return;
+        // }
+        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
+        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
+        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
                 result: {
-                    "_id": "",
-                    "totalAmount": 0,
-                    "totalOrder": 0
+                    claimData: claimData,
+                    orderData: {
+                        "_id": "",
+                        "totalAmount": 0,
+                        "totalOrder": 0
+                    }
                 }
+                // result: {
+                //     "_id": "",
+                //     "totalAmount": 0,
+                //     "totalOrder": 0
+                // }
             })
             return;
         }
-        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
-        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
         const claimData = {
             numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0].totalAmount
+            valueClaim: valueClaim[0]?.totalAmount
         }
         // res.send({
         //     code: constant.successCode,
