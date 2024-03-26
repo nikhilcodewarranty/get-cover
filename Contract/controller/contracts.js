@@ -453,6 +453,9 @@ exports.getContractById = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    // Get Claim Total of the contract
+    const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -503,6 +506,11 @@ exports.getContractById = async (req, res) => {
       },
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    getData[0].claimAmount = 0;
+    if (claimTotal.length > 0) {
+      getData[0].claimAmount = claimTotal[0]?.amount
+    }
+
     let orderId = getData[0].orderProductId
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
