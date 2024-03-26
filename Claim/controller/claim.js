@@ -22,6 +22,7 @@ const fs = require("fs");
 const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
+const providerService = require("../../Provider/services/providerService");
 
 
 var StorageP = multer.diskStorage({
@@ -499,19 +500,14 @@ exports.getAllClaims = async (req, res, next) => {
               as: "contracts.orders.resellers",
             }
           },
-          {
-            $lookup: {
-              from: "serviceproviders",
-              localField: "contracts.orders.servicerId",
-              foreignField: "_id",
-              as: "contracts.orders.servicers",
-            }
-          },
+
           {
             $project: {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
@@ -577,6 +573,14 @@ exports.getAllClaims = async (req, res, next) => {
         ]
       }
     })
+    let servicerMatch = {}
+    if (data.servicerName) {
+      const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer) {
+        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
+      }
+    }
+
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -589,6 +593,7 @@ exports.getAllClaims = async (req, res, next) => {
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+            servicerMatch
           ]
         },
       },
@@ -738,13 +743,18 @@ exports.getAllClaims = async (req, res, next) => {
       },
       {
         $lookup: {
+          from: "serviceproviders",
+          localField: "contracts.orders.servicerId",
+          foreignField: "_id",
+          as: "contracts.orders.servicers",
+        }
+      },
+      {
+        $lookup: {
           from: "customers",
           localField: "contracts.orders.customerId",
           foreignField: "_id",
           as: "contracts.orders.customer",
-          // pipeline: [
-
-          // ]
         }
       },
       {
@@ -759,7 +769,6 @@ exports.getAllClaims = async (req, res, next) => {
           ]
         },
       },
-
     ]
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
@@ -1524,8 +1533,9 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      console.log("totalDataComing--------------------------", totalDataComing);
       totalDataComing.forEach(data => {
+        data.diagnosis.replace(/\s+/g, ' ').trim();
+        data.servicerName.replace(/\s+/g, ' ').trim();
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
           data.exit = true
@@ -1607,7 +1617,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Contract not found"
             item.exit = true;
           }
-          if (claimData != null && claimData.length > 0) {
+          if (item.contractData && claimData != null && claimData.length > 0) {
             const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
             if (filter.length > 0) {
               item.status = "Claim is already open of this contract"
@@ -1620,7 +1630,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.status = "Servicer not found"
             item.exit = true;
           }
-          if (contractData.status != "Active") {
+          if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
             item.exit = true;
           }
@@ -1637,8 +1647,9 @@ exports.saveBulkClaim = async (req, res) => {
       // unique_key = "CC-" + "2024-" + data.unique_key_number
 
       //Update eligibility when contract is open
+
       const updateArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+        if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
         else {
           return null;
         }
@@ -1757,8 +1768,8 @@ exports.sendMessages = async (req, res) => {
       return
     }
     // console.log(" req.userId==================", req.role);return;
-    data.commentedBy = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-    data.commentedTo = '65f01eed2f048cac854daaa5';
+    data.commentedBy = req.userId
+    data.commentedTo = req.userId;
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
     }
@@ -1846,9 +1857,7 @@ exports.getMessages = async (req, res) => {
 
       }
     },
-    {
-      $unwind: "$commentTo"
-    },
+    { $unwind: { path: "$commentTo", preserveNullAndEmptyArrays: true } },
     {
       $lookup: {
         from: "users",
@@ -1885,9 +1894,7 @@ exports.getMessages = async (req, res) => {
         ]
       }
     },
-    {
-      $unwind: "$commentBy"
-    },
+    { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
     {
       $project: {
         _id: 1,
@@ -1897,7 +1904,7 @@ exports.getMessages = async (req, res) => {
         content: 1,
         // "commentBy.firstName": 1,
         // "commentBy.lastName": 1
-        "commentBy": 1, 
+        "commentBy": 1,
         "commentTo": 1
       }
     }
