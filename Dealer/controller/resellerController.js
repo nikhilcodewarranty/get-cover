@@ -411,7 +411,7 @@ exports.getResellerById = async (req, res) => {
                 ...user.toObject(),
                 resellerData: matchItem.toObject(),
                 orderData: order ? order : {},
-                claimData:claimData
+                claimData: claimData
             }
         }
         else {
@@ -677,6 +677,14 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
 
+        // Get servicer with claim
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
         if (!servicerUser) {
@@ -689,10 +697,14 @@ exports.getResellerServicers = async (req, res) => {
 
         result_Array = servicer.map(servicer => {
             const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
+            const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: servicer.toObject()
+                    servicerData: servicer.toObject(),
+                    claimValue: claimValue ? claimValue : 0,
+                    claimNumber: claimNumber ? claimNumber : 0
                 };
             } else {
                 return servicer.toObject();

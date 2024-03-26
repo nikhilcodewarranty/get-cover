@@ -264,13 +264,24 @@ exports.getServicer = async (req, res) => {
       return;
     };
 
+    // Get servicer with claim
+    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+
+    const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+
     const result_Array = servicerUser.map(item1 => {
       const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-
+      const claimValue = valueClaim.find(claim => claim._id.toString() === item1.accountId.toString())
+      const claimNumber = numberOfClaims.find(claim => claim._id.toString() === item1.accountId.toString())
       if (matchingItem) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: matchingItem.toObject()
+          servicerData: matchingItem.toObject(),
+          claimValue: claimValue ? claimValue : 0,
+          claimNumber: claimNumber ? claimNumber : 0
         };
       } else {
         return servicerData.toObject();
@@ -317,7 +328,7 @@ exports.getServiceProviderById = async (req, res, next) => {
     let resultUser = getMetaData.toObject()
 
     let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
-    let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" },servicerId: new mongoose.Types.ObjectId(req.params.servicerId)  });
+    let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" }, servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
     const claimData = {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim[0]?.totalAmount
@@ -512,6 +523,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     const servicerIds = serviceProviders.map(obj => obj._id);
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
 
     let servicerUser = await userService.getMembers(query1, projection)
 
