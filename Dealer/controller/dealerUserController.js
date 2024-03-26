@@ -2454,9 +2454,6 @@ exports.getAllContracts = async (req, res) => {
             });
             return;
         }
-
-
-
         let data = req.body
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -2481,7 +2478,6 @@ exports.getAllContracts = async (req, res) => {
                 }
             );
         }
-        console.log(pageLimit, skipLimit, limitData)
         newQuery.push(
             {
                 $facet: {
@@ -3834,7 +3830,45 @@ exports.getDashboardData = async (req, res) => {
         };
 
         let query = { status: 'Active', dealerId: new mongoose.Types.ObjectId(req.userId) };
-        let checkOrders = await orderService.getDashboardData(query, project)
+        let checkOrders = await orderService.getDashboardData(query, project);
+        //Get claims data
+        // let lookupQuery = [
+        //     {
+        //         $lookup: {
+        //             from: "contracts",
+        //             localField: "contractId",
+        //             foreignField: "_id",
+        //             as: "contracts",
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$contracts"
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "orders",
+        //             localField: "contracts.orderId",
+        //             foreignField: "_id",
+        //             as: "contracts.orders",
+        //         },
+
+        //     },
+        //     {
+        //         $unwind: "$contracts.orders"
+        //     },
+        //     {
+        //         $match:
+        //         {
+        //             $and: [
+        //                 // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //                 { "contracts.orders.dealerId": req.userId },
+        //             ]
+        //         },
+        //     },
+
+        // ]
+        // let valueClaim = await claimService.countCompletedClaims({ claimFile: 'Completed' });
+        // let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
         if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
