@@ -52,7 +52,7 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       }
-    //  data.members[0].status = true
+      //  data.members[0].status = true
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
@@ -130,7 +130,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let resetPasswordCode = randtoken.generate(4, '123456789')
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
-      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id,metaId: updateServicer._id ,approvedStatus: "Approved", status: true }));
+      teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
       }
@@ -315,7 +315,15 @@ exports.getServiceProviderById = async (req, res, next) => {
     };
     let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
+
+    let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
+    let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" },servicerId: new mongoose.Types.ObjectId(req.params.servicerId)  });
+    const claimData = {
+      numberOfClaims: numberOfClaims.length,
+      valueClaim: valueClaim[0]?.totalAmount
+    }
     resultUser.meta = singleServiceProvider
+    resultUser.claimData = claimData
     res.send({
       code: constant.successCode,
       message: resultUser
@@ -1185,7 +1193,7 @@ exports.getServicerClaims = async (req, res) => {
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
-            { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId)},
+            { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) },
           ]
         },
       },
