@@ -574,14 +574,18 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
     let servicerMatch = {}
-    if (data.servicerName!='') {
+    console.log("dataaaaa--------------", data.servicerName)
+    if (data.servicerName != '' && data.servicerName != undefined) {
       console.log("servicerName-----------------")
       const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer) {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
       }
+      else{
+        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+      }
     }
-    console.log("servicerName-----------------",servicerMatch)
+    console.log("servicerName-----------------", servicerMatch)
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -1344,13 +1348,13 @@ exports.editClaimStatus = async (req, res) => {
         updateData.claimStatus = [
           {
             status: 'Completed',
-            date:new Date()
+            date: new Date()
           }
         ]
         status.trackStatus = [
           {
             status: 'Completed',
-            date:new Date()
+            date: new Date()
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
@@ -1358,13 +1362,13 @@ exports.editClaimStatus = async (req, res) => {
       updateData.customerStatus = [
         {
           status: data.customerStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
       status.trackStatus = [
         {
           status: data.customerStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
 
@@ -1373,13 +1377,13 @@ exports.editClaimStatus = async (req, res) => {
       status.trackStatus = [
         {
           status: data.repairStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
       updateData.repairStatus = [
         {
           status: data.repairStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
     }
@@ -1388,13 +1392,13 @@ exports.editClaimStatus = async (req, res) => {
       status.trackStatus = [
         {
           status: data.claimStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
       updateData.claimStatus = [
         {
           status: data.claimStatus,
-          date:new Date()
+          date: new Date()
         }
       ]
       if (data.claimStatus == 'Completed') {
@@ -1967,13 +1971,14 @@ exports.statusClaim = async (req, res) => {
         // Update status for track status
         messageData.trackStatus = [
           {
-            status: 'Completed'
+            status: 'Completed',
+            date: new Date()
           }
         ]
       }
       updateStatus = await claimService.updateClaim({ _id: claimId }, {
         $push: messageData,
-        $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed' }] }
+        $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
       }, { new: true })
     }
     res.send({
