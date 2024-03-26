@@ -1389,6 +1389,8 @@ exports.editClaimStatus = async (req, res) => {
         }
       ]
       if (data.claimStatus == 'Completed') {
+        console.log("claimTotal--------------------------",claimTotal)
+        console.log("productValue--------------------------",checkContract.productValue)
         if (checkContract.productValue < claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
         }
