@@ -2900,36 +2900,25 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         let checkOrders = await orderService.getDashboardData(query, project)
-        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
-        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
-        const claimData = {
-            numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0]?.totalAmount
-        }
-        if (!checkOrders[0] && !valueClaim[0]) {
+        if (!checkOrders[0]) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
                 result: {
-                    claimData: {
-                        numberOfClaims:0,
-                        valueClaim:0
-                    },
-                    orderData: {
-                        totalAmount: 0,
-                        totalOrder: 0
-                    }
+                    "_id": "",
+                    "totalAmount": 0,
+                    "totalOrder": 0
                 }
-                // result: {
-                //     "_id": "",
-                //     "totalAmount": 0,
-                //     "totalOrder": 0
-                // }
             })
             return;
         }
-
-       // res.send({
+        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
+        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim[0].totalAmount
+        }
+        // res.send({
         //     code: constant.successCode,
         //     message: 'Success!',
         //     result:checkOrders[0]
@@ -2938,8 +2927,8 @@ exports.getDashboardData = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: {
-                claimData: claimData,
-                orderData: checkOrders[0]
+                claimData:claimData,
+                orderData:checkOrders[0]
             }
         })
     } catch (err) {

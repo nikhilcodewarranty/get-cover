@@ -2904,6 +2904,9 @@ exports.getDealerContract = async (req, res) => {
               $limit: pageLimit
             },
             {
+              $sort: {createdAt:-1}
+            },
+            {
               $project: {
                 productName: 1,
                 model: 1,
@@ -2912,6 +2915,8 @@ exports.getDealerContract = async (req, res) => {
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
+                createdAt: 1,
+                updatedAt: 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
                 totalRecords: 1
