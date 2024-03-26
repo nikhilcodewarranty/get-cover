@@ -173,9 +173,9 @@ exports.getAllDealers = async (req, res) => {
       }
     });
 
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -218,7 +218,7 @@ exports.getPendingDealers = async (req, res) => {
       $and: [
         { isDeleted: false },
         { status: "Pending" },
-        { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } }
+        { 'name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
       ]
 
     };
@@ -282,9 +282,9 @@ exports.getPendingDealers = async (req, res) => {
       }
     });
 
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -456,10 +456,10 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name : '', 'i')
-    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
 
     const filteredData = users.filter(entry => {
@@ -1088,7 +1088,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     let queryCategories = {
       $and: [
         { isDeleted: false },
-        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        { 'name': { '$regex': req.body.category ? req.body.category.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
       ]
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
@@ -1110,7 +1110,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     }
 
     if (data.name) {
-      matchConditions.push({ 'dealer.name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } });
+      matchConditions.push({ 'dealer.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
     console.log(matchStage);
@@ -2161,9 +2161,9 @@ exports.getDealerServicers = async (req, res) => {
       }
     });
 
-    const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -2342,10 +2342,10 @@ exports.getDealerResellers = async (req, res) => {
       }
     });
 
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-    const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -2576,14 +2576,14 @@ exports.getDealerOrders = async (req, res) => {
       });
 
       const unique_keyRegex = new RegExp(
-        data.orderId ? data.orderId.trim() : "",
+        data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : "",
         "i"
       );
       const venderOrderRegex = new RegExp(
-        data.venderOrder ? data.venderOrder.trim() : "",
+        data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : "",
         "i"
       );
-      const status = new RegExp(data.status ? data.status.trim() : "", "i");
+      const status = new RegExp(data.status ? data.status.replace(/\s+/g, ' ').trim() : "", "i");
       let filteredData = result_Array.filter((entry) => {
         return (
           unique_keyRegex.test(entry.unique_key) &&
@@ -2647,12 +2647,12 @@ exports.getDealerOrders = async (req, res) => {
       });
       let orderIdSearch = data.orderId ? data.orderId : ''
       const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
-      const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
-      const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
-      const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-      const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
-      const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
-      const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+      const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen.replace(/\s+/g, ' ').trim() : '', 'i')
+      const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
+      const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+      const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
+      const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
+      const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
       const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
 
