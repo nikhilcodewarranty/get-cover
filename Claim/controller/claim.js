@@ -574,13 +574,14 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
     let servicerMatch = {}
-    if (data.servicerName) {
+    if (data.servicerName!='') {
+      console.log("servicerName-----------------")
       const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer) {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
       }
     }
-
+    console.log("servicerName-----------------",servicerMatch)
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
