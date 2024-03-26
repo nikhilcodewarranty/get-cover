@@ -119,4 +119,30 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
+  static async countCompletedClaims(query, project = {}) {
+    try {
+      const allOrders = await claim.aggregate([
+        {
+          $match: query
+        },
+        {
+          "$group": {
+            "_id": "",
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$totalAmount"
+              }
+            },
+          },
+
+        },
+
+
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+  
 };

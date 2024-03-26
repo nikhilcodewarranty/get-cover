@@ -1342,24 +1342,28 @@ exports.editClaimStatus = async (req, res) => {
         let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
         updateData.claimStatus = [
           {
-            status: 'Completed'
+            status: 'Completed',
+            date:new Date()
           }
         ]
         status.trackStatus = [
           {
-            status: 'Completed'
+            status: 'Completed',
+            date:new Date()
           }
         ]
         let statusClaim = await claimService.updateClaim(criteria, { updateData }, { new: true })
       }
       updateData.customerStatus = [
         {
-          status: data.customerStatus
+          status: data.customerStatus,
+          date:new Date()
         }
       ]
       status.trackStatus = [
         {
-          status: data.customerStatus
+          status: data.customerStatus,
+          date:new Date()
         }
       ]
 
@@ -1367,12 +1371,14 @@ exports.editClaimStatus = async (req, res) => {
     if (data.hasOwnProperty("repairStatus")) {
       status.trackStatus = [
         {
-          status: data.repairStatus
+          status: data.repairStatus,
+          date:new Date()
         }
       ]
       updateData.repairStatus = [
         {
-          status: data.repairStatus
+          status: data.repairStatus,
+          date:new Date()
         }
       ]
     }
@@ -1380,17 +1386,22 @@ exports.editClaimStatus = async (req, res) => {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, { new: true })
       status.trackStatus = [
         {
-          status: data.claimStatus
+          status: data.claimStatus,
+          date:new Date()
         }
       ]
       updateData.claimStatus = [
         {
-          status: data.claimStatus
+          status: data.claimStatus,
+          date:new Date()
         }
       ]
       if (data.claimStatus == 'Completed') {
-        if (checkContract.productValue < claimTotal[0]?.amount) {
+        if (checkContract.productValue > claimTotal[0]?.amount) {
           const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+        }
+        else if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
         }
       }
     }
