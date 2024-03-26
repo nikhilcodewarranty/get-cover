@@ -556,7 +556,103 @@ exports.getCustomerById = async (req, res) => {
 
       let orderQuery = { customerId: { $in: [checkCustomer._id] }, status: "Active" }
       let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId");
+      //Get Claim Result 
+      const claimQuery = { claimFile: 'Completed' }
 
+      let lookupQuery = [
+        {
+          $match: claimQuery
+        },
+        {
+          $lookup: {
+            from: "contracts",
+            localField: "contractId",
+            foreignField: "_id",
+            as: "contracts",
+          }
+        },
+        {
+          $unwind: "$contracts"
+        },
+        {
+          $lookup: {
+            from: "orders",
+            localField: "contracts.orderId",
+            foreignField: "_id",
+            as: "contracts.orders",
+          },
+
+        },
+        {
+          $unwind: "$contracts.orders"
+        },
+        {
+          $match:
+          {
+            $and: [
+              // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+              { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.params.customerId) },
+            ]
+          },
+        },
+        {
+          "$group": {
+            "_id": "",
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$totalAmount"
+              }
+            },
+          },
+
+        },
+      ]
+      let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+
+      const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+      //Get number of claims
+      let numberOfCompleletedClaims = [
+        {
+          $match: rejectedQuery
+        },
+        {
+          $lookup: {
+            from: "contracts",
+            localField: "contractId",
+            foreignField: "_id",
+            as: "contracts",
+          }
+        },
+        {
+          $unwind: "$contracts"
+        },
+        {
+          $lookup: {
+            from: "orders",
+            localField: "contracts.orderId",
+            foreignField: "_id",
+            as: "contracts.orders",
+          },
+
+        },
+        {
+          $unwind: "$contracts.orders"
+        },
+        {
+          $match:
+          {
+            $and: [
+              // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+              { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.params.customerId) },
+            ]
+          },
+        },
+      ]
+      let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+      const claimData = {
+        numberOfClaims: numberOfClaims.length,
+        valueClaim: valueClaim[0]?.totalAmount
+      }
 
       res.send({
         code: constant.successCode,
@@ -566,7 +662,8 @@ exports.getCustomerById = async (req, res) => {
           primary: getPrimaryUser,
           resellerName: checkReseller ? checkReseller.name : '',
           dealerStatus: checkDealer.accountStatus,
-          orderData: ordersResult
+          orderData: ordersResult,
+          claimData:claimData
         }
       })
 
