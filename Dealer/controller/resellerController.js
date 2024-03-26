@@ -74,7 +74,7 @@ exports.createReseller = async (req, res) => {
             accountStatus: "Approved",
             dealerName: checkDealer.name,
         }
-       // data.members[0].status = true
+        // data.members[0].status = true
         let teamMembers = data.members
         // let emailsToCheck = teamMembers.map(member => member.email);
         // let queryEmails = { email: { $in: emailsToCheck } };
@@ -265,6 +265,7 @@ exports.getResellerById = async (req, res) => {
     //     return;
     // }
     let checkReseller = await resellerService.getResellers({ _id: req.params.resellerId }, { isDeleted: 0 });
+
     if (!checkReseller) {
         res.send({
             code: constant.errorCode,
@@ -272,6 +273,8 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
+    let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
+
     const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
     let resellerUser = await userService.getMembers(query1, { isDeleted: false })
     if (!resellerUser) {
@@ -325,7 +328,8 @@ exports.getResellerById = async (req, res) => {
     res.send({
         code: constant.successCode,
         message: "Success",
-        reseller: result_Array
+        reseller: result_Array,
+        dealerStatus: checkDealerStatus.status
     })
 
 
