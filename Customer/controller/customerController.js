@@ -188,6 +188,10 @@ exports.getAllCustomers = async (req, res, next) => {
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
@@ -739,7 +743,6 @@ exports.getCustomerUsers = async (req, res) => {
 exports.customerOrders = async (req, res) => {
   try {
     let data = req.body
-    console.log("req.params.customerId", req.params.customerId)
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkCustomer) {
       res.send({
@@ -1106,6 +1109,11 @@ exports.getCustomerContract = async (req, res) => {
             { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
           ]
         },
@@ -1310,6 +1318,7 @@ exports.customerClaims = async (req, res) => {
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
+              reason:1,
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
@@ -1376,6 +1385,7 @@ exports.customerClaims = async (req, res) => {
           $and: [
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
@@ -1423,6 +1433,8 @@ exports.customerClaims = async (req, res) => {
             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "contracts.orders.isDeleted": false },
             { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.params.customerId) },
           ]
@@ -1461,6 +1473,7 @@ exports.customerClaims = async (req, res) => {
       {
         $match:
         {
+          "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
           // "contracts.orders.dealers.isDeleted": false,
         }

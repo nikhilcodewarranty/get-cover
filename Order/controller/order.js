@@ -713,10 +713,6 @@ exports.getAllOrders = async (req, res) => {
                 {
                     $match: query
                 },
-
-                // {
-                //     $project: project,
-                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
@@ -793,8 +789,6 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
             let customerIdsArray = ordersResult.map((result) => result.customerId);
-            console.log('check--------------------------333333333333')
-
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
                 .map(result => result.customerId.toString());
@@ -802,9 +796,7 @@ exports.getAllOrders = async (req, res) => {
 
             const allUserIds = mergedArray.concat(userCustomerIds);
 
-            console.log('check--------------------------4444444444444')
-
-            const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+           const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
@@ -2985,14 +2977,6 @@ exports.getOrderContract = async (req, res) => {
                     as: "order"
                 }
             },
-            // {
-            //     $addFields: {
-            //         contracts: {
-            //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-            //         }
-            //     }
-            // }
-            // { $unwind: "$contracts" }
         ]
         //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContracts(query, skipLimit, limitData)

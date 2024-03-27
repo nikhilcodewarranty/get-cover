@@ -584,7 +584,7 @@ exports.getAllClaims = async (req, res, next) => {
         {
           $and: [
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
-            { unique_key: { '$regex': data.claimId ? data.claimId : '', '$options': 'i' } },
+            { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
@@ -609,9 +609,9 @@ exports.getAllClaims = async (req, res, next) => {
         {
           $and: [
             // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-            { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "contracts.isDeleted": false },
           ]
         },
@@ -693,8 +693,8 @@ exports.getAllClaims = async (req, res, next) => {
         {
           $and: [
             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-            { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+            { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.isDeleted": false },
             match
           ]
@@ -733,7 +733,7 @@ exports.getAllClaims = async (req, res, next) => {
       {
         $match:
         {
-          "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
+          "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
           // "contracts.orders.dealers.isDeleted": false,
         }
       },
@@ -760,7 +760,7 @@ exports.getAllClaims = async (req, res, next) => {
         $match:
         {
           $and: [
-            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "contracts.orders.customer.isDeleted": false },
           ]
         },
@@ -874,23 +874,8 @@ exports.searchClaim = async (req, res, next) => {
             { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { status: 'Active' }
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "claims",
-          localField: "_id",
-          foreignField: "contractId",
-          as: "claims",
-        }
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "claims.claimFile": { "$ne": "Open" } }
+            { status: 'Active' },
+            { eligibilty: true }
           ]
         },
       },
@@ -1113,7 +1098,8 @@ exports.addClaim = async (req, res, next) => {
     }
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    if (checkContract.productValue < claimTotal[0]?.amount) {
+    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
+    if (checkContract.productValue <= claimTotal[0]?.amount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1159,6 +1145,9 @@ exports.getContractById = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    // Get Claim Total of the contract
+    const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1196,7 +1185,7 @@ exports.getContractById = async (req, res) => {
             },
             {
               $lookup: {
-                from: "servicers",
+                from: "serviceproviders",
                 localField: "servicerId",
                 foreignField: "_id",
                 as: "servicer",
@@ -1209,6 +1198,11 @@ exports.getContractById = async (req, res) => {
       },
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    getData[0].claimAmount = 0;
+    if (claimTotal.length > 0) {
+      getData[0].claimAmount = claimTotal[0]?.amount
+    }
+
     let orderId = getData[0].orderProductId
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
@@ -1232,15 +1226,6 @@ exports.getContractById = async (req, res) => {
       }
 
     })
-    // for (let i = 0; i < order.length; i++) {
-    //   let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-    //   productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
-    //   getData[0].order[i].productsArray = productsArray
-
-    // }
-
-    // console.log(getData);
-
     if (!getData) {
       res.send({
         code: constant.errorCode,
@@ -1277,7 +1262,15 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
+    const remainingValue = contract.productValue - claimTotal[0]?.amount
+    // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Claim Amount Exceeds Contract Retail Price'
+    //   });
+    //   return;
+    // }
+    if (remainingValue < data.totalAmount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1412,7 +1405,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus }, { new: true })
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason:data.reason ? data.reason :'' }, { new: true })
       status.trackStatus = [
         {
           status: data.claimStatus,
@@ -1647,74 +1640,79 @@ exports.saveBulkClaim = async (req, res) => {
       const claimArray = await Promise.all(claimArrayPromise)
 
       // Get Contract with dealer, customer, reseller
-      // const contractAllDataPromise = totalDataComing.map(item => {
-      //   if (!item.exit) {
-      //     let query = [
-      //       {
-      //         $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
-      //       },
-      //       {
-      //         $lookup: {
-      //           from: "orders",
-      //           localField: "orderId",
-      //           foreignField: "_id",
-      //           as: "order",
-      //           pipeline: [
-      //             {
-      //               $lookup: {
-      //                 from: "dealers",
-      //                 localField: "dealerId",
-      //                 foreignField: "_id",
-      //                 as: "dealer",
-      //                 pipeline: [
-      //                   {
-      //                     $lookup: {
-      //                       from: "servicer_dealer_relations",
-      //                       localField: "_id",
-      //                       foreignField: "dealerId",
-      //                       as: "dealerServicer",
-      //                     }
-      //                   },
-      //                 ]
-      //               }
-      //             },
-      //             {
-      //               $lookup: {
-      //                 from: "resellers",
-      //                 localField: "resellerId",
-      //                 foreignField: "_id",
-      //                 as: "reseller",
-      //               }
-      //             },
-      //             {
-      //               $lookup: {
-      //                 from: "customers",
-      //                 localField: "customerId",
-      //                 foreignField: "_id",
-      //                 as: "customer",
-      //               }
-      //             },
-      //             {
-      //               $lookup: {
-      //                 from: "serviceproviders",
-      //                 localField: "servicerId",
-      //                 foreignField: "_id",
-      //                 as: "servicer",
-      //               }
-      //             },
+      const contractAllDataPromise = totalDataComing.map(item => {
+        if (!item.exit) {
+          let query = [
+            {
+              $match: { name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' } },
+            },
+            {
+              $addFields: {
+                convertedId: { $toObjectId: "$resell" }
+              }
+            },
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "convertedId",
+                foreignField: "_id",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "dealers",
+                      localField: "dealerId",
+                      foreignField: "_id",
+                      as: "dealer",
+                      pipeline: [
+                        {
+                          $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "_id",
+                            foreignField: "dealerId",
+                            as: "dealerServicer",
+                          }
+                        },
+                      ]
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "resellers",
+                      localField: "resellerId",
+                      foreignField: "_id",
+                      as: "reseller",
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customer",
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "serviceproviders",
+                      localField: "servicerId",
+                      foreignField: "_id",
+                      as: "servicer",
+                    }
+                  },
 
-      //           ],
+                ],
 
-      //         }
-      //       },
+              }
+            },
 
-      //     ]
-      //     return contractService.getAllContracts2(query)
-      //   }
-      //   else {
-      //     return null;
-      //   }
-      // })
+          ]
+          return contractService.getAllContracts2(query)
+        }
+        else {
+          return null;
+        }
+      })
       // const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
       // res.send({contractAllDataArray:contractAllDataArray[0]}); return;
