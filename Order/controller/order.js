@@ -2496,7 +2496,7 @@ exports.editOrderDetail = async (req, res) => {
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
 
-        if(Number(data.paidAmount)>=Number( checkId.orderAmount)){
+        if(Number(data.paidAmount)==Number( checkId.orderAmount)){
             data.paymentStatus == "Paid"
         }
         if (req.files) {
