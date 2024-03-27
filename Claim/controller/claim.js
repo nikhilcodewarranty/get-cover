@@ -1115,7 +1115,7 @@ exports.addClaim = async (req, res, next) => {
     let claimTotal = await claimService.checkTotalAmount(query);
     if (checkContract.productValue < claimTotal[0]?.amount) {
       res.send({
-        code: consta.errorCode,
+        code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
       });
       return;

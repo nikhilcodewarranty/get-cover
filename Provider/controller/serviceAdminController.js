@@ -277,9 +277,9 @@ exports.getServicer = async (req, res) => {
       }
     });
 
-    const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -787,10 +787,10 @@ exports.getSerivicerUsers = async (req, res) => {
         message: "No Users Found!"
       })
     } else {
-      const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-      const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
-      const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
-      const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+      const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+      const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
+      const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
+      const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
       const filteredData = getUsers.filter(entry => {
         return (
           firstNameRegex.test(entry.firstName) &&
@@ -990,9 +990,9 @@ exports.getServicerDealers = async (req, res) => {
       }
     });
 
-    const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -1180,7 +1180,7 @@ exports.getServicerClaims = async (req, res) => {
         {
           $and: [
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
-            { unique_key: { '$regex': data.claimId ? data.claimId : '', '$options': 'i' } },
+            { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
@@ -1207,7 +1207,7 @@ exports.getServicerClaims = async (req, res) => {
             // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-            { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+            { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           ]
         },
       },
@@ -1279,7 +1279,7 @@ exports.getServicerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "contracts.orders.customer.isDeleted": false },
           ]
         },

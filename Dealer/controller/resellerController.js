@@ -189,10 +189,10 @@ exports.getAllResellers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
-        const dealerRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
             return (
@@ -391,7 +391,7 @@ exports.getResellerPriceBook = async (req, res) => {
     let queryCategories = {
         $and: [
             { isDeleted: false },
-            { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+            { 'name': { '$regex': req.body.category ? req.body.category.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
         ]
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
@@ -603,9 +603,9 @@ exports.getResellerServicers = async (req, res) => {
             }
         })
 
-        const nameRegex = new RegExp(data.name ? data.name.trim() : '', 'i')
-        const emailRegex = new RegExp(data.email ? data.email.trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phone ? data.phone.trim() : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
             return (
@@ -924,11 +924,11 @@ exports.getResellerOrders = async (req, res) => {
         });
 
         const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
-        const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
-        const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-        const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
-        const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
-        const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+        const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
         const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
         const filteredData1 = updatedArray.filter(entry => {
@@ -1040,11 +1040,11 @@ exports.getResellerContract = async (req, res) => {
                 {
                     $and: [
                         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                        { unique_key: { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-                        { productName: { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
-                        { serial: { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-                        { manufacture: { '$regex': data.manufacture ? data.manufacture : '', '$options': 'i' } },
-                        { model: { '$regex': data.model ? data.model : '', '$options': 'i' } },
+                        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
                     ]
                 },
@@ -1067,8 +1067,8 @@ exports.getResellerContract = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                        { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                     ]
                 },
 
@@ -1343,11 +1343,11 @@ exports.getResellerClaims = async (req, res) => {
                 {
                     $and: [
                         // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
-                        { unique_key: { '$regex': data.claimId ? data.claimId : '', '$options': 'i' } },
+                        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         // { isDeleted: false },
-                        { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
-                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
-                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+                        { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                     ]
                 },
             },
@@ -1367,9 +1367,9 @@ exports.getResellerClaims = async (req, res) => {
                 {
                     $and: [
                         // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                        { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
-                        { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
-                        { "contracts.productName": { '$regex': data.productName ? data.productName : '', '$options': 'i' } },
+                        { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                     ]
                 },
             },
@@ -1389,8 +1389,8 @@ exports.getResellerClaims = async (req, res) => {
                 {
                     $and: [
                         // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                        { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-                        { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+                        { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
                         // { "contracts.orders.isDeleted": false },
                     ]
@@ -1442,7 +1442,7 @@ exports.getResellerClaims = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
+                        { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         // { "contracts.orders.customer.isDeleted": false },
                     ]
                 },

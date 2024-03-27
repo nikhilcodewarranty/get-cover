@@ -66,10 +66,10 @@ exports.getServicerUsers = async (req, res) => {
                 message: "No Users Found!"
             })
         } else {
-            const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-            const firstNameRegex = new RegExp(data.firstName ? data.firstName : '', 'i')
-            const lastNameRegex = new RegExp(data.lastName ? data.lastName : '', 'i')
-            const phoneRegex = new RegExp(data.phone ? data.phone : '', 'i')
+            const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+            const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
+            const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
+            const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
             const filteredData = getUsers.filter(entry => {
                 return (
                     firstNameRegex.test(entry.firstName) &&
@@ -389,9 +389,9 @@ exports.getServicerDealers = async (req, res) => {
             }
         });
 
-        const emailRegex = new RegExp(data.email ? data.email : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
             return (

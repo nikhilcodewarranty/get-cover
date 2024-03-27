@@ -17,12 +17,12 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let queryCategories = {
       $and: [
         { isDeleted: false },
-        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+        { 'name': { '$regex': req.body.category ? req.body.category.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
       ]
     };
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
-    let searchName = req.body.name ? req.body.name : ''
+    let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
     let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
@@ -501,11 +501,11 @@ exports.searchPriceBook = async (req, res, next) => {
   try {
     let query = {
       $or: [
-        { 'name': { '$regex': req.body.name, '$options': 'i' } },
-        { 'description': { '$regex': req.body.name, '$options': 'i' } },
-        { 'state': { '$regex': req.body.name, '$options': 'i' } },
-        { 'city': { '$regex': req.body.name, '$options': 'i' } },
-        { 'zip': { '$regex': req.body.name, '$options': 'i' } },
+        { 'name': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } },
+        { 'description': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } },
+        { 'state': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } },
+        { 'city': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } },
+        { 'zip': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } },
       ]
     };
     let projection = { isDeleted: 0, __v: 0 };
@@ -599,7 +599,7 @@ exports.getPriceBookCat = async (req, res) => {
     if (data.status) {
       query = {
         $and: [
-          { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
+          { 'name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           { 'status': data.status },
           { isDeleted: false }
         ]
@@ -607,7 +607,7 @@ exports.getPriceBookCat = async (req, res) => {
     } else {
       query = {
         $and: [
-          { 'name': { '$regex': req.body.name ? req.body.name : '', '$options': 'i' } },
+          { 'name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           { isDeleted: false }
         ]
       }
@@ -677,7 +677,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
     })
   }
 }
-
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
@@ -816,7 +815,7 @@ exports.getPriceBookCatById = async (req, res) => {
 exports.searchPriceBookCategories = async (req, res) => {
   try {
     let data = req.body;
-    let query = { 'name': { '$regex': req.body.name, '$options': 'i' } };
+    let query = { 'name': { '$regex': req.body.name.replace(/\s+/g, ' ').trim(), '$options': 'i' } };
     let projection = { __v: 0, status: 0 };
     let seachCategory = await priceBookService.getAllPriceCat(query, projection);
     if (!seachCategory) {
@@ -919,7 +918,6 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
-
 
 //
 exports.getCategoryByPriceBook = async (req, res) => {
