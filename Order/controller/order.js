@@ -2493,6 +2493,7 @@ exports.editOrderDetail = async (req, res) => {
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
+        data.dueAmount = Number(checkId.orderAmount) + Number(data.paidAmount)
         if(Number(data.paidAmount)>=Number( checkId.orderAmount)){
             data.paymentStatus == "Paid"
         }
