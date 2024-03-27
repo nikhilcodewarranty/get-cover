@@ -500,7 +500,7 @@ exports.getDealerById = async (req, res) => {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
           dealerData: matchingItem.toObject(),
           ordersResult: ordersResult,
-          claimData:claimData
+          claimData: claimData
         };
       } else {
         return dealerData.toObject();
@@ -2226,15 +2226,29 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    let servicer2 = servicer
+    console.log("servicer1--------------------", servicer2);
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
+      let dealerServicer = await providerService.getServiceProviderById({ dealerId: checkDealer._id.toString() })
+      servicer2.unshift(dealerServicer)
     }
 
-
-
-
     const servicerIds = servicer.map(obj => obj._id);
+
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    // Get servicer with claim
+
+    const idsClaims = servicer.map(servicer => servicer._id)
+    
+    const servicerClaimsIds = { servicerId: { $in: idsClaims }, claimFile: { $ne: "Rejected" } };
+
+    const servicerCompleted = { servicerId: { $in: idsClaims }, claimFile: "Completed" };
+
+    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+
+    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
 
     let servicerUser = await userService.getMembers(query1, {})
     // console.log("servicer============================",servicer);
@@ -2256,7 +2270,8 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: item1.toObject()
         };
       } else {
-        return servicerUser.toObject();
+        console.log("servicerUser-----------------------",servicerUser)
+        return servicerUser;
       }
     });
 
@@ -2326,7 +2341,7 @@ exports.getServicersList = async (req, res) => {
 
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
 
-    
+
     const resultArray = servicer.map(item => {
       const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
       const documentData = item._doc;
@@ -3190,7 +3205,7 @@ exports.getDealerClaims = async (req, res) => {
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
-              reason:1,
+              reason: 1,
               repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,

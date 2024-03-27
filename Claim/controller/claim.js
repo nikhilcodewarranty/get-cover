@@ -874,23 +874,8 @@ exports.searchClaim = async (req, res, next) => {
             { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { status: 'Active' }
-          ]
-        },
-      },
-      {
-        $lookup: {
-          from: "claims",
-          localField: "_id",
-          foreignField: "contractId",
-          as: "claims",
-        }
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "claims.claimFile": { "$ne": "Open" } }
+            { status: 'Active' },
+            { eligibilty: true }
           ]
         },
       },
@@ -1113,7 +1098,8 @@ exports.addClaim = async (req, res, next) => {
     }
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    if (checkContract.productValue < claimTotal[0]?.amount) {
+    let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
+    if (checkContract.productValue <= claimTotal[0]?.amount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1277,7 +1263,15 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
+    const remainingValue = contract.productValue - claimTotal[0]?.amount
+    // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Claim Amount Exceeds Contract Retail Price'
+    //   });
+    //   return;
+    // }
+    if (remainingValue < data.totalAmount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
