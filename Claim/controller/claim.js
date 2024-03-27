@@ -1424,7 +1424,7 @@ exports.editClaimStatus = async (req, res) => {
         }
       }
     }
-    // Keep history of status in mongodb
+    // Keep history of status in mongodb 
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
     // Update every status 
     let updateBodyStatus = await claimService.updateClaim(criteria, updateData, { new: true })
