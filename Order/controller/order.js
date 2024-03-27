@@ -796,7 +796,7 @@ exports.getAllOrders = async (req, res) => {
 
             const allUserIds = mergedArray.concat(userCustomerIds);
 
-           const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+            const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
@@ -1977,9 +1977,7 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1._id.toString()
-        );
-
+            (item2) => item2.accountId.toString() === item1._id.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1995,6 +1993,7 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+
 
 exports.getServicerByOrderId = async (req, res) => {
     try {
@@ -2078,8 +2077,42 @@ exports.getServicerByOrderId = async (req, res) => {
         });
 
     }
-    catch (err) { }
+    catch (err) {
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+     }
 }
+
+exports.getServiceCoverage = async (req, res) => {
+    try {
+        let data = req.body;
+        let checkDealer = await dealerService.getDealerById(req.params.dealerId, {
+            isDeleted: 0,
+        })
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found!",
+            });
+            return;
+        }   
+
+        res.send({
+            code: constant.successCode,
+            result: checkDealer,
+        });
+
+    }
+    catch (err) {
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+     }
+}
+
 
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
@@ -2433,7 +2466,7 @@ exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
         data.venderOrder = data.dealerPurchaseOrder
-        
+
 
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -2495,14 +2528,14 @@ exports.editOrderDetail = async (req, res) => {
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
-        console.log('order paid check +++++++++++++++++++++++=',Number(data.paidAmount),Number( checkId.orderAmount))
+        console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
 
-        if(Number(data.paidAmount)==Number( checkId.orderAmount)){
+        if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
         }
 
-        console.log('order paid check +++++++++++++++++++++++=',data)
+        console.log('order paid check +++++++++++++++++++++++=', data)
 
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
@@ -2888,8 +2921,8 @@ exports.getDashboardData = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: {
-                claimData:claimData,
-                orderData:checkOrders[0]
+                claimData: claimData,
+                orderData: checkOrders[0]
             }
         })
     } catch (err) {
