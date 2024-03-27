@@ -22,6 +22,7 @@ router.post("/getDealerContract/:dealerId", [verifyToken], dealerController.getD
 
 router.post("/getDealerClaims/:dealerId", [verifyToken], dealerController.getDealerClaims);
 
+router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTermAndCondition);
 
 router.put("/changeDealerStatus/:dealerId", [verifyToken], validator('change_status_dealer'), dealerController.changeDealerStatus);
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerController.getDealerPriceBookById);

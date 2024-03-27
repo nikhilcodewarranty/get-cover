@@ -951,9 +951,6 @@ exports.searchClaim = async (req, res, next) => {
       },
     ]
 
-    console.log(query)
-
-
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
@@ -1270,7 +1267,7 @@ exports.editClaim = async (req, res) => {
     //   });
     //   return;
     // }
-    if (remainingValue < data.totalAmount) {
+    if (remainingValue <= data.totalAmount) {
       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1405,7 +1402,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason:data.reason ? data.reason :'' }, { new: true })
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
       status.trackStatus = [
         {
           status: data.claimStatus,
@@ -1640,82 +1637,45 @@ exports.saveBulkClaim = async (req, res) => {
       const claimArray = await Promise.all(claimArrayPromise)
 
       // Get Contract with dealer, customer, reseller
-      const contractAllDataPromise = totalDataComing.map(item => {
-        if (!item.exit) {
-          let query = [
-            {
-              $match: { name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' } },
-            },
-            {
-              $addFields: {
-                convertedId: { $toObjectId: "$resell" }
-              }
-            },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "convertedId",
-                foreignField: "_id",
-                as: "order",
-                pipeline: [
-                  {
-                    $lookup: {
-                      from: "dealers",
-                      localField: "dealerId",
-                      foreignField: "_id",
-                      as: "dealer",
-                      pipeline: [
-                        {
-                          $lookup: {
-                            from: "servicer_dealer_relations",
-                            localField: "_id",
-                            foreignField: "dealerId",
-                            as: "dealerServicer",
-                          }
-                        },
-                      ]
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "resellers",
-                      localField: "resellerId",
-                      foreignField: "_id",
-                      as: "reseller",
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "customers",
-                      localField: "customerId",
-                      foreignField: "_id",
-                      as: "customer",
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "serviceproviders",
-                      localField: "servicerId",
-                      foreignField: "_id",
-                      as: "servicer",
-                    }
-                  },
+      // const contractAllDataPromise = totalDataComing.map(item => {
+      //   if (!item.exit) {
+      //     let query = [
+      //       {
+      //         $match: { name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' } },
+      //       },
+      //       {
+      //         $addFields: {
+      //           convertedId: { $toObjectId: "$resellerId" }
+      //         }
+      //       },
+      //       {
+      //         "$lookup": {
+      //           "let": { "userObjId": { "$toObjectId": "$resellerId" } },
+      //           "from": "resellers",
+      //           "pipeline": [
+      //             { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
+      //           ],
+      //           "as": "userDetails"
+      //         },
 
-                ],
+      //       },
+      //       {
+      //         $unwind: {
+      //           path: "$userDetails",
+      //           preserveNullAndEmptyArrays: true,
+      //         }
+      //       },
+      //     ]
+      //     // return contractService.getAllContracts2(query)
+      //     return servicerService.getAggregateServicer(query)
+      //   }
+      //   else {
+      //     return null;
+      //   }
+      // })
+      const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-              }
-            },
-
-          ]
-          return contractService.getAllContracts2(query)
-        }
-        else {
-          return null;
-        }
-      })
-      // const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-      // res.send({contractAllDataArray:contractAllDataArray[0]}); return;
+      res.send({ contractAllDataArray: contractAllDataArray }); return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
