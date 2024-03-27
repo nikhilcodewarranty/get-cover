@@ -2040,21 +2040,23 @@ exports.statusClaim = async (req, res) => {
             date: new Date()
           }
         ]
+        updateStatus = await claimService.updateClaim({ _id: claimId }, {
+          $push: messageData,
+          $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
+        }, { new: true })
+        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+        let checkContract = await contractService.getContractById({ _id: contractId })
+        let claimTotal = await claimService.checkTotalAmount(query);
+        // Update Eligibilty true and false
+        if (checkContract.productValue > claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+        }
+        else if (checkContract.productValue < claimTotal[0]?.amount) {
+          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+        }
       }
-      updateStatus = await claimService.updateClaim({ _id: claimId }, {
-        $push: messageData,
-        $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
-      }, { new: true })
-      const query = { contractId: new mongoose.Types.ObjectId(contractId) }
-      let checkContract = await contractService.getContractById({ _id: contractId })
-      let claimTotal = await claimService.checkTotalAmount(query);
-      // Update Eligibilty true and false
-      if (checkContract.productValue > claimTotal[0]?.amount) {
-        const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
-      }
-      else if (checkContract.productValue < claimTotal[0]?.amount) {
-        const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-      }
+
+
       // await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
     }
     res.send({
