@@ -2498,7 +2498,8 @@ exports.editOrderDetail = async (req, res) => {
         console.log('order paid check +++++++++++++++++++++++=',Number(data.paidAmount),Number( checkId.orderAmount))
 
         if(Number(data.paidAmount)==Number( checkId.orderAmount)){
-            data.paymentStatus == "Paid"
+            console.log("condition matched +++++++++++++++++++===")
+            data.paymentStatus = "Paid"
         }
 
         console.log('order paid check +++++++++++++++++++++++=',data)
