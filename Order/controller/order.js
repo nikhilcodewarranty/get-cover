@@ -1994,7 +1994,7 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
-
+    
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
