@@ -67,6 +67,10 @@ const dealarSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  termCondition: {
+    type: [],
+    default: []
+  },
   isDeleted: {
     type: String,
     default: false

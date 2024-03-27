@@ -1651,60 +1651,15 @@ exports.saveBulkClaim = async (req, res) => {
                 convertedId: { $toObjectId: "$resell" }
               }
             },
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "convertedId",
-                foreignField: "_id",
-                as: "order",
-                pipeline: [
-                  {
-                    $lookup: {
-                      from: "dealers",
-                      localField: "dealerId",
-                      foreignField: "_id",
-                      as: "dealer",
-                      pipeline: [
-                        {
-                          $lookup: {
-                            from: "servicer_dealer_relations",
-                            localField: "_id",
-                            foreignField: "dealerId",
-                            as: "dealerServicer",
-                          }
-                        },
-                      ]
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "resellers",
-                      localField: "resellerId",
-                      foreignField: "_id",
-                      as: "reseller",
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "customers",
-                      localField: "customerId",
-                      foreignField: "_id",
-                      as: "customer",
-                    }
-                  },
-                  {
-                    $lookup: {
-                      from: "serviceproviders",
-                      localField: "servicerId",
-                      foreignField: "_id",
-                      as: "servicer",
-                    }
-                  },
-
-                ],
-
-              }
-            },
+            { "$lookup": {
+              "from": "user",
+              "let": { "userId": "$_id" },
+              "pipeline": [
+                { "$addFields": { "userId": { "$toObjectId": "$userId" }}},
+                { "$match": { "$expr": { "$eq": [ "$userId", "$$userId" ] } } }
+              ],
+              "as": "output"
+            }},
 
           ]
           return contractService.getAllContracts2(query)

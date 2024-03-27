@@ -657,6 +657,39 @@ exports.deleteDealer = async (req, res) => {
   }
 };
 
+exports.uploadTermAndCondition = async (req, res, next) => {
+  try {
+    uploadP(req, res, async (err) => {
+      if (req.role != 'Super Admin') {
+        res.send({
+          code: constant.errorCode,
+          message: 'Only suoer admin allow to do this action!'
+        });
+        return;
+      }
+      let file = req.files;
+      // let filename = file.filename;
+      // let originalName = file.originalname;
+      // let size = file.size;
+      // let files = []
+
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        file
+      })
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+    return
+  }
+
+}
+
 /**---------------------------------------------------Register Dealer-------------------------------------------- */
 exports.registerDealer = async (req, res) => {
   try {
