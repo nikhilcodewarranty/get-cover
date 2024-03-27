@@ -573,7 +573,7 @@ exports.getAllClaims = async (req, res, next) => {
       if (checkServicer) {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
       }
-      else{
+      else {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
@@ -1277,9 +1277,6 @@ exports.editClaim = async (req, res) => {
     let contract = await contractService.getContractById({ _id: checkClaim.contractId });
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let claimTotal = await claimService.checkTotalAmount(query);
-    console.log("contract========", contract.productValue)
-    console.log("totalAmount========", data.totalAmount)
-    console.log("amount========", claimTotal[0]?.amount)
     if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
       res.send({
         code: constant.errorCode,
@@ -1301,6 +1298,42 @@ exports.editClaim = async (req, res) => {
       message: "Updated successfully"
     })
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+// Claim Paid and unpaid api
+
+exports.paidUnpaidClaim = async (req, res) => {
+  try {
+    let criteria = { _id: req.params.claimId }
+    let data = req.body
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+    let option = { new: true }
+    let updateData = await claimService.updateClaim(criteria, data, option);
+    if (!updateData) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to update payment status!'
+      });
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: 'Successfully updated!'
+    })
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1541,8 +1574,8 @@ exports.saveBulkClaim = async (req, res) => {
         };
       });
       totalDataComing.forEach(data => {
-        data.diagnosis.replace(/\s+/g, ' ').trim();
-        data.servicerName.replace(/\s+/g, ' ').trim();
+        // data.diagnosis.replace(/\s+/g, ' ').trim();
+        // data.servicerName.replace(/\s+/g, ' ').trim();
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
           data.exit = true
@@ -1612,6 +1645,79 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const claimArray = await Promise.all(claimArrayPromise)
+
+      // Get Contract with dealer, customer, reseller
+      // const contractAllDataPromise = totalDataComing.map(item => {
+      //   if (!item.exit) {
+      //     let query = [
+      //       {
+      //         $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+      //       },
+      //       {
+      //         $lookup: {
+      //           from: "orders",
+      //           localField: "orderId",
+      //           foreignField: "_id",
+      //           as: "order",
+      //           pipeline: [
+      //             {
+      //               $lookup: {
+      //                 from: "dealers",
+      //                 localField: "dealerId",
+      //                 foreignField: "_id",
+      //                 as: "dealer",
+      //                 pipeline: [
+      //                   {
+      //                     $lookup: {
+      //                       from: "servicer_dealer_relations",
+      //                       localField: "_id",
+      //                       foreignField: "dealerId",
+      //                       as: "dealerServicer",
+      //                     }
+      //                   },
+      //                 ]
+      //               }
+      //             },
+      //             {
+      //               $lookup: {
+      //                 from: "resellers",
+      //                 localField: "resellerId",
+      //                 foreignField: "_id",
+      //                 as: "reseller",
+      //               }
+      //             },
+      //             {
+      //               $lookup: {
+      //                 from: "customers",
+      //                 localField: "customerId",
+      //                 foreignField: "_id",
+      //                 as: "customer",
+      //               }
+      //             },
+      //             {
+      //               $lookup: {
+      //                 from: "serviceproviders",
+      //                 localField: "servicerId",
+      //                 foreignField: "_id",
+      //                 as: "servicer",
+      //               }
+      //             },
+
+      //           ],
+
+      //         }
+      //       },
+
+      //     ]
+      //     return contractService.getAllContracts2(query)
+      //   }
+      //   else {
+      //     return null;
+      //   }
+      // })
+      // const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      // res.send({contractAllDataArray:contractAllDataArray[0]}); return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {

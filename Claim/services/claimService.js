@@ -94,7 +94,7 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
-  static async getDashboardData(query, project = {}) {
+  static async getDashboardData(query, groupBy = {}) {
     try {
       const allOrders = await claim.aggregate([
         {
@@ -110,6 +110,51 @@ module.exports = class claimService {
             },
           },
 
+        },
+
+
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+  static async getServicerClaimsValue(query, groupBy = {}) {
+    try {
+      const allOrders = await claim.aggregate([
+        {
+          $match: query
+        },
+        {
+          "$group": {
+            "_id": groupBy,
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$totalAmount"
+              }
+            },
+          },
+
+        },
+
+
+      ])
+      return allOrders;
+    } catch (error) {
+      console.log(`Could not fetch order ${error}`);
+    }
+  }
+  static async getServicerClaimsNumber(query, groupBy = {}) {
+    try {
+      const allOrders = await claim.aggregate([
+        {
+          $match: query
+        },
+        {
+          $group: {
+            _id: groupBy,
+            noOfOrders: { $sum: 1 },
+          }
         },
 
 

@@ -80,6 +80,12 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: 'Pending'
   },
+  claimPaymentStatus:{
+    type: String,
+    default: 'Unpaid',
+    enum: ['Paid', 'Unpaid'],
+
+  },
   shippingAmount: {
     type: Number,
     default: 0

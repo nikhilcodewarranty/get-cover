@@ -306,8 +306,103 @@ exports.getResellerById = async (req, res) => {
     }
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId");
 
-    console.log("ordersResult================", ordersResult)
+    //Get Claim Result 
+    const claimQuery = { claimFile: 'Completed' }
 
+    let lookupQuery = [
+        {
+            $match: claimQuery
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "contractId",
+                foreignField: "_id",
+                as: "contracts",
+            }
+        },
+        {
+            $unwind: "$contracts"
+        },
+        {
+            $lookup: {
+                from: "orders",
+                localField: "contracts.orderId",
+                foreignField: "_id",
+                as: "contracts.orders",
+            },
+
+        },
+        {
+            $unwind: "$contracts.orders"
+        },
+        {
+            $match:
+            {
+                $and: [
+                    // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                ]
+            },
+        },
+        {
+            "$group": {
+                "_id": "",
+                "totalAmount": {
+                    "$sum": {
+                        "$sum": "$totalAmount"
+                    }
+                },
+            },
+
+        },
+    ]
+    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+
+    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+    //Get number of claims
+    let numberOfCompleletedClaims = [
+        {
+            $match: rejectedQuery
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "contractId",
+                foreignField: "_id",
+                as: "contracts",
+            }
+        },
+        {
+            $unwind: "$contracts"
+        },
+        {
+            $lookup: {
+                from: "orders",
+                localField: "contracts.orderId",
+                foreignField: "_id",
+                as: "contracts.orders",
+            },
+
+        },
+        {
+            $unwind: "$contracts.orders"
+        },
+        {
+            $match:
+            {
+                $and: [
+                    // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+                    { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                ]
+            },
+        },
+    ]
+    let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+    const claimData = {
+        numberOfClaims: numberOfClaims.length,
+        valueClaim: valueClaim[0]?.totalAmount
+    }
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
         let order = ordersResult.find(order => order._id.toString() === user.accountId.toString())
@@ -315,7 +410,8 @@ exports.getResellerById = async (req, res) => {
             return {
                 ...user.toObject(),
                 resellerData: matchItem.toObject(),
-                orderData: order ? order : {}
+                orderData: order ? order : {},
+                claimData: claimData
             }
         }
         else {
@@ -581,6 +677,14 @@ exports.getResellerServicers = async (req, res) => {
 
         const servicerIds = servicer.map(obj => obj._id);
 
+        // Get servicer with claim
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
         if (!servicerUser) {
@@ -593,10 +697,14 @@ exports.getResellerServicers = async (req, res) => {
 
         result_Array = servicer.map(servicer => {
             const matchingItem = servicerUser.find(user => user.accountId.toString() === servicer._id.toString())
+            const claimValue = valueClaim.find(claim => claim._id.toString() === servicer._id.toString())
+            const claimNumber = numberOfClaims.find(claim => claim._id.toString() === servicer._id.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: servicer.toObject()
+                    servicerData: servicer.toObject(),
+                    claimValue: claimValue ? claimValue : 0,
+                    claimNumber: claimNumber ? claimNumber : 0
                 };
             } else {
                 return servicer.toObject();
