@@ -1997,6 +1997,7 @@ exports.statusClaim = async (req, res) => {
     for (let i = 0; i < result.length; i++) {
       let messageData = {};
       const repairStatus = result[i].repairStatus;
+      let contractId = result[i].contractId;
       const claimId = result[i]._id;
       const customerStatus = result[i].customerStatus;
       //Get latest Servicer Shipped Status
@@ -2035,6 +2036,8 @@ exports.statusClaim = async (req, res) => {
         $push: messageData,
         $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
       }, { new: true })
+
+      await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
     }
     res.send({
       code: constant.successCode,
