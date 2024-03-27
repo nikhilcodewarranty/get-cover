@@ -1135,6 +1135,7 @@ exports.getServicerClaims = async (req, res) => {
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
+              reason:1,
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
