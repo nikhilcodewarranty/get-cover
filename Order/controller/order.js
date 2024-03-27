@@ -2433,77 +2433,7 @@ exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
         data.venderOrder = data.dealerPurchaseOrder
-        // let data = {
-        //     "_id": "65c5f9b57e935a6b4aa10cf9",
-        //     "dealerId": "65c49fa82e3394537511528e",
-        //     "servicerId": "65c4f445023c5e533fefc6d0",
-        //     "customerId": "65c4a2755b49fb821a5aa3b2",
-        //     "resellerId": "65c4a1132e3394537511529f",
-        //     "venderOrder": "NIk-001",
-        //     "serviceCoverageType": "Parts & Labour",
-        //     "coverageType": "Breakdown & Accidental",
-        //     "unique_key_number": 100000,
-        //     "unique_key_search": "GC2024100000",
-        //     "unique_key": "GC-2024-100000",
-        //     "productsArray": [
-        //         {
-        //             "categoryId": "65c32a947e54710b7783fdb9",
-        //             "priceBookId": "65c32c097e54710b7783fdc1",
-        //             "unitPrice": 500,
-        //             "noOfProducts": 1,
-        //             "priceType": "Quantity Pricing",
-        //             "term": 12,
-        //             "description": "testing",
-        //             "checkNumberProducts": 56,
-        //             "orderFile": {
-        //                 "fileName": "file-1707473332788.xlsx",
-        //                 "name": "Copy of Copy of Add Product Format.xlsx",
-        //                 "size": "5987",
-        //                 "_id": "65c5f9b57e935a6b4aa10cfc"
-        //             },
-        //             "QuantityPricing": [
-        //                 {
-        //                     "name": "panel",
-        //                     "quantity": 20,
-        //                     "enterQuantity": 15,
-        //                     "_id": "65c32c097e54710b7783fdc2"
-        //                 },
-        //                 {
-        //                     "name": "inverter",
-        //                     "quantity": 40,
-        //                     "enterQuantity": 40,
-        //                     "_id": "65c32c097e54710b7783fdc3"
-        //                 },
-        //                 {
-        //                     "name": "battery",
-        //                     "quantity": 1,
-        //                     "enterQuantity": 1,
-        //                     "_id": "65c32c097e54710b7783fdc4"
-        //                 }
-        //             ],
-        //             "price": 500,
-        //             "additionalNotes": "",
-        //             "rangeStart": null,
-        //             "rangeEnd": null,
-        //             "coverageStartDate": "2024-02-29T00:00:00.000Z",
-        //             "coverageEndDate": "2025-02-28T00:00:00.000Z",
-        //             "_id": "65c5f9b57e935a6b4aa10cfb"
-        //         }
-        //     ],
-        //     "orderAmount": 500,
-        //     "sendNotification": true,
-        //     "paymentStatus": "Paid",
-        //     "status": "Active",
-        //     "isDeleted": false,
-        //     "orderDate": "2024-02-09T10:06:50.134Z",
-        //     "paidAmount": 500,
-        //     "dueAmount": 0,
-        //     "paymentMethod": "Manually",
-        //     "canProceed": true,
-        //     "createdAt": "2024-02-09T10:08:53.779Z",
-        //     "updatedAt": "2024-02-09T10:08:54.248Z",
-        //     "__v": 0
-        // }
+        
 
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -2562,7 +2492,10 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-
+        data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
+        if(Number(data.paidAmount)>=Number( checkId.orderAmount)){
+            data.paymentStatus == "Paid"
+        }
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
                 fileName: file.filename,
