@@ -561,6 +561,10 @@ exports.createDealer = async (req, res) => {
           let newValues = {
             $set: {
               status: "Approved",
+              serviceCoverageType: req.body.serviceCoverageType,
+              isShippingAllowed: req.body.isShippingAllowed,
+              coverageType: req.body.coverageType,
+              termConditon: req.body.termConditon,
               accountStatus: true,
               isServicer: data.isServicer ? data.isServicer : false
             }
@@ -870,6 +874,10 @@ exports.createDealer = async (req, res) => {
             $set: {
               status: "Approved",
               accountStatus: true,
+              serviceCoverageType: req.body.serviceCoverageType,
+              isShippingAllowed: req.body.isShippingAllowed,
+              coverageType: req.body.coverageType,
+              termConditon: req.body.termConditon,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -969,6 +977,10 @@ exports.createDealer = async (req, res) => {
             street: data.street,
             userAccount: req.body.customerAccountCreated,
             city: data.city,
+            serviceCoverageType: req.body.serviceCoverageType,
+            isShippingAllowed: req.body.isShippingAllowed,
+            coverageType: req.body.coverageType,
+            termConditon: req.body.termConditon,
             zip: data.zip,
             state: data.state,
             isServicer: data.isServicer ? data.isServicer : false,
@@ -1020,7 +1032,7 @@ exports.createDealer = async (req, res) => {
             approvedStatus: 'Approved'
           }));
 
-         // console.log("allUsersData--------------------------",allUsersData);
+          // console.log("allUsersData--------------------------",allUsersData);
 
           const createUsers = await userService.insertManyUser(allUsersData);
 
@@ -1152,6 +1164,10 @@ exports.createDealer = async (req, res) => {
             userAccount: req.body.customerAccountCreated,
             city: data.city,
             zip: data.zip,
+            serviceCoverageType: req.body.serviceCoverageType,
+            isShippingAllowed: req.body.isShippingAllowed,
+            coverageType: req.body.coverageType,
+            termConditon: req.body.termConditon,
             state: data.state,
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
