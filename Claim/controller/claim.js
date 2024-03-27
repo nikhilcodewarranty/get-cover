@@ -1412,20 +1412,21 @@ exports.editClaimStatus = async (req, res) => {
       updateData.claimStatus = [
         {
           status: data.claimStatus,
-          date: new Date() 
+          date: new Date()
         }
       ]
-      if (data.claimStatus == 'Completed') {
-        if (checkContract.productValue > claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
-        }
-        else if (checkContract.productValue < claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
-        }
-      }
+      // if (data.claimStatus == 'Completed') {
+      //   if (checkContract.productValue > claimTotal[0]?.amount) {
+      //     const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+      //   }
+      //   else if (checkContract.productValue < claimTotal[0]?.amount) {
+      //     const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+      //   }
+      // } 
     }
     // Keep history of status in mongodb 
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
+
     // Update every status 
     let updateBodyStatus = await claimService.updateClaim(criteria, updateData, { new: true })
     if (!updateStatus) {
@@ -1434,6 +1435,14 @@ exports.editClaimStatus = async (req, res) => {
         message: 'Unable to update status!'
       })
       return;
+    }
+    if (updateBodyStatus.claimFile == 'Completed') {
+      if (checkContract.productValue > claimTotal[0]?.amount) {
+        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
+      }
+      else if (checkContract.productValue < claimTotal[0]?.amount) {
+        const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
+      }
     }
     res.send({
       code: constant.successCode,
@@ -2036,8 +2045,17 @@ exports.statusClaim = async (req, res) => {
         $push: messageData,
         $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
       }, { new: true })
-
-      await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+      const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+      let checkContract = await contractService.getContractById({ _id: contractId })
+      let claimTotal = await claimService.checkTotalAmount(query);
+      // Update Eligibilty true and false
+      if (checkContract.productValue > claimTotal[0]?.amount) {
+        const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+      }
+      else if (checkContract.productValue < claimTotal[0]?.amount) {
+        const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+      }
+      // await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
     }
     res.send({
       code: constant.successCode,
