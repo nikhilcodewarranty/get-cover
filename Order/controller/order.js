@@ -879,14 +879,14 @@ exports.getAllOrders = async (req, res) => {
 
 
             const unique_keyRegex = new RegExp(
-                data.unique_key ? data.unique_key.trim() : "",
+                data.unique_key ? data.unique_key.replace(/\s+/g, ' ').trim() : "",
                 "i"
             );
             const venderOrderRegex = new RegExp(
-                data.venderOrder ? data.venderOrder.trim() : "",
+                data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : "",
                 "i"
             );
-            const status = new RegExp(data.status ? data.status.trim() : "", "i");
+            const status = new RegExp(data.status ? data.status.replace(/\s+/g, ' ').trim() : "", "i");
 
             let filteredData = result_Array.filter((entry) => {
                 return (
@@ -936,11 +936,11 @@ exports.getAllOrders = async (req, res) => {
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
-            const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
-            const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-            const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
-            const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
-            const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+            const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
+            const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+            const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
+            const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
+            const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
             const filteredData1 = updatedArray.filter(entry => {
@@ -1105,14 +1105,14 @@ exports.getAllArchieveOrders = async (req, res) => {
     });
 
     const unique_keyRegex = new RegExp(
-        data.unique_key ? data.unique_key.trim() : "",
+        data.unique_key ? data.unique_key.replace(/\s+/g, ' ').trim() : "",
         "i"
     );
     const venderOrderRegex = new RegExp(
-        data.venderOrder ? data.venderOrder.trim() : "",
+        data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : "",
         "i"
     );
-    const status = new RegExp(data.phone ? data.phone.trim() : "", "i");
+    const status = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : "", "i");
 
     let filteredData = result_Array.filter((entry) => {
         return (
@@ -1130,12 +1130,12 @@ exports.getAllArchieveOrders = async (req, res) => {
                 ? item.resellerName
                 : item.servicerName,
     }));
-    const orderIdRegex = new RegExp(data.orderId ? data.orderId : '', 'i')
-    const venderRegex = new RegExp(data.venderOrder ? data.venderOrder : '', 'i')
-    const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName : '', 'i')
-    const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName : '', 'i')
-    const customerNameRegex = new RegExp(data.customerName ? data.customerName : '', 'i')
-    const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName : '', 'i')
+    const orderIdRegex = new RegExp(data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', 'i')
+    const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
+    const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
     const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
     const filteredData1 = updatedArray.filter(entry => {
