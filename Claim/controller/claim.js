@@ -1412,7 +1412,7 @@ exports.editClaimStatus = async (req, res) => {
       updateData.claimStatus = [
         {
           status: data.claimStatus,
-          date: new Date()
+          date: new Date() 
         }
       ]
       if (data.claimStatus == 'Completed') {
