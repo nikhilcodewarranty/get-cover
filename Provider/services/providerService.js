@@ -20,7 +20,6 @@ module.exports = class providerService {
     }
   }
 
-
   static async createServiceProvider(data) {
     try {
       console.log(data)
@@ -31,6 +30,16 @@ module.exports = class providerService {
     }
   }
 
+  static async getAggregateServicer(query) {
+    try {
+      const response = await serviceProvider.aggregate(query)
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+
   static async getServiceProviderById(query) {
     try {
       const singleServiceProviderResponse = await serviceProvider.findOne(query);
@@ -40,9 +49,9 @@ module.exports = class providerService {
     }
   }
 
-  static async updateServiceProvider(criteria,data) {
+  static async updateServiceProvider(criteria, data) {
     try {
-      const updatedResponse = await serviceProvider.findOneAndUpdate(criteria,data,{new:true});
+      const updatedResponse = await serviceProvider.findOneAndUpdate(criteria, data, { new: true });
 
       return updatedResponse;
     } catch (error) {
@@ -96,7 +105,7 @@ module.exports = class providerService {
     }
   }
 
-  static async deleteServicer(query){
+  static async deleteServicer(query) {
     try {
       const singleDealerResponse = await serviceProvider.deleteOne(query);
       return singleDealerResponse;

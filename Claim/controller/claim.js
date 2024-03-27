@@ -1405,7 +1405,7 @@ exports.editClaimStatus = async (req, res) => {
       ]
     }
     if (data.hasOwnProperty("claimStatus")) {
-      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason:data.reason ? data.reason :'' }, { new: true })
+      let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
       status.trackStatus = [
         {
           status: data.claimStatus,
@@ -1648,117 +1648,125 @@ exports.saveBulkClaim = async (req, res) => {
             },
             {
               $addFields: {
-                convertedId: { $toObjectId: "$resell" }
+                convertedId: { $toObjectId: "$resellerId" }
               }
             },
-            { "$lookup": {
-              "from": "user",
-              "let": { "userId": "$_id" },
-              "pipeline": [
-                { "$addFields": { "userId": { "$toObjectId": "$userId" }}},
-                { "$match": { "$expr": { "$eq": [ "$userId", "$$userId" ] } } }
-              ],
-              "as": "output"
-            }},
-
-          ]
-          return contractService.getAllContracts2(query)
-        }
-        else {
-          return null;
-        }
-      })
-      // const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-      // res.send({contractAllDataArray:contractAllDataArray[0]}); return;
-      //Filter data which is contract , servicer and not active
-      totalDataComing.forEach((item, i) => {
-        if (!item.exit) {
-          const contractData = contractArray[i];
-          const servicerData = servicerArray[i]
-          const claimData = claimArray[i]
-          item.contractData = contractData;
-          item.servicerData = servicerData
-          if (!contractData) {
-            item.status = "Contract not found"
-            item.exit = true;
-          }
-          if (item.contractData && claimData != null && claimData.length > 0) {
-            const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
-            if (filter.length > 0) {
-              item.status = "Claim is already open of this contract"
-              item.exit = true;
+            {
+              "$lookup": {
+                "let": { "userObjId": { "$toObjectId": "$resellerId" } },
+                "from": "resellers",
+                "pipeline": [
+                  { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
+                ],
+                "as": "userDetails"
+              },
+            
+          },
+          {
+            $unwind: {
+              path: "$userDetails",
+              preserveNullAndEmptyArrays: true,
             }
-            // item.status = "Claim is already open of this contract"
-            // item.exit = true;
-          }
-          if (!servicerData && item.servicerName != '') {
-            item.status = "Servicer not found"
-            item.exit = true;
-          }
-          if (contractData && contractData.status != "Active") {
-            item.status = "Contract is not active";
-            item.exit = true;
-          }
-        } else {
-          item.contractData = null
-          item.servicerData = null
-        }
-      })
-      let finalArray = []
-      //Save bulk claim
-      let count = await claimService.getClaimCount();
-      let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-      // unique_key_search = "CC" + "2024" + data.unique_key_number
-      // unique_key = "CC-" + "2024-" + data.unique_key_number
-
-      //Update eligibility when contract is open
-
-      const updateArrayPromise = totalDataComing.map(item => {
-        if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+          },
+          ]
+      // return contractService.getAllContracts2(query)
+      return servicerService.getAggregateServicer(query)
+    }
         else {
-          return null;
-        }
-      })
-      const updateArray = await Promise.all(updateArrayPromise);
-      totalDataComing.map((data, index) => {
-        if (!data.exit) {
-          let obj = {
-            contractId: data.contractData._id,
-            servicerId: data.servicerData._id,
-            unique_key_number: unique_key_number,
-            unique_key_search: "CC" + "2024" + unique_key_number,
-            unique_key: "CC-" + "2024-" + unique_key_number,
-            diagnosis: data.diagnosis,
-            lossDate: data.lossDate,
-            claimFile: 'Open',
-          }
-          unique_key_number++
-          finalArray.push(obj)
-          data.status = 'Add claim successfully!'
-        }
-      })
-      //save bulk claim
-      const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
-      //send email to receipient
-      const csvArray = totalDataComing.map((item, i) => {
-        return {
-          contractId: item.contractId ? item.contractId : "",
-          servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? item.lossDate : '',
-          diagnosis: item.diagnosis ? item.diagnosis : '',
-          status: item.status ? item.status : '',
-        }
-      })
-      function convertArrayToHTMLTable(array) {
-        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-        const rows = array.map(obj => {
-          const values = Object.values(obj).map(value => `<td>${value}</td>`);
-          values[2] = `${values[2]}`;
-          return values.join('');
-        });
+      return null;
+    }
+  })
+  const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-        const htmlContent = `<html>
+  res.send({ contractAllDataArray: contractAllDataArray }); return;
+  //Filter data which is contract , servicer and not active
+  totalDataComing.forEach((item, i) => {
+    if (!item.exit) {
+      const contractData = contractArray[i];
+      const servicerData = servicerArray[i]
+      const claimData = claimArray[i]
+      item.contractData = contractData;
+      item.servicerData = servicerData
+      if (!contractData) {
+        item.status = "Contract not found"
+        item.exit = true;
+      }
+      if (item.contractData && claimData != null && claimData.length > 0) {
+        const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
+        if (filter.length > 0) {
+          item.status = "Claim is already open of this contract"
+          item.exit = true;
+        }
+        // item.status = "Claim is already open of this contract"
+        // item.exit = true;
+      }
+      if (!servicerData && item.servicerName != '') {
+        item.status = "Servicer not found"
+        item.exit = true;
+      }
+      if (contractData && contractData.status != "Active") {
+        item.status = "Contract is not active";
+        item.exit = true;
+      }
+    } else {
+      item.contractData = null
+      item.servicerData = null
+    }
+  })
+  let finalArray = []
+  //Save bulk claim
+  let count = await claimService.getClaimCount();
+  let unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+  // unique_key_search = "CC" + "2024" + data.unique_key_number
+  // unique_key = "CC-" + "2024-" + data.unique_key_number
+
+  //Update eligibility when contract is open
+
+  const updateArrayPromise = totalDataComing.map(item => {
+    if (!item.exit && item.contractData) return contractService.updateContract({ _id: item.contractData._id }, { eligibilty: false }, { new: true });
+    else {
+      return null;
+    }
+  })
+  const updateArray = await Promise.all(updateArrayPromise);
+  totalDataComing.map((data, index) => {
+    if (!data.exit) {
+      let obj = {
+        contractId: data.contractData._id,
+        servicerId: data.servicerData._id,
+        unique_key_number: unique_key_number,
+        unique_key_search: "CC" + "2024" + unique_key_number,
+        unique_key: "CC-" + "2024-" + unique_key_number,
+        diagnosis: data.diagnosis,
+        lossDate: data.lossDate,
+        claimFile: 'Open',
+      }
+      unique_key_number++
+      finalArray.push(obj)
+      data.status = 'Add claim successfully!'
+    }
+  })
+  //save bulk claim
+  const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+  //send email to receipient
+  const csvArray = totalDataComing.map((item, i) => {
+    return {
+      contractId: item.contractId ? item.contractId : "",
+      servicerName: item.servicerName ? item.servicerName : "",
+      lossDate: item.lossDate ? item.lossDate : '',
+      diagnosis: item.diagnosis ? item.diagnosis : '',
+      status: item.status ? item.status : '',
+    }
+  })
+  function convertArrayToHTMLTable(array) {
+    const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+    const rows = array.map(obj => {
+      const values = Object.values(obj).map(value => `<td>${value}</td>`);
+      values[2] = `${values[2]}`;
+      return values.join('');
+    });
+
+    const htmlContent = `<html>
             <head>
                 <style>
                     table {
@@ -1783,24 +1791,24 @@ exports.saveBulkClaim = async (req, res) => {
             </body>
         </html>`;
 
-        return htmlContent;
-      }
+    return htmlContent;
+  }
 
-      const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+  const htmlTableString = convertArrayToHTMLTable(csvArray);
+  const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
-      res.send({
-        code: constant.successCode,
-        message: 'Success!',
-        result: saveBulkClaim
-      })
-    }
+  res.send({
+    code: constant.successCode,
+    message: 'Success!',
+    result: saveBulkClaim
+  })
+}
     catch (err) {
-      res.send({
-        code: constant.errorCode,
-        message: err.message
-      })
-    }
+  res.send({
+    code: constant.errorCode,
+    message: err.message
+  })
+}
   })
 
 }
