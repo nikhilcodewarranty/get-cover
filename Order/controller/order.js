@@ -2443,50 +2443,51 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+        console.log("sjdhfskjfh",checkId)
 
 
-        if (data.dealerId.toString() != checkId.dealerId.toString()) {
-            let checkDealer = await dealerService.getDealerById(
-                data.dealerId
-            );
-            if (!checkDealer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Dealer not found",
-                });
-                return;
-            }
-        }
+        // if (data.dealerId.toString() != checkId.dealerId.toString()) {
+        //     let checkDealer = await dealerService.getDealerById(
+        //         data.dealerId
+        //     );
+        //     if (!checkDealer) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "Dealer not found",
+        //         });
+        //         return;
+        //     }
+        // }
 
-        if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
-            let query = {
-                $or: [
-                    { _id: data.servicerId },
-                    { resellerId: data.servicerId },
-                    { dealerId: data.servicerId },
-                ],
-            };
-            let checkServicer = await servicerService.getServiceProviderById(query);
-            if (!checkServicer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Servicer not found",
-                });
-                return;
-            }
-        }
+        // if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
+        //     let query = {
+        //         $or: [
+        //             { _id: data.servicerId },
+        //             { resellerId: data.servicerId },
+        //             { dealerId: data.servicerId },
+        //         ],
+        //     };
+        //     let checkServicer = await servicerService.getServiceProviderById(query);
+        //     if (!checkServicer) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "Servicer not found",
+        //         });
+        //         return;
+        //     }
+        // }
 
-        if (data.customerId != '' && data.customerId != checkId.customerId) {
-            let query = { _id: data.customerId };
-            let checkCustomer = await customerService.getCustomerById(query);
-            if (!checkCustomer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Customer not found",
-                });
-                return;
-            }
-        }
+        // if (data.customerId != '' && data.customerId != checkId.customerId) {
+        //     let query = { _id: data.customerId };
+        //     let checkCustomer = await customerService.getCustomerById(query);
+        //     if (!checkCustomer) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "Customer not found",
+        //         });
+        //         return;
+        //     }
+        // }
 
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
@@ -2495,6 +2496,7 @@ exports.editOrderDetail = async (req, res) => {
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
+        console.log('order paid check +++++++++++++++++++++++=',Number(data.paidAmount),Number( checkId.orderAmount))
 
         if(Number(data.paidAmount)==Number( checkId.orderAmount)){
             data.paymentStatus == "Paid"
