@@ -1994,7 +1994,7 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
-    
+
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
@@ -2079,10 +2079,10 @@ exports.getServicerByOrderId = async (req, res) => {
     }
     catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
-     }
+    }
 }
 
 exports.getServiceCoverage = async (req, res) => {
@@ -2097,7 +2097,7 @@ exports.getServiceCoverage = async (req, res) => {
                 message: "Dealer not found!",
             });
             return;
-        }   
+        }
 
         res.send({
             code: constant.successCode,
@@ -2107,10 +2107,10 @@ exports.getServiceCoverage = async (req, res) => {
     }
     catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
-     }
+    }
 }
 
 
