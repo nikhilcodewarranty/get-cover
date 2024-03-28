@@ -2262,23 +2262,24 @@ exports.sendMessages = async (req, res) => {
 }
 
 exports.paidUnpaid = async (req, res) => {
-  // if (req.role != 'Super Admin') {
-  //   res.send({
-  //     code: constant.errorCode,
-  //     message: 'Only super admin allow to do this action'
-  //   })
-  //   return
-  // }
-  // if (!claimData) {
-  //   res.send({
-  //     code: constant.errorCode,
-  //     message: 'Claim not found!'
-  //   })
-  // }
-  let data = req.body
-  let claimId = data.claimIds
-  let queryIds = { _id: { $in: claimId } };
-  const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
+  try {
+    let data = req.body
+    let claimId = data.claimIds
+    let queryIds = { _id: { $in: claimId } };
+    const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
+    if (!updateBulk) {
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to update!'
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+
 
 }
 
