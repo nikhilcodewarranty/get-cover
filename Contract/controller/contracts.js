@@ -6,6 +6,7 @@ const claimService = require("../../Claim/services/claimService");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const contract = require("../model/contract");
+const providerService = require("../../Provider/services/providerService");
 
 // get all contracts api
 
@@ -53,6 +54,25 @@ exports.getAllContracts = async (req, res) => {
           $match: {
             $and: [
               { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    if (data.servicerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "serviceproviders",
+            localField: "order.servicerId",
+            foreignField: "_id",
+            as: "order.servicer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             ]
           },
         }
