@@ -164,6 +164,14 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
+  static async markAsPaid(query) {
+    try {
+      const paidBulk = await claim.updateMany(criteria, data, option);
+      return paidBulk;
+    } catch (error) {
+      console.log(`Could not add order ${error}`);
+    }
+  }
   static async valueCompletedClaims(query, project = {}) {
     try {
       const allOrders = await claim.aggregate(query)
@@ -172,5 +180,5 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
-  
+
 };

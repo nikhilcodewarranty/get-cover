@@ -1304,6 +1304,7 @@ exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
     const flag = req.params.flag == 1 ? 'Paid' : 'Unpaid'
+    console.log("flag-----------------", flag)
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -1360,6 +1361,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
+              claimPaymentStatus: 1,
               repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
@@ -2267,13 +2269,16 @@ exports.paidUnpaid = async (req, res) => {
   //   })
   //   return
   // }
-  const claimData = await claimService.getClaimById({ _id: req.params.claimId });
-  if (!claimData) {
-    res.send({
-      code: constant.errorCode,
-      message: 'Claim not found!'
-    })
-  }
+  // if (!claimData) {
+  //   res.send({
+  //     code: constant.errorCode,
+  //     message: 'Claim not found!'
+  //   })
+  // }
+  let data = req.body
+  let claimId = data.claimIds
+  let queryIds = { _id: { $in: claimId } };
+  const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
 
 }
 
