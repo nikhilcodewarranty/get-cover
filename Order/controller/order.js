@@ -547,8 +547,6 @@ exports.createOrder1 = async (req, res) => {
                 });
                 var contractArray = [];
                 totalDataComing.forEach((data, index1) => {
-                    // console.log('I am showing')
-                    // console.log("I am in--------------------------------",  increamentNumber )
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -572,7 +570,6 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
-                    console.log('-----------------------------Increament Number---------------------------------------------------', contractObject)
                     increamentNumber++
                     //unique_key_number1++
                     // console.log("unique_key_number1", contractObject)
@@ -582,7 +579,7 @@ exports.createOrder1 = async (req, res) => {
                 });
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
-                console.log("saveContracts==================", saveContracts)
+                //  console.log("saveContracts==================", saveContracts)
 
             })
             res.send({
@@ -747,6 +744,8 @@ exports.getAllOrders = async (req, res) => {
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+            // res.json(ordersResult);return;
+            // console.log("ordersResult00000000000000",ordersResult.length);return;
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
@@ -2466,8 +2465,6 @@ exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
         data.venderOrder = data.dealerPurchaseOrder
-
-
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
             res.send({
@@ -2476,8 +2473,6 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-
-
         if (data.dealerId.toString() != checkId.dealerId.toString()) {
             let checkDealer = await dealerService.getDealerById(
                 data.dealerId
@@ -2642,18 +2637,18 @@ exports.editOrderDetail = async (req, res) => {
 
             let count1 = await contractService.getContractsCount();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-            await savedResponse.productsArray.map(async (product) => {
-                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-                let priceBookId = product.priceBookId;
-                let coverageStartDate = product.coverageStartDate;
-                let coverageEndDate = product.coverageEndDate;
-                let orderProductId = product._id;
-                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                let projection = { isDeleted: 0 };
-                let priceBook = await priceBookService.getPriceBookById(
-                    query,
-                    projection
-                );
+            savedResponse.productsArray.map(async (product) => {
+            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            let priceBookId = product.priceBookId;
+            let coverageStartDate = product.coverageStartDate;
+            let coverageEndDate = product.coverageEndDate;
+            let orderProductId = product._id;
+            let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+            let projection = { isDeleted: 0 };
+            let priceBook = await priceBookService.getPriceBookById(
+                query,
+                projection
+            );
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
@@ -2765,7 +2760,7 @@ exports.markAsPaid = async (req, res) => {
         );
         let count1 = await contractService.getContractsCount();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-        await savedResponse.productsArray.map(async (product) => {
+         savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
 
             let priceBookId = product.priceBookId;
@@ -2781,8 +2776,6 @@ exports.markAsPaid = async (req, res) => {
             const wb = XLSX.readFile(pathFile);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
-
-
             // let contractCount =
             //     Number(
             //         count1.length > 0 && count1[0].unique_key

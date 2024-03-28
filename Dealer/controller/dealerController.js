@@ -3008,6 +3008,7 @@ exports.getDealerContract = async (req, res) => {
             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "order.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
           ]
         },
 
@@ -3020,14 +3021,14 @@ exports.getDealerContract = async (req, res) => {
           as: "order.dealer"
         }
       },
-      {
-        $match: {
-          $and: [
-            { "order.dealer._id": new mongoose.Types.ObjectId(req.params.dealerId) },
-            // { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-          ]
-        },
-      },
+      // {
+      //   $match: {
+      //     $and: [
+      //       { "order.dealer._id": new mongoose.Types.ObjectId(req.params.dealerId) },
+      //       // { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
+      //     ]
+      //   },
+      // },
 
       {
         $facet: {
@@ -3067,6 +3068,7 @@ exports.getDealerContract = async (req, res) => {
                 updatedAt: 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
+                "order.dealerId": 1,
                 totalRecords: 1
               }
             }
