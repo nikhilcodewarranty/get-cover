@@ -367,16 +367,16 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-    let quantityPriceDetail = [
-      {
+    // let quantityPriceDetail = [
+    //   {
 
-        name: '',
-        quantity: ''
+    //     name: '',
+    //     quantity: ''
 
-      }];
-    if (body.priceType == 'Quantity Pricing') {
-      quantityPriceDetail = body.quantityPriceDetail;
-    }
+    //   }];
+    // if (body.priceType == 'Quantity Pricing') {
+    //   quantityPriceDetail = body.quantityPriceDetail;
+    // }
     const newValue = {
       $set: {
         status: body.status,
@@ -389,7 +389,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         priceType: body.priceType || existingPriceBook.priceType,
         rangeStart: body.priceType == 'Flat Pricing' ? body.rangeStart : '',
         rangeEnd: body.priceType == 'Flat Pricing' ? body.rangeEnd : '',
-        quantityPriceDetail: quantityPriceDetail
+        quantityPriceDetail: body.quantityPriceDetail || existingPriceBook.quantityPriceDetail
       }
     };
     // Update Price Book Status

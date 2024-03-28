@@ -968,7 +968,7 @@ exports.getAllOrders = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body;
@@ -1886,7 +1886,7 @@ exports.editFileCase = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getCustomerInOrder = async (req, res) => {
     try {
@@ -1993,7 +1993,6 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
-
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
@@ -2082,7 +2081,7 @@ exports.getServicerByOrderId = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getServiceCoverage = async (req, res) => {
     try {
@@ -2110,8 +2109,7 @@ exports.getServiceCoverage = async (req, res) => {
             message: err.message
         })
     }
-}
-
+};
 
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
@@ -2837,7 +2835,7 @@ exports.markAsPaid = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getDashboardData = async (req, res) => {
     try {
@@ -3029,7 +3027,7 @@ exports.getOrderContract = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getOrderPdf = async (req, res) => {
     try {
@@ -3138,7 +3136,7 @@ exports.getOrderPdf = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 const renderContractsChunked = async (
     contracts,
@@ -3604,7 +3602,7 @@ exports.generatePDF = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.updateServicerByOrder = async (req, res) => {
     try {
@@ -3644,7 +3642,7 @@ exports.updateServicerByOrder = async (req, res) => {
         })
         return;
     }
-}
+};
 
 exports.cronJobStatus = async (req, res) => {
     try {
@@ -3744,7 +3742,7 @@ exports.cronJobStatus = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.cronJobStatusWithDate = async (req, res) => {
     try {
@@ -3860,5 +3858,5 @@ exports.cronJobStatusWithDate = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 

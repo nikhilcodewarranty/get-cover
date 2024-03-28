@@ -441,6 +441,8 @@ exports.getResellerUsers = async (req, res) => {
     //     return;
     // }
 
+    let data = req.body
+
     let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 })
     if (!checkReseller) {
         res.send({
@@ -449,7 +451,16 @@ exports.getResellerUsers = async (req, res) => {
         });
         return;
     }
-    const queryUser = { accountId: { $in: checkReseller._id } }
+    const queryUser ={
+        $and:[
+            { accountId: { $in: checkReseller._id } },
+            { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } },
+        ]
+    }
+    console.log('skdsdjsdk---------------',queryUser,data)
     let users = await userService.getMembers(queryUser, { isDeleted: 0 });
     res.send({
         code: constant.successCode,
