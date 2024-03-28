@@ -2234,11 +2234,13 @@ exports.getMembers = async (req, res) => {
     let data = req.body
     data.isPrimary = false;
     let userMembers = await userService.getMembers({ $or: [{ accountId: req.userId }, { _id: req.userId }] }, { isDeleted: false })
+    let userMember = await userService.getUserById1( { _id: req.teammateId }, { isDeleted: false })
 
     res.send({
       code: constant.successCode,
       message: "Success!",
-      result: userMembers ? userMembers : []
+      result: userMembers ? userMembers : [],
+      loginMember:userMember
     })
 
   } catch (err) {
