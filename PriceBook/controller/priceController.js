@@ -387,8 +387,8 @@ exports.updatePriceBookById = async (req, res, next) => {
         category: body.priceCatId || existingPriceBook.category,
         description: body.description || existingPriceBook.description,
         priceType: body.priceType || existingPriceBook.priceType,
-        rangeStart: body.priceType == 'Flat Pricing' ? body.rangeStart : '',
-        rangeEnd: body.priceType == 'Flat Pricing' ? body.rangeEnd : '',
+        rangeStart: body.rangeStart ? body.rangeStart : existingPriceBook.rangeStart,
+        rangeEnd: body.rangeEnd ? body.rangeEnd : existingPriceBook.rangeStart,
         quantityPriceDetail: body.quantityPriceDetail || existingPriceBook.quantityPriceDetail
       }
     };
@@ -413,7 +413,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         const option = { new: true };
         console.log(body.status)
         let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId, status: 'Pending' }, { status: 'Archieved' }, option)
-        console.log("updateOrder================",updateOrder);
+        console.log("updateOrder================", updateOrder);
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
