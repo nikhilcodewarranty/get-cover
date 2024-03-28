@@ -1320,8 +1320,7 @@ exports.editClaim = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
-    const flag = req.params.flag == 1 ? 'Paid' : 'Unpaid'
-    console.log("flag-----------------", flag)
+    const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -1455,7 +1454,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': 'Completed' },
             { claimPaymentStatus: flag },
-            servicerMatch
+            { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) }
           ]
         },
       },
