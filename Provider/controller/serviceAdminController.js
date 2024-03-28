@@ -1132,10 +1132,11 @@ exports.getServicerClaims = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
-              reason:1,
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
@@ -1150,7 +1151,10 @@ exports.getServicerClaims = async (req, res) => {
               "contracts.orders.dealerId": 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
+              "contracts.orders.serviceCoverageType": 1,
+              "contracts.orders.coverageType": 1,
               "contracts.orders.customerId": 1,
+              "contracts.orders.dealers.isShippingAllowed": 1,
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
@@ -1260,25 +1264,6 @@ exports.getServicerClaims = async (req, res) => {
           localField: "contracts.orders.dealerId",
           foreignField: "_id",
           as: "contracts.orders.dealers",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-            // {
-            //   $lookup: {
-            //     from: "servicer_dealer_relations",
-            //     localField: "_id",
-            //     foreignField: "dealerId",
-            //     as: "dealerServicer",
-            //   }
-            // },
-          ]
         }
       },
       {
