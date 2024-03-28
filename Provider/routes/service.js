@@ -15,6 +15,8 @@ router.post("/getSerivicerUsers/:servicerId", servicerAdminController.getSerivic
 router.post("/servicers/:status", [verifyToken], servicerAdminController.getServicer); //get all dealers
 router.get("/getServiceProviderById/:servicerId", [verifyToken], servicerAdminController.getServiceProviderById); //get all dealers
 router.delete("/rejectServicer/:servicerId", [verifyToken], servicerAdminController.rejectServicer); //get all dealers
+router.post("/getPaidUnpaidClaims/:servicerId",[verifyToken],servicerAdminController.paidUnpaidClaim)
+router.post("/paidUnpaidClaim",[verifyToken],servicerAdminController.paidUnpaid)
 
 router.get("/serviceProvider/create-serviceProvider", servicerAdminController.createServiceProvider);
 router.post("/getServicerClaims/:servicerId", [verifyToken], servicerAdminController.getServicerClaims);
