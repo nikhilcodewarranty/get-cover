@@ -1099,7 +1099,7 @@ exports.getCustomerContract = async (req, res) => {
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
                 "order.customerId": 1,
-                totalRecords: 1
+                //totalRecords: 1
               }
             }
           ],
