@@ -1644,8 +1644,82 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const claimArray = await Promise.all(claimArrayPromise)
-
       // Get Contract with dealer, customer, reseller
+      const contractAllDataPromise = totalDataComing.map(item => {
+        if (!item.exit) {
+          let query = [
+            {
+              $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+            },
+            {
+              $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "dealers",
+                      localField: "dealerId",
+                      foreignField: "_id",
+                      as: "dealer",
+                      pipeline: [
+                        {
+                          $lookup: {
+                            from: "servicer_dealer_relations",
+                            localField: "_id",
+                            foreignField: "dealerId",
+                            as: "dealerServicer",
+                          }
+                        },
+                      ]
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "resellers",
+                      localField: "resellerId",
+                      foreignField: "_id",
+                      as: "reseller",
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "serviceproviders",
+                      localField: "servicerId",
+                      foreignField: "_id",
+                      as: "servicer",
+                    }
+                  },
+                ],
+              },
+            },
+            {
+              $project: {
+                orderId: 1,
+                "order.dealerId": 1,
+                "order.servicerId": 1,
+                "order.resellerId": 1,
+                "order.dealer": 1,
+                "order.reseller": 1,
+                "order.servicer": 1
+              }
+            },
+            { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
+          ]
+          return contractService.getAllContracts2(query)
+        }
+        else {
+          return null;
+        }
+      })
+      const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      // res.json(contractAllDataArray);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
       //     let query = [
@@ -1682,15 +1756,15 @@ exports.saveBulkClaim = async (req, res) => {
       //     return null;
       //   }
       // })
-      const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
-      res.send({ contractAllDataArray: contractAllDataArray }); return;
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
           const contractData = contractArray[i];
           const servicerData = servicerArray[i]
-          const claimData = claimArray[i]
+          const allDataArray = contractAllDataArray[i];
+          const claimData = claimArray[i];
+          let flag = false;
           item.contractData = contractData;
           item.servicerData = servicerData
           if (!contractData) {
@@ -1706,7 +1780,26 @@ exports.saveBulkClaim = async (req, res) => {
             // item.status = "Claim is already open of this contract"
             // item.exit = true;
           }
-          if (!servicerData && item.servicerName != '') {
+          if (allDataArray.length > 0 && servicerData) {
+            //console.log("allDataArray--------------------------", i, allDataArray[0]?.order.dealer.dealerServicer, servicerData)
+            if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
+              //Find Servicer with dealer Servicer
+              const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId.toString() === servicerData._id.toString())
+              if (servicerCheck) {
+                flag = true
+              }
+            }
+            //Check dealer itself servicer
+            if (allDataArray[0]?.order.dealer.isServicer && allDataArray[0]?.order.dealer._id.toString() === servicerData.dealerId.toString) {
+              flag = true
+            }
+
+            if (allDataArray[0]?.order.reseller.isServicer && allDataArray[0]?.order.reseller._id.toString() === servicerData.resellerId.toString) {
+              flag = true
+            }
+            // console.log(allDataArray)
+          }
+          if (!flag) {
             item.status = "Servicer not found"
             item.exit = true;
           }
@@ -1719,6 +1812,11 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
+
+      res.send({
+        totalDataComing
+      })
+      return;
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
