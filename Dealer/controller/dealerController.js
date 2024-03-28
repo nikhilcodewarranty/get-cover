@@ -533,7 +533,8 @@ exports.getUserByDealerId = async (req, res) => {
       return;
     }
 
-    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
+    // const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
+    const dealers = await dealerService.getDealerById(req.params.dealerId);
 
     //result.metaData = singleDealer
     if (!dealers) {
@@ -562,14 +563,14 @@ exports.getUserByDealerId = async (req, res) => {
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
 
-    const filteredData = users.filter(entry => {
+    let filteredData = users.filter(entry => {
       return (
         firstNameRegex.test(entry.firstName) &&
         lastNameRegex.test(entry.lastName) &&
         emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
-    });
+    }); 
 
 
     //result.metaData = singleDealer
@@ -585,7 +586,8 @@ exports.getUserByDealerId = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      dealerStatus: dealers[0].accountStatus
+      dealerData:dealers,
+      dealerStatus: dealers.accountStatus
     })
 
   } catch (err) {
