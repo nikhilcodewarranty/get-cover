@@ -1093,66 +1093,60 @@ exports.getResellerContract = async (req, res) => {
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
-        // let query = [
-        //     {
-        //         $lookup: {
-        //             from: "orders",
-        //             localField: "orderId",
-        //             foreignField: "_id",
-        //             as: "order",
-        //             pipeline: [
-        //                 {
-        //                     $lookup: {
-        //                         from: "dealers",
-        //                         localField: "dealerId",
-        //                         foreignField: "_id",
-        //                         as: "dealer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "resellers",
-        //                         localField: "resellerId",
-        //                         foreignField: "_id",
-        //                         as: "reseller",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "customers",
-        //                         localField: "customerId",
-        //                         foreignField: "_id",
-        //                         as: "customer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "servicers",
-        //                         localField: "servicerId",
-        //                         foreignField: "_id",
-        //                         as: "servicer",
-        //                     }
-        //                 },
+        let newQuery = [];
+        if (data.servicerName) {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        localField: "order.servicerId",
+                        foreignField: "_id",
+                        as: "order.servicer"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
+        }
+        newQuery.push(
+            {
+                $facet: {
+                    totalRecords: [
+                        {
+                            $count: "total"
+                        }
+                    ],
+                    data: [
+                        {
+                            $skip: skipLimit
+                        },
+                        {
+                            $limit: pageLimit
+                        },
+                        {
+                            $project: {
+                                productName: 1,
+                                model: 1,
+                                serial: 1,
+                                unique_key: 1,
+                                status: 1,
+                                manufacture: 1,
+                                eligibilty: 1,
+                                "order.unique_key": 1,
+                                "order.venderOrder": 1,
+                                "order.resellerId": 1,
+                                totalRecords: 1
+                            }
+                        }
+                    ],
+                },
 
-        //                 // { $unwind: "$dealer" },
-        //                 // { $unwind: "$reseller" },
-        //                 // { $unwind: "$servicer?$servicer:{}" },
-
-        //             ]
-        //         }
-        //     },
-        //     {
-        //         $match: { isDeleted: false, orderId: { $in: orderIDs } },
-        //     },
-        //     // {
-        //     //   $addFields: {
-        //     //     contracts: {
-        //     //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-        //     //     }
-        //     //   }
-        //     // }
-        //     // { $unwind: "$contracts" }
-        // ]
+            })
         let query = [
             {
                 $match:
@@ -1207,44 +1201,49 @@ exports.getResellerContract = async (req, res) => {
                     ]
                 },
             },
-            {
-                $facet: {
-                    totalRecords: [
-                        {
-                            $count: "total"
-                        }
-                    ],
-                    data: [
-                        {
-                            $skip: skipLimit
-                        },
-                        {
-                            $limit: pageLimit
-                        },
-                        {
-                            $project: {
-                                productName: 1,
-                                model: 1,
-                                serial: 1,
-                                unique_key: 1,
-                                status: 1,
-                                manufacture: 1,
-                                eligibilty: 1,
-                                "order.unique_key": 1,
-                                "order.venderOrder": 1
-                            }
-                        }
-                    ],
-                },
+            // {
+            //     $facet: {
+            //         totalRecords: [
+            //             {
+            //                 $count: "total"
+            //             }
+            //         ],
+            //         data: [
+            //             {
+            //                 $skip: skipLimit
+            //             },
+            //             {
+            //                 $limit: pageLimit
+            //             },
+            //             {
+            //                 $project: {
+            //                     productName: 1,
+            //                     model: 1,
+            //                     serial: 1,
+            //                     unique_key: 1,
+            //                     status: 1,
+            //                     manufacture: 1,
+            //                     eligibilty: 1,
+            //                     "order.unique_key": 1,
+            //                     "order.venderOrder": 1
+            //                 }
+            //             }
+            //         ],
+            //     },
 
-            }
+            // }
         ]
+        if (newQuery.length > 0) {
+            query = query.concat(newQuery);
+        }
         console.log(pageLimit, skipLimit, limitData)
         let getContracts = await contractService.getAllContracts2(query)
 
         //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
         //let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
-        let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+        //let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+        let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+
         // if (!getContract) {
         //     res.send({
         //         code: constants.errorCode,
@@ -1256,7 +1255,7 @@ exports.getResellerContract = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: getContracts[0]?.data ? getContracts[0]?.data : [],
-            totalCount: totalCount
+            totalCount
         })
 
         console.log(orderIDs)
