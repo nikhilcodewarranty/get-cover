@@ -2273,6 +2273,12 @@ exports.paidUnpaid = async (req, res) => {
         message: 'Unable to update!'
       })
     }
+
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result: updateBulk
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,

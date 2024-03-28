@@ -164,7 +164,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
-  static async markAsPaid(query) {
+  static async markAsPaid(criteria,data,option) {
     try {
       const paidBulk = await claim.updateMany(criteria, data, option);
       return paidBulk;
