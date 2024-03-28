@@ -2079,7 +2079,7 @@ exports.checkEmailForSingle = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.updateProfile = async (req, res) => {
   try {
@@ -2113,7 +2113,7 @@ exports.updateProfile = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.updatePassword = async (req, res) => {
   try {
@@ -2153,7 +2153,7 @@ exports.updatePassword = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.getUserByToken = async (req, res) => {
   try {
@@ -2227,7 +2227,7 @@ exports.addMembers = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.getMembers = async (req, res) => {
   try {
@@ -2247,7 +2247,7 @@ exports.getMembers = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -2288,7 +2288,7 @@ exports.changePrimaryUser = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 
 

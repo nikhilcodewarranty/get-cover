@@ -5,15 +5,14 @@ const dealerService = require("../services/dealerService");
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const claimService = require("../../Claim/services/claimService");
-
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
-const dealerRelation = require("../../Provider/model/dealerServicer")
+const dealerRelation = require("../../Provider/model/dealerServicer");
 const servicerService = require("../../Provider/services/providerService");
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
 const dealer = require("../model/dealer");
-const constant = require('../../config/constant')
+const constant = require('../../config/constant');
 const bcrypt = require("bcrypt");
 const XLSX = require("xlsx");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
@@ -21,7 +20,7 @@ const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
 const fs = require('fs');
 const json2csv = require('json-2-csv').json2csv;
-const connection = require('../../db')
+const connection = require('../../db');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
@@ -555,8 +554,10 @@ exports.getUserByDealerId = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
 
-    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    // const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    // const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
@@ -657,6 +658,7 @@ exports.deleteDealer = async (req, res) => {
   }
 };
 
+//
 exports.uploadTermAndCondition = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
@@ -2830,79 +2832,6 @@ exports.getDealerOrders = async (req, res) => {
   }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//-------------------------------------under developement section ----------------------------//
-
-const MongoClient = require('mongodb').MongoClient;
-
-// Connection URLs for the two databases
-const url2 = `${process.env.DB_URL}User`;
-const url1 = `${process.env.DB_URL}User`;
-
-// Common ID
-
-// Create MongoClient instances for each database
-const client2 = new MongoClient(url2, { useNewUrlParser: true, useUnifiedTopology: true });
-const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Connect to the servers
-// Promise.all([ client2.connect()])
-// .then(() => {
-// console.log('Connected to both databases');
-
-// // Specify the databases
-// const db2 = client2.db();
-
-// // Specify the collections
-// const collection2 = db2.collection('dealers');
-
-
-
-
-// // Close the connections
-// client2.close();
-// });
-// })
-// .catch(err => {
-// console.error('Error connecting to databases:', err);
-// });
-
-
 exports.getDealerRequest = async (req, res) => {
   try {
     let data = req.body
@@ -2983,6 +2912,7 @@ exports.getDealerContract = async (req, res) => {
             { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { orderId: { $in:orderIDs } },
             // { eligibility: true },
           ]
         },
@@ -3482,3 +3412,42 @@ exports.getDealerClaims = async (req, res) => {
     })
   }
 }
+
+
+//-------------------------------------under developement section ----------------------------//
+
+const MongoClient = require('mongodb').MongoClient;
+
+// Connection URLs for the two databases
+const url2 = `${process.env.DB_URL}User`;
+const url1 = `${process.env.DB_URL}User`;
+
+// Common ID
+
+// Create MongoClient instances for each database
+const client2 = new MongoClient(url2, { useNewUrlParser: true, useUnifiedTopology: true });
+const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Connect to the servers
+// Promise.all([ client2.connect()])
+// .then(() => {
+// console.log('Connected to both databases');
+
+// // Specify the databases
+// const db2 = client2.db();
+
+// // Specify the collections
+// const collection2 = db2.collection('dealers');
+
+
+
+
+// // Close the connections
+// client2.close();
+// });
+// })
+// .catch(err => {
+// console.error('Error connecting to databases:', err);
+// });
+
+
