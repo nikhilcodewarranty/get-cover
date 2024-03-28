@@ -669,7 +669,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         });
         return;
       }
-      let file = req.files;
+      let file = req.file;
       // let filename = file.filename;
       // let originalName = file.originalname;
       // let size = file.size;
@@ -919,8 +919,6 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 // All Dealer Books
-
-
 
 exports.getAllDealerPriceBooks = async (req, res) => {
   try {

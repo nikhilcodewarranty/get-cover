@@ -387,6 +387,8 @@ exports.createDealer = async (req, res) => {
     uploadMiddleware.singleFileUpload(req, res, async () => {
 
       const data = req.body;
+      console.log("----------------------------",data)
+      console.log("files----------------------------",req.file)
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
