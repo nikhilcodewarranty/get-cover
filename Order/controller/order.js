@@ -2637,18 +2637,18 @@ exports.editOrderDetail = async (req, res) => {
 
             let count1 = await contractService.getContractsCount();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-            savedResponse.productsArray.map(async (product) => {
-            const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-            let priceBookId = product.priceBookId;
-            let coverageStartDate = product.coverageStartDate;
-            let coverageEndDate = product.coverageEndDate;
-            let orderProductId = product._id;
-            let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-            let projection = { isDeleted: 0 };
-            let priceBook = await priceBookService.getPriceBookById(
-                query,
-                projection
-            );
+            let save = savedResponse.productsArray.map(async (product) => {
+                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let priceBookId = product.priceBookId;
+                let coverageStartDate = product.coverageStartDate;
+                let coverageEndDate = product.coverageEndDate;
+                let orderProductId = product._id;
+                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+                let projection = { isDeleted: 0 };
+                let priceBook = await priceBookService.getPriceBookById(
+                    query,
+                    projection
+                );
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
@@ -2760,7 +2760,7 @@ exports.markAsPaid = async (req, res) => {
         );
         let count1 = await contractService.getContractsCount();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-         savedResponse.productsArray.map(async (product) => {
+        let save = savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
 
             let priceBookId = product.priceBookId;
