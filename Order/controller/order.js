@@ -826,8 +826,6 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
 
-            console.log('check--------------------------55555555555')
-
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -874,9 +872,6 @@ exports.getAllOrders = async (req, res) => {
                 }
             });
 
-            console.log('check--------------------------666666666666')
-
-
             const unique_keyRegex = new RegExp(
                 data.unique_key ? data.unique_key.replace(/\s+/g, ' ').trim() : "",
                 "i"
@@ -894,7 +889,6 @@ exports.getAllOrders = async (req, res) => {
                     status.test(entry.status)
                 );
             });
-
             const updatedArray = filteredData.map(item => {
                 let isEmptyStartDate = item.productsArray.map(
                     (item1) => item1.coverageStartDate === null
@@ -930,8 +924,7 @@ exports.getAllOrders = async (req, res) => {
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
-
-
+       
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
@@ -941,14 +934,14 @@ exports.getAllOrders = async (req, res) => {
             const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-
+          
             const filteredData1 = updatedArray.filter(entry => {
                 return (
                     venderRegex.test(entry.venderOrder) &&
                     orderIdRegex.test(entry.unique_key_search) &&
                     dealerNameRegex.test(entry.dealerName.name) &&
                     servicerNameRegex.test(entry.servicerName.name) &&
-                    customerNameRegex.test(entry.customerName.name) &&
+                    customerNameRegex.test(entry.customerName.username) &&
                     resellerNameRegex.test(entry.resellerName.name) &&
                     statusRegex.test(entry.status)
                 );
