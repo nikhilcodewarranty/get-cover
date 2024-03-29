@@ -903,7 +903,7 @@ exports.getResellerOrders = async (req, res) => {
         // let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId), status: { $ne: "Archieved" } }
         // let ordersResult = await orderService.getAllOrders(orderQuery, project)
 
-        let query1 = { status: { $ne: "Archieved" }, resellerId: new mongoose.Types.ObjectId(req.params.dealerId) };
+        let query1 = { status: { $ne: "Archieved" }, resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
 
         let lookupQuery = [
             {
