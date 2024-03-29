@@ -2522,6 +2522,9 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
+        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
+            checkId.paidAmount = 0
+        }
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
@@ -2533,9 +2536,7 @@ exports.editOrderDetail = async (req, res) => {
             })
             return;
         };
-        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
-            checkId.paidAmount = 0
-        }
+       
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
