@@ -663,7 +663,7 @@ exports.getCustomerById = async (req, res) => {
           resellerName: checkReseller ? checkReseller.name : '',
           dealerStatus: checkDealer.accountStatus,
           orderData: ordersResult,
-          claimData:claimData
+          claimData: claimData
         }
       })
 
@@ -1033,66 +1033,79 @@ exports.getCustomerContract = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-    // let query = [
-    //   {
-    //     $lookup: {
-    //       from: "orders",
-    //       localField: "orderId",
-    //       foreignField: "_id",
-    //       as: "order",
-    //       pipeline: [
-    //         {
-    //           $lookup: {
-    //             from: "dealers",
-    //             localField: "dealerId",
-    //             foreignField: "_id",
-    //             as: "dealer",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "resellers",
-    //             localField: "resellerId",
-    //             foreignField: "_id",
-    //             as: "reseller",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "customers",
-    //             localField: "customerId",
-    //             foreignField: "_id",
-    //             as: "customer",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "servicers",
-    //             localField: "servicerId",
-    //             foreignField: "_id",
-    //             as: "servicer",
-    //           }
-    //         },
+    let newQuery = [];
+    if (data.servicerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "serviceproviders",
+            localField: "order.servicerId",
+            foreignField: "_id",
+            as: "order.servicer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    if (data.resellerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "resellers",
+            localField: "order.resellerId",
+            foreignField: "_id",
+            as: "order.reseller"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+                "order.customerId": 1,
+                //totalRecords: 1
+              }
+            }
+          ],
+        },
 
-    //         // { $unwind: "$dealer" },
-    //         // { $unwind: "$reseller" },
-    //         // { $unwind: "$servicer?$servicer:{}" },
-
-    //       ]
-    //     }
-    //   },
-    //   {
-    //     $match: { isDeleted: false, orderId: { $in: orderIDs } },
-    //   },
-    //   // {
-    //   //   $addFields: {
-    //   //     contracts: {
-    //   //       $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-    //   //     }
-    //   //   }
-    //   // }
-    //   // { $unwind: "$contracts" }
-    // ]
+      })
 
     let query = [
       {
@@ -1153,40 +1166,44 @@ exports.getCustomerContract = async (req, res) => {
           ]
         },
       },
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-            {
-              $project: {
-                productName: 1,
-                model: 1,
-                serial: 1,
-                unique_key: 1,
-                status: 1,
-                manufacture: 1,
-                eligibilty: 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1
-              }
-            }
+      // {
+      //   $facet: {
+      //     totalRecords: [
+      //       {
+      //         $count: "total"
+      //       }
+      //     ],
+      //     data: [
+      //       {
+      //         $skip: skipLimit
+      //       },
+      //       {
+      //         $limit: pageLimit
+      //       },
+      //       {
+      //         $project: {
+      //           productName: 1,
+      //           model: 1,
+      //           serial: 1,
+      //           unique_key: 1,
+      //           status: 1,
+      //           manufacture: 1,
+      //           eligibilty: 1,
+      //           "order.unique_key": 1,
+      //           "order.venderOrder": 1
+      //         }
+      //       }
 
-          ],
+      //     ],
 
-        },
+      //   },
 
-      }
+      // }
     ]
+
+    if (newQuery.length > 0) {
+      query = query.concat(newQuery);
+    }
     console.log(pageLimit, skipLimit, limitData)
     let getContracts = await contractService.getAllContracts2(query)
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
@@ -1311,10 +1328,11 @@ exports.customerClaims = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
-              reason:1,
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
@@ -1329,7 +1347,10 @@ exports.customerClaims = async (req, res) => {
               "contracts.orders.dealerId": 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
+              "contracts.orders.serviceCoverageType": 1,
+              "contracts.orders.coverageType": 1,
               "contracts.orders.customerId": 1,
+              "contracts.orders.dealers.isShippingAllowed": 1,
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,

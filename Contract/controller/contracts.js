@@ -78,7 +78,25 @@ exports.getAllContracts = async (req, res) => {
         }
       );
     }
-
+    if (data.resellerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "resellers",
+            localField: "order.resellerId",
+            foreignField: "_id",
+            as: "order.reseller"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
     newQuery.push(
       {
         $facet: {
@@ -88,14 +106,6 @@ exports.getAllContracts = async (req, res) => {
             }
           ],
           data: [
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "order.resellerId",
-                foreignField: "_id",
-                as: "order.reseller",
-              }
-            },
             {
               $skip: skipLimit
             },
@@ -112,7 +122,8 @@ exports.getAllContracts = async (req, res) => {
                 manufacture: 1,
                 eligibilty: 1,
                 "order.unique_key": 1,
-                "order.venderOrder": 1
+                "order.venderOrder": 1,
+                totalRecords: 1
               }
             }
           ],
@@ -162,14 +173,6 @@ exports.getAllContracts = async (req, res) => {
         },
 
       }
-      // { 
-      //   $match:
-      //   {
-      //     $and: [
-      //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-      //     ]
-      //   },
-      // },
     ]
 
     if (newQuery.length > 0) {
@@ -527,7 +530,7 @@ exports.getContractById = async (req, res) => {
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
     getData[0].claimAmount = 0;
-    if (claimTotal.length > 0) { 
+    if (claimTotal.length > 0) {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 

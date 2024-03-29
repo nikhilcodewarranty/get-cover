@@ -533,7 +533,8 @@ exports.getUserByDealerId = async (req, res) => {
       return;
     }
 
-    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
+    // const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
+    const dealers = await dealerService.getDealerById(req.params.dealerId);
 
     //result.metaData = singleDealer
     if (!dealers) {
@@ -562,14 +563,14 @@ exports.getUserByDealerId = async (req, res) => {
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
 
-    const filteredData = users.filter(entry => {
+    let filteredData = users.filter(entry => {
       return (
         firstNameRegex.test(entry.firstName) &&
         lastNameRegex.test(entry.lastName) &&
         emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
-    });
+    }); 
 
 
     //result.metaData = singleDealer
@@ -585,7 +586,8 @@ exports.getUserByDealerId = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      dealerStatus: dealers[0].accountStatus
+      dealerData:dealers,
+      dealerStatus: dealers.accountStatus
     })
 
   } catch (err) {
@@ -669,7 +671,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         });
         return;
       }
-      let file = req.files;
+      let file = req.file;
       // let filename = file.filename;
       // let originalName = file.originalname;
       // let size = file.size;
@@ -919,8 +921,6 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 // All Dealer Books
-
-
 
 exports.getAllDealerPriceBooks = async (req, res) => {
   try {
@@ -2934,6 +2934,78 @@ exports.getDealerContract = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let newQuery = [];
+    if (data.servicerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "serviceproviders",
+            localField: "order.servicerId",
+            foreignField: "_id",
+            as: "order.servicer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    if (data.resellerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "resellers",
+            localField: "order.resellerId",
+            foreignField: "_id",
+            as: "order.reseller"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+                "order.dealerId": 1,
+              }
+            }
+          ],
+        },
+
+      })
     let query = [
       {
         $match:
@@ -2986,140 +3058,57 @@ exports.getDealerContract = async (req, res) => {
         }
       },
       // {
-      //   $match: {
-      //     $and: [
-      //       { "order.dealer._id": new mongoose.Types.ObjectId(req.params.dealerId) },
-      //       // { "order.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-      //     ]
+      //   $facet: {
+      //     totalRecords: [
+      //       {
+      //         $count: "total"
+      //       }
+      //     ],
+      //     data: [
+      //       {
+      //         $skip: skipLimit
+      //       },
+      //       {
+      //         $limit: pageLimit
+      //       },
+      //       {
+      //         $sort: { createdAt: -1 }
+      //       },
+      //       // {
+      //       //   $project: {
+      //       //     productName: 1,
+      //       //     model: 1,
+      //       //     serial: 1,
+      //       //     unique_key: 1,
+      //       //     status: 1,
+      //       //     manufacture: 1,
+      //       //     eligibilty: 1,
+      //       //     createdAt: 1,
+      //       //     updatedAt: 1,
+      //       //     "order.unique_key": 1,
+      //       //     "order.venderOrder": 1,
+      //       //     "order.dealerId": 1,
+      //       //     totalRecords: 1
+      //       //   }
+      //       // }
+      //     ],
       //   },
-      // },
 
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $lookup: {
-                from: "resellers",
-                localField: "order.resellerId",
-                foreignField: "_id",
-                as: "order.reseller",
-              }
-            },
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-            {
-              $sort: { createdAt: -1 }
-            },
-            {
-              $project: {
-                productName: 1,
-                model: 1,
-                serial: 1,
-                unique_key: 1,
-                status: 1,
-                manufacture: 1,
-                eligibilty: 1,
-                createdAt: 1,
-                updatedAt: 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1,
-                "order.dealerId": 1,
-                totalRecords: 1
-              }
-            }
-          ],
-        },
-
-      }
-      // { 
-      //   $match:
-      //   {
-      //     $and: [
-      //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } },
-      //     ]
-      //   },
-      // },
+      // }
     ]
 
+    if (newQuery.length > 0) {
+      query = query.concat(newQuery);
+    }
+
     let getContracts = await contractService.getAllContracts2(query)
-    // let query = [
-    //   {
-    //     $lookup: {
-    //       from: "orders",
-    //       localField: "orderId",
-    //       foreignField: "_id",
-    //       as: "order",
-    //       pipeline: [
-    //         {
-    //           $lookup: {
-    //             from: "dealers",
-    //             localField: "dealerId",
-    //             foreignField: "_id",
-    //             as: "dealer",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "resellers",
-    //             localField: "resellerId",
-    //             foreignField: "_id",
-    //             as: "reseller",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "customers",
-    //             localField: "customerId",
-    //             foreignField: "_id",
-    //             as: "customer",
-    //           }
-    //         },
-    //         {
-    //           $lookup: {
-    //             from: "servicers",
-    //             localField: "servicerId",
-    //             foreignField: "_id",
-    //             as: "servicer",
-    //           }
-    //         },
 
-    //         // { $unwind: "$dealer" },
-    //         // { $unwind: "$reseller" },
-    //         // { $unwind: "$servicer?$servicer:{}" },
-
-    //       ]
-    //     }
-    //   },
-    //   {
-    //     $match: { isDeleted: false, orderId: { $in: orderIDs } },
-    //   },
-    // ]  
-    //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-
-    // let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
-
-    // if (!getContracts) {
-    //   res.send({
-    //     code: constants.errorCode,
-    //     message: err.message
-    //   })
-    //   return;
-    // }
-    // let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,
       message: "Success",
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      totalCount: getContracts[0].totalRecords[0].total ? getContracts[0].totalRecords[0].total : 0
+      totalCount
     })
 
   } catch (err) {
@@ -3197,6 +3186,8 @@ exports.getDealerClaims = async (req, res) => {
               "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
+              "receiptImage": 1,
+              reason: 1,
               "unique_key": 1,
               totalAmount: 1,
               servicerId: 1,
@@ -3204,7 +3195,6 @@ exports.getDealerClaims = async (req, res) => {
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
-              reason: 1,
               repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
@@ -3215,7 +3205,10 @@ exports.getDealerClaims = async (req, res) => {
               "contracts.orders.dealerId": 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
+              "contracts.orders.serviceCoverageType": 1,
+              "contracts.orders.coverageType": 1,
               "contracts.orders.customerId": 1,
+              "contracts.orders.dealers.isShippingAllowed": 1,
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
