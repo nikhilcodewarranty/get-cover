@@ -1990,7 +1990,7 @@ exports.getDealerOrders = async (req, res) => {
                     street: 1
                 }
             );
-           const result_Array = ordersResult.map((item1) => {
+            const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
                         ? respectiveDealers.find(
@@ -2035,7 +2035,7 @@ exports.getDealerOrders = async (req, res) => {
                     };
                 }
             });
-           const unique_keyRegex = new RegExp(
+            const unique_keyRegex = new RegExp(
                 data.unique_key ? data.unique_key.trim() : "",
                 "i"
             );
@@ -2143,40 +2143,18 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 });
                 return;
             }
-
-
             let query = { status: "Archieved", dealerId: new mongoose.Types.ObjectId(req.userId) };
 
             let lookupQuery = [
                 {
                     $match: query
                 },
-
-                // {
-                //     $project: project,
-                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        // flag: {
-                        //     $cond: {
-                        //         if: {
-                        //             $and: [
-                        //                 // { $eq: ["$payment.status", "paid"] },
-                        //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                        //                 { $ne: ["$customerId", null] },
-                        //                 { $ne: ["$paymentStatus", 'Paid'] },
-                        //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                        //             ]
-                        //         },
-                        //         then: true,
-                        //         else: false
-                        //     }
-                        // }
-
                     }
                 },
 
@@ -2394,7 +2372,7 @@ exports.getDealerArchievedOrders = async (req, res) => {
                     orderIdRegex.test(entry.unique_key_search) &&
                     dealerNameRegex.test(entry.dealerName.name) &&
                     servicerNameRegex.test(entry.servicerName.name) &&
-                    customerNameRegex.test(entry.customerName.name) &&
+                    customerNameRegex.test(entry.customerName.username) &&
                     resellerNameRegex.test(entry.resellerName.name) &&
                     statusRegex.test(entry.status)
                 );
@@ -2442,6 +2420,25 @@ exports.getAllContracts = async (req, res) => {
                     $match: {
                         $and: [
                             { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
+        }
+        if (data.servicerName) {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        localField: "order.servicerId",
+                        foreignField: "_id",
+                        as: "order.servicer"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         ]
                     },
                 }
@@ -2538,59 +2535,6 @@ exports.getAllContracts = async (req, res) => {
 
         let getContracts = await contractService.getAllContracts2(query)
         let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-        // let query = [
-
-        //     {
-        //         $lookup: {
-        //             from: "orders",
-        //             localField: "orderId",
-        //             foreignField: "_id",
-        //             as: "order",
-        //             pipeline: [
-        //                 {
-        //                     $lookup: {
-        //                         from: "dealers",
-        //                         localField: "dealerId",
-        //                         foreignField: "_id",
-        //                         as: "dealer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "resellers",
-        //                         localField: "resellerId",
-        //                         foreignField: "_id",
-        //                         as: "reseller",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "customers",
-        //                         localField: "customerId",
-        //                         foreignField: "_id",
-        //                         as: "customer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "servicers",
-        //                         localField: "servicerId",
-        //                         foreignField: "_id",
-        //                         as: "servicer",
-        //                     }
-        //                 },
-
-        //             ]
-
-        //         }
-        //     },
-        //     { $unwind: "$order" },
-
-        //     { $match: { "order.dealerId": new mongoose.Types.ObjectId(req.userId) } }
-        // ]
-
-        // let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
-
         let getTotalCount = await contractService.findContractCount({ isDeleted: false })
         res.send({
             code: constant.successCode,
@@ -2598,15 +2542,6 @@ exports.getAllContracts = async (req, res) => {
             result: getContracts[0]?.data ? getContracts[0]?.data : [],
             totalCount
         })
-
-        // res.send({
-        //   code: constant.successCode,
-        //   message: "Success!",
-        //   result: checkOrder,
-        //   contractCount: totalContract.length,
-        //   orderUserData: userData
-        // });
-
 
     } catch (err) {
         res.send({
