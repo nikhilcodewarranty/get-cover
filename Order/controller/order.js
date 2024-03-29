@@ -2518,12 +2518,15 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
 
+        
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
         if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
+            console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
             checkId.paidAmount = 0
+            console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
         }
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
