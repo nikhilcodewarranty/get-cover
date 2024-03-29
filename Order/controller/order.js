@@ -2349,6 +2349,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         //     });
         //     return;
         // }
+
         let checkPurchaseOrder;
         let data = req.body;
         if (
@@ -2358,7 +2359,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
                 },
                 { isDeleted: 0 }
             );
@@ -2366,7 +2367,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
                 },
                 { isDeleted: 0 }
             );
