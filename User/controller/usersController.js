@@ -407,14 +407,8 @@ function uniqByKeepLast(data, key) {
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
-   upload(req, res, async () => {
-
+    upload(req, res, async () => {
       const data = req.body;
-      console.log("----------------------------",data)
-      console.log("files----------------------------",req.files)
-
-
-
       let priceFile
       let termFile
       let file = req.files
@@ -424,15 +418,8 @@ exports.createDealer = async (req, res) => {
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
           priceFile = file[i]
-
-          // priceFile.push(file[i].filename);
-
-        } 
+        }
       }
-
-
-
-
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
@@ -1216,7 +1203,7 @@ exports.createDealer = async (req, res) => {
             termConditon: req.body.termConditon,
             state: data.state,
             country: data.country,
-            termCondition:termFile,
+            termCondition: termFile,
             isServicer: data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,
@@ -2281,13 +2268,13 @@ exports.getMembers = async (req, res) => {
     let data = req.body
     data.isPrimary = false;
     let userMembers = await userService.getMembers({ $or: [{ accountId: req.userId }, { _id: req.userId }] }, { isDeleted: false })
-    let userMember = await userService.getUserById1( { _id: req.teammateId }, { isDeleted: false })
+    let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
 
     res.send({
       code: constant.successCode,
       message: "Success!",
       result: userMembers ? userMembers : [],
-      loginMember:userMember
+      loginMember: userMember
     })
 
   } catch (err) {
