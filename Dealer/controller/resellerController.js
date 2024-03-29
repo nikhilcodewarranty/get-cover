@@ -195,10 +195,11 @@ exports.getAllResellers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
+            console.log('search check ++++++++++++',entry)
             return (
                 nameRegex.test(entry.resellerData.name) &&
                 emailRegex.test(entry.email) &&
-                dealerRegex.test(entry.resellerData.dealerId) &&
+                dealerRegex.test(entry.resellerData.dealerName) &&
                 phoneRegex.test(entry.phoneNumber)
             );
         });

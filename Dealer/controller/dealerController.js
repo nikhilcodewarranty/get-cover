@@ -174,7 +174,7 @@ exports.getAllDealers = async (req, res) => {
 
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -2238,97 +2238,131 @@ exports.getDealerServicers = async (req, res) => {
 
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid dealer ID"
-      })
-      return;
+        res.send({
+            code: constant.errorCode,
+            message: "Invalid dealer ID"
+        })
+        return;
     }
     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     if (!getServicersIds) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the servicer"
-      })
-      return;
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the servicer"
+        })
+        return;
     }
     let ids = getServicersIds.map((item) => item.servicerId)
-    let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+    let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the servicers"
-      })
-      return;
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the servicers"
+        })
+        return;
     }
-    let servicer2 = servicer
-    console.log("servicer1--------------------", servicer2);
     if (checkDealer.isServicer) {
-      servicer.unshift(checkDealer);
-      let dealerServicer = await providerService.getServiceProviderById({ dealerId: checkDealer._id.toString() })
-      servicer2.unshift(dealerServicer)
-    }
+        servicer.unshift(checkDealer);
+    };
 
     const servicerIds = servicer.map(obj => obj._id);
-
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
-    // Get servicer with claim
-
-    const idsClaims = servicer.map(servicer => servicer._id)
-
-    const servicerClaimsIds = { servicerId: { $in: idsClaims }, claimFile: { $ne: "Rejected" } };
-
-    const servicerCompleted = { servicerId: { $in: idsClaims }, claimFile: "Completed" };
-
-    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-
-    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
-
-    let servicerUser = await userService.getMembers(query1, {})
-    // console.log("servicer============================",servicer);
-    // console.log("servicerUser============================",servicerUser);
+    let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the data"
+        });
+        return;
     };
 
     const result_Array = servicer.map(item1 => {
-      const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
+        const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
 
-      if (matchingItem) {
-        return {
-          ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: item1.toObject()
-        };
-      } else {
-        console.log("servicerUser-----------------------", servicerUser)
-        return servicerUser;
-      }
+        if (matchingItem) {
+            return {
+                ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: item1.toObject()
+            };
+        } else {
+            return servicerUser.toObject();
+        }
     });
+
+    for (let i = 0; i < result_Array.length; i++) {
+      const servicerId = result_Array[i].servicerData._id;
+      console.log("claim check+++++++++++++++++++++",servicerId)
+
+      // Aggregate pipeline to join orders, contracts, and claims
+      var aggregateResult = await orderService.getAllOrders1([
+        { $match: { 
+          $and:[
+            {servicerId: new mongoose.Types.ObjectId(servicerId)},
+            {dealerId: new mongoose.Types.ObjectId(req.params.dealerId)},
+          ]
+         } },
+        {
+          $lookup: {
+            from: "contracts",
+            localField: "_id",
+            foreignField: "orderId",
+            as: "contracts"
+          }
+        },
+        { $unwind: "$contracts" },
+        {
+          $lookup: {
+            from: "claims",
+            localField: "contracts._id",
+            foreignField: "contractId",
+            as: "claims"
+          }
+        },
+        
+        {
+          $group: {
+            _id: "$servicerId",
+            claimCount: { $sum: { $size: "$claims" } },
+            totalOrderAmount: { $sum: "$claims.totalAmount" },
+          }
+        },
+        
+      ]);
+
+      // If there are results for the current servicerId, update the result array
+
+      console.log("claim check+++++++++++++++++++++",aggregateResult)
+
+      if (aggregateResult.length > 0) {
+        result_Array[i].claimCount = aggregateResult[0].claimCount;
+        result_Array[i].totalOrderAmount = aggregateResult[0].totalOrderAmount;
+      } else {
+        // If no claims found for the servicerId, set count and totalOrderAmount to 0
+        result_Array[i].claimCount = 0;
+        result_Array[i].totalOrderAmount = 0;
+      }
+    }
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
-      return (
-        nameRegex.test(entry.servicerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
+        return (
+            nameRegex.test(entry.servicerData.name) &&
+            emailRegex.test(entry.email) &&
+            phoneRegex.test(entry.phoneNumber)
+        );
     });
 
     res.send({
-      code: constant.successCode,
-      message: "Success",
-      data: filteredData
+        code: constant.successCode,
+        message: "Success",
+        result: aggregateResult
     });
 
-  } catch (err) {
+} catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
