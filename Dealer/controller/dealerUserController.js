@@ -527,9 +527,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.term': { '$regex': req.body.term ? req.body.term : '' , '$options': 'i' } },
+                { 'priceBooks.term': Number(req.body.term) },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
-                { 'priceBooks.term': Number(data.term)},
                 { 'status': true },
                 {
                     dealerId: new mongoose.Types.ObjectId(req.userId)
