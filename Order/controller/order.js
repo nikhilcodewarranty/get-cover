@@ -1414,11 +1414,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         obj.data.forEach((obj1) => {
                             for (let key in obj1) {
                                 // Trim whitespace from each value
-                                obj1[key] = obj1[key].toString().replace(/\s+/g, ' ').trim();
+                                obj1[key] = obj1[key].replace(/\s+/g, ' ').trim();
                             }
                         });
                     
 
+                        console.log("obj---------------------",obj.data)
+                        console.log("obj1111111---------------------",obj1)
                         const isValidLength = obj.data.every(
                             (obj1) => Object.keys(obj1).length === 5
                         );
