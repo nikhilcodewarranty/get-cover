@@ -519,7 +519,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         };
         let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
         let catIdsArray = getCatIds.map(category => category._id)
-        let searchName = req.body.name.replace(/\s+/g, ' ').trim() ? req.body.name.replace(/\s+/g, ' ').trim() : ''
+        let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
         let query
         console.log("lklklkkklk", data.status)
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
@@ -527,7 +527,9 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.term': { '$regex': req.body.term ? req.body.term : '' , '$options': 'i' } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
+                // { 'priceBooks.term': req.body.term},
                 { 'status': true },
                 {
                     dealerId: new mongoose.Types.ObjectId(req.userId)
