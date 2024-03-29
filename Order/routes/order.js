@@ -28,6 +28,8 @@ router.post('/getOrderPdf/:orderId', [verifyToken], orderController.getOrderPdf)
 
 router.post('/getServicerInOrders', [verifyToken], orderController.getServicerInOrders)
 
+router.post("/getDealerResellers", [verifyToken], orderController.getDealerResellers)
+
 router.get('/getServiceCoverage/:dealerId', [verifyToken], orderController.getServiceCoverage)
 
 
