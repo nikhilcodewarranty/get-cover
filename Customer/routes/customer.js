@@ -4,7 +4,7 @@ const customerController = require("../controller/customerController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation'); 
 
-
+  
 router.post("/customer", [verifyToken], customerController.getAllCustomers);
 router.post("/getDealerCustomers/:dealerId", [verifyToken], customerController.getDealerCustomers);
 router.post("/getResellerCustomers/:resellerId", [verifyToken], customerController.getResellerCustomers);
