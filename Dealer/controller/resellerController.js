@@ -738,7 +738,8 @@ exports.getResellerServicers = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success",
-            data: filteredData
+            data: filteredData,
+            resellerStatus:checkReseller.status
         });
     }
     catch (err) {

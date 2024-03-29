@@ -527,21 +527,16 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.term': { '$regex': req.body.term ? req.body.term : '' , '$options': 'i' } },
+                { 'priceBooks.term': Number(req.body.term) },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
-                // { 'priceBooks.term': req.body.term},
                 { 'status': true },
                 {
                     dealerId: new mongoose.Types.ObjectId(req.userId)
                 }
             ]
         };
-
-
-
         //
         let projection = { isDeleted: 0, __v: 0 }
-
         let limit = req.body.limit ? req.body.limit : 10000
         let page = req.body.page ? req.body.page : 1
         const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
@@ -1897,31 +1892,12 @@ exports.getDealerOrders = async (req, res) => {
                 {
                     $match: query
                 },
-
-                // {
-                //     $project: project,
-                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        // flag: {
-                        //     $cond: {
-                        //         if: {
-                        //             $and: [
-                        //                 // { $eq: ["$payment.status", "paid"] },
-                        //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                        //                 { $ne: ["$customerId", null] },
-                        //                 { $ne: ["$paymentStatus", 'Paid'] },
-                        //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                        //             ]
-                        //         },
-                        //         then: true,
-                        //         else: false
-                        //     }
-                        // }
 
                     }
                 },
@@ -1942,8 +1918,6 @@ exports.getDealerOrders = async (req, res) => {
                 .map(result => result.resellerId.toString());
 
             let mergedArray = userDealerIds.concat(userResellerIds);
-
-
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
             //Get Respective Dealers
             let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -2016,8 +1990,6 @@ exports.getDealerOrders = async (req, res) => {
                     street: 1
                 }
             );
-
-
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -2063,9 +2035,6 @@ exports.getDealerOrders = async (req, res) => {
                     };
                 }
             });
-
-
-
             const unique_keyRegex = new RegExp(
                 data.unique_key ? data.unique_key.trim() : "",
                 "i"
@@ -2140,7 +2109,7 @@ exports.getDealerOrders = async (req, res) => {
                     orderIdRegex.test(entry.unique_key_search) &&
                     dealerNameRegex.test(entry.dealerName.name) &&
                     servicerNameRegex.test(entry.servicerName.name) &&
-                    customerNameRegex.test(entry.customerName.name) &&
+                    customerNameRegex.test(entry.customerName.username) &&
                     resellerNameRegex.test(entry.resellerName.name) &&
                     statusRegex.test(entry.status)
                 );
@@ -2174,40 +2143,18 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 });
                 return;
             }
-
-
             let query = { status: "Archieved", dealerId: new mongoose.Types.ObjectId(req.userId) };
 
             let lookupQuery = [
                 {
                     $match: query
                 },
-
-                // {
-                //     $project: project,
-                // },
                 {
                     "$addFields": {
                         "noOfProducts": {
                             "$sum": "$productsArray.checkNumberProducts"
                         },
                         totalOrderAmount: { $sum: "$orderAmount" },
-                        // flag: {
-                        //     $cond: {
-                        //         if: {
-                        //             $and: [
-                        //                 // { $eq: ["$payment.status", "paid"] },
-                        //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                        //                 { $ne: ["$customerId", null] },
-                        //                 { $ne: ["$paymentStatus", 'Paid'] },
-                        //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                        //             ]
-                        //         },
-                        //         then: true,
-                        //         else: false
-                        //     }
-                        // }
-
                     }
                 },
 
@@ -2425,7 +2372,7 @@ exports.getDealerArchievedOrders = async (req, res) => {
                     orderIdRegex.test(entry.unique_key_search) &&
                     dealerNameRegex.test(entry.dealerName.name) &&
                     servicerNameRegex.test(entry.servicerName.name) &&
-                    customerNameRegex.test(entry.customerName.name) &&
+                    customerNameRegex.test(entry.customerName.username) &&
                     resellerNameRegex.test(entry.resellerName.name) &&
                     statusRegex.test(entry.status)
                 );
@@ -2473,6 +2420,25 @@ exports.getAllContracts = async (req, res) => {
                     $match: {
                         $and: [
                             { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
+        }
+        if (data.servicerName) {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        localField: "order.servicerId",
+                        foreignField: "_id",
+                        as: "order.servicer"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         ]
                     },
                 }
@@ -2569,59 +2535,6 @@ exports.getAllContracts = async (req, res) => {
 
         let getContracts = await contractService.getAllContracts2(query)
         let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-        // let query = [
-
-        //     {
-        //         $lookup: {
-        //             from: "orders",
-        //             localField: "orderId",
-        //             foreignField: "_id",
-        //             as: "order",
-        //             pipeline: [
-        //                 {
-        //                     $lookup: {
-        //                         from: "dealers",
-        //                         localField: "dealerId",
-        //                         foreignField: "_id",
-        //                         as: "dealer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "resellers",
-        //                         localField: "resellerId",
-        //                         foreignField: "_id",
-        //                         as: "reseller",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "customers",
-        //                         localField: "customerId",
-        //                         foreignField: "_id",
-        //                         as: "customer",
-        //                     }
-        //                 },
-        //                 {
-        //                     $lookup: {
-        //                         from: "servicers",
-        //                         localField: "servicerId",
-        //                         foreignField: "_id",
-        //                         as: "servicer",
-        //                     }
-        //                 },
-
-        //             ]
-
-        //         }
-        //     },
-        //     { $unwind: "$order" },
-
-        //     { $match: { "order.dealerId": new mongoose.Types.ObjectId(req.userId) } }
-        // ]
-
-        // let getContracts = await contractService.getAllContracts(query, skipLimit, pageLimit)
-
         let getTotalCount = await contractService.findContractCount({ isDeleted: false })
         res.send({
             code: constant.successCode,
@@ -2629,15 +2542,6 @@ exports.getAllContracts = async (req, res) => {
             result: getContracts[0]?.data ? getContracts[0]?.data : [],
             totalCount
         })
-
-        // res.send({
-        //   code: constant.successCode,
-        //   message: "Success!",
-        //   result: checkOrder,
-        //   contractCount: totalContract.length,
-        //   orderUserData: userData
-        // });
-
 
     } catch (err) {
         res.send({
@@ -3829,8 +3733,6 @@ exports.getDashboardData = async (req, res) => {
             orderAmount: 1,
         };
 
-        console.log("userId------------------------", req.userId)
-
         let query = { status: 'Active', dealerId: new mongoose.Types.ObjectId(req.userId) };
         const claimQuery = { claimFile: 'Completed' }
         let checkOrders = await orderService.getDashboardData(query, project);
@@ -3927,10 +3829,9 @@ exports.getDashboardData = async (req, res) => {
         let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
         const claimData = {
             numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0]?.totalAmount
+            valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
         }
-
-        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
+        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
