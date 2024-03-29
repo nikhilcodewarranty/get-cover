@@ -2359,9 +2359,7 @@ exports.getDealerServicers = async (req, res) => {
     res.send({
         code: constant.successCode,
         message: "Success",
-        result: {
-          data:filteredData
-        }
+        data: filteredData
     });
 
 } catch (err) {
