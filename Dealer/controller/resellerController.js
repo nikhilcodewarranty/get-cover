@@ -465,7 +465,8 @@ exports.getResellerUsers = async (req, res) => {
     let users = await userService.getMembers(queryUser, { isDeleted: 0 });
     res.send({
         code: constant.successCode,
-        data: users
+        data: users,
+        resellerStatus:checkReseller.status
     });
     return;
 }
