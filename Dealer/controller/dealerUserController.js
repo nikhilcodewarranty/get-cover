@@ -521,13 +521,12 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
         let query
-        console.log("lklklkkklk", data.status)
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                 { 'priceBooks.term': Number(req.body.term) },
+                { 'priceBooks.type': Number(req.body.priceType) },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 {
@@ -1831,11 +1830,13 @@ exports.getDealerResellers = async (req, res) => {
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const statusRegex = new RegExp(data.status)
 
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
                 emailRegex.test(entry.email) &&
+                statusRegex.test(entry.status) &&
                 dealerRegex.test(entry.resellerData.dealerId) &&
                 phoneRegex.test(entry.phoneNumber)
             );
@@ -2498,7 +2499,7 @@ exports.getAllContracts = async (req, res) => {
                         { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
                         // { eligibility: true },
                     ]
-                },
+                }, 
             },
             {
                 $lookup: {
