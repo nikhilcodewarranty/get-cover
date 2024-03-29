@@ -2524,7 +2524,7 @@ exports.editOrderDetail = async (req, res) => {
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
 
-        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid"){
+        if(checkId.paymentStatus == "Paid"  && data.paymentStatus == "PartlyPaid"){
             checkId.paidAmount = 0
         }
         if(checkId.paymentStatus == "Unpaid"){

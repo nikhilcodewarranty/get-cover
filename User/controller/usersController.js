@@ -1054,8 +1054,8 @@ exports.createDealer = async (req, res) => {
 
 
           // Create User for primary dealer
-
-          console.log("allUserData----------------------------")
+          console.log("body----------------------------",req.body)
+          console.log("allUserData----------------------------",allUserData);return;
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
