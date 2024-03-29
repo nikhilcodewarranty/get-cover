@@ -1411,6 +1411,15 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             return false; // 'data' should be an object
                         }
 
+                        obj.data.forEach((obj1) => {
+                            for (let key in obj1) {
+                                // Trim whitespace from each value
+                                obj1[key] = obj1[key].toString().replace(/\s+/g, ' ').trim();
+                            }
+                        });
+                    
+
+                        console.log("obj---------------------",obj.data)
                         const isValidLength = obj.data.every(
                             (obj1) => Object.keys(obj1).length === 5
                         );
