@@ -570,7 +570,7 @@ exports.getUserByDealerId = async (req, res) => {
         emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
-    }); 
+    });
 
 
     //result.metaData = singleDealer
@@ -586,7 +586,7 @@ exports.getUserByDealerId = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      dealerData:dealers,
+      dealerData: dealers,
       dealerStatus: dealers.accountStatus
     })
 
@@ -2238,31 +2238,31 @@ exports.getDealerServicers = async (req, res) => {
 
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
-        res.send({
-            code: constant.errorCode,
-            message: "Invalid dealer ID"
-        })
-        return;
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
     }
     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     if (!getServicersIds) {
-        res.send({
-            code: constant.errorCode,
-            message: "Unable to fetch the servicer"
-        })
-        return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicer"
+      })
+      return;
     }
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
-        res.send({
-            code: constant.errorCode,
-            message: "Unable to fetch the servicers"
-        })
-        return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicers"
+      })
+      return;
     }
     if (checkDealer.isServicer) {
-        servicer.unshift(checkDealer);
+      servicer.unshift(checkDealer);
     };
 
     const servicerIds = servicer.map(obj => obj._id);
@@ -2270,38 +2270,40 @@ exports.getDealerServicers = async (req, res) => {
 
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
-        res.send({
-            code: constant.errorCode,
-            message: "Unable to fetch the data"
-        });
-        return;
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
     };
 
     const result_Array = servicer.map(item1 => {
-        const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
+      const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
 
-        if (matchingItem) {
-            return {
-                ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                servicerData: item1.toObject()
-            };
-        } else {
-            return servicerUser.toObject();
-        }
+      if (matchingItem) {
+        return {
+          ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: item1.toObject()
+        };
+      } else {
+        return servicerUser.toObject();
+      }
     });
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
-      console.log("claim check+++++++++++++++++++++",servicerId)
+      console.log("claim check+++++++++++++++++++++", servicerId)
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
-        { $match: { 
-          $and:[
-            {servicerId: new mongoose.Types.ObjectId(servicerId)},
-            {dealerId: new mongoose.Types.ObjectId(req.params.dealerId)},
-          ]
-         } },
+        {
+          $match: {
+            $and: [
+              { servicerId: new mongoose.Types.ObjectId(servicerId) },
+              { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
+            ]
+          }
+        },
         {
           $lookup: {
             from: "contracts",
@@ -2316,23 +2318,25 @@ exports.getDealerServicers = async (req, res) => {
             from: "claims",
             localField: "contracts._id",
             foreignField: "contractId",
-            as: "claims"
+            as: "claims",
+            pipeline: [
+              {
+                $match: { claimFile: { $in: ["Open", "Completed"] } }
+              }
+            ]
           }
         },
-        
         {
-          $group: {
-            _id: "$servicerId",
-            claimCount: { $sum: { $size: "$claims" } },
-            totalOrderAmount: { $sum: 10 },
+          $project: {
+            'claims': { $arrayElemAt: ["$claims", 0] },
+            _id:0
           }
-        },
-        
+        }
       ]);
 
       // If there are results for the current servicerId, update the result array
-
-      console.log("claim check+++++++++++++++++++++",aggregateResult)
+       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 0);
+      console.log("claim check+++++++++++++++++++++", aggregateResult)
 
       if (aggregateResult.length > 0) {
         result_Array[i].claimCount = aggregateResult[0].claimCount;
@@ -2349,20 +2353,20 @@ exports.getDealerServicers = async (req, res) => {
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
-        return (
-            nameRegex.test(entry.servicerData.name) &&
-            emailRegex.test(entry.email) &&
-            phoneRegex.test(entry.phoneNumber)
-        );
+      return (
+        nameRegex.test(entry.servicerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
     });
 
     res.send({
-        code: constant.successCode,
-        message: "Success",
-        data: filteredData
+      code: constant.successCode,
+      message: "Success",
+      data: filteredData
     });
 
-} catch (err) {
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message

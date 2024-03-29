@@ -2524,7 +2524,13 @@ exports.editOrderDetail = async (req, res) => {
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
-
+        if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
+           res.send({
+            code:constant.error,
+            message:"Not a valid paying amount"
+           })
+           return;
+        }
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
