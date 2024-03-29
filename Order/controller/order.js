@@ -1997,14 +1997,14 @@ exports.getServicerInOrders = async (req, res) => {
 exports.getDealerResellers = async (req, res) => {
     try {
         let data = req.body
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action"
-            })
-            return;
-        }
-        let checkDealer = await dealerService.getDealerById(req.params.dealerId, {})
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action"
+        //     })
+        //     return;
+        // }
+        let checkDealer = await dealerService.getDealerById(req.body.dealerId, {})
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -2013,7 +2013,7 @@ exports.getDealerResellers = async (req, res) => {
             return;
         };
 
-        let query = { isDeleted: false, dealerId: req.params.dealerId, status: true }
+        let query = { isDeleted: false, dealerId: req.body.dealerId, status: true }
         let projection = { __v: 0 }
         const resellers = await resellerService.getResellers(query, projection);
         if (!resellers) {
