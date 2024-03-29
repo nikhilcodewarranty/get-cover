@@ -1429,7 +1429,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid fields value",
                             });
-                        }
+                        } 
                     });
 
                     if (message.length > 0) {

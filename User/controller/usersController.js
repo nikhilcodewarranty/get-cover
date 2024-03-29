@@ -610,7 +610,7 @@ exports.createDealer = async (req, res) => {
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
               coverageType: req.body.coverageType,
-              termConditon: req.body.termConditon,
+              termConditon: termFile,
               accountStatus: true,
               isServicer: data.isServicer ? data.isServicer : false
             }
@@ -923,7 +923,7 @@ exports.createDealer = async (req, res) => {
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
               coverageType: req.body.coverageType,
-              termConditon: req.body.termConditon,
+              termConditon: termFile,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
