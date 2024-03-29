@@ -2498,7 +2498,7 @@ exports.getAllContracts = async (req, res) => {
                         { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
                         // { eligibility: true },
                     ]
-                },
+                }, 
             },
             {
                 $lookup: {
