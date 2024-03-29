@@ -1264,7 +1264,7 @@ exports.editClaim = async (req, res) => {
     let claimTotal = await claimService.checkTotalAmount(query);
     if (claimTotal.length > 0) {
       const remainingValue = contract.productValue - claimTotal[0]?.amount
-      if (remainingValue < data.totalAmount){
+      if (remainingValue < data.totalAmount) {
         res.send({
           code: constant.errorCode,
           message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1549,7 +1549,7 @@ exports.saveBulkClaim = async (req, res) => {
       let message = [];
       let checkDuplicate = [];
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
-      const totalDataComing = totalDataComing1.map((item, i) => {
+      let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         return {
           contractId: item[keys[0]],
@@ -1560,6 +1560,22 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
+      console.log(totalDataComing)
+      totalDataComing = totalDataComing.map((item, i) => {
+        console.log(item.contractId)
+        return {
+          contractId: item.contractId.toString().replace(/\s+/g, ' ').trim(),
+          servicerName: item.servicerName.toString().replace(/\s+/g, ' ').trim(),
+          lossDate: item.lossDate.toString().replace(/\s+/g, ' ').trim(),
+          diagnosis: item.diagnosis.toString().replace(/\s+/g, ' ').trim(),
+          duplicate: false,
+          exit: false
+        };
+      });
+
+      // console.log("totalDataComing----------------", totalDataComing);
+      // return;
+
       totalDataComing.forEach(data => {
         // data.diagnosis.replace(/\s+/g, ' ').trim();
         // data.servicerName.replace(/\s+/g, ' ').trim();
