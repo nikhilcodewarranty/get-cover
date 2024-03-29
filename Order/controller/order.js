@@ -1420,7 +1420,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     
 
                         console.log("obj---------------------",obj.data)
-                        console.log("obj1111111---------------------",obj1)
                         const isValidLength = obj.data.every(
                             (obj1) => Object.keys(obj1).length === 5
                         );
