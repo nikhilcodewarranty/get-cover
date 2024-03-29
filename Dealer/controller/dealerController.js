@@ -2324,7 +2324,7 @@ exports.getDealerServicers = async (req, res) => {
           $group: {
             _id: "$servicerId",
             claimCount: { $sum: { $size: "$claims" } },
-            totalOrderAmount: { $sum: "$claims.totalAmount" },
+            totalOrderAmount: { $sum: 10 },
           }
         },
         
@@ -2359,7 +2359,7 @@ exports.getDealerServicers = async (req, res) => {
     res.send({
         code: constant.successCode,
         message: "Success",
-        result: aggregateResult
+        result: filteredData
     });
 
 } catch (err) {
