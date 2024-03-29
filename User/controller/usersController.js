@@ -32,6 +32,29 @@ const csvParser = require('csv-parser');
 const customerService = require("../../Customer/services/customerService");
 
 
+
+var Storage = multer.diskStorage({
+  destination: function (req, files, cb) {
+    cb(null, path.join(__dirname, '../../uploads/'));
+  },
+  filename: function (req, files, cb) {
+    // console.log('file++++++++++', files)
+    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+  }
+})
+
+var upload = multer({
+  storage: Storage,
+}).any([
+  { name: "file" },
+  { name: "termAndCondition" },
+])
+
+
+
+
+
+
 //----------------------- api's function ---------------//
 
 // create user 
@@ -384,11 +407,32 @@ function uniqByKeepLast(data, key) {
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
-    uploadMiddleware.singleFileUpload(req, res, async () => {
+   upload(req, res, async () => {
 
       const data = req.body;
       console.log("----------------------------",data)
-      console.log("files----------------------------",req.file)
+      console.log("files----------------------------",req.files)
+
+
+
+      let priceFile
+      let termFile
+      let file = req.files
+      for (i = 0; i < file.length; i++) {
+        if (file[i].fieldname == 'termAndCondition') {
+          termFile = file[i]
+          // termFile.push(file[i].filename);
+        } else if (file[i].fieldname == 'file') {
+          priceFile = file[i]
+
+          // priceFile.push(file[i].filename);
+
+        } 
+      }
+
+
+
+
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
@@ -647,7 +691,7 @@ exports.createDealer = async (req, res) => {
           }
 
 
-          let csvName = req.file.filename
+          let csvName = priceFile.filename
           const csvWriter = createCsvWriter({
             path: './uploads/resultFile/' + csvName,
             header: [
@@ -657,7 +701,7 @@ exports.createDealer = async (req, res) => {
               // Add more headers as needed
             ],
           });
-          const wb = XLSX.readFile(req.file.path);
+          const wb = XLSX.readFile(priceFile.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
           const headers = [];
@@ -982,7 +1026,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
-            termConditon: req.body.termConditon,
+            termConditon: termFile,
             zip: data.zip,
             state: data.state,
             isServicer: data.isServicer ? data.isServicer : false,
@@ -1100,7 +1144,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
 
-          let csvName = req.file.filename
+          let csvName = priceFile.filename
           const csvWriter = createCsvWriter({
             path: './uploads/resultFile/' + csvName,
             header: [
@@ -1117,7 +1161,7 @@ exports.createDealer = async (req, res) => {
           let allpriceBookIds = [];
           let newArray1;
           let allPriceBooks;
-          const wb = XLSX.readFile(req.file.path);
+          const wb = XLSX.readFile(priceFile.path);
           const sheets = wb.SheetNames;
           const ws = wb.Sheets[sheets[0]];
           const headers = [];
@@ -1172,6 +1216,7 @@ exports.createDealer = async (req, res) => {
             termConditon: req.body.termConditon,
             state: data.state,
             country: data.country,
+            termCondition:termFile,
             isServicer: data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,

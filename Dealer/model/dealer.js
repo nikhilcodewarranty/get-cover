@@ -68,20 +68,7 @@ const dealarSchema = new mongoose.Schema({
     default: ''
   },
   termCondition: {
-    type: {
-      fileName: {
-        type: String,
-        default: ''
-      },
-      name: {
-        type: String,
-        default: ''
-      },
-      size: {
-        type: String,
-        default: ''
-      },
-    },
+    type: {},
     default: {}
   },
   isDeleted: {
