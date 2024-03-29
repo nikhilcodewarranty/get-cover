@@ -20,3 +20,4 @@ router.post('/getCustomerUsers/:customerId', [verifyToken], customerController.g
 router.post('/customerClaims/:customerId', [verifyToken], customerController.customerClaims)
 
 module.exports = router; 
+ 
