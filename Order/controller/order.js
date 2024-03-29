@@ -2530,7 +2530,7 @@ exports.editOrderDetail = async (req, res) => {
             message:"Not a valid paying amount"
            })
            return;
-        }
+        };
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
