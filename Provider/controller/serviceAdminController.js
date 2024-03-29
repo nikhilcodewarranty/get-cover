@@ -1652,7 +1652,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
-    allServicer = await servicerService.getAllServiceProvider(
+    allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
