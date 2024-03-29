@@ -924,7 +924,7 @@ exports.getAllOrders = async (req, res) => {
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
-       
+
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
@@ -934,7 +934,7 @@ exports.getAllOrders = async (req, res) => {
             const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-          
+
             const filteredData1 = updatedArray.filter(entry => {
                 return (
                     venderRegex.test(entry.venderOrder) &&
@@ -1410,9 +1410,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 obj1[key] = obj1[key].toString().replace(/\s+/g, ' ').trim();
                             }
                         });
-                    
 
-                        console.log("obj---------------------",obj.data)
+
+                        console.log("obj---------------------", obj.data)
                         const isValidLength = obj.data.every(
                             (obj1) => Object.keys(obj1).length === 5
                         );
@@ -1422,7 +1422,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 key: obj.key,
                                 message: "Invalid fields value",
                             });
-                        } 
+                        }
                     });
 
                     if (message.length > 0) {
@@ -2312,12 +2312,14 @@ exports.archiveOrder = async (req, res) => {
 
             return;
         }
-
-        let updateStatus = await orderService.updateOrder(
-            { _id: checkOrder._id },
-            { status: "Archieved" },
-            { new: true }
-        );
+        let updateStatus;
+        if (checkOrder.status != 'Active') {
+             updateStatus = await orderService.updateOrder(
+                { _id: checkOrder._id },
+                { status: "Archieved" },
+                { new: true }
+            );
+        }
         if (!updateStatus) {
             res.send({
                 code: constant.errorCode,
@@ -2525,11 +2527,11 @@ exports.editOrderDetail = async (req, res) => {
 
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
         if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
-           res.send({
-            code:constant.error,
-            message:"Not a valid paying amount"
-           })
-           return;
+            res.send({
+                code: constant.error,
+                message: "Not a valid paying amount"
+            })
+            return;
         };
         if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
             checkId.paidAmount = 0
