@@ -2525,7 +2525,7 @@ exports.editOrderDetail = async (req, res) => {
         data.customerId = data.customerId != "" ? data.customerId : null;
         console.log('check+++++++++++++++++++++++111111111',checkId.paymentStatus,data.paymentStatus)
 
-        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
+        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid"){
             console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
             checkId.paidAmount = 0
             console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
