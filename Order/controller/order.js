@@ -2531,6 +2531,9 @@ exports.editOrderDetail = async (req, res) => {
            })
            return;
         };
+        if(checkId.paymentStatus == "Paid" && data.paymentStatus == "partlyPaid"){
+            checkId.paidAmount = 0
+        }
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
