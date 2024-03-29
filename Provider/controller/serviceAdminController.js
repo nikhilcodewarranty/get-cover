@@ -386,7 +386,7 @@ exports.editServicerDetail = async (req, res) => {
       return;
     }
     if (data.name != data.oldName) {
-      let checkName = await providerService.getServicerByName({ name: { $regex: data.name } }, {})
+      let checkName = await providerService.getServicerByName({ name: new RegExp("\\b" + data.name + "\\b") }, {})
       if (checkName) {
         res.send({
           code: constant.errorCode,
