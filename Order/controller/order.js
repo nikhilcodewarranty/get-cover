@@ -2523,12 +2523,13 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        console.log('check+++++++++++++++++++++++111111111',checkId.paymentStatus,data.paymentStatus)
 
         if(checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid"){
-            console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
             checkId.paidAmount = 0
-            console.log('check+++++++++++++++++++++++111111111',checkId.paidAmount)
+        }
+        if(checkId.paymentStatus == "Unpaid"){
+            checkId.paidAmount = 0
+            data.dueAmount = checkId.paidAmount
         }
         data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
