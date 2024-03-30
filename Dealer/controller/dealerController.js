@@ -1808,7 +1808,9 @@ exports.updateDealerMeta = async (req, res) => {
     let option = { new: true }
     data.name = data.accountName
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
-
+    if (!data.accountStatus) {
+      await userService.updateUser({metaId: checkDealer._id}, { status: false }, { new: true })
+    }
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
@@ -2611,14 +2613,6 @@ exports.getDealerOrders = async (req, res) => {
         {
           $match: query
         },
-        // {
-        //   $lookup: {
-        //     from: "contracts",
-        //     localField: "_id",
-        //     foreignField: "orderId",
-        //     as: "contract"
-        //   }
-        // },
         {
           $project: project,
         },
@@ -2951,7 +2945,6 @@ exports.getDealerContract = async (req, res) => {
       return
     }
     let orderIDs = getDealerOrder.map((ID) => ID._id)
-
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -3039,8 +3032,6 @@ exports.getDealerContract = async (req, res) => {
             { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { orderId: { $in: orderIDs } },
-            // { eligibility: true },
           ]
         },
       },
@@ -3070,60 +3061,20 @@ exports.getDealerContract = async (req, res) => {
         },
 
       },
-      {
-        $lookup: {
-          from: "dealers",
-          localField: "order.dealerId",
-          foreignField: "_id",
-          as: "order.dealer"
-        }
-      },
       // {
-      //   $facet: {
-      //     totalRecords: [
-      //       {
-      //         $count: "total"
-      //       }
-      //     ],
-      //     data: [
-      //       {
-      //         $skip: skipLimit
-      //       },
-      //       {
-      //         $limit: pageLimit
-      //       },
-      //       {
-      //         $sort: { createdAt: -1 }
-      //       },
-      //       // {
-      //       //   $project: {
-      //       //     productName: 1,
-      //       //     model: 1,
-      //       //     serial: 1,
-      //       //     unique_key: 1,
-      //       //     status: 1,
-      //       //     manufacture: 1,
-      //       //     eligibilty: 1,
-      //       //     createdAt: 1,
-      //       //     updatedAt: 1,
-      //       //     "order.unique_key": 1,
-      //       //     "order.venderOrder": 1,
-      //       //     "order.dealerId": 1,
-      //       //     totalRecords: 1
-      //       //   }
-      //       // }
-      //     ],
-      //   },
-
-      // }
+      //   $lookup: {
+      //     from: "dealers",
+      //     localField: "order.dealerId",
+      //     foreignField: "_id",
+      //     as: "order.dealer"
+      //   }
+      // },
     ]
-
     if (newQuery.length > 0) {
       query = query.concat(newQuery);
     }
 
     let getContracts = await contractService.getAllContracts2(query)
-
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     res.send({
       code: constant.successCode,

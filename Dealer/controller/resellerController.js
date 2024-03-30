@@ -873,17 +873,77 @@ exports.getResellerOrders = async (req, res) => {
             productsArray: 1,
             dealerId: 1,
             unique_key: 1,
+            unique_key_number: 1,
+            unique_key_search: 1,
             servicerId: 1,
             customerId: 1,
+            serviceCoverageType: 1,
+            coverageType: 1,
             resellerId: 1,
             paymentStatus: 1,
             status: 1,
+            createdAt: 1,
             venderOrder: 1,
             orderAmount: 1,
-        }
+            contract: "$contract"
+          };
+        // let project = {
+        //     productsArray: 1,
+        //     dealerId: 1,
+        //     unique_key: 1,
+        //     servicerId: 1,
+        //     customerId: 1,
+        //     resellerId: 1,
+        //     paymentStatus: 1,
+        //     status: 1,
+        //     venderOrder: 1,
+        //     orderAmount: 1,
+        // }
 
-        let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId), status: { $ne: "Archieved" } }
-        let ordersResult = await orderService.getAllOrders(orderQuery, project)
+        // let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId), status: { $ne: "Archieved" } }
+        // let ordersResult = await orderService.getAllOrders(orderQuery, project)
+
+        let query1 = { status: { $ne: "Archieved" }, resellerId: new mongoose.Types.ObjectId(req.params.resellerId) };
+
+        let lookupQuery = [
+            {
+              $match: query1
+            },
+            {
+              $project: project,
+            },
+            {
+              "$addFields": {
+                "noOfProducts": {
+                  "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+                flag: {
+                  $cond: {
+                    if: {
+                      $and: [
+                        // { $eq: ["$payment.status", "paid"] },
+                        { $ne: ["$productsArray.orderFile.fileName", ''] },
+                        { $ne: ["$customerId", null] },
+                        { $ne: ["$paymentStatus", 'Paid'] },
+                        { $ne: ["$productsArray.coverageStartDate", null] },
+                      ]
+                    },
+                    then: true,
+                    else: false
+                  }
+                }
+              }
+            },
+            { $sort: { unique_key: -1 } }
+          ]
+    
+          let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+          let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+          let limitData = Number(pageLimit)
+    
+    
+          let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };

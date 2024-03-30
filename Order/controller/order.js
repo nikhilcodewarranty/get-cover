@@ -1994,6 +1994,107 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+exports.getDealerResellers = async (req, res) => {
+    try {
+        let data = req.body
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action"
+        //     })
+        //     return;
+        // }
+        let checkDealer = await dealerService.getDealerById(req.body.dealerId, {})
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        };
+
+        let query = { isDeleted: false, dealerId: req.body.dealerId, status: true }
+        let projection = { __v: 0 }
+        const resellers = await resellerService.getResellers(query, projection);
+        if (!resellers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the resellers"
+            });
+            return;
+        };
+
+
+        const resellerId = resellers.map(obj => obj._id.toString());
+
+        const orderResellerId = resellers.map(obj => obj._id);
+        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+        //Get Dealer Customer Orders
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = {
+            $and: [
+                { resellerId: { $in: orderResellerId }, status: "Active" },
+            ]
+        }
+        let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$resellerId');
+
+        const result_Array = getPrimaryUser.map(item1 => {
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+
+            if (matchingItem || order) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    resellerData: matchingItem.toObject(),
+                    orderData: order ? order : {}
+                };
+            } else {
+                return dealerData.toObject();
+            }
+        });
+
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.resellerData.name) &&
+                emailRegex.test(entry.email) &&
+                dealerRegex.test(entry.resellerData.dealerId) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: filteredData
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
 
 exports.getServicerByOrderId = async (req, res) => {
     try {
@@ -2248,6 +2349,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         //     });
         //     return;
         // }
+
         let checkPurchaseOrder;
         let data = req.body;
         if (
@@ -2257,7 +2359,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
                 },
                 { isDeleted: 0 }
             );
@@ -2265,7 +2367,7 @@ exports.checkPurchaseOrder = async (req, res) => {
             checkPurchaseOrder = await orderService.getOrder(
                 {
                     venderOrder: req.body.dealerPurchaseOrder,
-                    dealerId: req.body.dealerId,
+                    dealerId: req.body.dealerId ? req.body.dealerId : req.userId,
                 },
                 { isDeleted: 0 }
             );
@@ -2314,7 +2416,7 @@ exports.archiveOrder = async (req, res) => {
         }
         let updateStatus;
         if (checkOrder.status != 'Active') {
-             updateStatus = await orderService.updateOrder(
+            updateStatus = await orderService.updateOrder(
                 { _id: checkOrder._id },
                 { status: "Archieved" },
                 { new: true }
@@ -2524,10 +2626,10 @@ exports.editOrderDetail = async (req, res) => {
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
 
-        if(checkId.paymentStatus == "Paid"  && data.paymentStatus == "PartlyPaid"){
+        if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
             checkId.paidAmount = 0
         }
-        if(checkId.paymentStatus == "Unpaid"){
+        if (checkId.paymentStatus == "Unpaid") {
             checkId.paidAmount = 0
             data.dueAmount = checkId.paidAmount
         }
@@ -2542,7 +2644,7 @@ exports.editOrderDetail = async (req, res) => {
             })
             return;
         };
-       
+
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"

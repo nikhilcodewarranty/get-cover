@@ -6,6 +6,7 @@ const role = require("../../User/model/role");
 const claimService = require("../../Claim/services/claimService");
 
 const userService = require("../../User/services/userService");
+const moment = require("moment");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
@@ -1400,6 +1401,14 @@ exports.paidUnpaid = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
+    let dateQuery = {}
+    if (data.noOfDays) {
+      const end = moment().startOf('day').toDate(); 
+      const start = moment().format('DD-MM-YYYY').subtract(30, 'd');
+      dateQuery = {
+        timestamp: { $gte: start, $lte: end }
+      }
+    }
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1521,6 +1530,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+
+    console.log("dateQuery----------------------",dateQuery);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -1534,6 +1545,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': 'Completed' },
             { claimPaymentStatus: flag },
+            dateQuery,
             { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) }
           ]
         },
@@ -1631,7 +1643,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         },
       },
     ]
-    if (newQuery.length > 0) {
+    if (newQuery.length > 0) { 
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getAllClaims(lookupQuery);
@@ -1652,7 +1664,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
-    allServicer = await servicerService.getAllServiceProvider(
+    allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );

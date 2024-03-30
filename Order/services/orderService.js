@@ -19,7 +19,7 @@ module.exports = class orderService {
 
           }
         },
-        { $sort: { unique_key: -1 } }
+        { $sort: { unique_key_number: -1 } }
       ]).sort({createdAt:-1})
       return allOrders;
     } catch (error) {
