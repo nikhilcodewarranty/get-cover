@@ -1809,7 +1809,7 @@ exports.updateDealerMeta = async (req, res) => {
     data.name = data.accountName
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!data.accountStatus) {
-      await userService.updateUser({metaId: checkDealer._id}, { status: false }, { new: true })
+      await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
     if (!updatedData) {
       res.send({
@@ -2338,33 +2338,25 @@ exports.getDealerServicers = async (req, res) => {
       ]);
 
       // If there are results for the current servicerId, update the result array
-      aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 0);
+      aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
       // console.log("claim check+++++++++++++++++++++", aggregateResult)
+      let totalClaimAmount = 0
 
-      if (aggregateResult.length > 0) {
-        let totalClaimAmount = 0
-        for (let p = 0; p < aggregateResult.length; p++) {
-          if (aggregateResult[p].claims) {
-            if (aggregateResult[p].servicerId.toString() == servicerId.toString()) {
-              console.log('total amout before calculate +++++++++++++++++', p, aggregateResult[p].claims ? aggregateResult[p].claims.totalAmount : 0)
-              totalClaimAmount = aggregateResult[p].claims ? aggregateResult[p].claims.totalAmount : 0 + totalClaimAmount;
-              console.log('total amout after calculate +++++++++++++++++', totalClaimAmount)
-
-            }
-          }
-
-          if (totalClaimAmount > 0) {
-            result_Array[i].claimCount = 2;
-            result_Array[i].totalClaimAmount = totalClaimAmount;
-          }
-          totalClaimAmount = 0
+      function calculateTotalAmountAndCount(arr) {
+        let total = 0;
+        let count = aggregateResult.length;
+        for (let obj of arr) {
+          total += obj.claims.totalAmount;
         }
-
-      } else {
-        // If no claims found for the servicerId, set count and totalOrderAmount to 0
-        result_Array[i].claimCount = 0;
-        result_Array[i].totalClaimAmount = 0;
+        return { totalAmount: total, totalCount: count };
       }
+      const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
+      console.log("Total amount:", totalAmount);
+      console.log("Total count:", totalCount);
+
+      result_Array[i].claimCount = totalCount;
+      result_Array[i].totalClaimAmount = totalAmount;
+
     }
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')

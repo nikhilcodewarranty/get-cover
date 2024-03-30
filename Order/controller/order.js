@@ -925,8 +925,8 @@ exports.getAllOrders = async (req, res) => {
                 };
             });
 
-            let orderIdSearch = data.orderId ? data.orderId : ''
-            const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
+            let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
+            const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
             const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
             const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -2873,8 +2873,8 @@ exports.markAsPaid = async (req, res) => {
     try {
         let data = req.body
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-        
-        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active", dueAmount: 0, paidAmount: checkOrder.orderAmount}, { new: true })
+
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active", dueAmount: 0, paidAmount: checkOrder.orderAmount }, { new: true })
         if (!updateOrder) {
             res.send({
                 code: constant.errorCode,
