@@ -2189,13 +2189,13 @@ exports.getServicerByOrderId = async (req, res) => {
 exports.getServiceCoverage = async (req, res) => {
     try {
         let dealerId;
-        if (req.role != 'Super Admin') {
+        if (req.role == 'Super Admin') {
             dealerId = req.params.dealerId
         }
-        if(req.role!='Dealer'){
+        if (req.role == 'Dealer') {
             dealerId = req.userId
         }
-        
+
         let data = req.body;
         let checkDealer = await dealerService.getDealerById(dealerId, {
             isDeleted: 0,
