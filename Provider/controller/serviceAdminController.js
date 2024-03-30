@@ -1403,16 +1403,16 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     if (data.noOfDays) {
-      // const end = moment().startOf('day').toDate(); 
-      // const start = moment().subtract(30, 'd');
+      const end = moment().startOf('day').format("DD-MM-YYYY")
+      const start = moment().subtract(30, 'days').startOf('day').format("DD-MM-YYYY")
       dateQuery = {
-        "claimFile": 
-        {
-            $gte: new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)))
+        claimDate: {
+          $gte: start,
+          $lte: end,
         }
       }
     }
-    console.log("dateQuery---------------",dateQuery);
+    console.log("dateQuery---------------", dateQuery);
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1535,7 +1535,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       }
     }
 
-    console.log("dateQuery----------------------",dateQuery);
+    console.log("dateQuery----------------------", dateQuery);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -1647,7 +1647,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         },
       },
     ]
-    if (newQuery.length > 0) { 
+    if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getAllClaims(lookupQuery);
