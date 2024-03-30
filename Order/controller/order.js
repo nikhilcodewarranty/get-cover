@@ -3095,11 +3095,52 @@ exports.getOrderContract = async (req, res) => {
                 },
 
             },
+
+            {
+                $facet: {
+                    totalRecords: [
+                        {
+                            $count: "total"
+                        }
+                    ],
+                    data: [
+                        {
+                            $skip: skipLimit
+                        },
+                        {
+                            $limit: pageLimit
+                        },
+                        {
+                            $project: {
+                                productName: 1,
+                                model: 1,
+                                serial: 1,
+                                unique_key: 1,
+                                status: 1,
+                                manufacture: 1,
+                                eligibilty: 1,
+                                "order.unique_key": 1,
+                                "order.venderOrder": 1,
+                                "order.dealerId": 1,
+                                "order.productsArray":1
+                            }
+                        }
+                    ],
+                },
+
+            }
         ]
+
+        let checkOrder=[];
         //  console.log.log('before--------------', Date.now())
-        let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+        //let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+        let getContracts = await contractService.getAllContracts2(query)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
-        let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+       // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+       //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
+       checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
+       let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+       //res.json(checkOrder);return
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -3169,8 +3210,8 @@ exports.getOrderContract = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: checkOrder,
-            totalCount: totalContract,
+            result: getContracts[0]?.data ? getContracts[0]?.data : [],
+            totalCount: totalCount,
             orderUserData: userData
         });
 
