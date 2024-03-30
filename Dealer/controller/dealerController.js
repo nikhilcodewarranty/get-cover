@@ -1808,7 +1808,9 @@ exports.updateDealerMeta = async (req, res) => {
     let option = { new: true }
     data.name = data.accountName
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
-
+    if (!data.accountStatus) {
+      await userService.updateUser({metaId: checkDealer._id}, { status: false }, { new: true })
+    }
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
@@ -2329,13 +2331,13 @@ exports.getDealerServicers = async (req, res) => {
         {
           $project: {
             'claims': { $arrayElemAt: ["$claims", 0] },
-            _id:0
+            _id: 0
           }
         }
       ]);
 
       // If there are results for the current servicerId, update the result array
-       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 0);
+      aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 0);
       console.log("claim check+++++++++++++++++++++", aggregateResult)
 
       if (aggregateResult.length > 0) {

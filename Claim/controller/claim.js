@@ -847,7 +847,6 @@ exports.getAllClaims = async (req, res, next) => {
     })
   }
 }
-
 exports.searchClaim = async (req, res, next) => {
   try {
     let data = req.body
@@ -972,7 +971,6 @@ exports.searchClaim = async (req, res, next) => {
 
 
 }
-
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
@@ -1037,7 +1035,6 @@ exports.uploadCommentImage = async (req, res, next) => {
   }
 
 }
-
 exports.addClaim = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -1245,7 +1242,6 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
-
 // Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {
@@ -1309,11 +1305,7 @@ exports.editClaim = async (req, res) => {
     })
   }
 }
-
 // Claim Paid and unpaid api
-
-
-
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
@@ -1982,8 +1974,6 @@ exports.sendMessages = async (req, res) => {
     })
   };
 }
-
-
 
 exports.getMessages = async (req, res) => {
   // if (req.role != 'Super Admin') {
