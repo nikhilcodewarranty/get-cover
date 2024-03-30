@@ -2954,7 +2954,7 @@ exports.getDealerContract = async (req, res) => {
         {
           $match: {
             $and: [
-              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.toString().replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             ]
           },
         }
