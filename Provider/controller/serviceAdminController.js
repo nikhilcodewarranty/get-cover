@@ -1403,7 +1403,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     if (data.noOfDays) {
-      const end = moment().startOf('day').toDate();
+      const end = moment().startOf('day').format("DD-MM-YYYY")
       const start = moment().subtract(30, 'days').startOf('day').format("DD-MM-YYYY")
       dateQuery = {
         claimDate: {
