@@ -2942,6 +2942,7 @@ exports.getDealerContract = async (req, res) => {
     let limitData = Number(pageLimit)
     let newQuery = [];
     if (data.servicerName) {
+      data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
       newQuery.push(
         {
           $lookup: {
