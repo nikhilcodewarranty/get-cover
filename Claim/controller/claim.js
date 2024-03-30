@@ -1259,54 +1259,49 @@ exports.editClaim = async (req, res) => {
       })
       return
     }
-    let contract = await contractService.getContractById({ _id: checkClaim.contractId });
-    const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: 'Completed' }
-    let claimTotal = await claimService.checkTotalAmount(query);
-    if (claimTotal.length > 0) {
-      const remainingValue = contract.productValue - claimTotal[0]?.amount
-      if (remainingValue < data.totalAmount) {
+    if (checkClaim.claimFile == 'Open') {
+      let contract = await contractService.getContractById({ _id: checkClaim.contractId });
+      const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: 'Completed' }
+      let claimTotal = await claimService.checkTotalAmount(query);
+      if (claimTotal.length > 0) {
+        const remainingValue = contract.productValue - claimTotal[0]?.amount
+        if (remainingValue < data.totalAmount) {
+          res.send({
+            code: constant.errorCode,
+            message: 'Claim Amount Exceeds Contract Retail Price'
+          });
+          return;
+        }
+      }
+      // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
+      //   res.send({
+      //     code: constant.errorCode,
+      //     message: 'Claim Amount Exceeds Contract Retail Price'
+      //   });
+      //   return;
+      // }
+      if (contract.productValue < data.totalAmount) {
         res.send({
           code: constant.errorCode,
           message: 'Claim Amount Exceeds Contract Retail Price'
         });
         return;
       }
+      let option = { new: true }
+      let updateData = await claimService.updateClaim(criteria, data, option)
+      if (!updateData) {
+        res.send({
+          code: constant.errorCode,
+          message: "Failed to process your request."
+        })
+        return;
+      }
+      res.send({
+        code: constant.successCode,
+        message: "Updated successfully"
+      })
     }
 
-    // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Claim Amount Exceeds Contract Retail Price'
-    //   });
-    //   return;
-    // }
-    if (contract.productValue < data.totalAmount) {
-      res.send({
-        code: constant.errorCode,
-        message: 'Claim Amount Exceeds Contract Retail Price'
-      });
-      return;
-    }
-    // if (claimTotal[0]?.amount < data.totalAmount) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Claim Amount Exceeds Contract Retail Price'
-    //   });
-    //   return;
-    // }
-    let option = { new: true }
-    let updateData = await claimService.updateClaim(criteria, data, option)
-    if (!updateData) {
-      res.send({
-        code: constant.errorCode,
-        message: "Failed to process your request."
-      })
-      return;
-    }
-    res.send({
-      code: constant.successCode,
-      message: "Updated successfully"
-    })
   } catch (err) {
     res.send({
       code: constant.errorCode,
