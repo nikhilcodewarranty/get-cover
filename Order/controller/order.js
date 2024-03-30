@@ -3089,15 +3089,47 @@ exports.getOrderContract = async (req, res) => {
             {
                 $match:
                 {
-                  $and: [
-                    { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  ]
+                    $and: [
+                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
                 },
-        
-              },
+
+            },
+            {
+                $facet: {
+                    totalRecords: [
+                        {
+                            $count: "total"
+                        }
+                    ],
+                    data: [
+                        {
+                            $skip: skipLimit
+                        },
+                        {
+                            $limit: pageLimit
+                        },
+                        {
+                            $project: {
+                                productName: 1,
+                                model: 1,
+                                serial: 1,
+                                unique_key: 1,
+                                status: 1,
+                                manufacture: 1,
+                                eligibilty: 1,
+                                "order.unique_key": 1,
+                                "order.venderOrder": 1,
+                                "order.dealerId": 1,
+                            }
+                        }
+                    ],
+                },
+
+            }
         ]
         //  console.log.log('before--------------', Date.now())
-        let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+        let checkOrder = await contractService.getAllContracts2(query, skipLimit, limitData)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
         let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
