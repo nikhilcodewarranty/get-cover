@@ -1406,7 +1406,10 @@ exports.paidUnpaidClaim = async (req, res) => {
       const end = moment().startOf('day').toDate(); 
       const start = moment().format('DD-MM-YYYY').subtract(30, 'd');
       dateQuery = {
-        claimDate: { $gte: start, $lte: end }
+        "claimFile": 
+        {
+            $gte: new Date((new Date().getTime() - (30 * 24 * 60 * 60 * 1000)))
+        }
       }
     }
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
