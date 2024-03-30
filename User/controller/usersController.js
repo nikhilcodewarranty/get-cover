@@ -867,7 +867,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
             $set: {
@@ -1375,7 +1375,7 @@ exports.createDealer = async (req, res) => {
             return htmlContent;
           }
           const htmlTableString = convertArrayToHTMLTable(csvArray);
-          const mailing1 = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+          const mailing1 = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
