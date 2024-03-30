@@ -1403,16 +1403,16 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     if (data.noOfDays) {
-      const end = moment().startOf('day').format("DD-MM-YYYY")
-      const start = moment().subtract(30, 'days').startOf('day').format("DD-MM-YYYY")
+      const end = moment().startOf('day')
+      const start = moment().subtract(data.noOfDays, 'days').startOf('day')
+      console.log(end,start)
       dateQuery = {
         claimDate: {
-          $gte: start,
-          $lte: end,
+          $gte: new Date(start),
+          $lte: new Date(end),
         }
       }
     } 
-    console.log("dateQuery---------------", dateQuery);
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1469,6 +1469,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
+              claimDate:1,
               claimStatus: 1,
               claimPaymentStatus: 1,
               repairStatus: 1,
