@@ -1297,7 +1297,10 @@ exports.editClaim = async (req, res) => {
         message: "Updated successfully"
       })
     }
-
+    res.send({
+      code: constant.successCode,
+      message: "Updated successfully"
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,
