@@ -1411,7 +1411,7 @@ exports.paidUnpaidClaim = async (req, res) => {
           $lte: end,
         }
       }
-    }
+    } 
     console.log("dateQuery---------------", dateQuery);
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
