@@ -1994,6 +1994,7 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+
 exports.getDealerResellers = async (req, res) => {
     try {
         let data = req.body
@@ -2094,7 +2095,7 @@ exports.getDealerResellers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getServicerByOrderId = async (req, res) => {
     try {
@@ -3055,7 +3056,7 @@ exports.getDashboardData = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getOrderContract = async (req, res) => {
     try {
