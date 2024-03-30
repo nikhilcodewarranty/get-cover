@@ -411,6 +411,7 @@ exports.createDealer = async (req, res) => {
       const data = req.body;
       let priceFile
       let termFile
+      let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
         if (file[i].fieldname == 'termAndCondition') {
@@ -1015,7 +1016,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
-            isAccountCreate:isAccountCreate,
+            isAccountCreate:req.body.isAccountCreate,
             termConditon: termFile,
             zip: data.zip,
             state: data.state,
