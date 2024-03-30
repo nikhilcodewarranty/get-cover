@@ -1157,7 +1157,7 @@ exports.getResellerContract = async (req, res) => {
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let newQuery = [];
-        data.servicerName = data.servicerName.replace(/\s+/g, ' ').trim()
+        data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
 
         if (data.servicerName) {
           newQuery.push(

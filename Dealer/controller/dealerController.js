@@ -2941,7 +2941,7 @@ exports.getDealerContract = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let newQuery = [];
-    data.servicerName = data.servicerName.replace(/\s+/g, ' ').trim()
+    data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
     if (data.servicerName) {
       data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
       console.log("Servicer name----------------",  data.servicerName);
@@ -2963,7 +2963,8 @@ exports.getDealerContract = async (req, res) => {
         }
       );
     }
-    data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
+    data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
+   // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
     if (data.resellerName) {
       newQuery.push(
         {
