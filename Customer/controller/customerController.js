@@ -284,8 +284,8 @@ exports.getDealerCustomers = async (req, res) => {
 
     const filteredData = result_Array.filter(entry => {
       return (
-        firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName) &&
+        firstNameRegex.test(entry.customerData.username) &&
+        lastNameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
         phoneRegex.test(entry.phoneNumber)
       );
