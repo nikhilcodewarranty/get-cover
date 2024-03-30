@@ -1643,7 +1643,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         },
       },
     ]
-    if (newQuery.length > 0) {
+    if (newQuery.length > 0) { 
       lookupQuery = lookupQuery.concat(newQuery);
     }
     let allClaims = await claimService.getAllClaims(lookupQuery);
