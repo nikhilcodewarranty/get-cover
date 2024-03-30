@@ -2188,8 +2188,16 @@ exports.getServicerByOrderId = async (req, res) => {
 
 exports.getServiceCoverage = async (req, res) => {
     try {
+        let dealerId;
+        if (req.role == 'Super Admin') {
+            dealerId = req.params.dealerId
+        }
+        if (req.role == 'Dealer') {
+            dealerId = req.userId
+        }
+
         let data = req.body;
-        let checkDealer = await dealerService.getDealerById(req.params.dealerId, {
+        let checkDealer = await dealerService.getDealerById(dealerId, {
             isDeleted: 0,
         })
         if (!checkDealer) {
@@ -2864,7 +2872,9 @@ exports.editOrderDetail = async (req, res) => {
 exports.markAsPaid = async (req, res) => {
     try {
         let data = req.body
-        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active" }, { new: true })
+        const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+        
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active", dueAmount: 0, paidAmount: checkOrder.orderAmount}, { new: true })
         if (!updateOrder) {
             res.send({
                 code: constant.errorCode,
