@@ -2872,7 +2872,9 @@ exports.editOrderDetail = async (req, res) => {
 exports.markAsPaid = async (req, res) => {
     try {
         let data = req.body
-        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active" }, { new: true })
+        const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+        
+        let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active", dueAmount: 0, paidAmount: checkOrder.orderAmount}, { new: true })
         if (!updateOrder) {
             res.send({
                 code: constant.errorCode,
