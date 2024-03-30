@@ -2943,6 +2943,7 @@ exports.getDealerContract = async (req, res) => {
     let newQuery = [];
     if (data.servicerName) {
       data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
+      console.log("Servicer name----------------",  data.servicerName);
       newQuery.push(
         {
           $lookup: {
