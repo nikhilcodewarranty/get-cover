@@ -2876,7 +2876,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
-            dealerId: req.userId,
+            dealerId:req.userId,
             status: true,
         });
         if (!getDealerPriceBook) {
@@ -2895,7 +2895,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
-
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
                 item.priceBook.toString(),
@@ -2958,7 +2957,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
 
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
-                dealerId: req.params.dealerId,
+                dealerId: req.params.dealerId ? req.params.dealerId : req.userId,
                 priceBook: data.priceBookId,
             });
         }

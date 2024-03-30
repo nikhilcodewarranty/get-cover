@@ -2226,7 +2226,6 @@ exports.getServiceCoverage = async (req, res) => {
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
-
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
             dealerId: req.params.dealerId,
