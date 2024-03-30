@@ -2294,7 +2294,7 @@ exports.getDealerServicers = async (req, res) => {
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
-      console.log("claim check+++++++++++++++++++++", servicerId)
+      // console.log("claim check+++++++++++++++++++++", servicerId)
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
@@ -2331,22 +2331,39 @@ exports.getDealerServicers = async (req, res) => {
         {
           $project: {
             'claims': { $arrayElemAt: ["$claims", 0] },
-            _id: 0
+            _id: 0,
+            servicerId: 1
           }
         }
       ]);
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 0);
-      console.log("claim check+++++++++++++++++++++", aggregateResult)
+      // console.log("claim check+++++++++++++++++++++", aggregateResult)
 
       if (aggregateResult.length > 0) {
-        result_Array[i].claimCount = aggregateResult[0].claimCount;
-        result_Array[i].totalOrderAmount = aggregateResult[0].totalOrderAmount;
+        let totalClaimAmount = 0
+        for (let p = 0; p < aggregateResult.length; p++) {
+          if (aggregateResult[p].claims) {
+            if (aggregateResult[p].servicerId.toString() == servicerId.toString()) {
+              console.log('total amout before calculate +++++++++++++++++', p, aggregateResult[p].claims ? aggregateResult[p].claims.totalAmount : 0)
+              totalClaimAmount = aggregateResult[p].claims ? aggregateResult[p].claims.totalAmount : 0 + totalClaimAmount;
+              console.log('total amout after calculate +++++++++++++++++', totalClaimAmount)
+
+            }
+          }
+
+          if (totalClaimAmount > 0) {
+            result_Array[i].claimCount = 2;
+            result_Array[i].totalClaimAmount = totalClaimAmount;
+          }
+          totalClaimAmount = 0
+        }
+
       } else {
         // If no claims found for the servicerId, set count and totalOrderAmount to 0
         result_Array[i].claimCount = 0;
-        result_Array[i].totalOrderAmount = 0;
+        result_Array[i].totalClaimAmount = 0;
       }
     }
 
