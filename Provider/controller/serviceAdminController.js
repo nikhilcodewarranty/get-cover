@@ -6,6 +6,7 @@ const role = require("../../User/model/role");
 const claimService = require("../../Claim/services/claimService");
 
 const userService = require("../../User/services/userService");
+const moment = require("moment");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
@@ -1400,6 +1401,14 @@ exports.paidUnpaid = async (req, res) => {
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
+    let dateQuery = {}
+    if (data.noOfDays) {
+      const startdate = moment().format('YYYY-MM-DD').subtract(Number(data.noOfDays), 'd');
+      const today = moment().format('YYYY-MM-DD')
+      dateQuery = {
+        timestamp: { $gte: startdate, $lte: today }
+      }
+    }
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1534,6 +1543,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': 'Completed' },
             { claimPaymentStatus: flag },
+            dateQuery,
             { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) }
           ]
         },
