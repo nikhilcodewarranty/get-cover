@@ -1530,6 +1530,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+
+    console.log("dateQuery----------------------",dateQuery);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
