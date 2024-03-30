@@ -2963,6 +2963,7 @@ exports.getDealerContract = async (req, res) => {
         }
       );
     }
+    data.resellerName = data.resellerName.toString().replace(/\s+/g, ' ').trim()
     if (data.resellerName) {
       newQuery.push(
         {
