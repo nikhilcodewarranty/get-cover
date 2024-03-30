@@ -1403,10 +1403,10 @@ exports.paidUnpaidClaim = async (req, res) => {
     let data = req.body
     let dateQuery = {}
     if (data.noOfDays) {
-      const startdate = moment().format('YYYY-MM-DD').subtract(Number(data.noOfDays), 'd');
-      const today = moment().format('YYYY-MM-DD')
+      const end = moment().startOf('day').toDate(); 
+      const start = moment().startOf('day').subtract(30, 'day').toDate();
       dateQuery = {
-        timestamp: { $gte: startdate, $lte: today }
+        timestamp: { $gte: start, $lte: end }
       }
     }
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
