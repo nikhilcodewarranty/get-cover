@@ -1404,7 +1404,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     let dateQuery = {}
     if (data.noOfDays) {
       const end = moment().startOf('day').toDate(); 
-      const start = moment().startOf('day').subtract(30, 'day').toDate();
+      const start = moment().format('DD-MM-YYYY').subtract(30, 'd');
       dateQuery = {
         timestamp: { $gte: start, $lte: end }
       }
