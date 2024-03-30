@@ -411,6 +411,7 @@ exports.createDealer = async (req, res) => {
       const data = req.body;
       let priceFile
       let termFile
+      let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
         if (file[i].fieldname == 'termAndCondition') {
@@ -574,9 +575,8 @@ exports.createDealer = async (req, res) => {
             roleId: '656f08041eb1acda244af8c6',
             accountId: data.dealerId,
             metaId: data.dealerId,
-
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? obj.status : false
+            status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
 
           }));
           if (allUsersData.length > 1) {
@@ -596,9 +596,11 @@ exports.createDealer = async (req, res) => {
               status: "Approved",
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
+              isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
               termConditon: termFile,
               accountStatus: true,
+              isAccountCreate:isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -888,7 +890,7 @@ exports.createDealer = async (req, res) => {
             accountId: req.body.dealerId,
             metaId: req.body.dealerId,
             isPrimary: index === 0 ? true : false,
-            status: req.body.isAccountCreate ? true : false
+            status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
@@ -909,6 +911,7 @@ exports.createDealer = async (req, res) => {
               accountStatus: true,
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
+              isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
               termConditon: termFile,
               isServicer: data.isServicer ? data.isServicer : false
@@ -1013,6 +1016,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
+            isAccountCreate:req.body.isAccountCreate,
             termConditon: termFile,
             zip: data.zip,
             state: data.state,
@@ -1063,7 +1067,7 @@ exports.createDealer = async (req, res) => {
             metaId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
-            status: !req.body.isAccountCreate ? false : obj.status,
+            status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
             approvedStatus: 'Approved'
           }));
 
@@ -1202,6 +1206,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
+            isAccountCreate:isAccountCreate,
             termConditon: req.body.termConditon,
             state: data.state,
             country: data.country,
@@ -1383,7 +1388,7 @@ exports.createDealer = async (req, res) => {
             metaId: createMetaData._id,
             position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
             isPrimary: index === 0 ? true : false,
-            status: !req.body.isAccountCreate ? false : obj.status,
+            status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
             approvedStatus: 'Approved'
           }));
 

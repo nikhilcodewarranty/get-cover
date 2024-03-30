@@ -55,6 +55,10 @@ const dealarSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isAccountCreate: {
+    type: Boolean,
+    default: false
+  },
   isShippingAllowed: {
     type: Boolean,
     default: false
