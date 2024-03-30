@@ -2951,9 +2951,10 @@ exports.markAsPaid = async (req, res) => {
                     unique_key_number: unique_key_number1,
                 };
                 increamentNumber++;
+                console.log("maping running ++++++++++++++++++++++++++++")
                 contractArray.push(contractObject);
             });
-
+            console.log("contractsLength++++++++++++++++++++++++++++++++++",contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
         })
 
