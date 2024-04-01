@@ -508,7 +508,7 @@ exports.customerOrders = async (req, res) => {
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
         let data = req.body
-        data.status = typeof (data.status) == "string" ? "all" : data.status
+        //data.status = typeof (data.status) == "string" ? "all" : data.status
         console.log(data)
         let categorySearch = req.body.category ? req.body.category : ''
         let queryCategories = {
@@ -525,8 +525,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.term': Number(req.body.term) },
-                { 'priceBooks.type': Number(req.body.priceType) },
+                { 'priceBooks.term': Number(data.term) },
+                { 'priceBooks.priceType': { '$regex': data.priceType ? data.priceType : '', '$options': 'i' }  },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 {
@@ -534,6 +534,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 }
             ]
         };
+        console.log(query)
         //
         let projection = { isDeleted: 0, __v: 0 }
         let limit = req.body.limit ? req.body.limit : 10000

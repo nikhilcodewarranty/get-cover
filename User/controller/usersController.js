@@ -47,7 +47,7 @@ var upload = multer({
   storage: Storage,
 }).any([
   { name: "file" },
-  { name: "termAndCondition" },
+  { name: "termCondition" },
 ])
 
 
@@ -403,7 +403,6 @@ function uniqByKeepLast(data, key) {
   ]
 
 }
-
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
@@ -414,7 +413,7 @@ exports.createDealer = async (req, res) => {
       let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
-        if (file[i].fieldname == 'termAndCondition') {
+        if (file[i].fieldname == 'termCondition') {
           termFile = file[i]
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
@@ -598,7 +597,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
-              termConditon: termFile,
+              termCondition: termFile,
               accountStatus: true,
               isAccountCreate:isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false
@@ -913,7 +912,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
-              termConditon: termFile,
+              termCondition: termFile,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -1008,6 +1007,7 @@ exports.createDealer = async (req, res) => {
 
 
           let count = await dealerService.getDealerCount();
+
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -1017,7 +1017,7 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate:req.body.isAccountCreate,
-            termConditon: termFile,
+            termCondition: termFile,
             zip: data.zip,
             state: data.state,
             isServicer: data.isServicer ? data.isServicer : false,
@@ -1207,10 +1207,9 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate:isAccountCreate,
-            termConditon: req.body.termConditon,
+            termCondition: termFile,
             state: data.state,
             country: data.country,
-            termCondition: termFile,
             isServicer: data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,
