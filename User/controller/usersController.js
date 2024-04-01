@@ -403,7 +403,6 @@ function uniqByKeepLast(data, key) {
   ]
 
 }
-
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
@@ -414,7 +413,7 @@ exports.createDealer = async (req, res) => {
       let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
-        if (file[i].fieldname == 'termAndCondition') {
+        if (file[i].fieldname == 'termCondition') {
           termFile = file[i]
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
