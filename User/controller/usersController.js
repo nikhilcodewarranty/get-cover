@@ -1007,6 +1007,8 @@ exports.createDealer = async (req, res) => {
 
 
           let count = await dealerService.getDealerCount();
+
+          console.log("termFile---------------------",termFile)
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -1026,6 +1028,8 @@ exports.createDealer = async (req, res) => {
             createdBy: data.createdBy,
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
+          console.log("dealerMeta---------------------",dealerMeta);
+          return;
           // Create Dealer Meta Data
           const createMetaData = await dealerService.createDealer(dealerMeta);
           if (!createMetaData) {
