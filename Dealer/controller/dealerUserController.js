@@ -2426,7 +2426,10 @@ exports.getAllContracts = async (req, res) => {
                 }
             );
         }
+        data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
         if (data.servicerName) {
+            data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
+            console.log("Servicer name----------------", data.servicerName);
             newQuery.push(
                 {
                     $lookup: {
@@ -2439,7 +2442,28 @@ exports.getAllContracts = async (req, res) => {
                 {
                     $match: {
                         $and: [
-                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.toString().replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
+        }
+        data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
+        // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
+        if (data.resellerName) {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "resellers",
+                        localField: "order.resellerId",
+                        foreignField: "_id",
+                        as: "order.reseller"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         ]
                     },
                 }
@@ -2499,7 +2523,7 @@ exports.getAllContracts = async (req, res) => {
                         { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
                         // { eligibility: true },
                     ]
-                }, 
+                },
             },
             {
                 $lookup: {
@@ -2895,7 +2919,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
-
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
                 item.priceBook.toString(),
@@ -2958,7 +2981,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
 
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
-                dealerId: req.params.dealerId,
+                dealerId: req.params.dealerId ? req.params.dealerId : req.userId,
                 priceBook: data.priceBookId,
             });
         }

@@ -2226,7 +2226,6 @@ exports.getServiceCoverage = async (req, res) => {
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
-
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
             dealerId: req.params.dealerId,
@@ -2955,7 +2954,7 @@ exports.markAsPaid = async (req, res) => {
                 console.log("maping running ++++++++++++++++++++++++++++")
                 contractArray.push(contractObject);
             });
-            console.log("contractsLength++++++++++++++++++++++++++++++++++",contractArray.length)
+            console.log("contractsLength++++++++++++++++++++++++++++++++++", contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
         })
 
@@ -3066,7 +3065,18 @@ exports.getOrderContract = async (req, res) => {
         let limitData = Number(pageLimit)
         let query = [
             {
-                $match: { orderId: new mongoose.Types.ObjectId(req.params.orderId) }
+                $match: {
+                    $and: [
+                        { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
+                        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                }
+
             },
             {
                 $lookup: {
@@ -3076,11 +3086,61 @@ exports.getOrderContract = async (req, res) => {
                     as: "order"
                 }
             },
+            {
+                $match:
+                {
+                    $and: [
+                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                },
+
+            },
+
+            {
+                $facet: {
+                    totalRecords: [
+                        {
+                            $count: "total"
+                        }
+                    ],
+                    data: [
+                        {
+                            $skip: skipLimit
+                        },
+                        {
+                            $limit: pageLimit
+                        },
+                        {
+                            $project: {
+                                productName: 1,
+                                model: 1,
+                                serial: 1,
+                                unique_key: 1,
+                                status: 1,
+                                manufacture: 1,
+                                eligibilty: 1,
+                                "order.unique_key": 1,
+                                "order.venderOrder": 1,
+                                "order.dealerId": 1,
+                                "order.productsArray":1
+                            }
+                        }
+                    ],
+                },
+
+            }
         ]
+
+        let checkOrder=[];
         //  console.log.log('before--------------', Date.now())
-        let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+        //let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
+        let getContracts = await contractService.getAllContracts2(query)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
-        let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+       // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+       //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
+       checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
+       let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+       //res.json(checkOrder);return
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -3150,8 +3210,8 @@ exports.getOrderContract = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Success!",
-            result: checkOrder,
-            totalCount: totalContract,
+            result: getContracts[0]?.data ? getContracts[0]?.data : [],
+            totalCount: totalCount,
             orderUserData: userData
         });
 

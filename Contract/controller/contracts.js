@@ -674,6 +674,16 @@ exports.cronJobEligible = async (req, res) => {
           }
           bulk.push(updateDoc)
         }
+        else{
+          updateDoc = {
+            'updateMany': {
+              'filter': { '_id': notOpenContractIds[j] },
+              update: { $set: { eligibilty: false } },
+              'upsert': false
+            }
+          }
+          bulk.push(updateDoc)
+        }
       }
     }
     // Update when claim is not open but completed claim and product value still less than claim value
