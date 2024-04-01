@@ -538,7 +538,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         if (data.term) {
             query.$and.push({ 'priceBooks.term': Number(data.term) });
         }
-        console.log(query)
+        console.log(query) 
         //
         let projection = { isDeleted: 0, __v: 0 }
         let limit = req.body.limit ? req.body.limit : 10000
