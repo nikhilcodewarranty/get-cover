@@ -597,7 +597,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
-              termConditon: termFile,
+              termCondition: termFile,
               accountStatus: true,
               isAccountCreate:isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false
@@ -912,7 +912,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate:isAccountCreate,
               coverageType: req.body.coverageType,
-              termConditon: termFile,
+              termCondition: termFile,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -1008,7 +1008,6 @@ exports.createDealer = async (req, res) => {
 
           let count = await dealerService.getDealerCount();
 
-          console.log("termFile---------------------",termFile)
           const dealerMeta = {
             name: data.name,
             street: data.street,
@@ -1018,7 +1017,7 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate:req.body.isAccountCreate,
-            termConditon: termFile,
+            termCondition: termFile,
             zip: data.zip,
             state: data.state,
             isServicer: data.isServicer ? data.isServicer : false,
@@ -1028,8 +1027,6 @@ exports.createDealer = async (req, res) => {
             createdBy: data.createdBy,
             unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
           };
-          console.log("dealerMeta---------------------",dealerMeta);
-          return;
           // Create Dealer Meta Data
           const createMetaData = await dealerService.createDealer(dealerMeta);
           if (!createMetaData) {
@@ -1210,10 +1207,9 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate:isAccountCreate,
-            termConditon: req.body.termConditon,
+            termCondition: termFile,
             state: data.state,
             country: data.country,
-            termCondition: termFile,
             isServicer: data.isServicer ? data.isServicer : false,
             status: 'Approved',
             accountStatus: true,
