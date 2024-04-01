@@ -526,7 +526,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                 { 'priceBooks.term': Number(data.term) },
-                { 'priceBooks.type': { '$regex': data.priceType ? data.priceType : '', '$options': 'i' }  },
+                { 'priceBooks.priceType': { '$regex': data.priceType ? data.priceType : '', '$options': 'i' }  },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 {
