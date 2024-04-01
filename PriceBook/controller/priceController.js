@@ -918,7 +918,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
-
+ 
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
