@@ -2295,22 +2295,22 @@ exports.getAccountInfo = async (req, res) => {
   try {
     let accountInfo;
     if (req.role == 'Dealer') {
-      accountInfo = await dealerService.getDealerById(req.userId, { name: 1 })
+      accountInfo = await dealerService.getDealerById(req.userId, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
     if (req.role == 'Customer') {
-      accountInfo = await customerService.getCustomerById({_id:req.userId},  { username: 1 })
+      accountInfo = await customerService.getCustomerById({ _id: req.userId }, { username: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
     if (req.role == 'Reseller') {
-      accountInfo = await resellerService.getReseller({_id:req.userId},  { name: 1 })
+      accountInfo = await resellerService.getReseller({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
     if (req.role == 'Servicer') {
-      accountInfo = await providerService.getServiceProviderById({_id:req.userId},  { name: 1 })
+      accountInfo = await providerService.getServiceProviderById({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
 
     res.send({
-      code:constant.successCode,
-      message:'Success!',
-      result:accountInfo
+      code: constant.successCode,
+      message: 'Success!',
+      result: accountInfo
     })
   }
   catch (err) {
