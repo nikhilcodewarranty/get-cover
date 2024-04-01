@@ -49,7 +49,7 @@ router.post("/validateData", [verifyToken], userController.validateData);
 
 //create dealer api from super admin
 router.post("/createDealer",[verifyToken], userController.createDealer); 
-
+router.get("/getAccountInfo",[verifyToken], userController.getAccountInfo); 
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);

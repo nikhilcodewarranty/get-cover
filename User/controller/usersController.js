@@ -595,11 +595,11 @@ exports.createDealer = async (req, res) => {
               status: "Approved",
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
-              isAccountCreate:isAccountCreate,
+              isAccountCreate: isAccountCreate,
               coverageType: req.body.coverageType,
               termCondition: termFile,
               accountStatus: true,
-              isAccountCreate:isAccountCreate,
+              isAccountCreate: isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -910,7 +910,7 @@ exports.createDealer = async (req, res) => {
               accountStatus: true,
               serviceCoverageType: req.body.serviceCoverageType,
               isShippingAllowed: req.body.isShippingAllowed,
-              isAccountCreate:isAccountCreate,
+              isAccountCreate: isAccountCreate,
               coverageType: req.body.coverageType,
               termCondition: termFile,
               isServicer: data.isServicer ? data.isServicer : false
@@ -1016,7 +1016,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
-            isAccountCreate:req.body.isAccountCreate,
+            isAccountCreate: req.body.isAccountCreate,
             termCondition: termFile,
             zip: data.zip,
             state: data.state,
@@ -1206,7 +1206,7 @@ exports.createDealer = async (req, res) => {
             serviceCoverageType: req.body.serviceCoverageType,
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
-            isAccountCreate:isAccountCreate,
+            isAccountCreate: isAccountCreate,
             termCondition: termFile,
             state: data.state,
             country: data.country,
@@ -2290,6 +2290,36 @@ exports.getMembers = async (req, res) => {
     })
   }
 };
+
+exports.getAccountInfo = async (req, res) => {
+  try {
+    let accountInfo;
+    if (req.role == 'Dealer') {
+      accountInfo = await dealerService.getDealerById(req.userId, { name: 1 })
+    }
+    if (req.role == 'Customer') {
+      accountInfo = await customerService.getCustomerById({_id:req.userId},  { username: 1 })
+    }
+    if (req.role == 'Reseller') {
+      accountInfo = await resellerService.getReseller({_id:req.userId},  { name: 1 })
+    }
+    if (req.role == 'Servicer') {
+      accountInfo = await providerService.getServiceProviderById({_id:req.userId},  { name: 1 })
+    }
+
+    res.send({
+      code:constant.successCode,
+      message:'Success!',
+      result:accountInfo
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 exports.changePrimaryUser = async (req, res) => {
   try {
