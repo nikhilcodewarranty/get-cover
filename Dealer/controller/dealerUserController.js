@@ -520,20 +520,24 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
+        let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
+        console.log("priceType----------------------",priceType)
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-        query = {
+         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.term': Number(data.term) },
-                { 'priceBooks.priceType': { '$regex': data.priceType ? data.priceType : '', '$options': 'i' }  },
+                { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
-                {
-                    dealerId: new mongoose.Types.ObjectId(req.userId)
-                }
+                { dealerId: new mongoose.Types.ObjectId(req.userId) }
             ]
         };
+        
+        // Conditionally add the term query if data.term is not blank
+        if (data.term) {
+            query.$and.push({ 'priceBooks.term': Number(data.term) });
+        }
         console.log(query)
         //
         let projection = { isDeleted: 0, __v: 0 }
