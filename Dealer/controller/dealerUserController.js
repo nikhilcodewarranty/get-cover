@@ -45,7 +45,7 @@ var StorageP = multer.diskStorage({
     filename: function (req, files, cb) {
         cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
     }
-})
+});
 
 var uploadP = multer({
     storage: StorageP,
@@ -124,7 +124,7 @@ exports.getDealerUsers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 //price api
 exports.createDealerPriceBook = async (req, res) => {
@@ -183,7 +183,7 @@ exports.createDealerPriceBook = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getDealerPriceBookById = async (req, res) => {
     try {
@@ -215,7 +215,7 @@ exports.getDealerPriceBookById = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getPriceBooks = async (req, res) => {
     try {
@@ -249,7 +249,7 @@ exports.getPriceBooks = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getResellerCustomers = async (req, res) => {
     try {
@@ -339,7 +339,7 @@ exports.getResellerCustomers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.customerOrders = async (req, res) => {
     try {
@@ -503,7 +503,7 @@ exports.customerOrders = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
@@ -689,7 +689,7 @@ exports.getResellerPriceBook = async (req, res) => {
     })
 
 
-}
+};
 
 exports.getResellerUsers = async (req, res) => {
     if (req.role != "Dealer") {
@@ -715,9 +715,9 @@ exports.getResellerUsers = async (req, res) => {
         data: users
     });
     return;
-}
-//servicers api
+};
 
+//servicers api
 exports.getResellerServicers = async (req, res) => {
     try {
         let data = req.body
@@ -916,7 +916,7 @@ exports.getDealerServicers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getServicersList = async (req, res) => {
     try {
@@ -945,7 +945,7 @@ exports.getServicersList = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.createDeleteRelation = async (req, res) => {
     try {
@@ -1032,7 +1032,7 @@ exports.createDeleteRelation = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 //customers api
 exports.createCustomer = async (req, res, next) => {
@@ -1227,7 +1227,7 @@ exports.getDealerCustomers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getCustomerInOrder = async (req, res) => {
     try {
@@ -1453,7 +1453,7 @@ exports.createReseller = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getResellerOrders = async (req, res) => {
     try {
@@ -1756,7 +1756,7 @@ exports.getResellerOrders = async (req, res) => {
         })
 
     }
-}
+};
 
 exports.getDealerResellers = async (req, res) => {
     try {
@@ -1853,7 +1853,7 @@ exports.getDealerResellers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 //order api
 exports.getDealerOrders = async (req, res) => {
@@ -2131,7 +2131,7 @@ exports.getDealerOrders = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getDealerArchievedOrders = async (req, res) => {
     try {
@@ -2391,7 +2391,7 @@ exports.getDealerArchievedOrders = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getAllContracts = async (req, res) => {
     try {
@@ -2550,7 +2550,7 @@ exports.getAllContracts = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 // exports.getAllContracts = async (req, res) => {
 //     try {
@@ -3386,7 +3386,7 @@ exports.createOrder = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.editOrderDetail = async (req, res) => {
     try {
@@ -3866,7 +3866,7 @@ exports.getDashboardData = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.addClaim = async (req, res, next) => {
     try {
@@ -3966,7 +3966,7 @@ exports.addClaim = async (req, res, next) => {
             message: err.message,
         })
     }
-}
+};
 
 exports.getAllClaims = async (req, res, next) => {
     try {
@@ -4696,7 +4696,7 @@ exports.getAllClaims = async (req, res, next) => {
             message: err.message
         })
     }
-}
+};
 
 
 

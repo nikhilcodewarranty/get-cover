@@ -576,6 +576,7 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
 exports.deleteOrdercontractbulk = async (req, res) => {
   try {
     let deleteContract = await contract.deleteMany({ orderId: "65d86f0372b2ed718d3271b1" })
@@ -591,6 +592,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
     })
   }
 }
+
 exports.cronJobEligible = async (req, res) => {
   try {
     let query = { status: 'Active' };
