@@ -47,7 +47,7 @@ var upload = multer({
   storage: Storage,
 }).any([
   { name: "file" },
-  { name: "termAndCondition" },
+  { name: "termCondition" },
 ])
 
 
