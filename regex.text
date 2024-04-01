@@ -1,1 +1,2 @@
 { name: new RegExp("\\b" + data.name + "\\b") }, {}  //for exact word matching
+ let regex = new RegExp('^' + data.name + '$', 'i');

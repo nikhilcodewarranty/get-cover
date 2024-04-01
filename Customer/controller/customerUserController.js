@@ -1043,7 +1043,7 @@ exports.getDashboardData = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
-    let mid = new mongoose.Types.ObjectId("65f025a1dcc98904ac068548")
+    let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
         $match: {
@@ -1070,6 +1070,13 @@ exports.getCustomerDetails = async (req, res) => {
       { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
     ]
     let getCustomer = await customerService.getCustomerByAggregate(query)
+    if(!getCustomer[0]){
+      res.send({
+        code:Constant.errorCode,
+        message:"Unable to fetch the details"
+      })
+      return;
+    }
     res.send({
       code: constant.successCode,
       message: "Successfully fetched user details.",
