@@ -1148,7 +1148,7 @@ exports.getResellerContract = async (req, res) => {
         if (!getResellerOrder) {
             res.send({
                 code: constant.errorCode,
-                message: "Unable to fetch the data"
+                message: "Unable to fetch the data" 
             })
             return
         }
