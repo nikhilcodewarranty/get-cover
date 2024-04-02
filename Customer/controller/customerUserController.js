@@ -488,8 +488,91 @@ exports.getCustomerContract = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-
+    let newQuery = [];
+    data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
+    if (data.servicerName) {
+      data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
+      console.log("Servicer name----------------", data.servicerName);
+      newQuery.push(
+        {
+          $lookup: {
+            from: "serviceproviders",
+            localField: "order.servicerId",
+            foreignField: "_id",
+            as: "order.servicer"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.toString().replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
+    // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
+    if (data.resellerName) {
+      newQuery.push(
+        {
+          $lookup: {
+            from: "resellers",
+            localField: "order.resellerId",
+            foreignField: "_id",
+            as: "order.reseller"
+          }
+        },
+        {
+          $match: {
+            $and: [
+              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
+      );
+    }
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $lookup: {
+                from: "resellers",
+                localField: "order.resellerId",
+                foreignField: "_id",
+                as: "order.reseller",
+              }
+            },
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1
+              }
+            }
+          ],
+        },
+      })
     let query = [
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -500,7 +583,8 @@ exports.getCustomerContract = async (req, res) => {
             { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
+            // { eligibility: true },
           ]
         },
       },
@@ -524,64 +608,112 @@ exports.getCustomerContract = async (req, res) => {
           $and: [
             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "order.customerId": new mongoose.Types.ObjectId(req.userId) }
           ]
-        },
-
-      },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "order.customerId",
-          foreignField: "_id",
-          as: "order.customer"
-        }
-      },
-      {
-        $match: {
-          $and: [
-            { "order.customer._id": new mongoose.Types.ObjectId(req.userId) },
-          ]
-        },
-      },
-      {
-        $facet: {
-          totalRecords: [
-            {
-              $count: "total"
-            }
-          ],
-          data: [
-            {
-              $skip: skipLimit
-            },
-            {
-              $limit: pageLimit
-            },
-            {
-              $project: {
-                productName: 1,
-                model: 1,
-                serial: 1,
-                unique_key: 1,
-                status: 1,
-                manufacture: 1,
-                eligibilty: 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1
-              }
-            }
-
-          ],
-
         },
 
       }
+
     ]
+
+    if (newQuery.length > 0) {
+      query = query.concat(newQuery);
+    }
+
+    // let query = [
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+    //         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //       ]
+    //     },
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "orders",
+    //       localField: "orderId",
+    //       foreignField: "_id",
+    //       as: "order",
+    //     }
+    //   },
+    //   {
+    //     $unwind: {
+    //       path: "$order",
+    //       preserveNullAndEmptyArrays: true,
+    //     }
+    //   },
+    //   {
+    //     $match:
+    //     {
+    //       $and: [
+    //         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //         { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+    //       ]
+    //     },
+
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "customers",
+    //       localField: "order.customerId",
+    //       foreignField: "_id",
+    //       as: "order.customer"
+    //     }
+    //   },
+    //   {
+    //     $match: {
+    //       $and: [
+    //         { "order.customer._id": new mongoose.Types.ObjectId(req.userId) },
+    //       ]
+    //     },
+    //   },
+    //   {
+    //     $facet: {
+    //       totalRecords: [
+    //         {
+    //           $count: "total"
+    //         }
+    //       ],
+    //       data: [
+    //         {
+    //           $skip: skipLimit
+    //         },
+    //         {
+    //           $limit: pageLimit
+    //         },
+    //         {
+    //           $project: {
+    //             productName: 1,
+    //             model: 1,
+    //             serial: 1,
+    //             unique_key: 1,
+    //             status: 1,
+    //             manufacture: 1,
+    //             eligibilty: 1,
+    //             "order.unique_key": 1,
+    //             "order.venderOrder": 1
+    //           }
+    //         }
+
+    //       ],
+
+    //     },
+
+    //   }
+    // ]u
     console.log(pageLimit, skipLimit, limitData)
     let getContracts = await contractService.getAllContracts2(query)
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
     console.log(orderIDs, skipLimit, limitData)
-    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    // let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     console.log(pageLimit, skipLimit, limitData)
     // if (!getContract) {
     //   res.send({
@@ -1070,10 +1202,10 @@ exports.getCustomerDetails = async (req, res) => {
       { $unwind: { path: "$reseller", preserveNullAndEmptyArrays: true } }
     ]
     let getCustomer = await customerService.getCustomerByAggregate(query)
-    if(!getCustomer[0]){
+    if (!getCustomer[0]) {
       res.send({
-        code:Constant.errorCode,
-        message:"Unable to fetch the details"
+        code: Constant.errorCode,
+        message: "Unable to fetch the details"
       })
       return;
     }
