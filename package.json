@@ -30,6 +30,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
     "pdf-creator-node": "^2.3.5",
+    "pdf-lib": "^1.17.1",
     "pdf-merger-js": "^5.1.1",
     "pdfkit": "^0.14.0",
     "pdfmake": "^0.2.9",
