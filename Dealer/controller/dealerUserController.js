@@ -614,8 +614,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 message: "Unable to fetch the data"
             })
             return;
-        }
-        res.send({
+        } 
+        res.send({ 
             code: constant.successCode,
             message: "Success",
             result: priceBooks
