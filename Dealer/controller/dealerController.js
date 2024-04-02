@@ -920,8 +920,8 @@ exports.statusUpdate = async (req, res) => {
     return
   }
 };
-// All Dealer Books
 
+// All Dealer Books
 exports.getAllDealerPriceBooks = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -1066,7 +1066,7 @@ exports.getDealerPriceBookById = async (req, res) => {
       })
       return;
     }
-    let projection =  {
+    let projection = {
 
       _id: 1,
       name: 1,
@@ -1141,7 +1141,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
       })
       return;
     }
-    let projection =  {
+    let projection = {
 
       _id: 1,
       name: 1,
@@ -2355,17 +2355,24 @@ exports.getDealerServicers = async (req, res) => {
         return servicerUser.toObject();
       }
     });
+    console.log("claim check+++++++4444444444444++++++++++++++", result_Array)
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
-      // console.log("claim check+++++++++++++++++++++", servicerId)
+    let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
+    console.log("claim check+++++++4444444444444++++++++++++++", getServicerFromDealer[0]._id)
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
         {
           $match: {
             $and: [
-              { servicerId: new mongoose.Types.ObjectId(servicerId) },
+              {
+                $or:[
+                  { servicerId: new mongoose.Types.ObjectId(servicerId) },
+                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]._id) },
+                ]
+              },
               { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
             ]
           }
@@ -2385,11 +2392,11 @@ exports.getDealerServicers = async (req, res) => {
             localField: "contracts._id",
             foreignField: "contractId",
             as: "claims",
-            pipeline: [
-              {
-                $match: { claimFile: { $in: ["Open", "Completed"] } }
-              }
-            ]
+            // pipeline: [
+            //   {
+            //     $match: { claimFile: { $in: ["Open", "Completed"] } }
+            //   }
+            // ]
           }
         },
         {
@@ -2400,10 +2407,11 @@ exports.getDealerServicers = async (req, res) => {
           }
         }
       ]);
+      console.log("claim check+++++++++++++++++++++", aggregateResult)
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-      // console.log("claim check+++++++++++++++++++++", aggregateResult)
+      console.log("claim check+++++++++++++++++++++", aggregateResult)
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
@@ -3008,7 +3016,7 @@ exports.getDealerContract = async (req, res) => {
     data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
     if (data.servicerName) {
       data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
-      console.log("Servicer name----------------",  data.servicerName);
+      console.log("Servicer name----------------", data.servicerName);
       newQuery.push(
         {
           $lookup: {
@@ -3028,7 +3036,7 @@ exports.getDealerContract = async (req, res) => {
       );
     }
     data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
-   // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
+    // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
     if (data.resellerName) {
       newQuery.push(
         {

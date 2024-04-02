@@ -2585,48 +2585,54 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-        if (data.dealerId.toString() != checkId.dealerId.toString()) {
-            let checkDealer = await dealerService.getDealerById(
-                data.dealerId
-            );
-            if (!checkDealer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Dealer not found",
-                });
-                return;
+        if (data.dealerId != "") {
+            if (data.dealerId.toString() != checkId.dealerId.toString()) {
+                let checkDealer = await dealerService.getDealerById(
+                    data.dealerId
+                );
+                if (!checkDealer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Dealer not found",
+                    });
+                    return;
+                }
             }
         }
 
-        if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
-            let query = {
-                $or: [
-                    { _id: data.servicerId },
-                    { resellerId: data.servicerId },
-                    { dealerId: data.servicerId },
-                ],
-            };
-            let checkServicer = await servicerService.getServiceProviderById(query);
-            if (!checkServicer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Servicer not found",
-                });
-                return;
+        if (data.servicerId != "") {
+            if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
+                let query = {
+                    $or: [
+                        { _id: data.servicerId },
+                        { resellerId: data.servicerId },
+                        { dealerId: data.servicerId },
+                    ],
+                };
+                let checkServicer = await servicerService.getServiceProviderById(query);
+                if (!checkServicer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Servicer not found",
+                    });
+                    return;
+                }
+            }
+        }
+        if (data.customerId != "") {
+            if (data.customerId != '' && data.customerId != checkId.customerId) {
+                let query = { _id: data.customerId };
+                let checkCustomer = await customerService.getCustomerById(query);
+                if (!checkCustomer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Customer not found",
+                    });
+                    return;
+                }
             }
         }
 
-        if (data.customerId != '' && data.customerId != checkId.customerId) {
-            let query = { _id: data.customerId };
-            let checkCustomer = await customerService.getCustomerById(query);
-            if (!checkCustomer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Customer not found",
-                });
-                return;
-            }
-        }
 
 
         data.createdBy = req.userId;
@@ -3122,7 +3128,7 @@ exports.getOrderContract = async (req, res) => {
                                 "order.unique_key": 1,
                                 "order.venderOrder": 1,
                                 "order.dealerId": 1,
-                                "order.productsArray":1
+                                "order.productsArray": 1
                             }
                         }
                     ],
@@ -3131,16 +3137,16 @@ exports.getOrderContract = async (req, res) => {
             }
         ]
 
-        let checkOrder=[];
+        let checkOrder = [];
         //  console.log.log('before--------------', Date.now())
         //let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         let getContracts = await contractService.getAllContracts2(query)
         //  console.log.log('after+++++++++++++++++++++', Date.now())
-       // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
-       //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
-       checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
-       let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-       //res.json(checkOrder);return
+        // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
+        //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
+        checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
+        let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+        //res.json(checkOrder);return
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
