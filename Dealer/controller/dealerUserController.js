@@ -1462,7 +1462,7 @@ exports.createReseller = async (req, res) => {
             state: data.state,
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
-            status: data.status,
+            status: true,
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
@@ -1501,7 +1501,7 @@ exports.createReseller = async (req, res) => {
                 resellerId: createdReseler._id,
                 state: data.state,
                 country: data.country,
-                status: data.status,
+                status: true,
                 accountStatus: "Approved",
                 unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
             }
