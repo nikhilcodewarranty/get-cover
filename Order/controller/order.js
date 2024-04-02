@@ -2643,11 +2643,11 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
             checkId.paidAmount = 0
         }
-        if (checkId.paymentStatus == "Unpaid") {
-            checkId.paidAmount = 0
-            data.dueAmount = checkId.paidAmount
-        }
-        data.paidAmount = Number(checkId.paidAmount) + Number(data.paidAmount)
+        // if (checkId.paymentStatus == "Unpaid") {
+        //     checkId.paidAmount = 0
+        //     data.dueAmount = checkId.paidAmount
+        // }
+        data.paidAmount =  Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
