@@ -260,7 +260,7 @@ exports.getPriceBooks = async (req, res) => {
             })
             return;
         }
-        let projection =  {
+        let projection = {
 
             _id: 1,
             name: 1,
@@ -292,7 +292,7 @@ exports.getPriceBooks = async (req, res) => {
             priceBooks: 1,
             dealer: 1
 
-          }
+        }
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -614,8 +614,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 message: "Unable to fetch the data"
             })
             return;
-        } 
-        res.send({ 
+        }
+        res.send({
             code: constant.successCode,
             message: "Success",
             result: priceBooks
@@ -671,7 +671,7 @@ exports.statusUpdate = async (req, res) => {
                 code: constant.errorCode,
                 message: "Unable to update the dealer price status"
             });
- 
+
             return;
 
         }
@@ -1943,7 +1943,7 @@ exports.getDealerResellersInOrder = async (req, res) => {
             return;
         };
 
-        let query = { isDeleted: false, dealerId: req.userId,status:true }
+        let query = { isDeleted: false, dealerId: req.userId, status: true }
         let projection = { __v: 0 }
         const resellers = await resellerService.getResellers(query, projection);
         if (!resellers) {
@@ -3358,35 +3358,42 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
 
-        if (data.servicerId != checkId.servicerId) {
-            let query = {
-                $or: [
-                    { _id: data.servicerId },
-                    { resellerId: data.servicerId },
-                    { dealerId: data.servicerId },
-                ],
-            };
-            let checkServicer = await servicerService.getServiceProviderById(query);
-            if (!checkServicer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Servicer not found",
-                });
-                return;
+        if (data.servicerId != "") {
+            if (data.servicerId != checkId.servicerId) {
+                let query = {
+                    $or: [
+                        { _id: data.servicerId },
+                        { resellerId: data.servicerId },
+                        { dealerId: data.servicerId },
+                    ],
+                };
+                let checkServicer = await servicerService.getServiceProviderById(query);
+                if (!checkServicer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Servicer not found",
+                    });
+                    return;
+                }
             }
         }
 
-        if (data.customerId != checkId.customerId) {
-            let query = { _id: data.customerId };
-            let checkCustomer = await customerService.getCustomerById(query);
-            if (!checkCustomer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Customer not found",
-                });
-                return;
+
+        if (data.customerId != "") {
+            if (data.customerId != checkId.customerId) {
+                let query = { _id: data.customerId };
+                let checkCustomer = await customerService.getCustomerById(query);
+                if (!checkCustomer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Customer not found",
+                    });
+                    return;
+                }
             }
         }
+
+
 
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
