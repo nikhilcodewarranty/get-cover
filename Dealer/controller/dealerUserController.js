@@ -1212,7 +1212,7 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
-        let query = { isDeleted: false, dealerId: req.userId, status: true }
+        let query = { isDeleted: false, dealerId: req.userId }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
