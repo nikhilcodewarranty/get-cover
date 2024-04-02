@@ -1894,12 +1894,13 @@ exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
         let query;
-        if (data.resellerId != "") {
+        if (data.resellerId != "" && data.resellerId != undefined) {
             query = { dealerId: data.dealerId, resellerId: data.resellerId };
         } else {
             query = { dealerId: data.dealerId };
         }
         let getCustomers = await customerService.getAllCustomers(query, {});
+       
         if (!getCustomers) {
             res.send({
                 code: constant.errorCode,
@@ -1907,11 +1908,30 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
+        console.log(" getCustomers --------------", getCustomers)
+        const customerIds = getCustomers.map(customer => customer._id.toString());
+        console.log("customerUser00000000000000000", customerIds);
+        let query1 = { accountId: { $in: customerIds }, isPrimary: true };
+        let projection = { __v: 0, isDeleted: 0 }
+
+        let customerUser = await userService.getMembers(query1, projection)
+
+        const result_Array = customerUser.map(item1 => {
+            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            if (matchingItem) {
+                return {
+                    ...matchingItem.toObject(),
+                    email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
+                };
+            } else {
+                return dealerData.toObject();
+            }
+        });
 
         res.send({
             code: constant.successCode,
             message: "Successfully Fetched",
-            result: getCustomers,
+            result: result_Array,
         });
     } catch (err) {
         res.send({
