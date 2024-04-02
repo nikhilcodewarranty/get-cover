@@ -61,6 +61,57 @@ app.use((req, res, next) => {
 })
 
 
+
+console.log('check+++++++++++++++++222222')
+
+const { PDFDocument, rgb } = require('pdf-lib');
+const fs = require('fs').promises;
+
+async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+  console.log('PDFs merged 11111111111111!');
+
+    // Load the PDFs
+    const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+    const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+    const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+    const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+    // Create a new PDF Document
+    const mergedPdf = await PDFDocument.create();
+
+    // Add the pages of the first PDF
+    const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+    pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+    // Add the pages of the second PDF
+    const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+    pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+    // Serialize the PDF
+    const mergedPdfBytes = await mergedPdf.save();
+
+    // Write the merged PDF to a file
+    await fs.writeFile(outputPath, mergedPdfBytes);
+
+    console.log('PDFs merged successfully!');
+}
+
+console.log('check+++++++++++++++++111111',mergePDFs)
+// Usage
+const pdfPath1 = '/home/anil/Documents/Projects/node_js main/get-cover/first.pdf';
+const pdfPath2 = '/home/anil/Documents/Projects/node_js main/get-cover/second.pdf';
+const outputPath = '/home/anil/Documents/Projects/node_js main/get-cover/merged.pdf';
+
+console.log('check+++++++++++++++++33333',outputPath)
+
+mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+
+
+
+
+
+
 const PORT = process.env.USER_API_ENDPOINT || 8080
 httpServer.listen(PORT, () => console.log(`users Server is running on port ${PORT}`))
 

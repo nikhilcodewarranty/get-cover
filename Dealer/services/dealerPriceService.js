@@ -132,18 +132,18 @@ module.exports = class dealerPriceService {
 
             _id: 1,
             name: 1,
-            // wholesalePrice: {
-            //   $sum: [
-            //     // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
-            //     "$priceBooks.reserveFutureFee",
-            //     "$priceBooks.reinsuranceFee",
-            //     "$priceBooks.adminFee",
-            //     "$priceBooks.frontingFee",
-            //   ],
-            // },
+            wholesalePrice: {
+              $sum: [
+                // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
+                // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
+                "$priceBooks.reserveFutureFee",
+                "$priceBooks.reinsuranceFee",
+                "$priceBooks.adminFee",
+                "$priceBooks.frontingFee",
+              ],
+            },
             "priceBook": 1,
             "dealerId": 1,
             "status": 1,
