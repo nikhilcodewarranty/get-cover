@@ -615,7 +615,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
             })
             return;
         } 
-        res.send({
+        res.send({ 
             code: constant.successCode,
             message: "Success",
             result: priceBooks
