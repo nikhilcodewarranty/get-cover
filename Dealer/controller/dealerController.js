@@ -975,7 +975,7 @@ exports.changeDealerStatus = async (req, res) => {
     //Update Dealer User Status if inactive
     if (!req.body.status) {
       let dealerUserCreateria = { accountId: req.params.dealerId };
-      let newValue = {
+      let newValue = { 
         $set: {
           status: req.body.status
         }

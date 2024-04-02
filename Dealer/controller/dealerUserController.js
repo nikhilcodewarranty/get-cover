@@ -1210,7 +1210,7 @@ exports.getDealerCustomers = async (req, res) => {
                 message: 'Only dealer allow to do this action!'
             });
             return
-        }
+        } 
         let data = req.body
         let query = { isDeleted: false, dealerId: req.userId }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
