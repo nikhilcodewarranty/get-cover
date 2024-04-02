@@ -194,7 +194,40 @@ exports.getDealerPriceBookById = async (req, res) => {
             })
             return;
         }
-        let projection = { isDeleted: 0, __v: 0, wholesalePrice: 0 }
+        let projection = {
+
+            _id: 1,
+            name: 1,
+            // wholesalePrice: {
+            //   $sum: [
+            //     // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
+            //     "$priceBooks.reserveFutureFee",
+            //     "$priceBooks.reinsuranceFee",
+            //     "$priceBooks.adminFee",
+            //     "$priceBooks.frontingFee",
+            //   ],
+            // },
+            "priceBook": 1,
+            "dealerId": 1,
+            "status": 1,
+            "retailPrice": 1,
+            "description": 1,
+            "isDeleted": 1,
+            // "brokerFee": {
+            //   $subtract: ["$retailPrice","$wholesalePrice" ],
+            // },
+            "unique_key": 1,
+            "__v": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            priceBooks: 1,
+            dealer: 1
+
+        }
+
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -228,7 +261,39 @@ exports.getPriceBooks = async (req, res) => {
             })
             return;
         }
-        let projection = { isDeleted: 0, __v: 0 }
+        let projection =  {
+
+            _id: 1,
+            name: 1,
+            // wholesalePrice: {
+            //   $sum: [
+            //     // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
+            //     // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
+            //     "$priceBooks.reserveFutureFee",
+            //     "$priceBooks.reinsuranceFee",
+            //     "$priceBooks.adminFee",
+            //     "$priceBooks.frontingFee",
+            //   ],
+            // },
+            "priceBook": 1,
+            "dealerId": 1,
+            "status": 1,
+            "retailPrice": 1,
+            "description": 1,
+            "isDeleted": 1,
+            // "brokerFee": {
+            //   $subtract: ["$retailPrice","$wholesalePrice" ],
+            // },
+            "unique_key": 1,
+            "__v": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            priceBooks: 1,
+            dealer: 1
+
+          }
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -521,10 +586,10 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
-        console.log("priceType----------------------",priceType)
+        console.log("priceType----------------------", priceType)
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-         query = {
+        query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                 { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
@@ -533,12 +598,12 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 { dealerId: new mongoose.Types.ObjectId(req.userId) }
             ]
         };
-        
+
         // Conditionally add the term query if data.term is not blank
         if (data.term) {
             query.$and.push({ 'priceBooks.term': Number(data.term) });
         }
-        console.log(query) 
+        console.log(query)
         //
         let projection = { isDeleted: 0, __v: 0 }
         let limit = req.body.limit ? req.body.limit : 10000
