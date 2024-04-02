@@ -20,6 +20,7 @@ router.post('/getServicerInOrders', [verifyToken], dealerUserController.getServi
 router.get('/getDashboardData', [verifyToken], dealerUserController.getDashboardData)
 
 router.post('/getDealerResellers',[verifyToken],dealerUserController.getDealerResellers)
+router.post('/getDealerResellersInOrder',[verifyToken],dealerUserController.getDealerResellersInOrder)
 router.get('/getDealerPriceBookById/:dealerPriceBookId',[verifyToken],dealerUserController.getDealerPriceBookById)
 router.post('/getCustomerOrders/:customerId',[verifyToken],dealerUserController.customerOrders)
 router.post('/getResellerOrders/:resellerId',[verifyToken],dealerUserController.getResellerOrders)

@@ -1924,6 +1924,103 @@ exports.getDealerResellers = async (req, res) => {
     }
 };
 
+exports.getDealerResellersInOrder = async (req, res) => {
+    try {
+        // if (req.role != 'Dealer') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only dealer allow to do this action!'
+        //     });
+        //     return;
+        // }
+        let data = req.body
+        let checkDealer = await dealerService.getDealerById(req.userId, {})
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer ID"
+            })
+            return;
+        };
+
+        let query = { isDeleted: false, dealerId: req.userId,status:true }
+        let projection = { __v: 0 }
+        const resellers = await resellerService.getResellers(query, projection);
+        if (!resellers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the resellers"
+            });
+            return;
+        };
+        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerOrderIds = resellers.map(obj => obj._id);
+        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        //Get Reseller Orders
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
+
+        let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
+
+
+        const result_Array = getPrimaryUser.map(item1 => {
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
+            if (matchingItem || orders) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    resellerData: matchingItem.toObject(),
+                    orders: orders ? orders : {}
+                };
+            } else {
+                return dealerData.toObject();
+            }
+        });
+
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const statusRegex = new RegExp(data.status)
+
+        const filteredData = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.resellerData.name) &&
+                emailRegex.test(entry.email) &&
+                statusRegex.test(entry.status) &&
+                dealerRegex.test(entry.resellerData.dealerId) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: filteredData
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
 //order api
 exports.getDealerOrders = async (req, res) => {
     try {
