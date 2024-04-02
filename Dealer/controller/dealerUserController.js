@@ -195,7 +195,6 @@ exports.getDealerPriceBookById = async (req, res) => {
             return;
         }
         let projection = {
-
             _id: 1,
             name: 1,
             // wholesalePrice: {
