@@ -1247,25 +1247,26 @@ exports.getResellerContract = async (req, res) => {
                     $and: [
                         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "order.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
                     ]
                 },
 
             },
-            {
-                $lookup: {
-                    from: "resellers",
-                    localField: "order.resellerId",
-                    foreignField: "_id",
-                    as: "order.reseller"
-                }
-            },
-            {
-                $match: {
-                    $and: [
-                        { "order.reseller._id": new mongoose.Types.ObjectId(req.params.resellerId) },
-                    ]
-                },
-            },
+            // {
+            //     $lookup: {
+            //         from: "resellers",
+            //         localField: "order.resellerId",
+            //         foreignField: "_id",
+            //         as: "order.reseller"
+            //     }
+            // },
+            // {
+            //     $match: {
+            //         $and: [
+            //             { "order.reseller._id": new mongoose.Types.ObjectId(req.params.resellerId) },
+            //         ]
+            //     },
+            // },
             // {
             //     $facet: {
             //         totalRecords: [
