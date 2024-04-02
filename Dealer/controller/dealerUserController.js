@@ -607,7 +607,7 @@ exports.statusUpdate = async (req, res) => {
                 code: constant.errorCode,
                 message: "Unable to update the dealer price status"
             });
-
+ 
             return;
 
         }
