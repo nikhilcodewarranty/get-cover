@@ -219,13 +219,13 @@ exports.getAllResellers = async (req, res) => {
 }
 
 exports.getResellerByDealerId = async (req, res) => {
-    if (req.role != "Super Admin") {
-        res.send({
-            code: constant.errorCode,
-            message: "Only super admin allow to do this action"
-        })
-        return;
-    }
+    // if (req.role != "Super Admin") {
+    //     res.send({
+    //         code: constant.errorCode,
+    //         message: "Only super admin allow to do this action"
+    //     })
+    //     return;
+    // }
     const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
 
     //result.metaData = singleDealer
@@ -472,13 +472,13 @@ exports.getResellerUsers = async (req, res) => {
 }
 
 exports.getResellerPriceBook = async (req, res) => {
-    if (req.role != "Super Admin") {
-        res.send({
-            code: constant.errorCode,
-            message: "Only super admin allow to do this action"
-        })
-        return;
-    }
+    // if (req.role != "Super Admin") {
+    //     res.send({
+    //         code: constant.errorCode,
+    //         message: "Only super admin allow to do this action"
+    //     })
+    //     return;
+    // }
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 })
     if (!checkReseller) {
         res.send({
@@ -772,13 +772,13 @@ exports.getResellerServicers = async (req, res) => {
 
 exports.getResselerByCustomer = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action"
-            })
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action"
+        //     })
+        //     return;
+        // }
         let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, { isDeleted: 0 })
         if (!checkCustomer) {
             res.send({
@@ -814,13 +814,13 @@ exports.getResselerByCustomer = async (req, res) => {
 
 exports.getDealerByReseller = async (req, res) => {
     try {
-        if (req.role != "Super Admin") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only super admin allow to do this action"
-            })
-            return;
-        }
+        // if (req.role != "Super Admin") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only super admin allow to do this action"
+        //     })
+        //     return;
+        // }
 
         let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
         if (!checkReseller) {

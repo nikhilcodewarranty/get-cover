@@ -27,6 +27,7 @@ const userRoutes = require("./User/routes/user");
 const dealerRoutes = require("./Dealer/routes/dealer");
 const dealerUserRoutes = require("./Dealer/routes/dealerUser");
 const resellerRoutes = require("./Dealer/routes/reseller");
+const resellerUserRoutes = require("./Dealer/routes/resellerUser");
 const claimRoutes = require("./Claim/routes/claim");
 const contractRoutes = require("./Contract/routes/contract");
 const serviceRoutes = require("./Provider/routes/service");
@@ -163,6 +164,7 @@ app.use("/api-v1/claim", claimRoutes);
 app.use("/api-v1/servicerPortal", servicePortal);
 app.use("/api-v1/dealerPortal", dealerUserRoutes);
 app.use("/api-v1/customerPortal", customerUserRoutes);
+app.use("/api-v1/resellerPortal", resellerUserRoutes);
 
 
 // catch 404 and forward to error handler
