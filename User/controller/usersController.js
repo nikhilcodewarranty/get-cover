@@ -1576,7 +1576,7 @@ exports.createSuperAdmin = async (req, res) => {
       metaId: savedUser._id,
     }
 
-    await userService.updateUser({ _id: savedUser._id }, updateUser, { new: true })
+    const updateData = await userService.updateSingleUser({ _id: savedUser._id }, updateUser, { new: true })
 
     // Generate JWT token 
     const token = jwt.sign(
@@ -1588,7 +1588,7 @@ exports.createSuperAdmin = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Account created successfully",
-      data: savedUser
+      data: updateData
     })
   } catch (error) {
     res.send({

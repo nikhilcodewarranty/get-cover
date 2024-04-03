@@ -2458,7 +2458,7 @@ exports.archiveOrder = async (req, res) => {
         }   
         res.send({
             code: constant.errorCode,
-            message: "Already Active!",
+            message: "This order is already in active state!",
         });
     } catch (err) {
         res.send({
@@ -2907,7 +2907,7 @@ exports.markAsPaid = async (req, res) => {
         if (checkOrder.status == 'Archieved') {
             res.send({
                 code: constant.errorCode,
-                message: "Already Archieved!",
+                message: "The order has already archeived!",
             });
             return;
         }
