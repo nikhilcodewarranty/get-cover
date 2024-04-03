@@ -565,9 +565,6 @@ exports.editResellers = async (req, res) => {
         }
         data.name = data.accountName
         let updateReseller = await resellerService.updateReseller(criteria, data)
-        if (checkReseller.isServicer) {
-            const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
-        }
         if (!updateReseller) {
             res.send({
                 code: constant.errorCode,
@@ -575,6 +572,26 @@ exports.editResellers = async (req, res) => {
             })
             return;
         }
+        if (checkReseller.isServicer) {
+            const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
+        }
+        else if (data.isServicer) {
+            const CountServicer = await providerService.getServicerCount();
+            let servicerObject = {
+              name: data.accountName,
+              street: data.street,
+              city: data.city,
+              zip: data.zip,
+              dealerId: req.params.resellerId,
+              state: data.state,
+              country: data.country,
+              status: data.status,
+              accountStatus: "Approved",
+              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+            }
+            let createData = await providerService.createServiceProvider(servicerObject)
+    
+          }
         let resellerUserCreateria = { accountId: req.params.resellerId };
         let newValue = {
             $set: {

@@ -408,6 +408,7 @@ exports.createDealer = async (req, res) => {
   try {
     upload(req, res, async () => {
       const data = req.body;
+      data.name = data.name.trim().replace(/\s+/g, ' ');
       let priceFile
       let termFile;
       let isAccountCreate = req.body.isAccountCreate
@@ -648,7 +649,7 @@ exports.createDealer = async (req, res) => {
           }
           res.send({
             code: constant.successCode,
-            message: 'Successfully Created',
+            message: 'Successfully Created', 
           });
 
         }
