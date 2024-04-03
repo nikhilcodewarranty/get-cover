@@ -3,57 +3,61 @@ const connection = require('../../db')
 const serviceProviderSchema = new mongoose.Schema({
   name: {
     type: String,
-    default:'',
-    index:true
+    default: '',
+    index: true
   },
-  dealerId:{
-    type:String,
-    default:null
+  dealerId: {
+    type: String,
+    default: null
   },
-  resellerId:{
-    type:String,
-    default:null
+  resellerId: {
+    type: String,
+    default: null
   },
   street: {
     type: String,
-    default:''
+    default: ''
   },
   city: {
     type: String,
-    default:''
+    default: ''
   },
-  unique_key:{
+  unique_key: {
     type: Number,
   },
-  userAccount:{
-    type:Boolean,
-    default:false
+  userAccount: {
+    type: Boolean,
+    default: false
   },
   state: {
     type: String,
-    default:''
+    default: ''
   },
   zip: {
     type: String,
-    default:''
+    default: ''
   },
   country: {
     type: String,
-    default:''
+    default: ''
   },
   status: {
     type: Boolean,
-    default:true
+    default: true
+  },
+  isAccountCreate: {
+    type: Boolean,
+    default: true
   },
   accountStatus: {
     type: String,
     enum: ["Pending", "Approved", "Rejected"],
-    default:"Pending"
+    default: "Pending"
   },
   isDeleted: {
     type: String,
     default: false
   }
-},{timestamps:true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("serviceProvider", serviceProviderSchema);

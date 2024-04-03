@@ -47,6 +47,10 @@ const reseller = new Schema({
         default: true,
         index: true
     },
+    isAccountCreate:{
+        type:Boolean,
+        default:true
+    },
     accountStatus: {
         type: String,
         enum: ["Pending", "Approved", "Rejected"],
