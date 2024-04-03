@@ -1181,6 +1181,7 @@ exports.createDeleteRelation = async (req, res) => {
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
+        data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         let getCount = await customerService.getCustomersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer ID
@@ -1497,6 +1498,7 @@ exports.getServicerInOrders = async (req, res) => {
 exports.createReseller = async (req, res) => {
     try {
         let data = req.body
+        data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         let getCount = await resellerService.getResellersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer for existing 
@@ -3217,6 +3219,7 @@ exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
+        data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
         // if (data.productsArray[i].QuantityPricing) {
@@ -3417,8 +3420,6 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-
-
         if (req.userId.toString() != checkId.dealerId.toString()) {
             let checkDealer = await dealerService.getDealerById(
                 req.userId
@@ -3451,8 +3452,6 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-
-
         if (data.customerId != "") {
             if (data.customerId != checkId.customerId) {
                 let query = { _id: data.customerId };
@@ -3466,9 +3465,7 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-
-
-
+        data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;

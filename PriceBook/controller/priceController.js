@@ -156,7 +156,7 @@ exports.createPriceBook = async (req, res, next) => {
     // console.log(priceBookData);
     // return;
 
-    let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, {})
+    let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${data.name}$`, 'i') } }, {})
 
     if (checkPriceBook.length > 0) {
       res.send({
