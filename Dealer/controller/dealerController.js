@@ -1057,7 +1057,6 @@ exports.changeDealerStatus = async (req, res) => {
   }
 }
 
-
 exports.getDealerPriceBookById = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -2377,7 +2376,6 @@ exports.getDealerServicers = async (req, res) => {
         return servicerUser.toObject();
       }
     });
-    console.log("claim check+++++++4444444444444++++++++++++++", result_Array)
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
