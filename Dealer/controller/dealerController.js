@@ -2089,7 +2089,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const pricebookArrayPromise = totalDataComing.map(item => {
-          if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true });
+          if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true });
           return null;
         })
 
