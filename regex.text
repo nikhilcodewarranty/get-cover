@@ -1,2 +1,20 @@
 { name: new RegExp("\\b" + data.name + "\\b") }, {}  //for exact word matching
  let regex = new RegExp('^' + data.name + '$', 'i');
+
+
+
+ <table style="width:100%">
+  <tr>
+    <th>Company</th>
+    <td>Contact</td>
+  </tr>
+  <tr>
+    <th>Alfreds Futterkiste vgybhbhy ghbhbhy <br/>hbyhbybu gvgbyvy vyvybyvu</th>
+    <td>Maria Anders</td>
+  </tr>
+  <tr>
+    <th>Centro comercial Moctezuma</th>
+    <td>
+Francisco Chang</td>
+  </tr>
+</table>

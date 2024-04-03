@@ -2363,7 +2363,7 @@ exports.getDealerServicers = async (req, res) => {
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
       let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
-      console.log("claim check+++++++4444444444444++++++++++++++", getServicerFromDealer[0]._id)
+      console.log("claim check+++++++4444444444444++++++++++++++")
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
@@ -2373,7 +2373,7 @@ exports.getDealerServicers = async (req, res) => {
               {
                 $or: [
                   { servicerId: new mongoose.Types.ObjectId(servicerId) },
-                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]._id) },
+                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?._id) },
                 ]
               },
               { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
@@ -2410,11 +2410,11 @@ exports.getDealerServicers = async (req, res) => {
           }
         }
       ]);
-      console.log("claim check+++++++++++++++++++++", aggregateResult)
+      console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-      console.log("claim check+++++++++++++++++++++", aggregateResult)
+      console.log("claim check+++++++++++++++++++++")
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
