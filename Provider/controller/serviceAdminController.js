@@ -20,6 +20,7 @@ const randtoken = require('rand-token').generator()
 exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
+    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
     let servicerObject = {
       name: data.accountName,
@@ -28,7 +29,7 @@ exports.createServiceProvider = async (req, res, next) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
-      isAccountCreate:data.status,
+      isAccountCreate: data.status,
       status: true,
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -155,6 +156,7 @@ exports.createServiceProvider = async (req, res, next) => {
 exports.approveServicer = async (req, res, next) => {
   try {
     let data = req.body
+    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -375,6 +377,8 @@ exports.rejectServicer = async (req, res) => {
 exports.editServicerDetail = async (req, res) => {
   try {
     let data = req.body
+    data.name = data.name.trim().replace(/\s+/g, ' ');
+    data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
     if (!checkServicer) {
       res.send({
@@ -394,10 +398,23 @@ exports.editServicerDetail = async (req, res) => {
         return;
       };
     }
-
-
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
+    let servicerUserCreateria = { accountId: req.params.servicerId };
+    let newValue = {
+        $set: {
+            status: false
+        }
+    };
+    if (data.isAccountCreate) {
+      servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
+        newValue = {
+            $set: {
+                status: true
+            }
+        };
+    }
+    const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
     if (!updateData) {
       res.send({
         code: constant.errorCode,
@@ -405,12 +422,12 @@ exports.editServicerDetail = async (req, res) => {
       })
       return;
     }
-    let criteria1 = {
-      $and: [
-        { _id: data.userId },
-        { accountId: checkServicer._id }
-      ]
-    }
+    // let criteria1 = {
+    //   $and: [
+    //     { _id: data.userId },
+    //     { accountId: checkServicer._id }
+    //   ]
+    // }
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
@@ -473,7 +490,7 @@ exports.updateStatus = async (req, res) => {
         })
       }
     } else {
-      if(checkServicer.isAccountCreate){
+      if (checkServicer.isAccountCreate) {
         let criteria1 = { accountId: checkServicer._id, isPrimary: true }
         let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
         if (!updateMetaData) {
@@ -482,13 +499,20 @@ exports.updateStatus = async (req, res) => {
             message: "Unable to update the primary details"
           })
         }
+        else {
+          res.send({
+            code: constant.successCode,
+            message: "Updated Successfully 'false'",
+            result: { updateData, updateMetaData }
+          })
+        }
       }
     }
 
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
-      result: updateData 
+      result: updateData
     })
 
   } catch (err) {
