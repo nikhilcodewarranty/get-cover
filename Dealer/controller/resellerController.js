@@ -675,7 +675,7 @@ exports.addResellerUser = async (req, res) => {
             message: err.message
         })
     }
-}
+} 
 
 exports.getResellerServicers = async (req, res) => {
     try {
