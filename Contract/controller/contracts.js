@@ -39,7 +39,6 @@ exports.getAllContracts = async (req, res) => {
         }
       );
     }
-
     if (data.customerName) {
       newQuery.push(
         {

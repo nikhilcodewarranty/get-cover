@@ -961,6 +961,80 @@ exports.getDealerServicers = async (req, res) => {
             }
         });
 
+        for (let i = 0; i < result_Array.length; i++) {
+            const servicerId = result_Array[i].servicerData._id;
+            let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
+            console.log("claim check+++++++4444444444444++++++++++++++")
+
+            // Aggregate pipeline to join orders, contracts, and claims
+            var aggregateResult = await orderService.getAllOrders1([
+                {
+                    $match: {
+                        $and: [
+                            {
+                                $or: [
+                                    { servicerId: new mongoose.Types.ObjectId(servicerId) },
+                                    { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?._id) },
+                                ]
+                            },
+                            { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
+                        ]
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "contracts",
+                        localField: "_id",
+                        foreignField: "orderId",
+                        as: "contracts"
+                    }
+                },
+                { $unwind: "$contracts" },
+                {
+                    $lookup: {
+                        from: "claims",
+                        localField: "contracts._id",
+                        foreignField: "contractId",
+                        as: "claims",
+                        // pipeline: [
+                        //   {
+                        //     $match: { claimFile: { $in: ["Open", "Completed"] } }
+                        //   }
+                        // ]
+                    }
+                },
+                {
+                    $project: {
+                        'claims': { $arrayElemAt: ["$claims", 0] },
+                        _id: 0,
+                        servicerId: 1
+                    }
+                }
+            ]);
+            console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
+
+            // If there are results for the current servicerId, update the result array
+            aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
+            console.log("claim check+++++++++++++++++++++")
+            let totalClaimAmount = 0
+
+            function calculateTotalAmountAndCount(arr) {
+                let total = 0;
+                let count = aggregateResult.length;
+                for (let obj of arr) {
+                    total += obj.claims.totalAmount;
+                }
+                return { totalAmount: total, totalCount: count };
+            }
+            const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
+            console.log("Total amount:", totalAmount);
+            console.log("Total count:", totalCount);
+
+            result_Array[i].claimCount = totalCount;
+            result_Array[i].totalClaimAmount = totalAmount;
+
+        }
+
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1210,7 +1284,7 @@ exports.getDealerCustomers = async (req, res) => {
                 message: 'Only dealer allow to do this action!'
             });
             return
-        } 
+        }
         let data = req.body
         let query = { isDeleted: false, dealerId: req.userId }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
