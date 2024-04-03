@@ -545,7 +545,6 @@ exports.editResellers = async (req, res) => {
         let data = req.body
         let criteria = { _id: req.params.resellerId }
         let option = { new: true }
-
         let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 });
         if (!checkReseller) {
             res.send({
@@ -576,6 +575,22 @@ exports.editResellers = async (req, res) => {
             })
             return;
         }
+        let resellerUserCreateria = { accountId: req.params.resellerId };
+        let newValue = {
+            $set: {
+                status: false
+            }
+        };
+        if (data.isAccountCreate) {
+            resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
+            newValue = {
+                $set: {
+                    status: true
+                }
+            };
+        }
+        const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
+
         res.send({
             code: constant.successCode,
             message: "Success",
