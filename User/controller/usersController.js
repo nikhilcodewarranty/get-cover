@@ -409,7 +409,7 @@ exports.createDealer = async (req, res) => {
     upload(req, res, async () => {
       const data = req.body;
       let priceFile
-      let termFile
+      let termFile;
       let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
@@ -2304,7 +2304,7 @@ exports.getAccountInfo = async (req, res) => {
       accountInfo = await resellerService.getReseller({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
     if (req.role == 'Servicer') {
-       accountInfo = await providerService.getServiceProviderById({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
+      accountInfo = await providerService.getServiceProviderById({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
 
     res.send({

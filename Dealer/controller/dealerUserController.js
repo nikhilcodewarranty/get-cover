@@ -1210,7 +1210,7 @@ exports.getDealerCustomers = async (req, res) => {
                 message: 'Only dealer allow to do this action!'
             });
             return
-        }
+        } 
         let data = req.body
         let query = { isDeleted: false, dealerId: req.userId }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
@@ -1426,7 +1426,7 @@ exports.createReseller = async (req, res) => {
         let getCount = await resellerService.getResellersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
         // check dealer for existing 
-        let checkDealer = await dealerService.getDealerByName({ _id: req.userId, status: true }, {});
+        let checkDealer = await dealerService.getDealerByName({ _id: req.userId, accountStatus: true }, {});
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -1462,7 +1462,7 @@ exports.createReseller = async (req, res) => {
             state: data.state,
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
-            status: data.status,
+            status: true,
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
@@ -1501,7 +1501,7 @@ exports.createReseller = async (req, res) => {
                 resellerId: createdReseler._id,
                 state: data.state,
                 country: data.country,
-                status: data.status,
+                status: true,
                 accountStatus: "Approved",
                 unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
             }

@@ -1871,8 +1871,9 @@ exports.updateDealerMeta = async (req, res) => {
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     data.name = data.accountName
+    data.accountStatus = true
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
-    if (!data.accountStatus) {
+    if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
     if (!updatedData) {
@@ -1890,6 +1891,8 @@ exports.updateDealerMeta = async (req, res) => {
       if (checkDealer.isServicer) {
         const updateServicerMeta = await servicerService.updateServiceProvider(criteria, data)
       }
+      //update primary user to true
+      await userService.updateUser({ metaId: checkDealer._id }, { status: true }, { new: true })
       res.send({
         code: constant.successCode,
         message: "Success",
@@ -2359,8 +2362,8 @@ exports.getDealerServicers = async (req, res) => {
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
-    let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
-    console.log("claim check+++++++4444444444444++++++++++++++", getServicerFromDealer[0]._id)
+      let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
+      console.log("claim check+++++++4444444444444++++++++++++++", getServicerFromDealer[0]._id)
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
@@ -2368,7 +2371,7 @@ exports.getDealerServicers = async (req, res) => {
           $match: {
             $and: [
               {
-                $or:[
+                $or: [
                   { servicerId: new mongoose.Types.ObjectId(servicerId) },
                   { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]._id) },
                 ]
