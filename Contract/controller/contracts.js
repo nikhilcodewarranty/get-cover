@@ -20,7 +20,6 @@ exports.getAllContracts = async (req, res) => {
     // console.log(index)
     // return;
     let newQuery = [];
-    let matchConditions = []
     if (data.dealerName) {
       newQuery.push(
         {
@@ -31,16 +30,16 @@ exports.getAllContracts = async (req, res) => {
             as: "order.dealer"
           }
         },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
+        {
+          $match: {
+            $and: [
+              { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
       );
-      matchConditions.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
+
     if (data.customerName) {
       newQuery.push(
         {
@@ -51,16 +50,14 @@ exports.getAllContracts = async (req, res) => {
             as: "order.customer"
           }
         },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
+        {
+          $match: {
+            $and: [
+              { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
       );
-      matchConditions.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-
     }
     if (data.servicerName) {
       newQuery.push(
@@ -72,15 +69,14 @@ exports.getAllContracts = async (req, res) => {
             as: "order.servicer"
           }
         },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
+        {
+          $match: {
+            $and: [
+              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
       );
-      matchConditions.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
     if (data.resellerName) {
       newQuery.push(
@@ -92,53 +88,48 @@ exports.getAllContracts = async (req, res) => {
             as: "order.reseller"
           }
         },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
+        {
+          $match: {
+            $and: [
+              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+          },
+        }
       );
-      matchConditions.push({ "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-
-    if(matchConditions.length >0){
-      newQuery.push(matchConditions)
-    }
-
-    newQuery.push({
-      $facet: {
-        totalRecords: [
-          {
-            $count: "total"
-          }
-        ],
-        data: [
-          {
-            $skip: skipLimit
-          },
-          {
-            $limit: pageLimit
-          },
-          {
-            $project: {
-              productName: 1,
-              model: 1,
-              serial: 1,
-              unique_key: 1,
-              status: 1,
-              manufacture: 1,
-              eligibilty: 1,
-              "order.unique_key": 1,
-              "order.venderOrder": 1,
-              totalRecords: 1
+    newQuery.push(
+      {
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
             }
-          }
-        ],
-      },
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+                totalRecords: 1
+              }
+            }
+          ],
+        },
 
-    })
+      })
     let query = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -683,7 +674,7 @@ exports.cronJobEligible = async (req, res) => {
           }
           bulk.push(updateDoc)
         }
-        else {
+        else{
           updateDoc = {
             'updateMany': {
               'filter': { '_id': notOpenContractIds[j] },
