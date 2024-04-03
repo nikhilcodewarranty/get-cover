@@ -34,6 +34,7 @@ exports.createReseller = async (req, res) => {
         let data = req.body
         let getCount = await resellerService.getResellersCount({})
         data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
+        data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
         // check dealer for existing 
         let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
         if (!checkDealer) {
@@ -544,6 +545,8 @@ exports.editResellers = async (req, res) => {
     try {
         let data = req.body
         let criteria = { _id: req.params.resellerId }
+        data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
+        data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
         let option = { new: true }
         let checkReseller = await resellerService.getReseller({ _id: req.params.resellerId }, { isDeleted: 0 });
         if (!checkReseller) {
@@ -621,7 +624,7 @@ exports.editResellers = async (req, res) => {
             message: err.message
         })
     }
-}
+} 
 
 exports.addResellerUser = async (req, res) => {
     try {
