@@ -2653,13 +2653,10 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.status == 'Archieved') {
             res.send({
                 code: constant.errorCode,
-                message: "Already Archieved!",
+                message: "The order has already archeived!",
             });
             return;
         }
-
-
-
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
