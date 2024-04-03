@@ -416,7 +416,7 @@ exports.editServicerDetail = async (req, res) => {
     }
     const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
     if (!updateData) {
-      res.send({
+      res.send({ 
         code: constant.errorCode,
         message: "Unable to update the data"
       })
