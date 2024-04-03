@@ -15,7 +15,7 @@ const serviceProvider = require("../../Provider/model/serviceProvider");
 exports.createCustomer = async (req, res, next) => {
   try {
     let data = req.body;
-
+    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     let getCount = await customerService.getCustomersCount({})
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
     // check dealer ID
@@ -391,6 +391,7 @@ exports.getResellerCustomers = async (req, res) => {
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
+    data.username = data.username.trim().replace(/\s+/g, ' ');
     let checkDealer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkDealer) {
       res.send({
