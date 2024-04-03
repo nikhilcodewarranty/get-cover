@@ -390,7 +390,7 @@ exports.createOrder = async (req, res) => {
 exports.createOrder1 = async (req, res) => {
     try {
         let data = req.body;
-
+        data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
@@ -2594,7 +2594,7 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
-        data.venderOrder = data.dealerPurchaseOrder
+        data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
             res.send({

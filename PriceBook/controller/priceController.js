@@ -133,6 +133,7 @@ exports.createPriceBook = async (req, res, next) => {
       quantityPriceDetail = data.quantityPriceDetail;
     }
     const count = await priceBookService.getPriceBookCount();
+    data.name = data.name.trim().replace(/\s+/g, ' ');
 
     // price book data 
     let priceBookData = {
@@ -545,8 +546,9 @@ exports.createPriceBookCat = async (req, res) => {
     }
 
     const data = req.body;
+    data.name = data.name.trim().replace(/\s+/g, ' ');
     // Check if the category already exists
-    const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
+    const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${data.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingCategory) {
       res.send({
         code: constant.errorCode,
