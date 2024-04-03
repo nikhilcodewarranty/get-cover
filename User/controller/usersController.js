@@ -1578,7 +1578,7 @@ exports.createSuperAdmin = async (req, res) => {
 
     await userService.updateUser({ _id: savedUser._id }, updateUser, { new: true })
 
-    // Generate JWT token
+    // Generate JWT token 
     const token = jwt.sign(
       { userId: savedUser._id, email: savedUser.email },
       process.env.JWT_SECRET,
