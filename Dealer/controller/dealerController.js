@@ -1017,16 +1017,17 @@ exports.changeDealerStatus = async (req, res) => {
     }
 
     else {
-      let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
-      let newValue = {
-        $set: {
-          status: req.body.status
-        }
-      };
-      let option = { new: true };
-      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
-    }
-
+      if (singleDealer.isAccountCreate) {
+        let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
+        let newValue = {
+          $set: {
+            status: req.body.status
+          }
+        };
+        let option = { new: true };
+        const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+      }
+   }
     option = { new: true };
     //Update Dealer Status
     newValue = {
