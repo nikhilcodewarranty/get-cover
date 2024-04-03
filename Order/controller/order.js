@@ -1900,7 +1900,7 @@ exports.getCustomerInOrder = async (req, res) => {
             query = { dealerId: data.dealerId };
         }
         let getCustomers = await customerService.getAllCustomers(query, {});
-       
+
         if (!getCustomers) {
             res.send({
                 code: constant.errorCode,
@@ -2668,10 +2668,10 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
             checkId.paidAmount = 0
         }
-        // if (checkId.paymentStatus == "Unpaid") {
-        //     checkId.paidAmount = 0
-        //     data.dueAmount = checkId.paidAmount
-        // }
+        if (data.paymentStatus == "Paid") {
+            data.paidAmount = checkId.orderAmount
+            data.dueAmount = 0
+        }
         data.paidAmount = Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
