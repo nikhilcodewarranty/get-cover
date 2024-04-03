@@ -1017,16 +1017,17 @@ exports.changeDealerStatus = async (req, res) => {
     }
 
     else {
-      let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
-      let newValue = {
-        $set: {
-          status: req.body.status
-        }
-      };
-      let option = { new: true };
-      const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+      if (singleDealer.isAccountCreate) {
+        let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
+        let newValue = {
+          $set: {
+            status: req.body.status
+          }
+        };
+        let option = { new: true };
+        const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
+      }
     }
-
     option = { new: true };
     //Update Dealer Status
     newValue = {
@@ -1873,15 +1874,13 @@ exports.updateDealerMeta = async (req, res) => {
     data.name = data.accountName
     data.accountStatus = true
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
-    if (!data.isAccountCreate) {
-      await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
-    }
     if (!updatedData) {
       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
-    } else {
+    }
+    else {
       let criteria = { dealerId: checkDealer._id }
       let option = { new: true }
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
@@ -1891,14 +1890,34 @@ exports.updateDealerMeta = async (req, res) => {
       if (checkDealer.isServicer) {
         const updateServicerMeta = await servicerService.updateServiceProvider(criteria, data)
       }
-      //update primary user to true
-      await userService.updateUser({ metaId: checkDealer._id }, { status: true }, { new: true })
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: updatedData
-      })
+      else if (data.isServicer) {
+        const CountServicer = await providerService.getServicerCount();
+        let servicerObject = {
+          name: data.accountName,
+          street: data.street,
+          city: data.city,
+          zip: data.zip,
+          dealerId: data.dealerId,
+          state: data.state,
+          country: data.country,
+          status: data.status,
+          accountStatus: "Approved",
+          unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+        }
+        let createData = await providerService.createServiceProvider(servicerObject)
+
+      }
     }
+    //update primary user to true by default
+    await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
+    if (!data.isAccountCreate) {
+      await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: updatedData
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,
