@@ -21,7 +21,6 @@ exports.createServiceProvider = async (req, res, next) => {
   try {
     let data = req.body
     const count = await providerService.getServicerCount();
-
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -29,6 +28,7 @@ exports.createServiceProvider = async (req, res, next) => {
       zip: data.zip,
       state: data.state,
       country: data.country,
+      isAccountCreate:data.status,
       status: true,
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
@@ -114,11 +114,8 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       let teamMembers = data.members
-
-
       // console.log("getUserId================",getUserId);
       // return;
-
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
 
       if (!updateServicer) {
@@ -388,7 +385,7 @@ exports.editServicerDetail = async (req, res) => {
     }
     if (data.name != data.oldName) {
       let regex = new RegExp('^' + data.name + '$', 'i');
-      let checkName = await providerService.getServicerByName({ name: regex}, {})
+      let checkName = await providerService.getServicerByName({ name: regex }, {})
       if (checkName) {
         res.send({
           code: constant.errorCode,
@@ -1406,14 +1403,14 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (data.noOfDays) {
       const end = moment().startOf('day')
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
-      console.log(end,start)
+      console.log(end, start)
       dateQuery = {
         claimDate: {
           $gte: new Date(start),
           $lte: new Date(end),
         }
       }
-    } 
+    }
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1470,7 +1467,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               customerStatus: 1,
               repairParts: 1,
               diagnosis: 1,
-              claimDate:1,
+              claimDate: 1,
               claimStatus: 1,
               claimPaymentStatus: 1,
               repairStatus: 1,
