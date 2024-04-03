@@ -649,7 +649,7 @@ exports.createDealer = async (req, res) => {
           }
           res.send({
             code: constant.successCode,
-            message: 'Successfully Created', 
+            message: 'Successfully Created',
           });
 
         }
@@ -1562,8 +1562,6 @@ exports.createSuperAdmin = async (req, res) => {
       lastName: data.lastName,
       email: data.email,
       password: hashedPassword,
-      accountId: data.accountId,
-      metaId: data.accountId,
       phoneNumber: data.phoneNumber,
       roleId: superRole._id, //Assign super role
       isPrimary: data.isPrimary,
@@ -1572,6 +1570,13 @@ exports.createSuperAdmin = async (req, res) => {
 
     // Create a new user with the provided data
     const savedUser = await userService.createUser(userData);
+
+    let updateUser = {
+      accountId: savedUser._id,
+      metaId: savedUser._id,
+    }
+
+    await userService.updateUser({ _id: savedUser._id }, updateUser, { new: true })
 
     // Generate JWT token
     const token = jwt.sign(
@@ -2291,7 +2296,7 @@ exports.getMembers = async (req, res) => {
       ]
     }
     let userMembers = await userService.getMembers({
-      $and:[
+      $and: [
         { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2305,7 +2310,7 @@ exports.getMembers = async (req, res) => {
 
       ]
     }, { isDeleted: false })
-      let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
+    let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
 
     res.send({
       code: constant.successCode,
