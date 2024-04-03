@@ -2274,8 +2274,37 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    let userMembers = await userService.getMembers({ $or: [{ accountId: req.userId }, { _id: req.userId }] }, { isDeleted: false })
-    let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
+    console.log("data----------", data)
+    let query = {
+      $and: [
+        {
+          $or: [
+            { accountId: req.userId },
+            { _id: req.userId },
+          ]
+        },
+        { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { phone: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      ]
+    }
+    let userMembers = await userService.getMembers({
+      $and:[
+        { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        {
+          $or: [
+            { accountId: req.userId },
+            { _id: req.userId },
+          ]
+        },
+
+      ]
+    }, { isDeleted: false })
+      let userMember = await userService.getUserById1({ _id: req.teammateId }, { isDeleted: false })
 
     res.send({
       code: constant.successCode,
