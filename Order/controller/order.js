@@ -2448,14 +2448,14 @@ exports.archiveOrder = async (req, res) => {
                 { status: "Archieved" },
                 { new: true }
             );
-        }
-        if (!updateStatus) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to archive this order!",
-            });
-            return;
-        }
+            if (!updateStatus) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to archive this order!",
+                });
+                return;
+            }
+        }   
         res.send({
             code: constant.errorCode,
             message: "Already Active!",
