@@ -480,7 +480,7 @@ exports.updateStatus = async (req, res) => {
           code: constant.errorCode,
           message: "Unable to update the primary details"
         })
-      } else {
+      } else { 
         res.send({
           code: constant.successCode,
           message: "Updated Successfully",
