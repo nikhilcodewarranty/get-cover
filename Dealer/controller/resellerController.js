@@ -624,7 +624,7 @@ exports.editResellers = async (req, res) => {
             message: err.message
         })
     }
-}
+} 
 
 exports.addResellerUser = async (req, res) => {
     try {
