@@ -3465,6 +3465,13 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
+        if (checkId.status == 'Archieved') {
+            res.send({
+                code: constant.errorCode,
+                message: "The order has already archeived!",
+            });
+            return;
+        }
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
