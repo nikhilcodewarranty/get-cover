@@ -61,7 +61,7 @@ exports.createReseller = async (req, res) => {
             })
             return;
         }
-
+        let isAccountCreate = data.status
         let resellerObject = {
             name: data.accountName,
             street: data.street,
@@ -72,6 +72,7 @@ exports.createReseller = async (req, res) => {
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
             status: true,
+            isAccountCreate: isAccountCreate,
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
@@ -195,7 +196,7 @@ exports.getAllResellers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
-            console.log('search check ++++++++++++',entry)
+            console.log('search check ++++++++++++', entry)
             return (
                 nameRegex.test(entry.resellerData.name) &&
                 emailRegex.test(entry.email) &&
@@ -466,7 +467,7 @@ exports.getResellerUsers = async (req, res) => {
     res.send({
         code: constant.successCode,
         data: users,
-        resellerStatus:checkReseller.status
+        resellerStatus: checkReseller.status
     });
     return;
 }
@@ -739,7 +740,7 @@ exports.getResellerServicers = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             data: filteredData,
-            resellerStatus:checkReseller.status
+            resellerStatus: checkReseller.status
         });
     }
     catch (err) {
@@ -886,7 +887,7 @@ exports.getResellerOrders = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
             contract: "$contract"
-          };
+        };
         // let project = {
         //     productsArray: 1,
         //     dealerId: 1,
@@ -907,43 +908,43 @@ exports.getResellerOrders = async (req, res) => {
 
         let lookupQuery = [
             {
-              $match: query1
+                $match: query1
             },
             {
-              $project: project,
+                $project: project,
             },
             {
-              "$addFields": {
-                "noOfProducts": {
-                  "$sum": "$productsArray.checkNumberProducts"
-                },
-                totalOrderAmount: { $sum: "$orderAmount" },
-                flag: {
-                  $cond: {
-                    if: {
-                      $and: [
-                        // { $eq: ["$payment.status", "paid"] },
-                        { $ne: ["$productsArray.orderFile.fileName", ''] },
-                        { $ne: ["$customerId", null] },
-                        { $ne: ["$paymentStatus", 'Paid'] },
-                        { $ne: ["$productsArray.coverageStartDate", null] },
-                      ]
+                "$addFields": {
+                    "noOfProducts": {
+                        "$sum": "$productsArray.checkNumberProducts"
                     },
-                    then: true,
-                    else: false
-                  }
+                    totalOrderAmount: { $sum: "$orderAmount" },
+                    flag: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    // { $eq: ["$payment.status", "paid"] },
+                                    { $ne: ["$productsArray.orderFile.fileName", ''] },
+                                    { $ne: ["$customerId", null] },
+                                    { $ne: ["$paymentStatus", 'Paid'] },
+                                    { $ne: ["$productsArray.coverageStartDate", null] },
+                                ]
+                            },
+                            then: true,
+                            else: false
+                        }
+                    }
                 }
-              }
             },
             { $sort: { unique_key: -1 } }
-          ]
-    
-          let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-          let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-          let limitData = Number(pageLimit)
-    
-    
-          let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+        ]
+
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
+
+
+        let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -1148,7 +1149,7 @@ exports.getResellerContract = async (req, res) => {
         if (!getResellerOrder) {
             res.send({
                 code: constant.errorCode,
-                message: "Unable to fetch the data" 
+                message: "Unable to fetch the data"
             })
             return
         }
@@ -1160,25 +1161,25 @@ exports.getResellerContract = async (req, res) => {
         data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
 
         if (data.servicerName) {
-          newQuery.push(
-            {
-              $lookup: {
-                from: "serviceproviders",
-                localField: "order.servicerId",
-                foreignField: "_id",
-                as: "order.servicer"
-              }
-            },
-            {
-              $match: {
-                $and: [
-                  { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                ]
-              },
-            }
-          );
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "serviceproviders",
+                        localField: "order.servicerId",
+                        foreignField: "_id",
+                        as: "order.servicer"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
         }
-             
+
         newQuery.push(
             {
                 $facet: {
@@ -1358,7 +1359,7 @@ exports.changeResellerStatus = async (req, res) => {
 
         }
 
-        else {
+        else if (singleReseller.isAccountCreate && req.body.status) {
             let resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
             let newValue = {
                 $set: {
@@ -1368,7 +1369,6 @@ exports.changeResellerStatus = async (req, res) => {
             let option = { new: true };
             const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, option);
         }
-
         option = { new: true };
         //Update Reseller Status
         newValue = {
