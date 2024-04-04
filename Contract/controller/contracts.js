@@ -542,7 +542,7 @@ exports.getContractById = async (req, res) => {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
       if (productsArray.length > 0){
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-        getData[0].order[i].productsArray = productsArray
+        getData[0].order[i].productsArray = productsArray 
       } 
     }
     getData.map((data, index) => {
