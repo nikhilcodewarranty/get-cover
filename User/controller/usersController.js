@@ -408,7 +408,7 @@ exports.createDealer = async (req, res) => {
   try {
     upload(req, res, async () => {
       const data = req.body;
-      data.name = data.name.trim().replace(/\s+/g, ' ');
+    //  data.name = data.name.trim().replace(/\s+/g, ' ');
       let priceFile
       let termFile;
       let isAccountCreate = req.body.isAccountCreate
