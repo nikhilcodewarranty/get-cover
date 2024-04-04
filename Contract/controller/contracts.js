@@ -539,7 +539,6 @@ exports.getContractById = async (req, res) => {
     let order = getData[0].order
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
-      console.log("orderId------------------", orderId)
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
       if (productsArray.length > 0){
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
