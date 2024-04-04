@@ -36,6 +36,7 @@
     "pdfmake": "^0.2.9",
     "pug": "^3.0.2",
     "request": "^2.88.2",
+    "request_trimmer": "^1.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0"
   }
