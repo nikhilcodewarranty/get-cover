@@ -3438,6 +3438,15 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+
+        if (checkId.status == "Active" || checkId.status == "Archieved") {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to edit the order, please refersh the page",
+            });
+            return;
+        }
+
         if (req.userId.toString() != checkId.dealerId.toString()) {
             let checkDealer = await dealerService.getDealerById(
                 req.userId
