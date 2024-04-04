@@ -533,17 +533,17 @@ exports.getContractById = async (req, res) => {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
-    console.log("getData-------------------",getData)
+    console.log("getData-------------------", getData)
 
-    let orderId = getData[0].orderProductId
-     let order = getData[0].order
+    let orderProductId = getData[0].orderProductId
+    let order = getData[0].order
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
-      console.log("orderId------------------",orderId)
-      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      console.log("product data++++++++++++++++++++++++",productsArray)
-      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-      getData[0].order[i].productsArray = productsArray
+      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
+      if (productsArray.length > 0){
+        productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
+        getData[0].order[i].productsArray = productsArray
+      } 
     }
     getData.map((data, index) => {
       if (data.order[0]?.servicerId != null) {
@@ -678,7 +678,7 @@ exports.cronJobEligible = async (req, res) => {
           }
           bulk.push(updateDoc)
         }
-        else{
+        else {
           updateDoc = {
             'updateMany': {
               'filter': { '_id': notOpenContractIds[j] },
