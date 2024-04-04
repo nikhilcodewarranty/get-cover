@@ -571,7 +571,7 @@ exports.getContractById = async (req, res) => {
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message + ":" + err.stack
     })
   }
 }
