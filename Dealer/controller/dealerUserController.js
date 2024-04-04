@@ -1412,7 +1412,7 @@ exports.getCustomerInOrder = async (req, res) => {
         res.send({
             code: constant.successCode,
             message: "Successfully Fetched",
-            result: getCustomers,
+            result: result_Array,
         });
     } catch (err) {
         res.send({
