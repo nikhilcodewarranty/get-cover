@@ -78,6 +78,12 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     let teamMembers = data.members
+
+    const emailSet = new Set();
+    let isDuplicate = false;
+
+
+
     let emailsToCheck = teamMembers.map(member => member.email);
     let queryEmails = { email: { $in: emailsToCheck } };
     let checkEmails = await customerService.getAllCustomers(queryEmails, {});
@@ -1048,7 +1054,7 @@ exports.getCustomerContract = async (req, res) => {
         }
       );
     }
-    data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() :''
+    data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
 
     if (data.resellerName) {
       newQuery.push(
