@@ -533,10 +533,15 @@ exports.getContractById = async (req, res) => {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
+    console.log("getData-------------------",getData)
+
     let orderId = getData[0].orderProductId
-    let order = getData[0].order
+     let order = getData[0].order
+    //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
+      console.log("orderId------------------",orderId)
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
+      console.log("product data++++++++++++++++++++++++",productsArray)
       productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
       getData[0].order[i].productsArray = productsArray
     }
@@ -571,7 +576,7 @@ exports.getContractById = async (req, res) => {
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message + ":" + err.stack
     })
   }
 }
