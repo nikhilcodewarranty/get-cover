@@ -1908,7 +1908,7 @@ exports.updateDealerMeta = async (req, res) => {
       }
     }
     //update primary user to true by default
-    if (data.isAccountCreate) {
+    if (data.isAccountCreate && checkDealer.status) {
       await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
     }
 
