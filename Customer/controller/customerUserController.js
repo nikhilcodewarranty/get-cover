@@ -1220,7 +1220,7 @@ exports.getCustomerDetails = async (req, res) => {
                 from: "users",
                 foreignField: "metaId",
                 localField: "_id",
-                as: "userInfo",
+                as: "dealerInfo",
                 pipeline: [
                   {
                     $match:
@@ -1232,8 +1232,11 @@ exports.getCustomerDetails = async (req, res) => {
                   },
                   {
                     $project: {
-                      firstName: 1,
-                      lastName: 1,
+                      street:1,
+                      city:1,
+                      zip:1,
+                      state:1,
+                      country:1,
                     }
                   }
                 ]
@@ -1254,7 +1257,7 @@ exports.getCustomerDetails = async (req, res) => {
                 from: "users",
                 foreignField: "metaId",
                 localField: "_id",
-                as: "userInfo",
+                as: "resellerInfo",
                 pipeline: [
                   {
                     $match:
@@ -1266,8 +1269,11 @@ exports.getCustomerDetails = async (req, res) => {
                   },
                   {
                     $project: {
-                      firstName: 1,
-                      lastName: 1,
+                      street:1,
+                      city:1,
+                      zip:1,
+                      state:1,
+                      country:1,
                     }
                   }
                 ]
