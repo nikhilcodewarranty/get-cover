@@ -914,6 +914,7 @@ exports.getCustomerById = async (req, res) => {
         orderAmount: 1,
       }
 
+      
       let orderQuery = { customerId: { $in: [checkCustomer._id] }, status: "Active" }
       let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId");
 
