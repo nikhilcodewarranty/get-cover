@@ -598,7 +598,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate: isAccountCreate,
               coverageType: req.body.coverageType,
-              termCondition: termFile,
+              termCondition: termFile?termFile:'',
               accountStatus: true,
               isAccountCreate: isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false

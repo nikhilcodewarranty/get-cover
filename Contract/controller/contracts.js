@@ -20,6 +20,7 @@ exports.getAllContracts = async (req, res) => {
     // console.log(index)
     // return;
     let newQuery = [];
+    let matchedData = []
     if (data.dealerName) {
       newQuery.push(
         {
@@ -30,14 +31,15 @@ exports.getAllContracts = async (req, res) => {
             as: "order.dealer"
           }
         },
-        {
-          $match: {
-            $and: [
-              { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            ]
-          },
-        }
+        // {
+        //   $match: {
+        //     $and: [
+        //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
+        // }
       );
+      matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
     if (data.customerName) {
       newQuery.push(
@@ -49,14 +51,15 @@ exports.getAllContracts = async (req, res) => {
             as: "order.customer"
           }
         },
-        {
-          $match: {
-            $and: [
-              { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            ]
-          },
-        }
+        // {
+        //   $match: {
+        //     $and: [
+        //       { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
+        // }
       );
+      matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
     if (data.servicerName) {
       newQuery.push(
@@ -68,14 +71,15 @@ exports.getAllContracts = async (req, res) => {
             as: "order.servicer"
           }
         },
-        {
-          $match: {
-            $and: [
-              { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            ]
-          },
-        }
+        // {
+        //   $match: {
+        //     $and: [
+        //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
+        // }
       );
+      matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
     if (data.resellerName) {
       newQuery.push(
@@ -87,15 +91,25 @@ exports.getAllContracts = async (req, res) => {
             as: "order.reseller"
           }
         },
-        {
-          $match: {
-            $and: [
-              { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            ]
-          },
-        }
+        // {
+        //   $match: {
+        //     $and: [
+        //       { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
+        // }
       );
+      matchedData.push({ "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
+    if (matchedData.length > 0) {
+      let matchedCondition = {
+        $match: {
+          $and: matchedData
+        }
+      };
+      newQuery.push(matchedCondition);
+    }
+
     newQuery.push(
       {
         $facet: {
@@ -540,10 +554,10 @@ exports.getContractById = async (req, res) => {
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
-      if (productsArray.length > 0){
+      if (productsArray.length > 0) {
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-        getData[0].order[i].productsArray = productsArray 
-      } 
+        getData[0].order[i].productsArray = productsArray
+      }
     }
     getData.map((data, index) => {
       if (data.order[0]?.servicerId != null) {

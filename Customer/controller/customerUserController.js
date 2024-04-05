@@ -924,6 +924,7 @@ exports.getCustomerById = async (req, res) => {
           meta: checkCustomer,
           primary: getPrimaryUser,
           resellerName: checkReseller ? checkReseller.name : '',
+          resellerStatus: checkReseller ? checkReseller.status : null, 
           orderData: ordersResult
         }
       })
