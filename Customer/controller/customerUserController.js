@@ -1220,7 +1220,23 @@ exports.getCustomerDetails = async (req, res) => {
                 from: "users",
                 foreignField: "metaId",
                 localField: "_id",
-                as: "userInfo"
+                as: "userInfo",
+                pipeline: [
+                  {
+                    $match:
+                    {
+                      $and: [
+                        { isPrimary: true }
+                      ]
+                    },
+                  },
+                  {
+                    $project: {
+                      firstName: 1,
+                      lastName: 1,
+                    }
+                  }
+                ]
               }
             }
           ]
@@ -1238,7 +1254,23 @@ exports.getCustomerDetails = async (req, res) => {
                 from: "users",
                 foreignField: "metaId",
                 localField: "_id",
-                as: "userInfo"
+                as: "userInfo",
+                pipeline: [
+                  {
+                    $match:
+                    {
+                      $and: [
+                        { isPrimary: true }
+                      ]
+                    },
+                  },
+                  {
+                    $project: {
+                      firstName: 1,
+                      lastName: 1,
+                    }
+                  }
+                ]
               }
             }
           ]
