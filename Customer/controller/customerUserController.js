@@ -5,6 +5,7 @@ let dealerService = require('../../Dealer/services/dealerService')
 let resellerService = require('../../Dealer/services/resellerService')
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 let contractService = require('../../Contract/services/contractService')
+let claimService = require('../../Claim/services/claimService')
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 let userService = require('../../User/services/userService')
@@ -1121,10 +1122,10 @@ exports.getContractById = async (req, res) => {
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
-      if (productsArray.length > 0){
+      if (productsArray.length > 0) {
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-        getData[0].order[i].productsArray = productsArray 
-      } 
+        getData[0].order[i].productsArray = productsArray
+      }
     }
     getData.map((data, index) => {
       if (data.order[0]?.servicerId != null) {
@@ -1212,7 +1213,17 @@ exports.getCustomerDetails = async (req, res) => {
           from: "dealers",
           foreignField: "_id",
           localField: "dealerId",
-          as: "dealer"
+          as: "dealer",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "metaId",
+                localField: "_id",
+                as: "userInfo"
+              }
+            }
+          ]
         }
       },
       {
@@ -1220,7 +1231,17 @@ exports.getCustomerDetails = async (req, res) => {
           from: "resellers",
           foreignField: "_id",
           localField: "resellerId",
-          as: "reseller"
+          as: "reseller",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                foreignField: "metaId",
+                localField: "_id",
+                as: "userInfo"
+              }
+            }
+          ]
         }
       },
       { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
