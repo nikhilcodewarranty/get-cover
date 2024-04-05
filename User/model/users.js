@@ -42,6 +42,10 @@ const userSchema = new mongoose.Schema({
     default: '',
     index:true
   },
+  dialCode: {
+    type: String,
+    default: "+1",
+  },
   roleId: {
     type: mongoose.Schema.Types.ObjectId, ref: "roles",
   },
