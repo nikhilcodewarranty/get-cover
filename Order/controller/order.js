@@ -3843,7 +3843,7 @@ exports.generateHtmltopdf = async (req, res) => {
         //     return;
         // }
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-       // console.log(checkOrder);return
+        // console.log(checkOrder);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -3856,7 +3856,7 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         const orderFile = 'pdfs/' + Date.now() + "_" + checkOrder.unique_key + '.pdf';
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = '<h1>Hello World</h1><p>This is custom HTML content.</p>';
+        const html = `<h1>Hello World</h1><p>This is custom HTML content.</p>`;
         pdf.create(html, options).toFile(orderFile, (err, result) => {
             if (err) return console.log(err);
             res.send({
@@ -3921,6 +3921,8 @@ exports.cronJobStatus = async (req, res) => {
         let data = req.body;
         let currentDate = new Date();
         let endOfDay = new Date();
+        endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
+        endOfDay.setHours(0, 0, 0, 0);
         let lookupQuery = [
             {
                 $match: query // Your match condition here
@@ -4037,6 +4039,8 @@ exports.cronJobStatusWithDate = async (req, res) => {
         let data = req.body;
         let currentDate = new Date();
         let endOfDay = new Date();
+        endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
+        endOfDay.setHours(0, 0, 0, 0);
         let lookupQuery = [
             {
                 $match: query // Your match condition here 
