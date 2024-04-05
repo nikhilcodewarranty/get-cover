@@ -1482,7 +1482,6 @@ exports.login = async (req, res) => {
       })
       return;
     }
-    console.log("user=----------------------", user)
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
