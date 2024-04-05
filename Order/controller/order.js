@@ -1,6 +1,8 @@
 const { Order } = require("../model/order");
 require("dotenv").config()
 const orderResourceResponse = require("../utils/constant");
+const pdf = require('html-pdf');
+
 const orderService = require("../services/orderService");
 // const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
@@ -2455,7 +2457,7 @@ exports.archiveOrder = async (req, res) => {
                 });
                 return;
             }
-        }   
+        }
         res.send({
             code: constant.errorCode,
             message: "This order is already in active state!",
@@ -3831,8 +3833,46 @@ exports.generatePDF = async (req, res) => {
         })
     }
 };
-exports.generateHtmltopdf=async(req,res)=>{
-    
+exports.generateHtmltopdf = async (req, res) => {
+    try {
+        // if (req.role != 'Super Admin') {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: 'Only super allow to do this action!'
+        //     })
+        //     return;
+        // }
+        const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+       // console.log(checkOrder);return
+        const options = {
+            format: 'A4',
+            orientation: 'portrait',
+            border: '10mm',
+            childProcessOptions: {
+                env: {
+                    OPENSSL_CONF: '/dev/null',
+                },
+            }
+        }
+        const orderFile = 'pdfs/' + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+        //   var html = fs.readFileSync('../template/template.html', 'utf8');
+        const html = '<h1>Hello World</h1><p>This is custom HTML content.</p>';
+        pdf.create(html, options).toFile(orderFile, (err, result) => {
+            if (err) return console.log(err);
+            res.send({
+                code: constant.successCode,
+                message: 'Success!'
+            })
+        });
+
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+        return;
+    }
 }
 
 exports.updateServicerByOrder = async (req, res) => {

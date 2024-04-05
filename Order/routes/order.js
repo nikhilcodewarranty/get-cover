@@ -37,6 +37,7 @@ router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.get
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder)
 router.get('/cronJobStatus', orderController.cronJobStatus)
 router.post('/cronJobStatusWithDate', orderController.cronJobStatusWithDate)
+router.get('/generateHtmltopdf/:orderId', orderController.generateHtmltopdf)
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)

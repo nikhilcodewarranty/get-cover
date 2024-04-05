@@ -65,24 +65,24 @@ var app = express();
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
 
-const template = fs.readFileSync('./template/template.html', 'utf-8')
-const options = {
-  format: 'A4',
-  orientation: 'portrait',
-  border: '10mm',
-  childProcessOptions: {
-    env: {
-      OPENSSL_CONF: '/dev/null',
-    },
-  }
-}
-const document = {
-  html: template,
-  data: {
-    message: 'My First PDF'
-  },
-  path: "./pdfs/teste33r.pdf"
-}
+//const template = fs.readFileSync('./template/template.html', 'utf-8')
+// const options = {
+//   format: 'A4',
+//   orientation: 'portrait',
+//   border: '10mm',
+//   childProcessOptions: {
+//     env: {
+//       OPENSSL_CONF: '/dev/null',
+//     },
+//   }
+// }
+// const document = {
+//   html: template,
+//   data: {
+//     message: 'My First PDF'
+//   },
+//   path: "./pdfs/teste33r.pdf"
+// }
 
 // pdf.create(document,options).then((res)=>{
 // console.log(res)
