@@ -3892,7 +3892,7 @@ exports.cronJobStatus = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lte: ["$$product.coverageEndDate", endOfDay] },
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [

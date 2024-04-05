@@ -1871,7 +1871,7 @@ exports.updateDealerMeta = async (req, res) => {
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     data.name = data.accountName
-    data.accountStatus = true
+    // data.accountStatus = true
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!updatedData) {
       res.send({
@@ -1908,10 +1908,9 @@ exports.updateDealerMeta = async (req, res) => {
       }
     }
     //update primary user to true by default
-    if (data.isAccountCreate && checkDealer.status) {
+    if (data.isAccountCreate && checkDealer.accountStatus) {
       await userService.updateSingleUser({ metaId: checkDealer._id, isPrimary: true }, { status: true }, { new: true })
     }
-
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
