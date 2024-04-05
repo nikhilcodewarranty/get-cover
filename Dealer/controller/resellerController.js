@@ -468,7 +468,8 @@ exports.getResellerUsers = async (req, res) => {
     res.send({
         code: constant.successCode,
         data: users,
-        resellerStatus: checkReseller.status
+        resellerStatus: checkReseller.status,
+        isAccountCreate: checkReseller.isAccountCreate
     });
     return;
 }

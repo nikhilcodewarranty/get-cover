@@ -837,7 +837,8 @@ exports.getCustomerUsers = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      customerStatus: checkCustomer.status
+      customerStatus: checkCustomer.status,
+      isAccountCreate: checkCustomer.isAccountCreate
     })
   } catch (err) {
     res.send({
@@ -914,7 +915,7 @@ exports.getCustomerById = async (req, res) => {
         orderAmount: 1,
       }
 
-      
+
       let orderQuery = { customerId: { $in: [checkCustomer._id] }, status: "Active" }
       let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId");
 
@@ -926,7 +927,7 @@ exports.getCustomerById = async (req, res) => {
           meta: checkCustomer,
           primary: getPrimaryUser,
           resellerName: checkReseller ? checkReseller.name : '',
-          resellerStatus: checkReseller ? checkReseller.status : null, 
+          resellerStatus: checkReseller ? checkReseller.status : null,
           orderData: ordersResult
         }
       })

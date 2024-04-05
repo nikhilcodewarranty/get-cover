@@ -115,7 +115,8 @@ exports.getDealerUsers = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: filteredData,
-            dealerStatus: dealers[0].accountStatus
+            dealerStatus: dealers[0].accountStatus,
+            isAccountCreate: dealers[0].isAccountCreate
         })
 
     } catch (err) {
