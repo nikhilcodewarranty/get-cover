@@ -4,6 +4,8 @@ const pdf = require('pdf-creator-node');
 
 var path = require('path');
 var logger = require('morgan');
+const { trim_all} = require('request_trimmer');
+
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
 var bodyParser = require("body-parser");
@@ -103,6 +105,8 @@ const httpServer = http.createServer(app)
 // view engine setup  
 app.use(logger('dev'));
 app.use(express.json());
+app.use(trim_all);
+
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));

@@ -1,12 +1,14 @@
 require("dotenv").config();
 
 const bcrypt = require("bcrypt");
+
 const jwt = require("jsonwebtoken");
+
 const randtoken = require('rand-token').generator()
 
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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 ');
+sgMail.setApiKey('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');
 const XLSX = require("xlsx");
 const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;

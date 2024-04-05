@@ -6,17 +6,17 @@ const validator = require('../config/validation');
 
 router.post('/getDealerUsers', [verifyToken], dealerUserController.getDealerUsers)
 router.post('/createOrder', [verifyToken], dealerUserController.createOrder)
-router.post('/editOrderDetail/:orderId', [verifyToken], dealerUserController.editOrderDetail) 
+router.post('/editOrderDetail/:orderId', [verifyToken], dealerUserController.editOrderDetail)
 router.post('/getPriceBooks', [verifyToken], dealerUserController.getPriceBooks)
 router.post('/createDealerPriceBook', [verifyToken], dealerUserController.createDealerPriceBook)
 router.post('/getAllPriceBooksByFilter', [verifyToken], dealerUserController.getAllPriceBooksByFilter)
-router.post('/createCustomer', [verifyToken], dealerUserController.createCustomer)
+router.post('/createCustomer', [verifyToken], validator('create_customer'), dealerUserController.createCustomer)
 router.post('/createDealerPriceBook', [verifyToken], dealerUserController.createDealerPriceBook)
 router.post('/getDealerCustomers', [verifyToken], dealerUserController.getDealerCustomers)
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], dealerUserController.statusUpdate);
 router.post("/getResellerPriceBook/:resellerId", [verifyToken], dealerUserController.getResellerPriceBook);
 router.post('/getCustomerInOrder', [verifyToken], dealerUserController.getCustomerInOrder)
-router.post('/getServicerInOrders', [verifyToken], dealerUserController.getServicerInOrders) 
+router.post('/getServicerInOrders', [verifyToken], dealerUserController.getServicerInOrders)
 router.get('/getDashboardData', [verifyToken], dealerUserController.getDashboardData)
 
 router.post('/getDealerResellers', [verifyToken], dealerUserController.getDealerResellers)

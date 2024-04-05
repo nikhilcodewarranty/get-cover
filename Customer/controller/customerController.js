@@ -1212,7 +1212,9 @@ exports.getCustomerContract = async (req, res) => {
     let getContracts = await contractService.getAllContracts2(query)
     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
     console.log(orderIDs, skipLimit, limitData)
-    let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    //let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+
     console.log(pageLimit, skipLimit, limitData)
     // if (!getContract) {
     //   res.send({

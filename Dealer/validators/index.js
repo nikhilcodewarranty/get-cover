@@ -5,6 +5,7 @@ const change_status_dealer = require('./change_status_dealer')
 const filter_price_book= require('./filter_price_book')
 const filter_dealer_price= require('./filter_dealer_price')
 const create_reseller= require('./create_reseller')
+const create_customer= require('./create_customer')
 
 
 
@@ -15,5 +16,6 @@ module.exports = {
     change_status_dealer,
     filter_price_book,
     filter_dealer_price,
-    create_reseller
+    create_reseller,
+    create_customer
 }
