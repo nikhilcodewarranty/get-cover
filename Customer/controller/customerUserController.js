@@ -1122,10 +1122,10 @@ exports.getContractById = async (req, res) => {
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
-      if (productsArray.length > 0) {
+      if (productsArray.length > 0){
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
-        getData[0].order[i].productsArray = productsArray
-      }
+        getData[0].order[i].productsArray = productsArray 
+      } 
     }
     getData.map((data, index) => {
       if (data.order[0]?.servicerId != null) {
@@ -1213,36 +1213,7 @@ exports.getCustomerDetails = async (req, res) => {
           from: "dealers",
           foreignField: "_id",
           localField: "dealerId",
-          as: "dealer",
-          pipeline: [
-            {
-              $lookup: {
-                from: "users",
-                foreignField: "metaId",
-                localField: "_id",
-                as: "dealerInfo",
-                pipeline: [
-                  {
-                    $match:
-                    {
-                      $and: [
-                        { isPrimary: true }
-                      ]
-                    },
-                  },
-                  {
-                    $project: {
-                      street:1,
-                      city:1,
-                      zip:1,
-                      state:1,
-                      country:1,
-                    }
-                  }
-                ]
-              }
-            }
-          ]
+          as: "dealer"
         }
       },
       {
@@ -1250,36 +1221,7 @@ exports.getCustomerDetails = async (req, res) => {
           from: "resellers",
           foreignField: "_id",
           localField: "resellerId",
-          as: "reseller",
-          pipeline: [
-            {
-              $lookup: {
-                from: "users",
-                foreignField: "metaId",
-                localField: "_id",
-                as: "resellerInfo",
-                pipeline: [
-                  {
-                    $match:
-                    {
-                      $and: [
-                        { isPrimary: true }
-                      ]
-                    },
-                  },
-                  {
-                    $project: {
-                      street:1,
-                      city:1,
-                      zip:1,
-                      state:1,
-                      country:1,
-                    }
-                  }
-                ]
-              }
-            }
-          ]
+          as: "reseller"
         }
       },
       { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
