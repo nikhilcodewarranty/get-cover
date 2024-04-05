@@ -734,7 +734,9 @@ exports.getCustomerUsers = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData,
-      customerStatus: checkCustomer.status
+      customerStatus: checkCustomer.status,
+      isAccountCreate: checkCustomer.isAccountCreate
+
     })
   } catch (err) {
     res.send({

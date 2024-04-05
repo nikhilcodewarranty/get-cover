@@ -856,7 +856,9 @@ exports.getSerivicerUsers = async (req, res) => {
         code: constant.successCode,
         message: "Success",
         result: filteredData,
-        servicerStatus: getServicerStatus.status
+        servicerStatus: getServicerStatus.status,
+      isAccountCreate: getServicerStatus.isAccountCreate
+
       })
     }
   } catch (err) {
