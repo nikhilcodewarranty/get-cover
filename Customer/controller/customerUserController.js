@@ -1056,6 +1056,9 @@ exports.getContractById = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    // Get Claim Total of the contract
+    const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1106,18 +1109,40 @@ exports.getContractById = async (req, res) => {
       },
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
-    let orderId = getData[0]?.orderProductId
-    let order = getData[0]?.order
-    for (let i = 0; i < order?.length; i++) {
-      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
-      getData[0].order[i].productsArray = productsArray
-
+    getData[0].claimAmount = 0;
+    if (claimTotal.length > 0) {
+      getData[0].claimAmount = claimTotal[0]?.amount
     }
 
-    // console.log(getData);
+    console.log("getData-------------------", getData)
 
-    if (!getData[0]) {
+    let orderProductId = getData[0].orderProductId
+    let order = getData[0].order
+    //res.json(order);return;
+    for (let i = 0; i < order.length; i++) {
+      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
+      if (productsArray.length > 0){
+        productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
+        getData[0].order[i].productsArray = productsArray 
+      } 
+    }
+    getData.map((data, index) => {
+      if (data.order[0]?.servicerId != null) {
+        if (data.order[0]?.dealer[0]?.isServicer && data.order[0]?.dealerId.toString() === data.order[0]?.servicerId.toString()) {
+          data.order[0]?.servicer.push(data.order[0]?.dealer[0])
+          getData[index] = data
+        }
+        if (data.order[0]?.reseller.length > 0) {
+          if (data.order[0]?.reseller[0]?.isServicer && data.order[0]?.resellerId.toString() === data.order[0]?.servicerId.toString()) {
+            data.order[0]?.servicer.push(data.order[0]?.reseller[0])
+            getData[index] = data
+          }
+
+        }
+      }
+
+    })
+    if (!getData) {
       res.send({
         code: constant.errorCode,
         message: "Unable to get contract"
