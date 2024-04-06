@@ -2019,10 +2019,12 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      // console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
 
       totalDataComing1 = totalDataComing1.map(item => {
+        console.log("item check )))))))))))))))))))",item)
         if (!item.priceBook) {
-          return { priceBook: '', 'RetailP rice': item['RetailP rice'] };
+          return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
@@ -2042,8 +2044,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return
       }
+      console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
+
       const totalDataComing = totalDataComing1.map(item => {
+      console.log("ccccc++++++++dddddddddddddddddd+++++++",item)
+
         const keys = Object.keys(item);
+        console.log("keys++++++++dddddddddddddddddd+++++++",keys)
+
         return {
           priceBook: item[keys[0]],
           retailPrice: item[keys[1]],
@@ -2053,9 +2061,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
       });
       //  return;
       // copy to here
-      totalDataComing.forEach(data => {
+      totalDataComing.forEach((data, index) => {
+        // console.log("data+++++++++++++++",data.retailPrice)
+
         if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
+          // console.log("data2--------------------------",data)
           data.status = "Dealer catalog retail price is not valid";
+          totalDataComing[index].retailPrice = data.retailPrice
           data.exit = true;
         }
         // else if(isNaN(parseFloat(data.retailPrice))){
@@ -2125,9 +2137,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
               dealerArray[i].brokerFee = dealerArray[i].retailPrice - dealerArray[i].wholesalePrice
               await dealerArray[i].save();
 
-              totalDataComing[i].status = "Dealer catalog updated successully";
+              totalDataComing[i].status = "Dealer catalog updated successully-";
               totalDataComing[i].duplicates.forEach((index) => {
-                totalDataComing[index].status = "Dealer catalog updated successully";
+                totalDataComing[index].status = "Dealer catalog updated successully_";
               })
 
             } else {
@@ -2135,17 +2147,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
-              console.log('checks for unique key-------------------------------',
-                {
-                  dealerId: data.dealerId,
-                  priceBook: totalDataComing[i].priceBookDetail._id,
-                  unique_key: unique_key,
-                  status: true,
-                  retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
-                  brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
-                  wholesalePrice
-                }
-              )
+
 
 
               await dealerPriceService.createDealerPrice({
@@ -2157,15 +2159,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              totalDataComing[i].status = "Dealer catalog created successully"
+              totalDataComing[i].status = "Dealer catalog created successully!"
+
               totalDataComing[i].duplicates.forEach((index, i) => {
-                totalDataComing[index].status = i == 0 ? "Dealer catalog created successully" : "Dealer catalog updated successully";
+                let msg = index === 0 ? "Dealer catalog created successully)" : "Dealer catalog updated successully%"
+                totalDataComing[index].status = msg;
               })
             }
           }
         }
 
-        console.log("totalDataComing3", totalDataComing);
         const csvArray = totalDataComing.map((item) => {
           return {
             priceBook: item.priceBook ? item.priceBook : "",
@@ -2173,7 +2176,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
             status: item.status
           }
         })
-        console.log('csv array-----------------------------', csvArray)
         function countStatus(array, status) {
           return array.filter(item => item.status === status).length;
         }
