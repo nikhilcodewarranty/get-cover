@@ -1225,7 +1225,7 @@ exports.getResellerContract = async (req, res) => {
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { eligibility: data.eligibilty === "true" ? true : false },
+                { eligibilty: data.eligibilty === "true" ? true : false },
             ]
         } else {
             contractFilter = [

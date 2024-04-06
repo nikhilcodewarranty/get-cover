@@ -153,7 +153,7 @@ exports.getAllContracts = async (req, res) => {
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { eligibility: data.eligibility },
+        { eligibilty: data.eligibilty === "true" ? true : false },
       ]
     } else {
       contractFilter = [
@@ -172,16 +172,7 @@ exports.getAllContracts = async (req, res) => {
       {
         $match:
         {
-          $and: [
-            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { eligibility: true },
-          ]
+          $and: contractFilter
         },
       },
       // {$limit: pageLimit},
@@ -215,6 +206,8 @@ exports.getAllContracts = async (req, res) => {
     if (newQuery.length > 0) {
       query = query.concat(newQuery);
     }
+
+
     // let query = [
     //   {
     //     $match:
