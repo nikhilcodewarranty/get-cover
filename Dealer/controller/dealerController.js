@@ -2022,7 +2022,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       // console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
 
       totalDataComing1 = totalDataComing1.map(item => {
-        console.log("item check )))))))))))))))))))",item)
+        console.log("item check )))))))))))))))))))", item)
         if (!item.priceBook) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
@@ -2044,13 +2044,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return
       }
-      console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
+      console.log("data++++++++dddddddddddddddddd+++++++", totalDataComing1)
 
       const totalDataComing = totalDataComing1.map(item => {
-      console.log("ccccc++++++++dddddddddddddddddd+++++++",item)
+        console.log("ccccc++++++++dddddddddddddddddd+++++++", item)
 
         const keys = Object.keys(item);
-        console.log("keys++++++++dddddddddddddddddd+++++++",keys)
+        console.log("keys++++++++dddddddddddddddddd+++++++", keys)
 
         return {
           priceBook: item[keys[0]],
@@ -3114,19 +3114,39 @@ exports.getDealerContract = async (req, res) => {
         },
 
       })
+
+    let contractFilter = []
+    if (data.eligibilty != '') {
+      contractFilter = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { eligibility: data.eligibilty === "true" ? true : false },
+      ]
+    } else {
+      contractFilter = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      ]
+    }
+
+
+    console.log("contract data-------------", contractFilter)
+
     let query = [
       {
         $match:
         {
-          $and: [
-            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          ]
+          $and: contractFilter
         },
       },
       {
@@ -3167,6 +3187,9 @@ exports.getDealerContract = async (req, res) => {
     if (newQuery.length > 0) {
       query = query.concat(newQuery);
     }
+
+
+    console.log("ksdjfksj", query)
 
     let getContracts = await contractService.getAllContracts2(query)
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0

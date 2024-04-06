@@ -582,20 +582,20 @@ exports.editResellers = async (req, res) => {
         else if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
-              name: data.accountName,
-              street: data.street,
-              city: data.city,
-              zip: data.zip,
-              dealerId: req.params.resellerId,
-              state: data.state,
-              country: data.country,
-              status: data.status,
-              accountStatus: "Approved",
-              unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+                name: data.accountName,
+                street: data.street,
+                city: data.city,
+                zip: data.zip,
+                dealerId: req.params.resellerId,
+                state: data.state,
+                country: data.country,
+                status: data.status,
+                accountStatus: "Approved",
+                unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
             }
             let createData = await providerService.createServiceProvider(servicerObject)
-    
-          }
+
+        }
         let resellerUserCreateria = { accountId: req.params.resellerId };
         let newValue = {
             $set: {
@@ -625,7 +625,7 @@ exports.editResellers = async (req, res) => {
             message: err.message
         })
     }
-} 
+}
 
 exports.addResellerUser = async (req, res) => {
     try {
@@ -676,7 +676,7 @@ exports.addResellerUser = async (req, res) => {
             message: err.message
         })
     }
-} 
+}
 
 exports.getResellerServicers = async (req, res) => {
     try {
@@ -1249,19 +1249,37 @@ exports.getResellerContract = async (req, res) => {
                 },
 
             })
+
+        let contractFilter = []
+        if (data.eligibilty != '') {
+            contractFilter = [
+                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { eligibility: data.eligibilty === "true" ? true : false },
+            ]
+        } else {
+            contractFilter = [
+                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+        }
+
+
         let query = [
             {
                 $match:
                 {
-                    $and: [
-                        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-                        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { status: { '$regex': data.status ? data.status : '', '$options': 'i' } },
-                    ]
+                    $and: contractFilter
                 },
             },
             {

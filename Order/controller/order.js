@@ -3099,18 +3099,35 @@ exports.getOrderContract = async (req, res) => {
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
+
+        let contractFilter = []
+        if (data.eligibilty != '') {
+            contractFilter = [
+                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { eligibility: data.eligibilty === "true" ? true : false },
+            ]
+        } else {
+            contractFilter = [
+                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+        }
+
         let query = [
             {
                 $match: {
-                    $and: [
-                        { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
-                        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                    ]
+                    $and: contractFilter
                 }
 
             },
@@ -4042,7 +4059,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
         let endOfDay = new Date();
         endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
         endOfDay.setHours(0, 0, 0, 0);
-        let lookupQuery = [ 
+        let lookupQuery = [
             {
                 $match: query // Your match condition here 
             },
@@ -4082,7 +4099,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
             }
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
- 
+
         let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
