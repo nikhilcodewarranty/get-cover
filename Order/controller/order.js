@@ -1439,7 +1439,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toString().toLowerCase(),
+                                serialNumber: item[keys[2]].toString().toLowerCase().replace(/\s+/g, ' '),
                                 retailValue: item[keys[4]]
                             };
                         });
