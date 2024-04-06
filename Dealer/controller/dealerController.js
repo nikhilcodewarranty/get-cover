@@ -2217,7 +2217,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               </body>
           </html>`;
 
-          return htmlContent;
+          return htmlContent; 
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
