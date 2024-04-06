@@ -4042,7 +4042,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
         let endOfDay = new Date();
         endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
         endOfDay.setHours(0, 0, 0, 0);
-        let lookupQuery = [
+        let lookupQuery = [ 
             {
                 $match: query // Your match condition here 
             },
@@ -4082,7 +4082,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
             }
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
-
+ 
         let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
