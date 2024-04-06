@@ -3833,6 +3833,7 @@ exports.generatePDF = async (req, res) => {
         })
     }
 };
+
 exports.generateHtmltopdf = async (req, res) => {
     try {
         // if (req.role != 'Super Admin') {
