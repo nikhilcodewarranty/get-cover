@@ -984,7 +984,6 @@ exports.getOrderContract = async (req, res) => {
       // }
       // { $unwind: "$contracts" }
     ]
-    //  console.log.log('before--------------', Date.now())
     let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
     //  console.log.log('after+++++++++++++++++++++', Date.now())
     let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
