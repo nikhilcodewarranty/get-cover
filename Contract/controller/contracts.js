@@ -167,10 +167,6 @@ exports.getAllContracts = async (req, res) => {
       ]
     }
 
-    res.send({
-      code:contractFilter
-    })
-
     let query = [
       { $sort: { unique_key_number: -1 } },
       {
