@@ -1325,7 +1325,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 // }));
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
-
                     let file1 = undefined; // Initialize file to undefined
                     if (data1.fileValue == 'true') {
                         let checkFile = JSON.parse(data1.orderFile)
@@ -1413,9 +1412,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 obj1[key] = obj1[key];
                             }
                         });
-
-
-                        console.log("obj---------------------", obj.data)
                         const isValidLength = obj.data.every(
                             (obj1) => Object.keys(obj1).length === 5
                         );
