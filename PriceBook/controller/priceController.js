@@ -430,7 +430,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       message: error.message
     })
   }
-};
+}; 
 
 // Function to update price book by me
 const updatePriceBookStatus = async (priceId, newData) => {
