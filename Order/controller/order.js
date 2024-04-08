@@ -3202,7 +3202,7 @@ exports.getOrderContract = async (req, res) => {
                 code: constant.successCode,
                 message: "Success!",
                 result: checkOrder,
-                contractCount: 0,
+                totalCount: 0,
                 orderUserData: {}
             })
             return
