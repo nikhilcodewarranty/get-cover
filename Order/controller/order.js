@@ -1410,7 +1410,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         obj.data.forEach((obj1) => {
                             for (let key in obj1) {
                                 // Trim whitespace from each value
-                                obj1[key] = obj1[key].toString().replace(/\s+/g, ' ').trim();
+                                obj1[key] = obj1[key];
                             }
                         });
 
@@ -1440,7 +1440,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             const keys = Object.keys(item);
                             return {
                                 key: obj.key,
-                                serialNumber: item[keys[2]].toString().toLowerCase().replace(/\s+/g, ' '),
+                                serialNumber: item[keys[2]],
                                 retailValue: item[keys[4]]
                             };
                         });
