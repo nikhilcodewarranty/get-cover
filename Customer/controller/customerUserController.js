@@ -1169,7 +1169,7 @@ exports.getDashboardData = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
-    let getUser = await userService.getUserById1({ accountId: req.userId })
+    let getUser = await userService.getUserById1({ _id: req.teammateId })
     let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
