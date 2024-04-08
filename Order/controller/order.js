@@ -1525,7 +1525,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
-                                else if (obj1.priceType == 'Flat Pricing' &&
+                                if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
                                 ) {
