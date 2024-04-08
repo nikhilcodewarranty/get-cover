@@ -3974,9 +3974,8 @@ exports.generateHtmltopdf = async (req, res) => {
             const outputPath = process.env.MAIN_FILE_PATH + "Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
-
             res.send({
-                code: constant.successCode,
+                code: constant.successCode, 
                 message: 'Success!'
             })
         });
