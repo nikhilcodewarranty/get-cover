@@ -3,6 +3,7 @@ require("dotenv").config()
 const orderResourceResponse = require("../utils/constant");
 const pdf = require('html-pdf');
 
+
 const orderService = require("../services/orderService");
 // const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
@@ -3913,7 +3914,7 @@ exports.generateHtmltopdf = async (req, res) => {
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
-                    <td>${checkOrder.productsArray[0]?.coverageStartDate}</td>
+                    <td>${checkOrder.productsArray[0]?.moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
                 <td>GET COVER service contract period (inclusive
@@ -3923,7 +3924,7 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr>
             <tr>
             <td>Expiration date:</td>
-            <td>${checkOrder.productsArray[0]?.coverageEndDate}</td>
+            <td>${checkOrder.productsArray[0]?.moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
                 <td>Covered System:</td>
