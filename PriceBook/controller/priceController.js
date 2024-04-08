@@ -44,7 +44,29 @@ exports.getAllPriceBooks = async (req, res, next) => {
         ]
       };
     }
+    // return;
+    if (data.term != '') {
+      query.$and.push({ 'term': Number(data.term) });
+    }
+    if (data.priceType != '') {
+      query.$and.push({ 'priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+        query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
+        query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
+        // const flatQuery = {
+        //   $and: [
+        //     { 'rangeStart': { $lte: Number(data.range) } },
+        //     { 'rangeEnd': { $gte: Number(data.range) } },
+        //   ]
+        // }
+        // query.$and.push(flatQuery);
+      }
+    }
 
+    // console.log("filter-------------------------", query);
+
+
+    // return
     console.log("-----------------------------------------", query)
     let projection = { isDeleted: 0, __v: 0 }
     if (req.role != "Super Admin") {
@@ -430,7 +452,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       message: error.message
     })
   }
-}; 
+};
 
 // Function to update price book by me
 const updatePriceBookStatus = async (priceId, newData) => {
@@ -920,7 +942,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
- 
+
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {

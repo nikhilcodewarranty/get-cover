@@ -1323,8 +1323,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 // const uploadedFiles = req.files.map((file) => ({
                 //     filePath: file.destination + '/' + file.filename,
                 // }));
-
-                console.log("I am hereeeeee");
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
@@ -1569,7 +1567,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         //         });
                         //     }
                         // }
-
                     });
 
                     console.log("message-------------",message);
