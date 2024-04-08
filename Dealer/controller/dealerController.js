@@ -1238,10 +1238,10 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     }
 
     if (data.priceType != '') {
-      query.$and.push({ 'priceType': data.priceType });
+      matchConditions.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
-        query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
-        query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
+        matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+        matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         // const flatQuery = {
         //   $and: [
         //     { 'rangeStart': { $lte: Number(data.range) } },

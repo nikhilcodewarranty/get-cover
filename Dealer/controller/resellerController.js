@@ -523,6 +523,21 @@ exports.getResellerPriceBook = async (req, res) => {
             }
         ]
     }
+
+    if (data.priceType != '') {
+        matchConditions.push({ 'priceBooks.priceType': data.priceType });
+        if (data.priceType == 'Flat Pricing') {
+          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+          // const flatQuery = {
+          //   $and: [
+          //     { 'rangeStart': { $lte: Number(data.range) } },
+          //     { 'rangeEnd': { $gte: Number(data.range) } },
+          //   ]
+          // }
+          // query.$and.push(flatQuery);
+        }
+      }
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
