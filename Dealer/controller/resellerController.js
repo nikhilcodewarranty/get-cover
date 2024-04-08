@@ -534,7 +534,7 @@ exports.getResellerPriceBook = async (req, res) => {
           //     { 'rangeStart': { $lte: Number(data.range) } },
           //     { 'rangeEnd': { $gte: Number(data.range) } },
           //   ]
-          // }
+          // } 
           // query.$and.push(flatQuery);
         }
       }
