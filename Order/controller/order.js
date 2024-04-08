@@ -3865,6 +3865,8 @@ exports.generateHtmltopdf = async (req, res) => {
         //     return;
         // }
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+        let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
+        let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
 
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
@@ -3887,7 +3889,7 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         const orderFile = 'pdfs/' + Date.now() + "_" + checkOrder.unique_key + '.pdf';
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<table border='1'>
+        const html = `<table border='1' border-collapse='collapse'>
                             <tr>
                                 <td style="width:50%">  GET COVER service contract number:</td>
                                 <td>GET COVER-${checkOrder.unique_key}</td>
@@ -3914,7 +3916,7 @@ exports.generateHtmltopdf = async (req, res) => {
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
-                    <td>${checkOrder.productsArray[0]?.moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td>${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
                 <td>GET COVER service contract period (inclusive
@@ -3924,7 +3926,7 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr>
             <tr>
             <td>Expiration date:</td>
-            <td>${checkOrder.productsArray[0]?.moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+            <td>${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
                 <td>Covered System:</td>
@@ -3965,9 +3967,10 @@ exports.generateHtmltopdf = async (req, res) => {
                 console.log('PDFs merged successfully!');
             }
 
+            const termConditionFile = checkDealer.termCondition.filename
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + "termCondition-1712140187701.pdf";
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
