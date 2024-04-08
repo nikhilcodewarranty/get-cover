@@ -3103,7 +3103,7 @@ exports.getOrderContract = async (req, res) => {
         let contractFilter = []
         if (data.eligibilty != '') {
             contractFilter = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3114,6 +3114,7 @@ exports.getOrderContract = async (req, res) => {
             ]
         } else {
             contractFilter = [
+                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3144,6 +3145,7 @@ exports.getOrderContract = async (req, res) => {
                 {
                     $and: [
                         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        // { "order._id": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                     ]
                 },
 
@@ -3170,6 +3172,7 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
+                                orderId: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 "order.unique_key": 1,
@@ -3861,9 +3864,16 @@ exports.generateHtmltopdf = async (req, res) => {
         //     return;
         // }
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-        const dealerInfo  = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
-        const resellerInfo  = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
-        const servicerInfo  = await servicerService.getServiceProviderById({ _id: checkOrder.servicerId }, { isDeleted: false })
+        const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+
+        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+
+        const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
+
+        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkOrder.servicerId }, { isDeleted: false })
+
+        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -3876,15 +3886,96 @@ exports.generateHtmltopdf = async (req, res) => {
         }
         const orderFile = 'pdfs/' + Date.now() + "_" + checkOrder.unique_key + '.pdf';
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<h1>Hello World</h1><p>This is custom HTML content.</p>`;
+        const html = `<table border='1'>
+                            <tr>
+                                <td style="width:50%">  GET COVER service contract number:</td>
+                                <td>GET COVER-${checkOrder.unique_key}</td>
+                            </tr>
+                            <tr>
+                                <td>Installer Name:</td>
+                                <td>
+                                    <p> Attention –${checkDealer.name}</p>
+                                    <p> Email Address –${DealerUser.email}</p>
+                                    <p>Telephone #${DealerUser.email}</p>
+                                </td>
+                            </tr>
+                        <tr>
+                            <td>GET COVER service contract holder name:</td>
+                            <td>
+                            <p> Attention –${checkServicer.name}</p>
+                            <p> Email Address –${servicerUser.email}</p>
+                            <p>Telephone #${servicerUser.email}</p>
+                            </td>
+                        </tr>
+                    <tr>
+                        <td>Address of GET COVER service contract holder:</td>
+                        <td>${checkServicer.city},${checkServicer.street},${checkServicer.state}</td>
+                   </tr>
+                <tr>
+                    <td>Start date (date of system installation)</td>
+                    <td>${checkOrder.productsArray[0]?.coverageStartDate}</td>
+                </tr>
+            <tr>
+                <td>GET COVER service contract period (inclusive
+                    of any US manufacturer’s warranty that may exist
+                    during the GET COVER service contract period)</td>
+                <td>${checkOrder.productsArray[0]?.term}</td>
+            </tr>
+            <tr>
+            <td>Expiration date:</td>
+            <td>${checkOrder.productsArray[0]?.coverageEndDate}</td>
+          </tr>
+            <tr>
+                <td>Covered System:</td>
+                <td>10 Year Labor only Coverage</td>
+            </tr>
+        </table>`;
         pdf.create(html, options).toFile(orderFile, (err, result) => {
             if (err) return console.log(err);
+            // -------------------merging pdfs 
+            const { PDFDocument, rgb } = require('pdf-lib');
+            const fs = require('fs').promises;
+
+            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                // Load the PDFs
+                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+                // Create a new PDF Document
+                const mergedPdf = await PDFDocument.create();
+
+                // Add the pages of the first PDF
+                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Add the pages of the second PDF
+                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Serialize the PDF
+                const mergedPdfBytes = await mergedPdf.save();
+
+                // Write the merged PDF to a file
+                await fs.writeFile(outputPath, mergedPdfBytes);
+
+                console.log('PDFs merged successfully!');
+            }
+
+            // Usage
+            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + "termCondition-1712140187701.pdf";
+            const outputPath = process.env.MAIN_FILE_PATH + "Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+            mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+            console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
+
             res.send({
                 code: constant.successCode,
                 message: 'Success!'
             })
         });
-
     }
     catch (err) {
         res.send({
