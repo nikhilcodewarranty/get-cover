@@ -3172,7 +3172,7 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                orderId:1,
+                                orderId: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 "order.unique_key": 1,
@@ -3864,7 +3864,6 @@ exports.generateHtmltopdf = async (req, res) => {
         //     return;
         // }
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-        // console.log(checkOrder);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -3880,12 +3879,53 @@ exports.generateHtmltopdf = async (req, res) => {
         const html = `<h1>Hello World</h1><p>This is custom HTML content.</p>`;
         pdf.create(html, options).toFile(orderFile, (err, result) => {
             if (err) return console.log(err);
+            // -------------------merging pdfs 
+            const { PDFDocument, rgb } = require('pdf-lib');
+            const fs = require('fs').promises;
+
+            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                console.log('PDFs merged 11111111111111!');
+
+                // Load the PDFs
+                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+                // Create a new PDF Document
+                const mergedPdf = await PDFDocument.create();
+
+                // Add the pages of the first PDF
+                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Add the pages of the second PDF
+                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Serialize the PDF
+                const mergedPdfBytes = await mergedPdf.save();
+
+                // Write the merged PDF to a file
+                await fs.writeFile(outputPath, mergedPdfBytes);
+
+                console.log('PDFs merged successfully!');
+            }
+
+            // Usage
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "Order/" + orderFile;
+            const pdfPath2 = process.env.MAIN_FILE_PATH + "Uploads/" + "termCondition-1712140187701.pdf";
+            const outputPath = process.env.MAIN_FILE_PATH + "Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+
+
+            mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+
             res.send({
                 code: constant.successCode,
                 message: 'Success!'
             })
         });
-
     }
     catch (err) {
         res.send({
