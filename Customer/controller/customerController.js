@@ -1265,7 +1265,7 @@ exports.updateCustomer = async (req, res, next) => {
       .status(customerResourceResponse.serverError.statusCode)
       .json({ error: "Internal server error" });
   }
-};
+}; 
 
 exports.deleteCustomer = async (req, res, next) => {
   try {

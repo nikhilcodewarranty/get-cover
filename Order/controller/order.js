@@ -3861,7 +3861,9 @@ exports.generateHtmltopdf = async (req, res) => {
         //     return;
         // }
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-        // console.log(checkOrder);return
+        const dealerInfo  = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+        const resellerInfo  = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
+        const servicerInfo  = await servicerService.getServiceProviderById({ _id: checkOrder.servicerId }, { isDeleted: false })
         const options = {
             format: 'A4',
             orientation: 'portrait',
