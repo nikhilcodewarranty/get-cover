@@ -3103,7 +3103,7 @@ exports.getOrderContract = async (req, res) => {
         let contractFilter = []
         if (data.eligibilty != '') {
             contractFilter = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3114,6 +3114,7 @@ exports.getOrderContract = async (req, res) => {
             ]
         } else {
             contractFilter = [
+                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3144,6 +3145,7 @@ exports.getOrderContract = async (req, res) => {
                 {
                     $and: [
                         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        // { "order._id": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                     ]
                 },
 
@@ -3170,6 +3172,7 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
+                                orderId:1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 "order.unique_key": 1,
