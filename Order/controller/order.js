@@ -3975,7 +3975,7 @@ exports.generateHtmltopdf = async (req, res) => {
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
-                code: constant.successCode, 
+                code: constant.successCode,
                 message: 'Success!'
             })
         });
@@ -3986,6 +3986,40 @@ exports.generateHtmltopdf = async (req, res) => {
             message: err.message
         })
         return;
+    }
+}
+
+exports.getPendingAmount = async (req, res) => {
+    try {
+        if (req.role != 'Super Admin') {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action!"
+            })
+            return;
+        }
+        const data = req.body
+        if (data.orderAmount > data.paidAmount) {
+            const pendingAmount = data.orderAmount - data.paidAmount
+            res.send({
+                code: constant.successCode,
+                message: 'Success!',
+                result: {
+                    pendingAmount: pendingAmount,
+                    status: 'PartlyPaid'
+                }
+            })
+        }
+        res.send({
+            code: constant.successCode,
+            message: 'Success!'
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
 }
 

@@ -20,6 +20,8 @@ router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
 //router.post('/getOrder', [verifyToken], orderController.getOrder)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
+router.post('/getPendingAmount', [verifyToken], orderController.getPendingAmount)
+
 router.get('/getOrderById/:orderId', [verifyToken], orderController.getSingleOrder)
 router.get('/markAsPaid/:orderId', [verifyToken], orderController.markAsPaid)
 router.post('/getOrderContract/:orderId', [verifyToken], orderController.getOrderContract)
