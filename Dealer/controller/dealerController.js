@@ -1213,7 +1213,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-    console.log("lklklkkklk", data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
       query = {
@@ -1238,6 +1237,20 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       };
     }
 
+    if (data.priceType != '') {
+      query.$and.push({ 'priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+        query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
+        query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
+        // const flatQuery = {
+        //   $and: [
+        //     { 'rangeStart': { $lte: Number(data.range) } },
+        //     { 'rangeEnd': { $gte: Number(data.range) } },
+        //   ]
+        // }
+        // query.$and.push(flatQuery);
+      }
+    }
 
     //
     let projection = { isDeleted: 0, __v: 0 }
