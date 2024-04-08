@@ -1116,6 +1116,7 @@ exports.getCustomerContract = async (req, res) => {
       let contractFilter = []
       if (data.eligibilty != '') {
         contractFilter = [
+          // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
           { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
