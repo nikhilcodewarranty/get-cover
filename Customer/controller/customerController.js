@@ -845,7 +845,7 @@ exports.customerOrders = async (req, res) => {
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult
       .filter(result => result.resellerId !== null)
-      .map(result => result.resellerId.toString());
+      .map(result => result.resellerId?.toString());
 
     let mergedArray = userDealerIds.concat(userResellerIds);
     //Get Respective Dealers
