@@ -3974,7 +3974,7 @@ exports.generateHtmltopdf = async (req, res) => {
             console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
                 code: constant.successCode,
-                message: 'Success!'
+                message: 'Success!',
             })
         });
     }
@@ -4083,7 +4083,7 @@ exports.cronJobStatus = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
@@ -4201,7 +4201,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
