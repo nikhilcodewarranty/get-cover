@@ -2853,7 +2853,6 @@ exports.getAllContracts = async (req, res) => {
     }
 };
 
-
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
