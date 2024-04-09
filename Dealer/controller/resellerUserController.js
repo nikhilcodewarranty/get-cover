@@ -473,6 +473,75 @@ exports.getResellerUsers = async (req, res) => {
     return;
 }
 
+exports.getResellerDetails = async (req, res) => {
+    try {
+        if (req.role != "Reseller") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only reseller allow to do this action"
+            })
+            return;
+        }
+        let data = req.body
+        let getUser = await userService.getUserById1({ _id: req.teammateId })
+        let mid = new mongoose.Types.ObjectId(req.userId)
+        let query = [
+            {
+                $match: {
+                    _id: mid
+                }
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    foreignField: "_id",
+                    localField: "dealerId",
+                    as: "dealer"
+                }
+            },
+            { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    name: 1,
+                    street: 1,
+                    city: 1,
+                    zip: 1,
+                    state: 1,
+                    country: 1,
+                    isServicer: 1,
+                    "dealer.name": 1,
+                    "dealer.street": 1,
+                    "dealer.city": 1,
+                    "dealer.zip": 1,
+                    "dealer.state": 1,
+                    "dealer.country": 1,
+                    "dealer.isServicer": 1,
+                }
+            }
+        ]
+        let getCustomer = await resellerService.getResellerByAggregate(query)
+        if (!getCustomer[0]) {
+            res.send({
+                code: Constant.errorCode,
+                message: "Unable to fetch the details"
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Successfully fetched user details.",
+            result: getCustomer[0],
+            loginMember: getUser
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
 exports.getResellerPriceBook = async (req, res) => {
     // if (req.role != "Super Admin") {
     //     res.send({

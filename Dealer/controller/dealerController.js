@@ -2853,7 +2853,7 @@ exports.getDealerOrders = async (req, res) => {
         const customerName =
           item1.customerId != null
             ? respectiveCustomer.find(
-              (item2) => item2._id.toString() === item1.customerId.toString()
+              (item2) => item2._id.toString() === item1.customerId?.toString()
             )
             : null;
         const resellerName =

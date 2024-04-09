@@ -1007,7 +1007,7 @@ exports.getResellerOrders = async (req, res) => {
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId.toString());
+            .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
         //Get Respective Dealers
@@ -1047,7 +1047,7 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId.toString());
+            .map(result => result.customerId?.toString());
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
@@ -1066,20 +1066,20 @@ exports.getResellerOrders = async (req, res) => {
                 item1.servicerId != null
                     ? respectiveServicer.find(
                         (item2) =>
-                            item2._id.toString() === item1.servicerId.toString() ||
+                            item2._id.toString() === item1.servicerId?.toString() ||
                             item2.resellerId === item1.servicerId
                     )
                     : null;
             const customerName =
                 item1.customerId != null
                     ? respectiveCustomer.find(
-                        (item2) => item2._id.toString() === item1.customerId.toString()
+                        (item2) => item2._id.toString() === item1.customerId?.toString()
                     )
                     : null;
             const resellerName =
                 item1.resellerId != null
                     ? respectiveReseller.find(
-                        (item2) => item2._id.toString() === item1.resellerId.toString()
+                        (item2) => item2._id.toString() === item1.resellerId?.toString()
                     )
                     : null;
             if (dealerName || customerName || servicerName || resellerName) {

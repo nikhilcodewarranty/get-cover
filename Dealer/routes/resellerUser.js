@@ -18,6 +18,7 @@ router.get("/getDashboardData", [verifyToken], resellerController.getDashboardDa
 router.get("/getDealerByReseller", [verifyToken], resellerController.getDealerByReseller);
 router.post("/getResellerPriceBook", [verifyToken], resellerController.getResellerPriceBook);
 router.post("/getResellerUsers", [verifyToken], resellerController.getResellerUsers);
+router.post("/getResellerDetails", [verifyToken], resellerController.getResellerDetails);
 router.post("/resellerOrders", [verifyToken], resellerController.getResellerOrders);
 router.post("/getResellerContract", [verifyToken], resellerController.getResellerContract);
 

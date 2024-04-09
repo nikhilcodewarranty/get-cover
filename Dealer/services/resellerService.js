@@ -38,6 +38,15 @@ module.exports = class resellerService {
         }
     }
 
+    static async getResellerByAggregate(query) {
+        try {
+            const singleResellerResponse = await reseller.aggregate(query);
+            return singleResellerResponse;
+        } catch (error) {
+            console.log(`Customer not found. ${error}`);
+        }
+
+    }
     static async updateMeta(query, projection) {
         try {
             let updateMeta = await reseller.updateMany(query, projection);
@@ -48,11 +57,11 @@ module.exports = class resellerService {
         }
     }
 
-    static async updateReseller(criteria,data){
-        try{
-            let updateMeta = await reseller.findOneAndUpdate(criteria, data,{new:true});
+    static async updateReseller(criteria, data) {
+        try {
+            let updateMeta = await reseller.findOneAndUpdate(criteria, data, { new: true });
             return updateMeta
-        }catch(err){
+        } catch (err) {
             console.log(`Unable to update the name ${err}`)
         }
     }
