@@ -526,7 +526,7 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     if (data.term != '') {
-        query.$and.push({ 'priceBooks.term': Number(data.term) });
+        query.$and.push({ 'priceBooks.term': Number(data.term) }); 
     }
 
     if (data.priceType != '') {
@@ -537,7 +537,7 @@ exports.getResellerPriceBook = async (req, res) => {
             // const flatQuery = {
             //   $and: [
             //     { 'rangeStart': { $lte: Number(data.range) } },
-            //     { 'rangeEnd': { $gte: Number(data.range) } },
+            //     { 'rangeEnd': { $gte: Number(data.range) } }, 
             //   ]
             // } 
             // query.$and.push(flatQuery);
