@@ -1334,9 +1334,11 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
         // query.$and.push(flatQuery);
       }
     }
-
     if (data.name) {
-      matchConditions.push({ 'dealer.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+      matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+    }
+    if (data.dealerName) {
+      matchConditions.push({ 'dealer.name': { '$regex': req.body.dealerName ? req.body.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
     }
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
     console.log(matchStage);
