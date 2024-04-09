@@ -1213,7 +1213,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-    console.log("lklklkkklk", data.status)
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
       query = {
@@ -1238,6 +1237,20 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       };
     }
 
+    if (data.priceType != '') {
+      matchConditions.push({ 'priceBooks.priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+        matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+        matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        // const flatQuery = {
+        //   $and: [
+        //     { 'rangeStart': { $lte: Number(data.range) } },
+        //     { 'rangeEnd': { $gte: Number(data.range) } },
+        //   ]
+        // }
+        // query.$and.push(flatQuery);
+      }
+    }
 
     //
     let projection = { isDeleted: 0, __v: 0 }
@@ -1300,12 +1313,26 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
 
     if (data.status != 'all' && data.status != undefined) {
-      console.log("dssdsdf");
       matchConditions.push({ 'status': data.status });
     }
 
     if (data.term) {
       matchConditions.push({ 'priceBooks.term': Number(data.term) });
+    }
+
+    if (data.priceType != '') {
+      matchConditions.push({ 'priceBooks.priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+        matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+        matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        // const flatQuery = {
+        //   $and: [
+        //     { 'rangeStart': { $lte: Number(data.range) } },
+        //     { 'rangeEnd': { $gte: Number(data.range) } },
+        //   ]
+        // }
+        // query.$and.push(flatQuery);
+      }
     }
 
     if (data.name) {
@@ -1340,7 +1367,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       code: constant.successCode,
       message: "Success",
       result: priceBooks,
-      matchStage
+      //matchStage
     })
   } catch (err) {
     res.send({
@@ -2217,7 +2244,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               </body>
           </html>`;
 
-          return htmlContent; 
+          return htmlContent;
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);

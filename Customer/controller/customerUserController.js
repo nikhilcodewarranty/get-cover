@@ -567,28 +567,28 @@ exports.getCustomerContract = async (req, res) => {
 
       })
 
-      let contractFilter = []
-      if (data.eligibilty != '') {
-        contractFilter = [
-          { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { eligibilty: data.eligibilty === "true" ? true : false },
-        ]
-      } else {
-        contractFilter = [
-          // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-          { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        ]
-      }
+    let contractFilter = []
+    if (data.eligibilty != '' && data.hasOwnProperty('eligibilty')) {
+      contractFilter = [
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { eligibilty: data.eligibilty === "true" ? true : false },
+      ]
+    } else {
+      contractFilter = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      ]
+    }
 
 
     let query = [
@@ -1169,6 +1169,7 @@ exports.getDashboardData = async (req, res) => {
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
+    let getUser = await userService.getUserById1({ _id: req.teammateId })
     let mid = new mongoose.Types.ObjectId(req.userId)
     let query = [
       {
@@ -1209,7 +1210,8 @@ exports.getCustomerDetails = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Successfully fetched user details.",
-      result: getCustomer[0]
+      result: getCustomer[0],
+      loginMember:getUser
     })
   } catch (err) {
     res.send({
