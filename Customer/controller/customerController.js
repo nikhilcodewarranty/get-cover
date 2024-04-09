@@ -391,7 +391,6 @@ exports.getResellerCustomers = async (req, res) => {
         nameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
         dealerRegex.test(entry.customerData.dealerId) &&
-        resellerRegex.test(entry.reseller.name) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
