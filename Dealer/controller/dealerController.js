@@ -1287,12 +1287,14 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
-
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
     data.status = typeof (data.status) == "string" ? "all" : data.status
-
-    //  data.status =  data.status==='true'  ? true : false;
-    //return;
-
     console.log(data.status)
     console.log(typeof (data.status))
 
@@ -1308,10 +1310,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     let searchDealerName = req.body.name ? req.body.name : ''
     let query
     let matchConditions = [];
-
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
-
-
     if (data.status != 'all' && data.status != undefined) {
       matchConditions.push({ 'status': data.status });
     }
@@ -1345,13 +1344,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     // console.log(matchStage);return;
 
     let projection = { isDeleted: 0, __v: 0 }
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
+
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
 
@@ -1379,7 +1372,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   }
 };
 
-
 function uniqByKeepLast(data, key) {
 
   return [
@@ -1393,8 +1385,6 @@ function uniqByKeepLast(data, key) {
   ]
 
 }
-
-
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -1725,7 +1715,6 @@ exports.uploadPriceBook = async (req, res) => {
     });
   }
 };
-
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
