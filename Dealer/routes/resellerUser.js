@@ -6,19 +6,20 @@ const validator = require('../config/validation');
 
 router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller)
 router.post('/getAllResellers', [verifyToken], resellerController.getAllResellers)
-router.post("/getResellerServicers/:resellerId", [verifyToken], resellerController.getResellerServicers)
+router.post("/getResellerServicers", [verifyToken], resellerController.getResellerServicers)
 router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
 router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
 router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerController.getResselerByCustomer);
-router.post("/changeResellerStatus/:resellerId", [verifyToken], resellerController.changeResellerStatus);
-router.post("/getResellerClaims/:resellerId", [verifyToken], resellerController.getResellerClaims);
+router.post("/changeResellerStatus", [verifyToken], resellerController.changeResellerStatus);
+router.post("/getResellerClaims", [verifyToken], resellerController.getResellerClaims);
 
-router.get("/getResellerById/:resellerId", [verifyToken], resellerController.getResellerById);
-router.get("/getDealerByReseller/:resellerId", [verifyToken], resellerController.getDealerByReseller);
-router.post("/getResellerPriceBook/:resellerId", [verifyToken], resellerController.getResellerPriceBook);
-router.post("/getResellerUsers/:resellerId", [verifyToken], resellerController.getResellerUsers);
-router.post("/resellerOrders/:resellerId", [verifyToken], resellerController.getResellerOrders);
-router.post("/getResellerContract/:resellerId", [verifyToken], resellerController.getResellerContract);
+router.get("/getResellerById", [verifyToken], resellerController.getResellerById);
+router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData);
+router.get("/getDealerByReseller", [verifyToken], resellerController.getDealerByReseller);
+router.post("/getResellerPriceBook", [verifyToken], resellerController.getResellerPriceBook);
+router.post("/getResellerUsers", [verifyToken], resellerController.getResellerUsers);
+router.post("/resellerOrders", [verifyToken], resellerController.getResellerOrders);
+router.post("/getResellerContract", [verifyToken], resellerController.getResellerContract);
 
-router.put("/editResellers/:resellerId", [verifyToken], resellerController.editResellers);
+router.put("/editResellers", [verifyToken], resellerController.editResellers);
 module.exports = router; 
