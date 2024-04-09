@@ -871,7 +871,7 @@ exports.customerOrders = async (req, res) => {
 
     let userCustomerIds = ordersResult
       .filter(result => result.customerId !== null)
-      .map(result => result.customerId.toString());
+      .map(result => result.customerId?.toString());
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
@@ -904,14 +904,14 @@ exports.customerOrders = async (req, res) => {
         item1.servicerId != null
           ? respectiveServicer.find(
             (item2) =>
-              item2._id.toString() === item1.servicerId.toString() ||
+              item2._id.toString() === item1.servicerId?.toString() ||
               item2.resellerId === item1.servicerId
           )
           : null;
       const customerName =
         item1.customerId != null
           ? respectiveCustomer.find(
-            (item2) => item2._id.toString() === item1.customerId.toString()
+            (item2) => item2._id.toString() === item1.customerId?.toString()
           )
           : null;
       const resellerName =
