@@ -747,13 +747,12 @@ exports.getAllOrders = async (req, res) => {
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
-            // res.json(ordersResult);return;
             // console.log("ordersResult00000000000000",ordersResult.length);return;
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
-                .map(result => result.resellerId.toString());
+                .map(result => result.resellerId?.toString());
 
             let mergedArray = userDealerIds.concat(userResellerIds);
 
@@ -793,7 +792,7 @@ exports.getAllOrders = async (req, res) => {
             let customerIdsArray = ordersResult.map((result) => result.customerId);
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
-                .map(result => result.customerId.toString());
+                .map(result => result.customerId?.toString());
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
@@ -840,20 +839,20 @@ exports.getAllOrders = async (req, res) => {
                     item1.servicerId != null
                         ? respectiveServicer.find(
                             (item2) =>
-                                item2._id.toString() === item1.servicerId.toString() ||
-                                item2.resellerId === item1.servicerId
+                                item2._id.toString() === item1.servicerId?.toString() ||
+                                item2.resellerId === item1?.servicerId
                         )
                         : null;
                 const customerName =
                     item1.customerId != null
                         ? respectiveCustomer.find(
-                            (item2) => item2._id.toString() === item1.customerId.toString()
+                            (item2) => item2._id.toString() === item1?.customerId.toString()
                         )
                         : null;
                 const resellerName =
                     item1.resellerId != null
                         ? respectiveReseller.find(
-                            (item2) => item2._id.toString() === item1.resellerId.toString()
+                            (item2) => item2._id.toString() === item1.resellerId?.toString()
                         )
                         : null;
 
@@ -3974,7 +3973,7 @@ exports.generateHtmltopdf = async (req, res) => {
             console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
                 code: constant.successCode,
-                message: 'Success!',
+                message: 'Success!'
             })
         });
     }
@@ -4083,7 +4082,7 @@ exports.cronJobStatus = async (req, res) => {
                                 $mergeObjects: [
                                     "$$product",
                                     {
-                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
+                                        ExpiredCondition: { $lt: ["$$product.coverageEndDate", endOfDay] },
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
@@ -4167,6 +4166,10 @@ exports.cronJobStatusWithDate = async (req, res) => {
     try {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
+        let currentDate = new Date();
+        console.log("endDate-----------------------",req.body.endDate);
+        console.log("currentDate-----------------------",currentDate);
+        console.log("startDate----------------------",startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {
@@ -4177,23 +4180,23 @@ exports.cronJobStatusWithDate = async (req, res) => {
         };
         let update = await orderService.updateOrder({ _id: orderID, "productsArray._id": orderProductId }, {
             $set: {
-                "productsArray.$.coverageStartDate": startDate,
-                "productsArray.$.coverageEndDate": endDate,
+                "productsArray.$.coverageStartDate": req.body.startDate,
+                "productsArray.$.coverageEndDate": req.body.endDate,
             }
         }, { multi: true })
         let query = { status: { $ne: "Archieved" } };
         let data = req.body;
-        let currentDate = new Date();
         let endOfDay = new Date();
         endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
-        endOfDay.setHours(0, 0, 0, 0);
+        console.log(endOfDay)
+        //endOfDay.setHours(0, 0, 0, 0);
         let lookupQuery = [
             {
                 $match: query // Your match condition here 
             },
             {
                 $addFields: {
-                    productsArray: { 
+                    productsArray: {
                         $map: {
                             input: "$productsArray", // Input array
                             as: "product",
@@ -4202,6 +4205,11 @@ exports.cronJobStatusWithDate = async (req, res) => {
                                     "$$product",
                                     {
                                         ExpiredCondition: { $lt: ["$$product.coverageEndDate", currentDate] },
+                                        // ExpiredCondition: { $and: [
+                                        //     { $lt: ["$$product.coverageEndDate", endOfDay] }, // Current date is greater than or equal to coverageStartDate
+                                        //     { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
+                                        // ] },
+                                        
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
@@ -4258,12 +4266,12 @@ exports.cronJobStatusWithDate = async (req, res) => {
                 bulk.push(updateDoc)
             }
         }
-        // res.send({
-        //     code: constant.successCode,
-        //     //result:bulk
-        //     bulk
-        // })
-        // return;
+        res.send({
+            code: constant.successCode,
+            //result:bulk
+            bulk
+        })
+        return;
         //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
