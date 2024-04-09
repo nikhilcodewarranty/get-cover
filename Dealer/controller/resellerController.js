@@ -525,6 +525,10 @@ exports.getResellerPriceBook = async (req, res) => {
         ]
     }
 
+    if (data.term != '') {
+        query.$and.push({ 'priceBooks.term': Number(data.term) });
+    }
+
     if (data.priceType != '') {
         query.$and.push({ 'priceBooks.priceType': data.priceType });
         if (data.priceType == 'Flat Pricing') {
