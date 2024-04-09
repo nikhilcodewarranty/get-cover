@@ -4193,7 +4193,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
             },
             {
                 $addFields: {
-                    productsArray: {
+                    productsArray: { 
                         $map: {
                             input: "$productsArray", // Input array
                             as: "product",
