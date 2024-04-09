@@ -260,16 +260,25 @@ exports.getDealerCustomers = async (req, res) => {
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
 
+    //Get Resseler
+
+    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
+    const queryReseller = { _id: { $in: resellerId } }
+    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
+
+
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.accountId.toString())
 
-      if (matchingItem || order) {
+      if (matchingItem || order || matchingReseller) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject(),
-          orderData: order ? order : {}
+          orderData: order ? order : {},
+          reseller: matchingReseller ? matchingReseller : {},
         };
       } else {
         return dealerData.toObject();
@@ -277,12 +286,6 @@ exports.getDealerCustomers = async (req, res) => {
     });
     let name = data.firstName ? data.firstName : ""
     let nameArray = name.split(" ");
-
-    if (data.resellerName) {
-
-    }
-
-
 
     // Create new keys for first name and last name
     let newObj = {
@@ -294,13 +297,15 @@ exports.getDealerCustomers = async (req, res) => {
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    const resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
         firstNameRegex.test(entry.customerData.username) &&
         lastNameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
+        phoneRegex.test(entry.phoneNumber),
+        resellerRegex.test(entry.reseller.name) 
       );
     });
 
@@ -334,9 +339,7 @@ exports.getResellerCustomers = async (req, res) => {
     const orderCustomerIds = customers.map(obj => obj._id);
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
 
-    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
-    const queryReseller = { _id: { $in: resellerId } }
-    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
+   
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -366,14 +369,12 @@ exports.getResellerCustomers = async (req, res) => {
     let result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
-      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.accountId.toString())
 
-      if (matchingItem || order || matchingReseller) {
+      if (matchingItem || order ) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject(),
           orderData: order ? order : {},
-          reseller: matchingReseller ? matchingReseller : {},
         };
       } else {
         return {};
@@ -384,7 +385,6 @@ exports.getResellerCustomers = async (req, res) => {
     const nameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
     console.log(result_Array);
     result_Array = result_Array.filter(entry => {
       return (
