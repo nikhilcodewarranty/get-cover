@@ -252,7 +252,7 @@ exports.getAllContracts = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: myQuery,
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
       // result: myQuery,
       totalCount
       // count: getCo
