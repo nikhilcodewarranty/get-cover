@@ -39,6 +39,16 @@ module.exports = class contractService {
     }
   }
 
+
+  static async getContractsCountNew() {
+    try {
+      const count = await contract.find().sort({unique_key_number:-1}).limit(1);
+      return count;
+    } catch (error) {
+      console.log(`Could not fetch contract count ${error}`);
+    }
+  }
+
   static async findContracts(query) {
     try {
       const count = await contract.find(query).sort({ "unique_key": -1 });

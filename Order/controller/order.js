@@ -520,7 +520,8 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
             console.log("order status update+++++++++++")
-            let count1 = await contractService.getContractsCount();
+            let count1 = await contractService.getContractsCountNew();
+            console.log("count1 New+++++++++++",count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -737,11 +738,9 @@ exports.getAllOrders = async (req, res) => {
 
                     }
                 },
+                { $sort: { unique_key: -1 } }            ]
 
-                { $sort: { unique_key: -1 } }
-            ]
-
-            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
             let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
             let limitData = Number(pageLimit)
 
