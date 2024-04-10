@@ -392,7 +392,65 @@ exports.createOrder = async (req, res) => {
 
 exports.createOrder1 = async (req, res) => {
     try {
-        let data = req.body;
+        // let data = req.body;
+
+        let data = {
+            "dealerId": "660e2cb754d348082efaa2ce",
+            "servicerId": "",
+            "customerId": "66157f42c049261385fe12c3",
+            "resellerId": "660f97395a316bedd0261ce2",
+            "dealerPurchaseOrder": "haaaghh",
+            "serviceCoverageType": "Parts",
+            "coverageType": "Breakdown",
+            "productsArray": [
+                {
+                    "categoryId": "660d3431fe4b01310274bd7e",
+                    "priceBookId": "660d38fefa01f2d971bdcf6f",
+                    "unitPrice": "700.00",
+                    "noOfProducts": "1",
+                    "file": {
+                        "fileName": "file-1705681158453.csv",
+                        "name": "Add Product Format - Sheet1.csv",
+                        "size": 101
+                    },
+                    "coverageStartDate": "2024-05-01T00:00:00.000Z",
+                    "coverageEndDate": "2025-05-01T00:00:00.000Z",
+                    "description": "car",
+                    "term": 12,
+                    "priceType": "Regular Pricing",
+                    "additionalNotes": "gfg",
+                    "QuantityPricing": [
+                        {
+                            "_id": "660d38fefa01f2d971bdcf70",
+                            "name": "",
+                            "quantity": null,
+                            "enterQuantity": ""
+                        }
+                    ],
+                    "checkNumberProducts": 1,
+                    "orderFile": {
+                        "fileName": "file-1712722451180.csv",
+                        "name": "Add Product Format - Sheet1.csv",
+                        "size": 101
+                    },
+                    "fileValue": true,
+                    "price": "700.00"
+                }
+            ],
+            "paidAmount": "700.00",
+            "file": [
+                {
+                    "fileName": "file-1712722451180.csv",
+                    "name": "Add Product Format - Sheet1.csv",
+                    "size": 101
+                }
+            ],
+            "dueAmount": 0,
+            "sendNotification": true,
+            "paymentStatus": "Paid",
+            "orderAmount": 700
+        }
+
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
@@ -524,6 +582,8 @@ exports.createOrder1 = async (req, res) => {
             console.log("count1 New+++++++++++",count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
+
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -551,6 +611,7 @@ exports.createOrder1 = async (req, res) => {
                 });
                 var contractArray = [];
                 totalDataComing.forEach((data, index1) => {
+                    console.log('index1++++++++++++++++++++++++++++++++++++++++++++=', new Date())
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -581,6 +642,8 @@ exports.createOrder1 = async (req, res) => {
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
+                console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
+
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
                 //  console.log("saveContracts==================", saveContracts)
@@ -1567,7 +1630,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         // }
                     });
 
-                    console.log("message-------------",message);
+                    console.log("message-------------", message);
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
