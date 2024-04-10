@@ -392,64 +392,64 @@ exports.createOrder = async (req, res) => {
 
 exports.createOrder1 = async (req, res) => {
     try {
-        // let data = req.body;
+        let data = req.body;
 
-        let data = {
-            "dealerId": "660e2cb754d348082efaa2ce",
-            "servicerId": "",
-            "customerId": "66157f42c049261385fe12c3",
-            "resellerId": "660f97395a316bedd0261ce2",
-            "dealerPurchaseOrder": "haaaghh",
-            "serviceCoverageType": "Parts",
-            "coverageType": "Breakdown",
-            "productsArray": [
-                {
-                    "categoryId": "660d3431fe4b01310274bd7e",
-                    "priceBookId": "660d38fefa01f2d971bdcf6f",
-                    "unitPrice": "700.00",
-                    "noOfProducts": "1",
-                    "file": {
-                        "fileName": "file-1705681158453.csv",
-                        "name": "Add Product Format - Sheet1.csv",
-                        "size": 101
-                    },
-                    "coverageStartDate": "2024-05-01T00:00:00.000Z",
-                    "coverageEndDate": "2025-05-01T00:00:00.000Z",
-                    "description": "car",
-                    "term": 12,
-                    "priceType": "Regular Pricing",
-                    "additionalNotes": "gfg",
-                    "QuantityPricing": [
-                        {
-                            "_id": "660d38fefa01f2d971bdcf70",
-                            "name": "",
-                            "quantity": null,
-                            "enterQuantity": ""
-                        }
-                    ],
-                    "checkNumberProducts": 1,
-                    "orderFile": {
-                        "fileName": "file-1712722451180.csv",
-                        "name": "Add Product Format - Sheet1.csv",
-                        "size": 101
-                    },
-                    "fileValue": true,
-                    "price": "700.00"
-                }
-            ],
-            "paidAmount": "700.00",
-            "file": [
-                {
-                    "fileName": "file-1712722451180.csv",
-                    "name": "Add Product Format - Sheet1.csv",
-                    "size": 101
-                }
-            ],
-            "dueAmount": 0,
-            "sendNotification": true,
-            "paymentStatus": "Paid",
-            "orderAmount": 700
-        }
+        // let data = {
+        //     "dealerId": "660e2cb754d348082efaa2ce",
+        //     "servicerId": "",
+        //     "customerId": "66157f42c049261385fe12c3",
+        //     "resellerId": "660f97395a316bedd0261ce2",
+        //     "dealerPurchaseOrder": "haaaghh",
+        //     "serviceCoverageType": "Parts",
+        //     "coverageType": "Breakdown",
+        //     "productsArray": [
+        //         {
+        //             "categoryId": "660d3431fe4b01310274bd7e",
+        //             "priceBookId": "660d38fefa01f2d971bdcf6f",
+        //             "unitPrice": "700.00",
+        //             "noOfProducts": "1",
+        //             "file": {
+        //                 "fileName": "file-1705681158453.csv",
+        //                 "name": "Add Product Format - Sheet1.csv",
+        //                 "size": 101
+        //             },
+        //             "coverageStartDate": "2024-05-01T00:00:00.000Z",
+        //             "coverageEndDate": "2025-05-01T00:00:00.000Z",
+        //             "description": "car",
+        //             "term": 12,
+        //             "priceType": "Regular Pricing",
+        //             "additionalNotes": "gfg",
+        //             "QuantityPricing": [
+        //                 {
+        //                     "_id": "660d38fefa01f2d971bdcf70",
+        //                     "name": "",
+        //                     "quantity": null,
+        //                     "enterQuantity": ""
+        //                 }
+        //             ],
+        //             "checkNumberProducts": 1,
+        //             "orderFile": {
+        //                 "fileName": "file-1712722451180.csv",
+        //                 "name": "Add Product Format - Sheet1.csv",
+        //                 "size": 101
+        //             },
+        //             "fileValue": true,
+        //             "price": "700.00"
+        //         }
+        //     ],
+        //     "paidAmount": "700.00",
+        //     "file": [
+        //         {
+        //             "fileName": "file-1712722451180.csv",
+        //             "name": "Add Product Format - Sheet1.csv",
+        //             "size": 101
+        //         }
+        //     ],
+        //     "dueAmount": 0,
+        //     "sendNotification": true,
+        //     "paymentStatus": "Paid",
+        //     "orderAmount": 700
+        // }
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
@@ -578,7 +578,8 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
             console.log("order status update+++++++++++")
-            let count1 = await contractService.getContractsCount();
+            let count1 = await contractService.getContractsCountNew();
+            console.log("count1 New+++++++++++", count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
@@ -800,11 +801,9 @@ exports.getAllOrders = async (req, res) => {
 
                     }
                 },
+                { $sort: { unique_key: -1 } }]
 
-                { $sort: { unique_key: -1 } }
-            ]
-
-            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
             let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
             let limitData = Number(pageLimit)
 
@@ -1437,7 +1436,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
@@ -1466,23 +1465,46 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
+                        console.log("before trim space--------------------", obj.data)
 
-                        obj.data.forEach((obj1) => {
-                            for (let key in obj1) {
-                                // Trim whitespace from each value
-                                obj1[key] = obj1[key];
+                        const orderFileData = obj.data.map(item => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]]
+                            };
+                        });
+                        console.log("orderFileData------------------", orderFileData);
+                        orderFileData.forEach((fileData) => {
+                            let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
+                            let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
+                            let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
+                            let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid fields value",
+                                });
                             }
                         });
-                        const isValidLength = obj.data.every(
-                            (obj1) => Object.keys(obj1).length === 5
-                        );
-                        if (!isValidLength) {
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid fields value",
-                            });
-                        }
+                        // console.log("After trim space--------------------",obj.data)
+                        // const isValidLength = obj.data.every(
+                        //     (obj1) => Object.keys(obj1).length === 5
+                        // );
+
+                        // console.log("After trim space--------------------",obj.data)
+                        // if (!isValidLength) {
+                        //     message.push({
+                        //         code: constant.errorCode,
+                        //         key: obj.key,
+                        //         message: "Invalid fields value",
+                        //     });
+                        // }
                     });
 
                     if (message.length > 0) {
@@ -1709,7 +1731,7 @@ exports.editFileCase = async (req, res) => {
                             priceType: productsWithFiles[j].priceType,
                             rangeStart: productsWithFiles[j].rangeStart,
                             rangeEnd: productsWithFiles[j].rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].key,
@@ -1740,16 +1762,40 @@ exports.editFileCase = async (req, res) => {
                             return false; // 'data' should be an object
                         }
 
-                        const isValidLength = obj.data.every(
-                            (obj1) => Object.keys(obj1).length === 5
-                        );
-                        if (!isValidLength) {
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid fields value",
-                            });
-                        }
+                        const orderFileData = obj.data.map(item => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]]
+                            };
+                        });
+                        orderFileData.forEach((fileData) => {
+                            let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
+                            let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
+                            let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
+                            let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid fields value",
+                                });
+                            }
+                        });
+                        // const isValidLength = obj.data.every(
+                        //     (obj1) => Object.keys(obj1).length === 5
+                        // );
+                        // if (!isValidLength) {
+                        //     message.push({
+                        //         code: constant.errorCode,
+                        //         key: obj.key,
+                        //         message: "Invalid fields value",
+                        //     });
+                        // }
                     });
 
                     if (message.length > 0) {
@@ -2854,7 +2900,8 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
 
-            let count1 = await contractService.getContractsCount();
+            //let count1 = await contractService.getContractsCount();
+            let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -2985,7 +3032,8 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
-        let count1 = await contractService.getContractsCount();
+        //let count1 = await contractService.getContractsCount();
+        let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let save = savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -4230,9 +4278,9 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         let currentDate = new Date();
-        console.log("endDate-----------------------",req.body.endDate);
-        console.log("currentDate-----------------------",currentDate);
-        console.log("startDate----------------------",startDate);
+        console.log("endDate-----------------------", req.body.endDate);
+        console.log("currentDate-----------------------", currentDate);
+        console.log("startDate----------------------", startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {
@@ -4272,7 +4320,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                                         //     { $lt: ["$$product.coverageEndDate", endOfDay] }, // Current date is greater than or equal to coverageStartDate
                                         //     { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
                                         // ] },
-                                        
+
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
