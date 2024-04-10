@@ -44,7 +44,7 @@ exports.getAllContracts = async (req, res) => {
 
     let newQuery = [];
     let matchedData = []
-    if (data.dealerName) {
+    if (data.dealerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -64,7 +64,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.customerName) {
+    if (data.customerName!= "") {
       newQuery.push(
         {
           $lookup: {
@@ -84,7 +84,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.servicerName) {
+    if (data.servicerName!= "") {
       newQuery.push(
         {
           $lookup: {
@@ -104,7 +104,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.resellerName) {
+    if (data.resellerName!= "") {
       newQuery.push(
         {
           $lookup: {
