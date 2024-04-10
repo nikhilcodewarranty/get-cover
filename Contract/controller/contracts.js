@@ -7,6 +7,7 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const contract = require("../model/contract");
 const providerService = require("../../Provider/services/providerService");
+const { pipeline } = require("nodemailer/lib/xoauth2");
 
 // get all contracts api
 
@@ -295,9 +296,37 @@ exports.getContracts = async (req, res) => {
             from: "dealers",
             localField: "order.dealerId",
             foreignField: "_id",
-            as: "order.dealer"
+            as: "order.dealer",
+            pipeline:[
+              {
+                  $match: {
+                    $and: [
+                      { "name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                    ]
+                  },
+                }
+              // {
+              //   $search: {
+              //     index: "dealerSearch",
+              //     text: {
+              //       query: data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '',
+              //       path: {
+              //         wildcard: "*"
+              //       }
+              //     }
+              //   }
+              // }
+            ]
           }
         },
+        {
+          $match:{
+            $expr: {
+              $gt: [{ $size: "$order.dealer" }, 1]
+            }
+          }
+        }
+
         // {
         //   $match: {
         //     $and: [
@@ -306,7 +335,7 @@ exports.getContracts = async (req, res) => {
         //   },
         // }
       );
-      matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      // matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
     if (data.customerName) {
       newQuery.push(
@@ -455,12 +484,23 @@ exports.getContracts = async (req, res) => {
 
     let myQuery = [
       { $sort: { unique_key_number: -1 } },
-      {
-        $match:
-        {
-          $and: contractFilter
-        },
-      },
+      // {
+      //   $match:
+      //   {
+      //     $and: contractFilter
+      //   },
+      // },
+      {$text:{
+        $search: {
+          index: "default",
+          text: {
+            query: "Apple",
+            path: {
+              wildcard: "*"
+            }
+          }
+        }
+      },},
       {
         $lookup: {
           from: "orders",
