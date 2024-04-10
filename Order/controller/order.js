@@ -1436,7 +1436,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],{ defval: "" }),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
@@ -1477,7 +1477,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 retailValue: item[keys[4]]
                             };
                         });
-                        console.log("orderFileData------------------",orderFileData);
+                        console.log("orderFileData------------------", orderFileData);
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
@@ -1731,7 +1731,7 @@ exports.editFileCase = async (req, res) => {
                             priceType: productsWithFiles[j].priceType,
                             rangeStart: productsWithFiles[j].rangeStart,
                             rangeEnd: productsWithFiles[j].rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].key,
@@ -1762,16 +1762,40 @@ exports.editFileCase = async (req, res) => {
                             return false; // 'data' should be an object
                         }
 
-                        const isValidLength = obj.data.every(
-                            (obj1) => Object.keys(obj1).length === 5
-                        );
-                        if (!isValidLength) {
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid fields value",
-                            });
-                        }
+                        const orderFileData = obj.data.map(item => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]]
+                            };
+                        });
+                        orderFileData.forEach((fileData) => {
+                            let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
+                            let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
+                            let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
+                            let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid fields value",
+                                });
+                            }
+                        });
+                        // const isValidLength = obj.data.every(
+                        //     (obj1) => Object.keys(obj1).length === 5
+                        // );
+                        // if (!isValidLength) {
+                        //     message.push({
+                        //         code: constant.errorCode,
+                        //         key: obj.key,
+                        //         message: "Invalid fields value",
+                        //     });
+                        // }
                     });
 
                     if (message.length > 0) {
