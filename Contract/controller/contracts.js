@@ -64,7 +64,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.customerName!= "") {
+    if (data.customerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -84,7 +84,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.servicerName!= "") {
+    if (data.servicerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -104,7 +104,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.resellerName!= "") {
+    if (data.resellerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -244,15 +244,16 @@ exports.getAllContracts = async (req, res) => {
     }
 
 
-
+    console.log("------------------------------------",data);
 
     let getContracts = await contractService.getAllContracts2(myQuery)
+    console.log("+++++++++++++++++++++++++++++++++=");
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      result: myQuery,
       // result: myQuery,
       totalCount
       // count: getCo
@@ -308,14 +309,14 @@ exports.getContracts = async (req, res) => {
             localField: "order.dealerId",
             foreignField: "_id",
             as: "order.dealer",
-            pipeline:[
+            pipeline: [
               {
-                  $match: {
-                    $and: [
-                      { "name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                    ]
-                  },
-                }
+                $match: {
+                  $and: [
+                    { "name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  ]
+                },
+              }
               // {
               //   $search: {
               //     index: "dealerSearch",
@@ -331,7 +332,7 @@ exports.getContracts = async (req, res) => {
           }
         },
         {
-          $match:{
+          $match: {
             $expr: {
               $gt: [{ $size: "$order.dealer" }, 1]
             }
@@ -501,17 +502,19 @@ exports.getContracts = async (req, res) => {
       //     $and: contractFilter
       //   },
       // },
-      {$text:{
-        $search: {
-          index: "default",
-          text: {
-            query: "Apple",
-            path: {
-              wildcard: "*"
+      {
+        $text: {
+          $search: {
+            index: "default",
+            text: {
+              query: "Apple",
+              path: {
+                wildcard: "*"
+              }
             }
           }
-        }
-      },},
+        },
+      },
       {
         $lookup: {
           from: "orders",
