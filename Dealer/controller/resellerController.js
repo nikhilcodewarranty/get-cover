@@ -1235,7 +1235,25 @@ exports.getResellerContract = async (req, res) => {
                 }
             );
         }
-
+        if (data.customerName) {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "customers",
+                        localField: "order.customerId",
+                        foreignField: "_id",
+                        as: "order.customer"
+                    }
+                },
+                {
+                    $match: {
+                        $and: [
+                            { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        ]
+                    },
+                }
+            );
+        }
         newQuery.push(
             {
                 $facet: {

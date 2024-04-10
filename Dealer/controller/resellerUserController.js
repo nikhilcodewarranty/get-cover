@@ -133,6 +133,119 @@ exports.createReseller = async (req, res) => {
     }
 }
 
+exports.createCustomer = async (req, res, next) => {
+    try {
+        let data = req.body;
+        data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
+        const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller."
+            })
+            return;
+        }
+        let getCount = await customerService.getCustomersCount({})
+        data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
+        // check dealer ID
+        let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId }, {});
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid dealer"
+            })
+            return;
+        };
+
+        // check reseller valid or not
+        // if (data.resellerName && data.resellerName != "") {
+        //     var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+        //     if (!checkReseller) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "Invalid Reseller."
+        //         })
+        //         return;
+        //     }
+        // }
+
+        // check customer acccount name 
+        let checkAccountName = await customerService.getCustomerByName({
+            username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName
+        });
+        // if (checkAccountName) {
+        //   res.send({
+        //     code: constant.errorCode,
+        //     message: "Customer already exist with this account name"
+        //   })
+        //   return;
+        // };
+
+        let checkCustomerEmail = await userService.findOneUser({ email: data.email });
+        if (checkCustomerEmail) {
+            res.send({
+                code: constant.errorCode,
+                message: "Primary user email already exist"
+            })
+            return;
+        }
+
+        let customerObject = {
+            username: data.accountName,
+            street: data.street,
+            city: data.city,
+            dealerId: checkDealer._id,
+            resellerId: checkReseller ? checkReseller._id : null,
+            resellerId1: checkReseller ? checkReseller._id : null,
+            zip: data.zip,
+            state: data.state,
+            country: data.country,
+            status: data.status,
+            unique_key: data.unique_key,
+            accountStatus: "Approved",
+            dealerName: checkDealer.name,
+        }
+
+        let teamMembers = data.members
+
+        const emailSet = new Set();
+        let isDuplicate = false;
+
+
+
+        let emailsToCheck = teamMembers.map(member => member.email);
+        let queryEmails = { email: { $in: emailsToCheck } };
+        let checkEmails = await customerService.getAllCustomers(queryEmails, {});
+        if (checkEmails.length > 0) {
+            res.send({
+                code: constant.errorCode,
+                message: "Some email ids already exist"
+            })
+        }
+
+        const createdCustomer = await customerService.createCustomer(customerObject);
+        if (!createdCustomer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to create the customer"
+            })
+            return;
+        };
+        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
+        // create members account 
+        let saveMembers = await userService.insertManyUser(teamMembers)
+        res.send({
+            code: constant.successCode,
+            message: "Customer created successfully",
+            result: data
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
 exports.getAllResellers = async (req, res) => {
     try {
         let data = req.body
@@ -1370,9 +1483,9 @@ exports.getResellerContract = async (req, res) => {
                                 order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
                                 resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
                                 order: {
-                                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-                                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-                                  resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
+                                    unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                    venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                    resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
                                 },
                                 totalRecords: 1
                             }
