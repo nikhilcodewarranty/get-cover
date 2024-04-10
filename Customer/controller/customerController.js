@@ -1116,9 +1116,17 @@ exports.getCustomerContract = async (req, res) => {
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1,
-                "order.customerId": 1,
+                // "order.unique_key": 1,
+                // "order.venderOrder": 1,
+                // "order.customerId": 1,
+                order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                order: {
+                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                  customerId: { $arrayElemAt: ["$order.customerId", 0] },
+                },
+                totalRecords: 1
                 //totalRecords: 1
               }
             }
@@ -1167,37 +1175,39 @@ exports.getCustomerContract = async (req, res) => {
           as: "order",
         }
       },
-      {
-        $unwind: {
-          path: "$order",
-          preserveNullAndEmptyArrays: true,
-        }
-      },
+      // {
+      //   $unwind: {
+      //     path: "$order",
+      //     preserveNullAndEmptyArrays: true,
+      //   }
+      // },
       {
         $match:
         {
           $and: [
             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "order.customerId": new mongoose.Types.ObjectId(req.params.customerId) },
+
           ]
         },
 
       },
-      {
-        $lookup: {
-          from: "customers",
-          localField: "order.customerId",
-          foreignField: "_id",
-          as: "order.customer"
-        }
-      },
-      {
-        $match: {
-          $and: [
-            { "order.customer._id": new mongoose.Types.ObjectId(req.params.customerId) },
-          ]
-        },
-      },
+      // {
+      //   $lookup: {
+      //     from: "customers",
+      //     localField: "order.customerId",
+      //     foreignField: "_id",
+      //     as: "order.customer"
+      //   }
+      // },
+      // {
+      //   $match: {
+      //     $and: [
+      //       { "order.customer._id": new mongoose.Types.ObjectId(req.params.customerId) },
+      //     ]
+      //   },
+      // },
       // {
       //   $facet: {
       //     totalRecords: [
