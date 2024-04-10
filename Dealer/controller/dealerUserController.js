@@ -2762,8 +2762,15 @@ exports.getAllContracts = async (req, res) => {
                                 status: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
-                                "order.unique_key": 1,
-                                "order.venderOrder": 1
+                                // "order.unique_key": 1,
+                                // "order.venderOrder": 1
+                                order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                order: {
+                                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                },
+                                totalRecords: 1
                             }
                         }
                     ],
@@ -2810,12 +2817,12 @@ exports.getAllContracts = async (req, res) => {
                     as: "order",
                 }
             },
-            {
-                $unwind: {
-                    path: "$order",
-                    preserveNullAndEmptyArrays: true,
-                }
-            },
+            // {
+            //     $unwind: {
+            //         path: "$order",
+            //         preserveNullAndEmptyArrays: true,
+            //     }
+            // },
             {
                 $match:
                 {
