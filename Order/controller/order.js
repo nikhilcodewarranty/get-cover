@@ -1477,6 +1477,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 retailValue: item[keys[4]]
                             };
                         });
+                        console.log("orderFileData------------------",orderFileData);
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.model.toString().replace(/\s+/g, ' ').trim()
