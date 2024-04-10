@@ -1466,24 +1466,44 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             return false; // 'data' should be an object
                         }
                         console.log("before trim space--------------------", obj.data)
-                        obj.data.forEach((obj1) => {
-                            console.log(obj1)
+
+                        const orderFileData = obj.data.map(item => {
+                            const keys = Object.keys(item);
+                            return {
+                                brand: item[keys[0]],
+                                model: item[keys[1]],
+                                serial: item[keys[2]],
+                                condition: item[keys[3]],
+                                retailValue: item[keys[4]]
+                            };
                         });
-
-
+                        orderFileData.forEach((fileData) => {
+                            let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
+                            let serial = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            let condition = fileData.serial.toString().replace(/\s+/g, ' ').trim()
+                            let retailValue = fileData.condition.toString().replace(/\s+/g, ' ').trim()
+                            let model = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                                message.push({
+                                    code: constant.errorCode,
+                                    key: obj.key,
+                                    message: "Invalid fields value",
+                                });
+                            }
+                        });
                         // console.log("After trim space--------------------",obj.data)
                         // const isValidLength = obj.data.every(
                         //     (obj1) => Object.keys(obj1).length === 5
                         // );
 
                         // console.log("After trim space--------------------",obj.data)
-                        if (!isValidLength) {
-                            message.push({
-                                code: constant.errorCode,
-                                key: obj.key,
-                                message: "Invalid fields value",
-                            });
-                        }
+                        // if (!isValidLength) {
+                        //     message.push({
+                        //         code: constant.errorCode,
+                        //         key: obj.key,
+                        //         message: "Invalid fields value",
+                        //     });
+                        // }
                     });
 
                     if (message.length > 0) {
