@@ -579,7 +579,7 @@ exports.createOrder1 = async (req, res) => {
             );
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCountNew();
-            console.log("count1 New+++++++++++",count1)
+            console.log("count1 New+++++++++++", count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
@@ -801,7 +801,7 @@ exports.getAllOrders = async (req, res) => {
 
                     }
                 },
-                { $sort: { unique_key: -1 } }            ]
+                { $sort: { unique_key: -1 } }]
 
             let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
             let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -1465,19 +1465,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-                        console.log("before trim space--------------------",obj.data)
+                        console.log("before trim space--------------------", obj.data)
                         obj.data.forEach((obj1) => {
-                            for (let key in obj1) {
-                                // Trim whitespace from each value
-                                obj1[key] = obj1[key].toString().replace(/\s+/g, ' ').trim();
-                            }
+                            console.log(obj1)
                         });
 
 
-                        console.log("After trim space--------------------",obj.data)
-                        const isValidLength = obj.data.every(
-                            (obj1) => Object.keys(obj1).length === 5
-                        );
+                        // console.log("After trim space--------------------",obj.data)
+                        // const isValidLength = obj.data.every(
+                        //     (obj1) => Object.keys(obj1).length === 5
+                        // );
+
+                        // console.log("After trim space--------------------",obj.data)
                         if (!isValidLength) {
                             message.push({
                                 code: constant.errorCode,
@@ -4234,9 +4233,9 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         let currentDate = new Date();
-        console.log("endDate-----------------------",req.body.endDate);
-        console.log("currentDate-----------------------",currentDate);
-        console.log("startDate----------------------",startDate);
+        console.log("endDate-----------------------", req.body.endDate);
+        console.log("currentDate-----------------------", currentDate);
+        console.log("startDate----------------------", startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {
@@ -4276,7 +4275,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
                                         //     { $lt: ["$$product.coverageEndDate", endOfDay] }, // Current date is greater than or equal to coverageStartDate
                                         //     { $gte: ["$$product.coverageEndDate", currentDate] }    // Current date is less than or equal to coverageEndDate
                                         // ] },
-                                        
+
                                         WaitingCondition: { $gt: ["$$product.coverageStartDate", currentDate] },
                                         ActiveCondition: {
                                             $and: [
