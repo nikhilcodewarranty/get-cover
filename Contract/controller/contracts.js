@@ -43,7 +43,7 @@ exports.getAllContracts = async (req, res) => {
 
     let newQuery = [];
     let matchedData = []
-    if (data.dealerName) {
+    if (data.dealerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -63,7 +63,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.customerName) {
+    if (data.customerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -83,7 +83,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.servicerName) {
+    if (data.servicerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -103,7 +103,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    if (data.resellerName) {
+    if (data.resellerName != "") {
       newQuery.push(
         {
           $lookup: {
@@ -223,16 +223,16 @@ exports.getAllContracts = async (req, res) => {
           foreignField: "_id",
           as: "order",
         }
-      }, 
+      },
       {
         $match:
         {
           $and: [
-            {order: {$elemMatch: {venderOrder:  { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}},
-            {order: {$elemMatch: {unique_key:  { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}}
-            // { "order[0].venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            // {order: {$elemMatch: {venderOrder:  { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}},
+            // {order: {$elemMatch: {unique_key:  { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}}
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            // { "order[0].unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
           ]
         },
       }
@@ -243,15 +243,16 @@ exports.getAllContracts = async (req, res) => {
     }
 
 
-
+    console.log("------------------------------------",data);
 
     let getContracts = await contractService.getAllContracts2(myQuery)
+    console.log("+++++++++++++++++++++++++++++++++=");
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      result: myQuery,
       // result: myQuery,
       totalCount
       // count: getCo
@@ -306,9 +307,37 @@ exports.getContracts = async (req, res) => {
             from: "dealers",
             localField: "order.dealerId",
             foreignField: "_id",
-            as: "order.dealer"
+            as: "order.dealer",
+            pipeline: [
+              {
+                $match: {
+                  $and: [
+                    { "name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                  ]
+                },
+              }
+              // {
+              //   $search: {
+              //     index: "dealerSearch",
+              //     text: {
+              //       query: data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '',
+              //       path: {
+              //         wildcard: "*"
+              //       }
+              //     }
+              //   }
+              // }
+            ]
           }
         },
+        {
+          $match: {
+            $expr: {
+              $gt: [{ $size: "$order.dealer" }, 1]
+            }
+          }
+        }
+
         // {
         //   $match: {
         //     $and: [
@@ -466,10 +495,23 @@ exports.getContracts = async (req, res) => {
 
     let myQuery = [
       { $sort: { unique_key_number: -1 } },
+      // {
+      //   $match:
+      //   {
+      //     $and: contractFilter
+      //   },
+      // },
       {
-        $match:
-        {
-          $and: contractFilter
+        $text: {
+          $search: {
+            index: "default",
+            text: {
+              query: "Apple",
+              path: {
+                wildcard: "*"
+              }
+            }
+          }
         },
       },
       {
