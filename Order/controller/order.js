@@ -392,64 +392,64 @@ exports.createOrder = async (req, res) => {
 
 exports.createOrder1 = async (req, res) => {
     try {
-        // let data = req.body;
+        let data = req.body;
 
-        let data = {
-            "dealerId": "660e2cb754d348082efaa2ce",
-            "servicerId": "",
-            "customerId": "66157f42c049261385fe12c3",
-            "resellerId": "660f97395a316bedd0261ce2",
-            "dealerPurchaseOrder": "haaaghh",
-            "serviceCoverageType": "Parts",
-            "coverageType": "Breakdown",
-            "productsArray": [
-                {
-                    "categoryId": "660d3431fe4b01310274bd7e",
-                    "priceBookId": "660d38fefa01f2d971bdcf6f",
-                    "unitPrice": "700.00",
-                    "noOfProducts": "1",
-                    "file": {
-                        "fileName": "file-1705681158453.csv",
-                        "name": "Add Product Format - Sheet1.csv",
-                        "size": 101
-                    },
-                    "coverageStartDate": "2024-05-01T00:00:00.000Z",
-                    "coverageEndDate": "2025-05-01T00:00:00.000Z",
-                    "description": "car",
-                    "term": 12,
-                    "priceType": "Regular Pricing",
-                    "additionalNotes": "gfg",
-                    "QuantityPricing": [
-                        {
-                            "_id": "660d38fefa01f2d971bdcf70",
-                            "name": "",
-                            "quantity": null,
-                            "enterQuantity": ""
-                        }
-                    ],
-                    "checkNumberProducts": 1,
-                    "orderFile": {
-                        "fileName": "file-1712722451180.csv",
-                        "name": "Add Product Format - Sheet1.csv",
-                        "size": 101
-                    },
-                    "fileValue": true,
-                    "price": "700.00"
-                }
-            ],
-            "paidAmount": "700.00",
-            "file": [
-                {
-                    "fileName": "file-1712722451180.csv",
-                    "name": "Add Product Format - Sheet1.csv",
-                    "size": 101
-                }
-            ],
-            "dueAmount": 0,
-            "sendNotification": true,
-            "paymentStatus": "Paid",
-            "orderAmount": 700
-        }
+        // let data = {
+        //     "dealerId": "660e2cb754d348082efaa2ce",
+        //     "servicerId": "",
+        //     "customerId": "66157f42c049261385fe12c3",
+        //     "resellerId": "660f97395a316bedd0261ce2",
+        //     "dealerPurchaseOrder": "haaaghh",
+        //     "serviceCoverageType": "Parts",
+        //     "coverageType": "Breakdown",
+        //     "productsArray": [
+        //         {
+        //             "categoryId": "660d3431fe4b01310274bd7e",
+        //             "priceBookId": "660d38fefa01f2d971bdcf6f",
+        //             "unitPrice": "700.00",
+        //             "noOfProducts": "1",
+        //             "file": {
+        //                 "fileName": "file-1705681158453.csv",
+        //                 "name": "Add Product Format - Sheet1.csv",
+        //                 "size": 101
+        //             },
+        //             "coverageStartDate": "2024-05-01T00:00:00.000Z",
+        //             "coverageEndDate": "2025-05-01T00:00:00.000Z",
+        //             "description": "car",
+        //             "term": 12,
+        //             "priceType": "Regular Pricing",
+        //             "additionalNotes": "gfg",
+        //             "QuantityPricing": [
+        //                 {
+        //                     "_id": "660d38fefa01f2d971bdcf70",
+        //                     "name": "",
+        //                     "quantity": null,
+        //                     "enterQuantity": ""
+        //                 }
+        //             ],
+        //             "checkNumberProducts": 1,
+        //             "orderFile": {
+        //                 "fileName": "file-1712722451180.csv",
+        //                 "name": "Add Product Format - Sheet1.csv",
+        //                 "size": 101
+        //             },
+        //             "fileValue": true,
+        //             "price": "700.00"
+        //         }
+        //     ],
+        //     "paidAmount": "700.00",
+        //     "file": [
+        //         {
+        //             "fileName": "file-1712722451180.csv",
+        //             "name": "Add Product Format - Sheet1.csv",
+        //             "size": 101
+        //         }
+        //     ],
+        //     "dueAmount": 0,
+        //     "sendNotification": true,
+        //     "paymentStatus": "Paid",
+        //     "orderAmount": 700
+        // }
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
