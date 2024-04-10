@@ -1363,9 +1363,18 @@ exports.getResellerContract = async (req, res) => {
                                 status: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
-                                "order.unique_key": 1,
-                                "order.venderOrder": 1,
-                                "order.resellerId": 1,
+                                // "order.unique_key": 1,
+                                // "order.venderOrder": 1,
+                                // "order.resellerId": 1,
+                                order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
+                                order: {
+                                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                  resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
+                                },
+                                totalRecords: 1
                             }
                         }
                     ],
@@ -1412,37 +1421,38 @@ exports.getResellerContract = async (req, res) => {
                     as: "order",
                 }
             },
-            {
-                $unwind: {
-                    path: "$order",
-                    preserveNullAndEmptyArrays: true,
-                }
-            },
+            // {
+            //     $unwind: {
+            //         path: "$order",
+            //         preserveNullAndEmptyArrays: true,
+            //     }
+            // },
             {
                 $match:
                 {
                     $and: [
                         { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        { "order.resellerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
 
             },
-            {
-                $lookup: {
-                    from: "resellers",
-                    localField: "order.resellerId",
-                    foreignField: "_id",
-                    as: "order.reseller"
-                }
-            },
-            {
-                $match: {
-                    $and: [
-                        { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) },
-                    ]
-                },
-            },
+            // {
+            //     $lookup: {
+            //         from: "resellers",
+            //         localField: "order.resellerId",
+            //         foreignField: "_id",
+            //         as: "order.reseller"
+            //     }
+            // },
+            // {
+            //     $match: {
+            //         $and: [
+            //             { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) },
+            //         ]
+            //     },
+            // },
             // {
             //     $facet: {
             //         totalRecords: [
