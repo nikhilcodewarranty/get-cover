@@ -4,8 +4,6 @@ const customerController = require("../controller/customerUserController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
 
-console.log('sdnfksdfksjfksdjf')
-
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders)
 router.post('/getCustomerContract', [verifyToken], customerController.getCustomerContract)
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser)

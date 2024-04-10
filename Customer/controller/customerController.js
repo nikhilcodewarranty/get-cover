@@ -194,11 +194,13 @@ exports.getAllCustomers = async (req, res, next) => {
     let nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     let phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     let dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+    let resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
     let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
         dealerRegex.test(entry.customerData.dealerName) &&
+        resellerRegex.test(entry.reseller?.name) &&
         phoneRegex.test(entry.phoneNumber)
       );
     });
@@ -258,17 +260,25 @@ exports.getDealerCustomers = async (req, res) => {
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
 
 
-    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    //Get Resseler
 
+    const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
+    const queryReseller = { _id: { $in: resellerId } }
+    const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
+
+
+    let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.accountId.toString())
 
-      if (matchingItem || order) {
+      if (matchingItem || order || matchingReseller) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject(),
-          orderData: order ? order : {}
+          orderData: order ? order : {},
+          reseller: matchingReseller ? matchingReseller : {},
         };
       } else {
         return dealerData.toObject();
@@ -287,13 +297,15 @@ exports.getDealerCustomers = async (req, res) => {
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    const resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
     const filteredData = result_Array.filter(entry => {
       return (
         firstNameRegex.test(entry.customerData.username) &&
         lastNameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
+        phoneRegex.test(entry.phoneNumber),
+        resellerRegex.test(entry.reseller.name) 
       );
     });
 
@@ -327,6 +339,7 @@ exports.getResellerCustomers = async (req, res) => {
     const orderCustomerIds = customers.map(obj => obj._id);
     const queryUser = { accountId: { $in: customersId }, isPrimary: true };
 
+   
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -356,11 +369,12 @@ exports.getResellerCustomers = async (req, res) => {
     let result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
-      if (matchingItem || order) {
+
+      if (matchingItem || order ) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
           customerData: matchingItem.toObject(),
-          orderData: order ? order : {}
+          orderData: order ? order : {},
         };
       } else {
         return {};
@@ -830,7 +844,7 @@ exports.customerOrders = async (req, res) => {
     let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
     let userResellerIds = ordersResult
       .filter(result => result.resellerId !== null)
-      .map(result => result.resellerId.toString());
+      .map(result => result.resellerId?.toString());
 
     let mergedArray = userDealerIds.concat(userResellerIds);
     //Get Respective Dealers
@@ -856,7 +870,7 @@ exports.customerOrders = async (req, res) => {
 
     let userCustomerIds = ordersResult
       .filter(result => result.customerId !== null)
-      .map(result => result.customerId.toString());
+      .map(result => result.customerId?.toString());
 
     const allUserIds = mergedArray.concat(userCustomerIds);
 
@@ -889,14 +903,14 @@ exports.customerOrders = async (req, res) => {
         item1.servicerId != null
           ? respectiveServicer.find(
             (item2) =>
-              item2._id.toString() === item1.servicerId.toString() ||
+              item2._id.toString() === item1.servicerId?.toString() ||
               item2.resellerId === item1.servicerId
           )
           : null;
       const customerName =
         item1.customerId != null
           ? respectiveCustomer.find(
-            (item2) => item2._id.toString() === item1.customerId.toString()
+            (item2) => item2._id.toString() === item1.customerId?.toString()
           )
           : null;
       const resellerName =
@@ -1113,29 +1127,29 @@ exports.getCustomerContract = async (req, res) => {
 
       })
 
-      let contractFilter = []
-      if (data.eligibilty != '') {
-        contractFilter = [
-          // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-          { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { eligibilty: data.eligibilty === "true" ? true : false },
-        ]
-      } else {
-        contractFilter = [
-          // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-          { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        ]
-      }
+    let contractFilter = []
+    if (data.eligibilty != '') {
+      contractFilter = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { eligibilty: data.eligibilty === "true" ? true : false },
+      ]
+    } else {
+      contractFilter = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      ]
+    }
 
 
     let query = [
@@ -1265,7 +1279,7 @@ exports.updateCustomer = async (req, res, next) => {
       .status(customerResourceResponse.serverError.statusCode)
       .json({ error: "Internal server error" });
   }
-}; 
+};
 
 exports.deleteCustomer = async (req, res, next) => {
   try {

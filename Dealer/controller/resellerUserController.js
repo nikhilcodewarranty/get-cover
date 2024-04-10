@@ -473,6 +473,164 @@ exports.getResellerUsers = async (req, res) => {
     return;
 }
 
+exports.getResellerDetails = async (req, res) => {
+    try {
+        if (req.role != "Reseller") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only reseller allow to do this action"
+            })
+            return;
+        }
+        let data = req.body
+        let getUser = await userService.getUserById1({ _id: req.teammateId })
+        let mid = new mongoose.Types.ObjectId(req.userId)
+        let query = [
+            {
+                $match: {
+                    _id: mid
+                }
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    foreignField: "_id",
+                    localField: "dealerId",
+                    as: "dealer"
+                }
+            },
+            { $unwind: { path: "$dealer", preserveNullAndEmptyArrays: true } },
+            {
+                $project: {
+                    name: 1,
+                    street: 1,
+                    city: 1,
+                    zip: 1,
+                    state: 1,
+                    country: 1,
+                    isServicer: 1,
+                    "dealer.name": 1,
+                    "dealer.street": 1,
+                    "dealer.city": 1,
+                    "dealer.zip": 1,
+                    "dealer.state": 1,
+                    "dealer.country": 1,
+                    "dealer.isServicer": 1,
+                }
+            }
+        ]
+        let getCustomer = await resellerService.getResellerByAggregate(query)
+        if (!getCustomer[0]) {
+            res.send({
+                code: Constant.errorCode,
+                message: "Unable to fetch the details"
+            })
+            return;
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Successfully fetched user details.",
+            result: getCustomer[0],
+            loginMember: getUser
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getResellerCustomers = async (req, res) => {
+    try {
+        if (req.role !== "Reseller") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only reseller is allowed to perform this action"
+            });
+            return
+        }
+        let data = req.body;
+        let query = { isDeleted: false, resellerId: req.userId }
+        let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
+        const customers = await customerService.getAllCustomers(query, projection);
+        if (!customers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customer"
+            });
+            return;
+        };
+        const customersId = customers.map(obj => obj._id.toString());
+        const orderCustomerIds = customers.map(obj => obj._id);
+        const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+
+
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+        }
+
+        let orderQuery = {
+            $and: [
+                { customerId: { $in: orderCustomerIds }, status: "Active" },
+                {
+                    'venderOrder': { '$regex': req.body.venderOrderNumber ? req.body.venderOrderNumber : '', '$options': 'i' },
+                },
+            ]
+        }
+        let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
+
+        let result_Array = getPrimaryUser.map(item1 => {
+            const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+            if (matchingItem || order) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    customerData: matchingItem.toObject(),
+                    orderData: order ? order : {}
+                };
+            } else {
+                return {};
+            }
+        });
+
+        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+        const nameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        result_Array = result_Array.filter(entry => {
+            return (
+                nameRegex.test(entry.customerData.username) &&
+                emailRegex.test(entry.email) &&
+                dealerRegex.test(entry.customerData.dealerId) &&
+                phoneRegex.test(entry.phoneNumber)
+            );
+        });
+
+        res.send({
+            code: constant.successCode,
+            result: result_Array
+        })
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
 exports.getResellerPriceBook = async (req, res) => {
     // if (req.role != "Super Admin") {
     //     res.send({
@@ -952,7 +1110,7 @@ exports.getResellerOrders = async (req, res) => {
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId.toString());
+            .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
         //Get Respective Dealers
@@ -992,7 +1150,7 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId.toString());
+            .map(result => result.customerId?.toString());
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
@@ -1011,14 +1169,14 @@ exports.getResellerOrders = async (req, res) => {
                 item1.servicerId != null
                     ? respectiveServicer.find(
                         (item2) =>
-                            item2._id.toString() === item1.servicerId.toString() ||
+                            item2._id.toString() === item1.servicerId?.toString() ||
                             item2.resellerId === item1.servicerId
                     )
                     : null;
             const customerName =
                 item1.customerId != null
                     ? respectiveCustomer.find(
-                        (item2) => item2._id.toString() === item1.customerId.toString()
+                        (item2) => item2._id.toString() === item1.customerId?.toString()
                     )
                     : null;
             const resellerName =
