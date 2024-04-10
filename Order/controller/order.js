@@ -1436,7 +1436,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],{ defval: "" }),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
