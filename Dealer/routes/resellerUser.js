@@ -13,7 +13,7 @@ router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerControl
 router.post("/changeResellerStatus", [verifyToken], resellerController.changeResellerStatus);
 router.post("/getResellerClaims", [verifyToken], resellerController.getResellerClaims);
 router.post("/getResellerCustomers", [verifyToken], resellerController.getResellerCustomers);
-router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer);
+router.post("/create-customer", [verifyToken], validator('create_customer'), [verifyToken], customerController.createCustomer);
 
 router.get("/getResellerById", [verifyToken], resellerController.getResellerById);
 router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData);
