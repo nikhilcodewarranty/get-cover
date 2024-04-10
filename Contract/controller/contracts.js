@@ -42,7 +42,7 @@ exports.getAllContracts = async (req, res) => {
     }
 
     let newQuery = [];
-    let matchedData = []
+    let matchedData = [] 
     if (data.dealerName) {
       newQuery.push(
         {
