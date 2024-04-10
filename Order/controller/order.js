@@ -2853,7 +2853,8 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
 
-            let count1 = await contractService.getContractsCount();
+            //let count1 = await contractService.getContractsCount();
+            let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -2984,7 +2985,8 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
-        let count1 = await contractService.getContractsCount();
+        //let count1 = await contractService.getContractsCount();
+        let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let save = savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
