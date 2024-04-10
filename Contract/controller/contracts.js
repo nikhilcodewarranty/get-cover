@@ -42,7 +42,7 @@ exports.getAllContracts = async (req, res) => {
     }
 
     let newQuery = [];
-    let matchedData = [] 
+    let matchedData = []
     if (data.dealerName) {
       newQuery.push(
         {
@@ -224,7 +224,18 @@ exports.getAllContracts = async (req, res) => {
           as: "order",
         }
       },
-
+      {
+        $match:
+        {
+          $and: [
+            // {order: {$elemMatch: {venderOrder:  { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}},
+            // {order: {$elemMatch: {unique_key:  { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' }}}}
+            { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            // // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+          ]
+        },
+      }
 
     ]
     if (newQuery.length > 0) {
