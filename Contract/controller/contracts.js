@@ -220,7 +220,7 @@ exports.getAllContracts = async (req, res) => {
         $lookup: {
           from: "orders",
           localField: "orderId",
-          foreignField: "_id",
+          foreignField: "_id", 
           as: "order",
         }
       },
