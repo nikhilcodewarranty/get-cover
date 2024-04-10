@@ -1480,10 +1480,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         console.log("orderFileData------------------",orderFileData);
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
-                            let serial = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            let condition = fileData.serial.toString().replace(/\s+/g, ' ').trim()
-                            let retailValue = fileData.condition.toString().replace(/\s+/g, ' ').trim()
-                            let model = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
+                            let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
+                            let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
                                 message.push({
                                     code: constant.errorCode,
