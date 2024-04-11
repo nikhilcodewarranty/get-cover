@@ -1430,9 +1430,31 @@ exports.getResellerContract = async (req, res) => {
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let newQuery = [];
+        let matchedData = []
         data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
 
-        if (data.servicerName) {
+
+        if (data.customerName != "") {
+            newQuery.push(
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "order.dealerId",
+                        foreignField: "_id",
+                        as: "order.dealer"
+                    }
+                },
+                // {
+                //   $match: {
+                //     $and: [
+                //       { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                //     ]
+                //   },
+                // }
+            );
+            matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+        }
+        if (data.servicerName != "") {
             newQuery.push(
                 {
                     $lookup: {
@@ -1442,16 +1464,24 @@ exports.getResellerContract = async (req, res) => {
                         as: "order.servicer"
                     }
                 },
-                {
-                    $match: {
-                        $and: [
-                            { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        ]
-                    },
-                }
+                // {
+                //   $match: {
+                //     $and: [
+                //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                //     ]
+                //   },
+                // }
             );
+            matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
         }
-
+        if (matchedData.length > 0) {
+            let matchedCondition = {
+              $match: {
+                $and: matchedData
+              }
+            };
+            newQuery.push(matchedCondition);
+          }
         newQuery.push(
             {
                 $facet: {
@@ -1498,7 +1528,7 @@ exports.getResellerContract = async (req, res) => {
         let contractFilter = []
         if (data.eligibilty != '') {
             contractFilter = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { orderId: { $in: orderIDs } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1510,6 +1540,7 @@ exports.getResellerContract = async (req, res) => {
         } else {
             contractFilter = [
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { orderId: { $in: orderIDs } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1534,12 +1565,6 @@ exports.getResellerContract = async (req, res) => {
                     as: "order",
                 }
             },
-            // {
-            //     $unwind: {
-            //         path: "$order",
-            //         preserveNullAndEmptyArrays: true,
-            //     }
-            // },
             {
                 $match:
                 {
@@ -1551,71 +1576,15 @@ exports.getResellerContract = async (req, res) => {
                 },
 
             },
-            // {
-            //     $lookup: {
-            //         from: "resellers",
-            //         localField: "order.resellerId",
-            //         foreignField: "_id",
-            //         as: "order.reseller"
-            //     }
-            // },
-            // {
-            //     $match: {
-            //         $and: [
-            //             { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) },
-            //         ]
-            //     },
-            // },
-            // {
-            //     $facet: {
-            //         totalRecords: [
-            //             {
-            //                 $count: "total"
-            //             }
-            //         ],
-            //         data: [
-            //             {
-            //                 $skip: skipLimit
-            //             },
-            //             {
-            //                 $limit: pageLimit
-            //             },
-            //             {
-            //                 $project: {
-            //                     productName: 1,
-            //                     model: 1,
-            //                     serial: 1,
-            //                     unique_key: 1,
-            //                     status: 1,
-            //                     manufacture: 1,
-            //                     eligibilty: 1,
-            //                     "order.unique_key": 1,
-            //                     "order.venderOrder": 1
-            //                 }
-            //             }
-            //         ],
-            //     },
-
-            // }
+            
         ]
         if (newQuery.length > 0) {
             query = query.concat(newQuery);
         }
-        console.log(pageLimit, skipLimit, limitData)
         let getContracts = await contractService.getAllContracts2(query)
 
-        //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-        //let totalCount = await contractService.findContracts({ isDeleted: false, orderId: { $in: orderIDs } })
-        //let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
         let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
 
-        // if (!getContract) {
-        //     res.send({
-        //         code: constants.errorCode,
-        //         message: err.message
-        //     })
-        //     return;
-        // }
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1623,7 +1592,6 @@ exports.getResellerContract = async (req, res) => {
             totalCount
         })
 
-        console.log(orderIDs)
     } catch (err) {
         res.send({
             code: constant.errorCode,

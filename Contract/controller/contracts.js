@@ -246,7 +246,7 @@ exports.getAllContracts = async (req, res) => {
     console.log("------------------------------------",data);
 
     let getContracts = await contractService.getAllContracts2(myQuery)
-    console.log("+++++++++++++++++++++++++++++++++=", getContracts[0]?.data,getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0);
+    // console.log("+++++++++++++++++++++++++++++++++=", getContracts[0]?.data,getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0);
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
 
     res.send({
