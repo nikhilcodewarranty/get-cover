@@ -989,8 +989,10 @@ exports.getResellerServicers = async (req, res) => {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: servicer.toObject(),
-                    claimValue: claimValue ? claimValue : 0,
-                    claimNumber: claimNumber ? claimNumber : 0
+                    claimValue: claimValue ? claimValue : {
+                        totalAmount: 0
+                    },
+                    claimNumber: claimNumber ? claimNumber : { noOfOrders: 0 }
                 };
             } else {
                 return servicer.toObject();
@@ -1476,12 +1478,12 @@ exports.getResellerContract = async (req, res) => {
         }
         if (matchedData.length > 0) {
             let matchedCondition = {
-              $match: {
-                $and: matchedData
-              }
+                $match: {
+                    $and: matchedData
+                }
             };
             newQuery.push(matchedCondition);
-          }
+        }
         newQuery.push(
             {
                 $facet: {
@@ -1576,7 +1578,7 @@ exports.getResellerContract = async (req, res) => {
                 },
 
             },
-            
+
         ]
         if (newQuery.length > 0) {
             query = query.concat(newQuery);

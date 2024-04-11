@@ -526,7 +526,7 @@ exports.getResellerPriceBook = async (req, res) => {
     }
 
     if (data.term != '') {
-        query.$and.push({ 'priceBooks.term': Number(data.term) }); 
+        query.$and.push({ 'priceBooks.term': Number(data.term) });
     }
 
     if (data.priceType != '') {
@@ -773,8 +773,10 @@ exports.getResellerServicers = async (req, res) => {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: servicer.toObject(),
-                    claimValue: claimValue ? claimValue : 0,
-                    claimNumber: claimNumber ? claimNumber : 0
+                    claimValue: claimValue ? claimValue : {
+                        totalAmount: 0
+                    },
+                    claimNumber: claimNumber ? claimNumber : { noOfOrders: 0 }
                 };
             } else {
                 return servicer.toObject();
@@ -1285,9 +1287,9 @@ exports.getResellerContract = async (req, res) => {
                                 order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
                                 resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
                                 order: {
-                                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-                                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-                                  resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
+                                    unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
+                                    venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+                                    resellerId: { $arrayElemAt: ["$order.resellerId", 0] },
                                 },
                                 totalRecords: 1
                             }
