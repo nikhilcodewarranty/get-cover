@@ -711,7 +711,10 @@ exports.getResellerCustomers = async (req, res) => {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
                     customerData: matchingItem.toObject(),
-                    orderData: order ? order : {}
+                    orderData: order ? order : {
+                        noOfOrders: 0,
+                        orderAmount: 0
+                    }
                 };
             } else {
                 return {};
