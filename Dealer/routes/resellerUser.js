@@ -14,6 +14,9 @@ router.post("/changeResellerStatus", [verifyToken], resellerController.changeRes
 router.post("/getResellerClaims", [verifyToken], resellerController.getResellerClaims);
 router.post("/getResellerCustomers", [verifyToken], resellerController.getResellerCustomers);
 router.post("/create-customer", [verifyToken], validator('create_customer'), [verifyToken], resellerController.createCustomer);
+router.post('/getCustomerInOrder', [verifyToken], resellerController.getCustomerInOrder)
+router.post('/getServicerInOrders', [verifyToken], resellerController.getServicerInOrders)
+router.post('/createOrder', [verifyToken], resellerController.createOrder)
 
 router.get("/getResellerById", [verifyToken], resellerController.getResellerById);
 router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData);

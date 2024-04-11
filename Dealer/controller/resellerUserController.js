@@ -246,6 +246,238 @@ exports.createCustomer = async (req, res, next) => {
         })
     }
 };
+//Create Order
+exports.createOrder = async (req, res) => {
+    try {
+        let data = req.body;
+
+        const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller."
+            })
+            return;
+        }
+
+        data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
+        data.resellerId = req.userId;
+        data.venderOrder = data.dealerPurchaseOrder;
+        let projection = { isDeleted: 0 };
+
+        let checkDealer = await dealerService.getDealerById(
+            checkReseller.dealerId,
+            projection
+        );
+
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found",
+            });
+            return;
+        }
+
+        if (data.servicerId) {
+            let query = {
+                $or: [
+                    { _id: data.servicerId },
+                    { resellerId: data.servicerId },
+                    { dealerId: data.servicerId },
+                ],
+            };
+
+            let checkServicer = await providerService.getServiceProviderById(query);
+            if (!checkServicer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Servicer not found",
+                });
+                return;
+            }
+        }
+
+        if (data.customerId) {
+            let query = { _id: data.customerId };
+            let checkCustomer = await customerService.getCustomerById(query);
+            if (!checkCustomer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Customer not found",
+                });
+                return;
+            }
+        }
+        if (data.priceBookId) {
+            let query = { _id: data.priceBookId };
+            let checkPriceBook = await priceBookService.findByName1(query);
+            if (!checkPriceBook) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "PriceBook not found",
+                });
+                return;
+            }
+        }
+
+        data.createdBy = req.userId;
+
+        data.servicerId = data.servicerId != "" ? data.servicerId : null;
+        data.resellerId = req.userId;
+        data.dealerId = checkReseller.dealerId;
+        data.customerId = data.customerId != "" ? data.customerId : null;
+        let count = await orderService.getOrdersCount();
+
+        data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
+        data.unique_key_search = "GC" + "2024" + data.unique_key_number
+        data.unique_key = "GC-" + "2024-" + data.unique_key_number
+
+        let checkVenderOrder = await orderService.getOrder(
+            { venderOrder: data.dealerPurchaseOrder, dealerId: checkDealer._id },
+            {}
+        );
+        if (checkVenderOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "dealer purchase order is already exist",
+            });
+            return;
+        }
+
+        data.status = "Pending";
+        let savedResponse = await orderService.addOrder(data);
+        if (!savedResponse) {
+            res.send({
+                code: constant.errorCode,
+                message: "unable to create order",
+            });
+            return;
+        }
+        let returnField = [];
+
+        let checkOrder = await orderService.getOrder(
+            { _id: savedResponse._id },
+        );
+
+        let resultArray = checkOrder.productsArray.map(
+            (item) => item.coverageStartDate === null
+        );
+
+        let isEmptyOrderFile = checkOrder.productsArray
+            .map(
+                (item) =>
+                    item.orderFile.fileName === ""
+            )
+
+        // .some(Boolean);
+        const obj = {
+            customerId: checkOrder.customerId ? true : false,
+            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
+            coverageStartDate: resultArray.includes(true) ? false : true,
+            fileName: isEmptyOrderFile.includes(true) ? false : true,
+        };
+
+        returnField.push(obj);
+
+
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+            console.log("All condition verify+++++++++++")
+            let savedResponse = await orderService.updateOrder(
+                { _id: checkOrder._id },
+                { status: "Active" },
+                { new: true }
+            );
+            console.log("order status update+++++++++++")
+            let count1 = await contractService.getContractsCountNew();
+            console.log("count1 New+++++++++++", count1)
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+            let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
+
+                const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let priceBookId = product.priceBookId;
+                let coverageStartDate = product.coverageStartDate;
+                let coverageEndDate = product.coverageEndDate;
+                let orderProductId = product._id;
+                let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+                let projection = { isDeleted: 0 };
+                let priceBook = await priceBookService.getPriceBookById(
+                    query,
+                    projection
+                );
+                const wb = XLSX.readFile(pathFile);
+                const sheets = wb.SheetNames;
+                const ws = wb.Sheets[sheets[0]];
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing = totalDataComing1.map((item) => {
+                    const keys = Object.keys(item);
+                    return {
+                        brand: item[keys[0]],
+                        model: item[keys[1]],
+                        serial: item[keys[2]],
+                        condition: item[keys[3]],
+                        retailValue: item[keys[4]],
+                    };
+                });
+                var contractArray = [];
+                totalDataComing.forEach((data, index1) => {
+                    console.log('index1++++++++++++++++++++++++++++++++++++++++++++=', new Date())
+                    let unique_key_number1 = increamentNumber
+                    let unique_key_search1 = "OC" + "2024" + unique_key_number1
+                    let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+                    claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                    let eligibilty = claimStatus == "Active" ? true : false
+                    let contractObject = {
+                        orderId: savedResponse._id,
+                        orderProductId: orderProductId,
+                        coverageStartDate: coverageStartDate,
+                        coverageEndDate: coverageEndDate,
+                        productName: priceBook[0].name,
+                        manufacture: data.brand,
+                        model: data.model,
+                        serial: data.serial,
+                        status: claimStatus,
+                        eligibilty: eligibilty,
+                        condition: data.condition,
+                        productValue: data.retailValue,
+                        unique_key: unique_key1,
+                        unique_key_search: unique_key_search1,
+                        unique_key_number: unique_key_number1,
+                    };
+                    increamentNumber++
+                    //unique_key_number1++
+                    // console.log("unique_key_number1", contractObject)
+
+                    contractArray.push(contractObject);
+                    //let saveData = contractService.createContract(contractObject)
+                });
+                console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
+
+                let saveContracts = await contractService.createBulkContracts(contractArray);
+
+                //  console.log("saveContracts==================", saveContracts)
+
+            })
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        } else {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+        }
+
+        // })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
 exports.getAllResellers = async (req, res) => {
     try {
         let data = req.body
@@ -1124,6 +1356,138 @@ exports.getDealerByReseller = async (req, res) => {
     }
 
 }
+
+exports.getCustomerInOrder = async (req, res) => {
+    try {
+        let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Reseller not found'
+            });
+            return;
+        }
+        let query = { dealerId: checkReseller.dealerId, resellerId: checkReseller._id };
+
+        let getCustomers = await customerService.getAllCustomers(query, {});
+
+        if (!getCustomers) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the customers",
+            });
+            return;
+        }
+        console.log(" getCustomers --------------", getCustomers)
+        const customerIds = getCustomers.map(customer => customer._id.toString());
+        console.log("customerUser00000000000000000", customerIds);
+        let query1 = { accountId: { $in: customerIds }, isPrimary: true };
+        let projection = { __v: 0, isDeleted: 0 }
+
+        let customerUser = await userService.getMembers(query1, projection)
+
+        const result_Array = customerUser.map(item1 => {
+            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            if (matchingItem) {
+                return {
+                    ...matchingItem.toObject(),
+                    email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
+                };
+            } else {
+                return dealerData.toObject();
+            }
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Successfully Fetched",
+            result: result_Array,
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+exports.getServicerInOrders = async (req, res) => {
+    let data = req.body;
+    let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
+    if (!checkReseller) {
+        res.send({
+            code: constant.errorCode,
+            message: 'Reseller not found'
+        });
+        return;
+    }
+    let servicer = [];
+    if (checkReseller.dealerId) {
+        var checkDealer = await dealerService.getDealerById(checkReseller.dealerId, {
+            isDeleted: 0,
+        });
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found!",
+            });
+            return;
+        }
+        let getServicersIds = await dealerRelationService.getDealerRelations({
+            dealerId: checkReseller.dealerId,
+        });
+        let ids = getServicersIds.map((item) => item.servicerId);
+        servicer = await providerService.getAllServiceProvider(
+            { _id: { $in: ids }, status: true },
+            {}
+        );
+        if (!servicer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the servicers",
+            });
+            return;
+        }
+    }
+
+    if (checkReseller && checkReseller.isServicer) {
+        servicer.unshift(checkReseller);
+    }
+
+    if (checkDealer && checkDealer.isServicer) {
+        servicer.unshift(checkDealer);
+    }
+
+    const servicerIds = servicer.map((obj) => obj._id);
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    let servicerUser = await userService.getMembers(query1, {});
+    if (!servicerUser) {
+        res.send({
+            code: constant.errorCode,
+            message: "Unable to fetch the data",
+        });
+        return;
+    }
+
+    const result_Array = servicer.map((item1) => {
+        const matchingItem = servicerUser.find(
+            (item2) => item2.accountId.toString() === item1._id.toString());
+        if (matchingItem) {
+            return {
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: matchingItem.toObject(),
+            };
+        } else {
+            return servicer.toObject();
+        }
+    });
+
+    res.send({
+        code: constant.successCode,
+        result: result_Array,
+    });
+};
 
 exports.getResellerOrders = async (req, res) => {
     try {
