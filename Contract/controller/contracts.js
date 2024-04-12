@@ -180,6 +180,7 @@ exports.getAllContracts = async (req, res) => {
             }
           ],
           data: [
+            { $sort: { unique_key_number: -1 } },
             {
               $skip: skipLimit
             },
@@ -211,7 +212,6 @@ exports.getAllContracts = async (req, res) => {
 
     )
     let myQuery = [
-      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -370,6 +370,8 @@ exports.getContracts = async (req, res) => {
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
       ]
     }
 
@@ -377,10 +379,50 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId == "" && data.productName == "" && data.serial == "" && data.manufacture == "" && data.model == "" && data.status == "" && data.eligibilty == "") {
+    if (data.contractId == "" && data.productName == "" && data.serial == "" && data.manufacture == "" && data.model == "" && data.status == "" && data.eligibilty == ""&& data.venderOrder == "" && data.orderId == "") {
       mainQuery = [
-        { $sort: { unique_key_number: -1 } },
-       
+        {
+          $facet: {
+            totalRecords: [
+              {
+                $count: "total"
+              }
+            ],
+            data: [
+              { $sort: { unique_key_number: -1 } },
+              {
+                $skip: skipLimit
+              },
+              {
+                $limit: pageLimit
+              },
+              {
+                $project: {
+                  productName: 1,
+                  model: 1,
+                  serial: 1,
+                  unique_key: 1,
+                  status: 1,
+                  manufacture: 1,
+                  eligibilty: 1,
+                  orderUniqueKey: 1,
+                  venderOrder: 1,
+                  totalRecords: 1
+                }
+              }
+            ],
+          },
+
+        },
+      ]
+    } else {
+      mainQuery = [
+        {
+          $match:
+          {
+            $and: contractFilterWithEligibilty
+          },
+        },
         // {
         //   $lookup: {
         //     from: "orders",
@@ -399,68 +441,7 @@ exports.getContracts = async (req, res) => {
         //     ]
         //   },
 
-        // },
-        {
-          $facet: {
-            totalRecords: [
-              {
-                $count: "total"
-              }
-            ],
-            data: [
-              {
-                $skip: skipLimit
-              },
-              {
-                $limit: pageLimit
-              },
-              // {
-              //   $project: {
-              //     productName: 1,
-              //     model: 1,
-              //     serial: 1,
-              //     unique_key: 1,
-              //     status: 1,
-              //     manufacture: 1,
-              //     eligibilty: 1,
-              //     "order.unique_key": 1,
-              //     "order.venderOrder": 1,
-              //     totalRecords: 1
-              //   }
-              // }
-            ],
-          },
-
-        },
-      ]
-    } else {
-      mainQuery = [
-        { $sort: { unique_key_number: -1 } },
-        {
-          $match:
-          {
-            $and: contractFilterWithEligibilty
-          },
-        },
-        {
-          $lookup: {
-            from: "orders",
-            localField: "orderId",
-            foreignField: "_id",
-            as: "order",
-          }
-        },
-        {
-          $match:
-          {
-            $and: [
-              { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-              { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            ]
-          },
-
-        }
+        // }
       ]
       mainQuery.push({
         $facet: {
@@ -470,6 +451,8 @@ exports.getContracts = async (req, res) => {
             }
           ],
           data: [
+            { $sort: { unique_key_number: -1 } },
+
             {
               $skip: skipLimit
             },
@@ -485,8 +468,8 @@ exports.getContracts = async (req, res) => {
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1,
+                orderUniqueKey: 1,
+                venderOrder: 1,
                 totalRecords: 1
               }
             }
