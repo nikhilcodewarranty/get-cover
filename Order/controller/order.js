@@ -2331,6 +2331,18 @@ exports.getServiceCoverage = async (req, res) => {
         if (req.role == 'Dealer') {
             dealerId = req.userId
         }
+        if (req.role == 'Reseller') {
+            const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+            if (!checkReseller) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid Reseller."
+                })
+                return;
+            }
+    
+            dealerId = checkReseller.dealerId
+        }
 
         let data = req.body;
         let checkDealer = await dealerService.getDealerById(dealerId, {
