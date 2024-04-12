@@ -392,6 +392,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+// Create Order
 exports.createOrder1 = async (req, res) => {
     try {
         let data = req.body;
@@ -673,6 +674,7 @@ exports.createOrder1 = async (req, res) => {
     }
 };
 
+//process order for checking pending requirements
 exports.processOrder = async (req, res) => {
     try {
         // if (req.role != "Super Admin") {
@@ -743,7 +745,7 @@ exports.processOrder = async (req, res) => {
         });
     }
 };
-
+//Get All Orders
 exports.getAllOrders = async (req, res) => {
     try {
         {
@@ -1030,7 +1032,7 @@ exports.getAllOrders = async (req, res) => {
         })
     }
 };
-
+//Get All archieve orders
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body;
     if (req.role != "Super Admin") {
@@ -1379,7 +1381,7 @@ exports.checkFileValidation = async (req, res) => {
         });
     }
 };
-
+//checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
@@ -2002,7 +2004,7 @@ exports.editFileCase = async (req, res) => {
         })
     }
 };
-
+//Get customer for order
 exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
@@ -2053,7 +2055,7 @@ exports.getCustomerInOrder = async (req, res) => {
         });
     }
 };
-
+//Get servicer in orders
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
     let servicer = [];
@@ -2127,7 +2129,7 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
-
+//Get Dealer Resellers
 exports.getDealerResellers = async (req, res) => {
     try {
         let data = req.body
@@ -2355,7 +2357,7 @@ exports.getServiceCoverage = async (req, res) => {
         })
     }
 };
-
+//Get Dealer price book and categories
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -2480,7 +2482,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
-
+//Check Purchase order
 exports.checkPurchaseOrder = async (req, res) => {
     try {
         // if (req.role != "Super Admin") {
@@ -2532,7 +2534,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         });
     }
 };
-
+//Archeive Order
 exports.archiveOrder = async (req, res) => {
     try {
         // if (req.role != "Super Admin") {
@@ -2703,7 +2705,7 @@ exports.getSingleOrder = async (req, res) => {
         });
     }
 };
-
+//Edit order detail
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3012,7 +3014,7 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-
+// Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
         let data = req.body
@@ -3122,7 +3124,7 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
-
+//Get dashbaord value for order and claims
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
