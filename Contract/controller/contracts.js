@@ -379,7 +379,9 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId == "" && data.productName == "" && data.serial == "" && data.manufacture == "" && data.model == "" && data.status == "" && data.eligibilty == ""&& data.venderOrder == "" && data.orderId == "") {
+    console.log(orderIds)
+    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+      console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         {
           $facet: {
@@ -482,7 +484,7 @@ exports.getContracts = async (req, res) => {
 
     // console.log("sssssss", contractFilterWithPaging)
 
-    let getContracts = await contractService.getAllContracts2(mainQuery,{ allowDiskUse: true })
+    let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
 
     res.send({
