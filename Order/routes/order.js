@@ -16,7 +16,7 @@ router.post('/generatePDF/:orderId', [verifyToken], orderController.generatePDF)
 
 // router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
 
-router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
+router.post('/getAllOrders', [verifyToken], orderController.getAllOrders) 
 //router.post('/getOrder', [verifyToken], orderController.getOrder)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
