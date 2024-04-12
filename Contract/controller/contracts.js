@@ -684,7 +684,7 @@ exports.getContractById = async (req, res) => {
     let order = getData[0].order
     //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
-      let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
+      let productsArray = order[i].productsArray.filter(product => product._id?.toString() == orderProductId?.toString())
       if (productsArray.length > 0) {
         productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
         getData[0].order[i].productsArray = productsArray
@@ -692,12 +692,12 @@ exports.getContractById = async (req, res) => {
     }
     getData.map((data, index) => {
       if (data.order[0]?.servicerId != null) {
-        if (data.order[0]?.dealer[0]?.isServicer && data.order[0]?.dealerId.toString() === data.order[0]?.servicerId.toString()) {
+        if (data.order[0]?.dealer[0]?.isServicer && data.order[0]?.dealerId?.toString() === data.order[0]?.servicerId?.toString()) {
           data.order[0]?.servicer.push(data.order[0]?.dealer[0])
           getData[index] = data
         }
         if (data.order[0]?.reseller.length > 0) {
-          if (data.order[0]?.reseller[0]?.isServicer && data.order[0]?.resellerId.toString() === data.order[0]?.servicerId.toString()) {
+          if (data.order[0]?.reseller[0]?.isServicer && data.order[0]?.resellerId?.toString() === data.order[0]?.servicerId?.toString()) {
             data.order[0]?.servicer.push(data.order[0]?.reseller[0])
             getData[index] = data
           }

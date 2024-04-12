@@ -802,7 +802,7 @@ exports.getAllClaims = async (req, res, next) => {
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+        const dealerOfServicer = allServicer.find(servicer => servicer._id?.toString() === matched.servicerId?.toString());
         servicer.push(dealerOfServicer)
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {

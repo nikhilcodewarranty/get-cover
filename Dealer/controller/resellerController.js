@@ -1006,7 +1006,7 @@ exports.getResellerOrders = async (req, res) => {
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
-        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
             .map(result => result.resellerId?.toString());
@@ -1150,10 +1150,10 @@ exports.getResellerOrders = async (req, res) => {
                 username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
             }
             if (item.resellerName) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
             }
             if (item.customerName) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
             }
             return {
                 ...item,
