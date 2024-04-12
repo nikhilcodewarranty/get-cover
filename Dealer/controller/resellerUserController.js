@@ -430,6 +430,8 @@ exports.createOrder = async (req, res) => {
                     let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
+                        orderUniqueKey: savedResponse.unique_key,
+                        venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,

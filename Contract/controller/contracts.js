@@ -7,6 +7,10 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const contract = require("../model/contract");
 const providerService = require("../../Provider/services/providerService");
+const dealerService = require("../../Dealer/services/dealerService");
+const customerService = require("../../Customer/services/customerService");
+const resellerService = require("../../Dealer/services/resellerService");
+const orderService = require("../../Order/services/orderService");
 
 // get all contracts api
 
@@ -176,6 +180,7 @@ exports.getAllContracts = async (req, res) => {
             }
           ],
           data: [
+            { $sort: { unique_key_number: -1 } },
             {
               $skip: skipLimit
             },
@@ -207,7 +212,6 @@ exports.getAllContracts = async (req, res) => {
 
     )
     let myQuery = [
-      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
@@ -241,6 +245,7 @@ exports.getAllContracts = async (req, res) => {
     }
 
 
+    console.log("------------------------------------", data);
 
     let getContracts = await contractService.getAllContracts2(myQuery)
     // console.log("+++++++++++++++++++++++++++++++++=", getContracts[0]?.data,getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0);
@@ -270,10 +275,83 @@ exports.getContracts = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let dealerIds = [];
+    let customerIds = [];
+    let resellerIds = [];
+    let servicerIds = [];
+    let userSearchCheck = 0
+    console.log('tesinggi------------')
+    if (data.dealerName != "") {
+      userSearchCheck = 1
+      let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        dealerIds = await getData.map(dealer => dealer._id)
+      } else {
+        dealerIds.push("1111121ccf9d400000000000")
+      }
+    };
+    if (data.customerName != "") {
+      userSearchCheck = 1
+      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        customerIds = await getData.map(customer => customer._id)
+      } else {
+        customerIds.push("1111121ccf9d400000000000")
+      }
+    };
+    if (data.servicerName != "") {
+      userSearchCheck = 1
+      let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        servicerIds = await getData.map(servicer => servicer._id)
+      } else {
+        servicerIds.push("1111121ccf9d400000000000")
+      }
+    };
+    if (data.resellerName != "") {
+      userSearchCheck = 1
+      let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        resellerIds = await getData.map(servicer => servicer._id)
+      } else {
+        resellerIds.push("1111121ccf9d400000000000")
+      }
+    };
 
-    let contractFilter = []
+    console.log('tesinggi------------')
+
+    let orderAndCondition = []
+
+    if (dealerIds.length > 0) {
+      orderAndCondition.push({ dealerId: { $in: dealerIds } })
+    }
+    if (customerIds.length > 0) {
+      orderAndCondition.push({ customerId: { $in: customerIds } })
+
+    }
+    if (servicerIds.length > 0) {
+      orderAndCondition.push({ servicerId: { $in: servicerIds } })
+
+    }
+    if (resellerIds.length > 0) {
+      orderAndCondition.push({ resellerId: { $in: resellerIds } })
+
+    }
+
+    let orderIds = []
+    if (orderAndCondition.length > 0) {
+      let getOrders = await orderService.getOrders({
+        $and: orderAndCondition
+      })
+      if (getOrders.length > 0) {
+        orderIds = await getOrders.map(order => order._id)
+      }
+    }
+
+
+    let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
-      contractFilter = [
+      contractFilterWithEligibilty = [
         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -284,7 +362,7 @@ exports.getContracts = async (req, res) => {
         { eligibilty: data.eligibilty === "true" ? true : false },
       ]
     } else {
-      contractFilter = [
+      contractFilterWithEligibilty = [
         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -292,165 +370,80 @@ exports.getContracts = async (req, res) => {
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
       ]
     }
 
-    let newQuery = [];
-    let matchedData = []
-    if (data.dealerName) {
-      newQuery.push(
+    if (userSearchCheck == 1) {
+      contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
+    }
+    let mainQuery = []
+    if (data.contractId == "" && data.productName == "" && data.serial == "" && data.manufacture == "" && data.model == "" && data.status == "" && data.eligibilty == ""&& data.venderOrder == "" && data.orderId == "") {
+      mainQuery = [
         {
-          $lookup: {
-            from: "dealers",
-            localField: "order.dealerId",
-            foreignField: "_id",
-            as: "order.dealer",
-            pipeline: [
+          $facet: {
+            totalRecords: [
               {
-                $match: {
-                  $and: [
-                    { "name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  ]
-                },
+                $count: "total"
               }
-              // {
-              //   $search: {
-              //     index: "dealerSearch",
-              //     text: {
-              //       query: data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '',
-              //       path: {
-              //         wildcard: "*"
-              //       }
-              //     }
-              //   }
-              // }
-            ]
-          }
-        },
-        {
-          $match: {
-            $expr: {
-              $gt: [{ $size: "$order.dealer" }, 1]
-            }
-          }
-        }
-
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
-      );
-      matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-    }
-    if (data.customerName) {
-      newQuery.push(
-        {
-          $lookup: {
-            from: "dealers",
-            localField: "order.dealerId",
-            foreignField: "_id",
-            as: "order.dealer"
-          }
-        },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
-      );
-      matchedData.push({ "order.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-    }
-    if (data.servicerName) {
-      newQuery.push(
-        {
-          $lookup: {
-            from: "serviceproviders",
-            localField: "order.servicerId",
-            foreignField: "_id",
-            as: "order.servicer"
-          }
-        },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
-      );
-      matchedData.push({ "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-    }
-    if (data.resellerName) {
-      newQuery.push(
-        {
-          $lookup: {
-            from: "resellers",
-            localField: "order.resellerId",
-            foreignField: "_id",
-            as: "order.reseller"
-          }
-        },
-        // {
-        //   $match: {
-        //     $and: [
-        //       { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        //     ]
-        //   },
-        // }
-      );
-      matchedData.push({ "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-    }
-    if (matchedData.length > 0) {
-      let matchedCondition = {
-        $match: {
-          $and: matchedData
-        }
-      };
-      newQuery.push(matchedCondition);
-    }
-
-    let queryWithLimit = {
-      $facet: {
-        totalRecords: [
-          {
-            $count: "total"
-          }
-        ],
-        data: [
-          {
-            $skip: skipLimit
-          },
-          {
-            $limit: pageLimit
-          },
-          {
-            $project: {
-              productName: 1,
-              model: 1,
-              serial: 1,
-              unique_key: 1,
-              status: 1,
-              manufacture: 1,
-              eligibilty: 1,
-              order: {
-                unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-                venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
+            ],
+            data: [
+              { $sort: { unique_key_number: -1 } },
+              {
+                $skip: skipLimit
               },
-              totalRecords: 1
-            }
-          }
-        ],
-      },
+              {
+                $limit: pageLimit
+              },
+              {
+                $project: {
+                  productName: 1,
+                  model: 1,
+                  serial: 1,
+                  unique_key: 1,
+                  status: 1,
+                  manufacture: 1,
+                  eligibilty: 1,
+                  orderUniqueKey: 1,
+                  venderOrder: 1,
+                  totalRecords: 1
+                }
+              }
+            ],
+          },
 
-    }
+        },
+      ]
+    } else {
+      mainQuery = [
+        {
+          $match:
+          {
+            $and: contractFilterWithEligibilty
+          },
+        },
+        // {
+        //   $lookup: {
+        //     from: "orders",
+        //     localField: "orderId",
+        //     foreignField: "_id",
+        //     as: "order",
+        //   }
+        // },
+        // {
+        //   $match:
+        //   {
+        //     $and: [
+        //       { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //       // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //       { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
 
-    newQuery.push(
-      {
+        // }
+      ]
+      mainQuery.push({
         $facet: {
           totalRecords: [
             {
@@ -458,6 +451,8 @@ exports.getContracts = async (req, res) => {
             }
           ],
           data: [
+            { $sort: { unique_key_number: -1 } },
+
             {
               $skip: skipLimit
             },
@@ -473,72 +468,29 @@ exports.getContracts = async (req, res) => {
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
-                order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-                order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-                order: {
-                  unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-                  venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-                },
+                orderUniqueKey: 1,
+                venderOrder: 1,
                 totalRecords: 1
               }
             }
           ],
         },
 
-      }
-
-    )
-
-
-    let myQuery = [
-      { $sort: { unique_key_number: -1 } },
-      // {
-      //   $match:
-      //   {
-      //     $and: contractFilter
-      //   },
-      // },
-      {
-        $text: {
-          $search: {
-            index: "default",
-            text: {
-              query: "Apple",
-              path: {
-                wildcard: "*"
-              }
-            }
-          }
-        },
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-        }
-      },
-
-
-    ]
-    if (newQuery.length > 0) {
-      myQuery = myQuery.concat(newQuery);
+      })
     }
 
 
+    // console.log("sssssss", contractFilterWithPaging)
 
-
-    let getContracts = await contractService.getAllContracts2(myQuery)
-    let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    let getContracts = await contractService.getAllContracts2(mainQuery,{ allowDiskUse: true })
+    let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
 
     res.send({
       code: constant.successCode,
       message: "Success",
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      // result: myQuery,
-      totalCount
-      // count: getCo
+      totalCount,
+      mainQuery
     })
 
   } catch (err) {
@@ -548,7 +500,6 @@ exports.getContracts = async (req, res) => {
     })
   }
 }
-
 
 exports.editContract = async (req, res) => {
   try {

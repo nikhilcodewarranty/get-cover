@@ -5,6 +5,12 @@ const contractSchema = new mongoose.Schema({
     ref: "order",
     index: true,
   },
+  orderUniqueKey:{
+    type:String
+  },
+  venderOrder:{
+    type:String
+  },
   productName: {
     type: String,
     index: true,

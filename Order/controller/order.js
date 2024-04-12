@@ -340,6 +340,8 @@ exports.createOrder = async (req, res) => {
                             let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
                                 orderId: savedResponse._id,
+                                orderUniqueKey: savedResponse.unique_key,
+                                venderOrder: savedResponse.venderOrder,
                                 orderProductId: matchedObject._id,
                                 productName: priceBook[0].name,
                                 manufacture: data.brand,
@@ -620,6 +622,8 @@ exports.createOrder1 = async (req, res) => {
                     let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
+                        orderUniqueKey: savedResponse.unique_key,
+                        venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
@@ -1800,9 +1804,9 @@ exports.editFileCase = async (req, res) => {
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
-                        res.send({ 
+                        res.send({
                             message,
-                        }); 
+                        });
                         return;
                     }
 
@@ -2950,6 +2954,8 @@ exports.editOrderDetail = async (req, res) => {
                     let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
+                        orderUniqueKey: savedResponse.unique_key,
+                        venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
                         coverageEndDate: coverageEndDate,
@@ -3080,6 +3086,8 @@ exports.markAsPaid = async (req, res) => {
                 let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
+                    orderUniqueKey: savedResponse.unique_key,
+                    venderOrder: savedResponse.venderOrder,
                     orderProductId: orderProductId,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
