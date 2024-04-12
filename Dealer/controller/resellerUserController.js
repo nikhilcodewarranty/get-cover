@@ -565,6 +565,439 @@ exports.getAllResellers = async (req, res) => {
     }
 }
 
+exports.editOrderDetail = async (req, res) => {
+    try {
+        let data = req.body;
+        const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller."
+            })
+            return;
+        }
+        data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
+        let checkId = await orderService.getOrder({ _id: req.params.orderId });
+        if (!checkId) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid order ID",
+            });
+            return;
+        }
+        let checkDealer = await dealerService.getDealerById(
+            checkReseller.dealerId
+        );
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found",
+            });
+            return;
+        }
+        if (data.servicerId != "") {
+            if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
+                let query = {
+                    $or: [
+                        { _id: data.servicerId },
+                        { resellerId: data.servicerId },
+                        { dealerId: data.servicerId },
+                    ],
+                };
+                let checkServicer = await servicerService.getServiceProviderById(query);
+                if (!checkServicer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Servicer not found",
+                    });
+                    return;
+                }
+            }
+        }
+        if (data.customerId != "") {
+            if (data.customerId != '' && data.customerId != checkId.customerId) {
+                let query = { _id: data.customerId };
+                let checkCustomer = await customerService.getCustomerById(query);
+                if (!checkCustomer) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Customer not found",
+                    });
+                    return;
+                }
+            }
+        }
+        if (checkId.status == 'Archieved') {
+            res.send({
+                code: constant.errorCode,
+                message: "The order has already archeived!",
+            });
+            return;
+        }
+        data.createdBy = req.userId;
+        data.servicerId = data.servicerId != "" ? data.servicerId : null;
+        data.resellerId = req.userId;
+        data.customerId = data.customerId != "" ? data.customerId : null;
+
+        if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
+            checkId.paidAmount = 0
+        }
+        if (data.paymentStatus == "Paid") {
+            data.paidAmount = checkId.orderAmount
+            data.dueAmount = 0
+        }
+        data.paidAmount = Number(data.paidAmount)
+        data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
+
+        console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
+        if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
+            res.send({
+                code: constant.error,
+                message: "Not a valid paying amount"
+            })
+            return;
+        };
+
+        if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
+            console.log("condition matched +++++++++++++++++++===")
+            data.paymentStatus = "Paid"
+        }
+
+        if (req.files) {
+            const uploadedFiles = req.files.map((file) => ({
+                fileName: file.filename,
+                originalName: file.originalname,
+                filePath: file.path,
+            }));
+
+            const filteredProducts = data.productsArray.filter(
+                (product) => product.orderFile.fileName !== ""
+            );
+            const filteredProducts2 = data.productsArray.filter(
+                (product) => product.file === ""
+            );
+
+
+            const productsWithOrderFiles = filteredProducts.map((product, index) => {
+                const file = uploadedFiles[index];
+
+                // Check if 'file' is not null
+                if (file && file.filePath) {
+                    return {
+                        ...product,
+                        file: file.filePath,
+                        orderFile: {
+                            fileName: file.fileName,
+                            originalName: file.originalName,
+                        },
+                    };
+                } else {
+                    // If 'file' is null, return the original product without modifications
+                    return product;
+                }
+            });
+
+            const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
+            data.productsArray = finalOutput;
+        }
+        let savedResponse = await orderService.updateOrder(
+            { _id: req.params.orderId },
+            data,
+            { new: true }
+        );
+        if (!savedResponse) {
+            res.send({
+                code: constant.errorCode,
+                message: "unable to create order",
+            });
+            return;
+        }
+
+        // check to processed order 
+
+        let returnField = [];
+
+        let checkOrder = await orderService.getOrder(
+            { _id: req.params.orderId },
+            // { isDeleted: 0 }
+        );
+        if (!checkOrder) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order not found!",
+            });
+            return;
+        }
+
+        let resultArray = checkOrder.productsArray.map(
+            (item) => item.coverageStartDate === null
+        );
+        let isEmptyOrderFile = checkOrder.productsArray
+            .map(
+                (item) =>
+                    item.orderFile.fileName === ""
+            )
+        // .some(Boolean);
+        const obj = {
+            customerId: checkOrder.customerId ? true : false,
+            paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
+            coverageStartDate: resultArray.includes(true) ? false : true,
+            fileName: isEmptyOrderFile.includes(true) ? false : true,
+        };
+
+        returnField.push(obj); 
+
+
+        // if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+        //     let savedResponse = await orderService.updateOrder(
+        //         { _id: req.params.orderId },
+        //         { status: "Active" },
+        //         { new: true }
+        //     );
+
+        //     //let count1 = await contractService.getContractsCount();
+        //     let count1 = await contractService.getContractsCountNew();
+        //     var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+        //     let save = savedResponse.productsArray.map(async (product) => {
+        //         const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+        //         let priceBookId = product.priceBookId;
+        //         let coverageStartDate = product.coverageStartDate;
+        //         let coverageEndDate = product.coverageEndDate;
+        //         let orderProductId = product._id;
+        //         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
+        //         let projection = { isDeleted: 0 };
+        //         let priceBook = await priceBookService.getPriceBookById(
+        //             query,
+        //             projection
+        //         );
+        //         const wb = XLSX.readFile(pathFile);
+        //         const sheets = wb.SheetNames;
+        //         const ws = wb.Sheets[sheets[0]];
+        //         let count1 = await contractService.getContractsCount();
+        //         let contractCount =
+        //             Number(
+        //                 count1.length > 0 && count1[0].unique_key
+        //                     ? count1[0].unique_key
+        //                     : 0
+        //             ) + 1;
+
+        //         const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+        //         const totalDataComing = totalDataComing1.map((item) => {
+        //             const keys = Object.keys(item);
+        //             return {
+        //                 brand: item[keys[0]],
+        //                 model: item[keys[1]],
+        //                 serial: item[keys[2]],
+        //                 condition: item[keys[3]],
+        //                 retailValue: item[keys[4]],
+        //             };
+        //         });
+        //         // let savedDataOrder = savedResponse.toObject()
+
+        //         var contractArray = [];
+        //         totalDataComing.forEach((data, index) => {
+        //             //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
+        //             let unique_key_number1 = increamentNumber
+        //             let unique_key_search1 = "OC" + "2024" + unique_key_number1
+        //             let unique_key1 = "OC-" + "2024-" + unique_key_number1
+        //             let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+        //             claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+        //             let eligibilty = claimStatus == "Active" ? true : false
+        //             let contractObject = {
+        //                 orderId: savedResponse._id,
+        //                 orderUniqueKey: savedResponse.unique_key,
+        //                 venderOrder: savedResponse.venderOrder,
+        //                 orderProductId: orderProductId,
+        //                 coverageStartDate: coverageStartDate,
+        //                 coverageEndDate: coverageEndDate,
+        //                 productName: priceBook[0].name,
+        //                 manufacture: data.brand,
+        //                 model: data.model,
+        //                 status: claimStatus,
+        //                 eligibilty: eligibilty,
+        //                 serial: data.serial,
+        //                 condition: data.condition,
+        //                 productValue: data.retailValue,
+        //                 unique_key: unique_key1,
+        //                 unique_key_search: unique_key_search1,
+        //                 unique_key_number: unique_key_number1,
+        //             };
+        //             contractArray.push(contractObject);
+        //             increamentNumber++;
+        //             //let saveData = contractService.createContract(contractObject)
+        //         });
+
+        //         await contractService.createBulkContracts(contractArray);
+
+        //     })
+
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: "Success",
+        //     });
+        // } else {
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: "Success",
+        //     });
+        // }
+
+        //     let checkPriceBook = await priceBookService.findByName1(query)
+        //     if (!checkPriceBook) {
+        //         res.send({
+        //             code: constant.errorCode,
+        //             message: "PriceBook not found"
+        //         })
+        //         return;
+        //     }
+        // }
+
+        // let data = req.body
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+
+exports.getCategoryAndPriceBooks = async (req, res) => {
+    try {
+        let data = req.body;
+        const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+        if (!checkReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Invalid Reseller."
+            })
+            return;
+        }
+        //check dealer id to get price book
+        let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
+            dealerId: checkReseller.dealerId,
+            status: true,
+        });
+        if (!getDealerPriceBook) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data",
+            });
+            return;
+        }
+        // price book ids array from dealer price book
+        let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
+        let query = { _id: { $in: dealerPriceIds } };
+        // if(data.priceCatId){
+        //     let categories =
+        //     query = { _id: { $in: dealerPriceIds } ,}
+        // }
+
+        let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
+
+        const dealerPriceBookMap = new Map(
+            getDealerPriceBook.map((item) => [
+                item.priceBook.toString(),
+                item.retailPrice,
+            ])
+        );
+
+        // Update getPriceBook array with retailPrice from getDealerPriceBook
+        let mergedPriceBooks = getPriceBooks.map((item) => {
+            const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
+            return {
+                ...item._doc,
+                retailPrice,
+            };
+        });
+
+
+        //unique categories IDs from price books
+        let uniqueCategory = {};
+        let uniqueCategories = getPriceBooks.filter((item) => {
+            if (!uniqueCategory[item.category.toString()]) {
+                uniqueCategory[item.category.toString()] = true;
+                return true;
+            }
+            return false;
+        });
+
+        uniqueCategories = uniqueCategories.map((item) => item.category);
+
+        // get categories related to dealers
+        let getCategories = await priceBookService.getAllPriceCat(
+            { _id: { $in: uniqueCategories } },
+            {}
+        );
+
+        // gettign selected category if user select the price book first
+        let filteredPiceBook;
+        let checkSelectedCategory;
+        let dealerPriceBookDetail = {
+            _id: "",
+            priceBook: "",
+            dealerId: "",
+            status: "",
+            retailPrice: "",
+            description: "",
+            isDeleted: "",
+            brokerFee: "",
+            unique_key: "",
+            wholesalePrice: "",
+            __v: 0,
+            createdAt: "",
+            updatedAt: "",
+        };
+        if (data.priceBookId || data.priceBookId != "") {
+            filteredPiceBook = getPriceBooks
+                .filter((item) => item._id.toString() === data.priceBookId)
+                .map((item) => item.category);
+            checkSelectedCategory = await priceBookService.getPriceCatByName({
+                _id: filteredPiceBook,
+            });
+
+            dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
+                dealerId: req.params.dealerId,
+                priceBook: data.priceBookId,
+            });
+        }
+
+        if (data.priceCatId || data.priceCatId != "") {
+            mergedPriceBooks = mergedPriceBooks.filter(
+                (item) => item.category.toString() === data.priceCatId
+            );
+            checkSelectedCategory = await priceBookService.getPriceCatByName({
+                _id: filteredPiceBook,
+            });
+
+            // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
+        }
+
+        let result = {
+            priceCategories: getCategories,
+            priceBooks: mergedPriceBooks,
+            selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
+            dealerPriceBookDetail: dealerPriceBookDetail,
+        };
+
+
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result,
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
 exports.getResellerByDealerId = async (req, res) => {
     // if (req.role != "Super Admin") {
     //     res.send({

@@ -4116,18 +4116,48 @@ exports.getPendingAmount = async (req, res) => {
             })
             return;
         }
+        let getOrderDetail = await orderService.getOrder({ _id: req.params.orderId })
+        let orderPaidAmount = getOrderDetail.paidAmount
+        let orderDueAmount = getOrderDetail.dueAmount
+        let orderAmount = getOrderDetail.orderAmount
         const data = req.body
-        if (data.orderAmount > data.paidAmount) {
-            const pendingAmount = data.orderAmount - data.paidAmount
-            res.send({
-                code: constant.successCode,
-                message: 'Success!',
-                result: {
-                    pendingAmount: pendingAmount,
-                    status: 'PartlyPaid'
-                }
-            })
+
+        let currentTotalAmount = Number(noOfProducts) * Number(oneProductAmount)
+
+        if (getOrderDetail.paymentStatus === "Unpaid") {
+            if (orderPaidAmount > currentTotalAmount) {
+                res.send({
+                    code: constant.successCode,
+                    message: 'Success!',
+                    result: {
+                        pendingAmount: 0,
+                        status: 'Paid'
+                    }
+                })
+            } else {
+                res.send({
+                    code: constant.successCode,
+                    message: 'Success!',
+                    result: {
+                        pendingAmount: Number(currentTotalAmount) - Number(orderPaidAmount),
+                        status: 'PartlyPaid'
+                    }
+                })
+            }
         }
+
+        // if (data.orderAmount > data.paidAmount) {
+        //     const pendingAmount = data.orderAmount - data.paidAmount
+        //     res.send({
+        //         code: constant.successCode,
+        //         message: 'Success!',
+        //         result: {
+        //             pendingAmount: pendingAmount,
+        //             status: 'PartlyPaid'
+        //         }
+        //     })
+        // }
+
         res.send({
             code: constant.successCode,
             message: 'Success!'
