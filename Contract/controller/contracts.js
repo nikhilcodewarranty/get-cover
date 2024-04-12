@@ -210,8 +210,6 @@ exports.getAllContracts = async (req, res) => {
       }
 
     )
-
-
     let myQuery = [
       { $sort: { unique_key_number: -1 } },
       {
