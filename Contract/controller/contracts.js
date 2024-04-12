@@ -482,7 +482,7 @@ exports.getContracts = async (req, res) => {
 
     // console.log("sssssss", contractFilterWithPaging)
 
-    let getContracts = await contractService.getAllContracts2(mainQuery)
+    let getContracts = await contractService.getAllContracts2(mainQuery,{ allowDiskUse: true })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
 
     res.send({
