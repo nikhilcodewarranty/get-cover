@@ -2174,10 +2174,10 @@ exports.getDealerOrders = async (req, res) => {
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-            let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+            let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
             let userResellerIds = ordersResult
                 .filter(result => result.resellerId !== null)
-                .map(result => result.resellerId.toString());
+                .map(result => result.resellerId?.toString());
 
             let mergedArray = userDealerIds.concat(userResellerIds);
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -2192,7 +2192,7 @@ exports.getDealerOrders = async (req, res) => {
                 street: 1
 
             });
-            let servicerIdArray = ordersResult.map((result) => result.servicerId);
+            let servicerIdArray = ordersResult.map((result) => result?.servicerId);
             const servicerCreteria = {
                 $or: [
                     { _id: { $in: servicerIdArray } },
@@ -2212,7 +2212,7 @@ exports.getDealerOrders = async (req, res) => {
                     street: 1
                 }
             );
-            let customerIdsArray = ordersResult.map((result) => result.customerId);
+            let customerIdsArray = ordersResult.map((result) => result?.customerId);
 
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
@@ -2238,7 +2238,7 @@ exports.getDealerOrders = async (req, res) => {
                 }
             );
             //Get all Reseller
-            let resellerIdsArray = ordersResult.map((result) => result.resellerId);
+            let resellerIdsArray = ordersResult.map((result) => result?.resellerId);
             const resellerCreteria = { _id: { $in: resellerIdsArray } };
             let respectiveReseller = await resellerService.getResellers(
                 resellerCreteria,
@@ -2263,20 +2263,20 @@ exports.getDealerOrders = async (req, res) => {
                     item1.servicerId != null
                         ? respectiveServicer.find(
                             (item2) =>
-                                item2._id.toString() === item1.servicerId.toString() ||
+                                item2._id.toString() === item1.servicerId?.toString() ||
                                 item2.resellerId === item1.servicerId
                         )
                         : null;
                 const customerName =
                     item1.customerId != null
                         ? respectiveCustomer.find(
-                            (item2) => item2._id.toString() === item1.customerId.toString()
+                            (item2) => item2._id.toString() === item1.customerId?.toString()
                         )
                         : null;
                 const resellerName =
                     item1.resellerId != null
                         ? respectiveReseller.find(
-                            (item2) => item2._id.toString() === item1.resellerId.toString()
+                            (item2) => item2._id.toString() === item1.resellerId?.toString()
                         )
                         : null;
 
