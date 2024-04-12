@@ -345,6 +345,7 @@ exports.createOrder = async (req, res) => {
         }
 
         data.status = "Pending";
+        console.log("data--------------------",data);
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({
