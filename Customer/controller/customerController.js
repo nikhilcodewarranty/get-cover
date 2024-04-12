@@ -916,7 +916,7 @@ exports.customerOrders = async (req, res) => {
       const resellerName =
         item1.resellerId != null
           ? respectiveReseller.find(
-            (item2) => item2._id.toString() === item1.resellerId.toString()
+            (item2) => item2._id.toString() === item1.resellerId?.toString()
           )
           : null;
       if (dealerName || customerName || servicerName || resellerName) {
@@ -982,13 +982,13 @@ exports.customerOrders = async (req, res) => {
         item.flag = true
       }
       if (item.dealerName) {
-        username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+        username = getPrimaryUser.find(user => user.accountId?.toString() === item.dealerName._id?.toString());
       }
       if (item.resellerName) {
-        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+        resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
       }
       if (item.customerName) {
-        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+        customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
       }
       return {
         ...item,
