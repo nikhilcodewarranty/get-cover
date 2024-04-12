@@ -865,7 +865,6 @@ exports.editOrderDetail = async (req, res) => {
     }
 };
 
-
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -961,7 +960,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
 
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
-                dealerId: req.params.dealerId,
+                dealerId: checkReseller.dealerId,
                 priceBook: data.priceBookId,
             });
         }
