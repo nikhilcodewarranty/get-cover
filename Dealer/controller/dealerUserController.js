@@ -1317,16 +1317,13 @@ exports.getDealerCustomers = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
         }
-
-
-
         let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
 
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
 
         const result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const order = ordersData.find(order => order._id.toString() === item1.accountId.toString())
+            const matchingItem = customers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
+            const order = ordersData.find(order => order._id?.toString() === item1.accountId?.toString())
             console.log("order===================", item1._id)
             if (matchingItem || order) {
                 return {
@@ -1399,7 +1396,7 @@ exports.getCustomerInOrder = async (req, res) => {
         let customerUser = await userService.getMembers(query1, projection)
 
         const result_Array = customerUser.map(item1 => {
-            const matchingItem = getCustomers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const matchingItem = getCustomers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(),
@@ -1494,7 +1491,7 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1._id.toString()
+            (item2) => item2.accountId?.toString() === item1._id?.toString()
         );
 
         if (matchingItem) {
@@ -1712,7 +1709,7 @@ exports.getResellerOrders = async (req, res) => {
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId.toString());
+            .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
 
@@ -1753,7 +1750,7 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId.toString());
+            .map(result => result.customerId?.toString());
         const customerCreteria = { _id: { $in: customerIdsArray } };
 
         const allUserIds = mergedArray.concat(userCustomerIds);
@@ -1794,27 +1791,27 @@ exports.getResellerOrders = async (req, res) => {
             const dealerName =
                 item1.dealerId != ""
                     ? respectiveDealers.find(
-                        (item2) => item2._id.toString() === item1.dealerId.toString()
+                        (item2) => item2._id?.toString() === item1.dealerId.toString()
                     )
                     : null;
             const servicerName =
                 item1.servicerId != null
                     ? respectiveServicer.find(
                         (item2) =>
-                            item2._id.toString() === item1.servicerId.toString() ||
+                            item2._id.toString() === item1.servicerId?.toString() ||
                             item2.resellerId === item1.servicerId
                     )
                     : null;
             const customerName =
                 item1.customerId != null
                     ? respectiveCustomer.find(
-                        (item2) => item2._id.toString() === item1.customerId.toString()
+                        (item2) => item2._id?.toString() === item1.customerId?.toString()
                     )
                     : null;
             const resellerName =
                 item1.resellerId != null
                     ? respectiveReseller.find(
-                        (item2) => item2._id.toString() === item1.resellerId.toString()
+                        (item2) => item2._id?.toString() === item1.resellerId?.toString()
                     )
                     : null;
 
@@ -1867,13 +1864,13 @@ exports.getResellerOrders = async (req, res) => {
         const updatedArray = filteredData.map(item => {
             let username = null; // Initialize username as null
             if (item.dealerName) {
-                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+                username = getPrimaryUser.find(user => user.accountId?.toString() === item.dealerName._id?.toString());
             }
             if (item.resellerName) {
-                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.resellerName._id?.toString()) : {};
             }
             if (item.customerName) {
-                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId?.toString() === item.customerName._id?.toString()) : {};
             }
             return {
                 ...item,

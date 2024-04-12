@@ -697,7 +697,7 @@ exports.addResellerUser = async (req, res) => {
         })
     }
 }
-
+//Get Reseller Servicer
 exports.getResellerServicers = async (req, res) => {
     try {
         let data = req.body
@@ -719,6 +719,7 @@ exports.getResellerServicers = async (req, res) => {
             return;
         }
         let result_Array = []
+        //Get Dealer Servicer
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
         if (!getServicersIds) {
             res.send({
