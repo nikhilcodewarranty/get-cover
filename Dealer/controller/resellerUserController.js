@@ -649,7 +649,6 @@ exports.editOrderDetail = async (req, res) => {
         }
         data.paidAmount = Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
-
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
         if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
             res.send({
