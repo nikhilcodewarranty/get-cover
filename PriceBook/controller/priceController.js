@@ -782,7 +782,7 @@ exports.updatePriceBookCat = async (req, res) => {
       if (data.status == false) {
         let updatePriceBook = await priceBookService.updatePriceBook({ category: updateCatResult._id }, { status: data.status }, { new: true })
         let projection = { isDeleted: 0, __v: 0 }
-        let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, option)
+        let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, {new:true})
 
         const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
         const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
