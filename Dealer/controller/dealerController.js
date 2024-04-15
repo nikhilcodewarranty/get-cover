@@ -3338,6 +3338,8 @@ exports.getDealerContract = async (req, res) => {
       if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
           console.log('check_--------dssssssssssssssssssssss--------')
           mainQuery = [
+            { $sort: { unique_key_number: -1 } },
+
               {
                   $facet: {
                       totalRecords: [
@@ -3346,7 +3348,6 @@ exports.getDealerContract = async (req, res) => {
                           }
                       ],
                       data: [
-                          { $sort: { unique_key_number: -1 } },
                           {
                               $skip: skipLimit
                           },
@@ -3374,6 +3375,8 @@ exports.getDealerContract = async (req, res) => {
           ]
       } else {
           mainQuery = [
+            { $sort: { unique_key_number: -1 } },
+
               {
                   $match:
                   {
@@ -3390,8 +3393,6 @@ exports.getDealerContract = async (req, res) => {
                       }
                   ],
                   data: [
-                      { $sort: { unique_key_number: -1 } },
-
                       {
                           $skip: skipLimit
                       },
