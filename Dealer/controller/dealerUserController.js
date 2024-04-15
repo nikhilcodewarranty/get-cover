@@ -2169,7 +2169,7 @@ exports.getDealerOrders = async (req, res) => {
             let limitData = Number(pageLimit)
 
 
-            let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+            let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
             let userResellerIds = ordersResult
