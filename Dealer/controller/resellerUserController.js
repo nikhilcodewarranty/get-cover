@@ -653,9 +653,9 @@ exports.editOrderDetail = async (req, res) => {
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
         if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
             res.send({
-                code: constant.error,
+                code: constant.error, 
                 message: "Not a valid paying amount"
-            })
+            }) 
             return;
         };
 
