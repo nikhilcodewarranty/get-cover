@@ -4,6 +4,7 @@ const providerService = require("../services/providerService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const role = require("../../User/model/role");
 const claimService = require("../../Claim/services/claimService");
+const LOG = require('../../User/model/logs')
 
 const userService = require("../../User/services/userService");
 const moment = require("moment");
@@ -402,21 +403,21 @@ exports.editServicerDetail = async (req, res) => {
     let updateData = await providerService.updateServiceProvider(criteria, data)
     let servicerUserCreateria = { accountId: req.params.servicerId };
     let newValue = {
-        $set: {
-            status: false
-        }
+      $set: {
+        status: false
+      }
     };
     if (data.isAccountCreate) {
       servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
-        newValue = {
-            $set: {
-                status: true
-            }
-        };
+      newValue = {
+        $set: {
+          status: true
+        }
+      };
     }
     const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
     if (!updateData) {
-      res.send({ 
+      res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
@@ -738,13 +739,47 @@ exports.registerServiceProvider = async (req, res) => {
     //   })
     //   // Send Email code here
     // }
-    let mailing = sgMail.send(emailConstant.servicerWelcomeMessage(data.email))
+    let emailData = {
+      dealerName: ServicerMeta.name,
+      c1: "Thank you for",
+      c2: "Registering as a",
+      c3: "Your account is currently pending approval from our admin.",
+      c4: "Once approved, you will receive a confirmation emai",
+      c5: "We appreciate your patience.",
+      role: "Servicer!"
+    }
+
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    let logData = {
+      userId:req.teammateId,
+      endpoint: "servicer/register",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "registered Successfully",
+        data: data
+      }
+    }
+
+    await LOG(logData).save()
 
     res.send({
       code: constant.successCode,
       data: createMetaData,
     });
   } catch (err) {
+    let logData = {
+      endpoint: "servicer/register",
+      body: {
+        type: "catch error"
+      },
+      response: {
+        code: constant.errorCode,
+        message: err.message,
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message,
@@ -857,7 +892,7 @@ exports.getSerivicerUsers = async (req, res) => {
         message: "Success",
         result: filteredData,
         servicerStatus: getServicerStatus.status,
-      isAccountCreate: getServicerStatus.isAccountCreate
+        isAccountCreate: getServicerStatus.isAccountCreate
 
       })
     }
@@ -1395,6 +1430,7 @@ exports.getServicerClaims = async (req, res) => {
     })
   }
 }
+
 // Mark as paid claims
 exports.paidUnpaid = async (req, res) => {
   try {

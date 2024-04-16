@@ -27,13 +27,15 @@ module.exports = {
     };
   },
 
-  dealerWelcomeMessage: (toEmail) => {
+  dealerWelcomeMessage: (toEmail,data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
-      templateId: process.env.register_dealer,
+      templateId: process.env.main_template,
+      dynamic_template_data:data
+
     };
   },
 
