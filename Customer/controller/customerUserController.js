@@ -709,7 +709,7 @@ exports.editCustomer = async (req, res) => {
 exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
-    console.log("data------------------", data)
+    console.log("data------------------")
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -717,7 +717,7 @@ exports.getCustomerContract = async (req, res) => {
     let customerIds = [];
     let resellerIds = [];
     let servicerIds = [];
-    let userSearchCheck = 0
+    let userSearchCheck = 1
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -732,16 +732,12 @@ exports.getCustomerContract = async (req, res) => {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
     }
 
-    if (req.role == 'Customer') {
-      userSearchCheck = 1
-      orderAndCondition.push({ customerId: { $in: [req.userId] } })
-    };
-    // if (req.userId) {
+    // if (req.role == 'Customer') {
     //   userSearchCheck = 1
-    //   orderAndCondition.push({ customerId: { $in: [req.params.customerId] } })
+    //   orderAndCondition.push({ customerId: { $in: [req.userId] } })
     // };
+    orderAndCondition.push({ customerId: { $in: [req.userId] } })
 
-    console.log("orderAndCondition-------------------", orderAndCondition)
     let orderIds = []
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
@@ -751,7 +747,7 @@ exports.getCustomerContract = async (req, res) => {
         orderIds = await getOrders.map(order => order._id)
       }
     }
-    console.log("getOrders-------------------", orderIds)
+    console.log("getOrders-------------------")
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
@@ -875,6 +871,7 @@ exports.getCustomerContract = async (req, res) => {
       message: "Success",
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
       totalCount,
+      mainQuery
     })
 
   } catch (err) {

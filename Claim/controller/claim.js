@@ -988,6 +988,179 @@ exports.searchClaim = async (req, res, next) => {
 
 
 }
+
+// exports.searchClaim = async (req, res) => {
+//   try {
+//     let data = req.body
+//     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+//     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+//     let limitData = Number(pageLimit)
+//     let dealerIds = [];
+//     let customerIds = [];
+//     let userSearchCheck = 0
+//     if (req.role == 'Dealer') {
+//       userSearchCheck = 1
+//       let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+//       if (getData.length > 0) {
+//         dealerIds = await getData.map(dealer => dealer._id)
+//       } else {
+//         dealerIds.push("1111121ccf9d400000000000")
+//       }
+//     };
+//     if (req.role == 'Customer') {
+//       userSearchCheck = 1
+//       let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+//       if (getData.length > 0) {
+//         customerIds = await getData.map(customer => customer._id)
+//       } else {
+//         customerIds.push("1111121ccf9d400000000000")
+//       }
+//     };
+//     if (data.customerName != "") {
+//       userSearchCheck = 1
+//       let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+//       if (getData.length > 0) {
+//         customerIds = await getData.map(customer => customer._id)
+//       } else {
+//         customerIds.push("1111121ccf9d400000000000")
+//       }
+//     };
+//     let orderAndCondition = []
+
+//     if (dealerIds.length > 0) {
+//       orderAndCondition.push({ dealerId: { $in: dealerIds } })
+//     }
+//     if (customerIds.length > 0) {
+//       orderAndCondition.push({ customerId: { $in: customerIds } })
+//     }
+//     let orderIds = []
+//     if (orderAndCondition.length > 0) {
+//       let getOrders = await orderService.getOrders({
+//         $and: orderAndCondition
+//       })
+//       if (getOrders.length > 0) {
+//         orderIds = await getOrders.map(order => order._id)
+//       }
+//     }
+//     let contractFilterWithEligibilty = []
+//     contractFilterWithEligibilty = [
+//       // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+//       { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+//       { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+//       { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+//       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+//       { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+//       { status: 'Active' },
+//       { eligibilty: true }
+//     ]
+
+
+//     if (userSearchCheck == 1) {
+//       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
+//     }
+//     let mainQuery = []
+//     console.log(orderIds)
+//     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+//       mainQuery = [
+//         { $sort: { unique_key_number: -1 } },
+//         {
+//           $facet: {
+//             totalRecords: [
+//               {
+//                 $count: "total"
+//               }
+//             ],
+//             data: [
+//               {
+//                 $skip: skipLimit
+//               },
+//               {
+//                 $limit: pageLimit
+//               },
+//               {
+//                 $project: {
+//                   productName: 1,
+//                   model: 1,
+//                   serial: 1,
+//                   unique_key: 1,
+//                   status: 1,
+//                   manufacture: 1,
+//                   eligibilty: 1,
+//                   orderUniqueKey: 1,
+//                   venderOrder: 1,
+//                   totalRecords: 1
+//                 }
+//               }
+//             ],
+//           },
+
+//         },
+//       ]
+//     } else {
+//       mainQuery = [
+//         { $sort: { unique_key_number: -1 } },
+//         {
+//           $match:
+//           {
+//             $and: contractFilterWithEligibilty
+//           },
+//         },
+//       ]
+//       mainQuery.push({
+//         $facet: {
+//           totalRecords: [
+//             {
+//               $count: "total"
+//             }
+//           ],
+//           data: [
+//             {
+//               $skip: skipLimit
+//             },
+//             {
+//               $limit: pageLimit
+//             },
+//             {
+//               $project: {
+//                 productName: 1,
+//                 model: 1,
+//                 serial: 1,
+//                 unique_key: 1,
+//                 status: 1,
+//                 manufacture: 1,
+//                 eligibilty: 1,
+//                 orderUniqueKey: 1,
+//                 venderOrder: 1,
+//                 totalRecords: 1
+//               }
+//             }
+//           ],
+//         },
+
+//       })
+//     }
+
+
+//     // console.log("sssssss", contractFilterWithPaging)
+
+//     let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
+//     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
+
+//     res.send({
+//       code: constant.successCode,
+//       message: "Success",
+//       result: getContracts[0]?.data ? getContracts[0]?.data : [],
+//       totalCount,
+//      //mainQuery
+//     })
+
+//   } catch (err) {
+//     res.send({
+//       code: constant.errorCode,
+//       message: err.message
+//     })
+//   }
+// }
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {

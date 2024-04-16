@@ -2340,7 +2340,7 @@ exports.getServiceCoverage = async (req, res) => {
                 })
                 return;
             }
-    
+
             dealerId = checkReseller.dealerId
         }
 
@@ -4133,9 +4133,7 @@ exports.getPendingAmount = async (req, res) => {
         let orderDueAmount = getOrderDetail.dueAmount
         let orderAmount = getOrderDetail.orderAmount
         const data = req.body
-
         let currentTotalAmount = Number(noOfProducts) * Number(oneProductAmount)
-
         if (getOrderDetail.paymentStatus === "Unpaid") {
             if (orderPaidAmount > currentTotalAmount) {
                 res.send({
@@ -4157,18 +4155,28 @@ exports.getPendingAmount = async (req, res) => {
                 })
             }
         }
-
-        // if (data.orderAmount > data.paidAmount) {
-        //     const pendingAmount = data.orderAmount - data.paidAmount
-        //     res.send({
-        //         code: constant.successCode,
-        //         message: 'Success!',
-        //         result: {
-        //             pendingAmount: pendingAmount,
-        //             status: 'PartlyPaid'
-        //         }
-        //     })
-        // }
+        else if (getOrderDetail.paymentStatus === "Paid") {
+            if (currentTotalAmount > orderPaidAmount) {
+                res.send({
+                    code: constant.successCode,
+                    message: 'Success!',
+                    result: {
+                        pendingAmount: Number(currentTotalAmount) - Number(orderPaidAmount),
+                        status: 'PartlyPaid'
+                    }
+                })
+            }
+            else {
+                res.send({
+                    code: constant.successCode,
+                    message: 'Success!',
+                    result: {
+                        pendingAmount: 0,
+                        status: 'Paid'
+                    }
+                })
+            }
+        }
 
         res.send({
             code: constant.successCode,
