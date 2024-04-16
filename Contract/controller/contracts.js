@@ -317,9 +317,6 @@ exports.getContracts = async (req, res) => {
         resellerIds.push("1111121ccf9d400000000000")
       }
     };
-
-    console.log('tesinggi------------')
-
     let orderAndCondition = []
 
     if (dealerIds.length > 0) {

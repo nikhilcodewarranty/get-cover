@@ -598,7 +598,7 @@ exports.getAllClaims = async (req, res, next) => {
       },
       {
         $lookup: {
-          from: "contracts",
+          from: "contracts", 
           localField: "contractId",
           foreignField: "_id",
           as: "contracts",
