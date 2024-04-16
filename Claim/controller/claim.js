@@ -598,7 +598,7 @@ exports.getAllClaims = async (req, res, next) => {
       },
       {
         $lookup: {
-          from: "contracts", 
+          from: "contracts",
           localField: "contractId",
           foreignField: "_id",
           as: "contracts",
@@ -709,25 +709,6 @@ exports.getAllClaims = async (req, res, next) => {
           localField: "contracts.orders.dealerId",
           foreignField: "_id",
           as: "contracts.orders.dealers",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-            // {
-            //   $lookup: {
-            //     from: "servicer_dealer_relations",
-            //     localField: "_id",
-            //     foreignField: "dealerId",
-            //     as: "dealerServicer",
-            //   }
-            // },
-          ]
         }
       },
       {
@@ -737,7 +718,6 @@ exports.getAllClaims = async (req, res, next) => {
         $match:
         {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
-          // "contracts.orders.dealers.isDeleted": false,
         }
       },
       {
@@ -764,7 +744,6 @@ exports.getAllClaims = async (req, res, next) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
@@ -921,7 +900,6 @@ exports.searchClaim = async (req, res, next) => {
           $and: contractFilter
         },
       },
-
       {
         $facet: {
           totalRecords: [
@@ -953,11 +931,11 @@ exports.searchClaim = async (req, res, next) => {
                   },
                   { $unwind: "$customers" },
                 ]
-      
+
               }
             },
             {
-              $unwind:"$order"
+              $unwind: "$order"
             },
             {
               $project: {
@@ -971,7 +949,7 @@ exports.searchClaim = async (req, res, next) => {
           ]
         }
       },
-   
+
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
