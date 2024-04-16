@@ -936,38 +936,42 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            // {
-            //   $project: {
-            //     unique_key: 1,
-            //     serial: 1,
-            //     "order.customers.username": 1,
-            //     "order.unique_key": 1,
-            //     "order.venderOrder": 1,
-            //   }
-            // }
-          ]
-        }
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
             {
               $lookup: {
-                from: "customers",
-                localField: "customerId",
+                from: "orders",
+                localField: "orderId",
                 foreignField: "_id",
-                as: "customers",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customers",
+                    }
+                  },
+                  { $unwind: "$customers" },
+                ]
+      
               }
             },
-            { $unwind: "$customers" },
+            {
+              $unwind:"$order"
+            },
+            {
+              $project: {
+                unique_key: 1,
+                serial: 1,
+                "order.customers.username": 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+              }
+            }
           ]
-
         }
       },
+   
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
