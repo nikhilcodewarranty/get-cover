@@ -15,6 +15,7 @@ const dealer = require("../model/dealer");
 const constant = require('../../config/constant');
 const bcrypt = require("bcrypt");
 const XLSX = require("xlsx");
+const LOG = require('../../User/model/logs')
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const emailConstant = require('../../config/emailConstant');
 const mongoose = require('mongoose');
@@ -197,7 +198,6 @@ exports.getAllDealers = async (req, res) => {
     })
   }
 };
-
 
 //Get Pending Request dealers
 exports.getPendingDealers = async (req, res) => {
@@ -776,6 +776,15 @@ exports.registerDealer = async (req, res) => {
     // Register the dealer
     const createdDealer = await dealerService.registerDealer(dealerMeta);
     if (!createdDealer) {
+      let logData = {
+        endpoint: "register dealer",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unbale to create the dealer"
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unbale to create the dealer"
@@ -817,11 +826,32 @@ exports.registerDealer = async (req, res) => {
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
 
-    if (createNotification) {
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email))
-
+    // if (createNotification) {
+    let emailData = {
+      dealerName: createdDealer.name,
+      c1:"Thank you for",
+      c2:"Registering! as a",
+      c3:"Your account is currently pending approval from our admin.",
+      c4:"Once approved, you will receive a confirmation emai",
+      c5:"We appreciate your patience.",
+      role: "Dealer"
     }
+
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+
+
+    // }
+    let logData = {
+      endpoint: "register dealer",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "created",
+        data: createdDealer
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.successCode,
       data: createdDealer,
@@ -905,6 +935,19 @@ exports.statusUpdate = async (req, res) => {
       return;
 
     }
+
+    let logData = {
+      userId:req.teammateId,
+      endpoint: "dealer/statusUpdate",
+      body: newValue,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        data: updatedResult
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
@@ -914,6 +957,18 @@ exports.statusUpdate = async (req, res) => {
     return
 
   } catch (err) {
+    let logData = {
+      userId:req.teammateId,
+      endpoint: "dealer/statusUpdate",
+      body: {
+        type: "catch error"
+      },
+      response: {
+        code: constant.errorCode,
+        message: err.message,
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message,
@@ -1038,6 +1093,16 @@ exports.changeDealerStatus = async (req, res) => {
     };
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
+      let logData = {
+        userId:req.teammateId,
+        endpoint: "dealer/changeDealerStatus",
+        body: changedDealerStatus,
+        response: {
+          code: constant.successCode,
+          message: 'Updated Successfully!',
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: 'Updated Successfully!',
@@ -1051,6 +1116,17 @@ exports.changeDealerStatus = async (req, res) => {
       })
     }
   } catch (err) {
+    let logData = {
+      endpoint: "dealer/changeDealerStatus",
+      body: {
+        type: "catch error"
+      },
+      response: {
+        code: constant.errorCode,
+        message: err.message,
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1389,7 +1465,6 @@ exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
 
-    // console.log("filesPath=========",req.file);return;
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -1428,13 +1503,6 @@ exports.uploadPriceBook = async (req, res) => {
       })
       return;
     }
-    // if (checkDealer[0].status == 'Pending') {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Dealer has not been approved yet!"
-    //   })
-    //   return;
-    // }
     let priceBookName = [];
     let csvStatus = [];
     let newArray1;
@@ -2977,7 +3045,7 @@ exports.getDealerOrders = async (req, res) => {
         code: constant.successCode,
         message: "Success",
         result: filteredData1,
-        "totalCount":updatedArray.length
+        "totalCount": updatedArray.length
       });
     };
   }
@@ -3041,402 +3109,199 @@ exports.getDealerRequest = async (req, res) => {
   }
 }
 
-// exports.getDealerContract = async (req, res) => {
-//   try {
-//     let data = req.body
-//     let getDealerOrder = await orderService.getOrders({ dealerId: req.params.dealerId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
-//     if (!getDealerOrder) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the data"
-//       })
-//       return
-//     }
-//     let orderIDs = getDealerOrder.map((ID) => ID._id)
-//     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-//     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-//     let limitData = Number(pageLimit)
-//     let newQuery = [];
-//     data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
-//     if (data.servicerName) {
-//       data.servicerName = data.servicerName.toString().replace(/\s+/g, ' ').trim()
-//       console.log("Servicer name----------------", data.servicerName);
-//       newQuery.push(
-//         {
-//           $lookup: {
-//             from: "serviceproviders",
-//             localField: "order.servicerId",
-//             foreignField: "_id",
-//             as: "order.servicer"
-//           }
-//         },
-//         {
-//           $match: {
-//             $and: [
-//               { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.toString().replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             ]
-//           },
-//         }
-//       );
-//     }
-//     data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
-//     // data.resellerName = data.resellerName.replace(/\s+/g, ' ').trim()
-//     if (data.resellerName) {
-//       newQuery.push(
-//         {
-//           $lookup: {
-//             from: "resellers",
-//             localField: "order.resellerId",
-//             foreignField: "_id",
-//             as: "order.reseller"
-//           }
-//         },
-//         {
-//           $match: {
-//             $and: [
-//               { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             ]
-//           },
-//         }
-//       );
-//     }
-//     newQuery.push(
-//       {
-//         $facet: {
-//           totalRecords: [
-//             {
-//               $count: "total"
-//             }
-//           ],
-//           data: [
-//             {
-//               $skip: skipLimit
-//             },
-//             {
-//               $limit: pageLimit
-//             },
-//             // {
-//             //   $project: {
-//             //     productName: 1,
-//             //     model: 1,
-//             //     serial: 1,
-//             //     unique_key: 1,
-//             //     status: 1,
-//             //     manufacture: 1,
-//             //     eligibilty: 1,
-//             //     "order.unique_key": 1,
-//             //     "order.venderOrder": 1,
-//             //     "order.dealerId": 1,
-//             //   }
-//             // }
-//             {
-//               $project: {
-//                 productName: 1,
-//                 model: 1,
-//                 serial: 1,
-//                 unique_key: 1,
-//                 status: 1,
-//                 manufacture: 1,
-//                 eligibilty: 1,
-//                 order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-//                 order_venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-//                 order: {
-//                   unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
-//                   venderOrder: { $arrayElemAt: ["$order.venderOrder", 0] },
-//                 },
-//                 totalRecords: 1
-//               }
-//             }
-//           ],
-//         },
-
-//       })
-
-//     let contractFilter = []
-//     if (data.eligibilty != '') {
-//       contractFilter = [
-//         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-//         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { eligibilty: data.eligibilty === "true" ? true : false },
-//       ]
-//     } else {
-//       contractFilter = [
-//         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-//         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//       ]
-//     }
-
-
-//     console.log("contract data-------------", contractFilter)
-
-//     let query = [
-//       {
-//         $match:
-//         {
-//           $and: contractFilter
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "orders",
-//           localField: "orderId",
-//           foreignField: "_id",
-//           as: "order",
-//         }
-//       },
-//       // {
-//       //   $unwind: {
-//       //     path: "$order",
-//       //     preserveNullAndEmptyArrays: true,
-//       //   }
-//       // },
-//       {
-//         $match:
-//         {
-//           $and: [
-//             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-//             { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             { "order.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
-//           ]
-//         },
-
-//       },
-//       // {
-//       //   $lookup: {
-//       //     from: "dealers",
-//       //     localField: "order.dealerId",
-//       //     foreignField: "_id",
-//       //     as: "order.dealer"
-//       //   }
-//       // },
-//     ]
-//     if (newQuery.length > 0) {
-//       query = query.concat(newQuery);
-//     }
-
-
-//     console.log("ksdjfksj", query)
-
-//     let getContracts = await contractService.getAllContracts2(query)
-//     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-//     res.send({
-//       code: constant.successCode,
-//       message: "Success",
-//       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-//       totalCount
-//     })
-
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
 
 exports.getDealerContract = async (req, res) => {
   try {
-      let data = req.body
-      console.log("data------------------", data)
-      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-      let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-      let limitData = Number(pageLimit)
-      let dealerIds = [];
-      let customerIds = [];
-      let resellerIds = [];
-      let servicerIds = [];
-      let userSearchCheck = 0
-      if (data.customerName != "") {
-        userSearchCheck = 1
-        let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-        if (getData.length > 0) {
-          customerIds = await getData.map(customer => customer._id)
-        } else {
-          customerIds.push("1111121ccf9d400000000000")
-        }
-      };
-      if (data.servicerName != "") {
-        userSearchCheck = 1
-        let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-        if (getData.length > 0) {
-          servicerIds = await getData.map(servicer => servicer._id)
-        } else {
-          servicerIds.push("1111121ccf9d400000000000")
-        }
-      };
-      if (data.resellerName != "") {
-        userSearchCheck = 1
-        let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-        if (getData.length > 0) {
-          resellerIds = await getData.map(servicer => servicer._id)
-        } else {
-          resellerIds.push("1111121ccf9d400000000000")
-        }
-      };
-      let orderAndCondition = []
-      if (servicerIds.length > 0) {
-          orderAndCondition.push({ servicerId: { $in: servicerIds } })
-
-      }
-      if (req.params.dealerId) {
-          userSearchCheck = 1
-          orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
-      };
-
-      console.log("orderAndCondition-------------------", orderAndCondition)
-      let orderIds = []
-      if (orderAndCondition.length > 0) {
-          let getOrders = await orderService.getOrders({
-              $and: orderAndCondition
-          })
-          if (getOrders.length > 0) {
-              orderIds = await getOrders.map(order => order._id)
-          }
-      }
-      console.log("getOrders-------------------", orderIds)
-      let contractFilterWithEligibilty = []
-      if (data.eligibilty != '') {
-          contractFilterWithEligibilty = [
-              // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-              { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { eligibilty: data.eligibilty === "true" ? true : false },
-          ]
+    let data = req.body
+    console.log("data------------------", data)
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+    let limitData = Number(pageLimit)
+    let dealerIds = [];
+    let customerIds = [];
+    let resellerIds = [];
+    let servicerIds = [];
+    let userSearchCheck = 0
+    if (data.customerName != "") {
+      userSearchCheck = 1
+      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        customerIds = await getData.map(customer => customer._id)
       } else {
-          contractFilterWithEligibilty = [
-              // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-              { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-              { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-          ]
+        customerIds.push("1111121ccf9d400000000000")
       }
-
-      if (userSearchCheck == 1) {
-          contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
-      }
-      let mainQuery = []
-      if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-          console.log('check_--------dssssssssssssssssssssss--------')
-          mainQuery = [
-            { $sort: { unique_key_number: -1 } },
-
-              {
-                  $facet: {
-                      totalRecords: [
-                          {
-                              $count: "total"
-                          }
-                      ],
-                      data: [
-                          {
-                              $skip: skipLimit
-                          },
-                          {
-                              $limit: pageLimit
-                          },
-                          {
-                              $project: {
-                                  productName: 1,
-                                  model: 1,
-                                  serial: 1,
-                                  unique_key: 1,
-                                  status: 1,
-                                  manufacture: 1,
-                                  eligibilty: 1,
-                                  orderUniqueKey: 1,
-                                  venderOrder: 1,
-                                  totalRecords: 1
-                              }
-                          }
-                      ],
-                  },
-
-              },
-          ]
+    };
+    if (data.servicerName != "") {
+      userSearchCheck = 1
+      let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        servicerIds = await getData.map(servicer => servicer._id)
       } else {
-          mainQuery = [
-            { $sort: { unique_key_number: -1 } },
-
-              {
-                  $match:
-                  {
-                      $and: contractFilterWithEligibilty
-                  },
-              },
-
-          ]
-          mainQuery.push({
-              $facet: {
-                  totalRecords: [
-                      {
-                          $count: "total"
-                      }
-                  ],
-                  data: [
-                      {
-                          $skip: skipLimit
-                      },
-                      {
-                          $limit: pageLimit
-                      },
-                      {
-                          $project: {
-                              productName: 1,
-                              model: 1,
-                              serial: 1,
-                              unique_key: 1,
-                              status: 1,
-                              manufacture: 1,
-                              eligibilty: 1,
-                              orderUniqueKey: 1,
-                              venderOrder: 1,
-                              totalRecords: 1
-                          }
-                      }
-                  ],
-              },
-
-          })
+        servicerIds.push("1111121ccf9d400000000000")
       }
+    };
+    if (data.resellerName != "") {
+      userSearchCheck = 1
+      let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        resellerIds = await getData.map(servicer => servicer._id)
+      } else {
+        resellerIds.push("1111121ccf9d400000000000")
+      }
+    };
+    let orderAndCondition = []
+    if (servicerIds.length > 0) {
+      orderAndCondition.push({ servicerId: { $in: servicerIds } })
 
+    }
+    if (req.params.dealerId) {
+      userSearchCheck = 1
+      orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
+    };
 
-      // console.log("sssssss", contractFilterWithPaging)
-
-      let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
-      let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
-
-      res.send({
-          code: constant.successCode,
-          message: "Success",
-          result: getContracts[0]?.data ? getContracts[0]?.data : [],
-          totalCount,
+    console.log("orderAndCondition-------------------", orderAndCondition)
+    let orderIds = []
+    if (orderAndCondition.length > 0) {
+      let getOrders = await orderService.getOrders({
+        $and: orderAndCondition
       })
+      if (getOrders.length > 0) {
+        orderIds = await getOrders.map(order => order._id)
+      }
+    }
+    console.log("getOrders-------------------", orderIds)
+    let contractFilterWithEligibilty = []
+    if (data.eligibilty != '') {
+      contractFilterWithEligibilty = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { eligibilty: data.eligibilty === "true" ? true : false },
+      ]
+    } else {
+      contractFilterWithEligibilty = [
+        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+        { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      ]
+    }
+
+    if (userSearchCheck == 1) {
+      contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
+    }
+    let mainQuery = []
+    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+      console.log('check_--------dssssssssssssssssssssss--------')
+      mainQuery = [
+        { $sort: { unique_key_number: -1 } },
+
+        {
+          $facet: {
+            totalRecords: [
+              {
+                $count: "total"
+              }
+            ],
+            data: [
+              {
+                $skip: skipLimit
+              },
+              {
+                $limit: pageLimit
+              },
+              {
+                $project: {
+                  productName: 1,
+                  model: 1,
+                  serial: 1,
+                  unique_key: 1,
+                  status: 1,
+                  manufacture: 1,
+                  eligibilty: 1,
+                  orderUniqueKey: 1,
+                  venderOrder: 1,
+                  totalRecords: 1
+                }
+              }
+            ],
+          },
+
+        },
+      ]
+    } else {
+      mainQuery = [
+        { $sort: { unique_key_number: -1 } },
+
+        {
+          $match:
+          {
+            $and: contractFilterWithEligibilty
+          },
+        },
+
+      ]
+      mainQuery.push({
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+            {
+              $project: {
+                productName: 1,
+                model: 1,
+                serial: 1,
+                unique_key: 1,
+                status: 1,
+                manufacture: 1,
+                eligibilty: 1,
+                orderUniqueKey: 1,
+                venderOrder: 1,
+                totalRecords: 1
+              }
+            }
+          ],
+        },
+
+      })
+    }
+
+
+    // console.log("sssssss", contractFilterWithPaging)
+
+    let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
+    let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      totalCount,
+    })
 
   } catch (err) {
-      res.send({
-          code: constant.errorCode,
-          message: err.message
-      })
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 }
 

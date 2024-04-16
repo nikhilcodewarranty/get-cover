@@ -1,10 +1,11 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const connection = require('../../db')
 
 const logs = new Schema({
     userId:{
         type:mongoose.Schema.Types.ObjectId,
-        default:''
+        default:"aaaaaaa833011167aaaaaaaa"
     },
     endpoint:{
         type:String,
@@ -20,4 +21,4 @@ const logs = new Schema({
     }
 },{timestamps:true})
 
-module.exports = mongoose.mmodel('logs',logs)
+module.exports = connection.userConnection.model('logs',logs)

@@ -867,64 +867,61 @@ exports.searchClaim = async (req, res, next) => {
     let lookupCondition = [{ isDeleted: false }]
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+
+    let orderIds = []
+    let customerIds = []
+    let checkCustomer = 0
+    if (data.customerName != "") {
+      checkCustomer = 1
+      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        customerIds = await getData.map(customer => customer._id)
+      } else {
+        customerIds.push("1111121ccf9d400000000000")
+      }
+
+    }
+
+    if (checkCustomer == 1) {
+      let getOrder = await orderService.getOrders({ customerId: { $in: customerIds } })
+      if (getOrder.length > 0) {
+        orderIds = await getOrder.map(order => order._id)
+      } else {
+        orderIds.push("1111121ccf9d400000000000")
+      }
+
+    }
+
+    let contractFilter;
+    if (checkCustomer == 1) {
+      contractFilter = [
+        { orderId: { $in: orderIds } },
+        { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: 'Active' },
+        { eligibilty: true }
+      ]
+    } else {
+      contractFilter = [
+        { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { status: 'Active' },
+        { eligibilty: true }
+      ]
+    }
+
     let query = [
       {
         $match:
         {
-          $and: [
-            // { serial: { $regex: `^${data.serial ? data.serial : ''}` } },
-            { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-            { status: 'Active' },
-            { eligibilty: true }
-          ]
+          $and: contractFilter
         },
       },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
-            {
-              $match: {
-                $and: [
-                  // { "venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-                  { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  { "unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                  match
-                ]
-              }
-            },
-            {
-              $lookup: {
-                from: "customers",
-                localField: "customerId",
-                foreignField: "_id",
-                as: "customers",
-              }
-            },
-            { $unwind: "$customers" },
-          ]
 
-        }
-      },
-      {
-        $unwind: "$order"
-      },
-      {
-        $match:
-        {
-          $and: [
-            // { "order.venderOrder": { $regex: `^${data.venderOrder ? data.venderOrder : ''}` } },
-            // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            { 'order.customers.username': { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "order.customers.username": { $regex: `^${data.customerName ? data.customerName : '',}` } },
-          ]
-        },
-      },
       {
         $facet: {
           totalRecords: [
@@ -939,16 +936,36 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            {
-              $project: {
-                unique_key: 1,
-                serial: 1,
-                "order.customers.username": 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1,
-              }
-            }
+            // {
+            //   $project: {
+            //     unique_key: 1,
+            //     serial: 1,
+            //     "order.customers.username": 1,
+            //     "order.unique_key": 1,
+            //     "order.venderOrder": 1,
+            //   }
+            // }
           ]
+        }
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "orderId",
+          foreignField: "_id",
+          as: "order",
+          pipeline: [
+            {
+              $lookup: {
+                from: "customers",
+                localField: "customerId",
+                foreignField: "_id",
+                as: "customers",
+              }
+            },
+            { $unwind: "$customers" },
+          ]
+
         }
       },
     ]

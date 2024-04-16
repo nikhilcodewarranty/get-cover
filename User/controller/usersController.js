@@ -167,6 +167,19 @@ exports.createServiceProvider = async (req, res) => {
         message: 'Unable to create users',
       });
     }
+    // let emailData = {
+    //   dealerName: providerMeta.name,
+    //   c1:"Thank you for",
+    //   c2:"Registering! as a",
+    //   c3:"Your account is currently pending approval from our admin.",
+    //   c4:"Once approved, you will receive a confirmation emai",
+    //   c5:"We appreciate your patience.",
+    //   role: "Servicer"
+    // }
+
+    // // Send Email code here
+    // let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+
 
     return res.send({
       code: constant.successCode,
