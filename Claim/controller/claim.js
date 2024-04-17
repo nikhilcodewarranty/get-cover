@@ -589,7 +589,7 @@ exports.getAllClaims = async (req, res, next) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
-            { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
+            { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             servicerMatch
@@ -883,16 +883,6 @@ exports.searchClaim = async (req, res, next) => {
         orderIds.push("1111121ccf9d400000000000")
       }
     }
-    // if (data.customerName != "") {
-    //   checkCustomer = 1
-    //   let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-    //   if (getData.length > 0) {
-    //     customerIds = await getData.map(customer => customer._id)
-    //   } else {
-    //     customerIds.push("1111121ccf9d400000000000")
-    //   }
-
-    // }
     let contractFilter;
     if (userSearchCheck == 1) {
       contractFilter = [
@@ -916,6 +906,7 @@ exports.searchClaim = async (req, res, next) => {
     }
 
     let query = [
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
