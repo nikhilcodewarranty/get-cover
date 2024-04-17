@@ -848,31 +848,53 @@ exports.searchClaim = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
 
     let orderIds = []
+    let orderAndCondition = []
+    let userSearchCheck = 0
     let customerIds = []
     let checkCustomer = 0
     if (data.customerName != "") {
-      checkCustomer = 1
+      userSearchCheck = 1
       let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
       if (getData.length > 0) {
         customerIds = await getData.map(customer => customer._id)
       } else {
         customerIds.push("1111121ccf9d400000000000")
       }
-
+    };
+    if (req.role == 'Dealer') {
+      userSearchCheck = 1
+      orderAndCondition.push({ dealerId: { $in: [req.userId] } })
     }
-
-    if (checkCustomer == 1) {
-      let getOrder = await orderService.getOrders({ customerId: { $in: customerIds } })
-      if (getOrder.length > 0) {
-        orderIds = await getOrder.map(order => order._id)
-      } else {
+    if (req.role == 'Customer') {
+      userSearchCheck = 1
+      orderAndCondition.push({ customerId: { $in: [req.userId] } })
+    }
+    if (customerIds.length > 0) {
+      orderAndCondition.push({ customerId: { $in: customerIds } })
+    }
+    if (orderAndCondition.length > 0) {
+      let getOrders = await orderService.getOrders({
+        $and: orderAndCondition
+      })
+      if (getOrders.length > 0) {
+        orderIds = await getOrders.map(order => order._id)
+      }
+      else {
         orderIds.push("1111121ccf9d400000000000")
       }
-
     }
+    // if (data.customerName != "") {
+    //   checkCustomer = 1
+    //   let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+    //   if (getData.length > 0) {
+    //     customerIds = await getData.map(customer => customer._id)
+    //   } else {
+    //     customerIds.push("1111121ccf9d400000000000")
+    //   }
 
+    // }
     let contractFilter;
-    if (checkCustomer == 1) {
+    if (userSearchCheck == 1) {
       contractFilter = [
         { orderId: { $in: orderIds } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1176,6 +1198,8 @@ exports.uploadReceipt = async (req, res, next) => {
 
 }
 
+
+
 exports.uploadCommentImage = async (req, res, next) => {
   try {
     imageUpload(req, res, async (err) => {
@@ -1207,6 +1231,8 @@ exports.uploadCommentImage = async (req, res, next) => {
   }
 
 }
+
+
 exports.addClaim = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -1414,6 +1440,8 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
+
 // Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {

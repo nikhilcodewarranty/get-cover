@@ -3158,7 +3158,6 @@ exports.getDealerContract = async (req, res) => {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
     };
-
     console.log("orderAndCondition-------------------", orderAndCondition)
     let orderIds = []
     if (orderAndCondition.length > 0) {
