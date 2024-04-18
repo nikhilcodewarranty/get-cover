@@ -6,6 +6,7 @@ const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
+const logs = require("../../User/model/logs");
 
 //------------- price book api's------------------//
 
@@ -190,12 +191,33 @@ exports.createPriceBook = async (req, res, next) => {
     //console.log("checkPriceBook=====================",checkPriceBook);return;
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
     if (!savePriceBook) {
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "price/createPriceBook",
+        body: req.body,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to save the price book",
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to save the price book",
 
       })
     } else {
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "price/createPriceBook",
+        body: req.body,
+        response: {
+          code: constant.successCode,
+          message: "Success",
+          data: savePriceBook
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.successCode,
         message: "Success",
@@ -203,6 +225,16 @@ exports.createPriceBook = async (req, res, next) => {
       })
     }
   } catch (err) {
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/createPriceBook catch",
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -440,6 +472,17 @@ exports.updatePriceBookById = async (req, res, next) => {
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
+
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/updatePriceBook",
+      body: req.body,
+      response: {
+        code: constant.successCode,
+        message: "Successfully Update",
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.successCode,
       message: "Successfully Update",
@@ -447,6 +490,16 @@ exports.updatePriceBookById = async (req, res, next) => {
     return;
 
   } catch (error) {
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/updatePriceBook catch",
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: error.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: error.message
@@ -589,13 +642,34 @@ exports.createPriceBookCat = async (req, res) => {
     // Create the price category
     const createdCategory = await priceBookService.createPriceCat(catData);
     if (!createdCategory) {
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "price/createPriceBookCat",
+        body: catData,
+        response: {
+          code: constant.errorCode,
+          message: 'Unable to create the price category'
+        }
+      }
+      await logs(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: 'Unable to create the price category'
       });
       return;
     }
-
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/createPriceBookCat",
+      body: catData,
+      response: {
+        code: constant.successCode,
+        message: 'Created Successfully',
+        data: createdCategory
+      }
+    }
+    await logs(logData).save()
     // Return success response
     res.send({
       code: constant.successCode,
@@ -604,6 +678,16 @@ exports.createPriceBookCat = async (req, res) => {
     });
 
   } catch (err) {
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/createPriceBookCat  catchError",
+      body: catData,
+      response: {
+        code: constant.errorCode,
+        message: err.message,
+      }
+    }
+    await logs(logData).save()
     // Handle unexpected errors
     res.send({
       code: constant.errorCode,
@@ -772,6 +856,16 @@ exports.updatePriceBookCat = async (req, res) => {
 
     const updateCatResult = await priceBookService.updatePriceCategory({ _id: req.params.catId }, newValue, { new: true });
     if (!updateCatResult) {
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "price/updatePricebookCat",
+        body: newValue,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the price book category"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to update the price book category"
@@ -782,7 +876,7 @@ exports.updatePriceBookCat = async (req, res) => {
       if (data.status == false) {
         let updatePriceBook = await priceBookService.updatePriceBook({ category: updateCatResult._id }, { status: data.status }, { new: true })
         let projection = { isDeleted: 0, __v: 0 }
-        let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, {new:true})
+        let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, { new: true })
 
         const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
         const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
@@ -793,12 +887,33 @@ exports.updatePriceBookCat = async (req, res) => {
 
       }
     }
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/updatePricebookCat",
+      body: req.body,
+      response: {
+        code: constant.successCode,
+        message: "Successfully updated",
+        result: updateCatResult
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.successCode,
       message: "Successfully updated",
       result: updateCatResult
     })
   } catch (err) {
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "price/updatePricebookCat  catch",
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
