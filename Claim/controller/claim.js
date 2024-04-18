@@ -2207,7 +2207,8 @@ exports.getMessages = async (req, res) => {
             $match:
             {
               $and: [
-                { isPrimary: true }
+                { isPrimary: true },
+                { metaId: { $ne: null } }
               ]
             },
           },
