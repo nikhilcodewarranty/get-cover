@@ -847,6 +847,7 @@ exports.getAllClaims = async (req, res, next) => {
     })
   }
 }
+
 exports.searchClaim = async (req, res, next) => {
   try {
     let data = req.body
@@ -1161,6 +1162,7 @@ exports.searchClaim = async (req, res, next) => {
 //     })
 //   }
 // }
+
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {

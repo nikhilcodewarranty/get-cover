@@ -2899,7 +2899,6 @@ exports.getAllContracts = async (req, res) => {
         let orderAndCondition = []
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
-
         }
         if (req.role == 'Dealer') {
             userSearchCheck = 1
@@ -3050,6 +3049,7 @@ exports.getAllContracts = async (req, res) => {
         })
     }
 }
+
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;

@@ -39,6 +39,7 @@ const orderService = require('../../Order/services/orderService');
 const order = require('../../Order/model/order');
 const { constants } = require('buffer');
 const contractService = require('../../Contract/services/contractService');
+const logs = require('../../User/model/logs');
 
 
 var StorageP = multer.diskStorage({
@@ -829,11 +830,11 @@ exports.registerDealer = async (req, res) => {
     // if (createNotification) {
     let emailData = {
       dealerName: createdDealer.name,
-      c1:"Thank you for",
-      c2:"Registering! as a",
-      c3:"Your account is currently pending approval from our admin.",
-      c4:"Once approved, you will receive a confirmation emai",
-      c5:"We appreciate your patience.",
+      c1: "Thank you for",
+      c2: "Registering! as a",
+      c3: "Your account is currently pending approval from our admin.",
+      c4: "Once approved, you will receive a confirmation emai",
+      c5: "We appreciate your patience.",
       role: "Dealer"
     }
 
@@ -937,7 +938,7 @@ exports.statusUpdate = async (req, res) => {
     }
 
     let logData = {
-      userId:req.teammateId,
+      userId: req.teammateId,
       endpoint: "dealer/statusUpdate",
       body: newValue,
       response: {
@@ -958,7 +959,7 @@ exports.statusUpdate = async (req, res) => {
 
   } catch (err) {
     let logData = {
-      userId:req.teammateId,
+      userId: req.teammateId,
       endpoint: "dealer/statusUpdate",
       body: {
         type: "catch error"
@@ -1094,7 +1095,7 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let logData = {
-        userId:req.teammateId,
+        userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
         body: changedDealerStatus,
         response: {
@@ -1461,6 +1462,7 @@ function uniqByKeepLast(data, key) {
   ]
 
 }
+
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -1783,6 +1785,7 @@ exports.uploadPriceBook = async (req, res) => {
     });
   }
 };
+
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
@@ -1821,11 +1824,33 @@ exports.createDealerPriceBook = async (req, res) => {
     }
     let createDealerPrice = await dealerPriceService.createDealerPrice(data)
     if (!createDealerPrice) {
+
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "dealer/createPriceBook",
+        body: req.body,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to create the dealer price book"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to create the dealer price book"
       })
     } else {
+      let logData = {
+        userId: req.teammateId,
+        endpoint: "dealer/createPriceBook",
+        body: req.body,
+        response: {
+          code: constant.successCode,
+          message: "Success",
+          result: createDealerPrice
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.successCode,
         message: "Success",
@@ -1833,6 +1858,16 @@ exports.createDealerPriceBook = async (req, res) => {
       })
     }
   } catch (err) {
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "dealer/createPriceBook catch",
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
