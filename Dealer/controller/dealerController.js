@@ -3193,7 +3193,6 @@ exports.getDealerContract = async (req, res) => {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
     };
-
     console.log("orderAndCondition-------------------", orderAndCondition)
     let orderIds = []
     if (orderAndCondition.length > 0) {
@@ -3216,6 +3215,8 @@ exports.getDealerContract = async (req, res) => {
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { eligibilty: data.eligibilty === "true" ? true : false },
+        { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
       ]
     } else {
       contractFilterWithEligibilty = [

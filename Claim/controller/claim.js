@@ -589,7 +589,7 @@ exports.getAllClaims = async (req, res, next) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
-            { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
+            { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             servicerMatch
@@ -709,25 +709,6 @@ exports.getAllClaims = async (req, res, next) => {
           localField: "contracts.orders.dealerId",
           foreignField: "_id",
           as: "contracts.orders.dealers",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-            // {
-            //   $lookup: {
-            //     from: "servicer_dealer_relations",
-            //     localField: "_id",
-            //     foreignField: "dealerId",
-            //     as: "dealerServicer",
-            //   }
-            // },
-          ]
         }
       },
       {
@@ -737,7 +718,6 @@ exports.getAllClaims = async (req, res, next) => {
         $match:
         {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
-          // "contracts.orders.dealers.isDeleted": false,
         }
       },
       {
@@ -764,7 +744,6 @@ exports.getAllClaims = async (req, res, next) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
@@ -870,31 +849,43 @@ exports.searchClaim = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
 
     let orderIds = []
+    let orderAndCondition = []
+    let userSearchCheck = 0
     let customerIds = []
     let checkCustomer = 0
     if (data.customerName != "") {
-      checkCustomer = 1
+      userSearchCheck = 1
       let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
       if (getData.length > 0) {
         customerIds = await getData.map(customer => customer._id)
       } else {
         customerIds.push("1111121ccf9d400000000000")
       }
-
+    };
+    if (req.role == 'Dealer') {
+      userSearchCheck = 1
+      orderAndCondition.push({ dealerId: { $in: [req.userId] } })
     }
-
-    if (checkCustomer == 1) {
-      let getOrder = await orderService.getOrders({ customerId: { $in: customerIds } })
-      if (getOrder.length > 0) {
-        orderIds = await getOrder.map(order => order._id)
-      } else {
+    if (req.role == 'Customer') {
+      userSearchCheck = 1
+      orderAndCondition.push({ customerId: { $in: [req.userId] } })
+    }
+    if (customerIds.length > 0) {
+      orderAndCondition.push({ customerId: { $in: customerIds } })
+    }
+    if (orderAndCondition.length > 0) {
+      let getOrders = await orderService.getOrders({
+        $and: orderAndCondition
+      })
+      if (getOrders.length > 0) {
+        orderIds = await getOrders.map(order => order._id)
+      }
+      else {
         orderIds.push("1111121ccf9d400000000000")
       }
-
     }
-
     let contractFilter;
-    if (checkCustomer == 1) {
+    if (userSearchCheck == 1) {
       contractFilter = [
         { orderId: { $in: orderIds } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -916,13 +907,13 @@ exports.searchClaim = async (req, res, next) => {
     }
 
     let query = [
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
           $and: contractFilter
         },
       },
-
       {
         $facet: {
           totalRecords: [
@@ -937,38 +928,42 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            // {
-            //   $project: {
-            //     unique_key: 1,
-            //     serial: 1,
-            //     "order.customers.username": 1,
-            //     "order.unique_key": 1,
-            //     "order.venderOrder": 1,
-            //   }
-            // }
-          ]
-        }
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "order",
-          pipeline: [
             {
               $lookup: {
-                from: "customers",
-                localField: "customerId",
+                from: "orders",
+                localField: "orderId",
                 foreignField: "_id",
-                as: "customers",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customers",
+                    }
+                  },
+                  { $unwind: "$customers" },
+                ]
+
               }
             },
-            { $unwind: "$customers" },
+            {
+              $unwind: "$order"
+            },
+            {
+              $project: {
+                unique_key: 1,
+                serial: 1,
+                "order.customers.username": 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+              }
+            }
           ]
-
         }
       },
+
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
@@ -1196,6 +1191,8 @@ exports.uploadReceipt = async (req, res, next) => {
 
 }
 
+
+
 exports.uploadCommentImage = async (req, res, next) => {
   try {
     imageUpload(req, res, async (err) => {
@@ -1227,6 +1224,8 @@ exports.uploadCommentImage = async (req, res, next) => {
   }
 
 }
+
+
 exports.addClaim = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -1434,6 +1433,8 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
+
+
 // Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {
