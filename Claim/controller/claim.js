@@ -1607,13 +1607,18 @@ exports.editClaimStatus = async (req, res) => {
       })
       return;
     }
-    if (updateBodyStatus.claimFile == 'Completed') {
+    //Eligibility true when claim is completed and rejected
+    if (updateBodyStatus.claimFile == 'Completed' || updateBodyStatus.claimFile == 'Rejected') {
       if (checkContract.productValue > claimTotal[0]?.amount) {
         const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: true }, { new: true })
       }
       else if (checkContract.productValue < claimTotal[0]?.amount) {
         const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
       }
+    }
+    //Amount reset of the claim in rejected claim
+    if (updateBodyStatus.claimFile == 'Rejected') {
+      let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0 }, { new: true })
     }
     res.send({
       code: constant.successCode,
@@ -1969,7 +1974,6 @@ exports.saveBulkClaim = async (req, res) => {
 
           if (allDataArray.length > 0 && servicerData) {
             flag = false;
-            //console.log("allDataArray--------------------------", i, allDataArray[0]?.order.dealer.dealerServicer, servicerData)
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId.toString() === servicerData._id.toString())
@@ -2023,8 +2027,6 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-
-
       // res.json(totalDataComing);
       // return;
       const updateArray = await Promise.all(updateArrayPromise);
@@ -2094,7 +2096,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
