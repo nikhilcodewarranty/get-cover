@@ -1994,7 +1994,7 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
-
+ 
           if ((!flag && flag != undefined)) {
             item.status = "Servicer not found"
             item.exit = true;
