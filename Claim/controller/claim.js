@@ -1905,7 +1905,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
       // res.json(contractAllDataArray);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
@@ -1968,9 +1967,7 @@ exports.saveBulkClaim = async (req, res) => {
             // item.exit = true;
           }
 
-          console.log("servicerData------------------------",servicerData)
           if (allDataArray.length > 0 && servicerData) {
-            console.log("I am hereeeeeeeeeeeeeeeeeeeeeeeeeeeee-------------", servicerData)
             flag = false;
             //console.log("allDataArray--------------------------", i, allDataArray[0]?.order.dealer.dealerServicer, servicerData)
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
@@ -1990,9 +1987,11 @@ exports.saveBulkClaim = async (req, res) => {
             }
             // console.log(allDataArray)
           }
+          if ((item.servicerName != '' && !servicerData)) {
+            flag = true
+          }
 
-          console.log("flag------------------------------------", flag)
-          if ((!flag && flag != undefined) || !servicerData) {
+          if ((!flag && flag != undefined)) {
             item.status = "Servicer not found"
             item.exit = true;
           }
