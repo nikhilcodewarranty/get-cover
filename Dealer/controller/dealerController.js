@@ -3636,7 +3636,7 @@ exports.getDealerClaims = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        selfServicer = item1.servicerId.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
       }
       return {
         ...item1,
