@@ -1992,7 +1992,7 @@ exports.saveBulkClaim = async (req, res) => {
             // console.log(allDataArray)
           }
           if ((item.servicerName != '' && !servicerData)) {
-            flag = true
+            flag = false
           }
 
           if ((!flag && flag != undefined)) {
