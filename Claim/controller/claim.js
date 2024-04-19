@@ -2,7 +2,7 @@ const { claim } = require("../model/claim");
 const { claimPart } = require("../model/claimPart");
 const path = require("path");
 const { claimStatus } = require("../model/claimStatus");
-const { comments } = require("../model/comments");
+const { comments } = require("../model/comments"); 
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
@@ -12,7 +12,7 @@ const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const userService = require("../../User/services/userService");
 const contractService = require("../../Contract/services/contractService");
-const servicerService = require("../../Provider/services/providerService");
+const servicerService = require("../../Provider/services/providerService"); 
 const multer = require("multer");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
@@ -1992,7 +1992,7 @@ exports.saveBulkClaim = async (req, res) => {
             // console.log(allDataArray)
           }
           if ((item.servicerName != '' && !servicerData)) {
-            flag = true
+            flag = false
           }
 
           if ((!flag && flag != undefined)) {
