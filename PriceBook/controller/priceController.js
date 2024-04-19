@@ -172,6 +172,7 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       quantityPriceDetail: quantityPriceDetail,
       category: checkCat._id,
+      coverageType:data.coverageType,
       status: data.status,
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
