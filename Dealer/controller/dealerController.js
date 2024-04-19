@@ -3237,7 +3237,6 @@ exports.getDealerContract = async (req, res) => {
     }
     let mainQuery = []
     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-      console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
 
@@ -3636,7 +3635,7 @@ exports.getDealerClaims = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        selfServicer = item1.servicerId.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
       }
       return {
         ...item1,
