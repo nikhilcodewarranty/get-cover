@@ -9,6 +9,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  notificationFor:{
+    type:[],
+    default:[]
+  },
   description: {
     type: String,
     default: ''
@@ -20,6 +24,10 @@ const notificationSchema = new mongoose.Schema({
   flag: {
     type: String,
     default: ''
+  },
+  flagId:{
+    type: mongoose.Schema.Types.ObjectId,
+    default:null
   },
   isDeleted: {
     type: String,

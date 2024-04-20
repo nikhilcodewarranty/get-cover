@@ -54,9 +54,6 @@ var upload = multer({
 
 
 
-
-
-
 //----------------------- api's function ---------------//
 
 // create user 
@@ -243,8 +240,6 @@ exports.tryUpload = async (req, res) => {
   }
 };
 
-
-
 //generate monthly terms /// only for backend use
 const generateMonthTerms = (numberOfTerms) => {
   const monthTerms = [];
@@ -262,9 +257,7 @@ const generateMonthTerms = (numberOfTerms) => {
   return monthTerms;
 };
 
-
 // validate dealer by super admin
-
 exports.validateData = async (req, res) => {
   const data = req.body;
   // Check if the user has Super Admin role
@@ -405,6 +398,7 @@ exports.validateData = async (req, res) => {
     message: 'Success',
   });
 }
+
 function uniqByKeepLast(data, key) {
 
   return [
@@ -418,6 +412,7 @@ function uniqByKeepLast(data, key) {
   ]
 
 }
+
 // create dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
@@ -1480,6 +1475,7 @@ exports.createDealer = async (req, res) => {
     });
   }
 };
+
 //save Dealer Meta Data
 //---------------------------------------------------- refined code ----------------------------------------//
 

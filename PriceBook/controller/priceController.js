@@ -1,6 +1,7 @@
 const { PriceBook } = require("../model/priceBook");
 const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
+const dealerService = require("../../Dealer/services/dealerService");
 const orderService = require("../../Order/services/orderService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
@@ -172,7 +173,7 @@ exports.createPriceBook = async (req, res, next) => {
       reserveFutureFee: data.reserveFutureFee,
       quantityPriceDetail: quantityPriceDetail,
       category: checkCat._id,
-      coverageType:data.coverageType,
+      coverageType: data.coverageType,
       status: data.status,
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
@@ -746,21 +747,33 @@ exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
+
+    let getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
+    if (!getDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
+
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
     let query;
     if (getPriceBook[0]) {
       query = {
-        $or: [
+        $and: [
           { status: true },
-          { _id: getPriceBook ? getPriceBook[0].category._id : "" }
+          { _id: getPriceBook ? getPriceBook[0].category._id : "" },
+          { coverageType: getDealer.coverageType }
         ]
       }
     } else {
       query = {
-        $or: [
+        $and: [
           { status: true },
+          { coverageType: getDealer.coverageType }
         ]
       }
     }
