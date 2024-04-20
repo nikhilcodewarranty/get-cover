@@ -39,7 +39,7 @@ const dealarSchema = new mongoose.Schema({
     default: ''
   },
   createdBy: {
-    type: String,
+    type: String, 
     default: ''
   },
   status: {
