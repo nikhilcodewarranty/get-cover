@@ -766,14 +766,14 @@ exports.getActivePriceBookCategories = async (req, res) => {
         $and: [
           { status: true },
           { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { coverageType: getDealer.coverageType }
+          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
         ]
       }
     } else {
       query = {
         $and: [
           { status: true },
-          { coverageType: getDealer.coverageType }
+          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
         ]
       }
     }
