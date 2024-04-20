@@ -32,14 +32,14 @@ const dealarSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    default: ''
+    default: '' 
   },
   token: {
     type: String,
     default: ''
   },
   createdBy: {
-    type: String,
+    type: String, 
     default: ''
   },
   status: {

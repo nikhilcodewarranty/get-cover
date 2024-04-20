@@ -4,14 +4,14 @@ const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "contracts",
-    index:true
+    index: true
     // required: true,
   },
   claimFile: {
     type: 'String',
     enum: ['Open', 'Completed', 'Rejected'],
     default: 'Open',
-    index:true
+    index: true
     // required: true,
   },
   reason: {
@@ -26,13 +26,13 @@ const claimSchema = new mongoose.Schema({
   },
   unique_key: {
     type: String,
-    index:true
+    index: true
   },
   servicerId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceproviders",
     default: null,
-    index:true
+    index: true
   },
   action: {
     type: String,
@@ -76,11 +76,19 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: 'New'
   },
+  trackingNumber: {
+    type: String,
+    default: ''
+  },
+  trackingType: {
+    type: String,
+    default: ''
+  },
   servicePaymentStatus: {
     type: String,
     default: 'Pending'
   },
-  claimPaymentStatus:{
+  claimPaymentStatus: {
     type: String,
     default: 'Unpaid',
     enum: ['Paid', 'Unpaid'],
