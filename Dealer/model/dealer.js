@@ -32,7 +32,7 @@ const dealarSchema = new mongoose.Schema({
   },
   country: {
     type: String,
-    default: ''
+    default: '' 
   },
   token: {
     type: String,
