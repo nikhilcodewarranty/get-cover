@@ -1732,7 +1732,7 @@ exports.editFileCase = async (req, res) => {
                         allDataComing.push({
                             key: productsWithFiles[j].key,
                             checkNumberProducts:
-                                productsWithFiles[j].checkNumberProducts,
+                            productsWithFiles[j].checkNumberProducts,
                             noOfProducts: productsWithFiles[j].noOfProducts,
                             priceType: productsWithFiles[j].priceType,
                             rangeStart: productsWithFiles[j].rangeStart,
@@ -1792,17 +1792,11 @@ exports.editFileCase = async (req, res) => {
                                 });
                             }
                         });
-                        // const isValidLength = obj.data.every(
-                        //     (obj1) => Object.keys(obj1).length === 5
-                        // );
-                        // if (!isValidLength) {
-                        //     message.push({
-                        //         code: constant.errorCode,
-                        //         key: obj.key,
-                        //         message: "Invalid fields value",
-                        //     });
-                        // }
                     });
+
+
+
+                    console.log("message-----------------------",message);
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
