@@ -748,14 +748,17 @@ exports.getActivePriceBookCategories = async (req, res) => {
     let data = req.body
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
 
-    let getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
-    if (!getDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid dealer ID"
-      })
-      return;
+    if (!data.dealerId && data.dealerId != "") {
+      let getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
+      if (!getDealer) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid dealer ID"
+        })
+        return;
+      }
     }
+
 
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
@@ -766,14 +769,14 @@ exports.getActivePriceBookCategories = async (req, res) => {
         $and: [
           { status: true },
           { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { coverageType: getDealer.coverageType }
+          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
         ]
       }
     } else {
       query = {
         $and: [
           { status: true },
-          { coverageType: getDealer.coverageType }
+          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
         ]
       }
     }
