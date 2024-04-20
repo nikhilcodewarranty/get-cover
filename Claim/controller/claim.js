@@ -2,7 +2,7 @@ const { claim } = require("../model/claim");
 const { claimPart } = require("../model/claimPart");
 const path = require("path");
 const { claimStatus } = require("../model/claimStatus");
-const { comments } = require("../model/comments"); 
+const { comments } = require("../model/comments");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
@@ -12,7 +12,7 @@ const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const userService = require("../../User/services/userService");
 const contractService = require("../../Contract/services/contractService");
-const servicerService = require("../../Provider/services/providerService"); 
+const servicerService = require("../../Provider/services/providerService");
 const multer = require("multer");
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
@@ -23,8 +23,6 @@ const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
-
-
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -44,14 +42,14 @@ var imageUpload = multer({
   },
 }).single("file");
 
+ 
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).array("file", 100);
-
-
 exports.getAllClaims = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -826,7 +824,6 @@ exports.getAllClaims = async (req, res, next) => {
     })
   }
 }
-
 exports.searchClaim = async (req, res, next) => {
   try {
     let data = req.body
@@ -984,7 +981,6 @@ exports.searchClaim = async (req, res, next) => {
 
 
 }
-
 // exports.searchClaim = async (req, res) => {
 //   try {
 //     let data = req.body
@@ -1157,7 +1153,6 @@ exports.searchClaim = async (req, res, next) => {
 //     })
 //   }
 // }
-
 exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
@@ -1190,9 +1185,6 @@ exports.uploadReceipt = async (req, res, next) => {
   }
 
 }
-
-
-
 exports.uploadCommentImage = async (req, res, next) => {
   try {
     imageUpload(req, res, async (err) => {
@@ -1224,8 +1216,7 @@ exports.uploadCommentImage = async (req, res, next) => {
   }
 
 }
-
-
+//add claim
 exports.addClaim = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -1326,7 +1317,7 @@ exports.addClaim = async (req, res, next) => {
     })
   }
 }
-
+//Get contract by id
 exports.getContractById = async (req, res) => {
   try {
     let data = req.body
@@ -1433,8 +1424,6 @@ exports.getContractById = async (req, res) => {
     })
   }
 }
-
-
 // Edit Repair part 
 exports.editClaim = async (req, res) => {
   try {
@@ -1633,7 +1622,7 @@ exports.editClaimStatus = async (req, res) => {
     })
   }
 }
-
+//Edit servicer
 exports.editServicer = async (req, res) => {
   let data = req.body
   // if (req.role != 'Super Admin') {
@@ -1689,7 +1678,7 @@ exports.editServicer = async (req, res) => {
 
 
 }
-
+//Save bulk claim
 exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
@@ -1750,7 +1739,6 @@ exports.saveBulkClaim = async (req, res) => {
       });
       console.log(totalDataComing)
       totalDataComing = totalDataComing.map((item, i) => {
-        console.log(item.contractId)
         return {
           contractId: item.contractId.toString().replace(/\s+/g, ' ').trim(),
           servicerName: item.servicerName.toString().replace(/\s+/g, ' ').trim(),
@@ -1994,7 +1982,7 @@ exports.saveBulkClaim = async (req, res) => {
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
           }
- 
+
           if ((!flag && flag != undefined)) {
             item.status = "Servicer not found"
             item.exit = true;
@@ -2096,7 +2084,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
@@ -2113,7 +2101,7 @@ exports.saveBulkClaim = async (req, res) => {
   })
 
 }
-
+//Send message
 exports.sendMessages = async (req, res) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -2181,7 +2169,7 @@ exports.sendMessages = async (req, res) => {
     })
   };
 }
-
+//Get messages
 exports.getMessages = async (req, res) => {
   // if (req.role != 'Super Admin') {
   //   res.send({
@@ -2292,7 +2280,7 @@ exports.getMessages = async (req, res) => {
     result: allMessages
   })
 }
-
+//Automatic completed when servicer shipped after 7 days cron job
 exports.statusClaim = async (req, res) => {
   try {
     const result = await claimService.getClaims({
