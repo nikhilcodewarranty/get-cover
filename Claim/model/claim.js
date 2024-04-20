@@ -98,7 +98,7 @@ const claimSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  status: {
+  status: { 
     type: Boolean,
     default: true
   },
