@@ -77,7 +77,7 @@ const claimSchema = new mongoose.Schema({
     default: 'New'
   },
   trackingNumber: {
-    type: String,
+    type: String, 
     default: ''
   },
   trackingType: {
