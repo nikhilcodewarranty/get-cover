@@ -748,7 +748,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
     let data = req.body
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
 
-    if (!data.dealerId && data.dealerId != "") {
+    if (!data.dealerId) {
       let getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
       if (!getDealer) {
         res.send({
