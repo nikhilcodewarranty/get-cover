@@ -42,7 +42,7 @@ var imageUpload = multer({
   },
 }).single("file");
 
- 
+
 
 var uploadP = multer({
   storage: StorageP,
@@ -797,7 +797,7 @@ exports.getAllClaims = async (req, res, next) => {
         selfServicer = item1.servicerId?.toString() === item1.servicerData?._id.toString() && item1.servicerData?.isServicer ? true : false
       }
       return {
-        ...item1, 
+        ...item1,
         servicerData: servicerName,
         selfServicer: selfServicer,
         contracts: {
@@ -1184,6 +1184,18 @@ exports.uploadReceipt = async (req, res, next) => {
     return
   }
 
+}
+
+exports.getUnpaidAmount = async (req, res, next) => {
+  try{
+
+  } 
+  catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
 }
 exports.uploadCommentImage = async (req, res, next) => {
   try {
