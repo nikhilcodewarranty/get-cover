@@ -803,7 +803,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: getCategories
+        result: getCategories,
+        coverageType: data.coverageType ? data.coverageType : ""
       })
     }
   } catch (err) {
@@ -1066,7 +1067,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     let queryFilter = {
       $and: [
         { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-        {coverageType:data.coverageType},
+        { coverageType: data.coverageType },
         { status: true }
       ]
     };
