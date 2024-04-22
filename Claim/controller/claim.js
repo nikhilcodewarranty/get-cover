@@ -1760,13 +1760,13 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      console.log(totalDataComing)
+      //console.log(totalDataComing)
       totalDataComing = totalDataComing.map((item, i) => {
         return {
-          contractId: item.contractId.toString().replace(/\s+/g, ' ').trim(),
-          servicerName: item.servicerName.toString().replace(/\s+/g, ' ').trim(),
-          lossDate: item.lossDate.toString().replace(/\s+/g, ' ').trim(),
-          diagnosis: item.diagnosis.toString().replace(/\s+/g, ' ').trim(),
+          contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
+          servicerName: item.servicerName?.toString().replace(/\s+/g, ' ').trim(),
+          lossDate: item.lossDate?.toString().replace(/\s+/g, ' ').trim(),
+          diagnosis: item.diagnosis?.toString().replace(/\s+/g, ' ').trim(),
           duplicate: false,
           exit: false
         };
@@ -2008,7 +2008,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           if ((!flag && flag != undefined)) {
             item.status = "Servicer not found"
-            item.exit = true;
+            item.exit = true; 
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
