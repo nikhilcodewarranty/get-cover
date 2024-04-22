@@ -2056,7 +2056,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerId: servicerId,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
-            unique_key: "CC-" + "2024-" + unique_key_number,
+            unique_key: "CC-" + "2024-" + unique_key_number, 
             diagnosis: data.diagnosis,
             lossDate: data.lossDate,
             claimFile: 'Open',
