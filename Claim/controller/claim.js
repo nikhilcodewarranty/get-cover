@@ -1185,15 +1185,25 @@ exports.uploadReceipt = async (req, res, next) => {
   }
 
 }
-
+//Get Unpaid claim value
 exports.getUnpaidAmount = async (req, res, next) => {
-  try{
-
-  } 
-  catch(err){
+  try {
+    const ids = req.body.claimIds;
+    const claimId = ids.map(id => new mongoose.Types.ObjectId(id))
+    const response = await claimService.checkTotalAmount({ _id: { $in: claimId } });
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.successCode,
+      message: "Success!",
+      result: {
+        totalClaims: ids.length,
+        unpaidValue: response[0]?.amount
+      }
+    })
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
