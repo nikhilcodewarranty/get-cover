@@ -764,8 +764,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
     let getPriceBook1 = await priceBookService.getPriceBookById({coverageType:data.coverageType ? data.coverageType : getDealer?.coverageType}, {})
 
-    let catIds = getPriceBook1.filter(catId=>catId.category)
-
+    let catIds = getPriceBook1.filter(catId=>new mongoose.Types.ObjectId(catId.category))
+    console.log('cat id +++++++++++++++',catIds)
     let query;
 
 
@@ -774,17 +774,21 @@ exports.getActivePriceBookCategories = async (req, res) => {
         $and: [
           { status: true },
           { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { _id: {$in:new mongoose.Types.ObjectId(catIds)}}
+          { _id: {$in:catIds}}
         ]
       }
     } else {
       query = {
         $and: [
           { status: true },
-          { coverageType: {$in:new mongoose.Types.ObjectId(catIds)}}
+          { _id: {$in:catIds}}
         ]
       }
     }
+
+    console.log('cat id +++++++++++++++',query)
+
+
     let projection = { __v: 0 }
     let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
 
