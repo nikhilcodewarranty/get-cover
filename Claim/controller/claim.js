@@ -1992,11 +1992,11 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString) {
+            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString) {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString) {
+            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString) {
               flag = true
             }
             // console.log(allDataArray)
@@ -2103,7 +2103,7 @@ exports.saveBulkClaim = async (req, res) => {
         </html>`;
 
         return htmlContent;
-      }
+      } 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
