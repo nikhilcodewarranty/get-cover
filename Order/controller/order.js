@@ -3992,9 +3992,10 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
 
-        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkOrder.servicerId }, { isDeleted: false })
+        const checkServicer = await servicerService.getServiceProviderById({ _id: checkOrder.servicerId }, { isDeleted: false })
 
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        //res.json(checkServicer);return
 
         const options = {
             format: 'A4',
@@ -4024,14 +4025,14 @@ exports.generateHtmltopdf = async (req, res) => {
                         <tr>
                             <td>GET COVER service contract holder name:</td>
                             <td>
-                            <p> Attention –${checkServicer.name}</p>
-                            <p> Email Address –${servicerUser.email}</p>
-                            <p>Telephone #${servicerUser.email}</p>
+                            <p> Attention –${checkServicer?.name}</p>
+                            <p> Email Address –${servicerUser?.email}</p>
+                            <p>Telephone #${servicerUser?.email}</p>
                             </td>
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${checkServicer.city},${checkServicer.street},${checkServicer.state}</td>
+                        <td>${checkServicer?.city},${checkServicer?.street},${checkServicer?.state}</td>
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
