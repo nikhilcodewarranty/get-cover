@@ -2039,7 +2039,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      // res.json(totalDataComing);
+      // res.json(totalDataComing); 
       // return;
       const updateArray = await Promise.all(updateArrayPromise);
       totalDataComing.map((data, index) => {
@@ -2115,7 +2115,7 @@ exports.saveBulkClaim = async (req, res) => {
       } 
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
