@@ -4097,8 +4097,8 @@ exports.generateHtmltopdf = async (req, res) => {
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
-            const link = "http://15.207.221.207:3002/Order/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+            const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
