@@ -1189,7 +1189,7 @@ exports.uploadReceipt = async (req, res, next) => {
 exports.getUnpaidAmount = async (req, res, next) => {
   try {
     const ids = req.body.claimIds;
-    await 
+     
   }
   catch (err) {
     res.send({
@@ -1635,7 +1635,7 @@ exports.editClaimStatus = async (req, res) => {
     })
   }
 }
-//Edit servicer 
+//Edit servicer
 exports.editServicer = async (req, res) => {
   let data = req.body
   // if (req.role != 'Super Admin') {
