@@ -768,7 +768,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
     console.log('cat id +++++++++++++++', data)
 
-    let getPriceBook1 = await priceBookService.getPriceBookById({ coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType }, {})
+    let getPriceBook1 = await priceBookService.getAllPriceIds({ coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType }, {})
 
     let catIds = getPriceBook1.filter(catId => new mongoose.Types.ObjectId(catId.category))
     console.log('cat id +++++++++++++++', catIds)
