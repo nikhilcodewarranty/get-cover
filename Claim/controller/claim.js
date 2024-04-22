@@ -1679,12 +1679,11 @@ exports.editServicer = async (req, res) => {
     })
     return
   }
-
   // console.log('claimId',req.params.claimId)
   // console.log('servicerId',req.body.servicerId);
   // return
 
-  let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, { servicerId: req.body.servicerId }, { new: true })
+  let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
   if (!updateServicer) {
     res.send({
       code: constant.errorCode,
