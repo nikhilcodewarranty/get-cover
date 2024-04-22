@@ -575,7 +575,16 @@ exports.getAllClaims = async (req, res, next) => {
       const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
-        servicerMatch = { 'servicerId': { $in: servicerIds } }
+        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+        servicerMatch = {
+          $or: [
+            { "servicerId": { $in: servicerIds } },
+            { "servicerId": { $in: dealerIds } },
+            { "servicerId": { $in: resellerIds } }
+          ]
+        };
       }
       else {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
@@ -1922,7 +1931,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-     //res.json(contractAllDataArray);return;
+      //res.json(contractAllDataArray);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
       //     let query = [
@@ -1985,7 +1994,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           if (allDataArray.length > 0 && servicerData) {
-            flag = false;        
+            flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
@@ -2009,7 +2018,7 @@ exports.saveBulkClaim = async (req, res) => {
 
           if ((!flag && flag != undefined)) {
             item.status = "Servicer not found"
-            item.exit = true; 
+            item.exit = true;
           }
           if (contractData && contractData.status != "Active") {
             item.status = "Contract is not active";
@@ -2044,11 +2053,11 @@ exports.saveBulkClaim = async (req, res) => {
       const updateArray = await Promise.all(updateArrayPromise);
       totalDataComing.map((data, index) => {
         if (!data.exit) {
-          let servicerId = data.servicerData?._id 
-          if(data.servicerData?.dealerId){
+          let servicerId = data.servicerData?._id
+          if (data.servicerData?.dealerId) {
             servicerId = data.servicerData?.dealerId
           }
-          if(data.servicerData?.resellerId){
+          if (data.servicerData?.resellerId) {
             servicerId = data.servicerData?.resellerId
           }
           let obj = {
@@ -2056,7 +2065,7 @@ exports.saveBulkClaim = async (req, res) => {
             servicerId: servicerId,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
-            unique_key: "CC-" + "2024-" + unique_key_number, 
+            unique_key: "CC-" + "2024-" + unique_key_number,
             diagnosis: data.diagnosis,
             lossDate: data.lossDate,
             claimFile: 'Open',
@@ -2112,7 +2121,7 @@ exports.saveBulkClaim = async (req, res) => {
         </html>`;
 
         return htmlContent;
-      } 
+      }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
