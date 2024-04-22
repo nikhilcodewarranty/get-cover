@@ -570,9 +570,10 @@ exports.getAllClaims = async (req, res, next) => {
     })
     let servicerMatch = {}
     if (data.servicerName != '' && data.servicerName != undefined) {
-      const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
-      if (checkServicer) {
-        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
+      const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer.length > 0) {
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        servicerMatch = { 'servicerId': { $in: servicerIds } }
       }
       else {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
