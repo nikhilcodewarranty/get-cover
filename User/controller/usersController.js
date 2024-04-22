@@ -2365,7 +2365,7 @@ exports.getAccountInfo = async (req, res) => {
       message: err.message
     })
   }
-}
+};
 
 exports.changePrimaryUser = async (req, res) => {
   try {
