@@ -1723,7 +1723,9 @@ exports.changeResellerStatus = async (req, res) => {
 exports.getResellerClaims = async (req, res) => {
     try {
 
-        const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
+        const resellerId = req.params.resellerId ? req.params.resellerId : req.userId
+
+        const singleReseller = await resellerService.getReseller({ _id: resellerId });
 
         if (!singleReseller) {
             res.send({
@@ -1902,7 +1904,7 @@ exports.getResellerClaims = async (req, res) => {
                         // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.params.resellerId) },
+                        { "contracts.orders.resellerId": new mongoose.Types.ObjectId(resellerId) },
                         // { "contracts.orders.isDeleted": false },
                     ]
                 },

@@ -758,8 +758,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
         return;
       }
     }
-
-
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
 
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})

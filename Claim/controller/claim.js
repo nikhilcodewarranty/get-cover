@@ -793,11 +793,11 @@ exports.getAllClaims = async (req, res, next) => {
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
-        const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+        selfServicer = item1.servicerId?.toString() === item1.servicerData?._id.toString() && item1.servicerData?.isServicer ? true : false
       }
       return {
-        ...item1,
+        ...item1, 
         servicerData: servicerName,
         selfServicer: selfServicer,
         contracts: {
