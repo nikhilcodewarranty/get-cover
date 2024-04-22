@@ -746,7 +746,9 @@ exports.getPriceBookCat = async (req, res) => {
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
+    console.log('cat id 0000000000000000000000000', data)
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
+    console.log('cat id 111111111111111111111111')
 
     if (data.dealerId) {
       var getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
@@ -761,6 +763,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
 
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
+    console.log('cat id 3333333333333333333333333333333')
+
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
     console.log('cat id +++++++++++++++', data)
 
