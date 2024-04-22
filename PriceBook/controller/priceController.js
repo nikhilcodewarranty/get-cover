@@ -1064,6 +1064,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     let queryFilter = {
       $and: [
         { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+        {coverageType:data.coverageType},
         { status: true }
       ]
     };
