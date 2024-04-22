@@ -509,6 +509,8 @@ exports.getAllClaims = async (req, res, next) => {
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
+              trackingNumber: 1,
+              trackingType: 1,
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
@@ -1920,7 +1922,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      // res.json(contractAllDataArray);return;
+     //res.json(contractAllDataArray);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
       //     let query = [
@@ -1983,7 +1985,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           if (allDataArray.length > 0 && servicerData) {
-            flag = false;
+            flag = false;        
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
               const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
@@ -1992,11 +1994,11 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString) {
+            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString) {
+            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
             }
             // console.log(allDataArray)
@@ -2042,9 +2044,16 @@ exports.saveBulkClaim = async (req, res) => {
       const updateArray = await Promise.all(updateArrayPromise);
       totalDataComing.map((data, index) => {
         if (!data.exit) {
+          let servicerId = data.servicerData?._id 
+          if(data.servicerData?.dealerId){
+            servicerId = data.servicerData?.dealerId
+          }
+          if(data.servicerData?.resellerId){
+            servicerId = data.servicerData?.resellerId
+          }
           let obj = {
             contractId: data.contractData._id,
-            servicerId: data.servicerData?._id,
+            servicerId: servicerId,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
             unique_key: "CC-" + "2024-" + unique_key_number,
