@@ -762,21 +762,26 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
+    let getPriceBook1 = await priceBookService.getPriceBookById({coverageType:data.coverageType ? data.coverageType : getDealer?.coverageType}, {})
+
+    let catIds = getPriceBook1.filter(catId=>catId.category)
 
     let query;
+
+
     if (getPriceBook[0]) {
       query = {
         $and: [
           { status: true },
           { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
+          { _id: {$in:new mongoose.Types.ObjectId(catIds)}}
         ]
       }
     } else {
       query = {
         $and: [
           { status: true },
-          { coverageType: data.coverageType ? data.coverageType : getDealer.coverageType }
+          { coverageType: {$in:new mongoose.Types.ObjectId(catIds)}}
         ]
       }
     }
