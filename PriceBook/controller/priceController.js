@@ -766,7 +766,9 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let getPriceBook1 = await priceBookService.getAllPriceIds({ coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType }, {})
 
-    let catIds = getPriceBook1.filter(catId => new mongoose.Types.ObjectId(catId.category))
+    console.log('cat id -----------------', getPriceBook1)
+
+    let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
     console.log('cat id -----------------', catIds)
     let query;
 
