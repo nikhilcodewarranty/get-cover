@@ -771,12 +771,12 @@ exports.getActivePriceBookCategories = async (req, res) => {
     let query;
 
 
-    if (getPriceBook[0]) {
+    if (!data.coverageType) {
       query = {
         $and: [
           { status: true },
           // { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { _id: { $in: catIds } }
+          // { _id: { $in: catIds } }
         ]
       }
     } else {
@@ -813,6 +813,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
     })
   }
 }
+
+
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
