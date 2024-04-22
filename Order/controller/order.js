@@ -1793,11 +1793,6 @@ exports.editFileCase = async (req, res) => {
                             }
                         });
                     });
-
-
-
-                    console.log("message-----------------------",message);
-
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
                         res.send({
