@@ -762,10 +762,12 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
-    let getPriceBook1 = await priceBookService.getPriceBookById({coverageType:data.coverageType ? data.coverageType : getDealer?.coverageType}, {})
+    console.log('cat id +++++++++++++++', data)
 
-    let catIds = getPriceBook1.filter(catId=>new mongoose.Types.ObjectId(catId.category))
-    console.log('cat id +++++++++++++++',catIds)
+    let getPriceBook1 = await priceBookService.getPriceBookById({ coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType }, {})
+
+    let catIds = getPriceBook1.filter(catId => new mongoose.Types.ObjectId(catId.category))
+    console.log('cat id +++++++++++++++', catIds)
     let query;
 
 
@@ -774,19 +776,19 @@ exports.getActivePriceBookCategories = async (req, res) => {
         $and: [
           { status: true },
           { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          { _id: {$in:catIds}}
+          { _id: { $in: catIds } }
         ]
       }
     } else {
       query = {
         $and: [
           { status: true },
-          { _id: {$in:catIds}}
+          { _id: { $in: catIds } }
         ]
       }
     }
 
-    console.log('cat id +++++++++++++++',query)
+    console.log('cat id +++++++++++++++', query)
 
 
     let projection = { __v: 0 }
