@@ -1974,7 +1974,7 @@ exports.saveBulkClaim = async (req, res) => {
             item.exit = true;
           }
           if (item.contractData && claimData != null && claimData.length > 0) {
-            const filter = claimData.filter(claim => claim.contractId.toString() === item.contractData._id.toString())
+            const filter = claimData.filter(claim => claim.contractId?.toString() === item.contractData?._id.toString())
             if (filter.length > 0) {
               item.status = "Claim is already open of this contract"
               item.exit = true;
@@ -1987,17 +1987,17 @@ exports.saveBulkClaim = async (req, res) => {
             flag = false;
             if (allDataArray[0]?.order.dealer.dealerServicer.length > 0) {
               //Find Servicer with dealer Servicer
-              const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId.toString() === servicerData._id.toString())
+              const servicerCheck = allDataArray[0]?.order.dealer.dealerServicer.find(item => item.servicerId?.toString() === servicerData._id?.toString())
               if (servicerCheck) {
                 flag = true
               }
             }
             //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer.isServicer && allDataArray[0]?.order.dealer._id.toString() === servicerData.dealerId.toString) {
+            if (allDataArray[0]?.order.dealer.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString) {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller.isServicer && allDataArray[0]?.order.reseller._id.toString() === servicerData.resellerId.toString) {
+            if (allDataArray[0]?.order.reseller.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString) {
               flag = true
             }
             // console.log(allDataArray)
