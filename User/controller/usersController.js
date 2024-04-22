@@ -3511,6 +3511,20 @@ exports.changePrimaryUser = async (req, res) => {
   }
 };
 
+exports.checkToken = async(req,res)=>{
+  try{
+    let data = req.body
+    res.send({
+      code:constant.successCode,
+      message:"Success"
+    })
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
 
 
 
