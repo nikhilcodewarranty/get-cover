@@ -23,14 +23,14 @@ verifyToken = async (req, res, next) => {
       let checkUser = await users.findOne({ _id: decoded.teammateId })
       if (!checkUser) {
         res.send({
-          code: 401,
+          code: 400,
           message: "Please login again"
         })
         return
       }
       if (!checkUser.status) {
         res.send({
-          code: 401,
+          code: 400,
           message: "Please login again"
         })
         return
