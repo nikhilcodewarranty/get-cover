@@ -3992,10 +3992,16 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
 
-        const checkServicer = await servicerService.getServiceProviderById({ _id: checkOrder.servicerId }, { isDeleted: false })
+        const checkServicer = await servicerService.getServiceProviderById({
+            $or: [
+                { "_id": checkOrder.servicerId },
+                { "dealerId": checkOrder.servicerId },
+                { "resellerId": checkOrder.servicerId }
+            ]
+        }, { isDeleted: false })
 
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
-        //res.json(checkServicer);return
+        //res.json(checkDealer);return
 
         const options = {
             format: 'A4',
