@@ -762,7 +762,19 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
-    let getPriceBook1 = await priceBookService.getAllPriceIds({ coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType }, {})
+    let coverageType =  data.coverageType ? data.coverageType : getDealer?.coverageType 
+    if(coverageType == "Breakdown & Accidental"){
+      queryPrice ={status:true}
+    }else{
+     queryPrice= {
+      $and:[
+        {status:true},
+        {coverageType:coverageType}
+      ]
+     }
+    }
+
+    let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
 
     console.log('cat id -----------------', getPriceBook1)
 
@@ -1064,13 +1076,23 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-    let queryFilter = {
-      $and: [
+    let queryFilter 
+    if(data.coverageType == "Breakdown & Accidental"){
+      queryFilter = {
+        $and: [
         { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-        { coverageType: data.coverageType },
         { status: true }
-      ]
-    };
+        ]
+      }
+    }else{
+      {
+        $and: [
+          { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+          { coverageType: data.coverageType },
+          { status: true }
+        ]
+      };
+    }
     //console.log("queryFilter=======================",queryFilter)
     let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)
     // console.log("fetchPriceBooks=======================",fetchPriceBooks)
