@@ -532,8 +532,11 @@ exports.getResellerPriceBook = async (req, res) => {
     if (data.priceType != '') {
         query.$and.push({ 'priceBooks.priceType': data.priceType });
         if (data.priceType == 'Flat Pricing') {
-            query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-            query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+            if (data.range != '') {
+                query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+                query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+            }
+
             // const flatQuery = {
             //   $and: [
             //     { 'rangeStart': { $lte: Number(data.range) } },

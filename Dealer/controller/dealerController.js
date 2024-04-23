@@ -1318,8 +1318,11 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     if (data.priceType != '') {
       matchConditions.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
-        matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-        matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        if (data.range != '') {
+          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        }
+   
         // const flatQuery = {
         //   $and: [
         //     { 'rangeStart': { $lte: Number(data.range) } },
@@ -1400,8 +1403,11 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     if (data.priceType != '') {
       matchConditions.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
-        matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-        matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        if (data.range != '') {
+          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+      }
+   
         // const flatQuery = {
         //   $and: [
         //     { 'rangeStart': { $lte: Number(data.range) } },
