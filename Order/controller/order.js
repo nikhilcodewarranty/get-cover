@@ -1695,7 +1695,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
-        let checkOrder = await orderService.getOrder(_id:req.body.orderId)
+        let checkOrder = await orderService.getOrder({_id:req.body.orderId})
         if(!checkOrder){
             res.send({
                 code:constant.errorCode,
