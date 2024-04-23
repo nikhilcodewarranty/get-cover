@@ -1531,14 +1531,11 @@ exports.editServicer = async (req, res) => {
     })
     return;
   }
-
   res.send({
     code: constant.successCode,
     message: 'Success!',
     result: updateServicer
   })
-
-
 }
 //Save bulk claim
 exports.saveBulkClaim = async (req, res) => {
@@ -1561,7 +1558,6 @@ exports.saveBulkClaim = async (req, res) => {
         raw: false,
         dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
-
       const wb = XLSX.readFile(fileUrl, {
         type: 'binary',
         cellDates: true,
@@ -1593,12 +1589,15 @@ exports.saveBulkClaim = async (req, res) => {
         return {
           contractId: item[keys[0]],
           servicerName: item[keys[1]],
-          lossDate: item[keys[2]],
+          lossDate:item[keys[2]],
           diagnosis: item[keys[3]],
           duplicate: false,
           exit: false
         };
       });
+
+
+      //res.json(totalDataComing);return;
       //console.log(totalDataComing)
       totalDataComing = totalDataComing.map((item, i) => {
         return {
@@ -1610,13 +1609,7 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-
-      // console.log("totalDataComing----------------", totalDataComing);
-      // return;
-
       totalDataComing.forEach(data => {
-        // data.diagnosis.replace(/\s+/g, ' ').trim();
-        // data.servicerName.replace(/\s+/g, ' ').trim();
         if (!data.contractId || data.contractId == "") {
           data.status = "ContractId cannot be empty"
           data.exit = true
