@@ -7,6 +7,8 @@ const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 const sgMail = require('@sendgrid/mail');
+const moment = require("moment");
+
 sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
@@ -1586,18 +1588,17 @@ exports.saveBulkClaim = async (req, res) => {
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
+        let dateLoss = item[keys[2]]
         return {
           contractId: item[keys[0]],
           servicerName: item[keys[1]],
-          lossDate:item[keys[2]],
+          lossDate: dateLoss.toString(),
           diagnosis: item[keys[3]],
           duplicate: false,
           exit: false
         };
       });
-
-
-      //res.json(totalDataComing);return;
+      // res.json(totalDataComing);return;
       //console.log(totalDataComing)
       totalDataComing = totalDataComing.map((item, i) => {
         return {
@@ -1618,13 +1619,21 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
-
-        if (new Date(data.lossDate) == 'Invalid Date') {
+       // data.lossDate = data.lossDate.split('-').join('/');
+        const formats = [
+          'MM/DD/YYYY',
+          'MM-DD-YYYY'
+        ]
+        let formatDate = formats.some(format => moment(data.lossDate , format, true).isValid())
+        console.log(data.lossDate)
+        console.log(moment(data.lossDate))
+        
+        if (moment(data.lossDate)=="Moment<Invalid date>") {
           data.status = "Date is not valid format"
           data.exit = true
         }
 
-        if (new Date(data.lossDate) > new Date()) {
+        if (moment(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
           data.exit = true
         }
@@ -1633,7 +1642,10 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Diagnosis can not be empty"
           data.exit = true
         }
+      
       })
+  
+      
       let cache = {};
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -1946,7 +1958,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,
