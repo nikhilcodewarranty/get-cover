@@ -804,7 +804,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
         code: constant.successCode,
         message: "Success",
         result: getCategories,
-        coverageType: data.coverageType ? data.coverageType : ""
+        coverageType: data.coverageType ? data.coverageType : getDealer?.coverageType
       })
     }
   } catch (err) {

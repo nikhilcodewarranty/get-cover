@@ -684,6 +684,7 @@ exports.getCustomerById = async (req, res) => {
           resellerName: checkReseller ? checkReseller.name : '',
           resellerStatus: checkReseller ? checkReseller.status : null,
           dealerStatus: checkDealer.accountStatus,
+          userAccount: checkDealer.userAccount,
           orderData: ordersResult,
           claimData: claimData
         }
