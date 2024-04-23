@@ -1345,7 +1345,7 @@ exports.createDealer = async (req, res) => {
                   })
                 }
                 totalDataComing[i].priceBookDetail = null
-              } else {
+              } else { 
                 totalDataComing[i].priceBookDetail = pricebooksArray[i];
               }
             }
