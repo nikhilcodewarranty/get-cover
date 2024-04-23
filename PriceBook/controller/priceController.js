@@ -1085,7 +1085,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
         ]
       }
     }else{
-      {
+      queryFilter= {
         $and: [
           { category: new mongoose.Types.ObjectId(req.params.categoryId) },
           { coverageType: data.coverageType },
