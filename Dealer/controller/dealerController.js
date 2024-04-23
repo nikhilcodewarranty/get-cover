@@ -589,7 +589,8 @@ exports.getUserByDealerId = async (req, res) => {
       result: filteredData,
       dealerData: dealers,
       dealerStatus: dealers.accountStatus,
-      isAccountCreate: dealers.isAccountCreate
+      isAccountCreate: dealers.isAccountCreate,
+      userAccount: dealers.userAccount,
     })
 
   } catch (err) {
