@@ -1629,13 +1629,13 @@ exports.saveBulkClaim = async (req, res) => {
         console.log(moment(data.lossDate))
         
         if (!moment(data.lossDate).isValid()) {
-          data.status = "Date is not valid format"
+          data.status = "Date is not valid format" 
           data.exit = true
-        }
+        } 
 
         if (moment(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
-          data.exit = true
+          data.exit = true 
         }
         data.lossDate = data.lossDate
         if (!data.diagnosis || data.diagnosis == "") {
