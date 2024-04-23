@@ -1628,7 +1628,7 @@ exports.saveBulkClaim = async (req, res) => {
         console.log(data.lossDate)
         console.log(moment(data.lossDate))
         
-        if (moment(data.lossDate)=="Moment<Invalid date>") {
+        if (!moment(data.lossDate).isValid()) {
           data.status = "Date is not valid format"
           data.exit = true
         }
