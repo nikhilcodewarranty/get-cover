@@ -1308,9 +1308,6 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.checkTotalAmount(query);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-        console.log("remainingValue----------------------",remainingValue.toFixed(2))
-        console.log("product value----------------------",contract.productValue)
-        console.log("amount----------------------",claimTotal[0]?.amount)
         if (remainingValue.toFixed(2) < data.totalAmount) {
           res.send({
             code: constant.errorCode,
@@ -1844,8 +1841,8 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             } 
 
-            console.log("servicerId---------------------------",servicerData)
-            console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
+            // console.log("servicerId---------------------------",servicerData)
+            // console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
@@ -1869,10 +1866,10 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-      res.send({
-        totalDataComing
-      })
-      return;
+      // res.send({
+      //   totalDataComing
+      // })
+      // return;
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
