@@ -600,6 +600,7 @@ exports.editResellers = async (req, res) => {
             return;
         }
         if (checkReseller.isServicer) {
+            console.log("dsfsddsfddfs");
             const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         }
         else if (data.isServicer) {
