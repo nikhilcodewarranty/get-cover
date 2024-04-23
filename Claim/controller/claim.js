@@ -1839,7 +1839,10 @@ exports.saveBulkClaim = async (req, res) => {
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
-            }
+            } 
+
+            console.log("servicerId---------------------------",servicerData)
+            console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
@@ -1863,10 +1866,10 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-      // res.send({
-      //   totalDataComing
-      // })
-      // return;
+      res.send({
+        totalDataComing
+      })
+      return;
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
@@ -1958,7 +1961,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,

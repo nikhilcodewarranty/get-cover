@@ -609,7 +609,7 @@ exports.editResellers = async (req, res) => {
                 street: data.street,
                 city: data.city,
                 zip: data.zip,
-                dealerId: req.params.resellerId,
+                resellerId: req.params.resellerId,
                 state: data.state,
                 country: data.country,
                 status: data.status,
