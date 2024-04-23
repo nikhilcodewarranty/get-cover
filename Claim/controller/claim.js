@@ -1308,10 +1308,10 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.checkTotalAmount(query);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-        console.log("remainingValue----------------------",remainingValue)
+        console.log("remainingValue----------------------",remainingValue.toFixed(2))
         console.log("product value----------------------",contract.productValue)
         console.log("amount----------------------",claimTotal[0]?.amount)
-        if (remainingValue < data.totalAmount) {
+        if (remainingValue.toFixed(2) < data.totalAmount) {
           res.send({
             code: constant.errorCode,
             message: 'Claim Amount Exceeds Contract Retail Price'
