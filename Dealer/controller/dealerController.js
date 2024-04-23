@@ -1318,7 +1318,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     if (data.priceType != '') {
       matchConditions.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
-        
+
         if (data.range != '') {
           matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
           matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
@@ -2233,7 +2233,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const pricebookArrayPromise = totalDataComing.map(item => {
-          if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType });
+          let queryPrice;
+          if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
+            queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+          } else {
+            queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
+          }
+          if (!item.status) return priceBookService.findByName1(queryPrice);
           return null;
         })
 
