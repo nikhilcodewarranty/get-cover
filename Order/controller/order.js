@@ -650,7 +650,13 @@ exports.createOrder1 = async (req, res) => {
                 console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-
+                if(!saveContracts){
+                    let savedResponse = await orderService.updateOrder(
+                        { _id: checkOrder._id },
+                        { status: "Pending" },
+                        { new: true }
+                    );
+                }
                 //  console.log("saveContracts==================", saveContracts)
 
             })
