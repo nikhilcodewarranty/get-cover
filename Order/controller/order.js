@@ -1695,6 +1695,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
+        let checkOrder = await orderService.getOrder(_id:req.body.orderId)
+        if(!checkOrder){
+            res.send({
+                code:constant.errorCode,
+                message:"Invalid order ID"
+            })
+        }
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
@@ -1988,7 +1995,8 @@ exports.editFileCase = async (req, res) => {
             }
             res.send({
                 code: constant.successCode,
-                message: 'Success!'
+                message: 'Success!',
+                totalAmount:checkOrder.orderAmount
             })
         }
     }
