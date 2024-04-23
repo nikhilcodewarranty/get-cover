@@ -53,8 +53,10 @@ exports.getAllPriceBooks = async (req, res, next) => {
     if (data.priceType != '') {
       query.$and.push({ 'priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
-        query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
-        query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
+        if (data.range != '') {
+          query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
+          query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
+        }
         // const flatQuery = {
         //   $and: [
         //     { 'rangeStart': { $lte: Number(data.range) } },
@@ -762,16 +764,16 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
 
-    let coverageType =  data.coverageType ? data.coverageType : getDealer?.coverageType 
-    if(coverageType == "Breakdown & Accidental"){
-      queryPrice ={status:true}
-    }else{
-     queryPrice= {
-      $and:[
-        {status:true},
-        {coverageType:coverageType}
-      ]
-     }
+    let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
+    if (coverageType == "Breakdown & Accidental") {
+      queryPrice = { status: true }
+    } else {
+      queryPrice = {
+        $and: [
+          { status: true },
+          { coverageType: coverageType }
+        ]
+      }
     }
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
@@ -1076,15 +1078,15 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     }
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-    let queryFilter 
-    if(data.coverageType == "Breakdown & Accidental"){
+    let queryFilter
+    if (data.coverageType == "Breakdown & Accidental") {
       queryFilter = {
         $and: [
-        { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-        { status: true }
+          { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+          { status: true }
         ]
       }
-    }else{
+    } else {
       {
         $and: [
           { category: new mongoose.Types.ObjectId(req.params.categoryId) },
