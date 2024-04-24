@@ -667,7 +667,7 @@ exports.createDealer = async (req, res) => {
           let file = req.file
           let data = req.body
 
-          if (!req.file) {
+          if (!req.files) {
             res.send({
               code: constant.errorCode,
               message: "No file uploaded"
@@ -781,20 +781,9 @@ exports.createDealer = async (req, res) => {
             }
 
             const pricebookArrayPromise = totalDataComing.map(item => {
-              let queryPrice;
-              if (singleDealer?.coverageType == "Breakdown & Accidental") {
-                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-              } else {
-                queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
-              }
-              if (!item.status) return priceBookService.findByName1(queryPrice);
+              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType });
               return null;
             })
-
-            // const pricebookArrayPromise = totalDataComing.map(item => {
-            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType });
-            //   return null;
-            // })
 
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -1283,6 +1272,7 @@ exports.createDealer = async (req, res) => {
           }
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
+
             let servicerObject = {
               name: data.name,
               street: data.street,
@@ -1328,12 +1318,6 @@ exports.createDealer = async (req, res) => {
               return null;
             }) 
 
-
-            // const pricebookArrayPromise = totalDataComing.map(item => {
-            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType  });
-            //   return null;
-            // })
-
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
             for (let i = 0; i < totalDataComing.length; i++) {
@@ -1345,7 +1329,7 @@ exports.createDealer = async (req, res) => {
                   })
                 }
                 totalDataComing[i].priceBookDetail = null
-              } else { 
+              } else {
                 totalDataComing[i].priceBookDetail = pricebooksArray[i];
               }
             }
