@@ -2287,10 +2287,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              totalDataComing[i].status = "Dealer catalog created successully!"
+              totalDataComing[i].status = "Dealer catalog updated successully!"
 
               totalDataComing[i].duplicates.forEach((index, i) => {
-                let msg = index === 0 ? "Dealer catalog created successully)" : "Dealer catalog updated successully%"
+                let msg = index === 0 ? "Dealer catalog created successully)" : "Dealer catalog created successully%"
                 totalDataComing[index].status = msg;
               })
             }
