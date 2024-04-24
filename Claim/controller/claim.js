@@ -508,6 +508,7 @@ exports.getAllClaims = async (req, res, next) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              note:1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
