@@ -1326,7 +1326,7 @@ exports.createDealer = async (req, res) => {
               }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
-            })
+            }) 
 
 
             // const pricebookArrayPromise = totalDataComing.map(item => {
