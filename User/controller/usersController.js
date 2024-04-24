@@ -1310,7 +1310,7 @@ exports.createDealer = async (req, res) => {
             const pricebookArrayPromise = totalDataComing.map(item => {
               if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType  });
               return null;
-            })
+            }) 
 
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
