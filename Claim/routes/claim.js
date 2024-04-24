@@ -9,6 +9,7 @@ router.post("/sendMessages/:claimId", [verifyToken],claimController.sendMessages
 router.get("/getMessages/:claimId", [verifyToken],claimController.getMessages);
 router.post("/uploadCommentImage", [verifyToken],claimController.uploadCommentImage);
 router.post("/createClaim",[verifyToken],claimController.addClaim)
+router.post("/getCoverageType/:contractId",[verifyToken],claimController.getCoverageType)
 router.post("/getAllClaims",[verifyToken],claimController.getAllClaims)
 router.put("/editClaim/:claimId",[verifyToken],claimController.editClaim)
 router.put("/editClaimStatus/:claimId",[verifyToken],claimController.editClaimStatus)

@@ -1526,6 +1526,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              note:1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
@@ -1598,7 +1599,6 @@ exports.paidUnpaidClaim = async (req, res) => {
       }
     }
 
-    console.log("dateQuery----------------------", dateQuery);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
