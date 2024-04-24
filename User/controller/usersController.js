@@ -667,13 +667,13 @@ exports.createDealer = async (req, res) => {
           let file = req.file
           let data = req.body
 
-          if (!req.files) {
-            res.send({
-              code: constant.errorCode,
-              message: "No file uploaded"
-            })
-            return;
-          }
+          // if (!req.files) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "No file uploaded"
+          //   })
+          //   return;
+          // }
 
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
@@ -1156,13 +1156,13 @@ exports.createDealer = async (req, res) => {
         }
 
         else if (savePriceBookType == 'no') {
-          if (!req.file) {
-            res.send({
-              code: constant.errorCode,
-              message: "No file uploaded"
-            })
-            return;
-          }
+          // if (!req.file) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "No file uploaded"
+          //   })
+          //   return;
+          // }
 
           let csvName = priceFile.filename
           const csvWriter = createCsvWriter({
