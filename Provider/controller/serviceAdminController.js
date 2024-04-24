@@ -1543,6 +1543,8 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.manufacture": 1,
               "contracts.serial": 1,
               "contracts.orders.dealerId": 1,
+              trackingNumber: 1,
+              trackingType: 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
               "contracts.orders.customerId": 1,
