@@ -427,7 +427,7 @@ exports.createDealer = async (req, res) => {
           termFile = file[i]
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
-          priceFile = file[i]
+          priceFile = file[i] 
         }
       }
       // Check if the specified role exists
@@ -1322,7 +1322,7 @@ exports.createDealer = async (req, res) => {
               if (createMetaData?.coverageType == "Breakdown & Accidental") {
                 queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
               } else {
-                queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
               }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
