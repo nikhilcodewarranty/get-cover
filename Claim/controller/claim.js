@@ -1308,7 +1308,7 @@ exports.editClaim = async (req, res) => {
       let claimTotal = await claimService.checkTotalAmount(query);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
-        if (remainingValue < data.totalAmount) {
+        if (remainingValue.toFixed(2) < data.totalAmount) {
           res.send({
             code: constant.errorCode,
             message: 'Claim Amount Exceeds Contract Retail Price'
@@ -1629,13 +1629,13 @@ exports.saveBulkClaim = async (req, res) => {
         console.log(moment(data.lossDate))
         
         if (!moment(data.lossDate).isValid()) {
-          data.status = "Date is not valid format"
+          data.status = "Date is not valid format" 
           data.exit = true
-        }
+        } 
 
         if (moment(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
-          data.exit = true
+          data.exit = true 
         }
         data.lossDate = data.lossDate
         if (!data.diagnosis || data.diagnosis == "") {
@@ -1839,7 +1839,10 @@ exports.saveBulkClaim = async (req, res) => {
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
-            }
+            } 
+
+            // console.log("servicerId---------------------------",servicerData)
+            // console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
@@ -1958,7 +1961,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
 
       res.send({
         code: constant.successCode,

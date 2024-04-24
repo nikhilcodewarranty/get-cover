@@ -781,9 +781,20 @@ exports.createDealer = async (req, res) => {
             }
 
             const pricebookArrayPromise = totalDataComing.map(item => {
-              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType });
+              let queryPrice;
+              if (singleDealer?.coverageType == "Breakdown & Accidental") {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              } else {
+                queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
+              }
+              if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             })
+
+            // const pricebookArrayPromise = totalDataComing.map(item => {
+            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType });
+            //   return null;
+            // })
 
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -1272,7 +1283,6 @@ exports.createDealer = async (req, res) => {
           }
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
-
             let servicerObject = {
               name: data.name,
               street: data.street,
@@ -1308,9 +1318,21 @@ exports.createDealer = async (req, res) => {
             }
 
             const pricebookArrayPromise = totalDataComing.map(item => {
-              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType  });
+              let queryPrice;
+              if (createMetaData?.coverageType == "Breakdown & Accidental") {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              } else {
+                queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
+              }
+              if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             })
+
+
+            // const pricebookArrayPromise = totalDataComing.map(item => {
+            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType  });
+            //   return null;
+            // })
 
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -1323,7 +1345,7 @@ exports.createDealer = async (req, res) => {
                   })
                 }
                 totalDataComing[i].priceBookDetail = null
-              } else {
+              } else { 
                 totalDataComing[i].priceBookDetail = pricebooksArray[i];
               }
             }
