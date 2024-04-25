@@ -271,30 +271,6 @@ const claimSchema = new mongoose.Schema({
       date: Date.now()
     }]
   },
-  contractUniqueId: {
-    type: String,
-    default: null
-  },
-  orderUniqueId: {
-    type: String,
-    default: null
-  },
-  dealerPo: {
-    type: String,
-    default: null
-  },
-  serialNumber: {
-    type: String,
-    default: null
-  },
-  productName: {
-    type: String,
-    default: null
-  },
-  productManufacturer: {
-    type: String,
-    default: null
-  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("claim", claimSchema);

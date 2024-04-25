@@ -2809,9 +2809,9 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
-            checkId.paidAmount = 0
-        }
+        // if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
+        //     checkId.paidAmount = 0
+        // }
 
         // data.paidAmount = Number(data.paidAmount)
         // data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
@@ -2825,12 +2825,12 @@ exports.editOrderDetail = async (req, res) => {
         //     return;
         // };
 
-        if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
-            data.paymentStatus = "Paid"
-        }
+        // if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
+        //     data.paymentStatus = "Paid"
+        // }
 
         if (data.paymentStatus == "Paid") {
-            data.paidAmount = checkId.orderAmount
+            data.paidAmount = data.orderAmount
             data.dueAmount = 0
 
             console.log('paid payment check ++++++++++++++++++', data.paidAmount, data.dueAmount)
@@ -3013,7 +3013,15 @@ exports.editOrderDetail = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
 
-                await contractService.createBulkContracts(contractArray);
+                let saveContracts = await contractService.createBulkContracts(contractArray);
+
+                if (!saveContracts) {
+                    let savedResponse = await orderService.updateOrder(
+                        { _id: checkOrder._id },
+                        { status: "Pending" },
+                        { new: true }
+                    );
+                }
 
             })
 
@@ -3146,6 +3154,13 @@ exports.markAsPaid = async (req, res) => {
             });
             console.log("contractsLength++++++++++++++++++++++++++++++++++", contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
+            if (!saveData) {
+                let savedResponse = await orderService.updateOrder(
+                    { _id: checkOrder._id },
+                    { status: "Pending" },
+                    { new: true }
+                );
+            }
         })
 
         res.send({

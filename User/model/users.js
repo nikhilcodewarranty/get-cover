@@ -12,35 +12,36 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     default: '',
-     index:true
+    index: true
   },
   password: {
     type: String,
-    default: '$2b$10$LVUNmN0okRsnlgyMzqxgvOq0RGQgfZPknOBvQn81fMQ74aU9TPlQe'
+    //default: '$2b$10$LVUNmN0okRsnlgyMzqxgvOq0RGQgfZPknOBvQn81fMQ74aU9TPlQe'
+    default: ''
   },
   accountId: {
     type: String,
   },
   metaId: {
     type: mongoose.Schema.Types.ObjectId,
-    default:null
+    default: null
   },
-  resetPasswordCode:{ 
-    type:String,
-    default:null
+  resetPasswordCode: {
+    type: String,
+    default: null
   },
-  isResetPassword:{
-    type:Boolean,
-    default:false
+  isResetPassword: {
+    type: Boolean,
+    default: false
   },
-  position:{
-    type:String,
-    default:''
+  position: {
+    type: String,
+    default: ''
   },
   phoneNumber: {
     type: String,
     default: '',
-    index:true
+    index: true
   },
   dialCode: {
     type: String,
@@ -64,7 +65,7 @@ const userSchema = new mongoose.Schema({
   approvedStatus: {
     type: String,
     enum: ["Pending", "Approved", "Rejected"],
-    default:"Pending"
+    default: "Pending"
   }
 }, { timestamps: true });
 

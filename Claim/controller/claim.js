@@ -514,7 +514,7 @@ exports.getAllClaims = async (req, res, next) => {
               customerStatus: 1,
               trackingNumber: 1,
               trackingType: 1,
-              claimType:1,
+              claimType: 1,
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,
@@ -1186,7 +1186,7 @@ exports.addClaim = async (req, res, next) => {
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
 
-      data.serialNumber = checkContract.serial
+    data.serialNumber = checkContract.serial
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
       res.send({
@@ -1413,7 +1413,7 @@ exports.editClaimStatus = async (req, res) => {
     if (data.hasOwnProperty("customerStatus")) {
       if (data.customerStatus == 'Product Received') {
         let option = { new: true }
-        let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed' }, option)
+        let claimStatus = await claimService.updateClaim(criteria, { claimFile: 'Completed', claimDate: new Date() }, option)
         updateData.claimStatus = [
           {
             status: 'Completed',
@@ -2233,7 +2233,7 @@ exports.statusClaim = async (req, res) => {
         ]
         updateStatus = await claimService.updateClaim({ _id: claimId }, {
           $push: messageData,
-          $set: { claimFile: 'Completed', claimStatus: [{ status: 'Completed', date: new Date() }] }
+          $set: { claimFile: 'Completed', claimDate: new Date(), claimStatus: [{ status: 'Completed', date: new Date() }] }
         }, { new: true })
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
         let checkContract = await contractService.getContractById({ _id: contractId })

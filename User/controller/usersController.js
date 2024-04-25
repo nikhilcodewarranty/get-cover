@@ -513,8 +513,6 @@ exports.createDealer = async (req, res) => {
           }
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
-
-
           if (cleanStr1 !== cleanStr2) {
             const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
             if (existingDealer) {
@@ -555,7 +553,6 @@ exports.createDealer = async (req, res) => {
             'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
           }));
           //Primary information edit
-
           let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
 
           let newValues1 = {
@@ -599,6 +596,8 @@ exports.createDealer = async (req, res) => {
               return;
             }
           }
+
+          console.log("createUsers---------------------------------------",createUsers) 
           let dealerQuery = { _id: data.dealerId }
           let newValues = {
             $set: {
@@ -632,10 +631,18 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (req.body.isAccountCreate) {
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
-            let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            for(let i=0;i<createUsers.length;i++){
+              let resetPasswordCode = randtoken.generate(4, '123456789')
+              let email = createUsers[i].email;
+              let id = createUsers[i]._id;
+              let resetLink = `http://15.207.221.207/newPassword/${id}/${resetPasswordCode}`
+              let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+              let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            }
+             resetPasswordCode = randtoken.generate(4, '123456789')
+             resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
+             mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+             updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
 
           }
           if (req.body.isServicer) {
@@ -1066,7 +1073,6 @@ exports.createDealer = async (req, res) => {
 
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
-
             let servicerObject = {
               name: data.name,
               street: data.street,
@@ -1083,10 +1089,6 @@ exports.createDealer = async (req, res) => {
             let createData = await providerService.createServiceProvider(servicerObject)
           }
 
-
-          // Create User for primary dealer
-          // console.log("body----------------------------",req.body)
-          // console.log("allUserData----------------------------",allUserData);return;
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
@@ -1130,8 +1132,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-
-
+          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77",createUsers)
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
