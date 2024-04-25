@@ -148,7 +148,7 @@ exports.createServiceProvider = async (req, res, next) => {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
           for (let i = 0; i < saveMembers.length; i++) {
-            if (saveMembers[i].status) {
+            if (saveMembers[i].status) { 
               let email = saveMembers[i].email
               let userId = saveMembers[i]._id
               let resetPasswordCode = randtoken.generate(4, '123456789')
@@ -156,7 +156,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
               const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
             }
-
+          
           }
         }
       }
