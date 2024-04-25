@@ -120,6 +120,8 @@ exports.createReseller = async (req, res) => {
             let createData = await providerService.createServiceProvider(servicerObject)
         }
 
+        
+
         res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
