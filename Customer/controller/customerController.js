@@ -443,7 +443,7 @@ exports.editCustomer = async (req, res) => {
     }
 
     if (data.isAccountCreate) {
-      let updatePrimaryUser = await userService.findOneAndUpdate({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
+      let updatePrimaryUser = await userService.updateSingleUser({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
     }else{
       let updatePrimaryUser = await userService.updateUser({ accountId: checkDealer._id }, { stauts: false }, { new: true })
 

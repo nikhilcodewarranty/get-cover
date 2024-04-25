@@ -453,6 +453,14 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
+
+    if (data.isAccountCreate) {
+      let updatePrimaryUser = await userService.updateSingleUser({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
+    }else{
+      let updatePrimaryUser = await userService.updateUser({ accountId: checkDealer._id }, { stauts: false }, { new: true })
+
+    }
+
     // let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
     // if (!updateDetail) {
     //   res.send({
