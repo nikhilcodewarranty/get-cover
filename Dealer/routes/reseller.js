@@ -22,3 +22,4 @@ router.post("/getResellerContract/:resellerId", [verifyToken], resellerControlle
 
 router.put("/editResellers/:resellerId", [verifyToken], resellerController.editResellers);
 module.exports = router; 
+ 

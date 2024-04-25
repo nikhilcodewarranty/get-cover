@@ -621,7 +621,7 @@ exports.editResellers = async (req, res) => {
 
         }
         let resellerUserCreateria = { accountId: req.params.resellerId };
-        let newValue = {
+        let newValue = { 
             $set: {
                 status: false
             }
