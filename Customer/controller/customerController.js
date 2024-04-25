@@ -418,7 +418,7 @@ exports.editCustomer = async (req, res) => {
         code: constant.errorCode,
         message: "Invalid ID"
       })
-      return;
+      return; 
     }; 
 
     // if(data.oldName != data.username){
