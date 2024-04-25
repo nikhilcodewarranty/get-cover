@@ -418,8 +418,8 @@ exports.editCustomer = async (req, res) => {
         code: constant.errorCode,
         message: "Invalid ID"
       })
-      return; 
-    }; 
+      return;
+    };
 
     // if(data.oldName != data.username){
     //   let checkName =  await customerService.getCustomerByName({username:data.username})
@@ -442,9 +442,11 @@ exports.editCustomer = async (req, res) => {
       return;
     }
 
-    if (data.isAccountCreate) {
+    if (data.isAccountCreate || data.isAccountCreate == 'false') {
+      console.log("I am gereeeee");
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { stauts: true }, { new: true })
-    }else{
+    } else {
+      console.log("I am sdfsdfdsfdsfds");
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { stauts: false }, { new: true })
 
     }
