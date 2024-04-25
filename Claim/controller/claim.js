@@ -1173,6 +1173,7 @@ exports.addClaim = async (req, res, next) => {
     data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
     data.unique_key_search = "CC" + "2024" + data.unique_key_number
     data.unique_key = "CC-" + "2024-" + data.unique_key_number
+    data.serialNumber = checkContract.serial
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
       res.send({
