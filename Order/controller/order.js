@@ -2805,7 +2805,6 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-
         if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
             checkId.paidAmount = 0
         }
@@ -2826,7 +2825,6 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
-            console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
         }
 

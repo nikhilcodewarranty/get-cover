@@ -503,8 +503,16 @@ exports.editContract = async (req, res) => {
   try {
     let data = req.body
     let criteria = { _id: req.params.contractId }
+    const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotal = await claimService.checkTotalAmount(query);
+    const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     let option = { new: true }
     let updateContracts = await contractService.updateContract(criteria, data, option)
+    //check if claim value is less then product value update eligibilty true
+    if(claimAmount < data.productValue){
+      data.eligibilty = true
+      let updateEligiblity = await contractService.updateContract(criteria, data, option)
+    }
     if (!updateContracts) {
       res.send({
         code: constant.errorCode,

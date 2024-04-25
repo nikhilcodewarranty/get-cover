@@ -1526,6 +1526,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              note:1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
@@ -1542,6 +1543,8 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.manufacture": 1,
               "contracts.serial": 1,
               "contracts.orders.dealerId": 1,
+              trackingNumber: 1,
+              trackingType: 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
               "contracts.orders.customerId": 1,
@@ -1598,7 +1601,6 @@ exports.paidUnpaidClaim = async (req, res) => {
       }
     }
 
-    console.log("dateQuery----------------------", dateQuery);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {

@@ -427,7 +427,7 @@ exports.createDealer = async (req, res) => {
           termFile = file[i]
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
-          priceFile = file[i]
+          priceFile = file[i] 
         }
       }
       // Check if the specified role exists
@@ -667,13 +667,13 @@ exports.createDealer = async (req, res) => {
           let file = req.file
           let data = req.body
 
-          if (!req.files) {
-            res.send({
-              code: constant.errorCode,
-              message: "No file uploaded"
-            })
-            return;
-          }
+          // if (!req.files) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "No file uploaded"
+          //   })
+          //   return;
+          // }
 
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
@@ -1156,13 +1156,13 @@ exports.createDealer = async (req, res) => {
         }
 
         else if (savePriceBookType == 'no') {
-          if (!req.file) {
-            res.send({
-              code: constant.errorCode,
-              message: "No file uploaded"
-            })
-            return;
-          }
+          // if (!req.file) {
+          //   res.send({
+          //     code: constant.errorCode,
+          //     message: "No file uploaded"
+          //   })
+          //   return;
+          // }
 
           let csvName = priceFile.filename
           const csvWriter = createCsvWriter({
@@ -1308,7 +1308,13 @@ exports.createDealer = async (req, res) => {
             }
 
             const pricebookArrayPromise = totalDataComing.map(item => {
-              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType  });
+              let queryPrice;
+              if (createMetaData?.coverageType == "Breakdown & Accidental") {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              } else {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
+              }
+              if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             }) 
 
@@ -3181,13 +3187,13 @@ exports.checkToken = async(req,res)=>{
 //             message: 'Successfully Created',
 //           });
 
-//           return;
+//           return; 
 
 //         }
 
 //         else if (savePriceBookType == 'no') {
 //           if (!req.file) {
-//             res.send({
+//             res.send({ 
 //               code: constant.errorCode,
 //               message: "No file uploaded"
 //             })

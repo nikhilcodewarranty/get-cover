@@ -508,6 +508,7 @@ exports.getAllClaims = async (req, res, next) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              note: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
@@ -799,16 +800,16 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers)
+      if (item1.contracts.orders.resellers[0]?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers[0])
       }
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+        servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId?.toString() === item1.servicerData?._id.toString() && item1.servicerData?.isServicer ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
       }
       return {
         ...item1,
@@ -1619,33 +1620,33 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = "Loss date cannot be empty"
           data.exit = true
         }
-       // data.lossDate = data.lossDate.split('-').join('/');
+        // data.lossDate = data.lossDate.split('-').join('/');
         const formats = [
           'MM/DD/YYYY',
           'MM-DD-YYYY'
         ]
-        let formatDate = formats.some(format => moment(data.lossDate , format, true).isValid())
+        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())
         console.log(data.lossDate)
         console.log(moment(data.lossDate))
-        
+
         if (!moment(data.lossDate).isValid()) {
-          data.status = "Date is not valid format" 
+          data.status = "Date is not valid format"
           data.exit = true
-        } 
+        }
 
         if (moment(data.lossDate) > new Date()) {
           data.status = "Date can not greater than today"
-          data.exit = true 
+          data.exit = true
         }
         data.lossDate = data.lossDate
         if (!data.diagnosis || data.diagnosis == "") {
           data.status = "Diagnosis can not be empty"
           data.exit = true
         }
-      
+
       })
-  
-      
+
+
       let cache = {};
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -1839,7 +1840,7 @@ exports.saveBulkClaim = async (req, res) => {
             //Check dealer itself servicer
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
-            } 
+            }
 
             // console.log("servicerId---------------------------",servicerData)
             // console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
@@ -2254,6 +2255,34 @@ exports.getMaxClaimAmount = async (req, res) => {
   }
 }
 
+exports.getCoverageType = async (req, res) => {
+  try {
+    const checkContract = await contractService.getContractById({ _id: req.params.contractId });
+    if (!checkContract) {
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to find Contract!"
+      });
+      return
+    }
+    const query = { _id: new mongoose.Types.ObjectId(checkContract.orderId) }
+
+    const checkOrder = await orderService.getOrder(query, { isDeleted: false })
+
+    res.send({
+      code:constant.successCode,
+      message:"Success!",
+      result:checkOrder
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
 
 // exports.searchClaim = async (req, res) => {
 //   try {
