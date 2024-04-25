@@ -6,6 +6,7 @@ const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 let claimService = require('../../Claim/services/claimService')
+const randtoken = require('rand-token').generator()
 
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
