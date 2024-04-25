@@ -657,7 +657,7 @@ exports.createOrder1 = async (req, res) => {
                 if (!saveContracts) {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
-                        { status: "Pending" }, 
+                        { status: "Pending" },
                         { new: true }
                     );
                 }
@@ -2605,8 +2605,8 @@ exports.archiveOrder = async (req, res) => {
             }
         }
         res.send({
-            code: constant.errorCode,
-            message: "This order is already in active state!",
+            code: constant.successCode,
+            message: "Success!",
         });
     } catch (err) {
         res.send({
@@ -2812,24 +2812,28 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
             checkId.paidAmount = 0
         }
-        if (data.paymentStatus == "Paid") {
-            data.paidAmount = checkId.orderAmount
-            data.dueAmount = 0
-        }
-        data.paidAmount = Number(data.paidAmount)
-        data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
 
-        console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
-        if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
-            res.send({
-                code: constant.error,
-                message: "Not a valid paying amount"
-            })
-            return;
-        };
+        // data.paidAmount = Number(data.paidAmount)
+        // data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
+
+        // console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
+        // if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
+        //     res.send({
+        //         code: constant.error,
+        //         message: "Not a valid paying amount"
+        //     })
+        //     return;
+        // };
 
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
             data.paymentStatus = "Paid"
+        }
+
+        if (data.paymentStatus == "Paid") {
+            data.paidAmount = checkId.orderAmount
+            data.dueAmount = 0
+
+            console.log('paid payment check ++++++++++++++++++', data.paidAmount, data.dueAmount)
         }
 
         console.log('order paid check +++++++++++++++++++++++=', data)

@@ -514,6 +514,7 @@ exports.getAllClaims = async (req, res, next) => {
               customerStatus: 1,
               trackingNumber: 1,
               trackingType: 1,
+              claimType:1,
               repairParts: 1,
               diagnosis: 1,
               claimStatus: 1,

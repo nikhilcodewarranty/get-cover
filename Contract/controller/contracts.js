@@ -507,10 +507,15 @@ exports.editContract = async (req, res) => {
     let claimTotal = await claimService.checkTotalAmount(query);
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     let option = { new: true }
-
-    if (claimAmount < data.productValue) {
-      data.eligibilty = true
+    //check claim
+    let checkClaim = await claimService.getClaims({ contractId: req.params.contractId, claimFile: "Open" })
+    if (!checkClaim[0]) {
+      if (claimAmount < data.productValue) {
+        data.eligibilty = true
+      }
     }
+
+
     if (claimAmount > data.productValue || claimAmount == data.productValue) {
       data.eligibilty = false
     }
