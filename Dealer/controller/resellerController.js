@@ -493,7 +493,7 @@ exports.getResellerUsers = async (req, res) => {
 }
 
 exports.getResellerPriceBook = async (req, res) => {
-    if (req.role != "Super Admin") {
+    if (req.role != "Super Admin") { 
         res.send({
             code: constant.errorCode,
             message: "Only super admin allow to do this action"
