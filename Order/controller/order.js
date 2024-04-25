@@ -2825,9 +2825,9 @@ exports.editOrderDetail = async (req, res) => {
         //     return;
         // };
 
-        if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
-            data.paymentStatus = "Paid"
-        }
+        // if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
+        //     data.paymentStatus = "Paid"
+        // }
 
         if (data.paymentStatus == "Paid") {
             data.paidAmount = data.orderAmount
