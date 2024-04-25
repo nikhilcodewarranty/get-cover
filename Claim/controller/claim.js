@@ -839,6 +839,21 @@ exports.getAllClaims = async (req, res, next) => {
     })
   }
 }
+
+exports.getClaims =async(req,res)=>{
+  try{
+
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
+
+
+
 exports.searchClaim = async (req, res, next) => {
   try {
     let data = req.body

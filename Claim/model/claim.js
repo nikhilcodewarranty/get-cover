@@ -77,7 +77,7 @@ const claimSchema = new mongoose.Schema({
     default: 'New'
   },
   trackingNumber: {
-    type: String, 
+    type: String,
     default: ''
   },
   trackingType: {
@@ -98,7 +98,7 @@ const claimSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  status: { 
+  status: {
     type: Boolean,
     default: true
   },
@@ -244,6 +244,30 @@ const claimSchema = new mongoose.Schema({
       status: 'Request Sent',
       date: Date.now()
     }]
+  },
+  contractUniqueId: {
+    type: String,
+    default: null
+  },
+  orderUniqueId: {
+    type: String,
+    default: null
+  },
+  dealerPo: {
+    type: String,
+    default: null
+  },
+  serialNumber: {
+    type: String,
+    default: null
+  },
+  productName: {
+    type: String,
+    default: null
+  },
+  productManufacturer: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 
