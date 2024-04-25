@@ -43,6 +43,7 @@ router.get('/generateHtmltopdf/:orderId', orderController.generateHtmltopdf)
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)
+router.post('/getResellerByDealerAndCustomer', [verifyToken], orderController.getResellerByDealerAndCustomer)
 
 router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInOrder)
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks)
