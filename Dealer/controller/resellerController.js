@@ -100,7 +100,6 @@ exports.createReseller = async (req, res) => {
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
-
         if (data.status) {
             console.log("saveMembers------------------------------",saveMembers);
             for (let i = 0; i < saveMembers.length; i++) {
