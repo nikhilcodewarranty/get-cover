@@ -650,7 +650,7 @@ exports.createOrder1 = async (req, res) => {
                 console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                if(!saveContracts){
+                if (!saveContracts) {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Pending" },
@@ -1996,7 +1996,7 @@ exports.editFileCase = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: 'Success!',
-                productDetail:req.body
+                productDetail: req.body
             })
         }
     }
@@ -2388,9 +2388,23 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
             return;
         }
+        if (!data.coverageType) {
+            res.send({
+                code: constant.errorCode,
+                message: "Coverage type is required",
+            });
+            return;
+        }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        let query = { _id: { $in: dealerPriceIds } };
+
+        let query;
+        if (data.coverageType == "Breakdown & Accidental") {
+            query = { _id: { $in: dealerPriceIds, status: true } };
+        } else {
+            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true };
+
+        }
         // if(data.priceCatId){
         //     let categories =
         //     query = { _id: { $in: dealerPriceIds } ,}
