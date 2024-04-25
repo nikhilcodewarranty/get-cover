@@ -538,6 +538,10 @@ exports.createOrder1 = async (req, res) => {
         }
 
         data.status = "Pending";
+        if (data.paymentStatus == "Paid") {
+            data.paidAmount = data.orderAmount
+            data.dueAmount = 0
+        }
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({
@@ -3193,7 +3197,7 @@ exports.getDashboardData = async (req, res) => {
         //     return;
         // }
         let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
-        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: ["Rejected","Open"]} });
+        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: ["Rejected", "Open"] } });
         if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
