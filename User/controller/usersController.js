@@ -647,7 +647,7 @@ exports.createDealer = async (req, res) => {
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink }))
-            let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
           if (req.body.isServicer) {
@@ -986,7 +986,7 @@ exports.createDealer = async (req, res) => {
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink }))
-            let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
           // if (req.body.isAccountCreate) {
@@ -1515,7 +1515,7 @@ exports.createDealer = async (req, res) => {
               if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
-                let userId = createUsers[i]._id;
+                let userId = createUsers[i]._id; 
                 let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
