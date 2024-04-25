@@ -920,7 +920,8 @@ exports.searchClaim = async (req, res, next) => {
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
-        { eligibilty: true }
+        { eligibilty: true },
+        { claimFile: { $ne: "Open" } }
       ]
     } else {
       contractFilter = [
@@ -929,7 +930,8 @@ exports.searchClaim = async (req, res, next) => {
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
-        { eligibilty: true }
+        { eligibilty: true },
+        { claimFile: { $ne: "Open" } }
       ]
     }
 
@@ -1185,7 +1187,7 @@ exports.addClaim = async (req, res, next) => {
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
 
-      data.serialNumber = checkContract.serial
+    data.serialNumber = checkContract.serial
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
       res.send({
