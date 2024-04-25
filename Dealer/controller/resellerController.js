@@ -101,6 +101,26 @@ exports.createReseller = async (req, res) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
+        if (data.status) {
+            console.log("saveMembers------------------------------",saveMembers);
+            for (let i = 0; i < saveMembers.length; i++) {
+              if (saveMembers[i].status) { 
+                let email = saveMembers[i].email
+                let userId = saveMembers[i]._id
+                let resetPasswordCode = randtoken.generate(4, '123456789')
+                let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+                let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+                const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+              }
+            
+            }
+            // let resetPrimaryCode = randtoken.generate(4, '123456789')
+            // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
+    
+            // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
+            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+          }
+
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
 
@@ -119,10 +139,7 @@ exports.createReseller = async (req, res) => {
 
             let createData = await providerService.createServiceProvider(servicerObject)
         }
-
-        
-
-        res.send({
+       res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
             result: data
