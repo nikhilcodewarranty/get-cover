@@ -597,7 +597,7 @@ exports.createDealer = async (req, res) => {
             }
           }
 
-          console.log("createUsers---------------------------------------",createUsers)
+          console.log("createUsers---------------------------------------",createUsers) 
           let dealerQuery = { _id: data.dealerId }
           let newValues = {
             $set: {
