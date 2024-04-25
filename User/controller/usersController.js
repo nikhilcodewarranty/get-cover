@@ -427,7 +427,7 @@ exports.createDealer = async (req, res) => {
           termFile = file[i]
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
-          priceFile = file[i] 
+          priceFile = file[i]
         }
       }
       // Check if the specified role exists
@@ -597,7 +597,7 @@ exports.createDealer = async (req, res) => {
             }
           }
 
-          console.log("createUsers---------------------------------------",createUsers) 
+          console.log("createUsers---------------------------------------", createUsers)
           let dealerQuery = { _id: data.dealerId }
           let newValues = {
             $set: {
@@ -631,18 +631,11 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (req.body.isAccountCreate) {
-            for(let i=0;i<createUsers.length;i++){
-              let resetPasswordCode = randtoken.generate(4, '123456789')
-              let email = createUsers[i].email;
-              let id = createUsers[i]._id;
-              let resetLink = `http://15.207.221.207/newPassword/${id}/${resetPasswordCode}`
-              let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
-              let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            }
-             resetPasswordCode = randtoken.generate(4, '123456789')
-             resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
-             mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
-             updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            let resetLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPasswordCode}`
+            let mailing = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetLink }))
+            let updateStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
 
           }
           if (req.body.isServicer) {
@@ -788,7 +781,7 @@ exports.createDealer = async (req, res) => {
             }
 
             const pricebookArrayPromise = totalDataComing.map(item => {
-              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true,coverageType:data.coverageType });
+              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: data.coverageType });
               return null;
             })
 
@@ -1132,12 +1125,23 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77",createUsers)
+          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77", createUsers)
           if (req.body.isAccountCreate) {
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
-            let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            for (let i = 0; i < createUsers.length; i++) {
+              if (createUsers[i].status) {
+                let resetPasswordCode = randtoken.generate(4, '123456789')
+                let email = createUsers[i].email;
+                let userId = createUsers[i]._id;
+                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+                let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              }
+
+            }
+            //  resetPasswordCode = randtoken.generate(4, '123456789')
+            //  resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
+            //  mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+            //  updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             //   res.send({
@@ -1317,7 +1321,7 @@ exports.createDealer = async (req, res) => {
               }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
-            }) 
+            })
 
             const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -1476,10 +1480,21 @@ exports.createDealer = async (req, res) => {
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
           if (req.body.isAccountCreate) {
-            let resetPasswordCode = randtoken.generate(4, '123456789')
-            let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
-            let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+            for (let i = 0; i < createUsers.length; i++) {
+              if (createUsers[i].status) {
+                let resetPasswordCode = randtoken.generate(4, '123456789')
+                let email = createUsers[i].email;
+                let userId = createUsers[i]._id;
+                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+                let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+              }
+
+            }
+            // let resetPasswordCode = randtoken.generate(4, '123456789')
+            // let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
+            // const mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
+            // let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             // if (mailing) {
             //   let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
             //   res.send({
@@ -2446,17 +2461,17 @@ exports.changePrimaryUser = async (req, res) => {
   }
 };
 
-exports.checkToken = async(req,res)=>{
-  try{
+exports.checkToken = async (req, res) => {
+  try {
     let data = req.body
     res.send({
-      code:constant.successCode,
-      message:"Success"
+      code: constant.successCode,
+      message: "Success"
     })
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
