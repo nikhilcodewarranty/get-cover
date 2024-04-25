@@ -8,9 +8,8 @@ const claimSchema = new mongoose.Schema({
     // required: true,
   },
   orderId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "orders",
-    default: null,
+    type: String,
+    default: '',
     index: true
   },
   venderOrder: {
