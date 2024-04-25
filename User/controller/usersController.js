@@ -461,7 +461,7 @@ exports.createDealer = async (req, res) => {
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
-        const createUsers = [];
+        let createUsers = [];
         if (data.email != data.oldEmail) {
           let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
