@@ -513,8 +513,6 @@ exports.createDealer = async (req, res) => {
           }
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
-
-
           if (cleanStr1 !== cleanStr2) {
             const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
             if (existingDealer) {
@@ -555,7 +553,6 @@ exports.createDealer = async (req, res) => {
             'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
           }));
           //Primary information edit
-
           let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
 
           let newValues1 = {
@@ -599,6 +596,8 @@ exports.createDealer = async (req, res) => {
               return;
             }
           }
+
+          console.log("createUsers---------------------------------------",createUsers)
           let dealerQuery = { _id: data.dealerId }
           let newValues = {
             $set: {
