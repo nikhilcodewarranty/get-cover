@@ -461,6 +461,7 @@ exports.createDealer = async (req, res) => {
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
       if (data.dealerId != 'null' && data.dealerId != undefined) {
+        const createUsers = [];
         if (data.email != data.oldEmail) {
           let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
@@ -587,7 +588,7 @@ exports.createDealer = async (req, res) => {
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-            const createUsers = await userService.insertManyUser(allUsersData);
+             createUsers = await userService.insertManyUser(allUsersData);
             if (!createUsers) {
               res.send({
                 code: constant.errorCode,
@@ -931,7 +932,7 @@ exports.createDealer = async (req, res) => {
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-            const createUsers = await userService.insertManyUser(allUsersData);
+             createUsers = await userService.insertManyUser(allUsersData);
             if (!createUsers) {
               res.send({
                 code: constant.errorCode,
