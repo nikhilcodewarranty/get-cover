@@ -419,7 +419,7 @@ exports.editCustomer = async (req, res) => {
         message: "Invalid ID"
       })
       return;
-    };
+    }; 
 
     // if(data.oldName != data.username){
     //   let checkName =  await customerService.getCustomerByName({username:data.username})
