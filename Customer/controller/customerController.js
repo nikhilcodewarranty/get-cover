@@ -419,7 +419,7 @@ exports.editCustomer = async (req, res) => {
         message: "Invalid ID"
       })
       return;
-    }; 
+    };
 
     // if(data.oldName != data.username){
     //   let checkName =  await customerService.getCustomerByName({username:data.username})
@@ -442,10 +442,12 @@ exports.editCustomer = async (req, res) => {
       return;
     }
 
-    if (data.isAccountCreate) {
-      let updatePrimaryUser = await userService.updateSingleUser({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
-    }else{
-      let updatePrimaryUser = await userService.updateUser({ accountId: checkDealer._id }, { stauts: false }, { new: true })
+    if (data.isAccountCreate || data.isAccountCreate == 'true') {
+      console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
+      let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { stauts: true }, { new: true })
+    } else {
+      let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { stauts: false }, { new: true })
+      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser,data.isAccountCreate);
 
     }
     // let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
