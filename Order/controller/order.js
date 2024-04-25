@@ -3013,7 +3013,15 @@ exports.editOrderDetail = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
 
-                await contractService.createBulkContracts(contractArray);
+                let saveContracts = await contractService.createBulkContracts(contractArray);
+
+                if (!saveContracts) {
+                    let savedResponse = await orderService.updateOrder(
+                        { _id: checkOrder._id },
+                        { status: "Pending" },
+                        { new: true }
+                    );
+                }
 
             })
 
@@ -3146,6 +3154,13 @@ exports.markAsPaid = async (req, res) => {
             });
             console.log("contractsLength++++++++++++++++++++++++++++++++++", contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
+            if (!saveData) {
+                let savedResponse = await orderService.updateOrder(
+                    { _id: checkOrder._id },
+                    { status: "Pending" },
+                    { new: true }
+                );
+            }
         })
 
         res.send({
