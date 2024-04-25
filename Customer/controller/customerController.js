@@ -1553,6 +1553,8 @@ exports.customerClaims = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              trackingNumber: 1,
+              trackingType: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
