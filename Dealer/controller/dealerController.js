@@ -3418,12 +3418,13 @@ exports.getDealerClaims = async (req, res) => {
           },
           {
             $project: {
-              "contractId": 1,
+            "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
+              note: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
