@@ -825,6 +825,7 @@ exports.getAllOrders = async (req, res) => {
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+            console.log("--------------------------------------------------1")
             // console.log("ordersResult00000000000000",ordersResult.length);return;
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
@@ -834,6 +835,7 @@ exports.getAllOrders = async (req, res) => {
 
             let mergedArray = userDealerIds.concat(userResellerIds);
 
+            console.log("--------------------------------------------------2")
 
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
             //Get Respective Dealers
@@ -847,6 +849,7 @@ exports.getAllOrders = async (req, res) => {
                 street: 1
 
             });
+            console.log("--------------------------------------------------3")
             let servicerIdArray = ordersResult.map((result) => result.servicerId);
             const servicerCreteria = {
                 $or: [
@@ -855,6 +858,7 @@ exports.getAllOrders = async (req, res) => {
                     { dealerId: { $in: servicerIdArray } },
                 ],
             };
+            console.log("--------------------------------------------------4")
             //Get Respective Servicer
             let respectiveServicer = await servicerService.getAllServiceProvider(
                 servicerCreteria,
@@ -871,6 +875,8 @@ exports.getAllOrders = async (req, res) => {
             let userCustomerIds = ordersResult
                 .filter(result => result.customerId !== null)
                 .map(result => result.customerId?.toString());
+
+                console.log("--------------------------------------------------5")
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
@@ -891,6 +897,8 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
             //Get all Reseller
+
+            console.log("--------------------------------------------------6")
             let resellerIdsArray = ordersResult.map((result) => result.resellerId);
             const resellerCreteria = { _id: { $in: resellerIdsArray } };
             let respectiveReseller = await resellerService.getResellers(
@@ -906,6 +914,7 @@ exports.getAllOrders = async (req, res) => {
                 }
             );
 
+            console.log("--------------------------------------------------7")
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -969,7 +978,9 @@ exports.getAllOrders = async (req, res) => {
                     status.test(entry.status)
                 );
             });
-            const updatedArray = filteredData.map(item => {
+            console.log("--------------------------------------------------8",filteredData)
+         
+            const updatedArray = filteredData.map((item,index) => {
                 let isEmptyStartDate = item.productsArray.map(
                     (item1) => item1.coverageStartDate === null
                 );
@@ -1004,6 +1015,8 @@ exports.getAllOrders = async (req, res) => {
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
+
+            console.log("--------------------------------------------------9")
 
             let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()

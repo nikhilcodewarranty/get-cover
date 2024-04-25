@@ -67,15 +67,25 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-
       teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
-
       let saveMembers = await userService.insertManyUser(teamMembers)
-      let resetPasswordCode = randtoken.generate(4, '123456789')
-      let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true });
+      if (data.status) {
+        for (let i = 0; i < saveMembers.length; i++) {
+          if (saveMembers[i].status) { }
+          let email = saveMembers[i].email
+          let userId = saveMembers[i]._id
+          let resetPasswordCode = randtoken.generate(4, '123456789')
+          let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+          let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+          const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+        }
+        let resetPrimaryCode = randtoken.generate(4, '123456789')
+        let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
 
-      let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPasswordCode}`
-      const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+        let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
+        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+      }
+
       res.send({
         code: constant.successCode,
         message: "Customer created successfully",
@@ -127,15 +137,30 @@ exports.createServiceProvider = async (req, res, next) => {
         })
         return;
       };
-      let resetPasswordCode = randtoken.generate(4, '123456789')
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
+        if (data.status) {
+          for (let i = 0; i < saveMembers.length; i++) {
+            if (saveMembers[i].status) { }
+            let email = saveMembers[i].email
+            let userId = saveMembers[i]._id
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+            let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+          }
+        }
       }
-      let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
-      const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
+      if (data.status) {
+        let resetPrimaryCode = randtoken.generate(4, '123456789')
+        let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
+        let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPrimaryCode}`
+        const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
+      }
+    
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -752,7 +777,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Send Email code here
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     let logData = {
-      userId:req.teammateId,
+      userId: req.teammateId,
       endpoint: "servicer/register",
       body: data,
       response: {
@@ -1526,7 +1551,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
-              note:1,
+              note: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
