@@ -653,7 +653,7 @@ exports.createOrder1 = async (req, res) => {
                 if (!saveContracts) {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
-                        { status: "Pending" },
+                        { status: "Pending" }, 
                         { new: true }
                     );
                 }
