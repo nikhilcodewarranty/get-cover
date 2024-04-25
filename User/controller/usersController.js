@@ -1065,7 +1065,6 @@ exports.createDealer = async (req, res) => {
 
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
-
             let servicerObject = {
               name: data.name,
               street: data.street,
@@ -1082,10 +1081,6 @@ exports.createDealer = async (req, res) => {
             let createData = await providerService.createServiceProvider(servicerObject)
           }
 
-
-          // Create User for primary dealer
-          // console.log("body----------------------------",req.body)
-          // console.log("allUserData----------------------------",allUserData);return;
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
@@ -1129,8 +1124,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-
-
+          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77",createUsers)
           if (req.body.isAccountCreate) {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
