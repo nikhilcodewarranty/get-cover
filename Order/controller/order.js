@@ -3193,7 +3193,7 @@ exports.getDashboardData = async (req, res) => {
         //     return;
         // }
         let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
-        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" } });
+        let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: ["Rejected","Open"]} });
         if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
