@@ -2605,8 +2605,8 @@ exports.archiveOrder = async (req, res) => {
             }
         }
         res.send({
-            code: constant.errorCode,
-            message: "This order is already in active state!",
+            code: constant.successCode,
+            message: "Success!",
         });
     } catch (err) {
         res.send({
