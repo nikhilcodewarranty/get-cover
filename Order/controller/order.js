@@ -4492,3 +4492,47 @@ exports.cronJobStatusWithDate = async (req, res) => {
     }
 };
 
+exports.getResellerByDealerAndCustomer = async (req, res) => {
+    try {
+        let data = req.body
+        let getCustomer = await customerService.getCustomerByName({ _id: data.customerId })
+        console.log(getCustomer)
+        let getReseller = await userService.findUserforCustomer1([
+            {
+                $match: {
+                   $and:[
+                    {metaId: new mongoose.Types.ObjectId(getCustomer.resellerId)},
+                    {isPrimary:true}
+                   ]
+                }
+            },
+            {
+                $lookup: {
+                    from: "resellers",
+                    localField: "metaId",
+                    foreignField: "_id",
+                    as: "resellerData"
+                }
+            }
+        ])
+        if (!getReseller) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the detail"
+            })
+        } else {
+          
+
+            res.send({
+                code: constant.successCode,
+                message: "Successfully fetched the detail",
+                result: getReseller
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
