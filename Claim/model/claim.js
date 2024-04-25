@@ -7,6 +7,33 @@ const claimSchema = new mongoose.Schema({
     index: true
     // required: true,
   },
+  orderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "orders",
+    default: null,
+    index: true
+  },
+  venderOrder: {
+    type: String,
+    default: ''
+  },
+  serial: {
+    type: String,
+    default: ''
+  },
+  productName: {
+    type: String,
+    default: ''
+  },
+  model: {
+    type: String,
+    default: ''
+  },
+  manufacture: {
+    type: String,
+    default: ''
+  }, 
+  
   claimFile: {
     type: 'String',
     enum: ['Open', 'Completed', 'Rejected'],
