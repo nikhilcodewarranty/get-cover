@@ -1810,7 +1810,7 @@ exports.paidUnpaidClaim = async (req, res) => {
         ...item1,
         servicerData: servicerName,
         selfServicer: selfServicer,
-        contracts: {
+        contracts: { 
           ...item1.contracts,
           allServicer: servicer
         }
