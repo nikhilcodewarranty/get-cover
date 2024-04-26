@@ -1806,6 +1806,8 @@ exports.paidUnpaidClaim = async (req, res) => {
        // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
         selfServicer = item1.servicerId.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
         console.log("selfServicer------------------------------------",item1.servicerId)
+        console.log("selfServicer------------------------------------",item1.servicerData?._id?.toString())
+        console.log("selfServicer------------------------------------",item1.servicerData?._id?.toString())
       }
       return {
         ...item1,
