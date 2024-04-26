@@ -1794,14 +1794,14 @@ exports.paidUnpaidClaim = async (req, res) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers)
+      if (item1.contracts.orders.resellers[0]?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers[0])
       }
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+        servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
        // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
         selfServicer = item1.servicerId.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false

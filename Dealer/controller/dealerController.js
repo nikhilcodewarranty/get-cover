@@ -3558,25 +3558,6 @@ exports.getDealerClaims = async (req, res) => {
           localField: "contracts.orders.dealerId",
           foreignField: "_id",
           as: "contracts.orders.dealers",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-            // {
-            //   $lookup: {
-            //     from: "servicer_dealer_relations",
-            //     localField: "_id",
-            //     foreignField: "dealerId",
-            //     as: "dealerServicer",
-            //   }
-            // },
-          ]
         }
       },
       {
@@ -3645,16 +3626,16 @@ exports.getDealerClaims = async (req, res) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers)
+      if (item1.contracts.orders.resellers[0]?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers[0])
       }
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+        servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
       }
       return {
         ...item1,
