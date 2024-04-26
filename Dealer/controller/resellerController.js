@@ -102,27 +102,27 @@ exports.createReseller = async (req, res) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
-            console.log("saveMembers------------------------------",saveMembers);
+            console.log("saveMembers------------------------------", saveMembers);
             for (let i = 0; i < saveMembers.length; i++) {
-              if (saveMembers[i].status) { 
-                let email = saveMembers[i].email
-                let userId = saveMembers[i]._id
-                let resetPasswordCode = randtoken.generate(4, '123456789')
-                let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
-                let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+                if (saveMembers[i].status) {
+                    let email = saveMembers[i].email
+                    let userId = saveMembers[i]._id
+                    let resetPasswordCode = randtoken.generate(4, '123456789')
+                    let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+                    let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
 
-                //const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+                    //const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
 
-                const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
-              }
-            
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
+                }
+
             }
             // let resetPrimaryCode = randtoken.generate(4, '123456789')
             // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
-    
+
             // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
             // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
-          }
+        }
 
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
@@ -142,7 +142,7 @@ exports.createReseller = async (req, res) => {
 
             let createData = await providerService.createServiceProvider(servicerObject)
         }
-       res.send({
+        res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
             result: data
@@ -497,7 +497,7 @@ exports.getResellerUsers = async (req, res) => {
 }
 
 exports.getResellerPriceBook = async (req, res) => {
-    if (req.role != "Super Admin") { 
+    if (req.role != "Super Admin") {
         res.send({
             code: constant.errorCode,
             message: "Only super admin allow to do this action"
@@ -643,7 +643,7 @@ exports.editResellers = async (req, res) => {
 
         }
         let resellerUserCreateria = { accountId: req.params.resellerId };
-        let newValue = { 
+        let newValue = {
             $set: {
                 status: false
             }
@@ -1815,7 +1815,7 @@ exports.getResellerClaims = async (req, res) => {
                             note: 1,
                             totalAmount: 1,
                             servicerId: 1,
-                            claimType:1,
+                            claimType: 1,
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
@@ -1879,6 +1879,26 @@ exports.getResellerClaims = async (req, res) => {
                 ]
             }
         })
+        let servicerMatch = {}
+        if (data.servicerName != '' && data.servicerName != undefined) {
+            const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+            if (checkServicer.length > 0) {
+                let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+                let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+                let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+                //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+                servicerMatch = {
+                    $or: [
+                        { "servicerId": { $in: servicerIds } },
+                        { "servicerId": { $in: dealerIds } },
+                        { "servicerId": { $in: resellerIds } }
+                    ]
+                };
+            }
+            else {
+                servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+            }
+        }
         let lookupQuery = [
             { $sort: { unique_key_number: -1 } },
             {
@@ -1891,6 +1911,7 @@ exports.getResellerClaims = async (req, res) => {
                         { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                        servicerMatch
                     ]
                 },
             },
@@ -2022,7 +2043,9 @@ exports.getResellerClaims = async (req, res) => {
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-                selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+                //selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+                selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+
             }
             return {
                 ...item1,
