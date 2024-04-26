@@ -1002,7 +1002,7 @@ exports.getClaims = async (req, res) => {
             {
               $limit: pageLimit
             },
-          
+
           ],
         },
 
@@ -1804,7 +1804,13 @@ exports.saveBulkClaim = async (req, res) => {
         };
       });
       // res.json(totalDataComing);return;
-      //console.log(totalDataComing)
+      if (totalDataComing.length === 0) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid file!"
+        });
+        return;
+      }
       totalDataComing = totalDataComing.map((item, i) => {
         return {
           contractId: item.contractId?.toString().replace(/\s+/g, ' ').trim(),
