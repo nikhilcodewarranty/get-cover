@@ -843,11 +843,186 @@ exports.getAllClaims = async (req, res, next) => {
 
 exports.getClaims = async (req, res) => {
   try {
+    let data = req.body
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+    let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+
+    console.log('1111111111111111111111111111111111')
+    let dealerIds = [];
+    let customerIds = [];
+    let resellerIds = [];
+    let servicerIds = [];
+    let userSearchCheck = 0
+    console.log('tesinggi------------')
+    if (data.customerName != "") {
+      userSearchCheck = 1
+      let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        customerIds = await getData.map(customer => customer._id)
+      } else {
+        customerIds.push("1111121ccf9d400000000000")
+      }
+    };
+    if (data.servicerName != "") {
+      userSearchCheck = 1
+      let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      if (getData.length > 0) {
+        servicerIds = await getData.map(servicer => servicer._id)
+      } else {
+        servicerIds.push("1111121ccf9d400000000000")
+      }
+    };
+
+    let orderAndCondition = []
+
+    console.log('2222222222222222222222222222222')
+
+    if (dealerIds.length > 0) {
+      orderAndCondition.push({ dealerId: { $in: dealerIds } })
+    }
+    if (customerIds.length > 0) {
+      orderAndCondition.push({ customerId: { $in: customerIds } })
+
+    }
+    if (servicerIds.length > 0) {
+      orderAndCondition.push({ servicerId: { $in: servicerIds } })
+
+    }
+    if (resellerIds.length > 0) {
+      orderAndCondition.push({ resellerId: { $in: resellerIds } })
+
+    }
+    console.log('3333333333333333333333333333333333')
+
+    let orderIds = []
+    if (orderAndCondition.length > 0) {
+      let getOrders = await orderService.getOrders({
+        $and: orderAndCondition
+      })
+      if (getOrders.length > 0) {
+        orderIds = await getOrders.map(order => order.unique_key)
+      }
+    }
+    let claimFilter = [
+      { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      { serial: { '$regex': data.serial ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+      { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+      { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
+      { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+      { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+    ]
+    console.log('44444444444444444444444444444444444444')
+
+    let contractIds = []
+    let contractFilterWithEligibilty = []
+    let claimFilterQuery = []
+    let contractCheck = 0
+    if (data.contractId != "") {
+      let getContractId = await contractService.findContracts({ unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      contractCheck = 1
+      if (getContractId.length > 0) {
+        contractIds = getContractId.map(ID => ID._id)
+      } else {
+        contractIds.push("1111121ccf9d400000000000")
+      }
+    }
+    console.log('555555555555555555555555555555555')
+
+    if (userSearchCheck == 1) {
+      claimFilter.push({ orderId: { $in: orderIds } })
+    }
+    if (contractCheck == 1) {
+      console.log("contractIds------------------------------------", contractIds)
+      claimFilter.push({ contractId: { $in: contractIds } })
+    }
+
+    let mainQuery = []
+    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.customerStatusValue && data.repairStatus === "" && data.claimStatus === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0 && contractCheck == 0) {
+      mainQuery = [
+        { $sort: { unique_key_number: -1 } },
+        {
+          $facet: {
+            totalRecords: [
+              {
+                $count: "total"
+              }
+            ],
+            data: [
+              {
+                $skip: skipLimit
+              },
+              {
+                $limit: pageLimit
+              }
+            ],
+          },
+
+        },
+      ]
+    } else {
+      mainQuery = [
+        { $sort: { unique_key_number: -1 } },
+        {
+          $match:
+          {
+            $and: claimFilter
+          },
+        },
+        // {
+        //   $lookup: {
+        //     from: "orders",
+        //     localField: "orderId",
+        //     foreignField: "_id",
+        //     as: "order",
+        //   }
+        // },
+        // {
+        //   $match:
+        //   {
+        //     $and: [
+        //       { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //       // { "order.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+        //       { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        //     ]
+        //   },
+
+        // }
+      ]
+      mainQuery.push({
+        $facet: {
+          totalRecords: [
+            {
+              $count: "total"
+            }
+          ],
+          data: [
+            {
+              $skip: skipLimit
+            },
+            {
+              $limit: pageLimit
+            },
+          
+          ],
+        },
+
+      })
+    }
+
+    let getClaims = await claimService.getAllClaims(mainQuery)
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: getClaims,
+      query: mainQuery
+    })
+
 
   } catch (err) {
     res.send({
       code: constant.errorCode,
-      message: err.message
+      message: err.message, err: err.stack
     })
   }
 }
