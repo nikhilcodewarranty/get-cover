@@ -56,19 +56,6 @@ var uploadP = multer({
 }).single('file');
 
 
-var Storage = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, '../../uploads/mergedFile'));
-  },
-  filename: function (req, files, cb) {
-    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
-  }
-})
-
-var upload = multer({
-  storage: Storage,
-}).single('file');
-
 
 
 const checkObjectId = async (Id) => {
@@ -680,7 +667,7 @@ exports.deleteDealer = async (req, res) => {
 //
 exports.uploadTermAndCondition = async (req, res, next) => {
   try {
-    upload(req, res, async (err) => {
+    uploadP(req, res, async (err) => {
       if (req.role != 'Super Admin') {
         res.send({
           code: constant.errorCode,

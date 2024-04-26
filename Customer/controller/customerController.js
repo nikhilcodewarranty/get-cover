@@ -11,6 +11,7 @@ let orderService = require('../../Order/services/orderService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
+const emailConstant = require('../../config/emailConstant');
 
 exports.createCustomer = async (req, res, next) => {
   try {
@@ -105,6 +106,24 @@ exports.createCustomer = async (req, res, next) => {
     teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
+    if (saveMembers.length > 0) {
+     // let saveMembers = await userService.insertManyUser(teamMembers)
+      if (data.status) {
+        for (let i = 0; i < saveMembers.length; i++) {
+          if (saveMembers[i].status) {
+            let email = saveMembers[i].email
+            let userId = saveMembers[i]._id
+            let resetPasswordCode = randtoken.generate(4, '123456789')
+            let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+            let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+           // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
+
+          }
+
+        }
+      }
+    }
     res.send({
       code: constant.successCode,
       message: "Customer created successfully",

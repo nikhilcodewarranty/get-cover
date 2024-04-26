@@ -824,18 +824,18 @@ exports.getAllOrders = async (req, res) => {
         let limitData = Number(pageLimit)
 
 
-            let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
-            console.log("--------------------------------------------------1")
-            // console.log("ordersResult00000000000000",ordersResult.length);return;
-            let dealerIdsArray = ordersResult.map((result) => result.dealerId);
-            let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
-            let userResellerIds = ordersResult
-                .filter(result => result.resellerId !== null)
-                .map(result => result.resellerId?.toString());
+        let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+        console.log("--------------------------------------------------1")
+        // console.log("ordersResult00000000000000",ordersResult.length);return;
+        let dealerIdsArray = ordersResult.map((result) => result.dealerId);
+        let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
+        let userResellerIds = ordersResult
+            .filter(result => result.resellerId !== null)
+            .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
 
-            console.log("--------------------------------------------------2")
+        console.log("--------------------------------------------------2")
 
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
         //Get Respective Dealers
@@ -848,100 +848,100 @@ exports.getAllOrders = async (req, res) => {
             zip: 1,
             street: 1
 
-            });
-            console.log("--------------------------------------------------3")
-            let servicerIdArray = ordersResult.map((result) => result.servicerId);
-            const servicerCreteria = {
-                $or: [
-                    { _id: { $in: servicerIdArray } },
-                    { resellerId: { $in: servicerIdArray } },
-                    { dealerId: { $in: servicerIdArray } },
-                ],
-            };
-            console.log("--------------------------------------------------4")
-            //Get Respective Servicer
-            let respectiveServicer = await servicerService.getAllServiceProvider(
-                servicerCreteria,
-                {
-                    name: 1,
-                    city: 1,
-                    state: 1,
-                    country: 1,
-                    zip: 1,
-                    street: 1
-                }
-            );
-            let customerIdsArray = ordersResult.map((result) => result.customerId);
-            let userCustomerIds = ordersResult
-                .filter(result => result.customerId !== null)
-                .map(result => result.customerId?.toString());
+        });
+        console.log("--------------------------------------------------3")
+        let servicerIdArray = ordersResult.map((result) => result.servicerId);
+        const servicerCreteria = {
+            $or: [
+                { _id: { $in: servicerIdArray } },
+                { resellerId: { $in: servicerIdArray } },
+                { dealerId: { $in: servicerIdArray } },
+            ],
+        };
+        console.log("--------------------------------------------------4")
+        //Get Respective Servicer
+        let respectiveServicer = await servicerService.getAllServiceProvider(
+            servicerCreteria,
+            {
+                name: 1,
+                city: 1,
+                state: 1,
+                country: 1,
+                zip: 1,
+                street: 1
+            }
+        );
+        let customerIdsArray = ordersResult.map((result) => result.customerId);
+        let userCustomerIds = ordersResult
+            .filter(result => result.customerId !== null)
+            .map(result => result.customerId?.toString());
 
-                console.log("--------------------------------------------------5")
-            const customerCreteria = { _id: { $in: customerIdsArray } };
+        console.log("--------------------------------------------------5")
+        const customerCreteria = { _id: { $in: customerIdsArray } };
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
         const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
-            let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-            //Get Respective Customer
-            let respectiveCustomer = await customerService.getAllCustomers(
-                customerCreteria,
-                {
-                    username: 1,
-                    city: 1,
-                    state: 1,
-                    country: 1,
-                    zip: 1,
-                    street: 1
-                }
-            );
-            //Get all Reseller
+        let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+        //Get Respective Customer
+        let respectiveCustomer = await customerService.getAllCustomers(
+            customerCreteria,
+            {
+                username: 1,
+                city: 1,
+                state: 1,
+                country: 1,
+                zip: 1,
+                street: 1
+            }
+        );
+        //Get all Reseller
 
-            console.log("--------------------------------------------------6")
-            let resellerIdsArray = ordersResult.map((result) => result.resellerId);
-            const resellerCreteria = { _id: { $in: resellerIdsArray } };
-            let respectiveReseller = await resellerService.getResellers(
-                resellerCreteria,
-                {
-                    name: 1,
-                    isServicer: 1,
-                    city: 1,
-                    state: 1,
-                    country: 1,
-                    zip: 1,
-                    street: 1
-                }
-            );
+        console.log("--------------------------------------------------6")
+        let resellerIdsArray = ordersResult.map((result) => result.resellerId);
+        const resellerCreteria = { _id: { $in: resellerIdsArray } };
+        let respectiveReseller = await resellerService.getResellers(
+            resellerCreteria,
+            {
+                name: 1,
+                isServicer: 1,
+                city: 1,
+                state: 1,
+                country: 1,
+                zip: 1,
+                street: 1
+            }
+        );
 
-            console.log("--------------------------------------------------7")
-            const result_Array = ordersResult.map((item1) => {
-                const dealerName =
-                    item1.dealerId != ""
-                        ? respectiveDealers.find(
-                            (item2) => item2._id.toString() === item1.dealerId.toString()
-                        )
-                        : null;
-                const servicerName =
-                    item1.servicerId != null
-                        ? respectiveServicer.find(
-                            (item2) =>
-                                item2._id.toString() === item1.servicerId?.toString() ||
-                                item2.resellerId === item1?.servicerId
-                        )
-                        : null;
-                const customerName =
-                    item1.customerId != null
-                        ? respectiveCustomer.find(
-                            (item2) => item2._id.toString() === item1?.customerId.toString()
-                        )
-                        : null;
-                const resellerName =
-                    item1.resellerId != null
-                        ? respectiveReseller.find(
-                            (item2) => item2._id.toString() === item1.resellerId?.toString()
-                        )
-                        : null;
+        console.log("--------------------------------------------------7")
+        const result_Array = ordersResult.map((item1) => {
+            const dealerName =
+                item1.dealerId != ""
+                    ? respectiveDealers.find(
+                        (item2) => item2._id.toString() === item1.dealerId.toString()
+                    )
+                    : null;
+            const servicerName =
+                item1.servicerId != null
+                    ? respectiveServicer.find(
+                        (item2) =>
+                            item2._id.toString() === item1.servicerId?.toString() ||
+                            item2.resellerId === item1?.servicerId
+                    )
+                    : null;
+            const customerName =
+                item1.customerId != null
+                    ? respectiveCustomer.find(
+                        (item2) => item2._id.toString() === item1?.customerId.toString()
+                    )
+                    : null;
+            const resellerName =
+                item1.resellerId != null
+                    ? respectiveReseller.find(
+                        (item2) => item2._id.toString() === item1.resellerId?.toString()
+                    )
+                    : null;
 
             if (dealerName || customerName || servicerName || resellerName) {
                 return {
@@ -971,52 +971,52 @@ exports.getAllOrders = async (req, res) => {
         );
         const status = new RegExp(data.status ? data.status.replace(/\s+/g, ' ').trim() : "", "i");
 
-            let filteredData = result_Array.filter((entry) => {
-                return (
-                    unique_keyRegex.test(entry.unique_key) &&
-                    venderOrderRegex.test(entry.venderOrder) &&
-                    status.test(entry.status)
-                );
-            });
-            console.log("--------------------------------------------------8",filteredData)
-         
-            const updatedArray = filteredData.map((item,index) => {
-                let isEmptyStartDate = item.productsArray.map(
-                    (item1) => item1.coverageStartDate === null
-                );
-                let isEmptyOrderFile = item.productsArray
-                    .map(
-                        (item1) =>
-                            item1.orderFile.fileName === ""
-                    )
-                item.flag = false
-                const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
-                const fileName = isEmptyOrderFile.includes(true) ? false : true
-                if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
-                    item.flag = true
-                }
-                let username = null; // Initialize username as null
-                let resellerUsername = null; // Initialize username as null
-                let customerUserData = null; // Initialize username as null
-                if (item.dealerName._id) {
-                    username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
-                }
-                if (item.resellerName._id) {
-                    resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
-                }
-                if (item.customerName._id) {
-                    customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
-                }
-                return {
-                    ...item,
-                    servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
-                    username: username, // Set username based on the conditional checks
-                    resellerUsername: resellerUsername ? resellerUsername : {},
-                    customerUserData: customerUserData ? customerUserData : {}
-                };
-            });
+        let filteredData = result_Array.filter((entry) => {
+            return (
+                unique_keyRegex.test(entry.unique_key) &&
+                venderOrderRegex.test(entry.venderOrder) &&
+                status.test(entry.status)
+            );
+        });
+        console.log("--------------------------------------------------8", filteredData)
 
-            console.log("--------------------------------------------------9")
+        const updatedArray = filteredData.map((item, index) => {
+            let isEmptyStartDate = item.productsArray.map(
+                (item1) => item1.coverageStartDate === null
+            );
+            let isEmptyOrderFile = item.productsArray
+                .map(
+                    (item1) =>
+                        item1.orderFile.fileName === ""
+                )
+            item.flag = false
+            const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
+            const fileName = isEmptyOrderFile.includes(true) ? false : true
+            if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
+                item.flag = true
+            }
+            let username = null; // Initialize username as null
+            let resellerUsername = null; // Initialize username as null
+            let customerUserData = null; // Initialize username as null
+            if (item.dealerName._id) {
+                username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
+            }
+            if (item.resellerName._id) {
+                resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
+            }
+            if (item.customerName._id) {
+                customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
+            }
+            return {
+                ...item,
+                servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
+                username: username, // Set username based on the conditional checks
+                resellerUsername: resellerUsername ? resellerUsername : {},
+                customerUserData: customerUserData ? customerUserData : {}
+            };
+        });
+
+        console.log("--------------------------------------------------9")
 
         let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
         const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()
@@ -4159,8 +4159,9 @@ exports.generateHtmltopdf = async (req, res) => {
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
-            const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+            let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+            const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + mergeFileName;
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
