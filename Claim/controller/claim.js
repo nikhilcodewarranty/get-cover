@@ -1978,7 +1978,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      //res.json(contractAllDataArray);return;
+     // res.json(totalDataComing);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
       //     let query = [
@@ -2027,6 +2027,10 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
+          if (new Date(contractData.coverageStartDate) > new Date(item.lossDate)) {
+            item.status = "Loss date should be in between coverage start date and present date!"
+            item.exit = true;
+          }
           if (!contractData) {
             item.status = "Contract not found"
             item.exit = true;
