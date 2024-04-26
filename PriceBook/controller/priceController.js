@@ -332,6 +332,7 @@ exports.updatePriceBook = async (req, res, next) => {
         name: data.name,
         description: data.description,
         term: data.term,
+        coverageType:data.coverageType,
         frontingFee: data.frontingFee,
         reserveFutureFee: data.reserveFutureFee,
         reinsuranceFee: data.reinsuranceFee,

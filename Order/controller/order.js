@@ -758,70 +758,70 @@ exports.processOrder = async (req, res) => {
 //Get All Orders
 exports.getAllOrders = async (req, res) => {
     try {
-        {
-            let data = req.body;
-            if (req.role != "Super Admin") {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Only super admin allow to do this action",
-                });
-                return;
-            }
 
-            let project = {
-                productsArray: 1,
-                dealerId: 1,
-                unique_key: 1,
-                unique_key_number: 1,
-                unique_key_search: 1,
-                servicerId: 1,
-                customerId: 1,
-                serviceCoverageType: 1,
-                coverageType: 1,
-                resellerId: 1,
-                paymentStatus: 1,
-                status: 1,
-                createdAt: 1,
-                venderOrder: 1,
-                orderAmount: 1,
-                contract: "$contract"
-            };
+        let data = req.body;
+        if (req.role != "Super Admin") {
+            res.send({
+                code: constant.errorCode,
+                message: "Only super admin allow to do this action",
+            });
+            return;
+        }
 
-            let query = { status: { $ne: "Archieved" } };
+        let project = {
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            unique_key_number: 1,
+            unique_key_search: 1,
+            servicerId: 1,
+            customerId: 1,
+            serviceCoverageType: 1,
+            coverageType: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            createdAt: 1,
+            venderOrder: 1,
+            orderAmount: 1,
+            contract: "$contract"
+        };
 
-            let lookupQuery = [
-                {
-                    $match: query
-                },
-                {
-                    "$addFields": {
-                        "noOfProducts": {
-                            "$sum": "$productsArray.checkNumberProducts"
-                        },
-                        totalOrderAmount: { $sum: "$orderAmount" },
-                        // flag: {
-                        //     $cond: {
-                        //         if: {
-                        //             $and: [
-                        //                 // { $eq: ["$payment.status", "paid"] },
-                        //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                        //                 { $ne: ["$customerId", null] },
-                        //                 { $ne: ["$paymentStatus", 'Paid'] },
-                        //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                        //             ]
-                        //         },
-                        //         then: true,
-                        //         else: false
-                        //     }
-                        // }
+        let query = { status: { $ne: "Archieved" } };
 
-                    }
-                },
-                { $sort: { unique_key: -1 } }]
+        let lookupQuery = [
+            {
+                $match: query
+            },
+            {
+                "$addFields": {
+                    "noOfProducts": {
+                        "$sum": "$productsArray.checkNumberProducts"
+                    },
+                    totalOrderAmount: { $sum: "$orderAmount" },
+                    // flag: {
+                    //     $cond: {
+                    //         if: {
+                    //             $and: [
+                    //                 // { $eq: ["$payment.status", "paid"] },
+                    //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
+                    //                 { $ne: ["$customerId", null] },
+                    //                 { $ne: ["$paymentStatus", 'Paid'] },
+                    //                 { $ne: ["$productsArray.coverageStartDate", null] },
+                    //             ]
+                    //         },
+                    //         then: true,
+                    //         else: false
+                    //     }
+                    // }
 
-            let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
-            let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-            let limitData = Number(pageLimit)
+                }
+            },
+            { $sort: { unique_key: -1 } }]
+
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
+        let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
+        let limitData = Number(pageLimit)
 
 
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
@@ -833,20 +833,20 @@ exports.getAllOrders = async (req, res) => {
                 .filter(result => result.resellerId !== null)
                 .map(result => result.resellerId?.toString());
 
-            let mergedArray = userDealerIds.concat(userResellerIds);
+        let mergedArray = userDealerIds.concat(userResellerIds);
 
             console.log("--------------------------------------------------2")
 
-            const dealerCreateria = { _id: { $in: dealerIdsArray } };
-            //Get Respective Dealers
-            let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
-                name: 1,
-                isServicer: 1,
-                city: 1,
-                state: 1,
-                country: 1,
-                zip: 1,
-                street: 1
+        const dealerCreateria = { _id: { $in: dealerIdsArray } };
+        //Get Respective Dealers
+        let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
+            name: 1,
+            isServicer: 1,
+            city: 1,
+            state: 1,
+            country: 1,
+            zip: 1,
+            street: 1
 
             });
             console.log("--------------------------------------------------3")
@@ -879,9 +879,9 @@ exports.getAllOrders = async (req, res) => {
                 console.log("--------------------------------------------------5")
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
-            const allUserIds = mergedArray.concat(userCustomerIds);
+        const allUserIds = mergedArray.concat(userCustomerIds);
 
-            const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
+        const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
 
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
@@ -943,33 +943,33 @@ exports.getAllOrders = async (req, res) => {
                         )
                         : null;
 
-                if (dealerName || customerName || servicerName || resellerName) {
-                    return {
-                        ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                        dealerName: dealerName ? dealerName.toObject() : {},
-                        servicerName: servicerName ? servicerName.toObject() : {},
-                        customerName: customerName ? customerName.toObject() : {},
-                        resellerName: resellerName ? resellerName.toObject() : {},
-                    };
-                } else {
-                    return {
-                        dealerName: {},
-                        servicerName: {},
-                        customerName: {},
-                        resellerName: {},
-                    };
-                }
-            });
+            if (dealerName || customerName || servicerName || resellerName) {
+                return {
+                    ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    dealerName: dealerName ? dealerName.toObject() : {},
+                    servicerName: servicerName ? servicerName.toObject() : {},
+                    customerName: customerName ? customerName.toObject() : {},
+                    resellerName: resellerName ? resellerName.toObject() : {},
+                };
+            } else {
+                return {
+                    dealerName: {},
+                    servicerName: {},
+                    customerName: {},
+                    resellerName: {},
+                };
+            }
+        });
 
-            const unique_keyRegex = new RegExp(
-                data.unique_key ? data.unique_key.replace(/\s+/g, ' ').trim() : "",
-                "i"
-            );
-            const venderOrderRegex = new RegExp(
-                data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : "",
-                "i"
-            );
-            const status = new RegExp(data.status ? data.status.replace(/\s+/g, ' ').trim() : "", "i");
+        const unique_keyRegex = new RegExp(
+            data.unique_key ? data.unique_key.replace(/\s+/g, ' ').trim() : "",
+            "i"
+        );
+        const venderOrderRegex = new RegExp(
+            data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : "",
+            "i"
+        );
+        const status = new RegExp(data.status ? data.status.replace(/\s+/g, ' ').trim() : "", "i");
 
             let filteredData = result_Array.filter((entry) => {
                 return (
@@ -1018,36 +1018,36 @@ exports.getAllOrders = async (req, res) => {
 
             console.log("--------------------------------------------------9")
 
-            let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
-            const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()
-            const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
-            const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
-            const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
-            const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
-            const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
-            const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
-            const statusRegex = new RegExp(data.status ? data.status : '', 'i')
+        let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
+        const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()
+        const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen : '', 'i')
+        const venderRegex = new RegExp(data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', 'i')
+        const dealerNameRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const servicerNameRegex = new RegExp(data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
+        const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
-            const filteredData1 = updatedArray.filter(entry => {
-                return (
-                    venderRegex.test(entry.venderOrder) &&
-                    orderIdRegex.test(entry.unique_key_search) &&
-                    dealerNameRegex.test(entry.dealerName.name) &&
-                    servicerNameRegex.test(entry.servicerName.name) &&
-                    customerNameRegex.test(entry.customerName.username) &&
-                    resellerNameRegex.test(entry.resellerName.name) &&
-                    statusRegex.test(entry.status)
-                );
-            });
+        const filteredData1 = updatedArray.filter(entry => {
+            return (
+                venderRegex.test(entry.venderOrder) &&
+                orderIdRegex.test(entry.unique_key_search) &&
+                dealerNameRegex.test(entry.dealerName.name) &&
+                servicerNameRegex.test(entry.servicerName.name) &&
+                customerNameRegex.test(entry.customerName.username) &&
+                resellerNameRegex.test(entry.resellerName.name) &&
+                statusRegex.test(entry.status)
+            );
+        });
 
 
 
-            res.send({
-                code: constant.successCode,
-                message: "Success",
-                result: filteredData1,
-            });
-        };
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: filteredData1,
+        });
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -4528,10 +4528,10 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
         let getReseller = await userService.findUserforCustomer1([
             {
                 $match: {
-                   $and:[
-                    {metaId: new mongoose.Types.ObjectId(getCustomer.resellerId)},
-                    {isPrimary:true}
-                   ]
+                    $and: [
+                        { metaId: new mongoose.Types.ObjectId(getCustomer.resellerId) },
+                        { isPrimary: true }
+                    ]
                 }
             },
             {
@@ -4549,7 +4549,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                 message: "Unable to fetch the detail"
             })
         } else {
-          
+
 
             res.send({
                 code: constant.successCode,
