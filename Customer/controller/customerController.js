@@ -461,6 +461,7 @@ exports.editCustomer = async (req, res) => {
     if (data.isAccountCreate || data.isAccountCreate == 'true') {
       console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { stauts: true }, { new: true })
+      console.log("updatePrimaryUser-----------------------------------",updatePrimaryUser, data.isAccountCreate)
     } else {
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { stauts: false }, { new: true })
       console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser, data.isAccountCreate);
