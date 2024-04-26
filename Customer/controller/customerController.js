@@ -66,7 +66,7 @@ exports.createCustomer = async (req, res, next) => {
       username: data.accountName,
       street: data.street,
       city: data.city,
-      isAccountCreate: data.isAccountCreate,
+      isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
       dealerId: checkDealer._id,
       resellerId: checkReseller ? checkReseller._id : null,
       resellerId1: checkReseller ? checkReseller._id : null,
