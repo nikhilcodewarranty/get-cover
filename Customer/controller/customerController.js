@@ -66,6 +66,7 @@ exports.createCustomer = async (req, res, next) => {
       username: data.accountName,
       street: data.street,
       city: data.city,
+      isAccountCreate: data.isAccountCreate,
       dealerId: checkDealer._id,
       resellerId: checkReseller ? checkReseller._id : null,
       resellerId1: checkReseller ? checkReseller._id : null,
@@ -79,12 +80,8 @@ exports.createCustomer = async (req, res, next) => {
     }
 
     let teamMembers = data.members
-
     const emailSet = new Set();
     let isDuplicate = false;
-
-
-
     let emailsToCheck = teamMembers.map(member => member.email);
     let queryEmails = { email: { $in: emailsToCheck } };
     let checkEmails = await customerService.getAllCustomers(queryEmails, {});
@@ -107,7 +104,7 @@ exports.createCustomer = async (req, res, next) => {
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
     if (saveMembers.length > 0) {
-     // let saveMembers = await userService.insertManyUser(teamMembers)
+      // let saveMembers = await userService.insertManyUser(teamMembers)
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
           if (saveMembers[i].status) {
@@ -116,7 +113,7 @@ exports.createCustomer = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-           // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
 
           }
@@ -466,7 +463,7 @@ exports.editCustomer = async (req, res) => {
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { stauts: true }, { new: true })
     } else {
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { stauts: false }, { new: true })
-      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser,data.isAccountCreate);
+      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser, data.isAccountCreate);
 
     }
     // let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
