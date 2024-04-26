@@ -1957,6 +1957,8 @@ exports.saveBulkClaim = async (req, res) => {
               $project: {
                 orderId: 1,
                 "order.dealerId": 1,
+                "order._id": 1,
+                "order.unique_key": 1,
                 "order.servicerId": 1,
                 "order.resellerId": 1,
                 "order.dealer": 1,
@@ -2023,7 +2025,8 @@ exports.saveBulkClaim = async (req, res) => {
           const claimData = claimArray[i];
           let flag;
           item.contractData = contractData;
-          item.servicerData = servicerData
+          item.servicerData = servicerData;
+          item.orderData = allDataArray[0]
           if (!contractData) {
             item.status = "Contract not found"
             item.exit = true;
@@ -2111,6 +2114,12 @@ exports.saveBulkClaim = async (req, res) => {
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
+            orderId:data.orderData.unique_key,
+            venderOrder:data.contractData.venderOrder,
+            serial:data.contractData.serial,
+            productName:data.contractData.productName,
+            model:data.contractData.model,
+            manufacture:data.contractData.manufacture,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
             unique_key: "CC-" + "2024-" + unique_key_number,
@@ -2123,6 +2132,9 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
       })
+
+      // res.json(finalArray);
+      // return;
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //send email to receipient
