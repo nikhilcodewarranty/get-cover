@@ -6,6 +6,7 @@ const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 let claimService = require('../../Claim/services/claimService')
+const randtoken = require('rand-token').generator()
 
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -100,6 +101,28 @@ exports.createReseller = async (req, res) => {
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+        if (data.status) {
+            console.log("saveMembers------------------------------",saveMembers);
+            for (let i = 0; i < saveMembers.length; i++) {
+              if (saveMembers[i].status) { 
+                let email = saveMembers[i].email
+                let userId = saveMembers[i]._id
+                let resetPasswordCode = randtoken.generate(4, '123456789')
+                let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+                let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+
+                //const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+
+                const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
+              }
+            
+            }
+            // let resetPrimaryCode = randtoken.generate(4, '123456789')
+            // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
+    
+            // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
+            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
+          }
 
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
@@ -119,8 +142,7 @@ exports.createReseller = async (req, res) => {
 
             let createData = await providerService.createServiceProvider(servicerObject)
         }
-
-        res.send({
+       res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
             result: data
@@ -475,7 +497,7 @@ exports.getResellerUsers = async (req, res) => {
 }
 
 exports.getResellerPriceBook = async (req, res) => {
-    if (req.role != "Super Admin") {
+    if (req.role != "Super Admin") { 
         res.send({
             code: constant.errorCode,
             message: "Only super admin allow to do this action"
