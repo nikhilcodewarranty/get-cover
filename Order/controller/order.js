@@ -4123,7 +4123,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 <td>10 Year Labor only Coverage</td>
             </tr>
         </table>`;
-        pdf.create(html, options).toFile(orderFile, (err, result) => {
+        pdf.create(html, options).toFile(orderFile,async (err, result) => {
             if (err) return console.log(err);
             // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
@@ -4157,13 +4157,17 @@ exports.generateHtmltopdf = async (req, res) => {
                 console.log('PDFs merged successfully!');
             }
 
-            const termConditionFile = checkDealer.termCondition.filename
+            const termConditionFile = checkDealer.termCondition.fileName
+            console.log('termCondition++0000000000000000',termConditionFile,checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+            console.log('path check+++++++++',outputPath,pdfPath1,pdfPath2)
             const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + mergeFileName;
-            mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+            console.log('path check+++++++++',pathTosave)
+
             // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
                 code: constant.successCode,
