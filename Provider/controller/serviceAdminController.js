@@ -1638,14 +1638,33 @@ exports.paidUnpaidClaim = async (req, res) => {
     })
     let servicerMatch = {}
     if (data.servicerName != '' && data.servicerName != undefined) {
-      const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
-      if (checkServicer) {
-        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
+      const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer.length > 0) {
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+        servicerMatch = {
+          $or: [
+            { "servicerId": { $in: servicerIds } },
+            { "servicerId": { $in: dealerIds } },
+            { "servicerId": { $in: resellerIds } }
+          ]
+        };
       }
       else {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+    // if (data.servicerName != '' && data.servicerName != undefined) {
+    //   const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+    //   if (checkServicer) {
+    //     servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
+    //   }
+    //   else {
+    //     servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+    //   }
+    // }
 
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
