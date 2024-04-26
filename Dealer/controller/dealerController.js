@@ -32,7 +32,6 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
-const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
 const orderService = require('../../Order/services/orderService');
@@ -2021,7 +2020,7 @@ exports.updateDealerMeta = async (req, res) => {
         const updateServicerMeta = await servicerService.updateServiceProvider(criteria, data)
       }
       else if (data.isServicer) {
-        const CountServicer = await providerService.getServicerCount();
+        const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
           name: data.accountName,
           street: data.street,
@@ -2034,7 +2033,7 @@ exports.updateDealerMeta = async (req, res) => {
           accountStatus: "Approved",
           unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
         }
-        let createData = await providerService.createServiceProvider(servicerObject)
+        let createData = await servicerService.createServiceProvider(servicerObject)
 
       }
     }
@@ -2481,7 +2480,7 @@ exports.getDealerServicers = async (req, res) => {
       return;
     }
     let ids = getServicersIds.map((item) => item.servicerId)
-    let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+    let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
       res.send({
         code: constant.errorCode,
@@ -2653,7 +2652,7 @@ exports.getServicersList = async (req, res) => {
     }
     let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
     let projection = { __v: 0, isDeleted: 0 }
-    let servicer = await providerService.getAllServiceProvider(query, projection);
+    let servicer = await servicerService.getAllServiceProvider(query, projection);
 
 
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
@@ -3183,7 +3182,7 @@ exports.getDealerContract = async (req, res) => {
     };
     if (data.servicerName != "") {
       userSearchCheck = 1
-      let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
       } else {
@@ -3370,6 +3369,26 @@ exports.getDealerClaims = async (req, res) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     const checkDealer = await dealerService.getDealerById(req.params.dealerId);
+    let servicerMatch = {}
+    if (data.servicerName != '' && data.servicerName != undefined) {
+      const checkServicer = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer.length > 0) {
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+        servicerMatch = {
+          $or: [
+            { "servicerId": { $in: servicerIds } },
+            { "servicerId": { $in: dealerIds } },
+            { "servicerId": { $in: resellerIds } }
+          ]
+        };
+      }
+      else {
+        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+      }
+    }
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -3504,6 +3523,7 @@ exports.getDealerClaims = async (req, res) => {
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            servicerMatch
           ]
         },
       },
@@ -3635,7 +3655,7 @@ exports.getDealerClaims = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()? true : false
       }
       return {
         ...item1,
