@@ -4075,7 +4075,9 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-        const orderFile = 'pdfs/' + Date.now() + "_" + checkOrder.unique_key + '.pdf';
+        let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+
+        const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<table border='1' border-collapse='collapse'>
                             <tr>
@@ -4159,7 +4161,6 @@ exports.generateHtmltopdf = async (req, res) => {
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + mergeFileName;
             mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
