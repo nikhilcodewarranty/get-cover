@@ -110,7 +110,10 @@ exports.createReseller = async (req, res) => {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                 let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+
+                //const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+
+                const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
               }
             
             }
