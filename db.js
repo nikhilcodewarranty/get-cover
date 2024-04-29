@@ -22,7 +22,7 @@ const makeNewConnection = (uri) => {
     });
 
     return db;
-}
+} 
 
 //db's connection strings
 // const userConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); //getcover_test database 
