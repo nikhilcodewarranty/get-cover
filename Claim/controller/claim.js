@@ -517,7 +517,7 @@ exports.getAllClaims = async (req, res, next) => {
               claimType: 1,
               repairParts: 1,
               diagnosis: 1,
-              claimStatus: 1,
+              claimStatus: 1, 
               repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
