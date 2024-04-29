@@ -517,7 +517,7 @@ exports.getAllClaims = async (req, res, next) => {
               claimType: 1,
               repairParts: 1,
               diagnosis: 1,
-              claimStatus: 1, 
+              claimStatus: 1,
               repairStatus: 1,
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
@@ -1549,6 +1549,47 @@ exports.editClaim = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
+      })
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Updated successfully"
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.editClaimType = async (req, res) => {
+  try {
+    let data = req.body
+    let criteria = { _id: req.params.claimId }
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+    if (checkClaim.claimFile == 'Open') {
+      let option = { new: true }
+      let updateData = await claimService.updateClaim(criteria, data, option)
+      if (!updateData) {
+        res.send({
+          code: constant.errorCode,
+          message: "Failed to process your request."
+        })
+        return;
+      }
+      res.send({
+        code: constant.successCode,
+        result:updateData,
+        message: "Updated successfully",
+
       })
     }
     res.send({

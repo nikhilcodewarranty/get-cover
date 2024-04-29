@@ -13,6 +13,7 @@ router.post("/getCoverageType/:contractId", [verifyToken], claimController.getCo
 router.post("/getAllClaims", [verifyToken], claimController.getAllClaims)
 router.post("/getClaims", [verifyToken], claimController.getClaims)
 router.put("/editClaim/:claimId", [verifyToken], claimController.editClaim)
+router.put("/editClaimType/:claimId", [verifyToken], claimController.editClaimType)
 router.put("/editClaimStatus/:claimId", [verifyToken], claimController.editClaimStatus)
 router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer)
 router.get("/getContractById/:contractId", [verifyToken], claimController.getContractById)
