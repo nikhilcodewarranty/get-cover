@@ -4154,7 +4154,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
 
-                console.log('PDFs merged successfully!');
+                console.log('PDFs merged successfully!'); 
             }
 
             const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
