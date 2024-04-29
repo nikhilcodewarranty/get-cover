@@ -2239,6 +2239,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
           } else {
             queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
           }
+
+          console.log("queryPrice)))))))))))))))))))))))))))--------------------",queryPrice,item)
           if (!item.status) return priceBookService.findByName1(queryPrice);
           return null;
         })
@@ -2356,7 +2358,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
       }
       res.send({
         code: constant.successCode,
