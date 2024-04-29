@@ -4157,7 +4157,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 console.log('PDFs merged successfully!');
             }
 
-            const termConditionFile = checkDealer.termCondition.fileName
+            const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName :checkDealer.termCondition.filename
             console.log('termCondition++0000000000000000',termConditionFile,checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
