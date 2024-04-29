@@ -4,7 +4,7 @@ const pdf = require('pdf-creator-node');
 
 var path = require('path');
 var logger = require('morgan');
-const { trim_all} = require('request_trimmer');
+const { trim_all } = require('request_trimmer');
 
 var cookieParser = require('cookie-parser');
 const cors = require('cors')
@@ -42,6 +42,8 @@ const { createProxyMiddleware } = require('http-proxy-middleware');
 const axios = require('axios');
 const mongoose = require('mongoose')
 const fs = require('fs');
+const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
+
 
 var app = express();
 
@@ -111,7 +113,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/uploads', express.static('./uploads/'))
+app.use('/uploads', [verifyToken], express.static('./uploads/'))
 // app.use('/uploads/resultFile', express.static('./uploads/resultFile/'))
 
 app.get('/download/:filename', (req, res) => {
@@ -173,7 +175,8 @@ app.use("/api-v1/resellerPortal", resellerUserRoutes);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404));
+  res.status(404).json({ code: 404, message: "Not Found" })
+
 });
 
 // error handler
@@ -189,8 +192,11 @@ app.use(function (err, req, res, next) {
 
 //* Catch HTTP 404 
 app.use((req, res, next) => {
-  next(createHttpError(404));
+  res.status(404).json({ code: 404, message: "Not Found" })
+
 })
+
+
 
 const PORT = 3002
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
