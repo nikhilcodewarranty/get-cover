@@ -792,8 +792,20 @@ exports.createDealer = async (req, res) => {
               }
             }
 
+            // const pricebookArrayPromise = totalDataComing.map(item => {
+            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: data.coverageType });
+            //   return null;
+            // })
+
+
             const pricebookArrayPromise = totalDataComing.map(item => {
-              if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: data.coverageType });
+              let queryPrice;
+              if (singleDealer?.coverageType == "Breakdown & Accidental") {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              } else {
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
+              }
+              if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             })
 
@@ -1447,7 +1459,7 @@ exports.createDealer = async (req, res) => {
                               text-align: left;
                               padding: 8px;
                           }
-                          th {
+                          th { 
                               background-color: #f2f2f2;
                           }
                       </style>

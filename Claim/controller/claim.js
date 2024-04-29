@@ -811,7 +811,7 @@ exports.getAllClaims = async (req, res, next) => {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
         //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
 
       }
       return {
@@ -1656,6 +1656,9 @@ exports.editClaimStatus = async (req, res) => {
       //   }
       // } 
     }
+    if (data.hasOwnProperty("claimType")) {
+      let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
+    }
     // Keep history of status in mongodb 
     let updateStatus = await claimService.updateClaim(criteria, { $push: status }, { new: true })
 
@@ -1980,7 +1983,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-     // res.json(totalDataComing);return;
+      // res.json(totalDataComing);return;
       // const contractAllDataPromise = totalDataComing.map(item => {
       //   if (!item.exit) {
       //     let query = [
@@ -2120,12 +2123,12 @@ exports.saveBulkClaim = async (req, res) => {
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
-            orderId:data.orderData.unique_key,
-            venderOrder:data.contractData.venderOrder,
-            serial:data.contractData.serial,
-            productName:data.contractData.productName,
-            model:data.contractData.model,
-            manufacture:data.contractData.manufacture,
+            orderId: data.orderData.unique_key,
+            venderOrder: data.contractData.venderOrder,
+            serial: data.contractData.serial,
+            productName: data.contractData.productName,
+            model: data.contractData.model,
+            manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
             unique_key: "CC-" + "2024-" + unique_key_number,
@@ -2416,7 +2419,9 @@ exports.statusClaim = async (req, res) => {
 
       const latestServicerShippedDate = new Date(latestServicerShipped.date);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
+
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
+
       if (
         customerLastResponseDate > latestServicerShippedDate &&
         customerLastResponseDate < sevenDaysAfterShippedDate
