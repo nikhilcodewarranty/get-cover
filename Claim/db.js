@@ -3,7 +3,7 @@ require("dotenv").config()
 
 const mongoose = require('mongoose')
 
-const dbUrl = process.env.DB_URL + 'User'
+const dbUrl = process.env.DB_URL + 'getcover_test'
 
 
 const connection = {

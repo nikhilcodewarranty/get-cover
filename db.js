@@ -32,7 +32,7 @@ const orderConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`);
 const claimConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
 const CustomerConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
 
-module.exports = {
+module.exports = { 
     userConnection,
     dealerConnection,
     serviceConnection,
