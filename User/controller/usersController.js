@@ -1447,7 +1447,7 @@ exports.createDealer = async (req, res) => {
                               text-align: left;
                               padding: 8px;
                           }
-                          th {
+                          th { 
                               background-color: #f2f2f2;
                           }
                       </style>
