@@ -2416,7 +2416,9 @@ exports.statusClaim = async (req, res) => {
 
       const latestServicerShippedDate = new Date(latestServicerShipped.date);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
+
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
+
       if (
         customerLastResponseDate > latestServicerShippedDate &&
         customerLastResponseDate < sevenDaysAfterShippedDate
