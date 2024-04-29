@@ -36,7 +36,7 @@ app.use('/uploads/', express.static('./uploads'))
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  next(createError(404));
+  res.status(404).json({ code: 404, message: "Not Found" })
 });
 
 // error handler
