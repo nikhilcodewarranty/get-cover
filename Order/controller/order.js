@@ -4160,7 +4160,7 @@ exports.generateHtmltopdf = async (req, res) => {
             // const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
             const termConditionFile = "termCondition-1713605740802.pdf"
             
-            console.log('termCondition++0000000000000000', termConditionFile, checkDealer.termCondition)
+            console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
