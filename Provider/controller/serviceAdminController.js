@@ -78,7 +78,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let userId = saveMembers[i]._id
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
-            let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+            let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data.accountName }))
           }
 
@@ -150,8 +150,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
-      let updatePrimaryCode= await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode }, { new: true });
-      let updatePrimaryLInk = `http://15.207.221.207/newPassword/${updatePrimaryCode._id}/${primaryCode}`
+      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode }, { new: true });
+      let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
       const mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, name: data?.accountName }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
@@ -166,7 +166,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let userId = saveMembers[i]._id
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
-              let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+              let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
               // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
               const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
 
@@ -265,7 +265,7 @@ exports.approveServicer = async (req, res, next) => {
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
 
-    let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPasswordCode}`
+    let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
     res.send({
       code: constant.successCode,
@@ -1822,17 +1822,17 @@ exports.paidUnpaidClaim = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-       // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
         selfServicer = item1.servicerId.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
-        console.log("selfServicer------------------------------------",item1.servicerId)
-        console.log("selfServicer------------------------------------",item1.servicerData?._id?.toString())
-        console.log("selfServicer------------------------------------",item1.servicerData?._id?.toString())
+        console.log("selfServicer------------------------------------", item1.servicerId)
+        console.log("selfServicer------------------------------------", item1.servicerData?._id?.toString())
+        console.log("selfServicer------------------------------------", item1.servicerData?._id?.toString())
       }
       return {
         ...item1,
         servicerData: servicerName,
         selfServicer: selfServicer,
-        contracts: { 
+        contracts: {
           ...item1.contracts,
           allServicer: servicer
         }
