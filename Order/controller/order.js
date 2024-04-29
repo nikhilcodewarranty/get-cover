@@ -4157,8 +4157,8 @@ exports.generateHtmltopdf = async (req, res) => {
                 console.log('PDFs merged successfully!');
             }
 
-            // const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-            const termConditionFile = "termCondition-1713605740802.pdf"
+            const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
+            // const termConditionFile = "termCondition-1713605740802.pdf"
             
             console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
