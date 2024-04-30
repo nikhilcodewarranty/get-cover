@@ -1151,14 +1151,14 @@ exports.searchClaim = async (req, res, next) => {
                       as: "customers",
                     }
                   },
-                  // { $unwind: "$customers" },
+                  { $unwind: "$customers" },
                 ]
 
               }
             },
-            // {
-            //   $unwind: "$order"
-            // },
+            {
+              $unwind: "$order"
+            },
             {
               $project: {
                 unique_key: 1,
