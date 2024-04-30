@@ -3691,8 +3691,8 @@ exports.getDealerClaims = async (req, res) => {
 const MongoClient = require('mongodb').MongoClient;
 
 // Connection URLs for the two databases
-const url2 = `${process.env.DB_URL}User`;
-const url1 = `${process.env.DB_URL}User`;
+const url2 = `${process.env.DB_URL}`+process.env.dbName;
+const url1 = `${process.env.DB_URL}`+process.env.dbName;
 
 // Common ID
 
