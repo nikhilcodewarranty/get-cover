@@ -146,17 +146,17 @@ exports.createServiceProvider = async (req, res, next) => {
       };
 
       let primaryEmail = teamMembers[0].email
-      let primaryCode = randtoken.generate(4, '123456789')
-      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode }, { new: true });
-      let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-      const mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, name: data?.accountName }))
+      // let primaryCode = randtoken.generate(4, '123456789')
+      // let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode }, { new: true });
+      // let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
+      // // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+      // const mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, name: data?.accountName }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       //let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
       // teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
       // let saveMembers = await userService.insertManyUser(teamMembers)
       teamMembers = teamMembers.map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
-     // let saveMembers = await userService.insertManyUser(teamMembers)
+     //let saveMembers = await userService.insertManyUser(teamMembers)
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
