@@ -3204,7 +3204,6 @@ exports.getDealerContract = async (req, res) => {
     let orderAndCondition = []
     if (servicerIds.length > 0) {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
-
     }
     if (req.params.dealerId) {
       userSearchCheck = 1
