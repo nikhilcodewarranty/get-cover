@@ -1,6 +1,6 @@
 require("dotenv").config()
 const mongoose = require('mongoose')
-const dbUrl = process.env.DB_URL + 'getcover'
+const dbUrl = process.env.DB_URL + process.env.dbName
 
 console.log('mongo calll----------------------',dbUrl)
 const connection = {
