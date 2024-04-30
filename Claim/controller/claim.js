@@ -1113,12 +1113,12 @@ exports.searchClaim = async (req, res, next) => {
 
     let query = [
       { $sort: { unique_key_number: -1 } },
-      {
-        $match:
-        {
-          $and: contractFilter
-        },
-      },
+      // {
+      //   $match:
+      //   {
+      //     $and: contractFilter
+      //   },
+      // },
       {
         $facet: {
           totalRecords: [
@@ -1133,38 +1133,38 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            {
-              $lookup: {
-                from: "orders",
-                localField: "orderId",
-                foreignField: "_id",
-                as: "order",
-                pipeline: [
-                  {
-                    $lookup: {
-                      from: "customers",
-                      localField: "customerId",
-                      foreignField: "_id",
-                      as: "customers",
-                    }
-                  },
-                  { $unwind: "$customers" },
-                ]
+            // {
+            //   $lookup: {
+            //     from: "orders",
+            //     localField: "orderId",
+            //     foreignField: "_id",
+            //     as: "order",
+            //     pipeline: [
+            //       {
+            //         $lookup: {
+            //           from: "customers",
+            //           localField: "customerId",
+            //           foreignField: "_id",
+            //           as: "customers",
+            //         }
+            //       },
+            //       { $unwind: "$customers" },
+            //     ]
 
-              }
-            },
-            {
-              $unwind: "$order"
-            },
-            {
-              $project: {
-                unique_key: 1,
-                serial: 1,
-                "order.customers.username": 1,
-                "order.unique_key": 1,
-                "order.venderOrder": 1,
-              }
-            }
+            //   }
+            // },
+            // {
+            //   $unwind: "$order"
+            // },
+            // {
+            //   $project: {
+            //     unique_key: 1,
+            //     serial: 1,
+            //     "order.customers.username": 1,
+            //     "order.unique_key": 1,
+            //     "order.venderOrder": 1,
+            //   }
+            // }
           ]
         }
       },
@@ -1177,6 +1177,7 @@ exports.searchClaim = async (req, res, next) => {
     res.send({
       code: constant.successCode,
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      result2: getContracts,
       totalCount
       // count: getContracts2.length
     })
