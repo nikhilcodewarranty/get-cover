@@ -1102,6 +1102,7 @@ exports.searchClaim = async (req, res, next) => {
       ]
     } else {
       contractFilter = [
+        
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1111,6 +1112,8 @@ exports.searchClaim = async (req, res, next) => {
       ]
     }
 
+
+    // res.json(contractFilter);return;
     let query = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -1148,18 +1151,19 @@ exports.searchClaim = async (req, res, next) => {
                       as: "customers",
                     }
                   },
-                  { $unwind: "$customers" },
+                  // { $unwind: "$customers" },
                 ]
 
               }
             },
-            {
-              $unwind: "$order"
-            },
+            // {
+            //   $unwind: "$order"
+            // },
             {
               $project: {
                 unique_key: 1,
                 serial: 1,
+                orderId:1,
                 "order.customers.username": 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
