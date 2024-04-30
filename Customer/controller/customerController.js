@@ -292,12 +292,12 @@ exports.getDealerCustomers = async (req, res) => {
       if (matchingItem || order || matchingReseller) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject(),
+          customerData:matchingItem ?  matchingItem.toObject() : {},
           orderData: order ? order : {},
           reseller: matchingReseller ? matchingReseller : {},
         };
       } else {
-        return dealerData.toObject();
+        return {};
       }
     });
     let name = data.firstName ? data.firstName : ""
@@ -389,7 +389,7 @@ exports.getResellerCustomers = async (req, res) => {
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject(),
+          customerData:matchingItem ? matchingItem.toObject() : {},
           orderData: order ? order : {},
         };
       } else {
@@ -956,10 +956,10 @@ exports.customerOrders = async (req, res) => {
         };
       } else {
         return {
-          dealerName: dealerName.toObject(),
-          servicerName: servicerName.toObject(),
-          customerName: customerName.toObject(),
-          resellerName: resellerName.toObject(),
+          servicerName: servicerName ? servicerName.toObject() : {},
+          dealerName: dealerName ? dealerName.toObject() : dealerName,
+          customerName: customerName ? customerName.toObject() : {},
+          resellerName: resellerName ? resellerName.toObject() : {},
         };
       }
     });

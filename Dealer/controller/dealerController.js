@@ -2516,7 +2516,7 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: item1.toObject()
         };
       } else {
-        return servicerUser.toObject();
+        return {};
       }
     });
 
