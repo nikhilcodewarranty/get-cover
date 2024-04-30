@@ -1253,6 +1253,7 @@ exports.checkFileValidation = async (req, res) => {
             //     })
             //     return;
             // }
+            console.log(req.file)
             let csvName = req.file.filename;
             let originalName = req.file.originalname;
             let size = req.file.size;
@@ -2724,7 +2725,7 @@ exports.getSingleOrder = async (req, res) => {
                     servicerData: matchingItem.toObject(),
                 };
             } else {
-                return servicer.toObject();
+                return servicer?.toObject();
             }
         });
         let userData = {
