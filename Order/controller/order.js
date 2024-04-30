@@ -2725,7 +2725,7 @@ exports.getSingleOrder = async (req, res) => {
                     servicerData: matchingItem.toObject(),
                 };
             } else {
-                return servicer?.toObject();
+                return {};
             }
         });
         let userData = {
