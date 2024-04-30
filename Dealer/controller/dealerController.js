@@ -2512,7 +2512,7 @@ exports.getDealerServicers = async (req, res) => {
       return;
     };
     console.log("-------------------------------------------------------",4)
-    console.log("-------------------------------------------------------result_Array",result_Array)
+
     const result_Array = servicer.map(item1 => {
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
 
@@ -2525,7 +2525,7 @@ exports.getDealerServicers = async (req, res) => {
         return {};
       }
     });
-
+    console.log("-------------------------------------------------------result_Array",result_Array)
     console.log("-------------------------------------------------------",5)
 
 
