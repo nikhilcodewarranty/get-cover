@@ -2524,8 +2524,10 @@ exports.getDealerServicers = async (req, res) => {
 
     console.log("-------------------------------------------------------",5)
 
+    console.log("result_Array-----------------------------",result_Array);
+
     for (let i = 0; i < result_Array.length; i++) {
-      const servicerId = result_Array[i].servicerData._id;
+      const servicerId = result_Array[i].servicerData?._id;
       let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
       console.log("claim check+++++++4444444444444++++++++++++++")
 
