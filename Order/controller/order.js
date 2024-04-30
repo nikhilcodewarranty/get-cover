@@ -3278,25 +3278,77 @@ exports.getDashboardData = async (req, res) => {
 exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
+        console.log("data------------------", data)
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
+        let dealerIds = [];
+        let customerIds = [];
+        let resellerIds = [];
+        let servicerIds = [];
+        let userSearchCheck = 0
+        if (data.customerName != "") {
+            userSearchCheck = 1
+            let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                customerIds = await getData.map(customer => customer._id)
+            } else {
+                customerIds.push("1111121ccf9d400000000000")
+            }
+        };
+        if (data.servicerName != "") {
+            userSearchCheck = 1
+            let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                servicerIds = await getData.map(servicer => servicer._id)
+            } else {
+                servicerIds.push("1111121ccf9d400000000000")
+            }
+        };
+        if (data.resellerName != "") {
+            userSearchCheck = 1
+            let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                resellerIds = await getData.map(servicer => servicer._id)
+            } else {
+                resellerIds.push("1111121ccf9d400000000000")
+            }
+        };
+        if (data.dealerName != "") {
+            userSearchCheck = 1
+            let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            if (getData.length > 0) {
+                dealerIds = await getData.map(dealer => dealer._id)
+            } else {
+                dealerIds.push("1111121ccf9d400000000000")
+            }
+        };
+        let orderAndCondition = []
+        if (req.params.orderId) {
+            userSearchCheck = 1
+            orderAndCondition.push({ _id: new mongoose.Types.ObjectId(req.params.orderId) })
+        };
 
-        let contractFilter = []
+        if (dealerIds.length > 0) {
+            orderAndCondition.push({ dealerId: { $in: dealerIds } })
+        }
+        if (servicerIds.length > 0) {
+            orderAndCondition.push({ servicerId: { $in: servicerIds } })
+        }
+        console.log("orderAndCondition-------------------", orderAndCondition)
+        let orderIds = []
+        if (orderAndCondition.length > 0) {
+            let getOrders = await orderService.getOrders({
+                $and: orderAndCondition
+            })
+            if (getOrders.length > 0) {
+                orderIds = await getOrders.map(order => order._id)
+            }
+        }
+        console.log("getOrders-------------------", orderIds)
+        let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
-            contractFilter = [
-                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
-                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { eligibilty: data.eligibilty === "true" ? true : false },
-            ]
-        } else {
-            contractFilter = [
-                { orderId: new mongoose.Types.ObjectId(req.params.orderId) },
+            contractFilterWithEligibilty = [
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3304,36 +3356,78 @@ exports.getOrderContract = async (req, res) => {
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { eligibilty: data.eligibilty === "true" ? true : false },
+                { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            ]
+        } else {
+            contractFilterWithEligibilty = [
+                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
+                { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { venderOrder: { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { orderUniqueKey: { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             ]
         }
 
-        let query = [
-            {
-                $match: {
-                    $and: contractFilter
-                }
+        if (userSearchCheck == 1) {
+            contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
+        }
+        let mainQuery = []
+        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+            mainQuery = [
+                { $sort: { unique_key_number: -1 } },
 
-            },
-            {
-                $lookup: {
-                    from: "orders",
-                    localField: "orderId",
-                    foreignField: "_id",
-                    as: "order"
-                }
-            },
-            {
-                $match:
                 {
-                    $and: [
-                        { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { "order._id": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                    ]
+                    $facet: {
+                        totalRecords: [
+                            {
+                                $count: "total"
+                            }
+                        ],
+                        data: [
+                            {
+                                $skip: skipLimit
+                            },
+                            {
+                                $limit: pageLimit
+                            },
+                            {
+                                $project: {
+                                    productName: 1,
+                                    model: 1,
+                                    serial: 1,
+                                    unique_key: 1,
+                                    status: 1,
+                                    manufacture: 1,
+                                    eligibilty: 1,
+                                    orderUniqueKey: 1,
+                                    venderOrder: 1,
+                                    totalRecords: 1
+                                }
+                            }
+                        ],
+                    },
+
+                },
+            ]
+        } else {
+            mainQuery = [
+                { $sort: { unique_key_number: -1 } },
+
+                {
+                    $match:
+                    {
+                        $and: contractFilterWithEligibilty
+                    },
                 },
 
-            },
-
-            {
+            ]
+            mainQuery.push({
                 $facet: {
                     totalRecords: [
                         {
@@ -3354,30 +3448,30 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                orderId: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
-                                "order.unique_key": 1,
-                                "order.venderOrder": 1,
-                                "order.dealerId": 1,
-                                "order.productsArray": 1
+                                orderUniqueKey: 1,
+                                venderOrder: 1,
+                                totalRecords: 1
                             }
                         }
                     ],
                 },
 
-            }
-        ]
-
-        let checkOrder = [];
+            })
+        }
         //  console.log.log('before--------------', Date.now())
         //let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-        let getContracts = await contractService.getAllContracts2(query)
+        let getContracts = await contractService.getAllContracts2(mainQuery)
+        // res.json(getContracts);
+        // return;
         //  console.log.log('after+++++++++++++++++++++', Date.now())
         // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
         checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
         let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+        //       res.json(getContracts);
+        // return;
         //res.json(checkOrder);return
         if (!checkOrder[0]) {
             res.send({
@@ -3389,60 +3483,61 @@ exports.getOrderContract = async (req, res) => {
             })
             return
         }
-
+        // res.json(getContracts);
+        // return;
         // checkOrder = checkOrder;
-        let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
-        checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
-            const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
-            const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
-            if (pricebook) {
-                product.name = pricebook.name;
-            }
-            if (pricebookCat) {
-                product.catName = pricebookCat.name;
-            }
+        // let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
+        // checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
+        //     const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
+        //     const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
+        //     if (pricebook) {
+        //         product.name = pricebook.name;
+        //     }
+        //     if (pricebookCat) {
+        //         product.catName = pricebookCat.name;
+        //     }
 
-            return product;
-        }));
+        //     return product;
+        // }));
 
 
-        // return
-        //Get Dealer Data
-        let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
-        //Get customer Data
-        let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
-        //Get Reseller Data
+        // // return
+        // //Get Dealer Data
+        // let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
+        // //Get customer Data
+        // let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
+        // //Get Reseller Data
 
-        let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
+        // let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
 
-        const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        // const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
+        // const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
 
-        let dealerUser = await userService.findUserforCustomer(queryDealerUser)
+        // let dealerUser = await userService.findUserforCustomer(queryDealerUser)
 
-        let resellerUser = await userService.findUserforCustomer(queryResselerUser)
+        // let resellerUser = await userService.findUserforCustomer(queryResselerUser)
 
-        //Get Servicer Data
+        // //Get Servicer Data
 
-        let query1 = {
-            $or: [
-                { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-            ],
-        };
+        // let query1 = {
+        //     $or: [
+        //         { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+        //         // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+        //         // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
+        //     ],
+        // };
 
-        let checkServicer = await servicerService.getServiceProviderById(query1);
+        // let checkServicer = await servicerService.getServiceProviderById(query1);
 
-        let userData = {
-            dealerData: dealer ? dealer : {},
-            customerData: customer ? customer : {},
-            resellerData: reseller ? reseller : {},
-            servicerData: checkServicer ? checkServicer : {},
-            username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
-            resellerUsername: resellerUser ? resellerUser[0] : {}
-        };
+        // let userData = {
+        //     dealerData: dealer ? dealer : {},
+        //     customerData: customer ? customer : {},
+        //     resellerData: reseller ? reseller : {},
+        //     servicerData: checkServicer ? checkServicer : {},
+        //     username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
+        //     resellerUsername: resellerUser ? resellerUser[0] : {}
+        // };
 
 
         res.send({
@@ -3450,7 +3545,6 @@ exports.getOrderContract = async (req, res) => {
             message: "Success!",
             result: getContracts[0]?.data ? getContracts[0]?.data : [],
             totalCount: totalCount,
-            orderUserData: userData
         });
 
     } catch (err) {
@@ -4157,12 +4251,12 @@ exports.generateHtmltopdf = async (req, res) => {
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
 
-                console.log('PDFs merged successfully!'); 
+                console.log('PDFs merged successfully!');
             }
 
             const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
             // const termConditionFile = "termCondition-1713605740802.pdf"
-            
+
             console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
