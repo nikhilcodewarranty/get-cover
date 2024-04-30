@@ -2602,6 +2602,9 @@ exports.getDealerServicers = async (req, res) => {
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
+
+    console.log("filteredData----------------------------------------",filteredData)
+
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.servicerData.name) &&
