@@ -1116,12 +1116,12 @@ exports.searchClaim = async (req, res, next) => {
     // res.json(contractFilter);return;
     let query = [
       { $sort: { unique_key_number: -1 } },
-      // {
-      //   $match:
-      //   {
-      //     $and: contractFilter
-      //   },
-      // },
+      {
+        $match:
+        {
+          $and: contractFilter
+        },
+      },
       {
         $facet: {
           totalRecords: [
@@ -1136,23 +1136,23 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            // {
-            //   $lookup: {
-            //     from: "orders",
-            //     localField: "orderId",
-            //     foreignField: "_id",
-            //     as: "order",
-            //     pipeline: [
-            //       {
-            //         $lookup: {
-            //           from: "customers",
-            //           localField: "customerId",
-            //           foreignField: "_id",
-            //           as: "customers",
-            //         }
-            //       },
-            //       { $unwind: "$customers" },
-            //     ]
+            {
+              $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customers",
+                    }
+                  },
+                  { $unwind: "$customers" },
+                ]
 
               }
             },
@@ -1181,7 +1181,6 @@ exports.searchClaim = async (req, res, next) => {
     res.send({
       code: constant.successCode,
       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-      result2: getContracts,
       totalCount
       // count: getContracts2.length
     })
