@@ -133,7 +133,7 @@ var cronOptions = {
 
 // var job =  cron.schedule('* * * * * *', function() {    //* * * * * *
 //   axios
-//   .post("http://15.207.221.207:3002/api-v1/order/cronJobStatus", {})
+//   .post("http://15.207.221.207:3002/api-v1/order/cronJobStatus", {}) 
 // }, null, true, 'America/Los_Angeles');
 
 
