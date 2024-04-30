@@ -1670,7 +1670,7 @@ exports.createSuperAdmin = async (req, res) => {
       password: hashedPassword,
       phoneNumber: data.phoneNumber,
       roleId: superRole._id, //Assign super role
-      isPrimary: data.isPrimary,
+      isPrimary: true,
       status: data.status,
     }
 
