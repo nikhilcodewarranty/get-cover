@@ -2522,9 +2522,11 @@ exports.getDealerServicers = async (req, res) => {
           servicerData: item1.toObject()
         };
       }
-      //  else {
-      //   return {};
-      // }
+      else {
+        return {
+          servicerData:{}
+        };
+      }
     });
     console.log("-------------------------------------------------------result_Array",result_Array)
     console.log("-------------------------------------------------------",5)
