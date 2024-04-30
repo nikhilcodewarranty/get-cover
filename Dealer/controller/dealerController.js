@@ -2521,9 +2521,10 @@ exports.getDealerServicers = async (req, res) => {
           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
           servicerData: item1.toObject()
         };
-      } else {
-        return {};
       }
+      //  else {
+      //   return {};
+      // }
     });
     console.log("-------------------------------------------------------result_Array",result_Array)
     console.log("-------------------------------------------------------",5)
