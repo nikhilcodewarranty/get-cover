@@ -840,7 +840,7 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Send Email code here
-    console.log("Email---------------------------",ata.email, emailData)
+    console.log("Email---------------------------",data.email, emailData)
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
 
 
