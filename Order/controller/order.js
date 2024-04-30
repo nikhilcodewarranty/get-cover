@@ -2417,7 +2417,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let query;
         if (data.coverageType == "Breakdown & Accidental") {
-            query = { _id: { $in: dealerPriceIds, status: true } };
+            query = { _id: { $in: dealerPriceIds}, status: true  };
         } else {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true };
 
@@ -4173,51 +4173,48 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<table border='1' style="border-collapse: collapse;" border-collapse='collapse'>
+        const html = `<table border='1' border-collapse='collapse'>
                             <tr>
-                                <td colspan='2' class="text-align:center; font-size:20px;">Order Summery</td>
+                                <td style="width:50%">  GET COVER service contract number:</td>
+                                <td>GET COVER-${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
-                                <td style="width:50%; font-size:16px; ">  GET COVER service contract number:</td>
-                                <td style="width:50%; font-size:16px; ">GET COVER-${checkOrder.unique_key}</td>
-                            </tr>
-                            <tr>
-                                <td style="width:50%; font-size:16px; ">Installer Name:</td>
-                                <td style="width:50%; font-size:16px; ">
+                                <td>Installer Name:</td>
+                                <td>
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${DealerUser.email}</p>
                                     <p>Telephone #${DealerUser.email}</p>
                                 </td>
                             </tr>
                         <tr>
-                            <td style="width:50%; font-size:16px; "> GET COVER service contract holder name:</td>
-                            <td style="width:50%; font-size:16px; ">
+                            <td>GET COVER service contract holder name:</td>
+                            <td>
                             <p> Attention –${checkServicer?.name}</p>
                             <p> Email Address –${servicerUser?.email}</p>
                             <p>Telephone #${servicerUser?.email}</p>
                             </td>
                         </tr>
                     <tr>
-                        <td style="width:50%; font-size:16px; ">Address of GET COVER service contract holder:</td>
-                        <td style="width:50%; font-size:16px; ">${checkServicer?.city},${checkServicer?.street},${checkServicer?.state}</td>
+                        <td>Address of GET COVER service contract holder:</td>
+                        <td>${checkServicer?.city},${checkServicer?.street},${checkServicer?.state}</td>
                    </tr>
                 <tr>
-                    <td style="width:50%; font-size:16px; ">Start date (date of system installation)</td>
-                    <td style="width:50%; font-size:16px; ">${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td>Start date (date of system installation)</td>
+                    <td>${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="width:50%; font-size:16px; ">GET COVER service contract period (inclusive
+                <td>GET COVER service contract period (inclusive
                     of any US manufacturer’s warranty that may exist
                     during the GET COVER service contract period)</td>
-                <td style="width:50%; font-size:16px; ">${checkOrder.productsArray[0]?.term}</td>
-            </tr> 
+                <td>${checkOrder.productsArray[0]?.term}</td>
+            </tr>
             <tr>
-            <td style="width:50%; font-size:16px; ">Expiration date:</td>
-            <td style="width:50%; font-size:16px; ">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+            <td>Expiration date:</td>
+            <td>${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
-                <td style="width:50%; font-size:16px; ">Covered System:</td>
-                <td style="width:50%; font-size:16px; ">10 Year Labor only Coverage</td>
+                <td>Covered System:</td>
+                <td>10 Year Labor only Coverage</td>
             </tr>
         </table>`;
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
