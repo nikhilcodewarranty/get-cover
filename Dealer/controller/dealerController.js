@@ -2482,6 +2482,7 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    console.log("-------------------------------------------------------",1)
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
@@ -2495,10 +2496,10 @@ exports.getDealerServicers = async (req, res) => {
       servicer.unshift(checkDealer);
     };
 
-
+    console.log("-------------------------------------------------------",2)
     const servicerIds = servicer.map(obj => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
+    console.log("-------------------------------------------------------",3)
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
       res.send({
@@ -2507,7 +2508,7 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
-
+    console.log("-------------------------------------------------------",4)
     const result_Array = servicer.map(item1 => {
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
 
@@ -2520,6 +2521,8 @@ exports.getDealerServicers = async (req, res) => {
         return {};
       }
     });
+
+    console.log("-------------------------------------------------------",5)
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData._id;
