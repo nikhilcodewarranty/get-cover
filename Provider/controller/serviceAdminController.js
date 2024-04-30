@@ -141,7 +141,7 @@ exports.createServiceProvider = async (req, res, next) => {
         res.send({
           code: constant.errorCode,
           message: "Unable to update the servicer"
-        })
+        }) 
         return;
       };
 
