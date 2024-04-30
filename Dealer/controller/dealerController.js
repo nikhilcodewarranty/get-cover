@@ -2605,7 +2605,6 @@ exports.getDealerServicers = async (req, res) => {
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
 
-    console.log("filteredData----------------------------------------",filteredData)
 
     const filteredData = result_Array.filter(entry => {
       return (
@@ -2614,6 +2613,9 @@ exports.getDealerServicers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
+
+    console.log("filteredData----------------------------------------",filteredData)
+
 
     res.send({
       code: constant.successCode,
