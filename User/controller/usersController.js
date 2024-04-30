@@ -638,14 +638,14 @@ exports.createDealer = async (req, res) => {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
-                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
-            let resetPrimaryLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
+            let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
@@ -989,14 +989,14 @@ exports.createDealer = async (req, res) => {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
-                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
-            let resetPrimaryLink = `http://15.207.221.207/newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
+            let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
@@ -1175,7 +1175,7 @@ exports.createDealer = async (req, res) => {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
-                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
@@ -1528,7 +1528,7 @@ exports.createDealer = async (req, res) => {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id; 
-                let resetLink = `http://15.207.221.207/newPassword/${userId}/${resetPasswordCode}`
+                let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }

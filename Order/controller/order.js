@@ -4166,7 +4166,7 @@ exports.generateHtmltopdf = async (req, res) => {
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             console.log('path check+++++++++', outputPath, pdfPath1, pdfPath2)
-            const link = "http://15.207.221.207:3002/uploads/" + "mergedFile/" + mergeFileName;
+            const link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             console.log('path check+++++++++', pathTosave)
 
