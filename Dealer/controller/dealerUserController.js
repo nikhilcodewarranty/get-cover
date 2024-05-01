@@ -3878,7 +3878,16 @@ exports.editOrderDetail = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
 
-                await contractService.createBulkContracts(contractArray);
+               let createContract =  await contractService.createBulkContracts(contractArray);
+               if(!createContract){
+                if (!saveContracts) {
+                    let savedResponse = await orderService.updateOrder(
+                        { _id: checkOrder._id },
+                        { status: "Pending" },
+                        { new: true }
+                    );
+                }
+               }
 
             })
 

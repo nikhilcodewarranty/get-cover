@@ -441,6 +441,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       $set: {
         status: body.status,
         frontingFee: body.frontingFee || existingPriceBook.frontingFee,
+        coverageType: body.coverageType || existingPriceBook.coverageType,
         reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
         reinsuranceFee: body.reinsuranceFee || existingPriceBook.reinsuranceFee,
         adminFee: body.adminFee || existingPriceBook.adminFee,
