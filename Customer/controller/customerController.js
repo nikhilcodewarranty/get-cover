@@ -12,6 +12,7 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
 const emailConstant = require('../../config/emailConstant');
+const randtoken = require('rand-token').generator()
 
 exports.createCustomer = async (req, res, next) => {
   try {

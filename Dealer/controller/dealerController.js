@@ -2528,8 +2528,8 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-    console.log("-------------------------------------------------------result_Array",result_Array)
-    console.log("-------------------------------------------------------",5)
+    // console.log("-------------------------------------------------------result_Array",result_Array)
+    // console.log("-------------------------------------------------------",5)
 
 
     for (let i = 0; i < result_Array.length; i++) {
