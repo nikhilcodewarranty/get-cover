@@ -873,6 +873,8 @@ exports.getClaims = async (req, res) => {
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      console.log('2222222222222222222222222222222', getData)
+
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
       } else {
@@ -882,7 +884,7 @@ exports.getClaims = async (req, res) => {
 
     let orderAndCondition = []
 
-    console.log('2222222222222222222222222222222')
+    console.log('2222222222222222222222222222222', servicerIds)
 
     if (dealerIds.length > 0) {
       orderAndCondition.push({ dealerId: { $in: dealerIds } })
@@ -918,7 +920,7 @@ exports.getClaims = async (req, res) => {
       { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
       { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
     ]
-    console.log('44444444444444444444444444444444444444')
+    console.log('44444444444444444444444444444444444444',orderIds)
 
     let contractIds = []
     let contractFilterWithEligibilty = []
@@ -1107,7 +1109,7 @@ exports.searchClaim = async (req, res, next) => {
       ]
     } else {
       contractFilter = [
-        
+
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1168,7 +1170,7 @@ exports.searchClaim = async (req, res, next) => {
               $project: {
                 unique_key: 1,
                 serial: 1,
-                orderId:1,
+                orderId: 1,
                 "order.customers.username": 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
@@ -1596,7 +1598,7 @@ exports.editClaimType = async (req, res) => {
       }
       res.send({
         code: constant.successCode,
-        result:updateData,
+        result: updateData,
         message: "Updated successfully",
 
       })
