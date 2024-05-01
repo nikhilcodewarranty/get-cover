@@ -428,13 +428,13 @@ exports.createDealer = async (req, res) => {
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
           priceFile = file[i]
-        }
+        } 
       }
 
       let termData = {
-        fileName:termFile.filename ?termFile.filename:'',
-        name:termFile.originalname ?termFile.originalname:'',
-        size:termFile.size ?termFile.size:'',
+        fileName:termFile ? termFile.filename :'',
+        name:termFile ? termFile.originalname:'',
+        size:termFile ? termFile.size:'',
       }
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
