@@ -5,7 +5,7 @@ const validator = require('../config/validation');
 
 
 const dealerController = require("../controller/dealerController"); // dealer controller 
-const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
+const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware 
 const upload = multer({ dest: 'uploads/' });
 const uploadMiddleware = require('../middleware/uploadMiddleware'); 
 
