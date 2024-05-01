@@ -15,7 +15,7 @@ sgMail.setApiKey('SG.Bu08Ag_jRSeqCeRBnZYOvA.dgQFmbMjFVRQv9ouQFAIgDvigdw31f-1ibcL
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
-
+require("dotenv").config();
 const randtoken = require('rand-token').generator()
 //Created customer
 exports.createServiceProvider = async (req, res, next) => {
