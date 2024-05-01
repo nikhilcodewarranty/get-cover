@@ -2418,7 +2418,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let query;
         if (data.coverageType == "Breakdown & Accidental") {
-            query = { _id: { $in: dealerPriceIds}, status: true  };
+            query = { _id: { $in: dealerPriceIds }, status: true };
         } else {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true };
 
@@ -4269,7 +4269,7 @@ exports.generateHtmltopdf = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: 'Success!',
-                result: link
+                result: { link: link, fileName: mergeFileName }
             })
         });
     }

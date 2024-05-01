@@ -12,7 +12,9 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
 const emailConstant = require('../../config/emailConstant');
-
+const randtoken = require('rand-token').generator() 
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.sendgrid_key);
 exports.createCustomer = async (req, res, next) => {
   try {
     let data = req.body;
