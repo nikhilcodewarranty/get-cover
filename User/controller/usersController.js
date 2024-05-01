@@ -430,6 +430,12 @@ exports.createDealer = async (req, res) => {
           priceFile = file[i]
         }
       }
+
+      let termData = {
+        fileName:termFile.filename ?termFile.filename:'',
+        name:termFile.originalname ?termFile.originalname:'',
+        size:termFile.size ?termFile.size:'',
+      }
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
@@ -600,6 +606,11 @@ exports.createDealer = async (req, res) => {
 
           console.log("createUsers---------------------------------------", createUsers)
           let dealerQuery = { _id: data.dealerId }
+          // let termData = {
+          //   fileName:termFile.filename ?termFile.filename:'',
+          //   name:termFile.originalname ?termFile.originalname:'',
+          //   size:termFile.size ?termFile.size:'',
+          // }
           let newValues = {
             $set: {
               status: "Approved",
@@ -607,7 +618,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate: isAccountCreate,
               coverageType: req.body.coverageType,
-              termCondition: termFile ? termFile : '',
+              termCondition: termData,
               accountStatus: true,
               isAccountCreate: isAccountCreate,
               isServicer: data.isServicer ? data.isServicer : false
@@ -963,7 +974,7 @@ exports.createDealer = async (req, res) => {
               isShippingAllowed: req.body.isShippingAllowed,
               isAccountCreate: isAccountCreate,
               coverageType: req.body.coverageType,
-              termCondition: termFile,
+              termCondition: termData,
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
@@ -1087,7 +1098,7 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate: req.body.isAccountCreate,
-            termCondition: termFile,
+            termCondition: termData,
             zip: data.zip,
             state: data.state,
             isServicer: data.isServicer ? data.isServicer : false,
@@ -1300,7 +1311,7 @@ exports.createDealer = async (req, res) => {
             isShippingAllowed: req.body.isShippingAllowed,
             coverageType: req.body.coverageType,
             isAccountCreate: isAccountCreate,
-            termCondition: termFile,
+            termCondition: termData,
             state: data.state,
             country: data.country,
             isServicer: data.isServicer ? data.isServicer : false,
