@@ -767,6 +767,8 @@ exports.getAllClaims = async (req, res, next) => {
     }
     let allClaims = await claimService.getAllClaims(lookupQuery);
 
+    //res.json(allClaims);return;
+
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -790,17 +792,20 @@ exports.getAllClaims = async (req, res, next) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+    //   console.log("-----------------------------------------",allServicer)
+    // res.json(resultFiter);return;
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer._id?.toString() === matched.servicerId?.toString());
+        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         servicer.push(dealerOfServicer)
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
+
       if (item1.contracts.orders.resellers[0]?.isServicer) {
         servicer.unshift(item1.contracts.orders.resellers[0])
       }
@@ -808,7 +813,7 @@ exports.getAllClaims = async (req, res, next) => {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
+        servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
         //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
         selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false

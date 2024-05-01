@@ -2423,7 +2423,7 @@ exports.createDeleteRelation = async (req, res) => {
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
       dealerId: req.params.dealerId,
-      servicerId: servicerId
+      servicerId: servicerId 
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
