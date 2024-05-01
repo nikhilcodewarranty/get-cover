@@ -639,14 +639,14 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: singleDealer?.name }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink }))
+            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink,role:req.role,dealerName:singleDealer.name}))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
@@ -1176,7 +1176,7 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: data.name }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
 
@@ -1529,7 +1529,7 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id; 
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email,{ link: resetLink, role: req.role, dealerName: data.name }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
 
@@ -1670,7 +1670,7 @@ exports.createSuperAdmin = async (req, res) => {
       password: hashedPassword,
       phoneNumber: data.phoneNumber,
       roleId: superRole._id, //Assign super role
-      isPrimary: data.isPrimary,
+      isPrimary: true,
       status: data.status,
     }
 

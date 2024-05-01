@@ -2482,6 +2482,7 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+    console.log("-------------------------------------------------------",1)
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
@@ -2495,9 +2496,13 @@ exports.getDealerServicers = async (req, res) => {
       servicer.unshift(checkDealer);
     };
 
+    console.log("-------------------------------------------------------",2)
     const servicerIds = servicer.map(obj => obj._id);
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
+
+    console.log("-------------------------------------------------------servicerIds",servicerIds)
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    console.log("-------------------------------------------------------",3)
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
       res.send({
@@ -2506,22 +2511,29 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
+    console.log("-------------------------------------------------------",4)
 
     const result_Array = servicer.map(item1 => {
-      const matchingItem = servicerUser.find(item2 => item2.accountId.toString() === item1._id.toString());
+      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
 
       if (matchingItem) {
         return {
           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
           servicerData: item1.toObject()
         };
-      } else {
-        return servicerUser.toObject();
+      }
+      else {
+        return {
+          servicerData:{}
+        };
       }
     });
+    console.log("-------------------------------------------------------result_Array",result_Array)
+    console.log("-------------------------------------------------------",5)
+
 
     for (let i = 0; i < result_Array.length; i++) {
-      const servicerId = result_Array[i].servicerData._id;
+      const servicerId = result_Array[i].servicerData?._id;
       let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
       console.log("claim check+++++++4444444444444++++++++++++++")
 
@@ -2574,7 +2586,9 @@ exports.getDealerServicers = async (req, res) => {
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-      console.log("claim check+++++++++++++++++++++")
+
+
+      console.log("claim check+++++++++++++++++++++",aggregateResult)
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
@@ -2598,13 +2612,18 @@ exports.getDealerServicers = async (req, res) => {
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
 
+
+
     const filteredData = result_Array.filter(entry => {
       return (
-        nameRegex.test(entry.servicerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
+        nameRegex.test(entry.servicerData?.name) &&
+        emailRegex.test(entry?.email) &&
+        phoneRegex.test(entry?.phoneNumber)
       );
     });
+
+    console.log("filteredData----------------------------------------",filteredData)
+
 
     res.send({
       code: constant.successCode,

@@ -114,7 +114,7 @@ exports.createCustomer = async (req, res, next) => {
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `http://${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
             // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, name: data?.accountName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: data?.accountName }))
 
           }
 
@@ -292,12 +292,12 @@ exports.getDealerCustomers = async (req, res) => {
       if (matchingItem || order || matchingReseller) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject(),
+          customerData:matchingItem ?  matchingItem.toObject() : {},
           orderData: order ? order : {},
           reseller: matchingReseller ? matchingReseller : {},
         };
       } else {
-        return dealerData.toObject();
+        return {};
       }
     });
     let name = data.firstName ? data.firstName : ""
@@ -389,7 +389,7 @@ exports.getResellerCustomers = async (req, res) => {
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData: matchingItem.toObject(),
+          customerData:matchingItem ? matchingItem.toObject() : {},
           orderData: order ? order : {},
         };
       } else {
@@ -956,10 +956,10 @@ exports.customerOrders = async (req, res) => {
         };
       } else {
         return {
-          dealerName: dealerName.toObject(),
-          servicerName: servicerName.toObject(),
-          customerName: customerName.toObject(),
-          resellerName: resellerName.toObject(),
+          servicerName: servicerName ? servicerName.toObject() : {},
+          dealerName: dealerName ? dealerName.toObject() : dealerName,
+          customerName: customerName ? customerName.toObject() : {},
+          resellerName: resellerName ? resellerName.toObject() : {},
         };
       }
     });

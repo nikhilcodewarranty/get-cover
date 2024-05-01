@@ -1174,17 +1174,17 @@ exports.getAllArchieveOrders = async (req, res) => {
         if (dealerName || customerName || servicerName || resellerName) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-                dealerName: dealerName ? dealerName.toObject() : dealerName,
+                dealerName: dealerName ? dealerName.toObject() : {},
                 servicerName: servicerName ? servicerName.toObject() : {},
                 customerName: customerName ? customerName.toObject() : {},
                 resellerName: resellerName ? resellerName.toObject() : {},
             };
         } else {
             return {
-                dealerName: dealerName.toObject(),
-                servicerName: servicerName.toObject(),
-                customerName: customerName.toObject(),
-                resellerName: resellerName.toObject,
+                dealerName: dealerName ? dealerName.toObject() : {},
+                servicerName: servicerName ? servicerName.toObject() : {},
+                customerName: customerName ? customerName.toObject() : {},
+                resellerName: resellerName ? resellerName.toObject() : {},
             };
         }
     });
@@ -1253,6 +1253,7 @@ exports.checkFileValidation = async (req, res) => {
             //     })
             //     return;
             // }
+            console.log(req.file)
             let csvName = req.file.filename;
             let originalName = req.file.originalname;
             let size = req.file.size;
@@ -2059,7 +2060,7 @@ exports.getCustomerInOrder = async (req, res) => {
                     email: item1.email  // Use toObject() to convert Mongoose document to plain JavaScript object
                 };
             } else {
-                return dealerData.toObject();
+                return {};
             }
         });
 
@@ -2140,7 +2141,7 @@ exports.getServicerInOrders = async (req, res) => {
                 servicerData: matchingItem.toObject(),
             };
         } else {
-            return servicer.toObject();
+            return {};
         }
     });
 
@@ -2221,7 +2222,7 @@ exports.getDealerResellers = async (req, res) => {
                     orderData: order ? order : {}
                 };
             } else {
-                return dealerData.toObject();
+                return {};
             }
         });
 
@@ -2324,7 +2325,7 @@ exports.getServicerByOrderId = async (req, res) => {
                     servicerData: matchingItem.toObject(),
                 };
             } else {
-                return servicer.toObject();
+                return {};
             }
         });
 
@@ -2724,7 +2725,7 @@ exports.getSingleOrder = async (req, res) => {
                     servicerData: matchingItem.toObject(),
                 };
             } else {
-                return servicer.toObject();
+                return {};
             }
         });
         let userData = {
