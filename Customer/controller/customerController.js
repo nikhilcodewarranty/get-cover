@@ -160,7 +160,7 @@ exports.createCustomer = async (req, res, next) => {
     let logData = {
       userId: req.userId,
       endpoint: "/create-customer catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message
@@ -550,7 +550,7 @@ exports.editCustomer = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "/editCustomer/:customerId",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message
@@ -641,7 +641,7 @@ exports.changePrimaryUser = async (req, res) => {
     let logData = {
       endpoint: "changePrimaryUser catch",
       userId: req.userId,
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message
@@ -727,7 +727,7 @@ exports.addCustomerUser = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "addCustomerUser catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message
