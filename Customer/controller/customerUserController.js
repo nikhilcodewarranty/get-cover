@@ -15,6 +15,8 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
 
+const LOG = require('../../User/model/logs')
+
 
 // orders API's
 exports.customerOrders = async (req, res) => {
@@ -456,7 +458,7 @@ exports.editCustomer = async (req, res) => {
 
     if (data.isAccountCreate) {
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: checkDealer._id, isPrimaryUser: true }, { stauts: true }, { new: true })
-    }else{
+    } else {
       let updatePrimaryUser = await userService.updateUser({ accountId: checkDealer._id }, { stauts: false }, { new: true })
 
     }
@@ -919,11 +921,37 @@ exports.addCustomerUser = async (req, res) => {
     data.roleId = '656f080e1eb1acda244af8c7'
     let saveData = await userService.createUser(data)
     if (!saveData) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "addCustomerUser",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to add the user"
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to add the user"
       })
     } else {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "addCustomerUser",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "User added successfully",
+          result: saveData
+        }
+      }
+
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "User added successfully",
@@ -933,6 +961,18 @@ exports.addCustomerUser = async (req, res) => {
 
 
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "addCustomerUser catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1014,6 +1054,18 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to change tha primary"
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to change tha primary"
@@ -1022,11 +1074,37 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
     if (!updatePrimary) {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Something went wrong",
+          result: updatePrimary
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Something went wrong"
       })
     } else {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Updated successfully",
+          result: updatePrimary
+        }
+      }
+
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "Updated successfully",
@@ -1035,6 +1113,18 @@ exports.changePrimaryUser = async (req, res) => {
     }
 
   } catch (err) {
+    //Save Logs changePrimaryUser
+    let logData = {
+      endpoint: "changePrimaryUser catch",
+      userId: req.userId,
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
