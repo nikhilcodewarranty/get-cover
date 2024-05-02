@@ -711,6 +711,7 @@ exports.registerDealer = async (req, res) => {
       })
       return;
     }
+
     // Check if the dealer already exists
     const pendingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
     if (pendingDealer) {
@@ -799,6 +800,7 @@ exports.registerDealer = async (req, res) => {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
+      password: process.env.DUMMY_PASSWORD ? process.env.DUMMY_PASSWORD : data.password,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
       accountId: createdDealer._id,
@@ -840,7 +842,7 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Send Email code here
-    console.log("Email---------------------------",data.email, emailData)
+    console.log("Email---------------------------", data.email, emailData)
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
 
 
@@ -962,10 +964,8 @@ exports.statusUpdate = async (req, res) => {
   } catch (err) {
     let logData = {
       userId: req.teammateId,
-      endpoint: "dealer/statusUpdate",
-      body: {
-        type: "catch error"
-      },
+      endpoint: "dealer/statusUpdate catch",
+      body: req.body,
       response: {
         code: constant.errorCode,
         message: err.message,
@@ -2241,7 +2241,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
             queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
           }
 
-          console.log("queryPrice)))))))))))))))))))))))))))--------------------",queryPrice,item)
+          console.log("queryPrice)))))))))))))))))))))))))))--------------------", queryPrice, item)
           if (!item.status) return priceBookService.findByName1(queryPrice);
           return null;
         })
@@ -2423,7 +2423,7 @@ exports.createDeleteRelation = async (req, res) => {
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
       dealerId: req.params.dealerId,
-      servicerId: servicerId  
+      servicerId: servicerId
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
@@ -2482,7 +2482,7 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
-    console.log("-------------------------------------------------------",1)
+    console.log("-------------------------------------------------------", 1)
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
@@ -2496,13 +2496,13 @@ exports.getDealerServicers = async (req, res) => {
       servicer.unshift(checkDealer);
     };
 
-    console.log("-------------------------------------------------------",2)
+    console.log("-------------------------------------------------------", 2)
     const servicerIds = servicer.map(obj => obj._id);
 
 
-    console.log("-------------------------------------------------------servicerIds",servicerIds)
+    console.log("-------------------------------------------------------servicerIds", servicerIds)
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    console.log("-------------------------------------------------------",3)
+    console.log("-------------------------------------------------------", 3)
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
       res.send({
@@ -2511,7 +2511,7 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
-    console.log("-------------------------------------------------------",4)
+    console.log("-------------------------------------------------------", 4)
 
     const result_Array = servicer.map(item1 => {
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
@@ -2524,7 +2524,7 @@ exports.getDealerServicers = async (req, res) => {
       }
       else {
         return {
-          servicerData:{}
+          servicerData: {}
         };
       }
     });
@@ -2588,7 +2588,7 @@ exports.getDealerServicers = async (req, res) => {
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
 
 
-      console.log("claim check+++++++++++++++++++++",aggregateResult)
+      console.log("claim check+++++++++++++++++++++", aggregateResult)
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
@@ -2622,7 +2622,7 @@ exports.getDealerServicers = async (req, res) => {
       );
     });
 
-    console.log("filteredData----------------------------------------",filteredData)
+    console.log("filteredData----------------------------------------", filteredData)
 
 
     res.send({
@@ -3459,14 +3459,14 @@ exports.getDealerClaims = async (req, res) => {
           },
           {
             $project: {
-            "contractId": 1,
+              "contractId": 1,
               "claimFile": 1,
               "lossDate": 1,
               "receiptImage": 1,
               reason: 1,
               "unique_key": 1,
               note: 1,
-              claimType:1,
+              claimType: 1,
               totalAmount: 1,
               servicerId: 1,
               customerStatus: 1,
@@ -3676,7 +3676,7 @@ exports.getDealerClaims = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
       }
       return {
         ...item1,
@@ -3710,8 +3710,8 @@ exports.getDealerClaims = async (req, res) => {
 const MongoClient = require('mongodb').MongoClient;
 
 // Connection URLs for the two databases
-const url2 = `${process.env.DB_URL}`+process.env.dbName;
-const url1 = `${process.env.DB_URL}`+process.env.dbName;
+const url2 = `${process.env.DB_URL}` + process.env.dbName;
+const url1 = `${process.env.DB_URL}` + process.env.dbName;
 
 // Common ID
 

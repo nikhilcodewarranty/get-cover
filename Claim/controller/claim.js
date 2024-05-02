@@ -8,7 +8,7 @@ const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
-
+const LOG = require('../../User/model/logs')
 sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
@@ -920,7 +920,7 @@ exports.getClaims = async (req, res) => {
       { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
       { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
     ]
-    console.log('44444444444444444444444444444444444444',orderIds)
+    console.log('44444444444444444444444444444444444444', orderIds)
 
     let contractIds = []
     let contractFilterWithEligibilty = []
@@ -1377,6 +1377,17 @@ exports.addClaim = async (req, res, next) => {
     data.serialNumber = checkContract.serial
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
+      let logData = {
+        userId: req.userId,
+        endpoint: "addClaim",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to add claim of this contract!",
+          result: claimResponse
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: 'Unable to add claim of this contract!'
@@ -1385,12 +1396,27 @@ exports.addClaim = async (req, res, next) => {
     }
     // Eligibility false when claim open
     const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
+
+    //Save logs add claim
+
+    let logData = {
+      userId: req.userId,
+      endpoint: "addClaim",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: 'Success!',
+        result: claimResponse
+      }
+    }
+    await LOG(logData).save()
+
+
     res.send({
       code: constant.successCode,
       message: 'Success!',
       result: claimResponse
     })
-
 
   }
   catch (err) {
@@ -1534,13 +1560,6 @@ exports.editClaim = async (req, res) => {
           return;
         }
       }
-      // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
-      //   res.send({
-      //     code: constant.errorCode,
-      //     message: 'Claim Amount Exceeds Contract Retail Price'
-      //   });
-      //   return;
-      // }
       if (contract.productValue < data.totalAmount) {
         res.send({
           code: constant.errorCode,
@@ -1551,6 +1570,18 @@ exports.editClaim = async (req, res) => {
       let option = { new: true }
       let updateData = await claimService.updateClaim(criteria, data, option)
       if (!updateData) {
+        //Save Logs edit claim
+        let logData = {
+          userId: req.userId,
+          endpoint: "editClaim",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: 'Failed to process your request!',
+            result: updateData
+          }
+        }
+        await LOG(logData).save()
         res.send({
           code: constant.errorCode,
           message: "Failed to process your request."
@@ -1561,12 +1592,39 @@ exports.editClaim = async (req, res) => {
         code: constant.successCode,
         message: "Updated successfully"
       })
+      return;
     }
+    //Save Logs edit claim
+    let logData = {
+      userId: req.userId,
+      endpoint: "editClaim",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: 'Updated successfully',
+        result: updateData
+      }
+    }
+    await LOG(logData).save()
+
+
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
     })
   } catch (err) {
+    //Save Logs edit claim
+    let logData = {
+      userId: req.userId,
+      endpoint: "editClaim catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1590,24 +1648,63 @@ exports.editClaimType = async (req, res) => {
       let option = { new: true }
       let updateData = await claimService.updateClaim(criteria, data, option)
       if (!updateData) {
+        //Save logs 
+
+        let logData = {
+          userId: req.userId,
+          endpoint: "editClaimType",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Failed to process your request.",
+            result: updateData
+          }
+        }
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Failed to process your request."
         })
         return;
       }
+      //Save logs 
+      let logData = {
+        userId: req.userId,
+        endpoint: "editClaimType",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Updated successfully",
+          result: updateData
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.successCode,
         result: updateData,
         message: "Updated successfully",
-
       })
+      return;
     }
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
     })
   } catch (err) {
+    // Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "editClaimType catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1717,6 +1814,19 @@ exports.editClaimStatus = async (req, res) => {
     // Update every status 
     let updateBodyStatus = await claimService.updateClaim(criteria, updateData, { new: true })
     if (!updateStatus) {
+      //Save logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "editClaimStatus",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: 'Unable to update status!',
+          result: updateBodyStatus
+        }
+      }
+
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: 'Unable to update status!'
@@ -1736,6 +1846,18 @@ exports.editClaimStatus = async (req, res) => {
     if (updateBodyStatus.claimFile == 'Rejected') {
       let updatePrice = await claimService.updateClaim(criteria, { totalAmount: 0 }, { new: true })
     }
+    //Save logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "editClaimStatus",
+      body: data,
+      response: {
+        code: constant.successCode,
+        result: updateBodyStatus
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1743,6 +1865,18 @@ exports.editClaimStatus = async (req, res) => {
     })
 
   } catch (err) {
+    //Save logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "editClaimStatus catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -1751,55 +1885,98 @@ exports.editClaimStatus = async (req, res) => {
 }
 //Edit servicer
 exports.editServicer = async (req, res) => {
-  let data = req.body
-  // if (req.role != 'Super Admin') {
-  //   res.send({
-  //     code: constant.errorCode,
-  //     message: 'Only super admin allow to do this action!'
-  //   });
-  //   return
-  // }
-  let criteria = { _id: req.params.claimId }
-  let checkClaim = await claimService.getClaimById(criteria)
-  if (!checkClaim) {
-    res.send({
-      code: constant.errorCode,
-      message: "Invalid claim ID"
+  try {
+    let data = req.body
+    // if (req.role != 'Super Admin') {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: 'Only super admin allow to do this action!'
+    //   });
+    //   return
+    // }
+    let criteria = { _id: req.params.claimId }
+    let checkClaim = await claimService.getClaimById(criteria)
+    if (!checkClaim) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid claim ID"
+      })
+      return
+    }
+    criteria = { _id: req.body.servicerId }
+    let checkServicer = await servicerService.getServiceProviderById({
+      $or: [
+        { _id: req.body.servicerId },
+        { dealerId: req.body.servicerId },
+        { resellerId: req.body.servicerId },
+      ]
     })
-    return
-  }
-  criteria = { _id: req.body.servicerId }
-  let checkServicer = await servicerService.getServiceProviderById({
-    $or: [
-      { _id: req.body.servicerId },
-      { dealerId: req.body.servicerId },
-      { resellerId: req.body.servicerId },
-    ]
-  })
-  if (!checkServicer) {
-    res.send({
-      code: constant.errorCode,
-      message: "Servicer not found!"
-    })
-    return
-  }
-  // console.log('claimId',req.params.claimId)
-  // console.log('servicerId',req.body.servicerId);
-  // return
+    if (!checkServicer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Servicer not found!"
+      })
+      return
+    }
+    // console.log('claimId',req.params.claimId)
+    // console.log('servicerId',req.body.servicerId);
+    // return
 
-  let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
-  if (!updateServicer) {
+    let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
+    if (!updateServicer) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "editServicer/:claimId",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: 'Unable to update servicer!'
+        }
+      }
+      await LOG(logData).save()
+      res.send({
+        code: constant.errorCode,
+        message: 'Unable to update servicer!'
+      })
+      return;
+    }
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "editServicer/:claimId",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: updateServicer
+      }
+    }
+    await LOG(logData).save()
+    res.send({
+      code: constant.successCode,
+      message: 'Success!',
+      result: updateServicer
+    })
+
+  }
+  catch (err) {
+    //Save logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "editServicer catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
-      message: 'Unable to update servicer!'
+      message: err.message
     })
-    return;
   }
-  res.send({
-    code: constant.successCode,
-    message: 'Success!',
-    result: updateServicer
-  })
+
 }
 //Save bulk claim
 exports.saveBulkClaim = async (req, res) => {
@@ -2309,13 +2486,37 @@ exports.sendMessages = async (req, res) => {
     let sendMessage = await claimService.addMessage(data)
 
     if (!sendMessage) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "sendMessages",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to send message",
+          result: sendMessage
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: 'Unable to send message!'
       });
       return;
     }
-
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "sendMessages",
+      body: data,
+      response: {
+        code: constant.successCode,
+        messages: 'Message Sent!',
+        result: sendMessage
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
@@ -2324,6 +2525,17 @@ exports.sendMessages = async (req, res) => {
 
   }
   catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "sendMessages catch",
+      body: data,
+      response: {
+        code: constant.successCode,
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       messages: err.message

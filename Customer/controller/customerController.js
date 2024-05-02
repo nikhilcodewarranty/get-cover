@@ -12,8 +12,10 @@ const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
 const emailConstant = require('../../config/emailConstant');
-const randtoken = require('rand-token').generator() 
+const randtoken = require('rand-token').generator()
 const sgMail = require('@sendgrid/mail');
+const LOG = require('../../User/model/logs')
+
 sgMail.setApiKey(process.env.sendgrid_key);
 exports.createCustomer = async (req, res, next) => {
   try {
@@ -93,9 +95,20 @@ exports.createCustomer = async (req, res, next) => {
         message: "Some email ids already exist"
       })
     }
-
     const createdCustomer = await customerService.createCustomer(customerObject);
     if (!createdCustomer) {
+      //Save Logs create Customer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/create-customer",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: createdCustomer
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to create the customer"
@@ -123,12 +136,38 @@ exports.createCustomer = async (req, res, next) => {
         }
       }
     }
+
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Customer created successfully",
+        result: data
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Customer created successfully",
-      result: data
+      result: createdCustomer
     })
   } catch (err) {
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/create-customer catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -294,7 +333,7 @@ exports.getDealerCustomers = async (req, res) => {
       if (matchingItem || order || matchingReseller) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData:matchingItem ?  matchingItem.toObject() : {},
+          customerData: matchingItem ? matchingItem.toObject() : {},
           orderData: order ? order : {},
           reseller: matchingReseller ? matchingReseller : {},
         };
@@ -391,7 +430,7 @@ exports.getResellerCustomers = async (req, res) => {
       if (matchingItem || order) {
         return {
           ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
-          customerData:matchingItem ? matchingItem.toObject() : {},
+          customerData: matchingItem ? matchingItem.toObject() : {},
           orderData: order ? order : {},
         };
       } else {
@@ -453,6 +492,18 @@ exports.editCustomer = async (req, res) => {
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
     if (!updateCustomer) {
+      //Save Logs editCustomer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/editCustomer/:customerId",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the customer detail"
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to update the customer detail"
@@ -463,7 +514,7 @@ exports.editCustomer = async (req, res) => {
     if (data.isAccountCreate || data.isAccountCreate == 'true') {
       console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
-      console.log("updatePrimaryUser-----------------------------------",updatePrimaryUser, data.isAccountCreate)
+      console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)
     } else {
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
       console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser, data.isAccountCreate);
@@ -477,11 +528,36 @@ exports.editCustomer = async (req, res) => {
     //   })
     //   return;
     // };
+
+
+    //Save Logs editCustomer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/editCustomer/:customerId",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated successfully"
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
     })
   } catch (err) {
+    let logData = {
+      userId: req.userId,
+      endpoint: "/editCustomer/:customerId",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -502,6 +578,18 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
     if (!updateLastPrimary) {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to change tha primary"
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to change tha primary"
@@ -510,11 +598,37 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
     if (!updatePrimary) {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Something went wrong",
+          result: updatePrimary
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Something went wrong"
       })
     } else {
+      //Save Logs changePrimaryUser
+      let logData = {
+        endpoint: "changePrimaryUser",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Updated successfully",
+          result: updatePrimary
+        }
+      }
+      await LOG(logData).save()
+
       res.send({
         code: constant.successCode,
         message: "Updated successfully",
@@ -523,6 +637,18 @@ exports.changePrimaryUser = async (req, res) => {
     }
 
   } catch (err) {
+    //Save Logs changePrimaryUser
+    let logData = {
+      endpoint: "changePrimaryUser catch",
+      userId: req.userId,
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -556,11 +682,38 @@ exports.addCustomerUser = async (req, res) => {
     data.roleId = '656f080e1eb1acda244af8c7'
     let saveData = await userService.createUser(data)
     if (!saveData) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "addCustomerUser",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to add the user"
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to add the user"
       })
     } else {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "addCustomerUser",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "User added successfully",
+          result: saveData
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.successCode,
         message: "User added successfully",
@@ -570,6 +723,19 @@ exports.addCustomerUser = async (req, res) => {
 
 
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "addCustomerUser catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
