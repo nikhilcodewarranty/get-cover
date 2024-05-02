@@ -4258,7 +4258,7 @@ exports.generateHtmltopdf = async (req, res) => {
             console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/resultFile/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             console.log('path check+++++++++', outputPath, pdfPath1, pdfPath2)
             const link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
