@@ -3055,7 +3055,12 @@ exports.getAllContracts = async (req, res) => {
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
-
+        if (!data.coverageType) {
+            res.send({
+                code: constant.errorCode,
+                message: "Coverage type is required"
+            })
+        }
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
             dealerId: req.userId,
@@ -3070,11 +3075,25 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        let query = { _id: { $in: dealerPriceIds } };
+        let query
+
+        if (coverageType == "Breakdown & Accidental") {
+            query = { status: true, _id: { $in: dealerPriceIds } }
+        } else {
+            query = {
+                $and: [
+                    { status: true },
+                    { _id: { $in: dealerPriceIds } },
+                    { coverageType: coverageType }
+                ]
+            }
+        }
         // if(data.priceCatId){
         //     let categories =
         //     query = { _id: { $in: dealerPriceIds } ,}
         // }
+
+
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
         const dealerPriceBookMap = new Map(
@@ -3878,16 +3897,16 @@ exports.editOrderDetail = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
 
-               let createContract =  await contractService.createBulkContracts(contractArray);
-               if(!createContract){
-                if (!saveContracts) {
-                    let savedResponse = await orderService.updateOrder(
-                        { _id: checkOrder._id },
-                        { status: "Pending" },
-                        { new: true }
-                    );
+                let createContract = await contractService.createBulkContracts(contractArray);
+                if (!createContract) {
+                    if (!saveContracts) {
+                        let savedResponse = await orderService.updateOrder(
+                            { _id: checkOrder._id },
+                            { status: "Pending" },
+                            { new: true }
+                        );
+                    }
                 }
-               }
 
             })
 
@@ -4636,7 +4655,7 @@ exports.getAllClaims = async (req, res, next) => {
                             note: 1,
                             totalAmount: 1,
                             servicerId: 1,
-                            claimType:1,
+                            claimType: 1,
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
