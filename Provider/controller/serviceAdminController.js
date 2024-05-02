@@ -61,6 +61,20 @@ exports.createServiceProvider = async (req, res, next) => {
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
       console.log('check for create+++++++++++++++++++++=', createServiceProvider)
       if (!createServiceProvider) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "createServiceProvider",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to create the servicer",
+            result: createServiceProvider
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to create the servicer"
@@ -89,6 +103,20 @@ exports.createServiceProvider = async (req, res, next) => {
         // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       }
+
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "createServiceProvider",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Customer created successfully",
+          result: createServiceProvider
+        }
+      }
+
+      await LOG(logData).save()
 
       res.send({
         code: constant.successCode,
@@ -136,10 +164,20 @@ exports.createServiceProvider = async (req, res, next) => {
       // return;
 
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
-
-
-
       if (!updateServicer) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "createServiceProvider",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to update the servicer"
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to update the servicer"
@@ -182,6 +220,20 @@ exports.createServiceProvider = async (req, res, next) => {
       //   const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       // }
 
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "createServiceProvider",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Approve successfully",
+          result: data
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -193,6 +245,19 @@ exports.createServiceProvider = async (req, res, next) => {
 
 
   } catch (error) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "createServiceProvider catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: error.message
+      }
+    }
+
+    await LOG(logData).save()
+    
     res.send({
       code: constant.errorCode,
       message: error.message
@@ -816,10 +881,9 @@ exports.registerServiceProvider = async (req, res) => {
     });
   } catch (err) {
     let logData = {
+
       endpoint: "servicer/register",
-      body: {
-        type: "catch error"
-      },
+      body: data,
       response: {
         code: constant.errorCode,
         message: err.message,
@@ -983,12 +1047,38 @@ exports.addServicerUser = async (req, res) => {
       data.roleId = '65719c8368a8a86ef8e1ae4d'
       let saveData = await userService.createUser(data)
       if (!saveData) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "/addServicerUser/:servicerId",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to add the user"
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to add the user"
         })
         return;
       }
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "/addServicerUser/:servicerId",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Added successfully",
+          result: saveData
+        }
+      }
+
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "Added successfully",
@@ -996,6 +1086,19 @@ exports.addServicerUser = async (req, res) => {
       })
     }
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/addServicerUser/:servicerId catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
