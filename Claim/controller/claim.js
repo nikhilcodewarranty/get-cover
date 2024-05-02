@@ -8,7 +8,7 @@ const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
-
+const LOG = require('../../User/model/logs')
 sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
@@ -920,7 +920,7 @@ exports.getClaims = async (req, res) => {
       { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
       { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
     ]
-    console.log('44444444444444444444444444444444444444',orderIds)
+    console.log('44444444444444444444444444444444444444', orderIds)
 
     let contractIds = []
     let contractFilterWithEligibilty = []
@@ -1377,6 +1377,16 @@ exports.addClaim = async (req, res, next) => {
     data.serialNumber = checkContract.serial
     let claimResponse = await claimService.createClaim(data)
     if (!claimResponse) {
+      let logData = {
+        endpoint: "addClaim",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to add claim of this contract!",
+          result: claimResponse
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: 'Unable to add claim of this contract!'
@@ -1385,12 +1395,21 @@ exports.addClaim = async (req, res, next) => {
     }
     // Eligibility false when claim open
     const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
+    let logData = {
+      endpoint: "addClaim",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: 'Success!',
+        result: claimResponse
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.successCode,
       message: 'Success!',
       result: claimResponse
     })
-
 
   }
   catch (err) {
@@ -1534,13 +1553,6 @@ exports.editClaim = async (req, res) => {
           return;
         }
       }
-      // if (contract.productValue < data.totalAmount || contract.productValue < claimTotal[0]?.amount) {
-      //   res.send({
-      //     code: constant.errorCode,
-      //     message: 'Claim Amount Exceeds Contract Retail Price'
-      //   });
-      //   return;
-      // }
       if (contract.productValue < data.totalAmount) {
         res.send({
           code: constant.errorCode,
@@ -1551,6 +1563,17 @@ exports.editClaim = async (req, res) => {
       let option = { new: true }
       let updateData = await claimService.updateClaim(criteria, data, option)
       if (!updateData) {
+        //Save Logs edit claim
+        let logData = {
+          endpoint: "editClaim",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: 'Failed to process your request!',
+            result: updateData
+          }
+        }
+        await LOG(logData).save()
         res.send({
           code: constant.errorCode,
           message: "Failed to process your request."
@@ -1561,12 +1584,38 @@ exports.editClaim = async (req, res) => {
         code: constant.successCode,
         message: "Updated successfully"
       })
+      return;
     }
+    //Save Logs edit claim
+    let logData = {
+      endpoint: "editClaim",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: 'Updated successfully',
+        result: updateData
+      }
+    }
+    await LOG(logData).save()
+
+
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
     })
   } catch (err) {
+    //Save Logs edit claim
+    let logData = {
+      endpoint: "editClaim catch",
+      body: data,
+      response: {
+        code: constant.errorCode,
+        message: '',
+        result: err.message
+      }
+    }
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
