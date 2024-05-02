@@ -800,6 +800,7 @@ exports.registerDealer = async (req, res) => {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
+      password: process.env.DUMMY_PASSWORD ? process.env.DUMMY_PASSWORD : data.password,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
       accountId: createdDealer._id,
