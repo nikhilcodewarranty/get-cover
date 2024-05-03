@@ -684,9 +684,9 @@ exports.updateStatus = async (req, res) => {
           body: data,
           response: {
             code: constant.errorCode,
-            message: "Updated Successfully",
+            message: "Updated Successfully", 
             result: updateData
-          } 
+          }  
         }
 
         await LOG(logData).save()
