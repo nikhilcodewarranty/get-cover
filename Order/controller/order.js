@@ -4228,7 +4228,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td>
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
-                                    <p>Telephone #${resellerUser ? resellerUser?.email : ''}</p>
+                                    <p>Telephone #${resellerUser ? resellerUser?.phoneNumber : ''}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -4236,12 +4236,12 @@ exports.generateHtmltopdf = async (req, res) => {
                             <td>
                             <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone #${checkCustomer ? customerUser?.email : ''}</p>
+                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber : ''}</p>
                             </td>
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${customerUser ? customerUser?.city : ''},${customerUser ? customerUser?.street : ''},${customerUser ? customerUser?.state : ''}</td>
+                        <td>${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
