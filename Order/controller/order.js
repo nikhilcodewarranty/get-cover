@@ -4239,7 +4239,7 @@ exports.generateHtmltopdf = async (req, res) => {
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${checkServicer ? checkServicer?.city : ''},${checkServicer ? checkServicer?.street : ''},${checkServicer ? checkServicer?.state : ''}</td>
+                        <td>${customerUser ? customerUser?.city : ''},${customerUser ? customerUser?.street : ''},${customerUser ? customerUser?.state : ''}</td>
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
@@ -4293,23 +4293,16 @@ exports.generateHtmltopdf = async (req, res) => {
 
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
-
-                console.log('PDFs merged successfully!');
             }
 
             const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
             // const termConditionFile = "termCondition-1713605740802.pdf"
-
-            console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            console.log('path check+++++++++', outputPath, pdfPath1, pdfPath2)
             const link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            console.log('path check+++++++++', pathTosave)
-
             // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
                 code: constant.successCode,
