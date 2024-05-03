@@ -800,7 +800,7 @@ exports.registerDealer = async (req, res) => {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
-      password: process.env.DUMMY_PASSWORD ? process.env.DUMMY_PASSWORD : data.password,
+      //password: process.env.DUMMY_PASSWORD ? process.env.DUMMY_PASSWORD : data.password,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
       accountId: createdDealer._id,
@@ -2005,6 +2005,17 @@ exports.updateDealerMeta = async (req, res) => {
     // data.accountStatus = true
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!updatedData) {
+      //Save Logs update dealer
+      let logData = {
+        userId: req.userId,
+        endpoint: "dealer/updateDealerMeta",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the data"
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
@@ -2045,12 +2056,35 @@ exports.updateDealerMeta = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
+    //Save Logs update dealer
+    let logData = {
+      userId: req.userId,
+      endpoint: "dealer/updateDealerMeta",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Success",
+        result: updatedData
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.successCode,
       message: "Success",
       result: updatedData
     })
   } catch (err) {
+    //Save Logs update dealer
+    let logData = {
+      userId: req.userId,
+      endpoint: "dealer/updateDealerMeta catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2089,11 +2123,34 @@ exports.addDealerUser = async (req, res) => {
     data.status = statusCheck
     let saveData = await userService.createUser(data)
     if (!saveData) {
+      //Save Logs create Customer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/addDealerUser",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to add the data"
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to add the data"
       })
     } else {
+      //Save Logs create Customer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/addDealerUser",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Added successfully",
+          result: saveData
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "Added successfully",
@@ -2101,6 +2158,17 @@ exports.addDealerUser = async (req, res) => {
       })
     }
   } catch (err) {
+    //Save Logs create Customer
+    let logData = {
+      userId: req.userId,
+      endpoint: "/addDealerUser catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2285,9 +2353,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
-
-
-
               await dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
@@ -2398,9 +2463,6 @@ exports.createDeleteRelation = async (req, res) => {
         falseArray.push(item);
       }
     });
-
-
-
     let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
     let checkId = trueArray.map(record => record._id)
     const existingRecords = await dealerRelationService.getDealerRelations({
@@ -2427,11 +2489,34 @@ exports.createDeleteRelation = async (req, res) => {
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
+      //Save Logs create dealer relation
+      let logData = {
+        userId: req.userId,
+        endpoint: "dealer/createRelationWithServicer/:dealerId",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Success",
+          result: saveData
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "success"
       })
     } else {
+      //Save Logs create dealer relation
+      let logData = {
+        userId: req.userId,
+        endpoint: "dealer/createRelationWithServicer/:dealerId",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Success",
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "success"
@@ -2644,6 +2729,18 @@ exports.unAssignServicer = async (req, res) => {
     let data = req.body
     let deleteRelation = await dealerRelation.findOneAndDelete({ servicerId: data.servicerId, dealerId: data.dealerId })
     if (!deleteRelation) {
+      //Save Logs unAssignedServicer
+      let logData = {
+        userId: req.userId,
+        endpoint: "dealer/unAssignServicer",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to unassign",
+          result: deleteRelation
+        }
+      }
+      await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to unassign"
@@ -2655,6 +2752,17 @@ exports.unAssignServicer = async (req, res) => {
       })
     }
   } catch (err) {
+    //Save Logs unAssignedServicer
+    let logData = {
+      userId: req.userId,
+      endpoint: "dealer/unAssignServicer catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message

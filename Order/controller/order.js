@@ -4207,7 +4207,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 <td>GET COVER service contract period (inclusive
                     of any US manufacturer’s warranty that may exist
                     during the GET COVER service contract period)</td>
-                <td>${checkOrder.productsArray[0]?.term}</td>
+                <td>${checkOrder.productsArray[0]?.term / 12} Year</td>
             </tr>
             <tr>
             <td>Expiration date:</td>

@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const connection = require('../../db')
 const userSchema = new mongoose.Schema({
@@ -16,8 +17,9 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    //default: '$2b$10$LVUNmN0okRsnlgyMzqxgvOq0RGQgfZPknOBvQn81fMQ74aU9TPlQe'
-    default: ''
+    default: process.env.DUMMY_PASSWORD
+    
+    // default: ''
   },
   accountId: {
     type: String,
