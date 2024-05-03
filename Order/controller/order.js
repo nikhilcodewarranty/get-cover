@@ -4153,6 +4153,8 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
+        console.log("customerUser------------------------------",customerUser)
+
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
@@ -4232,7 +4234,7 @@ exports.generateHtmltopdf = async (req, res) => {
                         <tr>
                             <td>GET COVER service contract holder name:</td>
                             <td>
-                            <p> Attention –${checkCustomer ? checkCustomer?.name : ''}</p>
+                            <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
                             <p>Telephone #${checkCustomer ? customerUser?.email : ''}</p>
                             </td>
