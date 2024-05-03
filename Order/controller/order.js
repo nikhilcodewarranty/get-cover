@@ -4188,8 +4188,7 @@ exports.generateHtmltopdf = async (req, res) => {
         }
 
         const tableRows = productCoveredArray.map(product => `
-        <td>${product.productName}</td>
-        <td>${product.noOfProducts}</td>
+        <td>${product.productName}:${product.noOfProducts}</td>
 
 `).join('');
         const checkServicer = await servicerService.getServiceProviderById({
@@ -4240,7 +4239,7 @@ exports.generateHtmltopdf = async (req, res) => {
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${checkServicer?.city},${checkServicer?.street},${checkServicer?.state}</td>
+                        <td>${checkServicer ? checkServicer?.city : ''},${checkServicer ? checkServicer?.street : ''},${checkServicer ? checkServicer?.state : ''}</td>
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
