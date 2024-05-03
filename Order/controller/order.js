@@ -4218,14 +4218,14 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<table border='1' border-collapse='collapse'>
+        const html = `<table border='1' border-collapse='collapse' style=" border-collapse: collapse;">
                             <tr>
-                                <td style="width:50%">  GET COVER service contract number:</td>
-                                <td>${checkOrder.unique_key}</td>
+                                <td style="width:50%; font-size:13px;">  GET COVER service contract number:</td>
+                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
                                 <td>Installer Name:</td>
-                                <td>
+                                <td style="font-size:13px;">
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
                                     <p>Telephone #${resellerUser ? resellerUser?.phoneNumber : ''}</p>
@@ -4233,7 +4233,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             </tr>
                         <tr>
                             <td>GET COVER service contract holder name:</td>
-                            <td>
+                            <td style="font-size:13px;">
                             <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
                             <p>Telephone #${checkCustomer ? customerUser?.phoneNumber : ''}</p>
@@ -4241,24 +4241,24 @@ exports.generateHtmltopdf = async (req, res) => {
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
-                    <td>Start date (date of system installation)</td>
-                    <td>${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td style="font-size:13px;">Start date (date of system installation)</td>
+                    <td style="font-size:13px;">${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td>GET COVER service contract period (inclusive
+                <td style="font-size:13px;">GET COVER service contract period (inclusive
                     of any US manufacturer’s warranty that may exist
                     during the GET COVER service contract period)</td>
-                <td>${checkOrder.productsArray[0]?.term / 12} Year</td>
+                <td style="font-size:13px;">${checkOrder.productsArray[0]?.term / 12} Year</td>
             </tr>
             <tr>
-            <td>Expiration date:</td>
-            <td>${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+            <td style="font-size:13px;">Expiration date:</td>
+            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
-                <td>Number of covered components:</td>
+                <td style="font-size:13px;">Number of covered components:</td>
                 ${tableRows}                    
             </tr >
             
