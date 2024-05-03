@@ -14,6 +14,10 @@ const commentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         default: null
     },
+    commentedByUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        default: null
+    },
     content: {
         type: String,
         default: ''
