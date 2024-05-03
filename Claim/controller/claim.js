@@ -792,6 +792,9 @@ exports.getAllClaims = async (req, res, next) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+
+
+
     //   console.log("-----------------------------------------",allServicer)
     // res.json(resultFiter);return;
     const result_Array = resultFiter.map((item1) => {
@@ -2484,6 +2487,7 @@ exports.sendMessages = async (req, res) => {
     else if (data.type == 'Servicer') {
       data.commentedTo = orderData.servicerId
     }
+    
     let sendMessage = await claimService.addMessage(data)
 
     if (!sendMessage) {
