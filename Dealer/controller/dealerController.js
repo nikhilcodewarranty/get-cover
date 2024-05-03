@@ -43,7 +43,7 @@ const logs = require('../../User/model/logs');
 
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, '../../uploads/resultFile'));
+    cb(null, path.join(__dirname, '../../uploads'));
   },
   filename: function (req, files, cb) {
     cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
