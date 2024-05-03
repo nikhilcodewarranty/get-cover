@@ -21,6 +21,46 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  isOpenByAdmin:{
+    type:Boolean,
+    default: false
+  },
+  isOpenByDealer:{
+    type:Boolean,
+    default: false
+  },
+  isOpenByReseller:{
+    type:Boolean,
+    default: false
+  },
+  isOpenByServicer:{
+    type:Boolean,
+    default: false
+  },
+  isOpenByCustomer:{
+    type:Boolean,
+    default: false
+  },
+  isReadByAdmin:{
+    type:Boolean,
+    default: false
+  },
+  isReadByDealer:{
+    type:Boolean,
+    default: false
+  },
+  isReadByReseller:{
+    type:Boolean,
+    default: false
+  },
+  isReadByServicer:{
+    type:Boolean,
+    default: false
+  },
+  isReadByCustomer:{
+    type:Boolean,
+    default: false
+  },
   flag: {
     type: String,
     default: ''

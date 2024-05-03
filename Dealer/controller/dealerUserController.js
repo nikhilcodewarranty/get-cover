@@ -63,11 +63,8 @@ var upload = multer({
 exports.getDealerUsers = async (req, res) => {
     try {
         let data = req.body
-        //fetching data from user table
-
         const dealers = await dealerService.getSingleDealerById({ _id: req.userId }, { accountStatus: 1 });
 
-        //result.metaData = singleDealer
         if (!dealers) {
             res.send({
                 code: constant.errorCode,
@@ -102,7 +99,6 @@ exports.getDealerUsers = async (req, res) => {
         });
 
 
-        //result.metaData = singleDealer
         if (!users) {
             res.send({
                 code: constant.errorCode,
