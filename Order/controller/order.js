@@ -4153,7 +4153,6 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
-        console.log("customerUser------------------------------",customerUser)
 
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
@@ -4162,8 +4161,7 @@ exports.generateHtmltopdf = async (req, res) => {
         //Get reseller primary info
 
         const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
-
-        console.log(checkOrder);
+        
 
         //Get contract info of the order
 
@@ -4228,7 +4226,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td style="font-size:13px;">
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
-                                    <p>Telephone #${resellerUser ? resellerUser?.phoneNumber : ''}</p>
+                                    <p>Telephone #${resellerUser ?  resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -4236,7 +4234,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             <td style="font-size:13px;">
                             <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber : ''}</p>
+                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
