@@ -3674,7 +3674,6 @@ const renderContractsChunked = async (
 ) => {
     try {
         console.log('Rendering contracts chunk...'); // Ensure function is being called
-        console.log("contracts-------------------", contracts)
         let htmlContent = `
             <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
                 <thead style="background-color: #f4f4f4; text-align: left;">
@@ -3698,7 +3697,6 @@ const renderContractsChunked = async (
 
         for (let i = startIndex; i < endIndex && i < contracts.length; i++) {
             const contract = contracts[i];
-            console.log('contract')
             const serialNo = i + 1; // Adjust serial number
             htmlContent += `
                 <tr>
@@ -4153,7 +4151,6 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
-
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
@@ -4161,7 +4158,7 @@ exports.generateHtmltopdf = async (req, res) => {
         //Get reseller primary info
 
         const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
-        
+
 
         //Get contract info of the order
 
@@ -4177,7 +4174,6 @@ exports.generateHtmltopdf = async (req, res) => {
             }
         })
         const contractArray = await Promise.all(contractArrayPromise);
-
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
             let obj = {
@@ -4191,6 +4187,7 @@ exports.generateHtmltopdf = async (req, res) => {
         <td style="font-size:13px;">${product.productName}:${product.noOfProducts}</td>
 
 `).join('');
+
         const checkServicer = await servicerService.getServiceProviderById({
             $or: [
                 { "_id": checkOrder.servicerId },
@@ -4226,7 +4223,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td style="font-size:13px;">
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
-                                    <p>Telephone #${resellerUser ?  resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
+                                    <p>Telephone #${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -4234,7 +4231,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             <td style="font-size:13px;">
                             <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
+                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -4264,7 +4261,6 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr >
             
         </table > `;
-
 
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
