@@ -4153,6 +4153,7 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
+
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
@@ -4160,8 +4161,7 @@ exports.generateHtmltopdf = async (req, res) => {
         //Get reseller primary info
 
         const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
-
-        console.log(checkOrder);
+        
 
         //Get contract info of the order
 
@@ -4188,7 +4188,7 @@ exports.generateHtmltopdf = async (req, res) => {
         }
 
         const tableRows = productCoveredArray.map(product => `
-        <td>${product.productName}:${product.noOfProducts}</td>
+        <td style="font-size:13px;">${product.productName}:${product.noOfProducts}</td>
 
 `).join('');
         const checkServicer = await servicerService.getServiceProviderById({
@@ -4216,47 +4216,50 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<table border='1' border-collapse='collapse'>
+        const html = `<table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;">
                             <tr>
-                                <td style="width:50%">  GET COVER service contract number:</td>
-                                <td>${checkOrder.unique_key}</td>
+                                <td style="width:50%; font-size:13px;">  GET COVER service contract number:</td>
+                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
-                                <td>Installer Name:</td>
-                                <td>
+                                <td style="font-size:13px;">Installer Name:</td>
+                                <td style="font-size:13px;">
                                     <p> Attention –${checkDealer.name}</p>
                                     <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
-                                    <p>Telephone #${resellerUser ? resellerUser?.email : ''}</p>
+                                    <p>Telephone #${resellerUser ?  resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
                                 </td>
                             </tr>
                         <tr>
-                            <td>GET COVER service contract holder name:</td>
-                            <td>
-                            <p> Attention –${checkCustomer ? checkCustomer?.name : ''}</p>
+                            <td style="font-size:13px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;">
+                            <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone #${checkCustomer ? customerUser?.email : ''}</p>
+                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/,"($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
-                        <td>Address of GET COVER service contract holder:</td>
-                        <td>${customerUser ? customerUser?.city : ''},${customerUser ? customerUser?.street : ''},${customerUser ? customerUser?.state : ''}</td>
+                        <td style="font-size:13px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
-                    <td>Start date (date of system installation)</td>
-                    <td>${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td style="font-size:13px;">Start date (date of system installation)</td>
+                    <td style="font-size:13px;">${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td>GET COVER service contract period (inclusive
+                <td style="font-size:13px;">GET COVER service contract period (inclusive
                     of any US manufacturer’s warranty that may exist
                     during the GET COVER service contract period)</td>
-                <td>${checkOrder.productsArray[0]?.term / 12} Year</td>
+                <td style="font-size:13px;">
+                ${checkOrder.productsArray[0]?.term / 12} 
+                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
+                </td>
             </tr>
             <tr>
-            <td>Expiration date:</td>
-            <td>${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+            <td style="font-size:13px;">Expiration date:</td>
+            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
-                <td>Number of covered components:</td>
+                <td style="font-size:13px;">Number of covered components:</td>
                 ${tableRows}                    
             </tr >
             
