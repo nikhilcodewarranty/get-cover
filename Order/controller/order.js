@@ -4143,12 +4143,54 @@ exports.generateHtmltopdf = async (req, res) => {
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+        //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+
+        //Get customer
+        const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
+
+        //Get customer primary info
+
+        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
 
+        //Get reseller primary info
+
+        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+
+        console.log(checkOrder);
+
+        //Get contract info of the order
+
+        let productCoveredArray = []
+
+        //Check contract is exist or not using contract id
+        const contractArrayPromise = checkOrder?.productsArray.map(item => {
+            if (!item.exit) return contractService.getContractById({
+                orderProductId: item._id
+            });
+            else {
+                return null;
+            }
+        })
+        const contractArray = await Promise.all(contractArrayPromise);
+
+        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
+            let obj = {
+                productName: findContract.productName,
+                noOfProducts: checkOrder?.productsArray[i].noOfProducts
+            }
+            productCoveredArray.push(obj)
+        }
+
+        const tableRows = productCoveredArray.map(product => `
+        <td>${product.productName}:${product.noOfProducts}</td>
+
+`).join('');
         const checkServicer = await servicerService.getServiceProviderById({
             $or: [
                 { "_id": checkOrder.servicerId },
@@ -4177,27 +4219,27 @@ exports.generateHtmltopdf = async (req, res) => {
         const html = `<table border='1' border-collapse='collapse'>
                             <tr>
                                 <td style="width:50%">  GET COVER service contract number:</td>
-                                <td>GET COVER-${checkOrder.unique_key}</td>
+                                <td>${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
                                 <td>Installer Name:</td>
                                 <td>
                                     <p> Attention –${checkDealer.name}</p>
-                                    <p> Email Address –${DealerUser.email}</p>
-                                    <p>Telephone #${DealerUser.email}</p>
+                                    <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
+                                    <p>Telephone #${resellerUser ? resellerUser?.email : ''}</p>
                                 </td>
                             </tr>
                         <tr>
                             <td>GET COVER service contract holder name:</td>
                             <td>
-                            <p> Attention –${checkServicer?.name}</p>
-                            <p> Email Address –${servicerUser?.email}</p>
-                            <p>Telephone #${servicerUser?.email}</p>
+                            <p> Attention –${checkCustomer ? checkCustomer?.name : ''}</p>
+                            <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
+                            <p>Telephone #${checkCustomer ? customerUser?.email : ''}</p>
                             </td>
                         </tr>
                     <tr>
                         <td>Address of GET COVER service contract holder:</td>
-                        <td>${checkServicer?.city},${checkServicer?.street},${checkServicer?.state}</td>
+                        <td>${customerUser ? customerUser?.city : ''},${customerUser ? customerUser?.street : ''},${customerUser ? customerUser?.state : ''}</td>
                    </tr>
                 <tr>
                     <td>Start date (date of system installation)</td>
@@ -4214,10 +4256,13 @@ exports.generateHtmltopdf = async (req, res) => {
             <td>${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
-                <td>Covered System:</td>
-                <td>10 Year Labor only Coverage</td>
-            </tr>
-        </table>`;
+                <td>Number of covered components:</td>
+                ${tableRows}                    
+            </tr >
+            
+        </table > `;
+
+
         pdf.create(html, options).toFile(orderFile, async (err, result) => {
             if (err) return console.log(err);
             // -------------------merging pdfs 
@@ -4248,23 +4293,16 @@ exports.generateHtmltopdf = async (req, res) => {
 
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
-
-                console.log('PDFs merged successfully!');
             }
 
             const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
             // const termConditionFile = "termCondition-1713605740802.pdf"
-
-            console.log('termCondition++000000000002222222200000', termConditionFile, checkDealer.termCondition)
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            console.log('path check+++++++++', outputPath, pdfPath1, pdfPath2)
             const link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            console.log('path check+++++++++', pathTosave)
-
             // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
             res.send({
                 code: constant.successCode,

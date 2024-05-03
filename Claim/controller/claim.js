@@ -2474,6 +2474,7 @@ exports.sendMessages = async (req, res) => {
     // console.log(" req.userId==================", req.role);return;
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
+    data.commentedByUser = req.teammateId
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
     }
