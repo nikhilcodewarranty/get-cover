@@ -3046,7 +3046,7 @@ exports.getAllContracts = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
