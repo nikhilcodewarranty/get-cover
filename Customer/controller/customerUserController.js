@@ -965,7 +965,7 @@ exports.addCustomerUser = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "addCustomerUser catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message
@@ -1117,7 +1117,7 @@ exports.changePrimaryUser = async (req, res) => {
     let logData = {
       endpoint: "changePrimaryUser catch",
       userId: req.userId,
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         message: err.message

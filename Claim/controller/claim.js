@@ -1617,7 +1617,7 @@ exports.editClaim = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaim catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1697,7 +1697,7 @@ exports.editClaimType = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaimType catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1869,7 +1869,7 @@ exports.editClaimStatus = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaimStatus catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1964,7 +1964,7 @@ exports.editServicer = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editServicer catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.errorCode,
         result: err.message
@@ -2529,7 +2529,7 @@ exports.sendMessages = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "sendMessages catch",
-      body: data,
+      body: req.body ? req.body : {"type":"Catch Error"},
       response: {
         code: constant.successCode,
         result: err.message

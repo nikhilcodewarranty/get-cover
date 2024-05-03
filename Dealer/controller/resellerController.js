@@ -7,6 +7,7 @@ const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 let claimService = require('../../Claim/services/claimService')
 const randtoken = require('rand-token').generator()
+const LOG = require('../../User/model/logs')
 
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -45,7 +46,6 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-
         let checkName = await resellerService.getReseller({ name: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName }, {})
         if (checkName) {
             res.send({
@@ -54,7 +54,6 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-
         let checkCustomerEmail = await userService.findOneUser({ email: data.email });
         if (checkCustomerEmail) {
             res.send({
@@ -102,7 +101,6 @@ exports.createReseller = async (req, res) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
-            console.log("saveMembers------------------------------", saveMembers);
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
                     let email = saveMembers[i].email
@@ -110,9 +108,6 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-
-                    //const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-
                     const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: data?.accountName }))
                 }
 
@@ -126,7 +121,6 @@ exports.createReseller = async (req, res) => {
 
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
-
             let servicerObject = {
                 name: data.accountName,
                 street: data.street,
@@ -139,9 +133,20 @@ exports.createReseller = async (req, res) => {
                 accountStatus: "Approved",
                 unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
             }
-
             let createData = await providerService.createServiceProvider(servicerObject)
         }
+        //Save Logs create reseller
+        let logData = {
+            userId: req.userId,
+            endpoint: "reseller/createReseller",
+            body: data,
+            response: {
+                code: constant.successCode,
+                message: "Reseller created successfully",
+                result: createdReseler
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
@@ -150,6 +155,17 @@ exports.createReseller = async (req, res) => {
 
 
     } catch (err) {
+        //Save Logs create reseller
+        let logData = {
+            userId: req.userId,
+            endpoint: "reseller/createReseller catch",
+            body: req.body ? req.body : { "type": "Catch Error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -695,7 +711,6 @@ exports.addResellerUser = async (req, res) => {
         data.accountId = checkReseller._id
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
-
         let statusCheck;
         if (!checkReseller.status) {
             statusCheck = false
@@ -705,11 +720,35 @@ exports.addResellerUser = async (req, res) => {
         data.status = statusCheck
         let saveData = await userService.createUser(data)
         if (!saveData) {
+            //Save Logs add reseller user
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/addResellerUser",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to add the data",
+                    result: saveData
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to add the data"
             })
         } else {
+            //Save Logs add reseller user
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/addResellerUser",
+                body: data,
+                response: {
+                    code: constant.successCode,
+                    message: "Added successfully",
+                    result: saveData
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Added successfully",
@@ -717,6 +756,17 @@ exports.addResellerUser = async (req, res) => {
             })
         }
     } catch (err) {
+        //Save Logs add reseller user
+        let logData = {
+            userId: req.userId,
+            endpoint: "reseller/addResellerUser catch",
+            body: req.body ? req.body : { "type": "Catch Error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -1726,6 +1776,18 @@ exports.changeResellerStatus = async (req, res) => {
         };
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
         if (changedResellerStatus) {
+            //Save Logs change reseller status
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/changeResellerStatus/:resellerId",
+                body: req.body,
+                response: {
+                    code: constant.successCode,
+                    message: 'Updated Successfully!',
+                    data: changedResellerStatus
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: 'Updated Successfully!',
@@ -1733,12 +1795,35 @@ exports.changeResellerStatus = async (req, res) => {
             })
         }
         else {
+            //Save Logs change reseller status
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/changeResellerStatus/:resellerId",
+                body: req.body,
+                response: {
+                    code: constant.errorCode,
+                    message: 'Unable to update reseller status!',
+                    result:changedResellerStatus
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: 'Unable to update reseller status!',
             })
         }
     } catch (err) {
+        //Save Logs change reseller status
+        let logData = {
+            userId: req.userId,
+            endpoint: "reseller/changeResellerStatus/:resellerId catch",
+            body: req.body ? req.body : { "type": "Catch Error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message

@@ -61,6 +61,20 @@ exports.createServiceProvider = async (req, res, next) => {
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
       console.log('check for create+++++++++++++++++++++=', createServiceProvider)
       if (!createServiceProvider) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "createServiceProvider",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to create the servicer",
+            result: createServiceProvider
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to create the servicer"
@@ -89,6 +103,20 @@ exports.createServiceProvider = async (req, res, next) => {
         // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       }
+
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "createServiceProvider",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Customer created successfully",
+          result: createServiceProvider
+        }
+      }
+
+      await LOG(logData).save()
 
       res.send({
         code: constant.successCode,
@@ -136,10 +164,20 @@ exports.createServiceProvider = async (req, res, next) => {
       // return;
 
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
-
-
-
       if (!updateServicer) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "createServiceProvider",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to update the servicer"
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to update the servicer"
@@ -182,6 +220,20 @@ exports.createServiceProvider = async (req, res, next) => {
       //   const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       // }
 
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "createServiceProvider",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Approve successfully",
+          result: data
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.successCode,
         message: "Approve successfully",
@@ -193,6 +245,19 @@ exports.createServiceProvider = async (req, res, next) => {
 
 
   } catch (error) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "createServiceProvider catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: error.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: error.message
@@ -413,6 +478,18 @@ exports.rejectServicer = async (req, res) => {
     })
 
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/rejectServicer/:servicerId catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -420,7 +497,7 @@ exports.rejectServicer = async (req, res) => {
   }
 }
 
-//edit servicer details
+//edit servicer details (Log)
 exports.editServicerDetail = async (req, res) => {
   try {
     let data = req.body
@@ -463,6 +540,20 @@ exports.editServicerDetail = async (req, res) => {
     }
     const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
     if (!updateData) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "/editServicerDetail/:servicerId",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the data",
+          result: changeServicerUser
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
@@ -475,6 +566,21 @@ exports.editServicerDetail = async (req, res) => {
     //     { accountId: checkServicer._id }
     //   ]
     // }
+
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/editServicerDetail/:servicerId",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result: updateData
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
@@ -494,6 +600,19 @@ exports.editServicerDetail = async (req, res) => {
     //   })
     // }
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/editServicerDetail/:servicerId catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -515,6 +634,20 @@ exports.updateStatus = async (req, res) => {
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
     if (!updateData) {
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "/updateStatus/:servicerId",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the data",
+          result: updateData
+        }
+      }
+
+      await LOG(logData).save()
+
       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
@@ -525,11 +658,39 @@ exports.updateStatus = async (req, res) => {
       let criteria1 = { accountId: checkServicer._id }
       let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
       if (!updateMetaData) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "/updateStatus/:servicerId",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to update the primary details 'false'",
+            result: updateMetaData
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to update the primary details 'false'"
         })
       } else {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "/updateStatus/:servicerId",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Updated Successfully",
+            result: updateData
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.successCode,
           message: "Updated Successfully 'false'",
@@ -555,6 +716,19 @@ exports.updateStatus = async (req, res) => {
         }
       }
     }
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/updateStatus/:servicerId",
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result: updateData
+      }
+    }
+
+    await LOG(logData).save()
 
     res.send({
       code: constant.successCode,
@@ -563,6 +737,19 @@ exports.updateStatus = async (req, res) => {
     })
 
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "updateStatus/:servicerId catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -816,10 +1003,9 @@ exports.registerServiceProvider = async (req, res) => {
     });
   } catch (err) {
     let logData = {
+
       endpoint: "servicer/register",
-      body: {
-        type: "catch error"
-      },
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message,
@@ -983,12 +1169,38 @@ exports.addServicerUser = async (req, res) => {
       data.roleId = '65719c8368a8a86ef8e1ae4d'
       let saveData = await userService.createUser(data)
       if (!saveData) {
+        //Save Logs
+        let logData = {
+          userId: req.userId,
+          endpoint: "/addServicerUser/:servicerId",
+          body: data,
+          response: {
+            code: constant.errorCode,
+            message: "Unable to add the user"
+          }
+        }
+
+        await LOG(logData).save()
+
         res.send({
           code: constant.errorCode,
           message: "Unable to add the user"
         })
         return;
       }
+      //Save Logs
+      let logData = {
+        userId: req.userId,
+        endpoint: "/addServicerUser/:servicerId",
+        body: data,
+        response: {
+          code: constant.successCode,
+          message: "Added successfully",
+          result: saveData
+        }
+      }
+
+      await LOG(logData).save()
       res.send({
         code: constant.successCode,
         message: "Added successfully",
@@ -996,6 +1208,19 @@ exports.addServicerUser = async (req, res) => {
       })
     }
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.userId,
+      endpoint: "/addServicerUser/:servicerId catch",
+      body: req.body ? req.body : { "type": "Catch Error" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+
+    await LOG(logData).save()
+
     res.send({
       code: constant.errorCode,
       message: err.message
