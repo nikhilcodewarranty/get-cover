@@ -1620,7 +1620,7 @@ exports.editClaim = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaim catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1700,7 +1700,7 @@ exports.editClaimType = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaimType catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1872,7 +1872,7 @@ exports.editClaimStatus = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editClaimStatus catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         result: err.message
@@ -1967,7 +1967,7 @@ exports.editServicer = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "editServicer catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         result: err.message
@@ -2487,7 +2487,7 @@ exports.sendMessages = async (req, res) => {
     else if (data.type == 'Servicer') {
       data.commentedTo = orderData.servicerId
     }
-    
+
     let sendMessage = await claimService.addMessage(data)
 
     if (!sendMessage) {
@@ -2534,7 +2534,7 @@ exports.sendMessages = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "sendMessages catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.successCode,
         result: err.message
@@ -2638,6 +2638,25 @@ exports.getMessages = async (req, res) => {
     },
     { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
     {
+      $lookup: {
+        from: "users",
+        localField: "commentedByUser",
+        foreignField: "_id",
+        as: "commentByUser",
+        pipeline: [
+          {
+            $project: {
+              firstName: 1,
+              lastName: 1,
+              email: 1,
+              _id: 1
+            }
+          }
+        ]
+      }
+    },
+    { $unwind: { path: "$commentedByUser", preserveNullAndEmptyArrays: true } },
+    {
       $project: {
         _id: 1,
         date: 1,
@@ -2647,7 +2666,9 @@ exports.getMessages = async (req, res) => {
         // "commentBy.firstName": 1,
         // "commentBy.lastName": 1
         "commentBy": 1,
-        "commentTo": 1
+        "commentTo": 1,
+        "commentedByUser": 1,
+
       }
     }
   ]
