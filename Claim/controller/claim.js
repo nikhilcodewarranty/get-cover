@@ -1095,7 +1095,7 @@ exports.searchClaim = async (req, res, next) => {
       if (getOrders.length > 0) {
         orderIds = await getOrders.map(order => order._id)
       }
-      else {
+      else { 
         orderIds.push("1111121ccf9d400000000000")
       }
     }
