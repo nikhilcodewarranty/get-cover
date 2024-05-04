@@ -3,15 +3,15 @@ const connection = require('../../db')
 const notificationSchema = new mongoose.Schema({
   status: {
     type: Boolean,
-    default:false
+    default: false
   },
   title: {
     type: String,
     default: ''
   },
-  notificationFor:{
-    type:[],
-    default:[]
+  notificationFor: {
+    type: [],
+    default: []
   },
   description: {
     type: String,
@@ -21,57 +21,57 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  isOpenByAdmin:{
-    type:Boolean,
+  isOpenByAdmin: {
+    type: Boolean,
     default: false
   },
-  isOpenByDealer:{
-    type:Boolean,
+  isOpenByDealer: {
+    type: Boolean,
     default: false
   },
-  isOpenByReseller:{
-    type:Boolean,
+  isOpenByReseller: {
+    type: Boolean,
     default: false
   },
-  isOpenByServicer:{
-    type:Boolean,
+  isOpenByServicer: {
+    type: Boolean,
     default: false
   },
-  isOpenByCustomer:{
-    type:Boolean,
+  isOpenByCustomer: {
+    type: Boolean,
     default: false
   },
-  isReadByAdmin:{
-    type:Boolean,
+  isReadByAdmin: {
+    type: Boolean,
     default: false
   },
-  isReadByDealer:{
-    type:Boolean,
+  isReadByDealer: {
+    type: Boolean,
     default: false
   },
-  isReadByReseller:{
-    type:Boolean,
+  isReadByReseller: {
+    type: Boolean,
     default: false
   },
-  isReadByServicer:{
-    type:Boolean,
+  isReadByServicer: {
+    type: Boolean,
     default: false
   },
-  isReadByCustomer:{
-    type:Boolean,
+  isReadByCustomer: {
+    type: Boolean,
     default: false
   },
   flag: {
     type: String,
     default: ''
   },
-  flagId:{
+  flagId: {
     type: mongoose.Schema.Types.ObjectId,
-    default:null
+    default: null
   },
   isDeleted: {
     type: String,
     default: false
   },
-},{ timestamps: true });
+}, { timestamps: true });
 module.exports = connection.userConnection.model("notification", notificationSchema);
