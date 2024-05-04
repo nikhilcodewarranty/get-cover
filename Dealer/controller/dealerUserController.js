@@ -3570,6 +3570,8 @@ exports.editOrderDetail = async (req, res) => {
             await savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
+                let coverageStartDate = product.coverageStartDate;
+                let coverageEndDate = product.coverageEndDate;
                 let orderProductId = product._id;
                 let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
                 let projection = { isDeleted: 0 };
@@ -3605,6 +3607,10 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
+                    let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+                    claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                    let eligibilty = claimStatus == "Active" ? true : false
+
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
