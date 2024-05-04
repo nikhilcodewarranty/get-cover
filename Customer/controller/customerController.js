@@ -160,7 +160,7 @@ exports.createCustomer = async (req, res, next) => {
     let logData = {
       userId: req.userId,
       endpoint: "/create-customer catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
@@ -550,7 +550,7 @@ exports.editCustomer = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "/editCustomer/:customerId",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
@@ -641,7 +641,7 @@ exports.changePrimaryUser = async (req, res) => {
     let logData = {
       endpoint: "changePrimaryUser catch",
       userId: req.userId,
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
@@ -676,9 +676,10 @@ exports.addCustomerUser = async (req, res) => {
       })
       return;
     };
-
+    let checkUser = await userService.getUserById1({ accountId: data.customerId, isPrimary: true }, { isDeleted: false })
     data.accountId = checkCustomer._id
     data.metaId = checkCustomer._id
+    data.status = checkUser.status ? true : false;
     data.roleId = '656f080e1eb1acda244af8c7'
     let saveData = await userService.createUser(data)
     if (!saveData) {
@@ -727,7 +728,7 @@ exports.addCustomerUser = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "addCustomerUser catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
