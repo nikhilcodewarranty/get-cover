@@ -3055,7 +3055,8 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "Coverage type is required"
-            })
+            });
+            return;
         }
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
@@ -3080,7 +3081,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 $and: [
                     { status: true },
                     { _id: { $in: dealerPriceIds } },
-                    { coverageType: coverageType }
+                    { coverageType: data.coverageType }
                 ]
             }
         }
