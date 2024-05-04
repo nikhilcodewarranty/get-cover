@@ -1099,7 +1099,7 @@ exports.searchClaim = async (req, res, next) => {
         orderIds.push("1111121ccf9d400000000000")
       }
     }
-    let contractFilter;
+    let contractFilter; 
     if (userSearchCheck == 1) {
       contractFilter = [
         { orderId: { $in: orderIds } },
@@ -1404,7 +1404,7 @@ exports.addClaim = async (req, res, next) => {
 
     let logData = {
       userId: req.userId,
-      endpoint: "addClaim",
+      endpoint: "claim/addClaim",
       body: data,
       response: {
         code: constant.successCode,
@@ -1423,6 +1423,17 @@ exports.addClaim = async (req, res, next) => {
 
   }
   catch (err) {
+    //Save logs add claim
+    let logData = {
+      userId: req.userId,
+      endpoint: "claim/addClaim",
+      body: req.body ? req.body : { 'type': "Catch" },
+      response: {
+        code: constant.errorCode,
+        message: err.message,
+      }
+    }
+    await LOG(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message,
@@ -1576,7 +1587,7 @@ exports.editClaim = async (req, res) => {
         //Save Logs edit claim
         let logData = {
           userId: req.userId,
-          endpoint: "editClaim",
+          endpoint: "claim/editClaim",
           body: data,
           response: {
             code: constant.errorCode,
@@ -1600,7 +1611,7 @@ exports.editClaim = async (req, res) => {
     //Save Logs edit claim
     let logData = {
       userId: req.userId,
-      endpoint: "editClaim",
+      endpoint: "claim/editClaim",
       body: data,
       response: {
         code: constant.successCode,
@@ -1619,7 +1630,7 @@ exports.editClaim = async (req, res) => {
     //Save Logs edit claim
     let logData = {
       userId: req.userId,
-      endpoint: "editClaim catch",
+      endpoint: "claim/editClaim catch",
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
@@ -1655,7 +1666,7 @@ exports.editClaimType = async (req, res) => {
 
         let logData = {
           userId: req.userId,
-          endpoint: "editClaimType",
+          endpoint: "claim/editClaimType",
           body: data,
           response: {
             code: constant.errorCode,
@@ -1674,7 +1685,7 @@ exports.editClaimType = async (req, res) => {
       //Save logs 
       let logData = {
         userId: req.userId,
-        endpoint: "editClaimType",
+        endpoint: "claim/editClaimType",
         body: data,
         response: {
           code: constant.successCode,
@@ -1699,7 +1710,7 @@ exports.editClaimType = async (req, res) => {
     // Save Logs
     let logData = {
       userId: req.userId,
-      endpoint: "editClaimType catch",
+      endpoint: "claim/editClaimType catch",
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
@@ -1820,7 +1831,7 @@ exports.editClaimStatus = async (req, res) => {
       //Save logs
       let logData = {
         userId: req.userId,
-        endpoint: "editClaimStatus",
+        endpoint: "claim/editClaimStatus",
         body: data,
         response: {
           code: constant.errorCode,
@@ -1852,7 +1863,7 @@ exports.editClaimStatus = async (req, res) => {
     //Save logs
     let logData = {
       userId: req.userId,
-      endpoint: "editClaimStatus",
+      endpoint: "claim/editClaimStatus",
       body: data,
       response: {
         code: constant.successCode,
@@ -1871,7 +1882,7 @@ exports.editClaimStatus = async (req, res) => {
     //Save logs
     let logData = {
       userId: req.userId,
-      endpoint: "editClaimStatus catch",
+      endpoint: "claim/editClaimStatus catch",
       body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
@@ -2439,7 +2450,7 @@ exports.saveBulkClaim = async (req, res) => {
         message: err.message
       })
     }
-  }) 
+  })
 
 }
 //Send message
