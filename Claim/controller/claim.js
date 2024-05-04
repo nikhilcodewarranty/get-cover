@@ -2439,7 +2439,7 @@ exports.saveBulkClaim = async (req, res) => {
         message: err.message
       })
     }
-  })
+  }) 
 
 }
 //Send message
