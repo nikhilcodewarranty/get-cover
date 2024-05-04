@@ -3073,7 +3073,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let query
 
-        if (coverageType == "Breakdown & Accidental") {
+        if (data.coverageType == "Breakdown & Accidental") {
             query = { status: true, _id: { $in: dealerPriceIds } }
         } else {
             query = {
