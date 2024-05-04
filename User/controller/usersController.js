@@ -428,13 +428,13 @@ exports.createDealer = async (req, res) => {
           // termFile.push(file[i].filename);
         } else if (file[i].fieldname == 'file') {
           priceFile = file[i]
-        } 
+        }
       }
 
       let termData = {
-        fileName:termFile ? termFile.filename :'',
-        name:termFile ? termFile.originalname:'',
-        size:termFile ? termFile.size:'',
+        fileName: termFile ? termFile.filename : '',
+        name: termFile ? termFile.originalname : '',
+        size: termFile ? termFile.size : '',
       }
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
@@ -594,7 +594,7 @@ exports.createDealer = async (req, res) => {
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-             createUsers = await userService.insertManyUser(allUsersData);
+            createUsers = await userService.insertManyUser(allUsersData);
             if (!createUsers) {
               res.send({
                 code: constant.errorCode,
@@ -657,7 +657,7 @@ exports.createDealer = async (req, res) => {
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink,role:req.role,dealerName:singleDealer.name}))
+            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, role: req.role, dealerName: singleDealer.name }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
@@ -955,7 +955,7 @@ exports.createDealer = async (req, res) => {
           }));
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
-             createUsers = await userService.insertManyUser(allUsersData);
+            createUsers = await userService.insertManyUser(allUsersData);
             if (!createUsers) {
               res.send({
                 code: constant.errorCode,
@@ -1538,9 +1538,9 @@ exports.createDealer = async (req, res) => {
               if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
-                let userId = createUsers[i]._id; 
+                let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email,{ link: resetLink, role: req.role, dealerName: data.name }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: data.name }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
 
@@ -2385,7 +2385,7 @@ exports.addMembers = async (req, res) => {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
-      notificationFor:[],
+      notificationFor: [],
       flag: 'dealer'
     };
 
@@ -2533,8 +2533,8 @@ exports.changePrimaryUser = async (req, res) => {
 exports.checkToken = async (req, res) => {
   try {
     let data = req.body
-    let getUserDetails = await userService.getSingleUserByEmail({_id:req.teammateId})
-    // let getMainDetail = await 
+    let getUserDetails = await userService.getSingleUserByEmail({ _id: req.teammateId })
+
     res.send({
       code: constant.successCode,
       message: "Success"
