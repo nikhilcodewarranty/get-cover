@@ -27,7 +27,7 @@ const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
 const { createPdf } = require("pdfmake");
 const claimService = require("../../Claim/services/claimService");
-{/* <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link> */}
+{/* <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link> */ }
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         cb(null, path.join(__dirname, "../../uploads/orderFile"));
@@ -4185,7 +4185,7 @@ exports.generateHtmltopdf = async (req, res) => {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
                         productName: quanitityProduct.name,
-                        noOfProducts:quanitityProduct.enterQuantity
+                        noOfProducts: quanitityProduct.enterQuantity
                     }
                     productCoveredArray.push(obj)
                 }
@@ -4202,7 +4202,7 @@ exports.generateHtmltopdf = async (req, res) => {
             }
 
         }
- 
+
         // res.json(productCoveredArray);
         // return;
 
@@ -4249,7 +4249,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td style="font-size:13px;">
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
