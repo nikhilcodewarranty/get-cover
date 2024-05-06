@@ -4180,13 +4180,31 @@ exports.generateHtmltopdf = async (req, res) => {
         })
         const contractArray = await Promise.all(contractArrayPromise);
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
-            let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
-            let obj = {
-                productName: findContract.productName,
-                noOfProducts: checkOrder?.productsArray[i].noOfProducts
+            if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
+                for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
+                    let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
+                    let obj = {
+                        productName: quanitityProduct.name,
+                        noOfProducts:quanitityProduct.quantity
+                    }
+                    productCoveredArray.push(obj)
+                }
+
             }
-            productCoveredArray.push(obj)
+            else {
+                let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
+
+                let obj = {
+                    productName: findContract.productName,
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                }
+                productCoveredArray.push(obj)
+            }
+
         }
+
+        // res.json(productCoveredArray);
+        // return;
 
         const tableRows = productCoveredArray.map(product => `
         <td style="font-size:13px;">${product.productName}:${product.noOfProducts}</td>
