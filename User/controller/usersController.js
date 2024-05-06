@@ -2533,6 +2533,8 @@ exports.changePrimaryUser = async (req, res) => {
 exports.checkToken = async (req, res) => {
   try {
     let data = req.body
+    let getUserDetails = await userService.getSingleUserByEmail({_id:req.teammateId})
+    // let getMainDetail = await 
     res.send({
       code: constant.successCode,
       message: "Success"
