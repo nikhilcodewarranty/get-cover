@@ -684,9 +684,9 @@ exports.updateStatus = async (req, res) => {
           body: data,
           response: {
             code: constant.errorCode,
-            message: "Updated Successfully", 
+            message: "Updated Successfully",
             result: updateData
-          }  
+          }
         }
 
         await LOG(logData).save()
@@ -1149,6 +1149,8 @@ exports.addServicerUser = async (req, res) => {
       return
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
+    let checkUser = await userService.getUserById1({ accountId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
+    data.status = checkUser.status ? true : false;
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
