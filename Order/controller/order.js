@@ -2850,6 +2850,11 @@ exports.editOrderDetail = async (req, res) => {
             console.log('paid payment check ++++++++++++++++++', data.paidAmount, data.dueAmount)
         }
 
+        if (data.paidAmount == data.orderAmount) {
+            data.paymentStatus = "Paid"
+            console.log('paid payment check ++++++++++++++++++', data.paidAmount, data.dueAmount)
+        }
+
         console.log('order paid check +++++++++++++++++++++++=', data)
 
         if (req.files) {
@@ -4153,7 +4158,7 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
-        const checkReseller = await resellerService.getReseller({ resellerId: checkOrder.resellerId }, { isDeleted: false })
+        const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
 
         //Get reseller primary info
 
@@ -4221,9 +4226,9 @@ exports.generateHtmltopdf = async (req, res) => {
                             <tr>
                                 <td style="font-size:13px;">Installer Name:</td>
                                 <td style="font-size:13px;">
-                                    <p> Attention –${checkDealer.name}</p>
-                                    <p> Email Address –${resellerUser ? resellerUser?.email : ''}</p>
-                                    <p>Telephone #${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                                    <p> Attention –${checkReseller ? checkReseller.name : checkDealer.name}</p>
+                                    <p> Email Address –${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+                                    <p>Telephone : ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
@@ -4231,7 +4236,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             <td style="font-size:13px;">
                             <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone #${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p>Telephone : ${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
@@ -4239,20 +4244,18 @@ exports.generateHtmltopdf = async (req, res) => {
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
-                    <td style="font-size:13px;">Start date (date of system installation)</td>
+                    <td style="font-size:13px;">Coverage Start Date</td>
                     <td style="font-size:13px;">${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;">GET COVER service contract period (inclusive
-                    of any US manufacturer’s warranty that may exist
-                    during the GET COVER service contract period)</td>
+                <td style="font-size:13px;">GET COVER service contract period</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
                 </td>
             </tr>
             <tr>
-            <td style="font-size:13px;">Expiration date:</td>
+            <td style="font-size:13px;">Coverage End Date:</td>
             <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>

@@ -1509,7 +1509,7 @@ exports.getContractById = async (req, res) => {
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0].priceBookId) })
+      productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
       getData[0].order[i].productsArray = productsArray
     }
     getData.map((data, index) => {
@@ -2696,6 +2696,7 @@ exports.statusClaim = async (req, res) => {
     const result = await claimService.getClaims({
       'repairStatus.status': 'Servicer Shipped',
     });
+    console.log("statusClaim----------------------------",);
     let updateStatus
     for (let i = 0; i < result.length; i++) {
       let messageData = {};
@@ -2722,6 +2723,9 @@ exports.statusClaim = async (req, res) => {
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
 
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
+
+      // console.log("sevenDaysAfterShippedDate-------------------------",sevenDaysAfterShippedDate);
+      // return;
 
       if (
         customerLastResponseDate > latestServicerShippedDate &&

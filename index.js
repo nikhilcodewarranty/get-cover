@@ -43,12 +43,7 @@ const axios = require('axios');
 const mongoose = require('mongoose')
 const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
-
-
 var app = express();
-
-
-
 // mongoose.Promise = global.Promise;
 
 // // Connecting to the database
@@ -62,11 +57,8 @@ var app = express();
 //   console.log('Could not connect to the database. Exiting now...', err);
 //   process.exit();
 // });
-
-
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
-
 //const template = fs.readFileSync('./template/template.html', 'utf-8')
 // const options = {
 //   format: 'A4',
@@ -125,7 +117,6 @@ app.get('/download/:filename', (req, res) => {
 
 
 var cron = require('node-cron');
-
 var cronOptions = {
   'method': 'POST',
   'url': `${process.env.SITE_URL}:3002/api-v1/order/cronJobStatus`,
@@ -151,9 +142,6 @@ cron.schedule(' 6 0 * * *', () => {
   axios.get(`${process.env.SITE_URL}:3002/api-v1/claim/statusClaim`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
-
-
-
 //common routing for server
 app.use("/api-v1/user", userRoutes);
 app.use("/api-v1/admin", userRoutes);
@@ -171,14 +159,11 @@ app.use("/api-v1/servicerPortal", servicePortal);
 app.use("/api-v1/dealerPortal", dealerUserRoutes);
 app.use("/api-v1/customerPortal", customerUserRoutes);
 app.use("/api-v1/resellerPortal", resellerUserRoutes);
-
-
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   res.status(404).json({ code: 404, message: "Not Found" })
 
 });
-
 // error handler
 app.use(function (err, req, res, next) {
   // set locals, only providing error in development
@@ -195,9 +180,6 @@ app.use((req, res, next) => {
   res.status(404).json({ code: 404, message: "Not Found" })
 
 })
-
-
-
 const PORT = 3002
 httpServer.listen(PORT, () => console.log(`app listening at http://localhost:${PORT}`))
 
