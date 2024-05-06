@@ -4185,7 +4185,7 @@ exports.generateHtmltopdf = async (req, res) => {
                     let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
                     let obj = {
                         productName: quanitityProduct.name,
-                        noOfProducts:quanitityProduct.quantity
+                        noOfProducts:quanitityProduct.enterQuantity
                     }
                     productCoveredArray.push(obj)
                 }
@@ -4238,46 +4238,46 @@ exports.generateHtmltopdf = async (req, res) => {
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;">
                             <tr>
-                                <td style="width:50%; font-size:13px;">  GET COVER service contract number:</td>
+                                <td style="width:50%; font-size:13px;pading-left:15px;">  GET COVER service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
-                                <td style="font-size:13px;">Installer Name:</td>
+                                <td style="font-size:13px;pading-left:15px;">Installer Name:</td>
                                 <td style="font-size:13px;">
-                                    <p> Attention –${checkReseller ? checkReseller.name : checkDealer.name}</p>
-                                    <p> Email Address –${resellerUser ? resellerUser?.email : DealerUser.email}</p>
-                                    <p>Telephone : ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                    <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+                                    <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+                                    <p><b>Telephone :</b> ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
                                 </td>
                             </tr>
                         <tr>
-                            <td style="font-size:13px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;pading-left:15px;">GET COVER service contract holder name:</td>
                             <td style="font-size:13px;">
-                            <p> Attention –${checkCustomer ? checkCustomer?.username : ''}</p>
-                            <p> Email Address –${checkCustomer ? customerUser?.email : ''}</p>
-                            <p>Telephone : ${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+                            <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+                            <p><b>Telephone :</b> ${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
                             </td>
                         </tr>
                     <tr>
-                        <td style="font-size:13px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;pading-left:15px;">Address of GET COVER service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
-                    <td style="font-size:13px;">Coverage Start Date</td>
-                    <td style="font-size:13px;">${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                    <td style="font-size:13px;pading-left:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;">+1 ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;">GET COVER service contract period</td>
+                <td style="font-size:13px;pading-left:15px;">GET COVER service contract period</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
                 </td>
             </tr>
             <tr>
-            <td style="font-size:13px;">Coverage End Date:</td>
+            <td style="font-size:13px;pading-left:15px;">Coverage End Date:</td>
             <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
           </tr>
             <tr>
-                <td style="font-size:13px;">Number of covered components:</td>
+                <td style="font-size:13px;pading-left:15px;">Number of covered components:</td>
                <td> ${tableRows}   </td>                 
             </tr >
             
