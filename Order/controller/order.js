@@ -27,7 +27,7 @@ const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
 const { createPdf } = require("pdfmake");
 const claimService = require("../../Claim/services/claimService");
-<link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
+{/* <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link> */}
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         cb(null, path.join(__dirname, "../../uploads/orderFile"));
@@ -4236,7 +4236,10 @@ exports.generateHtmltopdf = async (req, res) => {
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
-        const html = `<table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
+        const html = `<head>
+        <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
+        </head>
+        <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
                             <tr>
                                 <td style="width:50%; font-size:13px;pading-left:15px;">  GET COVER service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
