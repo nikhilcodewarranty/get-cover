@@ -10,6 +10,8 @@ const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
+const LOG = require('../../User/model/logs')
+
 const dealerRelation = require("../../Provider/model/dealerServicer")
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
@@ -163,11 +165,34 @@ exports.createDealerPriceBook = async (req, res) => {
         }
         let createDealerPrice = await dealerPriceService.createDealerPrice(data)
         if (!createDealerPrice) {
+            //Save Logs for create price book
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/createDealerPriceBook",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to create the dealer price book"
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to create the dealer price book"
             })
         } else {
+            //Save Logs for create price book
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/createDealerPriceBook",
+                body: data,
+                response: {
+                    code: constant.successCode,
+                    message: "Success",
+                    result: createDealerPrice
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -175,6 +200,17 @@ exports.createDealerPriceBook = async (req, res) => {
             })
         }
     } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createDealerPriceBook catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -636,6 +672,8 @@ exports.statusUpdate = async (req, res) => {
             return
         }
 
+        let data = req.body;
+
         // Fetch existing dealer price book data
         const criteria = { _id: req.params.dealerPriceBookId };
         const projection = { isDeleted: 0, __v: 0 };
@@ -664,14 +702,35 @@ exports.statusUpdate = async (req, res) => {
         const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
 
         if (!updatedResult) {
+            //Save Logs for update price book
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/updateDealerPriceBook",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to update the dealer price status"
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to update the dealer price status"
             });
-
             return;
-
         }
+        //Save Logs for update price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/updateDealerPriceBook",
+            body: data,
+            response: {
+                code: constant.successCode,
+                message: "Updated Successfully",
+                data: updatedResult
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Updated Successfully",
@@ -681,6 +740,17 @@ exports.statusUpdate = async (req, res) => {
         return
 
     } catch (err) {
+        //Save Logs for update price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/updateDealerPriceBook catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
@@ -1568,6 +1638,17 @@ exports.createReseller = async (req, res) => {
         // }
         const createdReseler = await resellerService.createReseller(resellerObject);
         if (!createdReseler) {
+            //Save Logs for create reseller 
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/createReseller",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to create the reseller"
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to create the reseller"
@@ -1596,7 +1677,18 @@ exports.createReseller = async (req, res) => {
 
             let createData = await providerService.createServiceProvider(servicerObject)
         }
-
+        //Save Logs for create reseller 
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createReseller",
+            body: data,
+            response: {
+                code: constant.successCode,
+                message: "Reseller created successfully",
+                result: createdReseler
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Reseller created successfully",
@@ -1605,6 +1697,17 @@ exports.createReseller = async (req, res) => {
 
 
     } catch (err) {
+        //Save Logs for create reseller 
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createReseller catch",
+            body: req.body ? req.body : { type: "catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -3225,7 +3328,6 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
-
         if (data.servicerId) {
             let query = {
                 $or: [
@@ -3267,15 +3369,12 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
-
         data.createdBy = req.userId;
         data.dealerId = req.userId;
-
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
         let count = await orderService.getOrdersCount();
-
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
         data.unique_key_search = "GC" + "2024" + data.unique_key_number
         data.unique_key = "GC-" + "2024-" + data.unique_key_number
@@ -3295,6 +3394,17 @@ exports.createOrder = async (req, res) => {
         data.status = "Pending";
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
+            //Save Logs for create order
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/createOrder",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "unable to create order",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "unable to create order",
@@ -3302,12 +3412,35 @@ exports.createOrder = async (req, res) => {
             return;
         }
 
+        //Save Logs for create order
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createOrder",
+            body: data,
+            response: {
+                code: constant.successCode,
+                message: 'Success!'
+            }
+        }
+        await LOG(logData).save()
+
         res.send({
             code: constant.successCode,
             message: 'Success!'
         })
 
     } catch (err) {
+        //Save Logs for create order
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createOrder catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
