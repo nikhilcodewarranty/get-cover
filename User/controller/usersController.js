@@ -2281,7 +2281,7 @@ exports.updateProfile = async (req, res) => {
 exports.updatePassword = async (req, res) => {
   try {
     let data = req.body
-    const id = req.role == 'Super Admin' ? req.userId : req.teammateId
+    const id =  req.teammateId
     let checkId = await userService.getSingleUserByEmail({ _id: id })
     if (!checkId) {
       res.send({
