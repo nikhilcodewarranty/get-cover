@@ -1299,6 +1299,7 @@ exports.createCustomer = async (req, res, next) => {
             street: data.street,
             city: data.city,
             dealerId: checkDealer._id,
+            isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
@@ -1610,10 +1611,11 @@ exports.createReseller = async (req, res) => {
             })
             return;
         }
-
+        let isAccountCreate = data.status
         let resellerObject = {
             name: data.accountName,
             street: data.street,
+            isAccountCreate:isAccountCreate,
             city: data.city,
             dealerId: checkDealer._id,
             zip: data.zip,
