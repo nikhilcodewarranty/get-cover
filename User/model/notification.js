@@ -13,6 +13,14 @@ const notificationSchema = new mongoose.Schema({
     type: [],
     default: []
   },
+  readBy: {
+    type: [],
+    default: []
+  },
+  openBy: {
+    type: [],
+    default: []
+  },
   description: {
     type: String,
     default: ''
