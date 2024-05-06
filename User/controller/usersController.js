@@ -2379,19 +2379,19 @@ exports.addMembers = async (req, res) => {
       return;
     };
 
-    let adminId = new mongoose.Types.ObjectId()
+    // let adminId = new mongoose.Types.ObjectId()
 
-    const notificationData = {
-      title: "New Dealer Registration",
-      description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
-      userId: createdDealer._id,
-      notificationFor: [],
-      flag: 'dealer'
-    };
+    // const notificationData = {
+    //   title: "New Dealer Registration",
+    //   description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
+    //   userId: createdDealer._id,
+    //   notificationFor: [],
+    //   flag: 'dealer'
+    // };
 
 
-    // Create the user
-    const createNotification = await userService.createNotification(notificationData);
+    // // Create the user
+    // const createNotification = await userService.createNotification(notificationData);
 
     res.send({
       code: constant.successCode,
