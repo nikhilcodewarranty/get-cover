@@ -3314,7 +3314,6 @@ exports.createOrder = async (req, res) => {
         })
     }
 };
-
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;

@@ -2696,6 +2696,7 @@ exports.statusClaim = async (req, res) => {
     const result = await claimService.getClaims({
       'repairStatus.status': 'Servicer Shipped',
     });
+    console.log("statusClaim----------------------------",);
     let updateStatus
     for (let i = 0; i < result.length; i++) {
       let messageData = {};
@@ -2722,6 +2723,9 @@ exports.statusClaim = async (req, res) => {
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
 
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
+
+      // console.log("sevenDaysAfterShippedDate-------------------------",sevenDaysAfterShippedDate);
+      // return;
 
       if (
         customerLastResponseDate > latestServicerShippedDate &&
