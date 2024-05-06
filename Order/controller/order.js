@@ -4202,7 +4202,7 @@ exports.generateHtmltopdf = async (req, res) => {
             }
 
         }
-
+ 
         // res.json(productCoveredArray);
         // return;
 
