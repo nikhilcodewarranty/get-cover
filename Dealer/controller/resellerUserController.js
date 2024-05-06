@@ -6,6 +6,7 @@ const orderService = require("../../Order/services/orderService");
 const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 let claimService = require('../../Claim/services/claimService')
+const LOG = require('../../User/model/logs')
 
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -652,9 +653,9 @@ exports.editOrderDetail = async (req, res) => {
         console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
         if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
             res.send({
-                code: constant.error, 
+                code: constant.error,
                 message: "Not a valid paying amount"
-            }) 
+            })
             return;
         };
 
@@ -1564,11 +1565,34 @@ exports.addResellerUser = async (req, res) => {
         data.status = statusCheck
         let saveData = await userService.createUser(data)
         if (!saveData) {
+            //Save Logs add user
+            let logData = {
+                userId: req.userId,
+                endpoint: "resellerPortal/addResellerUser",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to add the data"
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to add the data"
             })
         } else {
+            //Save Logs add user
+            let logData = {
+                userId: req.userId,
+                endpoint: "resellerPortal/addResellerUser",
+                body: data,
+                response: {
+                    code: constant.successCode,
+                    message: "Added successfully",
+                    result: saveData
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Added successfully",
@@ -1576,6 +1600,17 @@ exports.addResellerUser = async (req, res) => {
             })
         }
     } catch (err) {
+        //Save Logs add user
+        let logData = {
+            userId: req.userId,
+            endpoint: "resellerPortal/addResellerUser catch",
+            body: req.body ? req.body : { "type": "Catch Error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -2601,6 +2636,8 @@ exports.changeResellerStatus = async (req, res) => {
 
         const singleReseller = await resellerService.getReseller({ _id: req.userId });
 
+        let data = req.body;
+
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -2641,6 +2678,18 @@ exports.changeResellerStatus = async (req, res) => {
         };
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.userId }, newValue);
         if (changedResellerStatus) {
+            //Save Logs change status
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/changeResellerStatus",
+                body: data,
+                response: {
+                    code: constant.successCode,
+                    message: 'Updated Successfully!',
+                    data: changedResellerStatus
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: 'Updated Successfully!',
@@ -2648,12 +2697,34 @@ exports.changeResellerStatus = async (req, res) => {
             })
         }
         else {
+            //Save Logs change status
+            let logData = {
+                userId: req.userId,
+                endpoint: "reseller/changeResellerStatus",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: 'Unable to update reseller status!',
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: 'Unable to update reseller status!',
             })
         }
     } catch (err) {
+        //Save Logs change status
+        let logData = {
+            userId: req.userId,
+            endpoint: "reseller/changeResellerStatus catch",
+            body: req.body ? req.body : { "type": "Catch Error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -2726,7 +2797,7 @@ exports.getResellerClaims = async (req, res) => {
                             reason: 1,
                             "unique_key": 1,
                             note: 1,
-                            claimType:1,
+                            claimType: 1,
                             totalAmount: 1,
                             servicerId: 1,
                             customerStatus: 1,
