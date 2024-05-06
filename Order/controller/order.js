@@ -4202,12 +4202,12 @@ exports.generateHtmltopdf = async (req, res) => {
             }
 
         }
-
+ 
         // res.json(productCoveredArray);
         // return;
 
         const tableRows = productCoveredArray.map(product => `
-        <td style="font-size:13px;">${product.productName}:${product.noOfProducts}</td>
+        <td style="font-size:13px;"><tr><td>${product.productName}:${product.noOfProducts}</td></tr></td>
 
 `).join('');
 
