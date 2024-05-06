@@ -4278,7 +4278,7 @@ exports.generateHtmltopdf = async (req, res) => {
           </tr>
             <tr>
                 <td style="font-size:13px;">Number of covered components:</td>
-                ${tableRows}                    
+               <td> ${tableRows}   </td>                 
             </tr >
             
         </table > `;
