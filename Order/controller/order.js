@@ -4273,7 +4273,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
-                                <td style="font-size:13px;padding-left:15px;">Installer Name:</td>
+                                <td style="font-size:13px;padding-left:15px;">Dealer Name:</td>
                                 <td style="font-size:13px;">
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
