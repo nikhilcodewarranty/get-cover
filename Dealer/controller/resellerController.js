@@ -663,7 +663,6 @@ exports.editResellers = async (req, res) => {
             status: false
         };
         if (data.isAccountCreate) {
-            console.log("dsfsdfsfsdsdfddfsdfsdsfdsfdfsdfsdfsdfsdfsdfs")
             resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
             newValue = {
                 status: true
