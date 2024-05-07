@@ -802,8 +802,7 @@ exports.getAllClaims = async (req, res, next) => {
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        console.log("servicer---------------------------1",allServicer)
-        console.log("servicer---------------------------",matched.servicerId)
+
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         if(dealerOfServicer){
           servicer.push(dealerOfServicer)
@@ -811,7 +810,6 @@ exports.getAllClaims = async (req, res, next) => {
    
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
-        console.log("servicer---------------------------2",item1.contracts.orders.servicers[0])
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
 
@@ -2231,44 +2229,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      // res.json(totalDataComing);return;
-      // const contractAllDataPromise = totalDataComing.map(item => {
-      //   if (!item.exit) {
-      //     let query = [
-      //       {
-      //         $match: { name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' } },
-      //       },
-      //       {
-      //         $addFields: {
-      //           convertedId: { $toObjectId: "$resellerId" }
-      //         }
-      //       },
-      //       {
-      //         "$lookup": {
-      //           "let": { "userObjId": { "$toObjectId": "$resellerId" } },
-      //           "from": "resellers",
-      //           "pipeline": [
-      //             { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
-      //           ],
-      //           "as": "userDetails"
-      //         },
-
-      //       },
-      //       {
-      //         $unwind: {
-      //           path: "$userDetails",
-      //           preserveNullAndEmptyArrays: true,
-      //         }
-      //       },
-      //     ]
-      //     // return contractService.getAllContracts2(query)
-      //     return servicerService.getAggregateServicer(query)
-      //   }
-      //   else {
-      //     return null;
-      //   }
-      // })
+      const contractAllDataArray = await Promise.all(contractAllDataPromise)  
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -2281,12 +2242,12 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-          if (new Date(contractData.coverageStartDate) > new Date(item.lossDate)) {
-            item.status = "Loss date should be in between coverage start date and present date!"
-            item.exit = true;
-          }
           if (!contractData) {
             item.status = "Contract not found"
+            item.exit = true;
+          }
+          if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
+            item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
           if (item.contractData && claimData != null && claimData.length > 0) {
@@ -2312,9 +2273,6 @@ exports.saveBulkClaim = async (req, res) => {
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
-
-            // console.log("servicerId---------------------------",servicerData)
-            // console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
