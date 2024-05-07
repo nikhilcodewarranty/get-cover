@@ -311,10 +311,10 @@ exports.getPriceBooks = async (req, res) => {
 
         }
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-        console.log('skldjflksjdf',checkDealer)
+        console.log('skldjflksjdf', checkDealer)
         let lookupQuery
-        if(checkDealer[0]?.coverageType != "Breakdown & Accidental"){
-            lookupQuery =  [
+        if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
+            lookupQuery = [
                 {
                     $match: query
                 },
@@ -338,7 +338,7 @@ exports.getPriceBooks = async (req, res) => {
                                     as: "category"
                                 }
                             },
-                            
+
                         ]
                     }
                 },
@@ -360,11 +360,11 @@ exports.getPriceBooks = async (req, res) => {
                         brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
                     },
                 },
-    
-    
+
+
             ]
-        }else{
-            lookupQuery =  [
+        } else {
+            lookupQuery = [
                 {
                     $match: query
                 },
@@ -383,7 +383,7 @@ exports.getPriceBooks = async (req, res) => {
                                     as: "category"
                                 }
                             },
-                            
+
                         ]
                     }
                 },
@@ -405,8 +405,8 @@ exports.getPriceBooks = async (req, res) => {
                         brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
                     },
                 },
-    
-    
+
+
             ]
         }
 
@@ -691,6 +691,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         //data.status = typeof (data.status) == "string" ? "all" : data.status
         console.log(data)
         let categorySearch = req.body.category ? req.body.category : ''
+        let checkDealer = await dealerService.getDealerById(req.userId, { isDeleted: false });
         let queryCategories = {
             $and: [
                 { isDeleted: false },
@@ -701,18 +702,33 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
-        console.log("priceType----------------------", priceType)
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-        query = {
-            $and: [
-                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-                { 'priceBooks.category._id': { $in: catIdsArray } },
-                { 'status': true },
-                { dealerId: new mongoose.Types.ObjectId(req.userId) }
-            ]
-        };
+
+        if (checkDealer.coverageType == "Breakdown & Accidental") {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                ]
+            };
+        } else {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'priceBooks.coverageType': checkDealer.coverageType },
+                    { 'status': true },
+                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                ]
+            };
+        }
+
+
 
         // Conditionally add the term query if data.term is not blank
         if (data.term) {

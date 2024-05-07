@@ -1450,19 +1450,40 @@ exports.getResellerPriceBook = async (req, res) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let projection = { isDeleted: 0, __v: 0 }
-    let query = {
-        $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            { 'status': true },
-            {
-                dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-            },
-            {
-                isDeleted: false
-            }
-        ]
+    let query
+
+    if (checkDealer.coverageType == "Breakdown & Accidental") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
+    } else {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.coverageType': checkDealer.coverageType },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
     }
+
+
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
