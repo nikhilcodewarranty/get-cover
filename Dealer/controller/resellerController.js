@@ -634,7 +634,7 @@ exports.editResellers = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to update the data"
-            })
+            }) 
             return;
         }
         if (checkReseller.isServicer) {
