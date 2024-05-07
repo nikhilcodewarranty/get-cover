@@ -489,7 +489,7 @@ exports.getContracts = async (req, res) => {
       mainQuery
     })
 
-  } catch (err) {
+  } catch (err) { 
     res.send({
       code: constant.errorCode,
       message: err.message
