@@ -801,6 +801,7 @@ exports.getAllClaims = async (req, res, next) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
+      let selfResellerServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
 
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
@@ -823,7 +824,8 @@ exports.getAllClaims = async (req, res, next) => {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
         //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfResellerServicer =  item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
 
       }
       return {
