@@ -1598,10 +1598,42 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    let getRole = await userService.getRoleById(roleQuery, roleProjection)
+    if (getRole.role == "Dealer") {
+      let checkDealer = await dealerService.getDealerById(user.accountId)
+      if (!checkDealer?.accountStatus) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
+        })
+        return
+      }
+    }
+    if (getRole.role == "Reseller") {
+      let checkReseller = await resellerService.getReseller({ _id: user.accountId })
+      if (!checkReseller?.status) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
+        })
+        return
+      }
+    }
+    if (getRole.role == "Servicer") {
+      let checkServicer = await providerService.getServiceProviderById({ _id: user.accountId })
+      if (!checkServicer?.status) {
+        res.send({
+          code: constant.errorCode,
+          message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
+        })
+        return
+      }
+    }
+    
     if (user.status == false) {
       res.send({
         code: constant.errorCode,
-        message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
+        message: "Your account is not active, please contact to the administration"
       })
       return;
     }
@@ -1617,8 +1649,7 @@ exports.login = async (req, res) => {
     console.log(user)
     let roleQuery = { _id: user.roleId }
     let roleProjection = { __v: 0 }
-    let getRole = await userService.getRoleById(roleQuery, roleProjection)
-    console.log("user data +++++++++++++", user, user.accountId ? user.accountId : user._id)
+
 
     // Generate JWT token
     const token = jwt.sign(
@@ -2176,7 +2207,7 @@ exports.getAllNotifications1 = async (req, res) => {
 exports.readNotification = async (req, res) => {
   try {
     let data = req.body
-    let checkId = await userService.updateNotification({ _id: req.params.notificationId },  { $addToSet: { readBy: req.teammateId } } ,{new:true})
+    let checkId = await userService.updateNotification({ _id: req.params.notificationId }, { $addToSet: { readBy: req.teammateId } }, { new: true })
     if (!checkId) {
       res.send({
         code: constant.errorCode,
