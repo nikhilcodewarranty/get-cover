@@ -311,55 +311,104 @@ exports.getPriceBooks = async (req, res) => {
 
         }
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-
-        let lookupQuery = [
-            {
-                $match: query
-            },
-            {
-                $lookup: {
-                    from: "pricebooks",
-                    localField: "priceBook",
-                    foreignField: "_id",
-                    as: "priceBooks",
-                    pipeline: [
-                        {
-                            $lookup: {
-                                from: "pricecategories",
-                                localField: "category",
-                                foreignField: "_id",
-                                as: "category"
-                            }
-                        },
-                        {
-                            $match: {
-                                coverageType: checkDealer.coverageType
-                            }
-                        }
-                    ]
-                }
-            },
-            { $unwind: "$priceBooks" },
-            {
-                $lookup: {
-                    from: "dealers",
-                    localField: "dealerId",
-                    foreignField: "_id",
-                    as: "dealer",
+        console.log('skldjflksjdf',checkDealer)
+        let lookupQuery
+        if(checkDealer[0]?.coverageType != "Breakdown & Accidental"){
+            lookupQuery =  [
+                {
+                    $match: query
                 },
-            },
-            { $unwind: "$dealer" },
-            {
-                $project: projection
-            },
-            {
-                $addFields: {
-                    brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "priceBook",
+                        foreignField: "_id",
+                        as: "priceBooks",
+                        pipeline: [
+                            {
+                                $match: {
+                                    coverageType: checkDealer[0]?.coverageType
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: "pricecategories",
+                                    localField: "category",
+                                    foreignField: "_id",
+                                    as: "category"
+                                }
+                            },
+                            
+                        ]
+                    }
                 },
-            },
-
-
-        ]
+                { $unwind: "$priceBooks" },
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "dealerId",
+                        foreignField: "_id",
+                        as: "dealer",
+                    },
+                },
+                { $unwind: "$dealer" },
+                {
+                    $project: projection
+                },
+                {
+                    $addFields: {
+                        brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+                    },
+                },
+    
+    
+            ]
+        }else{
+            lookupQuery =  [
+                {
+                    $match: query
+                },
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "priceBook",
+                        foreignField: "_id",
+                        as: "priceBooks",
+                        pipeline: [
+                            {
+                                $lookup: {
+                                    from: "pricecategories",
+                                    localField: "category",
+                                    foreignField: "_id",
+                                    as: "category"
+                                }
+                            },
+                            
+                        ]
+                    }
+                },
+                { $unwind: "$priceBooks" },
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "dealerId",
+                        foreignField: "_id",
+                        as: "dealer",
+                    },
+                },
+                { $unwind: "$dealer" },
+                {
+                    $project: projection
+                },
+                {
+                    $addFields: {
+                        brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+                    },
+                },
+    
+    
+            ]
+        }
 
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById1(lookupQuery)
         if (!getDealerPrice) {
