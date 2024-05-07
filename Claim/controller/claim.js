@@ -798,36 +798,35 @@ exports.getAllClaims = async (req, res, next) => {
     //   console.log("-----------------------------------------",allServicer)
     // res.json(resultFiter);return;
     const result_Array = resultFiter.map((item1) => {
+      servicer = []
       let servicerName = '';
       let selfServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-          const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
-          console.log(dealerOfServicer);
-          return dealerOfServicer; // Return the value to be included in the new array
+        console.log("servicer---------------------------1",allServicer)
+        console.log("servicer---------------------------",matched.servicerId)
+        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+        if(dealerOfServicer){
+          servicer.push(dealerOfServicer)
+        }
+   
       });
-      
-      // Initialize servicer array to store the results of matchedServicerDetails
-      let servicer = [];
-      
-      if (matchedServicerDetails.length > 0) {
-          servicer = matchedServicerDetails;
-      }
-      
       if (item1.contracts.orders.servicers[0]?.length > 0) {
-          servicer.unshift(item1.contracts.orders.servicers[0]);
+        console.log("servicer---------------------------2",item1.contracts.orders.servicers[0])
+        servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      
+
       if (item1.contracts.orders.resellers[0]?.isServicer) {
-          servicer.unshift(item1.contracts.orders.resellers[0]);
+        servicer.unshift(item1.contracts.orders.resellers[0])
       }
-      
       if (item1.contracts.orders.dealers.isServicer) {
-          servicer.unshift(item1.contracts.orders.dealers);
+        servicer.unshift(item1.contracts.orders.dealers)
       }
-      
       if (item1.servicerId != null) {
-          servicerName = servicer.find(serv => serv?._id?.toString() === item1.servicerId?.toString());
-          selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false;
+        servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
+        //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
+        //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+
       }
       return {
         ...item1,
