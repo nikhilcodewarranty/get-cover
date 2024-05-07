@@ -144,7 +144,6 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-
   sendNotification: {
     type: Boolean,
     default: false
@@ -181,6 +180,17 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     default: 'Manually'
+  },
+  paidDate: {
+    type: {
+      name: {
+        type: String,
+      },
+      date: {
+        type: Date,
+      },
+    },
+    default: {}
   },
   canProceed: {
     type: Boolean,

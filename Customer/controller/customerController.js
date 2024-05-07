@@ -1473,7 +1473,6 @@ exports.customerOrders = async (req, res) => {
 //   }
 // }
 
-
 exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
