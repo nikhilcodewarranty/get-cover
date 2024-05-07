@@ -578,12 +578,21 @@ exports.createOrder1 = async (req, res) => {
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("All condition verify+++++++++++")
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
                 { status: "Active" },
                 { new: true }
             );
+            let paidDate = {
+                name: "processOrder",
+                date: new Date()
+            }
+            let updatePaidDate = await orderService.updateOrder(
+                { _id: checkOrders._id },
+                { paidDate: paidDate },
+                { new: true }
+            );
+         
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCountNew();
             console.log("count1 New+++++++++++", count1)
@@ -2960,6 +2969,15 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
 
+            let paidDate = {
+                name: "processOrder",
+                date: new Date()
+            } 
+            let updatePaidDate = await orderService.updateOrder(
+                { _id: req.params.orderId },
+                { paidDate: paidDate },
+                { new: true }
+            );
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
@@ -3181,6 +3199,16 @@ exports.markAsPaid = async (req, res) => {
                 );
             }
         })
+
+        let paidDate = {
+            name: "markAsPaid",
+            date: new Date()
+        }
+        let updatePaidDate = await orderService.updateOrder(
+            { _id: req.params.orderId },
+            { paidDate: paidDate },
+            { new: true }
+        );
 
         res.send({
             code: constant.successCode,
@@ -4245,8 +4273,8 @@ exports.generateHtmltopdf = async (req, res) => {
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
-                                <td style="font-size:13px;padding-left:15px;">Installer Name:</td>
-                                <td style="font-size:13px;">
+                                <td style="font-size:13px;padding-left:15px;">Dealer Name:</td>
+                                <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
                                     <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
