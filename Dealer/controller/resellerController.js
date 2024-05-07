@@ -634,7 +634,7 @@ exports.editResellers = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to update the data"
-            }) 
+            })
             return;
         }
         if (checkReseller.isServicer) {
@@ -660,17 +660,13 @@ exports.editResellers = async (req, res) => {
         }
         let resellerUserCreateria = { accountId: req.params.resellerId };
         let newValue = {
-            $set: {
-                status: false
-            }
+            status: false
         };
         if (data.isAccountCreate) {
-             console.log("dsfsdfsfsdsdfddfsdfsdsfdsfdfsdfsdfsdfsdfsdfs")
+            console.log("dsfsdfsfsdsdfddfsdfsdsfdsfdfsdfsdfsdfsdfsdfs")
             resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
             newValue = {
-                $set: {
-                    status: true
-                }
+                status: true
             };
         }
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
@@ -1806,7 +1802,7 @@ exports.changeResellerStatus = async (req, res) => {
                 response: {
                     code: constant.errorCode,
                     message: 'Unable to update reseller status!',
-                    result:changedResellerStatus
+                    result: changedResellerStatus
                 }
             }
             await LOG(logData).save()
