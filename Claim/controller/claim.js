@@ -831,6 +831,7 @@ exports.getAllClaims = async (req, res, next) => {
       return {
         ...item1,
         servicerData: servicerName,
+        selfResellerServicer:selfResellerServicer,
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
