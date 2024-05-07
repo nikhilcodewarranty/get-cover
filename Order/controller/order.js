@@ -4274,7 +4274,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             </tr>
                             <tr>
                                 <td style="font-size:13px;padding-left:15px;">Dealer Name:</td>
-                                <td style="font-size:13px;">
+                                <td style="font-size:13px;"> 
                                     <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
                                     <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
                                     <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
