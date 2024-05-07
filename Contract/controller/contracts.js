@@ -493,7 +493,7 @@ exports.getContracts = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
-    })
+    }) 
   }
 }
 
