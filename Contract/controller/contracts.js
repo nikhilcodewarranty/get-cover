@@ -280,7 +280,6 @@ exports.getContracts = async (req, res) => {
     let resellerIds = [];
     let servicerIds = [];
     let userSearchCheck = 0
-    console.log('tesinggi------------')
     if (data.dealerName != "") {
       userSearchCheck = 1
       let getData = await dealerService.getAllDealers({ name: { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -378,7 +377,6 @@ exports.getContracts = async (req, res) => {
     let mainQuery = []
     console.log(orderIds)
     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-      console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -491,7 +489,7 @@ exports.getContracts = async (req, res) => {
       mainQuery
     })
 
-  } catch (err) {
+  } catch (err) { 
     res.send({
       code: constant.errorCode,
       message: err.message
