@@ -266,9 +266,9 @@ module.exports = class userService {
   };
 
   //get all roles
-  static async getAllNotifications(query, projection) {
+  static async getAllNotifications(query, skipLimit,limitData) {
     try {
-      const roles = await notification.find(query, projection).sort({ "createdAt": -1 });
+      const roles = await notification.find(query).sort({ "createdAt": -1 }).skip(skipLimit).limit(limitData);
       return roles;
     } catch (error) {
       console.log(`Could not find role ${error}`);

@@ -294,30 +294,14 @@ exports.getPriceBooks = async (req, res) => {
             return;
         }
         let projection = {
-
             _id: 1,
             name: 1,
-            // wholesalePrice: {
-            //   $sum: [
-            //     // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
-            //     "$priceBooks.reserveFutureFee",
-            //     "$priceBooks.reinsuranceFee",
-            //     "$priceBooks.adminFee",
-            //     "$priceBooks.frontingFee",
-            //   ],
-            // },
             "priceBook": 1,
             "dealerId": 1,
             "status": 1,
             "retailPrice": 1,
             "description": 1,
             "isDeleted": 1,
-            // "brokerFee": {
-            //   $subtract: ["$retailPrice","$wholesalePrice" ],
-            // },
             "unique_key": 1,
             "__v": 1,
             "createdAt": 1,
@@ -327,7 +311,57 @@ exports.getPriceBooks = async (req, res) => {
 
         }
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-        let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+
+        let lookupQuery = [
+            {
+                $match: query
+            },
+            {
+                $lookup: {
+                    from: "pricebooks",
+                    localField: "priceBook",
+                    foreignField: "_id",
+                    as: "priceBooks",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "pricecategories",
+                                localField: "category",
+                                foreignField: "_id",
+                                as: "category"
+                            }
+                        },
+                        {
+                            $match: {
+                                coverageType: checkDealer.coverageType
+                            }
+                        }
+                    ]
+                }
+            },
+            { $unwind: "$priceBooks" },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "dealerId",
+                    foreignField: "_id",
+                    as: "dealer",
+                },
+            },
+            { $unwind: "$dealer" },
+            {
+                $project: projection
+            },
+            {
+                $addFields: {
+                    brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+                },
+            },
+
+
+        ]
+
+        let getDealerPrice = await dealerPriceService.getDealerPriceBookById1(lookupQuery)
         if (!getDealerPrice) {
             res.send({
                 code: constant.errorCode,
@@ -1615,7 +1649,7 @@ exports.createReseller = async (req, res) => {
         let resellerObject = {
             name: data.accountName,
             street: data.street,
-            isAccountCreate:isAccountCreate,
+            isAccountCreate: isAccountCreate,
             city: data.city,
             dealerId: checkDealer._id,
             zip: data.zip,
@@ -3651,7 +3685,7 @@ exports.editOrderDetail = async (req, res) => {
             if (Number(data.orderAmount) > Number(checkId.orderAmount)) {
                 data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
                 data.paymentStatus = "PartlyPaid"
-            }else{
+            } else {
                 data.dueAmount = 0
                 data.paymentStatus = "Paid"
             }
