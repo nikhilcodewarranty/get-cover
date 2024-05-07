@@ -145,6 +145,17 @@ module.exports = class dealerPriceService {
     }
   }
 
+
+  static async getDealerPriceBookById1(query, projection) {
+    try {
+      const SingleDealerPrice = await dealerPrice.aggregate(query).sort({ "createdAt": -1 });
+      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      return SingleDealerPrice;
+    } catch (error) {
+      console.log(`Could not fetch dealer price ${error}`);
+    }
+  }
+
   static async getAllPriceBooksByFilter(query, projection) {
     try {
       const result = await dealerPrice.aggregate([
