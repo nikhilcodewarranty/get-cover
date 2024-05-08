@@ -1398,7 +1398,8 @@ exports.createCustomer = async (req, res, next) => {
             street: data.street,
             city: data.city,
             dealerId: checkDealer._id,
-            isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
+            //isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
+            isAccountCreate:!checkDealer.userAccount ? false : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
@@ -1409,6 +1410,7 @@ exports.createCustomer = async (req, res, next) => {
             dealerName: checkDealer.name,
         }
 
+        console.log("customerObject-----------------------------",checkDealer,customerObject)
         let teamMembers = data.members
         let emailsToCheck = teamMembers.map(member => member.email);
         let queryEmails = { email: { $in: emailsToCheck } };
@@ -1428,7 +1430,7 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
-        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
+        teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id,status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
         res.send({
@@ -3746,11 +3748,12 @@ exports.editOrderDetail = async (req, res) => {
         // }
         // }
 
-        if (checkId.paymentStatus != "unpaid") {
+        if (checkId.paymentStatus != "Unpaid") {
             if (Number(data.orderAmount) > Number(checkId.orderAmount)) {
                 data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
                 data.paymentStatus = "PartlyPaid"
-            } else {
+            }
+            if (Number(data.orderAmount) < Number(checkId.orderAmount)){
                 data.dueAmount = 0
                 data.paymentStatus = "Paid"
             }

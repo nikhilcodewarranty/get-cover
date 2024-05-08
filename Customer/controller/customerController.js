@@ -115,7 +115,7 @@ exports.createCustomer = async (req, res, next) => {
       })
       return;
     };
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
     if (saveMembers.length > 0) {
@@ -1960,9 +1960,14 @@ exports.customerClaims = async (req, res) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
+      let selfResellerServicer = false;
+
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-        const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
-        servicer.push(dealerOfServicer)
+        const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched?.servicerId.toString());
+        if (dealerOfServicer) {
+          servicer.push(dealerOfServicer)
+        }
+
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
@@ -1974,9 +1979,9 @@ exports.customerClaims = async (req, res) => {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
-        servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
-        const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+        servicerName = servicer.find(servicer => servicer?._id.toString() === item1?.servicerId.toString());
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
       return {
         ...item1,
