@@ -15,6 +15,8 @@ sgMail.setApiKey('SG.Bu08Ag_jRSeqCeRBnZYOvA.dgQFmbMjFVRQv9ouQFAIgDvigdw31f-1ibcL
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
+const supportingFunction = require('../../config/supportingFunction')
+
 require("dotenv").config();
 const randtoken = require('rand-token').generator()
 //Created customer
@@ -893,17 +895,6 @@ exports.registerServiceProvider = async (req, res) => {
         }
 
       }
-
-      // const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
-      // if(existingServicer){
-      //   if(existingServicer.accountStatus == "Pending"){
-      //     res.send({
-      //       code: constant.errorCode,
-      //       message: "You have registered already with this email!"
-      //     })
-      //     return;
-      //   }
-      // }
       res.send({
         code: constant.errorCode,
         message: "You have already registered  with this email!"
@@ -956,11 +947,15 @@ exports.registerServiceProvider = async (req, res) => {
     }
     //Send Notification to dealer 
 
+    let IDs = await supportingFunction.getUserIds()
+
+
     const notificationData = {
       title: "New Servicer Registration",
       description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createMetaData._id,
-      flag: 'servicer'
+      flag: 'servicer',
+      notificationFor: IDs
     };
 
     // Create the user

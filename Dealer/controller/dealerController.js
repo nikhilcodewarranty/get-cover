@@ -39,7 +39,7 @@ const order = require('../../Order/model/order');
 const { constants } = require('buffer');
 const contractService = require('../../Contract/services/contractService');
 const logs = require('../../User/model/logs');
-const getSuperIds = require('../../config/supportingFunction')
+const supportingFunction = require('../../config/supportingFunction')
 
 
 
@@ -309,44 +309,11 @@ exports.getPendingDealers = async (req, res) => {
   }
 };
 
-//create new dealer
-exports.createDealer = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    let data = req.body
-    let dealerData = {}
-    const createdDealer = await dealerService.createDealer(dealerData);
-    if (!createdDealer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create a new Dealer"
-      });
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Success"
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
 
 //get dealer detail by ID
 exports.getDealerById = async (req, res) => {
   try {
     //fetching data from user table
-    let IDS = await getSuperIds()
-    console.log(IDS)
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -586,7 +553,6 @@ exports.getUserByDealerId = async (req, res) => {
       });
       return
     }
-    console.log(dealers)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -624,6 +590,20 @@ exports.updateDealer = async (req, res) => {
       });
       return;
     };
+
+    let primaryUser = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+
+    let IDs = await supportingFunction.getUserIds()
+    IDs.push(primaryUser._id)
+    const notificationData = {
+      title: "Dealer updated",
+      description: data.name + " ," + "detail has beed updated ",
+      userId: updatedDealer._id,
+      flag: 'dealer',
+      notificationFor: IDs
+    };
+
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully"
@@ -823,20 +803,19 @@ exports.registerDealer = async (req, res) => {
     }
     //Send Notification to dealer 
 
-    let getSuperId = await userService.getUserById1({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }, {})
-    let IDs = getSuperId.map(ID => ID._id)
+    let IDs = await supportingFunction.getUserIds()
 
-    const notificationData = {
+    let notificationData = {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
       flag: 'dealer',
-      notificationFor: [IDs]
+      notificationFor: IDs
     };
 
 
     // Create the user
-    const createNotification = await userService.createNotification(notificationData);
+    let createNotification = await userService.createNotification(notificationData);
 
     // if (createNotification) {
     let emailData = {
@@ -850,7 +829,6 @@ exports.registerDealer = async (req, res) => {
     }
 
     // Send Email code here
-    console.log("Email---------------------------", data.email, emailData)
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
 
 
@@ -948,6 +926,23 @@ exports.statusUpdate = async (req, res) => {
       return;
 
     }
+
+    let IDs = await supportingFunction.getUserIds()
+    IDs.push(existingDealerPriceBook.dealerId)
+
+    let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
+
+    let notificationData = {
+      title: "Dealer price book updated",
+      description: getDealerDetail.name + " , " + "you price book has been updated",
+      userId: existingDealerPriceBook.dealerId,
+      contentId: req.params.dealerPriceBookId,
+      flag: 'dealer',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+
 
     let logData = {
       userId: req.teammateId,
@@ -1102,8 +1097,21 @@ exports.changeDealerStatus = async (req, res) => {
         accountStatus: req.body.status
       }
     };
+
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
+      let IDs = await supportingFunction.getUserIds()
+      IDs.push(new mongoose.Types.ObjectId(req.params.dealerId))
+      let notificationData = {
+        title: "Dealer status update",
+        description: singleDealer.name + " , " + "your status has been updated",
+        userId: req.params.dealerId,
+        flag: 'dealer',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -1857,6 +1865,22 @@ exports.createDealerPriceBook = async (req, res) => {
         message: "Unable to create the dealer price book"
       })
     } else {
+
+      let IDs = await supportingFunction.getUserIds()
+      IDs.push(new mongoose.Types.ObjectId(data.dealerId))
+
+      let notificationData = {
+        title: "New dealer price book created",
+        description: checkDealer.name + " , " + "new price book has been created",
+        userId: checkDealer._id,
+        flag: 'dealer',
+        contentId: createDealerPrice._id,
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+
+
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -2046,7 +2070,7 @@ exports.updateDealerMeta = async (req, res) => {
           street: data.street,
           city: data.city,
           zip: data.zip,
-          dealerId: data.dealerId,
+          dealerId: checkDealer.dealerId,
           state: data.state,
           country: data.country,
           status: data.status,
@@ -2064,6 +2088,23 @@ exports.updateDealerMeta = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
+
+    let IDs = await supportingFunction.getUserIds()
+    IDs.push(checkDealer._id)
+
+    let notificationData = {
+      title: "Dealer updated",
+      description: checkDealer.name + " , " + "details has beed updated",
+      userId: checkDealer._id,
+      flag: 'dealer',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+
+
+
+
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -2141,12 +2182,29 @@ exports.addDealerUser = async (req, res) => {
           message: "Unable to add the data"
         }
       }
+
+
+
       await LOG(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to add the data"
       })
     } else {
+      let IDs = await supportingFunction.getUserIds()
+      IDs.push(checkDealer._id)
+      let notificationData = {
+        title: "New user added",
+        description: checkDealer.name + " , " + "new user has been added",
+        userId: checkDealer._id,
+        contentId: saveData._id,
+        flag: 'dealer',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+
+
       //Save Logs create Customer
       let logData = {
         userId: req.userId,
