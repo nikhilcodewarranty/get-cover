@@ -14,13 +14,13 @@ router.get("/getUserById/:userId", [verifyToken], userController.getUserById); /
 router.get("/getUserByToken", [verifyToken], userController.getUserByToken); // get all users 
 router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // get all users 
 router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
-router.post("/approveDealers", [verifyToken], validator("filter_dealer"),dealerController.getAllDealers); //get all dealers
+router.post("/approveDealers", [verifyToken], validator("filter_dealer"), dealerController.getAllDealers); //get all dealers
 router.get("/approveServicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
-router.post("/pendingDealers", [verifyToken],validator("filter_dealer"), dealerController.getPendingDealers); //get all dealers
+router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealerController.getPendingDealers); //get all dealers
 router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
-router.get("/getAllNotifications", [verifyToken], userController.getAllNotifications); //get all dealers
-router.get("/getAllNotifications1", [verifyToken], userController.getAllNotifications1); //get all dealers
+router.get("/getAllNotifications", [verifyToken], userController.getAllNotifications1); //get all dealers
+router.get("/getAllNotifications1", [verifyToken], userController.getAllNotifications); //get all dealers
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
 router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
@@ -36,23 +36,23 @@ router.post("/sendLinkToEmail", userController.sendLinkToEmail); //send password
 router.post("/resetPassword/:userId/:code", userController.resetPassword); //reset password 
 router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); //Update Status
 router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); //Update Status
-router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload,userController.tryUpload); //Update Status
-router.post("/updateProfile", [verifyToken],userController.updateProfile); //Update Profile
-router.put("/updatePassword", [verifyToken],userController.updatePassword); //Update Password
+router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload, userController.tryUpload); //Update Status
+router.post("/updateProfile", [verifyToken], userController.updateProfile); //Update Profile
+router.put("/updatePassword", [verifyToken], userController.updatePassword); //Update Password
 
 
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
-router.post("/checkEmail", [verifyToken],validator("email_validation"), userController.checkEmail);
+router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail);
 router.post("/validateData", [verifyToken], userController.validateData);
 
 
 //create dealer api from super admin
-router.post("/createDealer",[verifyToken], userController.createDealer); 
-router.get("/checkToken",[verifyToken], userController.checkToken); 
-router.get("/getAccountInfo",[verifyToken], userController.getAccountInfo); 
+router.post("/createDealer", [verifyToken], userController.createDealer);
+router.get("/checkToken", [verifyToken], userController.checkToken);
+router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo);
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
