@@ -2865,7 +2865,7 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         console.log('order paid check +++++++++++++++++++++++=', data)
-
+         
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
                 fileName: file.filename,
