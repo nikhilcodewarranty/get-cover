@@ -29,6 +29,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  contentId:{
+    type:mongoose.Schema.Types.ObjectId,
+    default:null
+  },
   flag: {
     type: String,
     default: ''
