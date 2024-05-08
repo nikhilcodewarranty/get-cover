@@ -39,6 +39,8 @@ const order = require('../../Order/model/order');
 const { constants } = require('buffer');
 const contractService = require('../../Contract/services/contractService');
 const logs = require('../../User/model/logs');
+const getSuperIds = require('../../config/supportingFunction')
+
 
 
 var StorageP = multer.diskStorage({
@@ -343,6 +345,8 @@ exports.createDealer = async (req, res) => {
 exports.getDealerById = async (req, res) => {
   try {
     //fetching data from user table
+    let IDS = await getSuperIds()
+    console.log(IDS)
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -819,12 +823,15 @@ exports.registerDealer = async (req, res) => {
     }
     //Send Notification to dealer 
 
+    let getSuperId = await userService.getUserById1({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc") }, {})
+    let IDs = getSuperId.map(ID => ID._id)
+
     const notificationData = {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
       flag: 'dealer',
-      notificationFor:["66309496c789555fc763cc54",createdDealer._id]
+      notificationFor: [IDs]
     };
 
 
