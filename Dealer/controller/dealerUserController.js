@@ -1389,7 +1389,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Primary user email already exist"
-            })
+            }) 
             return;
         }
 
