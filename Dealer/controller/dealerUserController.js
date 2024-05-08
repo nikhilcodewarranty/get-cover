@@ -1410,6 +1410,7 @@ exports.createCustomer = async (req, res, next) => {
             dealerName: checkDealer.name,
         }
 
+        console.log("customerObject-----------------------------",checkDealer,customerObject)
         let teamMembers = data.members
         let emailsToCheck = teamMembers.map(member => member.email);
         let queryEmails = { email: { $in: emailsToCheck } };
