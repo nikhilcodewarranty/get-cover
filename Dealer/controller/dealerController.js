@@ -928,7 +928,8 @@ exports.statusUpdate = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
-    IDs.push(existingDealerPriceBook.dealerId)
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
+    IDs.push(getPrimary._id)
 
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
 
@@ -1101,7 +1102,9 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(new mongoose.Types.ObjectId(req.params.dealerId))
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+
+      IDs.push(getPrimary._id)
       let notificationData = {
         title: "Dealer status update",
         description: singleDealer.name + " , " + "your status has been updated",
@@ -1867,7 +1870,9 @@ exports.createDealerPriceBook = async (req, res) => {
     } else {
 
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(new mongoose.Types.ObjectId(data.dealerId))
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+
+      IDs.push(getPrimary._id)
 
       let notificationData = {
         title: "New dealer price book created",
@@ -2090,7 +2095,9 @@ exports.updateDealerMeta = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
-    IDs.push(checkDealer._id)
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId:checkDealer._id, isPrimary: true })
+
+    IDs.push(getPrimary._id)
 
     let notificationData = {
       title: "Dealer updated",
@@ -2192,7 +2199,9 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      IDs.push(checkDealer._id)
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId:checkDealer._id, isPrimary: true })
+
+      IDs.push(getPrimary._id)
       let notificationData = {
         title: "New user added",
         description: checkDealer.name + " , " + "new user has been added",

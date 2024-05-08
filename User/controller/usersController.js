@@ -2296,7 +2296,7 @@ exports.notificationStatusUpdate = async (req, res) => {
 
 exports.getCountNotification = async (req, res) => {
   try {
-    const allNotification = await userService.getCountNotification();
+    const allNotification = await userService.getCountNotification({ notificationFor: req.teammateId, openBy: { $ne: req.teammateId } });
 
     res.send({
       code: constant.successCode,
