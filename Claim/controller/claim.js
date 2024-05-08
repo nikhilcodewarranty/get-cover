@@ -801,9 +801,14 @@ exports.getAllClaims = async (req, res, next) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
+      let selfResellerServicer = false;
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
+
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
-        servicer.push(dealerOfServicer)
+        if(dealerOfServicer){
+          servicer.push(dealerOfServicer)
+        }
+   
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
@@ -819,12 +824,14 @@ exports.getAllClaims = async (req, res, next) => {
         servicerName = servicer.find(servicer => servicer?._id?.toString() === item1.servicerId?.toString());
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
         //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
+        selfResellerServicer =  item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
 
       }
       return {
         ...item1,
         servicerData: servicerName,
+        selfResellerServicer:selfResellerServicer,
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
@@ -2225,44 +2232,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      const contractAllDataArray = await Promise.all(contractAllDataPromise)
-      // res.json(totalDataComing);return;
-      // const contractAllDataPromise = totalDataComing.map(item => {
-      //   if (!item.exit) {
-      //     let query = [
-      //       {
-      //         $match: { name: { '$regex': item.servicerName ? item.servicerName : '', '$options': 'i' } },
-      //       },
-      //       {
-      //         $addFields: {
-      //           convertedId: { $toObjectId: "$resellerId" }
-      //         }
-      //       },
-      //       {
-      //         "$lookup": {
-      //           "let": { "userObjId": { "$toObjectId": "$resellerId" } },
-      //           "from": "resellers",
-      //           "pipeline": [
-      //             { "$match": { "$expr": { "$eq": ["$_id", "$$userObjId"] } } }
-      //           ],
-      //           "as": "userDetails"
-      //         },
-
-      //       },
-      //       {
-      //         $unwind: {
-      //           path: "$userDetails",
-      //           preserveNullAndEmptyArrays: true,
-      //         }
-      //       },
-      //     ]
-      //     // return contractService.getAllContracts2(query)
-      //     return servicerService.getAggregateServicer(query)
-      //   }
-      //   else {
-      //     return null;
-      //   }
-      // })
+      const contractAllDataArray = await Promise.all(contractAllDataPromise)  
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -2275,12 +2245,12 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-          if (new Date(contractData.coverageStartDate) > new Date(item.lossDate)) {
-            item.status = "Loss date should be in between coverage start date and present date!"
-            item.exit = true;
-          }
           if (!contractData) {
             item.status = "Contract not found"
+            item.exit = true;
+          }
+          if (contractData && new Date(contractData?.coverageStartDate) > new Date(item.lossDate)) {
+            item.status = "Loss date should be in between coverage start date and present date!"
             item.exit = true;
           }
           if (item.contractData && claimData != null && claimData.length > 0) {
@@ -2306,9 +2276,6 @@ exports.saveBulkClaim = async (req, res) => {
             if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
-
-            // console.log("servicerId---------------------------",servicerData)
-            // console.log("allDataArray[0]?.order.reseller---------------------------",allDataArray[0]?.order.reseller)
 
             if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true

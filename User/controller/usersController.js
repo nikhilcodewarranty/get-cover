@@ -1598,6 +1598,8 @@ exports.login = async (req, res) => {
       })
       return;
     }
+    let roleQuery = { _id: user.roleId }
+    let roleProjection = { __v: 0 }
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
     if (getRole.role == "Dealer") {
       let checkDealer = await dealerService.getDealerById(user.accountId)
@@ -1647,8 +1649,7 @@ exports.login = async (req, res) => {
       return;
     }
     console.log(user)
-    let roleQuery = { _id: user.roleId }
-    let roleProjection = { __v: 0 }
+
 
 
     // Generate JWT token
@@ -2553,7 +2554,7 @@ exports.getAccountInfo = async (req, res) => {
   try {
     let accountInfo;
     if (req.role == 'Dealer') {
-      accountInfo = await dealerService.getDealerById(req.userId, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
+      accountInfo = await dealerService.getDealerById(req.userId, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1, userAccount: 1 })
     }
     if (req.role == 'Customer') {
       accountInfo = await customerService.getCustomerById({ _id: req.userId }, { username: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
