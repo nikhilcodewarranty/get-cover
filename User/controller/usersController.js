@@ -2554,7 +2554,7 @@ exports.getAccountInfo = async (req, res) => {
   try {
     let accountInfo;
     if (req.role == 'Dealer') {
-      accountInfo = await dealerService.getDealerById(req.userId, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1, userAccount: 1 })
+      accountInfo = await dealerService.getDealerById(req.userId, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1, userAccount: 1, isServicer: 1 })
     }
     if (req.role == 'Customer') {
       accountInfo = await customerService.getCustomerById({ _id: req.userId }, { username: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
