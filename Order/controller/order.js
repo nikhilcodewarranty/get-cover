@@ -604,7 +604,7 @@ exports.createOrder1 = async (req, res) => {
                 { paidDate: paidDate },
                 { new: true }
             );
-         
+
             console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCountNew();
             console.log("count1 New+++++++++++", count1)
@@ -2786,6 +2786,14 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+   
+        if (checkId.status == "Active" || checkId.status == "Archieved") {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to edit the order, please refersh the page",
+            });
+            return;
+        }
         if (data.dealerId != "") {
             if (data.dealerId.toString() != checkId.dealerId.toString()) {
                 let checkDealer = await dealerService.getDealerById(
@@ -2984,7 +2992,7 @@ exports.editOrderDetail = async (req, res) => {
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
-            } 
+            }
             let updatePaidDate = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { paidDate: paidDate },
