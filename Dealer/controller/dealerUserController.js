@@ -1389,7 +1389,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Primary user email already exist"
-            }) 
+            })
             return;
         }
 
@@ -1408,7 +1408,7 @@ exports.createCustomer = async (req, res, next) => {
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
-        } 
+        }
 
         let teamMembers = data.members
         let emailsToCheck = teamMembers.map(member => member.email);
@@ -3753,8 +3753,15 @@ exports.editOrderDetail = async (req, res) => {
                 data.paymentStatus = "PartlyPaid"
             }
             if (Number(data.orderAmount) < Number(checkId.orderAmount)) {
-                data.dueAmount = 0
-                data.paymentStatus = "Paid"
+                let checkDue = Number(data.orderAmount) - Number(checkId.paidAmount)
+                if (checkDue <= 0) {
+                    data.dueAmount = 0
+                    data.paymentStatus = "Paid"
+                } else {
+                    data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                    data.paymentStatus = "PartlyPaid"
+                }
+
             }
         }
 
