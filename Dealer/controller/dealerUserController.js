@@ -1389,7 +1389,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Primary user email already exist"
-            })
+            }) 
             return;
         }
 
@@ -1408,7 +1408,7 @@ exports.createCustomer = async (req, res, next) => {
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
-        }
+        } 
 
         let teamMembers = data.members
         let emailsToCheck = teamMembers.map(member => member.email);
