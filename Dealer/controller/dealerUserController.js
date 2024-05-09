@@ -3494,6 +3494,13 @@ exports.createOrder = async (req, res) => {
 
         data.status = "Pending";
         let savedResponse = await orderService.addOrder(data);
+
+        // Update Term and condtion while create order
+        let uploadTermAndCondtion = await orderService.updateOrder(
+            { _id: savedResponse._id },
+            { termCondition: checkDealer?.termCondition },
+            { new: true }
+        );
         if (!savedResponse) {
             //Save Logs for create order
             let logData = {

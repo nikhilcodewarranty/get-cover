@@ -4355,7 +4355,6 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr >
             
         </table > `;
-        console.log("mergeFileName----------------------------",mergeFileName);
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
             console.log("I am here");
             link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
