@@ -40,6 +40,18 @@ var StorageP = multer.diskStorage({
     },
 });
 
+var Storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, path.join(__dirname, "../../uploads/orderFile"));
+    },
+    filename: function (req, file, cb) {
+        cb(
+            null,
+            file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+        );
+    },
+});
+
 var upload = multer({
     storage: StorageP,
     limits: {
@@ -48,7 +60,7 @@ var upload = multer({
 }).array("file", 100);
 
 var uploadP = multer({
-    storage: StorageP,
+    storage: Storage,
     limits: {
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
