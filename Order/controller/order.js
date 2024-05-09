@@ -4300,7 +4300,9 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-        let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+       // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+
+        let mergeFileName = checkOrder.unique_key + '.pdf'
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
@@ -4358,6 +4360,11 @@ exports.generateHtmltopdf = async (req, res) => {
             console.log("I am here");
             link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
+            res.send({
+                code: constant.successCode,
+                message: 'Success!',
+                result: response 
+            })
         } else {
             console.log("I am dsfsfdssdfsd");
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
@@ -4406,15 +4413,15 @@ exports.generateHtmltopdf = async (req, res) => {
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
                 response = { link: link, fileName: mergeFileName }
                 console.log("response--------------------------",response);
-                // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
+                res.send({
+                    code: constant.successCode,
+                    message: 'Success!',
+                    result: response
+                })
 
             });
         }
-        res.send({
-            code: constant.successCode,
-            message: 'Success!',
-            result: response
-        })
+       
     }
     catch (err) {
         res.send({
