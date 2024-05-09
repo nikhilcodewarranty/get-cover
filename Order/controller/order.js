@@ -2116,10 +2116,12 @@ exports.getServicerInOrders = async (req, res) => {
             dealerId: data.dealerId,
         });
         let ids = getServicersIds.map((item) => item.servicerId);
+
         servicer = await servicerService.getAllServiceProvider(
             { _id: { $in: ids }, status: true },
             {}
         );
+
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -2149,7 +2151,7 @@ exports.getServicerInOrders = async (req, res) => {
         }
     }
 
-    const servicerIds = servicer.map((obj) => obj._id);
+    const servicerIds = servicer.map((obj) => obj?._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
     let servicerUser = await userService.getMembers(query1, {});
