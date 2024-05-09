@@ -4394,10 +4394,13 @@ exports.generateHtmltopdf = async (req, res) => {
                 //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
 
                 const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
+
+                console.log("termConditionFile---------------------------",termConditionFile)
                 // Usage
                 const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
                 const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
                 const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+                console.log("outputPath---------------------------",outputPath)
                 link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
                 response = { link: link, fileName: mergeFileName }
