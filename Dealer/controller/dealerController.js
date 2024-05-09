@@ -3931,16 +3931,23 @@ exports.sendgridMail = async (req, res) => {
   try {
     let data = req.body
     let k = {
-      to: "anil@codenomad.net",
+      to: "sendgridtest@gmail.com",
       from: process.env.from_email,
       subject: `<<542EBBC8C7A7>>`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
-      text:"hello"
+      text: ".."
     }
 
 
     let mailing = sgMail.send(k)
-    
+    if (mailing) {
+      res.send({
+        code: 200,
+        message: "Sent",
+        mailing
+      })
+    }
+
 
   } catch (err) {
     res.send({
