@@ -578,6 +578,13 @@ exports.createOrder1 = async (req, res) => {
                     item.orderFile.fileName === ""
             )
 
+        // Update Term and condtion while create order
+        let uploadTermAndCondtion = await orderService.updateOrder(
+            { _id: checkOrder._id },
+            { termCondition: checkDealer?.termCondition },
+            { new: true }
+        );
+
         // .some(Boolean);
         const obj = {
             customerId: checkOrder.customerId ? true : false,
@@ -2172,7 +2179,7 @@ exports.getServicerInOrders = async (req, res) => {
                 servicerData: matchingItem.toObject(),
             };
         } else {
-            return {}; 
+            return {};
         }
     });
 
@@ -4201,7 +4208,10 @@ exports.generateHtmltopdf = async (req, res) => {
         //     })
         //     return;
         // }
+        let response;
+        let link;
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
+
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
         //Get Dealer
@@ -4343,54 +4353,63 @@ exports.generateHtmltopdf = async (req, res) => {
             </tr >
             
         </table > `;
+        if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+            console.log("I am here");
+            link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            response = { link: link, fileName: mergeFileName }
+        } else {
+            console.log("I am dsfsfdssdfsd");
+            pdf.create(html, options).toFile(orderFile, async (err, result) => {
+                if (err) return console.log(err);
+                // -------------------merging pdfs 
+                const { PDFDocument, rgb } = require('pdf-lib');
+                const fs = require('fs').promises;
 
-        pdf.create(html, options).toFile(orderFile, async (err, result) => {
-            if (err) return console.log(err);
-            // -------------------merging pdfs 
-            const { PDFDocument, rgb } = require('pdf-lib');
-            const fs = require('fs').promises;
+                async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                    // Load the PDFs
+                    const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                    const pdfDoc2Bytes = await fs.readFile(pdfPath2);
 
-            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                // Load the PDFs
-                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+                    const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                    const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
 
-                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+                    // Create a new PDF Document
+                    const mergedPdf = await PDFDocument.create();
 
-                // Create a new PDF Document
-                const mergedPdf = await PDFDocument.create();
+                    // Add the pages of the first PDF
+                    const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                    pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the first PDF
-                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
-                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+                    // Add the pages of the second PDF
+                    const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                    pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
 
-                // Add the pages of the second PDF
-                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
-                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+                    // Serialize the PDF
+                    const mergedPdfBytes = await mergedPdf.save();
 
-                // Serialize the PDF
-                const mergedPdfBytes = await mergedPdf.save();
+                    // Write the merged PDF to a file
+                    await fs.writeFile(outputPath, mergedPdfBytes);
+                }
 
-                // Write the merged PDF to a file
-                await fs.writeFile(outputPath, mergedPdfBytes);
-            }
+                //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
 
-            const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-            // const termConditionFile = "termCondition-1713605740802.pdf"
-            // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-            const link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
-            res.send({
-                code: constant.successCode,
-                message: 'Success!',
-                result: { link: link, fileName: mergeFileName }
-            })
-        });
+                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
+                // Usage
+                const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
+                const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+                const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+                link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+                let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+                response = { link: link, fileName: mergeFileName }
+                // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
+
+            });
+        }
+        res.send({
+            code: constant.successCode,
+            message: 'Success!',
+            result: response
+        })
     }
     catch (err) {
         res.send({

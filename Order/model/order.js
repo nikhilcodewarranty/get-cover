@@ -13,17 +13,17 @@ const orderSchema = new mongoose.Schema({
   customerId: {
     type: mongoose.Schema.Types.ObjectId,
     default: '',
-    index:true
+    index: true
   },
   resellerId: {
     type: mongoose.Schema.Types.ObjectId,
     default: '',
-    index:true
+    index: true
   },
   venderOrder: {
     type: String,
     default: '',
-    index:true
+    index: true
   },
   serviceCoverageType: {
     type: String,
@@ -35,14 +35,14 @@ const orderSchema = new mongoose.Schema({
   },
   unique_key_number: {
     type: Number,
-    index:true
+    index: true
   },
   unique_key_search: {
     type: String,
   },
   unique_key: {
     type: String,
-    index:true
+    index: true
   },
   productsArray: {
     type: [
@@ -180,6 +180,10 @@ const orderSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     default: 'Manually'
+  },
+  termCondition: {
+    type: {},
+    default: {}
   },
   paidDate: {
     type: {
