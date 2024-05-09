@@ -2656,13 +2656,10 @@ exports.getDealerServicers = async (req, res) => {
       servicer.unshift(checkDealer);
     };
 
-    console.log("-------------------------------------------------------", 2)
     const servicerIds = servicer.map(obj => obj._id);
 
 
-    console.log("-------------------------------------------------------servicerIds", servicerIds)
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    console.log("-------------------------------------------------------", 3)
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
       res.send({
@@ -2855,8 +2852,8 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
+    // let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null,resellerId:null}
     let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null}
-    
     let projection = { __v: 0, isDeleted: 0 }
 
     let servicer = await servicerService.getAllServiceProvider(query, projection);
