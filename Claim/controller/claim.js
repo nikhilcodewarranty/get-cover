@@ -805,10 +805,10 @@ exports.getAllClaims = async (req, res, next) => {
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
 
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
-        if(dealerOfServicer){
+        if (dealerOfServicer) {
           servicer.push(dealerOfServicer)
         }
-   
+
       });
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
@@ -825,13 +825,13 @@ exports.getAllClaims = async (req, res, next) => {
         //const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
         //selfServicer = item1.servicerId?.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
         selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        selfResellerServicer =  item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
 
       }
       return {
         ...item1,
         servicerData: servicerName,
-        selfResellerServicer:selfResellerServicer,
+        selfResellerServicer: selfResellerServicer,
         selfServicer: selfServicer,
         contracts: {
           ...item1.contracts,
@@ -1102,11 +1102,11 @@ exports.searchClaim = async (req, res, next) => {
       if (getOrders.length > 0) {
         orderIds = await getOrders.map(order => order._id)
       }
-      else { 
+      else {
         orderIds.push("1111121ccf9d400000000000")
       }
     }
-    let contractFilter; 
+    let contractFilter;
     if (userSearchCheck == 1) {
       contractFilter = [
         { orderId: { $in: orderIds } },
@@ -2110,8 +2110,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
 
       })
-
-
       let cache = {};
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
@@ -2232,7 +2230,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      const contractAllDataArray = await Promise.all(contractAllDataPromise)  
+      const contractAllDataArray = await Promise.all(contractAllDataPromise)
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
@@ -2273,14 +2271,13 @@ exports.saveBulkClaim = async (req, res) => {
               }
             }
             //Check dealer itself servicer
-            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
+            if (allDataArray[0]?.order.dealer?.isServicer && allDataArray[0]?.order.dealer?.accountStatus && allDataArray[0]?.order.dealer._id?.toString() === servicerData.dealerId?.toString()) {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
+            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.dealer?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
             }
-            // console.log(allDataArray)
           }
           if ((item.servicerName != '' && !servicerData)) {
             flag = false
