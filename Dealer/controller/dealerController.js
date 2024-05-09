@@ -2855,7 +2855,7 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null}
+    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null}
     
     let projection = { __v: 0, isDeleted: 0 }
 
