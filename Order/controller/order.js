@@ -2134,11 +2134,19 @@ exports.getServicerInOrders = async (req, res) => {
         });
     }
     if (checkReseller && checkReseller.isServicer) {
-        servicer.unshift(checkReseller);
+        //Get the servicer name if reseller as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
+        if (checkServicer.status) {
+            servicer.unshift(checkReseller);
+        }
     }
 
     if (checkDealer && checkDealer.isServicer) {
-        servicer.unshift(checkDealer);
+        //Get the servicer name if dealer as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+        if (checkServicer.status) {
+            servicer.unshift(checkReseller);
+        }
     }
 
     const servicerIds = servicer.map((obj) => obj._id);
@@ -2786,7 +2794,7 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-   
+
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
@@ -4255,7 +4263,7 @@ exports.generateHtmltopdf = async (req, res) => {
         // return;
 
         const tableRows = productCoveredArray.map(product => `
-        <p style="font-size:13px;">${product.productName}:${product.noOfProducts}</p>
+        <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
 `).join('');
 
