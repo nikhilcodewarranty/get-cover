@@ -2866,7 +2866,7 @@ exports.getServicersList = async (req, res) => {
 
 
     const resultArray = servicer.map(item => {
-      const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
+      const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString() ||servicer => servicer.servicerId.toString() == item.resellerId.toString() );
       const documentData = item._doc;
       return { ...documentData, check: !!matchingServicer };
     });
