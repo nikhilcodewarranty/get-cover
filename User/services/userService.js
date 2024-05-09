@@ -277,7 +277,7 @@ module.exports = class userService {
 
   static async getCountNotification(query) {
     try {
-      const roles = await notification.countDocuments()
+      const roles = await notification.countDocuments(query)
       return roles;
     } catch (error) {
       console.log(`Could not find role ${error}`);

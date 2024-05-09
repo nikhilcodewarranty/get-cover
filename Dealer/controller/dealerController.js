@@ -2095,7 +2095,7 @@ exports.updateDealerMeta = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId:checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
 
     IDs.push(getPrimary._id)
 
@@ -2199,7 +2199,7 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId:checkDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
 
       IDs.push(getPrimary._id)
       let notificationData = {
@@ -3925,3 +3925,34 @@ const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopolog
 // });
 
 
+
+
+exports.sendgridMail = async (req, res) => {
+  try {
+    let data = req.body
+    let k = {
+      to: "sendgridtest@gmail.com",
+      from: process.env.from_email,
+      subject: `<<542EBBC8C7A7>>`,
+      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
+      text: ".."
+    }
+
+
+    let mailing = sgMail.send(k)
+    if (mailing) {
+      res.send({
+        code: 200,
+        message: "Sent",
+        mailing
+      })
+    }
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

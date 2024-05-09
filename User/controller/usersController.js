@@ -2176,15 +2176,14 @@ exports.getAllNotifications1 = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let getNotifications = await userService.getAllNotifications({ notificationFor: new mongoose.Types.ObjectId(req.teammateId) }, skipLimit, limitData)
+    // let count = await userService.getAllNotifications({ notificationFor: new mongoose.Types.ObjectId(req.teammateId), openBy: { $ne: new mongoose.Types.ObjectId(req.teammateId) } })
 
-    let getNotifications = await userService.getAllNotifications({ notificationFor: req.teammateId }, skipLimit, limitData)
-    // let count = await userService.getAllNotifications({ notificationFor: req.teammateId, openBy: { $ne: req.teammateId } })
-
-    let updateNotification = await userService.updateNotification({ notificationFor: req.teammateId }, { $addToSet: { openBy: req.teammateId } }, { new: true })
+    let updateNotification = await userService.updateNotification({ notificationFor: new mongoose.Types.ObjectId(req.teammateId) }, { $addToSet: { openBy: new mongoose.Types.ObjectId(req.teammateId) } }, { new: true })
 
     let updatedNotifications = getNotifications.map(notification => {
-      const isRead = notification.readBy.includes(req.teammateId);
-      const isOpen = notification.openBy.includes(req.teammateId);
+      const isRead = notification.readBy.includes(new mongoose.Types.ObjectId(req.teammateId));
+      const isOpen = notification.openBy.includes(new mongoose.Types.ObjectId(req.teammateId));
       return {
         ...notification._doc,
         isRead,
@@ -2296,7 +2295,8 @@ exports.notificationStatusUpdate = async (req, res) => {
 
 exports.getCountNotification = async (req, res) => {
   try {
-    const allNotification = await userService.getCountNotification({ notificationFor: req.teammateId, openBy: { $ne: req.teammateId } });
+    let checkId = new mongoose.Types.ObjectId(req.teammateId)
+    const allNotification = await userService.getCountNotification({ notificationFor: checkId, openBy: { $ne: checkId } });
 
     res.send({
       code: constant.successCode,

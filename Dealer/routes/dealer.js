@@ -50,6 +50,7 @@ router.get("/getServicersList/:dealerId", [verifyToken], dealerController.getSer
 
 //resellers 
 router.post("/getDealerResellers/:dealerId", [verifyToken], dealerController.getDealerResellers)
+router.post("/sendgridMail",  dealerController.sendgridMail)
 
 
 module.exports = router;

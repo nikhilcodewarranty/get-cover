@@ -1389,7 +1389,7 @@ exports.createCustomer = async (req, res, next) => {
             res.send({
                 code: constant.errorCode,
                 message: "Primary user email already exist"
-            }) 
+            })
             return;
         }
 
@@ -1399,7 +1399,7 @@ exports.createCustomer = async (req, res, next) => {
             city: data.city,
             dealerId: checkDealer._id,
             //isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
-            isAccountCreate:!checkDealer.userAccount ? false : data.status,
+            isAccountCreate: !checkDealer.userAccount ? false : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
             zip: data.zip,
             state: data.state,
@@ -1408,12 +1408,12 @@ exports.createCustomer = async (req, res, next) => {
             unique_key: data.unique_key,
             accountStatus: "Approved",
             dealerName: checkDealer.name,
-        } 
+        }
 
         let teamMembers = data.members
         let emailsToCheck = teamMembers.map(member => member.email);
         let queryEmails = { email: { $in: emailsToCheck } };
-        let checkEmails = await customerService.getAllCustomers(queryEmails, {}); 
+        let checkEmails = await customerService.getAllCustomers(queryEmails, {});
         if (checkEmails.length > 0) {
             res.send({
                 code: constant.errorCode,
@@ -3548,6 +3548,7 @@ exports.createOrder = async (req, res) => {
         })
     }
 };
+
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3751,9 +3752,16 @@ exports.editOrderDetail = async (req, res) => {
                 data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
                 data.paymentStatus = "PartlyPaid"
             }
-            if (Number(data.orderAmount) < Number(checkId.orderAmount)){
-                data.dueAmount = 0
-                data.paymentStatus = "Paid"
+            if (Number(data.orderAmount) < Number(checkId.orderAmount)) {
+                let checkDue = Number(data.orderAmount) - Number(checkId.paidAmount)
+                if (checkDue <= 0) {
+                    data.dueAmount = 0
+                    data.paymentStatus = "Paid"
+                } else {
+                    data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                    data.paymentStatus = "PartlyPaid"
+                }
+
             }
         }
 
@@ -4914,6 +4922,8 @@ exports.getAllClaims = async (req, res, next) => {
         })
     }
 };
+
+
 
 
 
