@@ -1748,9 +1748,11 @@ exports.paidUnpaidClaim = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
+    let servicerId = req.params.servicerId
     let match = {};
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+      servicerId = req.userId
     }
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
@@ -1902,7 +1904,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'claimStatus.status': 'Completed' },
             { claimPaymentStatus: flag },
             dateQuery,
-            { 'servicerId': new mongoose.Types.ObjectId(req.params.servicerId) }
+            { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
           ]
         },
       },
