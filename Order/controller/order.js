@@ -4404,6 +4404,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
                 response = { link: link, fileName: mergeFileName }
+                console.log("response--------------------------",response);
                 // console.log('PDFs merged successfully!', pdfPath1, pdfPath2);
 
             });
