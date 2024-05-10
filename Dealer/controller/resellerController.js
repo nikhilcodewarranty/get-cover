@@ -637,11 +637,18 @@ exports.editResellers = async (req, res) => {
             })
             return;
         }
-        if (checkReseller.isServicer) {
-            console.log("dsfsddsfddfs");
-            const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
-        }
-        else if (data.isServicer) {
+        const servicerMeta = {
+            name: data.accountName,
+            city: data.city,
+            country: data.country,
+            street: data.street,
+            zip: data.zip
+          }
+          const updateServicerMeta = await servicerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
+        // if (checkReseller.isServicer) {
+        //     const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
+        // }
+         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
                 name: data.accountName,

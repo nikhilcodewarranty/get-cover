@@ -2667,15 +2667,33 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
+
+    //res.json(servicer);return;
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     };
 
     const servicerIds = servicer.map(obj => obj._id);
+    const dealerIds = servicer.map(obj => obj.dealerId);
+    const resellerIds = servicer.map(obj => obj.resellerId);
 
+   // res.json(servicerIds);
 
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    let servicerUser = await userService.getMembers(query1, {});
+    const matchServicer = {
+      $or: [
+        { accountId: { $in: servicerIds }, isPrimary: true },
+        { accountId: { $in: dealerIds }, isPrimary: true },
+        { accountId: { $in: resellerIds }, isPrimary: true }
+      ]
+    }
+   // const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+  //  res.json(matchServicer);
+  //  return;
+
+    let servicerUser = await userService.getMembers(matchServicer, {});
+
+    //res.json(servicerUser); return;
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
