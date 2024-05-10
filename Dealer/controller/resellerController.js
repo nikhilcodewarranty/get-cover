@@ -652,7 +652,7 @@ exports.editResellers = async (req, res) => {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
                 name: data.accountName,
-                street: data.street,
+                street: data.street, 
                 city: data.city,
                 zip: data.zip,
                 resellerId: req.params.resellerId,
