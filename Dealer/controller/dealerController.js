@@ -2077,20 +2077,20 @@ exports.updateDealerMeta = async (req, res) => {
       //   const servicerMeta = {
       //     name: data.accountName,
       //     city: data.city,
-      //     country: data.country,
+      //     country: data.country, 
       //     street: data.street,
       //     zip: data.zip
       //   }
       //   const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
       // }
-      if (data.isServicer) {
+      if (data.isServicer && !checkDealer.isServicer) {
         const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
           name: data.accountName,
           street: data.street,
           city: data.city,
           zip: data.zip,
-          dealerId: checkDealer.dealerId,
+          dealerId: checkDealer._id,
           state: data.state,
           country: data.country,
           status: data.status,
@@ -2667,31 +2667,51 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
-
     //res.json(servicer);return;
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     };
 
-    const servicerIds = servicer.map(obj => obj._id);
-    const dealerIds = servicer.map(obj => obj.dealerId);
-    const resellerIds = servicer.map(obj => obj.resellerId);
+    //res.json(servicer);return;
+    let servicerIds = []
 
-   // res.json(servicerIds);
+    servicer.forEach(obj => {
+      if (obj.dealerId != null) {
+        servicerIds.push(obj.dealerId);
+      }
+      else if(obj.resellerId!=null){
+        servicerIds.push(obj.resellerId);
+      }
+      else {
+        servicerIds.push(obj._id);
+      }
+      // dealerIds.push(obj.dealerId);
+      // resellerIds.push(obj.resellerId);
+    });
+    // const servicerIds = servicer.map(obj => obj._id);
+    // const dealerIds = servicer.map(obj => obj.dealerId);
+    // const resellerIds = servicer.map(obj => obj.resellerId);
 
-    const matchServicer = {
-      $or: [
-        { accountId: { $in: servicerIds }, isPrimary: true },
-        { accountId: { $in: dealerIds }, isPrimary: true },
-        { accountId: { $in: resellerIds }, isPrimary: true }
-      ]
-    }
-   // const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    //res.json(resellerIds);return;
 
-  //  res.json(matchServicer);
-  //  return;
 
-    let servicerUser = await userService.getMembers(matchServicer, {});
+
+
+    // const matchServicer = {
+    //   $or: [
+    //     { accountId: { $in: servicerIds }, isPrimary: true },
+    //     { accountId: { $in: dealerIds }, isPrimary: true },
+    //     { accountId: { $in: resellerIds }, isPrimary: true }
+    //   ]
+    // }
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    //  res.json(query1);
+    //  return;
+
+    let servicerUser = await userService.getMembers(query1, {});
+
+   // res.json(servicerUser);return;
 
     //res.json(servicerUser); return;
     if (!servicerUser) {
@@ -2701,10 +2721,9 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
-    console.log("-------------------------------------------------------", 4)
 
     const result_Array = servicer.map(item1 => {
-      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
 
       if (matchingItem) {
         return {
