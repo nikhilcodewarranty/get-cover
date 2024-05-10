@@ -1510,6 +1510,7 @@ exports.getDealerCustomers = async (req, res) => {
             l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
         };
         console.log('name check ++++++++++++++++++++++=', newObj)
+        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
         const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1517,6 +1518,7 @@ exports.getDealerCustomers = async (req, res) => {
 
         const filteredData = result_Array.filter(entry => {
             return (
+                nameRegex.test(entry.customerData.username) &&
                 firstNameRegex.test(entry.firstName) &&
                 lastNameRegex.test(entry.lastName) &&
                 emailRegex.test(entry.email) &&

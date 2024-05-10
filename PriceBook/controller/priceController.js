@@ -582,6 +582,7 @@ exports.deletePriceBook = async (req, res, next) => {
   }
 };
 
+
 //Search price price books
 exports.searchPriceBook = async (req, res, next) => {
   try {
