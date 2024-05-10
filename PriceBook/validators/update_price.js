@@ -2,6 +2,7 @@ const Joi = require('joi')
 
 const update_price_validation = Joi.object({
     name:Joi.string().trim().optional().allow(),
+    pName:Joi.string().trim().optional().allow(),
     description:Joi.string().trim().optional().allow(),
     frontingFee:Joi.number().optional().allow(),
     reinsuranceFee:Joi.number().optional().allow(),

@@ -1,6 +1,7 @@
 const Joi = require('joi')
 const create_price_validation = Joi.object({
     name:Joi.string().trim().required(),
+    pName:Joi.string().trim().required(),
     description:Joi.string().trim().required(),
     term:Joi.number().required(),
     frontingFee:Joi.number().required(),
