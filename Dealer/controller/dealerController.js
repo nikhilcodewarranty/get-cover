@@ -2672,6 +2672,7 @@ exports.getDealerServicers = async (req, res) => {
       servicer.unshift(checkDealer);
     };
 
+    //res.json(servicer);return;
     let servicerIds = []
 
     servicer.forEach(obj => {
@@ -2710,6 +2711,8 @@ exports.getDealerServicers = async (req, res) => {
 
     let servicerUser = await userService.getMembers(query1, {});
 
+   // res.json(servicerUser);return;
+
     //res.json(servicerUser); return;
     if (!servicerUser) {
       res.send({
@@ -2718,10 +2721,9 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
-    console.log("-------------------------------------------------------", 4)
 
     const result_Array = servicer.map(item1 => {
-      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
 
       if (matchingItem) {
         return {
