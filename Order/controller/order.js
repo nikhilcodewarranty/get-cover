@@ -564,7 +564,7 @@ exports.createOrder1 = async (req, res) => {
         }
         let returnField = [];
 
-        let checkOrder = await orderService.getOrder(
+        var checkOrder = await orderService.getOrder(
             { _id: savedResponse._id },
         );
 
