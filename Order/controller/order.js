@@ -3284,7 +3284,7 @@ exports.getDashboardData = async (req, res) => {
         };
 
         let query = { status: 'Active' };
-        let checkOrders_ = await orderService.getDashboardData(query, project)
+        var checkOrders_ = await orderService.getDashboardData(query, project)
         // if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
         //     res.send({
         //         code: constant.errorCode,
