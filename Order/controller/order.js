@@ -673,13 +673,10 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_number: unique_key_number1,
                     };
                     increamentNumber++
-                    //unique_key_number1++
-                    // console.log("unique_key_number1", contractObject)
 
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-                console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 if (!saveContracts) {
@@ -689,7 +686,7 @@ exports.createOrder1 = async (req, res) => {
                         { new: true }
                     );
                 }
-                //  console.log("saveContracts==================", saveContracts)
+                //  console.log("saveContracts==================",  saveContracts)
 
             })
             res.send({
