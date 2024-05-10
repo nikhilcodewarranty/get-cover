@@ -2667,33 +2667,50 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
-
     //res.json(servicer);return;
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     };
 
-    const servicerIds = servicer.map(obj => obj._id);
-    const dealerIds = servicer.map(obj => obj.dealerId);
-    const resellerIds = servicer.map(obj => obj.resellerId);
+    let servicerIds = []
 
-   // res.json(servicerIds);
+    servicer.forEach(obj => {
+      if (obj.dealerId != null) {
+        servicerIds.push(obj.dealerId);
+      }
+      else if(obj.resellerId!=null){
+        servicerIds.push(obj.resellerId);
+      }
+      else {
+        servicerIds.push(obj._id);
+      }
+      // dealerIds.push(obj.dealerId);
+      // resellerIds.push(obj.resellerId);
+    });
+    // const servicerIds = servicer.map(obj => obj._id);
+    // const dealerIds = servicer.map(obj => obj.dealerId);
+    // const resellerIds = servicer.map(obj => obj.resellerId);
 
-    const matchServicer = {
-      $or: [
-        { accountId: { $in: servicerIds }, isPrimary: true },
-        { accountId: { $in: dealerIds }, isPrimary: true },
-        { accountId: { $in: resellerIds }, isPrimary: true }
-      ]
-    }
-   // const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    //res.json(resellerIds);return;
 
-  //  res.json(matchServicer);
-  //  return;
 
-    let servicerUser = await userService.getMembers(matchServicer, {});
 
-    //res.json(servicerUser); return;
+
+    // const matchServicer = {
+    //   $or: [
+    //     { accountId: { $in: servicerIds }, isPrimary: true },
+    //     { accountId: { $in: dealerIds }, isPrimary: true },
+    //     { accountId: { $in: resellerIds }, isPrimary: true }
+    //   ]
+    // }
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+    //  res.json(query1);
+    //  return;
+
+    let servicerUser = await userService.getMembers(query1, {});
+
+    res.json(servicerUser); return;
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
