@@ -2065,10 +2065,25 @@ exports.updateDealerMeta = async (req, res) => {
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       //Update Meta in servicer also 
-      if (checkDealer.isServicer) {
-        const updateServicerMeta = await servicerService.updateServiceProvider(criteria, data)
+      const servicerMeta = {
+        name: data.accountName,
+        city: data.city,
+        country: data.country,
+        street: data.street,
+        zip: data.zip
       }
-      else if (data.isServicer) {
+      const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      // if (checkDealer.isServicer) {
+      //   const servicerMeta = {
+      //     name: data.accountName,
+      //     city: data.city,
+      //     country: data.country,
+      //     street: data.street,
+      //     zip: data.zip
+      //   }
+      //   const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+      // }
+      if (data.isServicer) {
         const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
           name: data.accountName,
@@ -2853,10 +2868,15 @@ exports.getServicersList = async (req, res) => {
       return;
     }
     // let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null,resellerId:null}
-    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null}
+
+    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null }
     let projection = { __v: 0, isDeleted: 0 }
 
     let servicer = await servicerService.getAllServiceProvider(query, projection);
+
+    // res.json(servicer);
+
+    // return;
 
 
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
