@@ -2874,9 +2874,9 @@ exports.getServicersList = async (req, res) => {
 
     let servicer = await servicerService.getAllServiceProvider(query, projection);
 
-    res.json(servicer);
+    // res.json(servicer);
 
-    return;
+    // return;
 
 
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
