@@ -164,6 +164,7 @@ exports.createPriceBook = async (req, res, next) => {
     // price book data 
     let priceBookData = {
       name: data.name,
+      pName: data.pName,
       description: data.description,
       term: data.term,
       frontingFee: data.frontingFee,
@@ -300,6 +301,7 @@ exports.updatePriceBook = async (req, res, next) => {
       let newValue = {
         $set: {
           name: data.name,
+          pName: data.pName,
           description: data.description,
           term: data.term,
           frontingFee: data.frontingFee,
@@ -330,6 +332,7 @@ exports.updatePriceBook = async (req, res, next) => {
     let newValue = {
       $set: {
         name: data.name,
+        pName: data.pName,
         description: data.description,
         term: data.term,
         coverageType:data.coverageType,
@@ -440,6 +443,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     const newValue = {
       $set: {
         status: body.status,
+        pName: body.pName|| existingPriceBook.pName,
         frontingFee: body.frontingFee || existingPriceBook.frontingFee,
         coverageType: body.coverageType || existingPriceBook.coverageType,
         reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
@@ -831,7 +835,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
     })
   }
 }
-
 
 
 const checkObjectId = async (Id) => {

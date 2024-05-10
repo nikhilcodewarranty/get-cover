@@ -6,6 +6,10 @@ const priceSchema = new mongoose.Schema({
     type: String,
     index: true
   },
+  pName: {
+    type: String,
+    index: true
+  },
   description: {
     type: String,
   },
