@@ -607,7 +607,7 @@ exports.createOrder1 = async (req, res) => {
                 date: new Date()
             }
             let updatePaidDate = await orderService.updateOrder(
-                { _id: checkOrders_._id },
+                { _id: checkOrder._id },
                 { paidDate: paidDate },
                 { new: true }
             );
