@@ -607,7 +607,7 @@ exports.createOrder1 = async (req, res) => {
                 date: new Date()
             }
             let updatePaidDate = await orderService.updateOrder(
-                { _id: checkOrders._id },
+                { _id: checkOrders_._id },
                 { paidDate: paidDate },
                 { new: true }
             );
@@ -3284,8 +3284,8 @@ exports.getDashboardData = async (req, res) => {
         };
 
         let query = { status: 'Active' };
-        let checkOrders = await orderService.getDashboardData(query, project)
-        // if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
+        let checkOrders_ = await orderService.getDashboardData(query, project)
+        // if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
         //     res.send({
         //         code: constant.errorCode,
         //         message: "Unable to fetch order data",
@@ -3307,7 +3307,7 @@ exports.getDashboardData = async (req, res) => {
         // }
         let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
         let numberOfClaims = await claimService.getClaims({ claimFile: 'Completed' });
-        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
+        if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
@@ -3334,14 +3334,14 @@ exports.getDashboardData = async (req, res) => {
         // res.send({
         //     code: constant.successCode,
         //     message: 'Success!',
-        //     result:checkOrders[0]
+        //     result:checkOrders_[0]
         // })
         res.send({
             code: constant.successCode,
             message: "Success",
             result: {
                 claimData: claimData,
-                orderData: checkOrders[0]
+                orderData: checkOrders_[0]
             }
         })
     } catch (err) {
