@@ -688,14 +688,23 @@ exports.createOrder1 = async (req, res) => {
                         { status: "Pending" },
                         { new: true }
                     );
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Something went wrong in creating the contract",
+                    });
+                    return
+                }
+                if (saveContracts) {
+                    res.send({
+                        code: constant.successCode,
+                        message: "Success",
+                    });
+                    return
                 }
                 //  console.log("saveContracts==================", saveContracts)
 
             })
-            res.send({
-                code: constant.successCode,
-                message: "Success",
-            });
+
         } else {
             res.send({
                 code: constant.successCode,
@@ -4300,7 +4309,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-       // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
 
         let mergeFileName = checkOrder.unique_key + '.pdf'
 
@@ -4362,7 +4371,7 @@ exports.generateHtmltopdf = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: 'Success!',
-                result: response 
+                result: response
             })
         } else {
             console.log("I am dsfsfdssdfsd");
@@ -4402,16 +4411,16 @@ exports.generateHtmltopdf = async (req, res) => {
 
                 const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
 
-                console.log("termConditionFile---------------------------",termConditionFile)
+                console.log("termConditionFile---------------------------", termConditionFile)
                 // Usage
                 const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
                 const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
                 const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-                console.log("outputPath---------------------------",outputPath)
+                console.log("outputPath---------------------------", outputPath)
                 link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
                 response = { link: link, fileName: mergeFileName }
-                console.log("response--------------------------",response);
+                console.log("response--------------------------", response);
                 res.send({
                     code: constant.successCode,
                     message: 'Success!',
@@ -4420,7 +4429,7 @@ exports.generateHtmltopdf = async (req, res) => {
 
             });
         }
-       
+
     }
     catch (err) {
         res.send({
