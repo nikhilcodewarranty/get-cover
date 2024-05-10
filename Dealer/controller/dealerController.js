@@ -2710,7 +2710,7 @@ exports.getDealerServicers = async (req, res) => {
 
     let servicerUser = await userService.getMembers(query1, {});
 
-    res.json(servicerUser); return;
+    //res.json(servicerUser); return;
     if (!servicerUser) {
       res.send({
         code: constant.errorCode,
