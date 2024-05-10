@@ -3906,15 +3906,21 @@ exports.editOrderDetail = async (req, res) => {
                             { status: "Pending" },
                             { new: true }
                         );
+                        res.send({
+                            code: constant.errorCode,
+                            message: "Something went wrong in creating the contract",
+                        });
+                        return
                     }
+                }
+                if (createContract) {
+                    res.send({
+                        code: constant.successCode,
+                        message: "Success",
+                    });
                 }
 
             })
-
-            res.send({
-                code: constant.successCode,
-                message: "Success",
-            });
         } else {
             res.send({
                 code: constant.successCode,
