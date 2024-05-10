@@ -2083,7 +2083,7 @@ exports.updateDealerMeta = async (req, res) => {
       //   }
       //   const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
       // }
-      if (data.isServicer) {
+      if (data.isServicer && !checkDealer.isServicer) {
         const CountServicer = await servicerService.getServicerCount();
         let servicerObject = {
           name: data.accountName,
