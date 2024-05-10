@@ -2090,7 +2090,7 @@ exports.updateDealerMeta = async (req, res) => {
           street: data.street,
           city: data.city,
           zip: data.zip,
-          dealerId: checkDealer.dealerId,
+          dealerId: checkDealer._id,
           state: data.state,
           country: data.country,
           status: data.status,
