@@ -2574,18 +2574,18 @@ exports.createDeleteRelation = async (req, res) => {
     // return res.json(deleteData)
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
-      dealerId: req.params.dealerId,  
-      servicerId: servicerId 
+      dealerId: req.params.dealerId,
+      servicerId: servicerId
     }));
     if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       //Save Logs create dealer relation
       let logData = {
-        userId: req.userId, 
+        userId: req.userId,
         endpoint: "dealer/createRelationWithServicer/:dealerId",
         body: data,
         response: {
-          code: constant.successCode, 
+          code: constant.successCode,
           message: "Success",
           result: saveData
         }
@@ -2938,19 +2938,22 @@ exports.getServicersList = async (req, res) => {
       let documentData = {}
       const matchingServicer = getRelations.find(servicer => servicer.servicerId?.toString() == item._id?.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
       const matchedReseller = dealerReseller.find(reseller => reseller._id?.toString() === item.resellerId?.toString() || item.resellerId == null)
-      if(matchedReseller){
+      if (matchedReseller) {
         documentData = item._doc
+        return { ...documentData, check: !!matchingServicer };
       }
-      console.log("documentData==============================================", documentData)
+      console.log("matchingServicer==============================================", matchingServicer)
 
-   //   const documentData = matchedReseller;
-      return { ...documentData, check: !!matchingServicer };
     });
+
+    let filteredData = resultArray.filter(item => item !== undefined);
+
+    console.log(filteredData);
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: resultArray
+      result: filteredData
     });
   } catch (err) {
     res.send({
