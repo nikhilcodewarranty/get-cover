@@ -1668,7 +1668,7 @@ exports.getServicerInOrders = async (req, res) => {
                 servicerData: matchingItem.toObject(),
             };
         } else {
-            return servicer.toObject();
+            return {};
         }
     });
 
@@ -3419,7 +3419,7 @@ exports.createOrder = async (req, res) => {
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
 
-        let checkDealer = await dealerService.getDealerById(
+        var checkDealer = await dealerService.getDealerById(
             req.userId,
             projection
         );
@@ -3970,7 +3970,7 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active', dealerId: new mongoose.Types.ObjectId(req.userId) };
         const claimQuery = { claimFile: 'Completed' }
-        let checkOrders = await orderService.getDashboardData(query, project);
+        var checkOrders_ = await orderService.getDashboardData(query, project);
         //Get claims data
         let lookupQuery = [
             {
@@ -4066,7 +4066,7 @@ exports.getDashboardData = async (req, res) => {
             numberOfClaims: numberOfClaims.length,
             valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
         }
-        if (!checkOrders[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
+        if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
             res.send({
                 code: constant.errorCode,
                 message: "Unable to fetch order data",
@@ -4091,7 +4091,7 @@ exports.getDashboardData = async (req, res) => {
             message: "Success",
             result: {
                 claimData: claimData,
-                orderData: checkOrders[0]
+                orderData: checkOrders_[0]
             }
         })
     } catch (err) {

@@ -2679,7 +2679,7 @@ exports.getDealerServicers = async (req, res) => {
       if (obj.dealerId != null) {
         servicerIds.push(obj.dealerId);
       }
-      else if(obj.resellerId!=null){
+      else if (obj.resellerId != null) {
         servicerIds.push(obj.resellerId);
       }
       else {
@@ -2711,7 +2711,7 @@ exports.getDealerServicers = async (req, res) => {
 
     let servicerUser = await userService.getMembers(query1, {});
 
-   // res.json(servicerUser);return;
+    // res.json(servicerUser);return;
 
     //res.json(servicerUser); return;
     if (!servicerUser) {
@@ -2724,7 +2724,6 @@ exports.getDealerServicers = async (req, res) => {
 
     const result_Array = servicer.map(item1 => {
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
-
       if (matchingItem) {
         return {
           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -2823,13 +2822,24 @@ exports.getDealerServicers = async (req, res) => {
 
 
 
-    const filteredData = result_Array.filter(entry => {
+    let filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.servicerData?.name) &&
         emailRegex.test(entry?.email) &&
         phoneRegex.test(entry?.phoneNumber)
       );
     });
+
+    // Add isServicer key for reseller when true
+
+    filteredData.forEach(item => {
+      // Check if resellerId is not null
+      if (item.servicerData.resellerId !== null) {
+          // Add the desired key-value pair inside servicerData object
+          item.servicerData.isServicer = true;
+          // You can add any key-value pair you want here
+      }
+  });
 
     console.log("filteredData----------------------------------------", filteredData)
 

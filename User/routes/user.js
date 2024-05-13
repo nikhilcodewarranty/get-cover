@@ -48,7 +48,7 @@ router.post("/approveDealer", [verifyToken], validator("create_dealer_validation
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail);
 router.post("/validateData", [verifyToken], userController.validateData);
 
-
+ 
 //create dealer api from super admin
 router.post("/createDealer", [verifyToken], userController.createDealer);
 router.get("/checkToken", [verifyToken], userController.checkToken);
