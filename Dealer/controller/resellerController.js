@@ -648,7 +648,7 @@ exports.editResellers = async (req, res) => {
         // if (checkReseller.isServicer) {
         //     const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         // }
-         if (data.isServicer && !checkDealer.isServicer) {
+         if (data.isServicer && !checkReseller.isServicer) {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
                 name: data.accountName,
