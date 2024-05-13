@@ -2581,7 +2581,7 @@ exports.createDeleteRelation = async (req, res) => {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       //Save Logs create dealer relation
       let logData = {
-        userId: req.userId,
+        userId: req.userId, 
         endpoint: "dealer/createRelationWithServicer/:dealerId",
         body: data,
         response: {
