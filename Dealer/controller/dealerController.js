@@ -2574,7 +2574,7 @@ exports.createDeleteRelation = async (req, res) => {
     // return res.json(deleteData)
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
-      dealerId: req.params.dealerId, 
+      dealerId: req.params.dealerId,  
       servicerId: servicerId 
     }));
     if (newRecords.length > 0) {
