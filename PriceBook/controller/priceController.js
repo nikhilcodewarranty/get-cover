@@ -25,6 +25,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
+    let searchName1 = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
     let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
@@ -33,6 +34,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
+          { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'status': data.status },
           { 'category': { $in: catIdsArray } }
         ]
@@ -41,6 +43,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       query = {
         $and: [
           { isDeleted: false },
+          { 'pName': { '$regex': searchName1, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
@@ -102,6 +105,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     })
   }
 };
+
 
 //Get all actvie price book
 exports.getAllActivePriceBook = async (req, res) => {
