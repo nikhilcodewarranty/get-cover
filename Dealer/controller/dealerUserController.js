@@ -1239,7 +1239,7 @@ exports.getDealerServicers = async (req, res) => {
         })
         return;
       }
-      let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: rreq.userId })
+      let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
       if (!getServicersIds) {
         res.send({
           code: constant.errorCode,
