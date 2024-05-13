@@ -1121,11 +1121,13 @@ exports.getDealerServicers = async (req, res) => {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: item1.toObject()
                 };
-            } 
+            } else {
+                return {}
+            }
         });
 
         for (let i = 0; i < result_Array.length; i++) {
-            const servicerId = result_Array[i].servicerData._id;
+            const servicerId = result_Array[i].servicerData?._id;
             let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
             console.log("claim check+++++++4444444444444++++++++++++++")
 
