@@ -644,11 +644,11 @@ exports.editResellers = async (req, res) => {
             street: data.street,
             zip: data.zip
           }
-          const updateServicerMeta = await servicerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
+          const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
         // if (checkReseller.isServicer) {
         //     const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         // }
-         if (data.isServicer && !checkDealer.isServicer) {
+         if (data.isServicer && !checkReseller.isServicer) {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
                 name: data.accountName,

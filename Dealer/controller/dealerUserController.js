@@ -1588,6 +1588,101 @@ exports.getCustomerInOrder = async (req, res) => {
     }
 };
 
+// exports.getServicerInOrders = async (req, res) => {
+//     let data = req.body;
+//     let servicer = [];
+//     if (req.userId) {
+//         var checkDealer = await dealerService.getDealerById(req.userId, {
+//             isDeleted: 0,
+//         });
+//         if (!checkDealer) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Dealer not found!",
+//             });
+//             return;
+//         }
+//         let getServicersIds = await dealerRelationService.getDealerRelations({
+//             dealerId: req.userId,
+//         });
+//         // if (!getServicersIds) {
+//         //     res.send({
+//         //         code: constant.errorCode,
+//         //         message: "Unable to fetch the servicer"
+//         //     })
+//         //     return;
+//         // }
+//         let ids = getServicersIds.map((item) => item.servicerId);
+//         servicer = await servicerService.getAllServiceProvider(
+//             { _id: { $in: ids }, status: true },
+//             {}
+//         );
+//         if (!servicer) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Unable to fetch the servicers",
+//             });
+//             return;
+//         }
+//     }
+//     if (data.resellerId) {
+//         var checkReseller = await resellerService.getReseller({
+//             _id: data.resellerId,
+//         });
+//         // if (!checkReseller) {
+//         //     res.send({
+//         //         code: constant.errorCode,
+//         //         message: "Invalid Reseller ID"
+//         //     })
+//         //     return;
+//         // }
+//     }
+//     if (checkReseller && checkReseller.isServicer) {
+//         servicer.unshift(checkReseller);
+//     }
+
+//     if (checkDealer && checkDealer.isServicer) {
+//         servicer.unshift(checkDealer);
+//     }
+
+//     const servicerIds = servicer.map((obj) => obj._id);
+//     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+//     let servicerUser = await userService.getMembers(query1, {});
+//     if (!servicerUser) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: "Unable to fetch the data",
+//         });
+//         return;
+//     }
+
+//     const result_Array = servicer.map((item1) => {
+//         const matchingItem = servicerUser.find(
+//             (item2) => item2.accountId?.toString() === item1._id?.toString()
+//         );
+
+//         if (matchingItem) {
+//             return {
+//                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+//                 servicerData: matchingItem.toObject(),
+//             };
+//         } else {
+//             return {};
+//         }
+//     });
+
+//     res.send({
+//         code: constant.successCode,
+//         result: result_Array,
+//     });
+// };
+
+
+
+
+
+//Get servicer in orders
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
     let servicer = [];
@@ -1603,20 +1698,15 @@ exports.getServicerInOrders = async (req, res) => {
             return;
         }
         let getServicersIds = await dealerRelationService.getDealerRelations({
-            dealerId: req.userId,
+            dealerId:req.userId,
         });
-        // if (!getServicersIds) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Unable to fetch the servicer"
-        //     })
-        //     return;
-        // }
         let ids = getServicersIds.map((item) => item.servicerId);
+
         servicer = await servicerService.getAllServiceProvider(
             { _id: { $in: ids }, status: true },
             {}
         );
+
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -1629,24 +1719,41 @@ exports.getServicerInOrders = async (req, res) => {
         var checkReseller = await resellerService.getReseller({
             _id: data.resellerId,
         });
-        // if (!checkReseller) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Invalid Reseller ID"
-        //     })
-        //     return;
-        // }
     }
     if (checkReseller && checkReseller.isServicer) {
-        servicer.unshift(checkReseller);
+        //Get the servicer name if reseller as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
+        if (checkServicer.status) {
+            servicer.unshift(checkReseller);
+        }
     }
 
     if (checkDealer && checkDealer.isServicer) {
-        servicer.unshift(checkDealer);
+        //Get the servicer name if dealer as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+        if (checkServicer.status) {
+            servicer.unshift(checkDealer);
+        }
     }
 
-    const servicerIds = servicer.map((obj) => obj._id);
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+
+
+    const servicerIds = servicer.map((obj) => obj?._id);
+    const resellerIdss = servicer.map((obj) => obj?.resellerId);
+    const dealerIdss = servicer.map((obj) => obj?.dealerId);
+    // const dealerIdss = servicer.map((obj) => obj?._id);
+    const query1 = {
+        $and: [
+            {
+                $or: [
+                    { accountId: { $in: servicerIds } },
+                    { accountId: { $in: resellerIdss } },
+                    { accountId: { $in: dealerIdss } },
+                ]
+            },
+            { isPrimary: true }
+        ]
+    };
 
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
@@ -1657,18 +1764,25 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
+    console.log('hceck',servicer,servicerUser)
+
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId?.toString() === item1._id?.toString()
-        );
-
+            (item2) => item2.accountId.toString() === item1?._id.toString() );
+            let matchingItem2 = servicerUser.find(
+                (item2) => item2.accountId.toString() === item1?.resellerId?.toString()||item2.accountId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem.toObject(),
             };
-        } else {
-            return {};
+        } else if(matchingItem2){
+            return {
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: matchingItem2.toObject(),
+            };
+        }else{
+            return {}
         }
     });
 
@@ -1677,7 +1791,6 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
-
 //dealers api
 exports.createReseller = async (req, res) => {
     try {
