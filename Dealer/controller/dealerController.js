@@ -2835,11 +2835,11 @@ exports.getDealerServicers = async (req, res) => {
     filteredData.forEach(item => {
       // Check if resellerId is not null
       if (item.servicerData.resellerId !== null) {
-          // Add the desired key-value pair inside servicerData object
-          item.servicerData.isServicer = true;
-          // You can add any key-value pair you want here
+        // Add the desired key-value pair inside servicerData object
+        item.servicerData.isServicer = true;
+        // You can add any key-value pair you want here
       }
-  });
+    });
 
     console.log("filteredData----------------------------------------", filteredData)
 
@@ -2925,13 +2925,25 @@ exports.getServicersList = async (req, res) => {
 
     // return;
 
+    const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId });
+
+    //  res.json(dealerReseller);
+    //  return;
+
 
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
 
 
     const resultArray = servicer.map(item => {
+      let documentData = {}
+      console.log("item==============================================", item)
       const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
-      const documentData = item._doc;
+      const matchedReseller = dealerReseller.find(reseller => reseller._id.toString() === item.resellerId?.toString())
+      if (matchedReseller) {
+         documentData = item._doc;
+      }
+      //  console.log("matchedReseller==============================================",matchedReseller)
+
       return { ...documentData, check: !!matchingServicer };
     });
 
