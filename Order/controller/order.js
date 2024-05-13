@@ -2163,12 +2163,28 @@ exports.getServicerInOrders = async (req, res) => {
         //Get the servicer name if dealer as servicer
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
         if (checkServicer.status) {
-            servicer.unshift(checkReseller);
+            servicer.unshift(checkServicer);
         }
     }
 
+
+
     const servicerIds = servicer.map((obj) => obj?._id);
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    const resellerIdss = servicer.map((obj) => obj?.resellerId);
+    const dealerIdss = servicer.map((obj) => obj?.dealerId);
+    // const dealerIdss = servicer.map((obj) => obj?._id);
+    const query1 = {
+        $and: [
+            {
+                $or: [
+                    { accountId: { $in: servicerIds } },
+                    { accountId: { $in: resellerIdss } },
+                    { accountId: { $in: dealerIdss } },
+                ]
+            },
+            { isPrimary: true }
+        ]
+    };
 
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
@@ -2179,16 +2195,25 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
+    console.log('hceck',servicer,servicerUser)
+
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?._id.toString());
+            (item2) => item2.accountId.toString() === item1?._id.toString() );
+            let matchingItem2 = servicerUser.find(
+                (item2) => item2.accountId.toString() === item1?.resellerId?.toString()||item2.accountId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem.toObject(),
             };
-        } else {
-            return {};
+        } else if(matchingItem2){
+            return {
+                ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                servicerData: matchingItem2.toObject(),
+            };
+        }else{
+            return {}
         }
     });
 
