@@ -47,6 +47,7 @@ router.post('/getResellerByDealerAndCustomer', [verifyToken], orderController.ge
 
 router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInOrder)
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks)
+router.post('/getPriceBooksInOrder/:dealerId', [verifyToken], orderController.getPriceBooksInOrder)
 
 
 module.exports = router;

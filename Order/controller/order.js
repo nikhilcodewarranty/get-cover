@@ -2611,7 +2611,7 @@ exports.getPriceBooksInOrder = async (req, res) => {
 
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice(query);
 
-
+        console.log("check111111111111111111",getDealerPriceBook)
         if (!getDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
@@ -2637,6 +2637,7 @@ exports.getPriceBooksInOrder = async (req, res) => {
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let query1;
+        console.log("check111111111111111111",dealerPriceIds)
         if (data.coverageType == "Breakdown & Accidental") {
             if (data.term) {
                 query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
@@ -2660,10 +2661,11 @@ exports.getPriceBooksInOrder = async (req, res) => {
             } else if (data.term && data.pName) {
                 query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
             } else {
-                query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.category };
+                query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.priceCatId };
             }
 
         }
+        console.log("check222222222222222222",query1)
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query1, {});
 
