@@ -1206,7 +1206,7 @@ exports.getDealerServicers = async (req, res) => {
 
         const filteredData = result_Array.filter(entry => {
             return (
-                nameRegex.test(entry.servicerData.name) &&
+                nameRegex.test(entry.servicerData?.name) &&
                 emailRegex.test(entry.email) &&
                 phoneRegex.test(entry.phoneNumber)
             );
