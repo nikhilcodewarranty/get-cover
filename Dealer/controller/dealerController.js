@@ -2936,8 +2936,8 @@ exports.getServicersList = async (req, res) => {
 
     const resultArray = servicer.map(item => {
       let documentData = {}
-      const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
-      const matchedReseller = dealerReseller.find(reseller => reseller._id.toString() === item.resellerId?.toString() || item.resellerId == null)
+      const matchingServicer = getRelations.find(servicer => servicer.servicerId?.toString() == item._id?.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
+      const matchedReseller = dealerReseller.find(reseller => reseller._id?.toString() === item.resellerId?.toString() || item.resellerId == null)
       if(matchedReseller){
         documentData = item._doc
       }
