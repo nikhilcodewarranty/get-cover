@@ -1668,7 +1668,7 @@ exports.getServicerInOrders = async (req, res) => {
                 servicerData: matchingItem.toObject(),
             };
         } else {
-            return servicer.toObject();
+            return {};
         }
     });
 
