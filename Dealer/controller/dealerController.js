@@ -2925,7 +2925,7 @@ exports.getServicersList = async (req, res) => {
 
     // return;
 
-    const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId });
+    const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId, status: true });
 
     //  res.json(dealerReseller);
     //  return;
