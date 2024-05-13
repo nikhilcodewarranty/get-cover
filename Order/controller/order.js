@@ -2192,24 +2192,24 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log('hceck',servicer,servicerUser)
+    console.log('hceck', servicer, servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?._id.toString() );
-            let matchingItem2 = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1?.resellerId?.toString()||item2.accountId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.accountId.toString() === item1?._id.toString());
+        let matchingItem2 = servicerUser.find(
+            (item2) => item2.accountId.toString() === item1?.resellerId?.toString() || item2.accountId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem.toObject(),
             };
-        } else if(matchingItem2){
+        } else if (matchingItem2) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem2.toObject(),
             };
-        }else{
+        } else {
             return {}
         }
     });
@@ -2598,6 +2598,121 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
+
+exports.getPriceBooksInOrder = async (req, res) => {
+    try {
+        let data = req.body
+        let query = {
+            $and: [
+                { dealerId: req.params.dealerId },
+                { status: true, }
+            ]
+        }
+
+        let getDealerPriceBook = await dealerPriceService.findAllDealerPrice(query);
+
+
+        if (!getDealerPriceBook) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the data",
+            });
+            return;
+        }
+        let dealerPriceBookDetail = {
+            _id: "",
+            priceBook: "",
+            dealerId: "",
+            status: "",
+            retailPrice: "",
+            description: "",
+            isDeleted: "",
+            brokerFee: "",
+            unique_key: "",
+            wholesalePrice: "",
+            __v: 0,
+            createdAt: "",
+            updatedAt: "",
+        };
+
+        let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
+        let query1;
+        if (data.coverageType == "Breakdown & Accidental") {
+            if (data.term) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
+            }
+            else if (data.pName) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
+
+            } else if (data.term && data.pName) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
+            } else {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId };
+            }
+        } else {
+
+            if (data.term) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
+            }
+            else if (data.pName) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
+
+            } else if (data.term && data.pName) {
+                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
+            } else {
+                query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.category };
+            }
+
+        }
+
+        let getPriceBooks = await priceBookService.getAllPriceIds(query1, {});
+
+        const dealerPriceBookMap = new Map(
+            getDealerPriceBook.map((item) => [
+                item.priceBook.toString(),
+                item.retailPrice,
+            ])
+        );
+
+        let mergedPriceBooks = getPriceBooks.map((item) => {
+            const retailPrice = dealerPriceBookMap.get(item._id.toString()) || 0;
+            return {
+                ...item._doc,
+                retailPrice,
+            };
+        });
+        let filteredPiceBook;
+        if (data.priceBookId || data.priceBookId != "") {
+            filteredPiceBook = getPriceBooks
+                .filter((item) => item._id.toString() === data.priceBookId)
+                .map((item) => item.category);
+            checkSelectedCategory = await priceBookService.getPriceCatByName({
+                _id: filteredPiceBook,
+            });
+
+            dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
+                dealerId: req.params.dealerId,
+                priceBook: data.priceBookId,
+            });
+        }
+
+        let result = {
+            priceBooks: mergedPriceBooks,
+            dealerPriceBookDetail: dealerPriceBookDetail,
+        };
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result,
+        });
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.messsage
+        })
+    }
+}
+
 //Check Purchase order
 exports.checkPurchaseOrder = async (req, res) => {
     try {
