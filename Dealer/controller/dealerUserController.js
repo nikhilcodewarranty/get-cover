@@ -1122,7 +1122,7 @@ exports.getDealerServicers = async (req, res) => {
                     servicerData: item1.toObject()
                 };
             } else {
-                return {}
+                return {servicerData: {} }
             }
         });
 
@@ -1230,7 +1230,7 @@ exports.getDealerServicers = async (req, res) => {
 // exports.getDealerServicers = async (req, res) => {
 //     try {
 //       let data = req.body
-  
+
 //       let checkDealer = await dealerService.getDealerByName({ _id: req.userId })
 //       if (!checkDealer) {
 //         res.send({
@@ -1261,10 +1261,10 @@ exports.getDealerServicers = async (req, res) => {
 //       if (checkDealer.isServicer) {
 //         servicer.unshift(checkDealer);
 //       };
-  
+
 //       //res.json(servicer);return;
 //       let servicerIds = []
-  
+
 //       servicer.forEach(obj => {
 //         if (obj.dealerId != null) {
 //           servicerIds.push(obj.dealerId);
@@ -1281,12 +1281,12 @@ exports.getDealerServicers = async (req, res) => {
 //       // const servicerIds = servicer.map(obj => obj._id);
 //       // const dealerIds = servicer.map(obj => obj.dealerId);
 //       // const resellerIds = servicer.map(obj => obj.resellerId);
-  
+
 //       //res.json(resellerIds);return;
-  
-  
-  
-  
+
+
+
+
 //       // const matchServicer = {
 //       //   $or: [
 //       //     { accountId: { $in: servicerIds }, isPrimary: true },
@@ -1295,14 +1295,14 @@ exports.getDealerServicers = async (req, res) => {
 //       //   ]
 //       // }
 //       const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-  
+
 //       //  res.json(query1);
 //       //  return;
-  
+
 //       let servicerUser = await userService.getMembers(query1, {});
-  
+
 //       // res.json(servicerUser);return;
-  
+
 //       //res.json(servicerUser); return;
 //       if (!servicerUser) {
 //         res.send({
@@ -1311,7 +1311,7 @@ exports.getDealerServicers = async (req, res) => {
 //         });
 //         return;
 //       };
-  
+
 //       const result_Array = servicer.map(item1 => {
 //         const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
 //         if (matchingItem) {
@@ -1328,13 +1328,13 @@ exports.getDealerServicers = async (req, res) => {
 //       });
 //       // console.log("-------------------------------------------------------result_Array",result_Array)
 //       // console.log("-------------------------------------------------------",5)
-  
-  
+
+
 //       for (let i = 0; i < result_Array.length; i++) {
 //         const servicerId = result_Array[i].servicerData?._id;
 //         let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
 //         console.log("claim check+++++++4444444444444++++++++++++++")
-  
+
 //         // Aggregate pipeline to join orders, contracts, and claims
 //         var aggregateResult = await orderService.getAllOrders1([
 //           {
@@ -1381,14 +1381,14 @@ exports.getDealerServicers = async (req, res) => {
 //           }
 //         ]);
 //         console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
-  
+
 //         // If there are results for the current servicerId, update the result array
 //         aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-  
-  
+
+
 //         console.log("claim check+++++++++++++++++++++", aggregateResult)
 //         let totalClaimAmount = 0
-  
+
 //         function calculateTotalAmountAndCount(arr) {
 //           let total = 0;
 //           let count = aggregateResult.length;
@@ -1400,18 +1400,18 @@ exports.getDealerServicers = async (req, res) => {
 //         const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
 //         console.log("Total amount:", totalAmount);
 //         console.log("Total count:", totalCount);
-  
+
 //         result_Array[i].claimCount = totalCount;
 //         result_Array[i].totalClaimAmount = totalAmount;
-  
+
 //       }
-  
+
 //       const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
 //       const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
 //       const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-  
-  
-  
+
+
+
 //       let filteredData = result_Array.filter(entry => {
 //         return (
 //           nameRegex.test(entry.servicerData?.name) &&
@@ -1419,9 +1419,9 @@ exports.getDealerServicers = async (req, res) => {
 //           phoneRegex.test(entry?.phoneNumber)
 //         );
 //       });
-  
+
 //       // Add isServicer key for reseller when true
-  
+
 //       filteredData.forEach(item => {
 //         // Check if resellerId is not null
 //         if (item.servicerData.resellerId !== null) {
@@ -1430,16 +1430,16 @@ exports.getDealerServicers = async (req, res) => {
 //           // You can add any key-value pair you want here
 //         }
 //       });
-  
+
 //       console.log("filteredData----------------------------------------", filteredData)
-  
-  
+
+
 //       res.send({
 //         code: constant.successCode,
 //         message: "Success",
 //         data: filteredData
 //       });
-  
+
 //     } catch (err) {
 //       res.send({
 //         code: constant.errorCode,
@@ -1919,7 +1919,7 @@ exports.getServicerInOrders = async (req, res) => {
             return;
         }
         let getServicersIds = await dealerRelationService.getDealerRelations({
-            dealerId:req.userId,
+            dealerId: req.userId,
         });
         let ids = getServicersIds.map((item) => item.servicerId);
 
@@ -1985,24 +1985,24 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log('hceck',servicer,servicerUser)
+    console.log('hceck', servicer, servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?._id.toString() );
-            let matchingItem2 = servicerUser.find(
-                (item2) => item2.accountId.toString() === item1?.resellerId?.toString()||item2.accountId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.accountId.toString() === item1?._id.toString());
+        let matchingItem2 = servicerUser.find(
+            (item2) => item2.accountId.toString() === item1?.resellerId?.toString() || item2.accountId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem.toObject(),
             };
-        } else if(matchingItem2){
+        } else if (matchingItem2) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                 servicerData: matchingItem2.toObject(),
             };
-        }else{
+        } else {
             return {}
         }
     });

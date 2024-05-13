@@ -2659,6 +2659,7 @@ exports.getDealerServicers = async (req, res) => {
     }
     console.log("-------------------------------------------------------", 1)
     let ids = getServicersIds.map((item) => item.servicerId)
+    
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
       res.send({
