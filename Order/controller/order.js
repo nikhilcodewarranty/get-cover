@@ -2160,7 +2160,7 @@ exports.getServicerInOrders = async (req, res) => {
         //Get the servicer name if dealer as servicer
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
         if (checkServicer.status) {
-            servicer.unshift(checkServicer);
+            servicer.unshift(checkDealer);
         }
     }
 
