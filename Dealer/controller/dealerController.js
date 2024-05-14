@@ -3717,6 +3717,8 @@ exports.getDealerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
+    console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111",data)
+
     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && data.pName === "" && userSearchCheck == 0) {
       console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111")
       mainQuery = [
