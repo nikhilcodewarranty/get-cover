@@ -4211,6 +4211,7 @@ exports.editOrderDetail = async (req, res) => {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
+                        pName: priceBook[0].pName,
                         manufacture: data.brand,
                         model: data.model,
                         serial: data.serial,
@@ -4221,7 +4222,6 @@ exports.editOrderDetail = async (req, res) => {
                         status: claimStatus,
                         eligibilty: eligibilty,
                         productValue: data.retailValue,
-
                         condition: data.condition,
                         productValue: data.retailValue,
                         unique_key: unique_key1,

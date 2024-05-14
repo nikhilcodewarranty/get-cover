@@ -1381,6 +1381,7 @@ exports.addClaim = async (req, res, next) => {
     data.venderOrder = checkOrder.venderOrder
     data.serial = checkContract.serial
     data.productName = checkContract.productName
+    data.pName = checkContract?.pName
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
 
@@ -2334,6 +2335,7 @@ exports.saveBulkClaim = async (req, res) => {
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
             productName: data.contractData.productName,
+            pName: data.contractData.pName,
             model: data.contractData.model,
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
