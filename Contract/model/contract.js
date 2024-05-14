@@ -16,6 +16,11 @@ const contractSchema = new mongoose.Schema({
     index: true,
     // required: true,
   },
+  pName: {
+    type: String,
+    index: true,
+    // required: true,
+  },
   orderProductId: {
     type: mongoose.Schema.Types.ObjectId,
     // required: true,

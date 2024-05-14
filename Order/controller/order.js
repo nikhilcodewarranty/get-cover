@@ -2488,25 +2488,25 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let query;
         if (data.coverageType == "Breakdown & Accidental") {
             if (data.term) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
             else if (data.pName) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  pName: data.pName };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
             } else if (data.term && data.pName) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  pName: data.pName, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
                 query = { _id: { $in: dealerPriceIds }, status: true, };
             }
         } else {
             if (data.term) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
             else if (data.pName) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  pName: data.pName };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
             } else if (data.term && data.pName) {
-                query = { _id: { $in: dealerPriceIds }, status: true,  pName: data.pName, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
                 query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
@@ -3810,14 +3810,6 @@ exports.getOrderPdf = async (req, res) => {
                     as: "order"
                 }
             },
-            // {
-            //     $addFields: {
-            //         contracts: {
-            //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-            //         }
-            //     }
-            // }
-            // { $unwind: "$contracts" }
         ]
         //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContractForPDF(query)

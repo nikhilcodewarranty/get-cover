@@ -24,6 +24,10 @@ const claimSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  pName: {
+    type: String,
+    default: ''
+  },
   model: {
     type: String,
     default: ''
