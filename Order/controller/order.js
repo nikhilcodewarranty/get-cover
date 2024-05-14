@@ -2530,27 +2530,27 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let query;
         if (data.coverageType == "Breakdown & Accidental") {
             if (data.term) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
             else if (data.pName) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, pName: data.pName };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
             } else if (data.term && data.pName) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, pName: data.pName, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, };
+                query = { _id: { $in: dealerPriceIds }, status: true, };
             }
         } else {
             if (data.term) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
             else if (data.pName) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, pName: data.pName };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
             } else if (data.term && data.pName) {
-                query = { _id: { $in: dealerPriceIds },category:data.priceCatId, status: true, pName: data.pName, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
-                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType,category:data.priceCatId, status: true, };
+                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
 
         }
@@ -2641,7 +2641,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let result = {
             priceCategories: getCategories,
-            priceBooks: mergedPriceBooks,
+            priceBooks: data.priceCatId==""?[]:mergedPriceBooks,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
         };
