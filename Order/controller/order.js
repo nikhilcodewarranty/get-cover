@@ -554,6 +554,47 @@ exports.createOrder1 = async (req, res) => {
             data.paidAmount = data.orderAmount
             data.dueAmount = 0
         }
+
+        if (data.billTo == "Dealer") {
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: checkDealer.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Reseller") {
+            let getReseller = await resellerService.getReseller({_id:data.resellerId})
+            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: getReseller.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Custom") {
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: data.name,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
+
+                }
+            }
+        }
+
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({

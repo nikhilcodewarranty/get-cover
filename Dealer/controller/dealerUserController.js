@@ -3458,6 +3458,7 @@ exports.getAllContracts = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3471,6 +3472,7 @@ exports.getAllContracts = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3484,7 +3486,7 @@ exports.getAllContracts = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === ""&&data.pName === "" && userSearchCheck == 0) {
             console.log('check_--------dssssssssssssssssssssss--------')
             mainQuery = [
                 {
@@ -3829,6 +3831,45 @@ exports.createOrder = async (req, res) => {
         }
 
         data.status = "Pending";
+        if (data.billTo == "Dealer") {
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: checkDealer.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Reseller") {
+            let getReseller = await resellerService.getReseller({_id:data.resellerId})
+            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: getReseller.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Custom") {
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: data.name,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
+
+                }
+            }
+        }
         let savedResponse = await orderService.addOrder(data);
 
         // Update Term and condtion while create order
