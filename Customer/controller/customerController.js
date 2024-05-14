@@ -510,6 +510,7 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
+    isAcoountCreate
 
     if (data.isAccountCreate || data.isAccountCreate == 'true') {
       console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
