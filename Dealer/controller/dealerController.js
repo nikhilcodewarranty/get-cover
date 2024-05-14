@@ -2886,21 +2886,21 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
-    if (checkDealer.isServicer) {
-      servicer.unshift(checkDealer);
-    };
-
     // Get Dealer Reseller Servicer
 
     let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
 
-    if (dealerResellerServicer.length > 0){
-      servicer.unshift(dealerResellerServicer[0]);
+    if (dealerResellerServicer.length > 0) {
+      servicer.unshift(...dealerResellerServicer);
     }
 
-    //   res.send({
-    //     dealerResellerServicer
-    //   })
+    if (checkDealer.isServicer) {
+      servicer.unshift(checkDealer);
+    };
+
+    // res.send({
+    //   servicer
+    // })
     // return;
 
     console.log("-------------------------------------------------------", 2)
