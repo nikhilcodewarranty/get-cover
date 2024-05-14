@@ -5,11 +5,11 @@ const contractSchema = new mongoose.Schema({
     ref: "order",
     index: true,
   },
-  orderUniqueKey:{
-    type:String
+  orderUniqueKey: {
+    type: String
   },
-  venderOrder:{
-    type:String
+  venderOrder: {
+    type: String
   },
   productName: {
     type: String,
@@ -19,6 +19,7 @@ const contractSchema = new mongoose.Schema({
   pName: {
     type: String,
     index: true,
+    default: ''
     // required: true,
   },
   orderProductId: {
