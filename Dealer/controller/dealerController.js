@@ -2910,7 +2910,7 @@ exports.unAssignServicer = async (req, res) => {
 
 exports.getServicersList = async (req, res) => {
   try {
-    let data = req.body
+    let data = req.body 
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -2918,9 +2918,9 @@ exports.getServicersList = async (req, res) => {
       })
       return;
     }
-    // let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null,resellerId:null}
+    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null,resellerId:null}
 
-    let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null }
+   // let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null }
     let projection = { __v: 0, isDeleted: 0 }
 
     let servicer = await servicerService.getAllServiceProvider(query, projection);
@@ -2941,12 +2941,12 @@ exports.getServicersList = async (req, res) => {
     const resultArray = servicer.map(item => {
       let documentData = {}
       const matchingServicer = getRelations.find(servicer => servicer.servicerId?.toString() == item._id?.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
-      const matchedReseller = dealerReseller.find(reseller => reseller._id?.toString() === item.resellerId?.toString() || item.resellerId == null)
-      if (matchedReseller) {
+     // const matchedReseller = dealerReseller.find(reseller => reseller._id?.toString() === item.resellerId?.toString() || item.resellerId == null)
+     // if (matchedReseller) {
         documentData = item._doc
         return { ...documentData, check: !!matchingServicer };
-      }
-      console.log("matchingServicer==============================================", matchingServicer)
+      //}
+      //console.log("matchingServicer==============================================", matchingServicer)
 
     });
 
