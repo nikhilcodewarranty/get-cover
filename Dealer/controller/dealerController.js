@@ -2119,7 +2119,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     let notificationData = {
       title: "Dealer updated",
-      description: checkDealer.name + " , " + "details has beed updated",
+      description: checkDealer.name + " , " + "details has been updated",
       userId: checkDealer._id,
       flag: 'dealer',
       notificationFor: IDs

@@ -563,7 +563,6 @@ exports.createDealer = async (req, res) => {
           }));
           //Primary information edit
           let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
-
           let newValues1 = {
             $set: {
               email: allUserData[0].email,
@@ -604,7 +603,7 @@ exports.createDealer = async (req, res) => {
             body: req.body,
             response: {
               code: constant.successCode,
-              message: "Saved Successfull!",
+              message: "Saved Successfully!",
               result: createPriceBook
             }
           }
@@ -2000,6 +1999,7 @@ exports.updateUserData = async (req, res) => {
       });
       return;
     };
+    
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
