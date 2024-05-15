@@ -637,7 +637,7 @@ exports.changePrimaryUser = async (req, res) => {
         message: "Something went wrong"
       })
     } else {
-      //Send notification for change primary user
+      //Send notification for dealer change primary user
       if (checkRole.role == "Dealer") {
         let IDs = await supportingFunction.getUserIds()
         const dealer = await dealerService.getDealerById(checkUser.accountId, {})
@@ -647,7 +647,7 @@ exports.changePrimaryUser = async (req, res) => {
           description: "The primary user has been changed!",
           userId: req.params.userId,
           flag: 'dealer',
-          notificationFor: IDs
+          notificationFor: [dealer._id]
         };
 
         let createNotification = await userService.createNotification(notificationData);

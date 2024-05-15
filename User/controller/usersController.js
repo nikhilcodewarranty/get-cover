@@ -1993,19 +1993,70 @@ exports.updateUserData = async (req, res) => {
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
     if (!updateUser) {
+      //Save Logs updateUserData
+      let logData = {
+        endpoint: "user/updateUserData",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the user data"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to update the user data"
       });
       return;
     };
-    
+    //Get role by id
+    const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
+    if (checkRole.role == "Dealer") {
+      //send notification to dealer when status change
+      let IDs = await supportingFunction.getUserIds()
+      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      IDs.push(dealer._id)
+      let notificationData = {
+        title: checkRole.role + "user has been change",
+        description: "The  user has been changed!",
+        userId: req.params.userId,
+        flag: 'dealer',
+        notificationFor: [dealer._id]
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+    }
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData",
+      userId: req.userId,
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result: updateUser
+      }
+    }
+    await logs(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
       result: updateUser
     });
   } catch (err) {
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData catch",
+      userId: req.userId,
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2169,17 +2220,68 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
+      //Save Logs delete user
+      let logData = {
+        endpoint: "user/deleteUser",
+        userId: req.userId,
+        body: criteria,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to delete the user"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to delete the user"
       });
       return;
     };
+    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
+
+    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+    if (checkRole.role == "Dealer") {
+      //send notification to dealer when deleted
+      let IDs = await supportingFunction.getUserIds()
+      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      IDs.push(dealer._id)
+      let notificationData = {
+        title: "User Deletion",
+        description: "The user has been deleted!",
+        userId: req.params.userId,
+        flag: 'dealer',
+        notificationFor: [dealer._id]
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+    }
+    //Save Logs delete user
+    let logData = {
+      endpoint: "user/deleteUser",
+      userId: req.userId,
+      body: criteria,
+      response: {
+        code: constant.successCode,
+        message: "Deleted Successfully"
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully"
     })
   } catch (err) {
+    //Save Logs delete user
+    let logData = {
+      endpoint: "user/deleteUser catch",
+      userId: req.userId,
+      body: { type: "catch" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
