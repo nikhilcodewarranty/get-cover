@@ -2543,38 +2543,39 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-
+        if (data.priceBookId || data.priceBookId != "") {
+            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
         let query;
         if (data.coverageType == "Breakdown & Accidental") {
-            if (data.term) {
+            if (data.term != "" && data.pName == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
-            else if (data.pName) {
+            else if (data.pName != "" && data.term == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term && data.pName) {
+            } else if (data.term != "" && data.pName != "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
                 query = { _id: { $in: dealerPriceIds }, status: true, };
             }
         } else {
-            if (data.term) {
+            if (data.term != "" && data.pName == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
-            else if (data.pName) {
+            else if (data.pName != "" && data.term == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term && data.pName) {
+            } else if (data.term != "" && data.pName != "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
             } else {
                 query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
 
         }
-        // if(data.priceCatId){
-        //     let categories =
-        //     query = { _id: { $in: dealerPriceIds } ,}
-        // }
+      
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
 
@@ -2656,14 +2657,23 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
+        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+            label: term + " Months",
+            value: term
+        }));
+
+        const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
+            pName: pName,
+        }));
+
         let result = {
             priceCategories: getCategories,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
+            productName: data.priceCatId == "" ? [] : uniqueProductName,
+            terms: data.priceCatId == "" ? [] : uniqueTerms,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
         };
-
-
 
         res.send({
             code: constant.successCode,
