@@ -161,7 +161,8 @@ app.use("/api-v1/customerPortal", customerUserRoutes);
 app.use("/api-v1/resellerPortal", resellerUserRoutes);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  res.status(404).json({ code: 404, message: "Not Found" })
+  res.redirect("http://15.207.221.207/")
+  // res.status(404).json({ code: 404, message: "Not Foundsddsd" })
 
 });
 // error handler
@@ -177,7 +178,8 @@ app.use(function (err, req, res, next) {
 
 //* Catch HTTP 404 
 app.use((req, res, next) => {
-  res.status(404).json({ code: 404, message: "Not Found" })
+  res.redirect("http://15.207.221.207/")
+
 
 })
 const PORT = 3002
