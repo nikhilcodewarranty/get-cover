@@ -1571,7 +1571,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     .map((headerObj) => ({
                         key: headerObj.key,
                         message:
-                            "Invalid file format detected. The sheet should contain exactly five columns.",
+                            "Invalid file format detected. The sheet should contain exactly eight columns.",
                     }));
                 if (errorMessages.length > 0) {
                     // There are errors, send the error messages
@@ -1594,7 +1594,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 model: item[keys[1]],
                                 serial: item[keys[2]],
                                 condition: item[keys[3]],
-                                retailValue: item[keys[4]]
+                                retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         orderFileData.forEach((fileData) => {
@@ -1602,8 +1605,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
                             let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
                             let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let partsWarranty = fileData.partsWarranty.toString().replace(/\s+/g, ' ').trim()
+                            let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
+                            let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
@@ -1895,7 +1901,10 @@ exports.editFileCase = async (req, res) => {
                                 model: item[keys[1]],
                                 serial: item[keys[2]],
                                 condition: item[keys[3]],
-                                retailValue: item[keys[4]]
+                                retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         orderFileData.forEach((fileData) => {
@@ -1904,7 +1913,10 @@ exports.editFileCase = async (req, res) => {
                             let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
                             let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                            let partsWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            let labourWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            let purchaseDate = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' ||  partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
@@ -2573,7 +2585,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             }
 
         }
-      
+
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
 
