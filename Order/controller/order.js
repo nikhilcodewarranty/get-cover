@@ -4784,7 +4784,6 @@ exports.updateServicerByOrder = async (req, res) => {
         return;
     }
 };
-
 exports.cronJobStatus = async (req, res) => {
     try {
         let query = { status: { $ne: "Archieved" } };
@@ -4841,7 +4840,6 @@ exports.cronJobStatus = async (req, res) => {
                 let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
-
                 if (product.ExpiredCondition) {
                     eligibilty = false;
                     status = 'Expired'
@@ -4864,13 +4862,6 @@ exports.cronJobStatus = async (req, res) => {
                 bulk.push(updateDoc)
             }
         }
-        // res.send({
-        //     code: constant.successCode,
-        //     //result:bulk
-        //     bulk
-        // })
-        // return;
-        //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
         res.send({
@@ -4892,9 +4883,9 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         let currentDate = new Date();
-        console.log("endDate-----------------------", req.body.endDate);
-        console.log("currentDate-----------------------", currentDate);
-        console.log("startDate----------------------", startDate);
+        // console.log("endDate-----------------------", req.body.endDate);
+        // console.log("currentDate-----------------------", currentDate);
+        // console.log("startDate----------------------", startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {

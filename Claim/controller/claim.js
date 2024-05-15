@@ -2333,7 +2333,7 @@ exports.saveBulkClaim = async (req, res) => {
             serial: data.contractData.serial,
             productName: data.contractData.productName,
             pName: data.contractData.pName,
-            model: data.contractData.model,
+            model: data.contractData.model, 
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
