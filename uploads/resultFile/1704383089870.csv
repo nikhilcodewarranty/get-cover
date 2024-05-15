@@ -1,6 +1,0 @@
-Price Book,Status,Reason
-test the product,Failed,The product is not exist in the catalog
-product,Failed,The product is not exist in the catalog
-Test 101,Failed,The product is not exist in the catalog
-tc-01,Failed,The product is not exist in the catalog
-tc-03,Failed,The product is not exist in the catalog
