@@ -1873,11 +1873,11 @@ exports.editFileCase = async (req, res) => {
                 }
 
                 const errorMessages = allHeaders
-                    .filter((headerObj) => headerObj.headers.length !== 5)
+                    .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
                         key: headerObj.key,
                         message:
-                            "Invalid file format detected. The sheet should contain exactly five columns.",
+                            "Invalid file format detected. The sheet should contain exactly eight columns.",
                     }));
                 if (errorMessages.length > 0) {
                     // There are errors, send the error messages
