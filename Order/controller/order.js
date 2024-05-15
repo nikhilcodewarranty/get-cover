@@ -1567,7 +1567,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 }
 
                 const errorMessages = allHeaders
-                    .filter((headerObj) => headerObj.headers.length !== 5)
+                    .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
                         key: headerObj.key,
                         message:
@@ -1586,7 +1586,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         if (!obj.data || typeof obj.data !== "object") {
                             return false; // 'data' should be an object
                         }
-                        console.log("before trim space--------------------", obj.data)
 
                         const orderFileData = obj.data.map(item => {
                             const keys = Object.keys(item);
@@ -1598,7 +1597,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 retailValue: item[keys[4]]
                             };
                         });
-                        console.log("orderFileData------------------", orderFileData);
                         orderFileData.forEach((fileData) => {
                             let brand = fileData.brand.toString().replace(/\s+/g, ' ').trim()
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
