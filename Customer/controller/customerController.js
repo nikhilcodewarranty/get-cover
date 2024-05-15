@@ -16,7 +16,6 @@ const randtoken = require('rand-token').generator()
 const sgMail = require('@sendgrid/mail');
 const LOG = require('../../User/model/logs')
 const supportingFunction = require('../../config/supportingFunction')
-const role = require("../model/role");
 
 sgMail.setApiKey(process.env.sendgrid_key);
 exports.createCustomer = async (req, res, next) => {
