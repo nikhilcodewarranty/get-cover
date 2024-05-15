@@ -63,6 +63,10 @@ const orderSchema = new mongoose.Schema({
           type: String,
           default: ''
         },
+        adh:{
+          type:String,
+          default:''
+        },
         term: {
           type: Number,
           default: 0
@@ -196,7 +200,6 @@ const orderSchema = new mongoose.Schema({
     },
     default: {}
   },
-
   billDetail: {
     type: {
       billTo: {
