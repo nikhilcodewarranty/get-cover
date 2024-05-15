@@ -1378,12 +1378,12 @@ exports.checkFileValidation = async (req, res) => {
                 }
             }
 
-            if (headers.length !== 5) {
+            if (headers.length !== 8) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.successCode,
                     message:
-                        "Invalid file format detected. The sheet should contain exactly five columns.",
+                        "Invalid file format detected. The sheet should contain exactly eight columns.",
                     orderFile: {
                         fileName: csvName,
                         name: originalName,
