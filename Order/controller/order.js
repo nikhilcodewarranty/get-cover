@@ -338,6 +338,9 @@ exports.createOrder = async (req, res) => {
                                 serial: item[keys[2]],
                                 condition: item[keys[3]],
                                 retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         // let savedDataOrder = savedResponse.toObject()
@@ -358,6 +361,9 @@ exports.createOrder = async (req, res) => {
                                 productName: priceBook[0].name,
                                 manufacture: data.brand,
                                 model: data.model,
+                                partsWarranty: data.partsWarranty,
+                                labourWarranty: data.labourWarranty,
+                                purchaseDate: data.purchaseDate,
                                 serial: data.serial,
                                 status: claimStatus,
                                 eligibilty: eligibilty,
@@ -569,7 +575,7 @@ exports.createOrder1 = async (req, res) => {
             }
         }
         if (data.billTo == "Reseller") {
-            let getReseller = await resellerService.getReseller({_id:data.resellerId})
+            let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
@@ -683,6 +689,9 @@ exports.createOrder1 = async (req, res) => {
                         serial: item[keys[2]],
                         condition: item[keys[3]],
                         retailValue: item[keys[4]],
+                        partsWarranty: item[keys[5]],
+                        labourWarranty: item[keys[6]],
+                        purchaseDate: item[keys[7]],
                     };
                 });
                 var contractArray = [];
@@ -705,6 +714,9 @@ exports.createOrder1 = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
+                        partsWarranty: data.partsWarranty,
+                        labourWarranty: data.labourWarranty,
+                        purchaseDate: data.purchaseDate,
                         serial: data.serial,
                         status: claimStatus,
                         eligibilty: eligibilty,
@@ -831,6 +843,7 @@ exports.processOrder = async (req, res) => {
         });
     }
 };
+
 //Get All Orders
 exports.getAllOrders = async (req, res) => {
     try {
@@ -1131,6 +1144,7 @@ exports.getAllOrders = async (req, res) => {
         })
     }
 };
+
 //Get All archieve orders
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body;
@@ -1481,6 +1495,7 @@ exports.checkFileValidation = async (req, res) => {
         });
     }
 };
+
 //checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {
     try {
@@ -2101,6 +2116,7 @@ exports.editFileCase = async (req, res) => {
         })
     }
 };
+
 //Get customer for order
 exports.getCustomerInOrder = async (req, res) => {
     try {
@@ -2152,6 +2168,7 @@ exports.getCustomerInOrder = async (req, res) => {
         });
     }
 };
+
 //Get servicer in orders
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
@@ -2641,7 +2658,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let result = {
             priceCategories: getCategories,
-            priceBooks: data.priceCatId==""?[]:mergedPriceBooks,
+            priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
         };
@@ -3261,6 +3278,9 @@ exports.editOrderDetail = async (req, res) => {
                         serial: item[keys[2]],
                         condition: item[keys[3]],
                         retailValue: item[keys[4]],
+                        partsWarranty: item[keys[5]],
+                        labourWarranty: item[keys[6]],
+                        purchaseDate: item[keys[7]],
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
@@ -3285,6 +3305,9 @@ exports.editOrderDetail = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
+                        partsWarranty: data.partsWarranty,
+                        labourWarranty: data.labourWarranty,
+                        purchaseDate: data.purchaseDate,
                         status: claimStatus,
                         eligibilty: eligibilty,
                         serial: data.serial,
@@ -3404,6 +3427,9 @@ exports.markAsPaid = async (req, res) => {
                     serial: item[keys[2]],
                     condition: item[keys[3]],
                     retailValue: item[keys[4]],
+                    partsWarranty: item[keys[5]],
+                    labourWarranty: item[keys[6]],
+                    purchaseDate: item[keys[7]],
                 };
             });
             // let savedDataOrder = savedResponse.toObject()
@@ -3426,6 +3452,9 @@ exports.markAsPaid = async (req, res) => {
                     pName: priceBook[0]?.pName,
                     manufacture: data.brand,
                     model: data.model,
+                    partsWarranty: data.partsWarranty,
+                    labourWarranty: data.labourWarranty,
+                    purchaseDate: data.purchaseDate,
                     status: claimStatus,
                     eligibilty: eligibilty,
                     serial: data.serial,
