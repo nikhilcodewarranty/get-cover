@@ -38,7 +38,7 @@ var StorageP = multer.diskStorage({
             files.fieldname + "-" + Date.now() + path.extname(files.originalname)
         );
     },
-});
+}); 
 
 var Storage = multer.diskStorage({
     destination: function (req, file, cb) {
