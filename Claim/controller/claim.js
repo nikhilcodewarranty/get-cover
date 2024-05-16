@@ -510,6 +510,7 @@ exports.getAllClaims = async (req, res, next) => {
               "unique_key": 1,
               note: 1,
               totalAmount: 1,
+              pName:1,
               servicerId: 1,
               customerStatus: 1,
               trackingNumber: 1,

@@ -18,6 +18,7 @@ User/node_modules/
 User/.env
 # Optional npm cache directory
 .npm
+./uploads
 
 # dotenv environment variables file
 .env
