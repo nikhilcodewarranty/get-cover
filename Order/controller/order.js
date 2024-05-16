@@ -578,7 +578,7 @@ exports.createOrder1 = async (req, res) => {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Reseller",
                 detail: {
                     name: getReseller.name,
                     email: getUser.email,
@@ -590,7 +590,7 @@ exports.createOrder1 = async (req, res) => {
         }
         if (data.billTo == "Custom") {
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Custom",
                 detail: {
                     name: data.name,
                     email: data.email,
@@ -3137,7 +3137,7 @@ exports.editOrderDetail = async (req, res) => {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Reseller",
                 detail: {
                     name: getReseller.name,
                     email: getUser.email,
@@ -3150,7 +3150,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Custom") {
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Custom",
                 detail: {
                     name: data.name,
                     email: data.email,
