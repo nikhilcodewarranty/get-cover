@@ -29,6 +29,7 @@ const json2csv = require('json-2-csv').json2csv;
 const connection = require('../../db')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
+const supportingFunction = require('../../config/supportingFunction')
 
 
 exports.createReseller = async (req, res) => {
@@ -89,6 +90,7 @@ exports.createReseller = async (req, res) => {
         //         message: "Some email ids already exist"
         //     })
         // }
+
         const createdReseler = await resellerService.createReseller(resellerObject);
         if (!createdReseler) {
             res.send({
@@ -97,6 +99,23 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
+        //Send Notification to reseller and admin
+
+        let IDs = await supportingFunction.getUserIds()
+        IDs.push(checkDealer._id)
+        IDs.push(createdReseler._id)
+
+        let notificationData = {
+            title: "Reseller Account Creation",
+            description: data.accountName + " " + "reseller account has been created successfully!",
+            userId: createdReseler._id,
+            flag: 'reseller',
+            notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
+
+        // Create the user
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -643,16 +662,16 @@ exports.editResellers = async (req, res) => {
             country: data.country,
             street: data.street,
             zip: data.zip
-          }
-          const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
+        }
+        const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, servicerMeta)
         // if (checkReseller.isServicer) {
         //     const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         // }
-         if (data.isServicer && !checkReseller.isServicer) {
+        if (data.isServicer && !checkReseller.isServicer) {
             const CountServicer = await providerService.getServicerCount();
             let servicerObject = {
                 name: data.accountName,
-                street: data.street, 
+                street: data.street,
                 city: data.city,
                 zip: data.zip,
                 resellerId: req.params.resellerId,
@@ -1783,6 +1802,21 @@ exports.changeResellerStatus = async (req, res) => {
         };
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
         if (changedResellerStatus) {
+            //Send notification to reseller,dealer and admin
+            let IDs = await supportingFunction.getUserIds()
+            let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: singleReseller.dealerId, isPrimary: true })
+            let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.resellerId, isPrimary: true })
+            IDs.push(dealerPrimary._id)
+            IDs.push(getPrimary._id)
+            let notificationData = {
+                title: "Reseller status update",
+                description: singleReseller.name + " , " + "your status has been updated",
+                userId: req.params.resellerId,
+                flag: 'reseller',
+                notificationFor: IDs
+            };
+
+            let createNotification = await userService.createNotification(notificationData);
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,

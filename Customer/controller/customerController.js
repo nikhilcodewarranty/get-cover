@@ -15,6 +15,7 @@ const emailConstant = require('../../config/emailConstant');
 const randtoken = require('rand-token').generator()
 const sgMail = require('@sendgrid/mail');
 const LOG = require('../../User/model/logs')
+const supportingFunction = require('../../config/supportingFunction')
 
 sgMail.setApiKey(process.env.sendgrid_key);
 exports.createCustomer = async (req, res, next) => {
@@ -25,6 +26,7 @@ exports.createCustomer = async (req, res, next) => {
     data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
     // check dealer ID
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
+    let IDs = await supportingFunction.getUserIds()
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -43,6 +45,8 @@ exports.createCustomer = async (req, res, next) => {
         })
         return;
       }
+      IDs.push(checkReseller._id)
+
     }
 
     // check customer acccount name 
@@ -115,6 +119,7 @@ exports.createCustomer = async (req, res, next) => {
       })
       return;
     };
+
     teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
@@ -136,7 +141,19 @@ exports.createCustomer = async (req, res, next) => {
         }
       }
     }
+    //Send Notification to customer,admin,reseller,dealer 
+    IDs.push(checkDealer._id)
+    IDs.push(createdCustomer._id)
 
+    let notificationData = {
+      title: "New Dealer Registration",
+      description: data.accountName + " " + "customer account has been created successfully!",
+      userId: createdCustomer._id,
+      flag: 'reseller',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
     //Save Logs create Customer
     let logData = {
       userId: req.userId,
@@ -598,6 +615,9 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
+    //Get role by id
+    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+
     if (!updatePrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -617,6 +637,21 @@ exports.changePrimaryUser = async (req, res) => {
         message: "Something went wrong"
       })
     } else {
+      //Send notification for dealer change primary user
+      if (checkRole.role == "Dealer") {
+        let IDs = await supportingFunction.getUserIds()
+        const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+        IDs.push(dealer._id)
+        let notificationData = {
+          title: checkRole.role + "primary user change",
+          description: "The primary user has been changed!",
+          userId: req.params.userId,
+          flag: 'dealer',
+          notificationFor: [dealer._id]
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
+      }
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",

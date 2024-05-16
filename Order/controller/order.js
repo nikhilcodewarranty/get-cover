@@ -38,7 +38,7 @@ var StorageP = multer.diskStorage({
             files.fieldname + "-" + Date.now() + path.extname(files.originalname)
         );
     },
-});
+}); 
 
 var Storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -1378,12 +1378,12 @@ exports.checkFileValidation = async (req, res) => {
                 }
             }
 
-            if (headers.length !== 5) {
+            if (headers.length !== 8) {
                 // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.successCode,
                     message:
-                        "Invalid file format detected. The sheet should contain exactly five columns.",
+                        "Invalid file format detected. The sheet should contain exactly eight columns.",
                     orderFile: {
                         fileName: csvName,
                         name: originalName,
@@ -1571,7 +1571,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     .map((headerObj) => ({
                         key: headerObj.key,
                         message:
-                            "Invalid file format detected. The sheet should contain exactly five columns.",
+                            "Invalid file format detected. The sheet should contain exactly eight columns.",
                     }));
                 if (errorMessages.length > 0) {
                     // There are errors, send the error messages
@@ -1594,7 +1594,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 model: item[keys[1]],
                                 serial: item[keys[2]],
                                 condition: item[keys[3]],
-                                retailValue: item[keys[4]]
+                                retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         orderFileData.forEach((fileData) => {
@@ -1602,8 +1605,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let serial = fileData.serial.toString().replace(/\s+/g, ' ').trim()
                             let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
                             let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
+                            let partsWarranty = fileData.partsWarranty.toString().replace(/\s+/g, ' ').trim()
+                            let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
+                            let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
@@ -1867,11 +1873,11 @@ exports.editFileCase = async (req, res) => {
                 }
 
                 const errorMessages = allHeaders
-                    .filter((headerObj) => headerObj.headers.length !== 5)
+                    .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
                         key: headerObj.key,
                         message:
-                            "Invalid file format detected. The sheet should contain exactly five columns.",
+                            "Invalid file format detected. The sheet should contain exactly eight columns.",
                     }));
                 if (errorMessages.length > 0) {
                     // There are errors, send the error messages
@@ -1895,7 +1901,10 @@ exports.editFileCase = async (req, res) => {
                                 model: item[keys[1]],
                                 serial: item[keys[2]],
                                 condition: item[keys[3]],
-                                retailValue: item[keys[4]]
+                                retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         orderFileData.forEach((fileData) => {
@@ -1904,7 +1913,10 @@ exports.editFileCase = async (req, res) => {
                             let condition = fileData.condition.toString().replace(/\s+/g, ' ').trim()
                             let retailValue = fileData.retailValue.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '') {
+                            let partsWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            let labourWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            let purchaseDate = fileData.model.toString().replace(/\s+/g, ' ').trim()
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' ||  partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
@@ -2573,7 +2585,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             }
 
         }
-      
+
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
 
@@ -4786,7 +4798,6 @@ exports.updateServicerByOrder = async (req, res) => {
         return;
     }
 };
-
 exports.cronJobStatus = async (req, res) => {
     try {
         let query = { status: { $ne: "Archieved" } };
@@ -4843,7 +4854,6 @@ exports.cronJobStatus = async (req, res) => {
                 let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
-
                 if (product.ExpiredCondition) {
                     eligibilty = false;
                     status = 'Expired'
@@ -4866,13 +4876,6 @@ exports.cronJobStatus = async (req, res) => {
                 bulk.push(updateDoc)
             }
         }
-        // res.send({
-        //     code: constant.successCode,
-        //     //result:bulk
-        //     bulk
-        // })
-        // return;
-        //  console.log("bulk==================",bulk);return;
         const result = await contractService.allUpdate(bulk);
 
         res.send({
@@ -4894,9 +4897,9 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         let currentDate = new Date();
-        console.log("endDate-----------------------", req.body.endDate);
-        console.log("currentDate-----------------------", currentDate);
-        console.log("startDate----------------------", startDate);
+        // console.log("endDate-----------------------", req.body.endDate);
+        // console.log("currentDate-----------------------", currentDate);
+        // console.log("startDate----------------------", startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {

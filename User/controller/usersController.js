@@ -29,9 +29,11 @@ const fs = require('fs');
 const multer = require('multer');
 const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
+const logs = require('../../User/model/logs');
 
 const csvParser = require('csv-parser');
 const customerService = require("../../Customer/services/customerService");
+const supportingFunction = require('../../config/supportingFunction')
 
 
 
@@ -561,7 +563,6 @@ exports.createDealer = async (req, res) => {
           }));
           //Primary information edit
           let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
-
           let newValues1 = {
             $set: {
               email: allUserData[0].email,
@@ -576,13 +577,37 @@ exports.createDealer = async (req, res) => {
 
           let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
           const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
+          // Save Logs when price book created
+
           if (!createPriceBook) {
+            let logData = {
+              userId: req.teammateId,
+              endpoint: "user/createDealer",
+              body: req.body,
+              response: {
+                code: constant.errorCode,
+                message: "Unable to save price book"
+              }
+            }
+            await logs(logData).save()
             res.send({
               code: constant.errorCode,
               message: "Unable to save price book"
             });
             return;
           }
+          // Save Logs
+          let logData = {
+            userId: req.teammateId,
+            endpoint: "user/createDealer",
+            body: req.body,
+            response: {
+              code: constant.successCode,
+              message: "Saved Successfully!",
+              result: createPriceBook
+            }
+          }
+          await logs(logData).save()
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
@@ -633,6 +658,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
 
+
           let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
           let updateData = {
             $set: {
@@ -640,6 +666,18 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+          // Send notification when approved
+          let IDs = await supportingFunction.getUserIds()
+          IDs.push(req.body.dealerId);
+          let notificationData = {
+            title: "Dealer Approval",
+            description: req.body.name + " " + "has been successfully approved",
+            userId: req.body.dealerId,
+            flag: 'dealer',
+            notificationFor: IDs
+          };
+          let createNotification = await userService.createNotification(notificationData);
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (req.body.isAccountCreate) {
@@ -679,6 +717,17 @@ exports.createDealer = async (req, res) => {
 
             let createData = await providerService.createServiceProvider(servicerObject)
           }
+          // Save Logs
+          logData = {
+            userId: req.teammateId,
+            endpoint: "user/createDealer",
+            body: req.body,
+            response: {
+              code: constant.successCode,
+              message: 'Successfully Created',
+            }
+          }
+          await logs(logData).save()
           res.send({
             code: constant.successCode,
             message: 'Successfully Created',
@@ -802,13 +851,6 @@ exports.createDealer = async (req, res) => {
                 totalDataComing[i].status = null;
               }
             }
-
-            // const pricebookArrayPromise = totalDataComing.map(item => {
-            //   if (!item.status) return priceBookService.findByName1({ name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: data.coverageType });
-            //   return null;
-            // })
-
-
             const pricebookArrayPromise = totalDataComing.map(item => {
               let queryPrice;
               if (singleDealer?.coverageType == "Breakdown & Accidental") {
@@ -957,12 +999,33 @@ exports.createDealer = async (req, res) => {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
             createUsers = await userService.insertManyUser(allUsersData);
             if (!createUsers) {
+              let logData = {
+                userId: req.teammateId,
+                endpoint: "user/createDealer",
+                body: req.body,
+                response: {
+                  code: constant.errorCode,
+                  message: "Unable to save users"
+                }
+              }
+              await logs(logData).save()
               res.send({
                 code: constant.errorCode,
                 message: "Unable to save users"
               });
               return;
             }
+            //Save Logs
+            let logData = {
+              userId: req.teammateId,
+              endpoint: "user/createDealer",
+              body: req.body,
+              response: {
+                code: constant.successCode,
+                message: "Saved Successfully"
+              }
+            }
+            await logs(logData).save()
           }
           let dealerQuery = { _id: req.body.dealerId }
 
@@ -979,6 +1042,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+
           if (!dealerStatus) {
             res.send({
               code: constant.errorCode,
@@ -986,6 +1050,17 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+          // Send notification when approved
+          let IDs = await supportingFunction.getUserIds()
+          IDs.push(req.body.dealerId);
+          let notificationData = {
+            title: "Dealer Approved",
+            description: req.body.name + " " + "has been successfully approved",
+            userId: req.body.dealerId,
+            flag: 'dealer',
+            notificationFor: IDs
+          };
+          let createNotification = await userService.createNotification(notificationData);
           let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
           let updateData = {
             $set: {
@@ -1111,12 +1186,49 @@ exports.createDealer = async (req, res) => {
           // Create Dealer Meta Data
           const createMetaData = await dealerService.createDealer(dealerMeta);
           if (!createMetaData) {
+            //Save Logs
+            let logData = {
+              userId: req.teammateId,
+              endpoint: "user/createDealer",
+              body: req.body,
+              response: {
+                code: constant.errorCode,
+                message: "Unable to create dealer"
+              }
+            }
+            await logs(logData).save()
             res.send({
               code: constant.errorCode,
               message: "Unable to create dealer"
             });
             return;
           }
+          //Save Logs
+          let logData = {
+            userId: req.teammateId,
+            endpoint: "user/createDealer",
+            body: req.body,
+            response: {
+              code: constant.errorCode,
+              message: "Created Successfully"
+            }
+          }
+          await logs(logData).save()
+
+          //Send Notification to dealer 
+
+          let IDs = await supportingFunction.getUserIds()
+
+          let notificationData = {
+            title: "Dealer Creation",
+            description: createMetaData.name + " " + "has been successfully created",
+            userId: createMetaData._id,
+            flag: 'dealer',
+            notificationFor: IDs
+          };
+          let createNotification = await userService.createNotification(notificationData);
+
+          // Create the user
 
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
@@ -1146,11 +1258,8 @@ exports.createDealer = async (req, res) => {
             status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
             approvedStatus: 'Approved'
           }));
-
           // console.log("allUsersData--------------------------",allUsersData);
-
           const createUsers = await userService.insertManyUser(allUsersData);
-
           if (!createUsers) {
             res.send({
               code: constant.errorCode,
@@ -1172,6 +1281,17 @@ exports.createDealer = async (req, res) => {
 
           const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
           if (!createPriceBook) {
+            //Save Logs
+            let logData = {
+              userId: req.teammateId,
+              endpoint: "user/createDealer",
+              body: req.body,
+              response: {
+                code: constant.errorCode,
+                message: "Unable to save price book"
+              }
+            }
+            await logs(logData).save()
             res.send({
               code: constant.errorCode,
               message: "Unable to save price book"
@@ -1329,6 +1449,18 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+
+          // Send notification 
+          let IDs = await supportingFunction.getUserIds()
+
+          let notificationData = {
+            title: "Dealer Creation",
+            description: createMetaData.name + " " + "has been successfully created",
+            userId: createMetaData._id,
+            flag: 'dealer',
+            notificationFor: IDs
+          };
+          let createNotification = await userService.createNotification(notificationData);
           if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
 
@@ -1576,6 +1708,17 @@ exports.createDealer = async (req, res) => {
 
     })
   } catch (err) {
+    //Save Logs
+    let logData = {
+      userId: req.teammateId,
+      endpoint: "user/createDealer catch",
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     return res.send({
       code: constant.errorCode,
       message: err.message
@@ -1850,18 +1993,70 @@ exports.updateUserData = async (req, res) => {
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
     if (!updateUser) {
+      //Save Logs updateUserData
+      let logData = {
+        endpoint: "user/updateUserData",
+        userId: req.userId,
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to update the user data"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to update the user data"
       });
       return;
     };
+    //Get role by id
+    const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
+    if (checkRole.role == "Dealer") {
+      //send notification to dealer when status change
+      let IDs = await supportingFunction.getUserIds()
+      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      IDs.push(dealer._id)
+      let notificationData = {
+        title: checkRole.role + "user has been change",
+        description: "The  user has been changed!",
+        userId: req.params.userId,
+        flag: 'dealer',
+        notificationFor: [dealer._id]
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+    }
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData",
+      userId: req.userId,
+      body: data,
+      response: {
+        code: constant.successCode,
+        message: "Updated Successfully",
+        result: updateUser
+      }
+    }
+    await logs(logData).save()
+
     res.send({
       code: constant.successCode,
       message: "Updated Successfully",
       result: updateUser
     });
   } catch (err) {
+    //Save Logs updateUserData
+    let logData = {
+      endpoint: "user/updateUserData catch",
+      userId: req.userId,
+      body: req.body,
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2025,17 +2220,68 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
+      //Save Logs delete user
+      let logData = {
+        endpoint: "user/deleteUser",
+        userId: req.userId,
+        body: criteria,
+        response: {
+          code: constant.errorCode,
+          message: "Unable to delete the user"
+        }
+      }
+      await logs(logData).save()
       res.send({
         code: constant.errorCode,
         message: "Unable to delete the user"
       });
       return;
     };
+    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
+
+    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+    if (checkRole.role == "Dealer") {
+      //send notification to dealer when deleted
+      let IDs = await supportingFunction.getUserIds()
+      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      IDs.push(dealer._id)
+      let notificationData = {
+        title: "User Deletion",
+        description: "The user has been deleted!",
+        userId: req.params.userId,
+        flag: 'dealer',
+        notificationFor: [dealer._id]
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
+    }
+    //Save Logs delete user
+    let logData = {
+      endpoint: "user/deleteUser",
+      userId: req.userId,
+      body: criteria,
+      response: {
+        code: constant.successCode,
+        message: "Deleted Successfully"
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.successCode,
       message: "Deleted Successfully"
     })
   } catch (err) {
+    //Save Logs delete user
+    let logData = {
+      endpoint: "user/deleteUser catch",
+      userId: req.userId,
+      body: { type: "catch" },
+      response: {
+        code: constant.errorCode,
+        message: err.message
+      }
+    }
+    await logs(logData).save()
     res.send({
       code: constant.errorCode,
       message: err.message

@@ -37,7 +37,6 @@ exports.createServiceProvider = async (req, res, next) => {
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
-
     if (data.flag == "create") {
 
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
@@ -61,7 +60,6 @@ exports.createServiceProvider = async (req, res, next) => {
       let teamMembers = data.members
 
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
-      console.log('check for create+++++++++++++++++++++=', createServiceProvider)
       if (!createServiceProvider) {
         //Save Logs
         let logData = {
@@ -105,6 +103,19 @@ exports.createServiceProvider = async (req, res, next) => {
         // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       }
+      let IDs = await supportingFunction.getUserIds()
+      //Send Notification to ,admin,,servicer 
+      IDs.push(createServiceProvider._id)
+
+      let notificationData = {
+        title: "Servicer Account Creation",
+        description: data.accountName + " " + "servicer account has been created successfully!",
+        userId: createServiceProvider._id,
+        flag: 'servicer',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
 
       //Save Logs
       let logData = {
@@ -113,7 +124,7 @@ exports.createServiceProvider = async (req, res, next) => {
         body: data,
         response: {
           code: constant.successCode,
-          message: "Customer created successfully",
+          message: "Servicer created successfully",
           result: createServiceProvider
         }
       }
@@ -122,7 +133,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       res.send({
         code: constant.successCode,
-        message: "Customer created successfully",
+        message: "Servicer created successfully",
         result: data
       })
       return
@@ -188,6 +199,7 @@ exports.createServiceProvider = async (req, res, next) => {
       };
 
 
+
       let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
@@ -221,7 +233,19 @@ exports.createServiceProvider = async (req, res, next) => {
       //   let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPrimaryCode}`
       //   const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
       // }
+      let IDs = await supportingFunction.getUserIds()
+      //Send Notification to ,admin,,servicer 
+      IDs.push(data.providerId)
 
+      let notificationData = {
+        title: "Servicer Account Approved",
+        description: data.accountName + " " + "servicer account has been approved successfully!",
+        userId: data.providerId,
+        flag: 'servicer',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
       //Save Logs
       let logData = {
         userId: req.userId,
@@ -679,6 +703,19 @@ exports.updateStatus = async (req, res) => {
           message: "Unable to update the primary details 'false'"
         })
       } else {
+        //Send notification to servicer and admin
+        let IDs = await supportingFunction.getUserIds()
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+        IDs.push(getPrimary._id)
+        let notificationData = {
+          title: "Servicer status update",
+          description: checkServicer.name + " , " + "your status has been updated",
+          userId: req.params.servicerId,
+          flag: 'servicer',
+          notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
         //Save Logs
         let logData = {
           userId: req.userId,
