@@ -2126,10 +2126,6 @@ exports.updateDealerMeta = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
-
-
-
     //Save Logs update dealer
     let logData = {
       userId: req.userId,

@@ -650,6 +650,18 @@ exports.editResellers = async (req, res) => {
         data.name = data.accountName
         let updateReseller = await resellerService.updateReseller(criteria, data)
         if (!updateReseller) {
+            //Save Logs update reseller
+            let logData = {
+                userId: req.userId,
+                endpoint: "/reseller/editResellers",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to update the data"
+                }
+            }
+            await LOG(logData).save()
+
             res.send({
                 code: constant.errorCode,
                 message: "Unable to update the data"
@@ -696,6 +708,41 @@ exports.editResellers = async (req, res) => {
         }
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
 
+        //Send notification to admin,dealer,reseller
+
+        let IDs = await supportingFunction.getUserIds()
+
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller.dealerId, isPrimary: true })
+
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller._id, isPrimary: true })
+
+        IDs.push(dealerPrimary._id)
+
+        IDs.push(resellerPrimary._id)
+
+        let notificationData = {
+            title: "Reseller updated",
+            description: checkReseller.name + " , " + "details has been updated",
+            userId: checkReseller._id,
+            flag: 'reseller',
+            notificationFor: IDs
+        };
+        // save notification
+        let createNotification = await userService.createNotification(notificationData);
+
+        //Save Logs update reseller
+        let logData = {
+            userId: req.userId,
+            endpoint: "/reseller/editResellers",
+            body: data,
+            response: {
+                code: constant.successCode,
+                message: "Success",
+                result: updateReseller
+            }
+        }
+        await LOG(logData).save()
+
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -704,6 +751,18 @@ exports.editResellers = async (req, res) => {
 
     }
     catch (err) {
+        //Save Logs update reseller
+        let logData = {
+            userId: req.userId,
+            endpoint: "/reseller/editResellers catch",
+            body: req.body,
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
+
         res.send({
             code: constant.errorCode,
             message: err.message

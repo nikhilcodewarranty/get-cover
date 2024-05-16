@@ -146,10 +146,10 @@ exports.createCustomer = async (req, res, next) => {
     IDs.push(createdCustomer._id)
 
     let notificationData = {
-      title: "New Dealer Registration",
+      title: "New Customer Created",
       description: data.accountName + " " + "customer account has been created successfully!",
       userId: createdCustomer._id,
-      flag: 'reseller',
+      flag: 'customer',
       notificationFor: IDs
     };
 
@@ -638,20 +638,21 @@ exports.changePrimaryUser = async (req, res) => {
       })
     } else {
       //Send notification for dealer change primary user
-      if (checkRole.role == "Dealer") {
+     // if (checkRole.role == "Dealer") {
         let IDs = await supportingFunction.getUserIds()
-        const dealer = await dealerService.getDealerById(checkUser.accountId, {})
-        IDs.push(dealer._id)
+        //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
         let notificationData = {
           title: checkRole.role + "primary user change",
           description: "The primary user has been changed!",
           userId: req.params.userId,
-          flag: 'dealer',
-          notificationFor: [dealer._id]
+          flag: checkRole.role,
+          notificationFor: [getPrimary._id]
         };
 
         let createNotification = await userService.createNotification(notificationData);
-      }
+     // }
+ 
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
