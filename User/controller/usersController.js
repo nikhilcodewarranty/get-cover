@@ -2012,21 +2012,22 @@ exports.updateUserData = async (req, res) => {
     };
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
-    if (checkRole.role == "Dealer") {
+   // if (checkRole.role == "Dealer") {
       //send notification to dealer when status change
       let IDs = await supportingFunction.getUserIds()
-      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: updateUser.accountId, isPrimary: true })
+
       IDs.push(dealer._id)
       let notificationData = {
         title: checkRole.role + "user has been change",
         description: "The  user has been changed!",
         userId: req.params.userId,
-        flag: 'dealer',
-        notificationFor: [dealer._id]
+        flag:checkRole.role,
+        notificationFor: [getPrimary._id]
       };
 
       let createNotification = await userService.createNotification(notificationData);
-    }
+  //  }
     //Save Logs updateUserData
     let logData = {
       endpoint: "user/updateUserData",
@@ -2240,8 +2241,9 @@ exports.deleteUser = async (req, res) => {
     };
 
 
+    console.log("checkRole-----------------------", checkRole)
 
-    //const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
     let primaryUser = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
 
@@ -2254,7 +2256,7 @@ exports.deleteUser = async (req, res) => {
       title: "User Deletion",
       description: checkUser.firstName + " user has been deleted!",
       userId: req.params.userId,
-      flag: 'dealer',
+      flag: checkRole.role,
       notificationFor: [primaryUser._id]
     };
 

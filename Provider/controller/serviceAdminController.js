@@ -593,6 +593,20 @@ exports.editServicerDetail = async (req, res) => {
     //   ]
     // }
 
+    //send notification to admin and servicer
+    let IDs = await supportingFunction.getUserIds()
+    //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    IDs.push(getPrimary._id)
+    let notificationData = {
+      title: "Servicer Detail Update",
+      description: "The servicer information has been changed!",
+      userId: req.params.customerId,
+      flag: "Servicer",
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
     //Save Logs
     let logData = {
       userId: req.userId,
