@@ -935,7 +935,7 @@ exports.statusUpdate = async (req, res) => {
 
     let notificationData = {
       title: "Dealer price book updated",
-      description: getDealerDetail.name + " , " + "you price book has been updated",
+      description: getDealerDetail.name + " , " + "your price book has been updated",
       userId: existingDealerPriceBook.dealerId,
       contentId: req.params.dealerPriceBookId,
       flag: 'dealer',
@@ -1887,8 +1887,6 @@ exports.createDealerPriceBook = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData);
-
-
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -2515,6 +2513,18 @@ exports.uploadDealerPriceBook = async (req, res) => {
         const htmlTableString = convertArrayToHTMLTable(csvArray);
         const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
       }
+      // Send notification when added in bulk
+      let IDs = await supportingFunction.getUserIds()
+      IDs.push(req.body.dealerId)
+      let notificationData = {
+        title: "Dealer Price Book Uploaded",
+        description: "The priceBook has been successfully uploaded",
+        userId: req.userId,
+        flag: 'priceBook',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
       res.send({
         code: constant.successCode,
         message: "Added successfully"
@@ -3713,7 +3723,7 @@ exports.getDealerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111",userSearchCheck,data)
+    console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111", userSearchCheck, data)
 
     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111")
