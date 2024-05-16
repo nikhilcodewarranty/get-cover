@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  notificationTo: {
+    type: Array,
+    default: []
+  },
   email: {
     type: String,
     default: '',
@@ -18,7 +22,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     default: process.env.DUMMY_PASSWORD
-    
+
     // default: ''
   },
   accountId: {
