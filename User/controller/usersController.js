@@ -2019,7 +2019,7 @@ exports.updateUserData = async (req, res) => {
 
       IDs.push(getPrimary._id)
       let notificationData = {
-        title: checkRole.role + "user has been change",
+        title: checkRole.role +" "+ "user has been change",
         description: "The  user has been changed!",
         userId: req.params.userId,
         flag:checkRole.role,
