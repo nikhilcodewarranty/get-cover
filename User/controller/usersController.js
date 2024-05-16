@@ -2218,6 +2218,7 @@ exports.deleteUser = async (req, res) => {
       }
     };
     let option = { new: true }
+    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
       //Save Logs delete user
@@ -2237,24 +2238,27 @@ exports.deleteUser = async (req, res) => {
       });
       return;
     };
-    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
+
 
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
-    if (checkRole.role == "Dealer") {
-      //send notification to dealer when deleted
-      let IDs = await supportingFunction.getUserIds()
-      const dealer = await dealerService.getDealerById(checkUser.accountId, {})
-      IDs.push(dealer._id)
-      let notificationData = {
-        title: "User Deletion",
-        description: "The user has been deleted!",
-        userId: req.params.userId,
-        flag: 'dealer',
-        notificationFor: [dealer._id]
-      };
 
-      let createNotification = await userService.createNotification(notificationData);
-    }
+    let primaryUser = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
+
+    //  if (checkRole.role == "Dealer") {
+    //send notification to dealer when deleted
+    let IDs = await supportingFunction.getUserIds()
+    // const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+    // IDs.push(dealer._id)
+    let notificationData = {
+      title: "User Deletion",
+      description: checkUser.firstName + " user has been deleted!",
+      userId: req.params.userId,
+      flag: 'dealer',
+      notificationFor: [primaryUser._id]
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+    //}
     //Save Logs delete user
     let logData = {
       endpoint: "user/deleteUser",

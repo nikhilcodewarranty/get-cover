@@ -131,7 +131,6 @@ exports.createDealerPriceBook = async (req, res) => {
         let data = req.body
         const count = await dealerPriceService.getDealerPriceCount();
         data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
-        console.log('check dealer+++++++++++++++', req.userId)
         let checkDealer = await dealerService.getDealerById(req.userId)
         if (!checkDealer) {
             res.send({
@@ -2648,7 +2647,6 @@ exports.getDealerResellersInOrder = async (req, res) => {
         })
     }
 };
-
 //order api
 exports.getDealerOrders = async (req, res) => {
     try {

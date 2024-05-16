@@ -777,16 +777,17 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
     let queryPrice;
-    if (coverageType == "Breakdown & Accidental") {
-      queryPrice = { status: true }
-    } else {
+    // if (coverageType == "Breakdown & Accidental") {
+    //   queryPrice = { status: true }
+    // } else {
+      
       queryPrice = {
         $and: [
           { status: true },
           { coverageType: coverageType }
         ]
       }
-    }
+    
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
 
