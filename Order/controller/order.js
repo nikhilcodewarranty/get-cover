@@ -38,7 +38,7 @@ var StorageP = multer.diskStorage({
             files.fieldname + "-" + Date.now() + path.extname(files.originalname)
         );
     },
-}); 
+});
 
 var Storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -1916,7 +1916,7 @@ exports.editFileCase = async (req, res) => {
                             let partsWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let labourWarranty = fileData.model.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' ||  partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
+                            if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == '') {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
@@ -3116,14 +3116,17 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let checkDealer1 = await dealerService.getDealerById(
+                data.dealerId
+            );
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer1._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
-                    name: checkDealer.name,
+                    name: checkDealer1.name,
                     email: getUser.email,
                     phoneNumber: getUser.phoneNumber,
-                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
+                    address: checkDealer1.street + ' , ' + checkDealer1.city + ' , ' + checkDealer1.country + ' , ' + checkDealer1.zip
 
                 }
             }
@@ -3142,7 +3145,7 @@ exports.editOrderDetail = async (req, res) => {
                     address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
 
                 }
-                
+
             }
         }
         if (data.billTo == "Custom") {
