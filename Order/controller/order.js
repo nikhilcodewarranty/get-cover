@@ -2670,7 +2670,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
             label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12  + " Years",
             value: term
-        }));
+        })).sort((a, b) => a.value - b.value)
 
         const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
             pName: pName,
