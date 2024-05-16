@@ -3075,7 +3075,7 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
 
-        if (data.servicerId != "") {
+        if (data.servicerId != "") { 
             if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
                 let query = {
                     $or: [
@@ -3131,8 +3131,6 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-
-
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
