@@ -2668,7 +2668,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: term + " Months",
+            label: Number(term) / 12 + " Year",
             value: term
         }));
 
