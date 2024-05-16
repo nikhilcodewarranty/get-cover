@@ -789,6 +789,10 @@ exports.createOrder1 = async (req, res) => {
                     let IDs = await supportingFunction.getUserIds()
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
                     let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+                    if (resellerPrimary) {
+                        IDs.push(resellerPrimary._id)
+                    }
                     IDs.push(dealerPrimary._id, customerPrimary._id)
                     let notificationData1 = {
                         title: "New order created",
@@ -2987,11 +2991,53 @@ exports.archiveOrder = async (req, res) => {
                 return;
             }
         }
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+        if (resellerPrimary) {
+            IDs.push(resellerPrimary._id)
+        }
+        if (customerPrimary) {
+            IDs.push(customerPrimary._id)
+        }
+        IDs.push(dealerPrimary._id)
+        let notificationData1 = {
+            title: "Order Archieved",
+            description: "The order has been archieved",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData1);
+        //Save Logs
+        let logData = {
+            endpoint: "order/archiveOrder",
+            body: data,
+            userId: req.userId,
+            response: {
+                code: constant.successCode,
+                message: "Success!",
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Success!",
         });
     } catch (err) {
+        let logData = {
+            endpoint: "order/archiveOrder",
+            body: req.body,
+            userId: req.userId,
+            response: {
+                code: constant.successCode,
+                message: "Success!",
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
@@ -3388,8 +3434,7 @@ exports.editOrderDetail = async (req, res) => {
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
         let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-        IDs.push(dealerPrimary._id, customerPrimary._id)
+        IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
             description: "The order has been updated",
@@ -3515,6 +3560,10 @@ exports.editOrderDetail = async (req, res) => {
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
                 let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                if (resellerPrimary) {
+                    IDs.push(resellerPrimary._id)
+                }
                 IDs.push(dealerPrimary._id, customerPrimary._id)
                 let notificationData1 = {
                     title: "Order update and processed",
@@ -3712,6 +3761,10 @@ exports.markAsPaid = async (req, res) => {
             let IDs = await supportingFunction.getUserIds()
             let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
             let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+            if (resellerPrimary) {
+                IDs.push(resellerPrimary._id)
+            }
             IDs.push(dealerPrimary._id, customerPrimary._id)
             let notificationData1 = {
                 title: "Mark As Paid",
