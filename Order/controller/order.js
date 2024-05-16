@@ -3037,7 +3037,7 @@ exports.getSingleOrder = async (req, res) => {
         res.send({
             code: constant.errorCode,
             message: err.message,
-        });
+        }); 
     } 
 };
 //Edit order detail
