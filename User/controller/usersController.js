@@ -2017,7 +2017,7 @@ exports.updateUserData = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: updateUser.accountId, isPrimary: true })
 
-      IDs.push(dealer._id)
+      IDs.push(getPrimary._id)
       let notificationData = {
         title: checkRole.role + "user has been change",
         description: "The  user has been changed!",
