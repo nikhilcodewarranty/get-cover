@@ -3128,6 +3128,12 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
+        let logData = {
+            endpoint: "order/editOrderDetail",
+            body: data,
+            userId: req.userId,
+            response: {}
+        };
         data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -3334,9 +3340,14 @@ exports.editOrderDetail = async (req, res) => {
             { new: true }
         );
         if (!savedResponse) {
+            logData.response = {
+                code: constant.errorCode,
+                message: "unable to update order",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
-                message: "unable to create order",
+                message: "unable to update order",
             });
             return;
         }
@@ -3374,6 +3385,20 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+        IDs.push(dealerPrimary._id, customerPrimary._id)
+        let notificationData = {
+            title: "Order update",
+            description: "The order has been updated",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData);
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -3474,6 +3499,11 @@ exports.editOrderDetail = async (req, res) => {
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
                 if (!saveContracts) {
+                    logData.response = {
+                        code: constant.errorCode,
+                        message: "unable to create contracts",
+                    };
+                    await LOG(logData).save();
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Pending" },
@@ -3481,13 +3511,37 @@ exports.editOrderDetail = async (req, res) => {
                     );
                 }
 
-            })
+                //send notification to dealer,reseller,admin,customer
+                let IDs = await supportingFunction.getUserIds()
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                IDs.push(dealerPrimary._id, customerPrimary._id)
+                let notificationData1 = {
+                    title: "Order update and processed",
+                    description: "The order has been update and processed",
+                    userId: req.userId,
+                    contentId: savedResponse._id,
+                    flag: 'order',
+                    notificationFor: IDs
+                };
+                let createNotification = await userService.createNotification(notificationData1);
 
+            })
+            logData.response = {
+                code: constant.successCode,
+                message: "Success",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.successCode,
                 message: "Success",
             });
         } else {
+            logData.response = {
+                code: constant.successCode,
+                message: "Success",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -3509,6 +3563,17 @@ exports.editOrderDetail = async (req, res) => {
 
         // let data = req.body
     } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
