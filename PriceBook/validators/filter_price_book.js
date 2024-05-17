@@ -2,6 +2,7 @@ const Joi = require('joi')
 
 const filer_price_book = Joi.object({
     name:Joi.string().trim().allow(null).allow('').optional(),
+    coverageType:Joi.string().trim().allow(null).allow('').optional(),
     pName:Joi.string().trim().allow(null).allow('').optional(),
     priceType:Joi.string().trim().allow(null).allow('').optional(),
     term:Joi.string().trim().allow(null).allow('').optional(),
