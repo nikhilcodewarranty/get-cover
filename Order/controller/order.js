@@ -355,8 +355,8 @@ exports.createOrder = async (req, res) => {
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
                             let claimStatus = new Date(products.coverageStartDate) < new Date() ? "Active" : "Waiting"
                             claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                            let dateCheck = new Date(product.coverageEndDate)
-                            dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                            let dateCheck = new Date(product.coverageStartDate)
+                            dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                             let eligibilty = new Date(dateCheck) < new Date() ? true : false
                             // let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
@@ -734,8 +734,8 @@ exports.createOrder1 = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    let dateCheck = new Date(product.coverageEndDate)
-                    dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                    let dateCheck = new Date(product.coverageStartDate)
+                    dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
@@ -3518,8 +3518,8 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    let dateCheck = new Date(product.coverageEndDate)
-                    dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                    let dateCheck = new Date(product.coverageStartDate)
+                    dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
@@ -3723,8 +3723,8 @@ exports.markAsPaid = async (req, res) => {
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                 claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                let dateCheck = new Date(product.coverageEndDate)
-                dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                let dateCheck = new Date(product.coverageStartDate)
+                dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                 let eligibilty = new Date(dateCheck) < new Date() ? true : false
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
