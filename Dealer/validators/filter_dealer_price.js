@@ -12,4 +12,4 @@ const filer__dealer_price_book = Joi.object({
     status:Joi.boolean().allow('').optional()
 })
 
-module.exports = filer__dealer_price_book  
+module.exports = filer__dealer_price_book   
