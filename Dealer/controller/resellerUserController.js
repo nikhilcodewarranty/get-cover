@@ -1452,21 +1452,21 @@ exports.getResellerPriceBook = async (req, res) => {
     let projection = { isDeleted: 0, __v: 0 }
     let query
 
-    if (checkDealer.coverageType == "Breakdown & Accidental") {
-        query = {
-            $and: [
-                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.category._id': { $in: catIdsArray } },
-                { 'status': true },
-                {
-                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                },
-                {
-                    isDeleted: false
-                }
-            ]
-        }
-    } else {
+    // if (checkDealer.coverageType == "Breakdown & Accidental") {
+    //     query = {
+    //         $and: [
+    //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //             { 'priceBooks.category._id': { $in: catIdsArray } },
+    //             { 'status': true },
+    //             {
+    //                 dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //             },
+    //             {
+    //                 isDeleted: false
+    //             }
+    //         ]
+    //     }
+    // } else {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -1481,7 +1481,7 @@ exports.getResellerPriceBook = async (req, res) => {
                 }
             ]
         }
-    }
+    // }
 
 
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }

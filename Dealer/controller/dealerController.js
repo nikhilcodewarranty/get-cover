@@ -2390,11 +2390,11 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         const pricebookArrayPromise = totalDataComing.map(item => {
           let queryPrice;
-          if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-            queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-          } else {
+          // if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
+          //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+          // } else {
             queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
-          }
+          // }
 
           console.log("queryPrice)))))))))))))))))))))))))))--------------------", queryPrice, item)
           if (!item.status) return priceBookService.findByName1(queryPrice);

@@ -312,7 +312,57 @@ exports.getPriceBooks = async (req, res) => {
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
         console.log('skldjflksjdf', checkDealer)
         let lookupQuery
-        if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
+        // if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
+        //     lookupQuery = [
+        //         {
+        //             $match: query
+        //         },
+        //         {
+        //             $lookup: {
+        //                 from: "pricebooks",
+        //                 localField: "priceBook",
+        //                 foreignField: "_id",
+        //                 as: "priceBooks",
+        //                 pipeline: [
+        //                     {
+        //                         $match: {
+        //                             coverageType: checkDealer[0]?.coverageType
+        //                         }
+        //                     },
+        //                     {
+        //                         $lookup: {
+        //                             from: "pricecategories",
+        //                             localField: "category",
+        //                             foreignField: "_id",
+        //                             as: "category"
+        //                         }
+        //                     },
+
+        //                 ]
+        //             }
+        //         },
+        //         { $unwind: "$priceBooks" },
+        //         {
+        //             $lookup: {
+        //                 from: "dealers",
+        //                 localField: "dealerId",
+        //                 foreignField: "_id",
+        //                 as: "dealer",
+        //             },
+        //         },
+        //         { $unwind: "$dealer" },
+        //         {
+        //             $project: projection
+        //         },
+        //         {
+        //             $addFields: {
+        //                 brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+        //             },
+        //         },
+
+
+        //     ]
+        // } else {
             lookupQuery = [
                 {
                     $match: query
@@ -324,11 +374,6 @@ exports.getPriceBooks = async (req, res) => {
                         foreignField: "_id",
                         as: "priceBooks",
                         pipeline: [
-                            {
-                                $match: {
-                                    coverageType: checkDealer[0]?.coverageType
-                                }
-                            },
                             {
                                 $lookup: {
                                     from: "pricecategories",
@@ -362,52 +407,7 @@ exports.getPriceBooks = async (req, res) => {
 
 
             ]
-        } else {
-            lookupQuery = [
-                {
-                    $match: query
-                },
-                {
-                    $lookup: {
-                        from: "pricebooks",
-                        localField: "priceBook",
-                        foreignField: "_id",
-                        as: "priceBooks",
-                        pipeline: [
-                            {
-                                $lookup: {
-                                    from: "pricecategories",
-                                    localField: "category",
-                                    foreignField: "_id",
-                                    as: "category"
-                                }
-                            },
-
-                        ]
-                    }
-                },
-                { $unwind: "$priceBooks" },
-                {
-                    $lookup: {
-                        from: "dealers",
-                        localField: "dealerId",
-                        foreignField: "_id",
-                        as: "dealer",
-                    },
-                },
-                { $unwind: "$dealer" },
-                {
-                    $project: projection
-                },
-                {
-                    $addFields: {
-                        brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
-                    },
-                },
-
-
-            ]
-        }
+        // }
 
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById1(lookupQuery)
         if (!getDealerPrice) {
@@ -704,17 +704,17 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
 
-        if (checkDealer.coverageType == "Breakdown & Accidental") {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
-                ]
-            };
-        } else {
+        // if (checkDealer.coverageType == "Breakdown & Accidental") {
+        //     query = {
+        //         $and: [
+        //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+        //             { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+        //             { 'priceBooks.category._id': { $in: catIdsArray } },
+        //             { 'status': true },
+        //             { dealerId: new mongoose.Types.ObjectId(req.userId) }
+        //         ]
+        //     };
+        // } else {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -725,7 +725,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
                 ]
             };
-        }
+        // }
 
 
 
@@ -3763,19 +3763,19 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
         let query;
-        if (data.coverageType == "Breakdown & Accidental") {
-            if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-            }
-            else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+        // if (data.coverageType == "Breakdown & Accidental") {
+        //     if (data.term != "" && data.pName == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+        //     }
+        //     else if (data.pName != "" && data.term == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-            } else {
-                query = { _id: { $in: dealerPriceIds }, status: true, };
-            }
-        } else {
+        //     } else if (data.term != "" && data.pName != "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+        //     } else {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, };
+        //     }
+        // } else {
             if (data.term != "" && data.pName == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
@@ -3788,7 +3788,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
 
-        }
+        // }
 
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});

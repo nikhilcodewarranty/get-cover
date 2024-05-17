@@ -2653,19 +2653,19 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
         let query;
-        if (data.coverageType == "Breakdown & Accidental") {
-            if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-            }
-            else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+        // if (data.coverageType == "Breakdown & Accidental") {
+        //     if (data.term != "" && data.pName == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+        //     }
+        //     else if (data.pName != "" && data.term == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-            } else {
-                query = { _id: { $in: dealerPriceIds }, status: true, };
-            }
-        } else {
+        //     } else if (data.term != "" && data.pName != "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+        //     } else {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, };
+        //     }
+        // } else {
             if (data.term != "" && data.pName == "") {
                 query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
             }
@@ -2678,7 +2678,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
 
-        }
+        // }
 
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
@@ -2831,19 +2831,19 @@ exports.getPriceBooksInOrder = async (req, res) => {
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let query1;
         console.log("check111111111111111111", dealerPriceIds)
-        if (data.coverageType == "Breakdown & Accidental") {
-            if (data.term) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
-            }
-            else if (data.pName) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
+        // if (data.coverageType == "Breakdown & Accidental") {
+        //     if (data.term) {
+        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
+        //     }
+        //     else if (data.pName) {
+        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
 
-            } else if (data.term && data.pName) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
-            } else {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId };
-            }
-        } else {
+        //     } else if (data.term && data.pName) {
+        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
+        //     } else {
+        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId };
+        //     }
+        // } else {
 
             if (data.term) {
                 query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
@@ -2857,7 +2857,7 @@ exports.getPriceBooksInOrder = async (req, res) => {
                 query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.priceCatId };
             }
 
-        }
+        // }
         console.log("check222222222222222222", query1)
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query1, {});
