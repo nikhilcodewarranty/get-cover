@@ -3,11 +3,13 @@ const priceBookResourceResponse = require("../utils/constant");
 const priceBookService = require("../services/priceBookService");
 const dealerService = require("../../Dealer/services/dealerService");
 const orderService = require("../../Order/services/orderService");
+const userService = require("../../User/services/userService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const constant = require("../../config/constant");
 const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose');
 const logs = require("../../User/model/logs");
+const supportingFunction = require('../../config/supportingFunction')
 
 //------------- price book api's------------------//
 
@@ -216,6 +218,17 @@ exports.createPriceBook = async (req, res, next) => {
 
       })
     } else {
+      // Send notification when create
+      let IDs = await supportingFunction.getUserIds()
+      let notificationData = {
+        title: "Price Book Created",
+        description: "The pricebook has been successfully created",
+        userId: req.userId,
+        contentId: null,
+        flag: 'priceBook',
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData);
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -339,7 +352,7 @@ exports.updatePriceBook = async (req, res, next) => {
         pName: data.pName,
         description: data.description,
         term: data.term,
-        coverageType:data.coverageType,
+        coverageType: data.coverageType,
         frontingFee: data.frontingFee,
         reserveFutureFee: data.reserveFutureFee,
         reinsuranceFee: data.reinsuranceFee,
@@ -447,7 +460,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     const newValue = {
       $set: {
         status: body.status,
-        pName: body.pName|| existingPriceBook.pName,
+        pName: body.pName || existingPriceBook.pName,
         frontingFee: body.frontingFee || existingPriceBook.frontingFee,
         coverageType: body.coverageType || existingPriceBook.coverageType,
         reserveFutureFee: body.reserveFutureFee || existingPriceBook.reserveFutureFee,
@@ -486,6 +499,18 @@ exports.updatePriceBookById = async (req, res, next) => {
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
+
+    // Send notification when updated
+    let IDs = await supportingFunction.getUserIds()
+    let notificationData = {
+      title: "Price Book Updated",
+      description: existingPriceBook.pName + " " + "has been successfully updated",
+      userId: req.userId,
+      flag: 'priceBook',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
 
     let logData = {
       userId: req.teammateId,
@@ -635,6 +660,7 @@ exports.createPriceBookCat = async (req, res) => {
       return;
     }
 
+
     const data = req.body;
     data.name = data.name.trim().replace(/\s+/g, ' ');
     // Check if the category already exists
@@ -674,6 +700,16 @@ exports.createPriceBookCat = async (req, res) => {
       });
       return;
     }
+    // save notification for create category
+    let IDs = await supportingFunction.getUserIds()
+    let notificationData = {
+      title: "New Category Created",
+      description: req.body.name + " " + "has been successfully created",
+      userId: req.teammateId,
+      flag: 'category',
+      notificationFor: IDs
+    };
+    let createNotification = await userService.createNotification(notificationData);
     let logData = {
       userId: req.teammateId,
       endpoint: "price/createPriceBookCat",
@@ -777,16 +813,17 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
     let queryPrice;
-    if (coverageType == "Breakdown & Accidental") {
-      queryPrice = { status: true }
-    } else {
-      queryPrice = {
-        $and: [
-          { status: true },
-          { coverageType: coverageType }
-        ]
-      }
+    // if (coverageType == "Breakdown & Accidental") {
+    //   queryPrice = { status: true }
+    // } else {
+
+    queryPrice = {
+      $and: [
+        { status: true },
+        { coverageType: coverageType }
+      ]
     }
+
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
 
@@ -943,6 +980,17 @@ exports.updatePriceBookCat = async (req, res) => {
 
       }
     }
+    // Send notification when update
+    let IDs = await supportingFunction.getUserIds()
+    let notificationData = {
+      title: "Category Updated",
+      description: "The category has been successfully updated",
+      userId: req.body.dealerId,
+      contentId: req.params.catId,
+      flag: 'category',
+      notificationFor: IDs
+    };
+    let createNotification = await userService.createNotification(notificationData);
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
@@ -1097,8 +1145,8 @@ exports.getPriceBookByCategoryId = async (req, res) => {
           { status: true }
         ]
       }
-    }else{
-      queryFilter= {
+    } else {
+      queryFilter = {
         $and: [
           { category: new mongoose.Types.ObjectId(req.params.categoryId) },
           { coverageType: data.coverageType },

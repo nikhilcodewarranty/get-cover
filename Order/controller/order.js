@@ -5,6 +5,9 @@ const pdf = require('html-pdf');
 
 
 const orderService = require("../services/orderService");
+const supportingFunction = require('../../config/supportingFunction')
+const LOG = require('../../User/model/logs')
+
 // const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
@@ -606,6 +609,16 @@ exports.createOrder1 = async (req, res) => {
 
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
+            let logData = {
+                endpoint: "order/createOrder",
+                body: data,
+                userId: req.userId,
+                response: {
+                    code: constant.errorCode,
+                    message: "unable to create order",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "unable to create order",
@@ -644,6 +657,22 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
+
+        //send notification to admin and dealer 
+
+        let IDs = await supportingFunction.getUserIds()
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+        IDs.push(getPrimary._id)
+        let notificationData = {
+            title: "New order created",
+            description: data.dealerPurchaseOrder + " " + "order has been created",
+            userId: req.userId,
+            contentId: null,
+            flag: 'order',
+            notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -740,6 +769,16 @@ exports.createOrder1 = async (req, res) => {
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
                 if (!saveContracts) {
+                    let logData = {
+                        endpoint: "order/createOrder",
+                        body: data,
+                        userId: req.userId,
+                        response: {
+                            code: constant.errorCode,
+                            message: "Something went wrong in creating the contract",
+                        }
+                    }
+                    await LOG(logData).save()
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Pending" },
@@ -752,6 +791,35 @@ exports.createOrder1 = async (req, res) => {
                     return
                 }
                 if (saveContracts) {
+                    //send notification to admin and dealer 
+                    let IDs = await supportingFunction.getUserIds()
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+                    if (resellerPrimary) {
+                        IDs.push(resellerPrimary._id)
+                    }
+                    IDs.push(dealerPrimary._id, customerPrimary._id)
+                    let notificationData1 = {
+                        title: "New order created",
+                        description: data.dealerPurchaseOrder + " " + "order has been created",
+                        userId: req.userId,
+                        contentId: null,
+                        flag: 'order',
+                        notificationFor: IDs
+                    };
+
+                    let createNotification = await userService.createNotification(notificationData1);
+                    let logData = {
+                        endpoint: "order/createOrder",
+                        body: data,
+                        userId: req.userId,
+                        response: {
+                            code: constant.successCode,
+                            message: "Success",
+                        }
+                    }
+                    await LOG(logData).save()
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -763,6 +831,16 @@ exports.createOrder1 = async (req, res) => {
             })
 
         } else {
+            let logData = {
+                endpoint: "order/createOrder",
+                body: data,
+                userId: req.userId,
+                response: {
+                    code: constant.successCode,
+                    message: "Success",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -771,6 +849,16 @@ exports.createOrder1 = async (req, res) => {
 
         // })
     } catch (err) {
+        let logData = {
+            endpoint: "order/createOrder catch",
+            body: req.body,
+            userId: req.userId,
+            response: {
+                code: constant.errorCode,
+                message: err.message,
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
@@ -2909,11 +2997,53 @@ exports.archiveOrder = async (req, res) => {
                 return;
             }
         }
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+        let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+        if (resellerPrimary) {
+            IDs.push(resellerPrimary._id)
+        }
+        if (customerPrimary) {
+            IDs.push(customerPrimary._id)
+        }
+        IDs.push(dealerPrimary._id)
+        let notificationData1 = {
+            title: "Order Archieved",
+            description: "The order has been archieved",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData1);
+        //Save Logs
+        let logData = {
+            endpoint: "order/archiveOrder",
+            body: data,
+            userId: req.userId,
+            response: {
+                code: constant.successCode,
+                message: "Success!",
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Success!",
         });
     } catch (err) {
+        let logData = {
+            endpoint: "order/archiveOrder",
+            body: req.body,
+            userId: req.userId,
+            response: {
+                code: constant.successCode,
+                message: "Success!",
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
@@ -3050,6 +3180,12 @@ exports.getSingleOrder = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
+        let logData = {
+            endpoint: "order/editOrderDetail",
+            body: data,
+            userId: req.userId,
+            response: {}
+        };
         data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -3256,9 +3392,14 @@ exports.editOrderDetail = async (req, res) => {
             { new: true }
         );
         if (!savedResponse) {
+            logData.response = {
+                code: constant.errorCode,
+                message: "unable to update order",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
-                message: "unable to create order",
+                message: "unable to update order",
             });
             return;
         }
@@ -3296,6 +3437,19 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        IDs.push(dealerPrimary._id)
+        let notificationData = {
+            title: "Order update",
+            description: "The order has been updated",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData);
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -3399,6 +3553,11 @@ exports.editOrderDetail = async (req, res) => {
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
                 if (!saveContracts) {
+                    logData.response = {
+                        code: constant.errorCode,
+                        message: "unable to create contracts",
+                    };
+                    await LOG(logData).save();
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Pending" },
@@ -3406,13 +3565,41 @@ exports.editOrderDetail = async (req, res) => {
                     );
                 }
 
-            })
+                //send notification to dealer,reseller,admin,customer
+                let IDs = await supportingFunction.getUserIds()
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                if (resellerPrimary) {
+                    IDs.push(resellerPrimary._id)
+                }
+                IDs.push(dealerPrimary._id, customerPrimary._id)
+                let notificationData1 = {
+                    title: "Order update and processed",
+                    description: "The order has been update and processed",
+                    userId: req.userId,
+                    contentId: savedResponse._id,
+                    flag: 'order',
+                    notificationFor: IDs
+                };
+                let createNotification = await userService.createNotification(notificationData1);
 
+            })
+            logData.response = {
+                code: constant.successCode,
+                message: "Success",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.successCode,
                 message: "Success",
             });
         } else {
+            logData.response = {
+                code: constant.successCode,
+                message: "Success",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -3434,6 +3621,17 @@ exports.editOrderDetail = async (req, res) => {
 
         // let data = req.body
     } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
@@ -3444,6 +3642,12 @@ exports.editOrderDetail = async (req, res) => {
 exports.markAsPaid = async (req, res) => {
     try {
         let data = req.body
+        let logData = {
+            endpoint: "order/markAsPaid",
+            body: data,
+            userId: req.userId,
+            response: {}
+        };
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         if (checkOrder.status == 'Archieved') {
             res.send({
@@ -3454,6 +3658,11 @@ exports.markAsPaid = async (req, res) => {
         }
         let updateOrder = await orderService.updateOrder({ _id: req.params.orderId }, { paymentStatus: "Paid", status: "Active", dueAmount: 0, paidAmount: checkOrder.orderAmount }, { new: true })
         if (!updateOrder) {
+            logData.response = {
+                code: constant.errorCode,
+                message: "unable to update the payment status"
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
                 message: "unable to udpate the paytment status"
@@ -3548,12 +3757,36 @@ exports.markAsPaid = async (req, res) => {
             console.log("contractsLength++++++++++++++++++++++++++++++++++", contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
             if (!saveData) {
+                logData.response = {
+                    code: constant.errorCode,
+                    message: "unable to make contracts",
+                    result: saveData
+                };
+                await LOG(logData).save();
                 let savedResponse = await orderService.updateOrder(
                     { _id: checkOrder._id },
                     { status: "Pending" },
                     { new: true }
                 );
             }
+            // send notification to dealer,admin, customer
+            let IDs = await supportingFunction.getUserIds()
+            let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+            let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+            if (resellerPrimary) {
+                IDs.push(resellerPrimary._id)
+            }
+            IDs.push(dealerPrimary._id, customerPrimary._id)
+            let notificationData1 = {
+                title: "Mark As Paid",
+                description: "The order has been mark as paid",
+                userId: req.userId,
+                contentId: null,
+                flag: 'order',
+                notificationFor: IDs
+            };
+            let createNotification = await userService.createNotification(notificationData1);
         })
 
         let paidDate = {
@@ -3566,11 +3799,26 @@ exports.markAsPaid = async (req, res) => {
             { new: true }
         );
 
+        logData.response = {
+            code: constant.successCode,
+            message: "Updated Successfully"
+        };
+        await LOG(logData).save();
         res.send({
             code: constant.successCode,
             message: "Updated Successfully"
         })
     } catch (err) {
+        let logData = {
+            endpoint: "order/markAsPaid catch",
+            body: req.body,
+            userId: req.userId,
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
