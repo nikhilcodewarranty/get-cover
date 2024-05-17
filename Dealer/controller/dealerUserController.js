@@ -4249,7 +4249,11 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    let eligibilty = claimStatus == "Active" ? true : false
+                    let dateCheck = new Date(product.coverageEndDate)
+                    dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                    let eligibilty = new Date(dateCheck) < new Date() ? true : false
+
+                    // let eligibilty = claimStatus == "Active" ? true : false
 
                     let contractObject = {
                         orderId: savedResponse._id,

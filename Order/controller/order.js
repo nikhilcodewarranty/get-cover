@@ -352,7 +352,10 @@ exports.createOrder = async (req, res) => {
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
                             let claimStatus = new Date(products.coverageStartDate) < new Date() ? "Active" : "Waiting"
                             claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                            let eligibilty = claimStatus == "Active" ? true : false
+                            let dateCheck = new Date(product.coverageEndDate)
+                            dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                            let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                            // let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
                                 orderId: savedResponse._id,
                                 orderUniqueKey: savedResponse.unique_key,
@@ -702,7 +705,10 @@ exports.createOrder1 = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    let eligibilty = claimStatus == "Active" ? true : false
+                    let dateCheck = new Date(product.coverageEndDate)
+                    dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                    let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
@@ -2668,7 +2674,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12  + " Years",
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
             value: term
         })).sort((a, b) => a.value - b.value)
 
@@ -3037,8 +3043,8 @@ exports.getSingleOrder = async (req, res) => {
         res.send({
             code: constant.errorCode,
             message: err.message,
-        }); 
-    } 
+        });
+    }
 };
 //Edit order detail
 exports.editOrderDetail = async (req, res) => {
@@ -3075,7 +3081,7 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
 
-        if (data.servicerId != "") { 
+        if (data.servicerId != "") {
             if (data.servicerId != '' && data.servicerId != checkId.servicerId) {
                 let query = {
                     $or: [
@@ -3358,7 +3364,10 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    let eligibilty = claimStatus == "Active" ? true : false
+                    let dateCheck = new Date(product.coverageEndDate)
+                    dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                    let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
@@ -3505,7 +3514,10 @@ exports.markAsPaid = async (req, res) => {
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                 claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                let eligibilty = claimStatus == "Active" ? true : false
+                let dateCheck = new Date(product.coverageEndDate)
+                dateCheck.setDate(product.coverageEndDate + product.adh ? product.adh : 0)
+                let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
                     orderUniqueKey: savedResponse.unique_key,
