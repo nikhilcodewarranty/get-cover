@@ -790,7 +790,7 @@ exports.addResellerUser = async (req, res) => {
             return;
         }
         let checkUser = await userService.getUserById1({ accountId: data.resellerId, isPrimary: true }, { isDeleted: false })
-        data.status = checkUser.status ? true : false;
+        data.status = checkUser.status == 'no' || !checkUser.status || checkUser.status == 'false' ? false : true;
         data.accountId = checkReseller._id
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
