@@ -783,7 +783,7 @@ exports.addResellerUser = async (req, res) => {
         };
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
         if (checkEmail) {
-            res.send({
+            res.send({ 
                 code: constant.errorCode,
                 message: "User already exist with this email"
             })
