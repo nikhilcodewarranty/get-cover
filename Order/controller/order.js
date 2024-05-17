@@ -1814,6 +1814,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 retailValue: item[keys[4]],
                                 partsWarranty: item[keys[5]],
                                 labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         if (priceObj.length > 0) {
@@ -1844,6 +1845,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
+                                if (new Date(obj.purchaseDate) > new Date()) {
+                                    res.send({
+                                      code: constant.errorCode,
+                                      key: obj.key,
+                                      message: 'The purchase date should be present date and past date!'
+                                    });
+                                    return;
+                                  }
                                 if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
