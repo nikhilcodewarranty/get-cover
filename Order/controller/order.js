@@ -1812,6 +1812,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 rangeStart: obj1.rangeStart,
                                 rangeEnd: obj1.rangeEnd,
                                 retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
                             };
                         });
                         if (priceObj.length > 0) {
@@ -1824,6 +1826,21 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                             message: "Retail Price should be integer and positive!!",
                                         });
 
+                                        return;
+                                    }
+                                }
+                                // check if the input value is a number
+                                if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
+
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
+                                
                                         return;
                                     }
                                 }
