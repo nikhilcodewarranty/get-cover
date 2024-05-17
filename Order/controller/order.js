@@ -2666,17 +2666,17 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         //         query = { _id: { $in: dealerPriceIds }, status: true, };
         //     }
         // } else {
-            if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-            }
-            else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+        if (data.term != "" && data.pName == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+        }
+        else if (data.pName != "" && data.term == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-            } else {
-                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
-            }
+        } else if (data.term != "" && data.pName != "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+        } else {
+            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        }
 
         // }
 
@@ -2750,6 +2750,11 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
         }
 
+        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+            value: term
+        })).sort((a, b) => a.value - b.value)
+
         if (data.priceCatId || data.priceCatId != "") {
             mergedPriceBooks = mergedPriceBooks.filter(
                 (item) => item.category.toString() === data.priceCatId
@@ -2761,10 +2766,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
-        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
-            value: term
-        })).sort((a, b) => a.value - b.value)
+        // const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+        //     label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+        //     value: term
+        // })).sort((a, b) => a.value - b.value)
 
         const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
             pName: pName,
@@ -2845,17 +2850,17 @@ exports.getPriceBooksInOrder = async (req, res) => {
         //     }
         // } else {
 
-            if (data.term) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
-            }
-            else if (data.pName) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
+        if (data.term) {
+            query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
+        }
+        else if (data.pName) {
+            query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
 
-            } else if (data.term && data.pName) {
-                query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
-            } else {
-                query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.priceCatId };
-            }
+        } else if (data.term && data.pName) {
+            query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
+        } else {
+            query1 = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, category: data.priceCatId };
+        }
 
         // }
         console.log("check222222222222222222", query1)

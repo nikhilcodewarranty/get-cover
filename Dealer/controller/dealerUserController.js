@@ -312,57 +312,57 @@ exports.getPriceBooks = async (req, res) => {
         let query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
         console.log('skldjflksjdf', checkDealer)
         let lookupQuery
-        // if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
-        //     lookupQuery = [
-        //         {
-        //             $match: query
-        //         },
-        //         {
-        //             $lookup: {
-        //                 from: "pricebooks",
-        //                 localField: "priceBook",
-        //                 foreignField: "_id",
-        //                 as: "priceBooks",
-        //                 pipeline: [
-        //                     {
-        //                         $match: {
-        //                             coverageType: checkDealer[0]?.coverageType
-        //                         }
-        //                     },
-        //                     {
-        //                         $lookup: {
-        //                             from: "pricecategories",
-        //                             localField: "category",
-        //                             foreignField: "_id",
-        //                             as: "category"
-        //                         }
-        //                     },
+        if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
+            lookupQuery = [
+                {
+                    $match: query
+                },
+                {
+                    $lookup: {
+                        from: "pricebooks",
+                        localField: "priceBook",
+                        foreignField: "_id",
+                        as: "priceBooks",
+                        pipeline: [
+                            {
+                                $match: {
+                                    coverageType: checkDealer[0]?.coverageType
+                                }
+                            },
+                            {
+                                $lookup: {
+                                    from: "pricecategories",
+                                    localField: "category",
+                                    foreignField: "_id",
+                                    as: "category"
+                                }
+                            },
 
-        //                 ]
-        //             }
-        //         },
-        //         { $unwind: "$priceBooks" },
-        //         {
-        //             $lookup: {
-        //                 from: "dealers",
-        //                 localField: "dealerId",
-        //                 foreignField: "_id",
-        //                 as: "dealer",
-        //             },
-        //         },
-        //         { $unwind: "$dealer" },
-        //         {
-        //             $project: projection
-        //         },
-        //         {
-        //             $addFields: {
-        //                 brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
-        //             },
-        //         },
+                        ]
+                    }
+                },
+                { $unwind: "$priceBooks" },
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "dealerId",
+                        foreignField: "_id",
+                        as: "dealer",
+                    },
+                },
+                { $unwind: "$dealer" },
+                {
+                    $project: projection
+                },
+                {
+                    $addFields: {
+                        brokerFee: { $subtract: ["$retailPrice", "$wholesalePrice"] },
+                    },
+                },
 
 
-        //     ]
-        // } else {
+            ]
+        } else {
             lookupQuery = [
                 {
                     $match: query
@@ -407,7 +407,7 @@ exports.getPriceBooks = async (req, res) => {
 
 
             ]
-        // }
+        }
 
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById1(lookupQuery)
         if (!getDealerPrice) {

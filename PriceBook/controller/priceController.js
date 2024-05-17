@@ -37,6 +37,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
+          { 'coverageType': { '$regex': data.coverageType, '$options': 'i' } },
           { 'status': data.status },
           { 'category': { $in: catIdsArray } }
         ]
@@ -46,6 +47,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
+          { 'coverageType': { '$regex': data.coverageType, '$options': 'i' } },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
@@ -1146,13 +1148,13 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     //     ]
     //   }
     // } else {
-      queryFilter = {
-        $and: [
-          { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-          { coverageType: data.coverageType },
-          { status: true }
-        ]
-      };
+    queryFilter = {
+      $and: [
+        { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+        { coverageType: data.coverageType },
+        { status: true }
+      ]
+    };
     // }
     //console.log("queryFilter=======================",queryFilter)
     let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)

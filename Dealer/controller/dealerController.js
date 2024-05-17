@@ -1316,6 +1316,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.coverageType': { '$regex': data.coverageType, '$options': 'i' } },
           { 'priceBooks.category._id': { $in: catIdsArray } },
           { 'status': data.status },
           {
@@ -1327,6 +1328,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.coverageType': { '$regex': data.coverageType, '$options': 'i' } },
           { 'priceBooks.category._id': { $in: catIdsArray } },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
@@ -2393,7 +2395,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           // if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
           //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
           // } else {
-            queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
+          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
           // }
 
           console.log("queryPrice)))))))))))))))))))))))))))--------------------", queryPrice, item)
