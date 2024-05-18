@@ -37,7 +37,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
           { isDeleted: false },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType': { '$regex': data.coverageType, '$options': 'i' } },
+          { 'coverageType':  data.coverageType },
           { 'status': data.status },
           { 'category': { $in: catIdsArray } }
         ]
@@ -47,7 +47,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType': { '$regex': data.coverageType, '$options': 'i' } },
+          { 'coverageType':  data.coverageType },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
