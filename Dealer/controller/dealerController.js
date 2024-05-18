@@ -1313,12 +1313,37 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let query
     // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
     if (data.status != 'all' && data.status != undefined) {
+      if (data.coverageType != "") {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.coverageType': data.coverageType },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': data.status },
+            {
+              dealerId: new mongoose.Types.ObjectId(data.dealerId)
+            }
+          ]
+        };
+      } else {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': data.status },
+            {
+              dealerId: new mongoose.Types.ObjectId(data.dealerId)
+            }
+          ]
+        };
+      }
+
+    } else if (data.coverageType != "") {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-          { 'priceBooks.coverageType':  data.coverageType},
+          { 'priceBooks.coverageType': data.coverageType },
           { 'priceBooks.category._id': { $in: catIdsArray } },
-          { 'status': data.status },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
           }
@@ -1328,7 +1353,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       query = {
         $and: [
           { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-          { 'priceBooks.coverageType': data.coverageType },
           { 'priceBooks.category._id': { $in: catIdsArray } },
           {
             dealerId: new mongoose.Types.ObjectId(data.dealerId)
@@ -1382,7 +1406,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     })
   } catch (err) {
     res.send({
-      code: constant.errorCode, 
+      code: constant.errorCode,
       message: err.message
     })
   }
@@ -1859,7 +1883,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if (!createDealerPrice) {
 
       let logData = {
-        userId: req.teammateId, 
+        userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
         body: req.body,
         response: {

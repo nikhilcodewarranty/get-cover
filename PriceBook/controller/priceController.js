@@ -32,13 +32,36 @@ exports.getAllPriceBooks = async (req, res, next) => {
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
     if (data.status != "all") {
+      if (coverageType != "") {
+        query = {
+          $and: [
+            { isDeleted: false },
+            { 'name': { '$regex': searchName, '$options': 'i' } },
+            { 'pName': { '$regex': searchName1, '$options': 'i' } },
+            { 'coverageType': data.coverageType },
+            { 'status': data.status },
+            { 'category': { $in: catIdsArray } }
+          ]
+        };
+      } else {
+        query = {
+          $and: [
+            { isDeleted: false },
+            { 'name': { '$regex': searchName, '$options': 'i' } },
+            { 'pName': { '$regex': searchName1, '$options': 'i' } },
+            { 'status': data.status },
+            { 'category': { $in: catIdsArray } }
+          ]
+        };
+      }
+
+    } else if (coverageType != "") {
       query = {
         $and: [
           { isDeleted: false },
-          { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType':  data.coverageType },
-          { 'status': data.status },
+          { 'coverageType': data.coverageType },
+          { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
       };
@@ -47,7 +70,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
         $and: [
           { isDeleted: false },
           { 'pName': { '$regex': searchName1, '$options': 'i' } },
-          { 'coverageType':  data.coverageType },
           { 'name': { '$regex': searchName, '$options': 'i' } },
           { 'category': { $in: catIdsArray } }
         ]
