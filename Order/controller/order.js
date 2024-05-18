@@ -1851,12 +1851,21 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                                 // console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
+                                if(!isNaN(new Date(obj.purchaseDate).getTime())){
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: 'Invalid Date!'
+                                    });
+                                    return;
+                                }
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
                                         message: 'The purchase date should be present date and past date!'
                                     });
+                                    return;
                                 }
                                 if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
