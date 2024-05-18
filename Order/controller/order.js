@@ -735,7 +735,8 @@ exports.createOrder1 = async (req, res) => {
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
-                    dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
+                    dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
+
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
