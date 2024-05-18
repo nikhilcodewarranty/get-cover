@@ -1629,7 +1629,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file);
+                        const wb = XLSX.readFile(productsWithFiles[j].products.file,{
+                            type: 'binary',
+                            cellDates: true,
+                            cellNF: false,
+                            cellText: false
+                          });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
@@ -1813,6 +1818,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 rangeStart: obj1.rangeStart,
                                 rangeEnd: obj1.rangeEnd,
                                 retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
                         if (priceObj.length > 0) {
@@ -1827,6 +1835,30 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                         return;
                                     }
+                                }
+                                // check if the input value is a number
+                                if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
+
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
+
+                                        return;
+                                    }
+                                }
+                                // console.log("dsfsddsfsdfd",obj.purchaseDate);
+                                // console.log("new date",new Date());
+                                if (new Date(obj.purchaseDate) > new Date()) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: 'The purchase date should be present date and past date!'
+                                    });
                                 }
                                 if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
