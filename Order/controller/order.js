@@ -1841,18 +1841,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                             key: obj.key,
                                             message: "Parts warranty and labour warranty should be an integer.",
                                         });
-                                
+
                                         return;
                                     }
                                 }
+                                console.log(obj.purchaseDate);
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     res.send({
-                                      code: constant.errorCode,
-                                      key: obj.key,
-                                      message: 'The purchase date should be present date and past date!'
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: 'The purchase date should be present date and past date!'
                                     });
                                     return;
-                                  }
+                                }
                                 if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
