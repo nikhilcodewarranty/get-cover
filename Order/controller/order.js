@@ -1850,15 +1850,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
-                                console.log("dsfsddsfsdfd",obj.purchaseDate);
-                                console.log("new date",new Date());
+                                // console.log("dsfsddsfsdfd",obj.purchaseDate);
+                                // console.log("new date",new Date());
                                 if (new Date(obj.purchaseDate) > new Date()) {
-                                    res.send({
+                                    message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
                                         message: 'The purchase date should be present date and past date!'
                                     });
-                                    return;
                                 }
                                 if (obj1.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
