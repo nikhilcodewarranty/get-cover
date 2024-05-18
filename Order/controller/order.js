@@ -657,9 +657,7 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
-
         //send notification to admin and dealer 
-
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
