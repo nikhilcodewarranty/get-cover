@@ -1859,7 +1859,7 @@ exports.createDealerPriceBook = async (req, res) => {
     if (!createDealerPrice) {
 
       let logData = {
-        userId: req.teammateId,
+        userId: req.teammateId, 
         endpoint: "dealer/createPriceBook",
         body: req.body,
         response: {

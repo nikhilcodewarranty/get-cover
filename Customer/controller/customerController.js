@@ -526,7 +526,7 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
-        if (data.isAccountCreate || data.isAccountCreate == 'true') {
+        if ((data.isAccountCreate || data.isAccountCreate == 'true') && checkDealer.status) {
       console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
       console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)

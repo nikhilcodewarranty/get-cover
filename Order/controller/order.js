@@ -657,9 +657,7 @@ exports.createOrder1 = async (req, res) => {
         };
 
         returnField.push(obj);
-
         //send notification to admin and dealer 
-
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
@@ -736,7 +734,7 @@ exports.createOrder1 = async (req, res) => {
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
                     dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    console.log("check +==================", dateCheck)
+                    console.log("check +==================",new Date(dateCheck))
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {

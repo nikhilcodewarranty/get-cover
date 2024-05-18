@@ -700,7 +700,7 @@ exports.editResellers = async (req, res) => {
         let newValue = {
             status: false
         };
-        if (data.isAccountCreate) {
+        if (data.isAccountCreate && checkReseller.status) {
             resellerUserCreateria = { accountId: req.params.resellerId, isPrimary: true };
             newValue = {
                 status: true
