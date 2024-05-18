@@ -1846,6 +1846,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 console.log("dsfsddsfsdfd",obj.purchaseDate);
+                                console.log("new date",new Date());
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     res.send({
                                         code: constant.errorCode,
