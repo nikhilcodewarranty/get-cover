@@ -1382,7 +1382,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     })
   } catch (err) {
     res.send({
-      code: constant.errorCode,
+      code: constant.errorCode, 
       message: err.message
     })
   }
