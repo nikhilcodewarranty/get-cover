@@ -32,7 +32,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
     if (data.status != "all") {
-      if (coverageType != "") {
+      if (data.coverageType != "") {
         query = {
           $and: [
             { isDeleted: false },
@@ -55,7 +55,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
         };
       }
 
-    } else if (coverageType != "") {
+    } else if (data.coverageType != "") {
       query = {
         $and: [
           { isDeleted: false },
