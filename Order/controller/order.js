@@ -736,7 +736,7 @@ exports.createOrder1 = async (req, res) => {
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
                     dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    console.log("check +==================",dateCheck)
+                    console.log("check +==================", dateCheck)
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
@@ -1629,12 +1629,12 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file,{
+                        const wb = XLSX.readFile(productsWithFiles[j].products.file, {
                             type: 'binary',
                             cellDates: true,
                             cellNF: false,
                             cellText: false
-                          });
+                        });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
@@ -2700,13 +2700,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         //     }
         // } else {
         if (data.term != "" && data.pName == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
         }
         else if (data.pName != "" && data.term == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: data.coverageType };
 
         } else if (data.term != "" && data.pName != "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term, coverageType: data.coverageType };
         } else {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
@@ -2783,10 +2783,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
         }
 
-        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
-            value: term
-        })).sort((a, b) => a.value - b.value)
+        // const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+        //     label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+        //     value: term
+        // })).sort((a, b) => a.value - b.value)
 
         if (data.priceCatId || data.priceCatId != "") {
             mergedPriceBooks = mergedPriceBooks.filter(
@@ -2799,10 +2799,10 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
-        // const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-        //     label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
-        //     value: term
-        // })).sort((a, b) => a.value - b.value)
+        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+            value: term
+        })).sort((a, b) => a.value - b.value)
 
         const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
             pName: pName,
