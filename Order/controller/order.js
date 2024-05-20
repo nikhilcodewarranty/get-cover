@@ -3191,11 +3191,16 @@ exports.getSingleOrder = async (req, res) => {
             });
         }
         if (reseller && reseller.isServicer) {
-            servicer.unshift(reseller);
+            if(reseller.status){
+                servicer.unshift(reseller);
+            }           
         }
 
         if (dealer && dealer.isServicer) {
-            servicer.unshift(dealer);
+            if(dealer.accountStatus){
+                servicer.unshift(dealer);
+            }  
+            //servicer.unshift(dealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
         const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
