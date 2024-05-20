@@ -406,8 +406,6 @@ exports.updatePriceBook = async (req, res, next) => {
     })
   }
 };
-
-
 //Update by Price Id by me
 exports.updatePriceBookById = async (req, res, next) => {
   try {
@@ -569,7 +567,6 @@ exports.updatePriceBookById = async (req, res, next) => {
     })
   }
 };
-
 // Function to update price book by me
 const updatePriceBookStatus = async (priceId, newData) => {
   const criteria = { _id: priceId };
