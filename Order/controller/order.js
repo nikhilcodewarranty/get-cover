@@ -1643,7 +1643,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
                         const readOpts = { // <--- need these settings in readFile options
-                            cellText:false, 
+                            //cellText:false, 
                             cellDates:true
                           };
                           
@@ -1651,7 +1651,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             header: 1,
                             defval: '',
                             blankrows: true,
-                            raw: false,
+                           // raw: false,
                             dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                           }
                         const wb = XLSX.readFile(productsWithFiles[j].products.file, readOpts);
