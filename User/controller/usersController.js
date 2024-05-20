@@ -792,7 +792,7 @@ exports.createDealer = async (req, res) => {
           let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
           totalDataComing1 = totalDataComing1.map(item => {
             console.log("item check )))))))))))))))))))", item)
-            if (!item.priceBook) {
+            if (!item['Product SKU']) {
               return { priceBook: '', 'RetailPrice': item['retailPrice'] };
             }
             return item;
@@ -1381,7 +1381,7 @@ exports.createDealer = async (req, res) => {
           let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
           totalDataComing1 = totalDataComing1.map(item => {
             console.log("item check )))))))))))))))))))", item)
-            if (!item.priceBook) {
+            if (!item['Product SKU']) {
               return { priceBook: '', 'RetailPrice': item['retailPrice'] };
             }
             return item;
