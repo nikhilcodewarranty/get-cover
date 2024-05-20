@@ -694,16 +694,16 @@ exports.createOrder1 = async (req, res) => {
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
-                    cellDates:true
-                  };
-                  
-                  const jsonOpts = {
+                    cellDates: true
+                };
+
+                const jsonOpts = {
                     //header: 1,
                     defval: '',
                     blankrows: true,
                     raw: false,
                     dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
-                  }
+                }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -715,10 +715,10 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile,readOpts);
+                const wb = XLSX.readFile(pathFile, readOpts);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -745,7 +745,7 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-                    console.log("The minimum date is:",data);
+                    // console.log("The minimum date is:",data);
 
                     let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
                     let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
@@ -756,11 +756,11 @@ exports.createOrder1 = async (req, res) => {
                     // Find the minimum date
                     let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                    console.log("The minimum date is:",new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
+                    console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
                     let popopo = new Date()
                     // console.log(new Date(popopo.setDate(popopo.getDate() + 10)), "order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new Date(product.coverageStartDate), new Date(dateCheck), product.adh)
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                    console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii",minDate)
+                    console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -775,7 +775,7 @@ exports.createOrder1 = async (req, res) => {
                         model: data.model,
                         partsWarranty: data.partsWarranty,
                         labourWarranty: data.labourWarranty,
-                        purchaseDate: data.purchaseDate,
+                        purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
                         status: claimStatus,
                         eligibilty: eligibilty,
@@ -1792,8 +1792,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
                         if (obj.priceType == "Quantity Pricing") {
-                            console.log("obj.checkNumberProducts==========================",obj.checkNumberProducts)
-                            console.log("obj.data==========================",obj.data)
+                            console.log("obj.checkNumberProducts==========================", obj.checkNumberProducts)
+                            console.log("obj.data==========================", obj.data)
                             if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
@@ -1972,6 +1972,18 @@ exports.editFileCase = async (req, res) => {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (Object.keys(data.productsArray[i]?.orderFile).length > 0 && data.productsArray[i]?.orderFile.fileName != '') {
                     let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
+                    const readOpts = { // <--- need these settings in readFile options
+                        //cellText:false, 
+                        cellDates: true
+                    };
+
+                    const jsonOpts = {
+                        //header: 1,
+                        defval: '',
+                        blankrows: true,
+                        raw: false,
+                        dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                    }
                     let product = {
                         key: i,
                         checkNumberProducts: data.productsArray[i].checkNumberProducts,
@@ -1993,11 +2005,11 @@ exports.editFileCase = async (req, res) => {
             if (productsWithFiles.length > 0) {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].file,{
-                            type: 'binary',
+                        const wb = XLSX.readFile(productsWithFiles[j].file, {
+                            // type: 'binary',
                             cellDates: true,
-                            cellNF: false,
-                            cellText: false
+                            //cellNF: false,
+                            //cellText: false
                         });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
@@ -2020,7 +2032,7 @@ exports.editFileCase = async (req, res) => {
                             priceType: productsWithFiles[j].priceType,
                             rangeStart: productsWithFiles[j].rangeStart,
                             rangeEnd: productsWithFiles[j].rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], jsonOpts),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].key,
@@ -3302,15 +3314,15 @@ exports.getSingleOrder = async (req, res) => {
             });
         }
         if (reseller && reseller.isServicer) {
-            if(reseller.status){
+            if (reseller.status) {
                 servicer.unshift(reseller);
-            }           
+            }
         }
 
         if (dealer && dealer.isServicer) {
-            if(dealer.accountStatus){
+            if (dealer.accountStatus) {
                 servicer.unshift(dealer);
-            }  
+            }
             //servicer.unshift(dealer);
         }
         const servicerIds = servicer.map((obj) => obj._id);
@@ -3652,6 +3664,18 @@ exports.editOrderDetail = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                const readOpts = { // <--- need these settings in readFile options
+                    //cellText:false, 
+                    cellDates: true
+                };
+
+                const jsonOpts = {
+                    //header: 1,
+                    defval: '',
+                    blankrows: true,
+                    raw: false,
+                    dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
@@ -3662,7 +3686,7 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile);
+                const wb = XLSX.readFile(pathFile,readOpts);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
@@ -3673,7 +3697,7 @@ exports.editOrderDetail = async (req, res) => {
                             : 0
                     ) + 1;
 
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -3859,7 +3883,18 @@ exports.markAsPaid = async (req, res) => {
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let save = savedResponse.productsArray.map(async (product) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            const readOpts = { // <--- need these settings in readFile options
+                //cellText:false, 
+                cellDates: true
+            };
 
+            const jsonOpts = {
+                //header: 1,
+                defval: '',
+                blankrows: true,
+                raw: false,
+                dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+            }
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
             let coverageStartDate = product.coverageStartDate;
@@ -3870,7 +3905,7 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
-            const wb = XLSX.readFile(pathFile);
+            const wb = XLSX.readFile(pathFile,readOpts);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
             // let contractCount =
@@ -3880,7 +3915,7 @@ exports.markAsPaid = async (req, res) => {
             //             : 0
             //     ) + 1;
 
-            const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+            const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
