@@ -693,12 +693,12 @@ exports.createOrder1 = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const readOpts = { // <--- need these settings in readFile options
-                    cellText:false, 
+                    //cellText:false, 
                     cellDates:true
                   };
                   
                   const jsonOpts = {
-                    header: 1,
+                    //header: 1,
                     defval: '',
                     blankrows: true,
                     raw: false,
