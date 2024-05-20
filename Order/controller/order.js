@@ -1993,7 +1993,12 @@ exports.editFileCase = async (req, res) => {
             if (productsWithFiles.length > 0) {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].file);
+                        const wb = XLSX.readFile(productsWithFiles[j].file,{
+                            type: 'binary',
+                            cellDates: true,
+                            cellNF: false,
+                            cellText: false
+                        });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
@@ -2187,6 +2192,75 @@ exports.editFileCase = async (req, res) => {
                     //     }
                     // });
 
+                    // let checkRetailValue = allDataComing.map((obj1) => {
+                    //     const priceObj = obj1.data.map((item) => {
+                    //         const keys = Object.keys(item);
+                    //         return {
+                    //             key: obj1.key,
+                    //             checkNumberProducts: obj1.checkNumberProducts,
+                    //             noOfProducts: obj1.noOfProducts,
+                    //             rangeStart: obj1.rangeStart,
+                    //             rangeEnd: obj1.rangeEnd,
+                    //             retailValue: item[keys[4]],
+                    //         };
+                    //     });
+                    //     priceObj.map((obj, index) => {
+                    //         if (isNaN(obj.retailValue) || obj.retailValue < 0) {
+                    //             {
+                    //                 message.push({
+                    //                     code: constant.errorCode,
+                    //                     key: obj.key,
+                    //                     message: "Retail Price should be integer and positive!!",
+                    //                 });
+
+                    //                 return;
+                    //             }
+                    //         }
+                    //         else if (obj1.priceType === 'Flat Pricing') {
+                    //             if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
+                    //                 console.log(obj1.priceType);
+                    //                 message.push({
+                    //                     code: constant.errorCode,
+                    //                     key: obj.key,
+                    //                     message: "Retail price should be between start and end range!",
+                    //                 });
+
+                    //                 return;
+                    //             }
+                    //         }
+                    //     });
+                    //     // else if (obj.priceType == "Flat Pricing") {
+                    //     //     if (priceObj.length > 0) {
+                    //     //         priceObj.map((obj, index) => {
+                    //     //             if (isNaN(obj.retailValue)) {
+                    //     //                 {
+                    //     //                     message.push({
+                    //     //                         code: constant.errorCode,
+                    //     //                         key: obj.key,
+                    //     //                         message: "Retail Price should be integer!!",
+                    //     //                     });
+
+                    //     //                     return;
+                    //     //                 }
+                    //     //             }
+                    //     //             else if (
+                    //     //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
+                    //     //                 Number(obj.retailValue) > Number(obj.rangeEnd)
+                    //     //             ) {
+                    //     //                 message.push({
+                    //     //                     code: constant.errorCode,
+                    //     //                     key: obj.key,
+                    //     //                     message: "Invalid Retail Price!",
+                    //     //                 });
+
+                    //     //                 return;
+                    //     //             }
+                    //     //         });
+                    //     //     }
+                    //     // }
+
+                    // });
+
                     let checkRetailValue = allDataComing.map((obj1) => {
                         const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
@@ -2197,23 +2271,61 @@ exports.editFileCase = async (req, res) => {
                                 rangeStart: obj1.rangeStart,
                                 rangeEnd: obj1.rangeEnd,
                                 retailValue: item[keys[4]],
+                                partsWarranty: item[keys[5]],
+                                labourWarranty: item[keys[6]],
+                                purchaseDate: item[keys[7]],
                             };
                         });
-                        priceObj.map((obj, index) => {
-                            if (isNaN(obj.retailValue) || obj.retailValue < 0) {
-                                {
+                        if (priceObj.length > 0) {
+                            priceObj.map((obj, index) => {
+                                if (isNaN(obj.retailValue) || obj.retailValue < 0) {
+                                    {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Retail Price should be integer and positive!!",
+                                        });
+
+                                        return;
+                                    }
+                                }
+                                // check if the input value is a number
+                                if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
+
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
+
+                                        return;
+                                    }
+                                }
+                                // console.log("dsfsddsfsdfd",obj.purchaseDate);
+                                // console.log("new date",new Date());
+                                // if (!isNaN(new Date(obj.purchaseDate).getTime())) {
+                                //     message.push({
+                                //         code: constant.errorCode,
+                                //         key: obj.key,
+                                //         message: 'Invalid Date!'
+                                //     });
+                                //     return;
+                                // } 
+                                if (new Date(obj.purchaseDate) > new Date()) {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
-                                        message: "Retail Price should be integer and positive!!",
+                                        message: 'The purchase date should be present date and past date!'
                                     });
-
                                     return;
                                 }
-                            }
-                            else if (obj1.priceType === 'Flat Pricing') {
-                                if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
-                                    console.log(obj1.priceType);
+                                if (obj1.priceType == 'Flat Pricing' &&
+                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
+                                    Number(obj.retailValue) > Number(obj.rangeEnd)
+                                ) {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
@@ -2222,8 +2334,8 @@ exports.editFileCase = async (req, res) => {
 
                                     return;
                                 }
-                            }
-                        });
+                            });
+                        }
                         // else if (obj.priceType == "Flat Pricing") {
                         //     if (priceObj.length > 0) {
                         //         priceObj.map((obj, index) => {
@@ -2253,7 +2365,6 @@ exports.editFileCase = async (req, res) => {
                         //         });
                         //     }
                         // }
-
                     });
 
                     if (message.length > 0) {

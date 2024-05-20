@@ -2578,18 +2578,18 @@ exports.getMessages = async (req, res) => {
     {
       $lookup: {
         from: "users",
-        localField: "commentedBy",
-        foreignField: "metaId",
+        localField: "commentedByUser",
+        foreignField: "_id",
         as: "commentBy",
         pipeline: [
-          {
-            $match:
-            {
-              $and: [
-                { isPrimary: true }
-              ]
-            },
-          },
+          // {
+          //   $match:
+          //   {
+          //     $and: [
+          //       { isPrimary: true }
+          //     ]
+          //   },
+          // },
           {
             $lookup: {
               from: 'roles',
@@ -2612,25 +2612,25 @@ exports.getMessages = async (req, res) => {
       }
     },
     { $unwind: { path: "$commentBy", preserveNullAndEmptyArrays: true } },
-    {
-      $lookup: {
-        from: "users",
-        localField: "commentedByUser",
-        foreignField: "_id",
-        as: "commentedByUser",
-        pipeline: [
-          {
-            $project: {
-              firstName: 1,
-              lastName: 1,
-              email: 1,
-              _id: 1
-            }
-          }
-        ]
-      }
-    },
-     { $unwind: { path: "$commentedByUser", preserveNullAndEmptyArrays: true } },
+    // {
+    //   $lookup: {
+    //     from: "users",
+    //     localField: "commentedByUser",
+    //     foreignField: "_id",
+    //     as: "commentedByUser",
+    //     pipeline: [
+    //       {
+    //         $project: {
+    //           firstName: 1,
+    //           lastName: 1,
+    //           email: 1,
+    //           _id: 1
+    //         }
+    //       }
+    //     ]
+    //   }
+    // },
+    //  { $unwind: { path: "$commentedByUser", preserveNullAndEmptyArrays: true } },
     {
       $project: {
         _id: 1,
@@ -2642,7 +2642,7 @@ exports.getMessages = async (req, res) => {
         // "commentBy.lastName": 1
         "commentBy": 1,
         "commentTo": 1,
-        "commentedByUser": 1,
+        // "commentedByUser": 1,
 
       }
     }
