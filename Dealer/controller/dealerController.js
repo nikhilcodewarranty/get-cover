@@ -2139,6 +2139,19 @@ exports.updateDealerMeta = async (req, res) => {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
 
+    //Get customer of the dealers
+    if (!data.userAccount) {
+      //Update isAccount for customer when user account false
+      const updateMeta = await customerService.updateCustomerData({ dealerId: checkDealer._id }, { isAccountCreate: false }, { new: true })
+      let customers = await customerService.getAllCustomers({ dealerId: checkDealer._id }, { isDeleted: false });
+      //Update user for customer when user account false
+      const userIds = customers.map(item => item._id.toString())
+      const updateUserMeta = await userService.updateUser({ accountId: { $in: userIds } }, { status: false }, { new: true })
+
+    }
+
+
+
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
 
@@ -2333,7 +2346,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
+      console.log("data++++++++dddddddddddddddddd+++++++", totalDataComing1)
 
       totalDataComing1 = totalDataComing1.map(item => {
         console.log("item check )))))))))))))))))))", item)
