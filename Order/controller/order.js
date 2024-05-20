@@ -729,24 +729,24 @@ exports.createOrder1 = async (req, res) => {
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
-                    let adhDays = Number(product.adh ? product.adh :0)
-                    let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty :0)
-                    let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty :0)
+                    let adhDays = Number(product.adh ? product.adh : 0)
+                    let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
+                    let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
-                     dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
+                    dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
 
-                    let partsWarrantyDate = new Date(data.purchaseDate.setDate(data.purchaseDate.getMonth()+partWarrantyMonth)) 
-                    let labourWarrantyDate = new Date(data.purchaseDate.setDate(data.purchaseDate.getMonth()+labourWarrantyMonth)) 
+                    let partsWarrantyDate = new Date(data.purchaseDate.setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
+                    let labourWarrantyDate = new Date(data.purchaseDate.setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
-                      }
-                      
-                      // Find the minimum date
-                      let minDate = findMinDate(dateCheck, partsWarrantyDate, labourWarrantyMonth);
-                      
-                      console.log("The minimum date is:", minDate);
+                    }
+
+                    // Find the minimum date
+                    let minDate = findMinDate(dateCheck, partsWarrantyDate, labourWarrantyMonth);
+
+                    console.log("The minimum date is:", minDate);
                     let popopo = new Date()
-                    console.log( new Date(popopo.setDate(popopo.getDate() + 10)),"order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",new Date(product.coverageStartDate),new Date(dateCheck),product.adh)
+                    console.log(new Date(popopo.setDate(popopo.getDate() + 10)), "order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new Date(product.coverageStartDate), new Date(dateCheck), product.adh)
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
