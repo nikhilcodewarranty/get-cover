@@ -219,7 +219,7 @@ exports.createPriceBook = async (req, res, next) => {
     if (checkPriceBook.length > 0) {
       res.send({
         code: constant.errorCode,
-        message: "Product already exist with this name"
+        message: "Product already exist with this sku"
       })
       return;
     }
