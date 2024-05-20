@@ -526,7 +526,7 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
-        if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
+    if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
       console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
       console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)
@@ -534,7 +534,7 @@ exports.editCustomer = async (req, res) => {
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
       console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser, data.isAccountCreate);
     }
-  
+
     //send notification to dealer,customer,admin,reseller
     let IDs = await supportingFunction.getUserIds()
     //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
@@ -546,7 +546,7 @@ exports.editCustomer = async (req, res) => {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
       userId: req.params.customerId,
-      flag:"Customer",
+      flag: "Customer",
       notificationFor: IDs
     };
 
@@ -642,21 +642,21 @@ exports.changePrimaryUser = async (req, res) => {
       })
     } else {
       //Send notification for dealer change primary user
-     // if (checkRole.role == "Dealer") {
-        let IDs = await supportingFunction.getUserIds()
-        //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
-        let notificationData = {
-          title: checkRole.role +  " primary user change",
-          description: "The primary user has been changed!",
-          userId: req.params.userId,
-          flag: checkRole.role,
-          notificationFor: [getPrimary._id]
-        };
+      // if (checkRole.role == "Dealer") {
+      let IDs = await supportingFunction.getUserIds()
+      //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
+      let notificationData = {
+        title: checkRole.role + " primary user change",
+        description: "The primary user has been changed!",
+        userId: req.params.userId,
+        flag: checkRole.role,
+        notificationFor: [getPrimary._id]
+      };
 
-        let createNotification = await userService.createNotification(notificationData);
-     // }
- 
+      let createNotification = await userService.createNotification(notificationData);
+      // }
+
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
@@ -980,13 +980,16 @@ exports.getCustomerUsers = async (req, res) => {
       return;
     };
 
+   let checkDealer =  await dealerService.getDealerById(checkCustomer.dealerId,{})
+
 
     res.send({
       code: constant.successCode,
       message: "Success",
       result: filteredData,
       customerStatus: checkCustomer.status,
-      isAccountCreate: checkCustomer.isAccountCreate
+      isAccountCreate: checkCustomer.isAccountCreate,
+      userAccount:checkDealer.userAccount
 
     })
   } catch (err) {
