@@ -194,7 +194,7 @@ exports.createDealerPriceBook = async (req, res) => {
             await LOG(logData).save()
             res.send({
                 code: constant.successCode,
-                message: "Success",
+                message: "Success", 
                 result: createDealerPrice
             })
         }
@@ -704,28 +704,28 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
 
-        // if (checkDealer.coverageType == "Breakdown & Accidental") {
-        //     query = {
-        //         $and: [
-        //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-        //             { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-        //             { 'priceBooks.category._id': { $in: catIdsArray } },
-        //             { 'status': true },
-        //             { dealerId: new mongoose.Types.ObjectId(req.userId) }
-        //         ]
-        //     };
-        // } else {
-        query = {
-            $and: [
-                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-                { 'priceBooks.category._id': { $in: catIdsArray } },
-                { 'priceBooks.coverageType': checkDealer.coverageType },
-                { 'status': true },
-                { dealerId: new mongoose.Types.ObjectId(req.userId) }
-            ]
-        };
-        // }
+        if (data.coverageType == "Breakdown & Accidental") {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                ]
+            };
+        } else {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'priceBooks.coverageType': checkDealer.coverageType },
+                    { 'status': true },
+                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                ]
+            };
+        }
 
 
 
@@ -1255,13 +1255,6 @@ exports.getDealerServicers = async (req, res) => {
                 message: "Unable to fetch the servicers"
             })
             return;
-        }
-        // Get Dealer Reseller Servicer
-
-        let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.userId, isServicer: true })
-
-        if (dealerResellerServicer.length > 0) {
-            servicer.unshift(...dealerResellerServicer);
         }
         //res.json(servicer);return;
         if (checkDealer.isServicer) {
@@ -3463,7 +3456,7 @@ exports.getAllContracts = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3477,7 +3470,7 @@ exports.getAllContracts = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3745,7 +3738,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let data = req.body;
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
-            dealerId: req.userId,
+            dealerId:  req.userId,
             status: true,
         });
         if (!getDealerPriceBook) {
@@ -3783,17 +3776,17 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         //         query = { _id: { $in: dealerPriceIds }, status: true, };
         //     }
         // } else {
-        if (data.term != "" && data.pName == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-        }
-        else if (data.pName != "" && data.term == "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+            if (data.term != "" && data.pName == "") {
+                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+            }
+            else if (data.pName != "" && data.term == "") {
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-        } else if (data.term != "" && data.pName != "") {
-            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-        } else {
-            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
-        }
+            } else if (data.term != "" && data.pName != "") {
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+            } else {
+                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+            }
 
         // }
 
@@ -3879,7 +3872,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12  + " Years",
             value: term
         })).sort((a, b) => a.value - b.value)
 
