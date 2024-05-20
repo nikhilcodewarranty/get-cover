@@ -689,12 +689,9 @@ exports.createOrder1 = async (req, res) => {
                 { new: true }
             );
 
-            console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCountNew();
-            console.log("count1 New+++++++++++", count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-                console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -726,7 +723,6 @@ exports.createOrder1 = async (req, res) => {
                 });
                 var contractArray = [];
                 totalDataComing.forEach((data, index1) => {
-                    console.log('index1++++++++++++++++++++++++++++++++++++++++++++=', new Date())
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
@@ -734,9 +730,9 @@ exports.createOrder1 = async (req, res) => {
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
                     dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    console.log("check +==================", dateCheck, new Date(dateCheck))
+                    console.log("order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",new Date(dateCheck),product,adh)
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                    
+
                     let eligibilty = claimStatus == "Active" ? new Date(dateCheck) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -826,7 +822,6 @@ exports.createOrder1 = async (req, res) => {
                     });
                     return
                 }
-                //  console.log("saveContracts==================",  saveContracts)
 
             })
 
@@ -1008,8 +1003,6 @@ exports.getAllOrders = async (req, res) => {
 
 
         let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
-        console.log("--------------------------------------------------1")
-        // console.log("ordersResult00000000000000",ordersResult.length);return;
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
         let userResellerIds = ordersResult
@@ -1018,7 +1011,6 @@ exports.getAllOrders = async (req, res) => {
 
         let mergedArray = userDealerIds.concat(userResellerIds);
 
-        console.log("--------------------------------------------------2")
 
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
         //Get Respective Dealers
@@ -1032,7 +1024,6 @@ exports.getAllOrders = async (req, res) => {
             street: 1
 
         });
-        console.log("--------------------------------------------------3")
         let servicerIdArray = ordersResult.map((result) => result.servicerId);
         const servicerCreteria = {
             $or: [
@@ -1041,7 +1032,6 @@ exports.getAllOrders = async (req, res) => {
                 { dealerId: { $in: servicerIdArray } },
             ],
         };
-        console.log("--------------------------------------------------4")
         //Get Respective Servicer
         let respectiveServicer = await servicerService.getAllServiceProvider(
             servicerCreteria,
@@ -1059,7 +1049,6 @@ exports.getAllOrders = async (req, res) => {
             .filter(result => result.customerId !== null)
             .map(result => result.customerId?.toString());
 
-        console.log("--------------------------------------------------5")
         const customerCreteria = { _id: { $in: customerIdsArray } };
 
         const allUserIds = mergedArray.concat(userCustomerIds);
@@ -1081,7 +1070,6 @@ exports.getAllOrders = async (req, res) => {
         );
         //Get all Reseller
 
-        console.log("--------------------------------------------------6")
         let resellerIdsArray = ordersResult.map((result) => result.resellerId);
         const resellerCreteria = { _id: { $in: resellerIdsArray } };
         let respectiveReseller = await resellerService.getResellers(
@@ -1097,7 +1085,6 @@ exports.getAllOrders = async (req, res) => {
             }
         );
 
-        console.log("--------------------------------------------------7")
         const result_Array = ordersResult.map((item1) => {
             const dealerName =
                 item1.dealerId != ""
