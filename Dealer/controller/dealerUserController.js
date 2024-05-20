@@ -704,7 +704,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
 
-        if (data.coverageType != "") {
+        if (data.coverageType == "Breakdown & Accidental") {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },

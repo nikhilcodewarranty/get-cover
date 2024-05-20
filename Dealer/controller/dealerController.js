@@ -2317,24 +2317,24 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let csvName = req.file.filename
 
       // from here copy
-      const csvWriter = createCsvWriter({
-        path: './uploads/resultFile/' + csvName,
-        header: [
-          { id: 'priceBook', title: 'Price Book' },
-          { id: 'status', title: 'Status' },
-          { id: 'reason', title: 'Reason' },
-          // Add more headers as needed
-        ],
-      });
+      // const csvWriter = createCsvWriter({
+      //   path: './uploads/resultFile/' + csvName,
+      //   header: [
+      //     { id: 'priceBook', title: 'Price Book' },
+      //     { id: 'status', title: 'Status' },
+      //     { id: 'reason', title: 'Reason' },
+      //     // Add more headers as needed
+      //   ],
+      // });
       const wb = XLSX.readFile(req.file.path);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      // console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
+      console.log("data++++++++dddddddddddddddddd+++++++",totalDataComing1)
 
       totalDataComing1 = totalDataComing1.map(item => {
         console.log("item check )))))))))))))))))))", item)
-        if (!item.priceBook) {
+        if (!item['Product SKU']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
