@@ -2617,7 +2617,7 @@ exports.getMessages = async (req, res) => {
         from: "users",
         localField: "commentedByUser",
         foreignField: "_id",
-        as: "commentByUser",
+        as: "commentedByUser",
         pipeline: [
           {
             $project: {
@@ -2630,7 +2630,7 @@ exports.getMessages = async (req, res) => {
         ]
       }
     },
-    { $unwind: { path: "$commentedByUser", preserveNullAndEmptyArrays: true } },
+     { $unwind: { path: "$commentedByUser", preserveNullAndEmptyArrays: true } },
     {
       $project: {
         _id: 1,
