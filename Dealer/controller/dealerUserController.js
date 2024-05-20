@@ -704,17 +704,17 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
 
-        // if (checkDealer.coverageType == "Breakdown & Accidental") {
-        //     query = {
-        //         $and: [
-        //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-        //             { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-        //             { 'priceBooks.category._id': { $in: catIdsArray } },
-        //             { 'status': true },
-        //             { dealerId: new mongoose.Types.ObjectId(req.userId) }
-        //         ]
-        //     };
-        // } else {
+        if (data.coverageType != "") {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                ]
+            };
+        } else {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -725,7 +725,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
                 ]
             };
-        // }
+        }
 
 
 

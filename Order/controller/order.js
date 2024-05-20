@@ -734,7 +734,7 @@ exports.createOrder1 = async (req, res) => {
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                     let dateCheck = new Date(product.coverageStartDate)
                     dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    console.log("check +==================",new Date(dateCheck))
+                    console.log("check +==================", dateCheck, new Date(dateCheck))
                     let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
@@ -1851,7 +1851,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                                 // console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
-                                if(!isNaN(new Date(obj.purchaseDate).getTime())){
+                                if (!isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
