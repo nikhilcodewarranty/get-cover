@@ -1461,7 +1461,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
         //     { 'rangeEnd': { $gte: Number(data.range) } },
         //   ]
         // }
-        // query.$and.push(flatQuery); 
+        // query.$and.push(flatQuery);
       }
     }
     if (data.coverageType) {
