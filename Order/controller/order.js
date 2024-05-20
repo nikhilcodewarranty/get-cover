@@ -735,8 +735,9 @@ exports.createOrder1 = async (req, res) => {
                     let dateCheck = new Date(product.coverageStartDate)
                     dateCheck = dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                     console.log("check +==================", dateCheck, new Date(dateCheck))
-                    let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                    // let eligibilty = claimStatus == "Active" ? true : false
+                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    
+                    let eligibilty = claimStatus == "Active" ? new Date(dateCheck) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
