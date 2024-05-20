@@ -742,7 +742,7 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     // Find the minimum date
-                    let minDate = findMinDate(dateCheck, partsWarrantyDate, labourWarrantyDate);
+                    let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
                     console.log("The minimum date is:", minDate);
                     let popopo = new Date()
