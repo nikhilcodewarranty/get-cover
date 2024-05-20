@@ -2227,7 +2227,7 @@ exports.deleteUser = async (req, res) => {
         endpoint: "user/deleteUser",
         userId: req.userId,
         body: criteria,
-        response: {
+        response: { 
           code: constant.errorCode,
           message: "Unable to delete the user"
         }
@@ -2241,7 +2241,6 @@ exports.deleteUser = async (req, res) => {
     };
 
 
-    console.log("checkRole-----------------------", checkRole)
 
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
