@@ -1631,14 +1631,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file, {
-                            type: 'binary',
-                            cellDates: true,
-                            cellNF: false,
-                            dateNF:"mm/dd/yyyy",
-                            cellText: false,
-                            raw: false
-                        });
+                        const wb = XLSX.readFile(productsWithFiles[j].products.file, { raw: true, cellDates: true });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
