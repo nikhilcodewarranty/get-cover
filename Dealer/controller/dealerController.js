@@ -2334,7 +2334,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       totalDataComing1 = totalDataComing1.map(item => {
         console.log("item check )))))))))))))))))))", item)
-        if (!item.priceBook) {
+        if (!item['Product SKU']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
