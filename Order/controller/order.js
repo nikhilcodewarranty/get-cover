@@ -1636,7 +1636,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             cellDates: true,
                             cellNF: false,
                             dateNF:"mm/dd/yyyy",
-                            cellText: false
+                            cellText: false,
+                            raw: false
                         });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
