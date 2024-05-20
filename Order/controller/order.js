@@ -1631,7 +1631,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file, { raw: true, cellDates: true });
+                        const readOpts = { // <--- need these settings in readFile options
+                            cellText:false, 
+                            cellDates:true
+                          };
+                          
+                          const jsonOpts = {
+                            header: 1,
+                            defval: '',
+                            blankrows: true,
+                            raw: false,
+                            dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                          }
+                        const wb = XLSX.readFile(productsWithFiles[j].products.file, readOpts);
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
@@ -1654,7 +1666,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],jsonOpts),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
