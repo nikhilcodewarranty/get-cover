@@ -707,7 +707,7 @@ exports.editResellers = async (req, res) => {
                 status: true
             };
         }
-
+ 
         console.log("$$$------------------------------------------",resellerUserCreateria,newValue)
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
 

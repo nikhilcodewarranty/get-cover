@@ -1839,14 +1839,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                                 // console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
-                                if (!isNaN(new Date(obj.purchaseDate).getTime())) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        key: obj.key,
-                                        message: 'Invalid Date!'
-                                    });
-                                    return;
-                                }
+                                // if (!isNaN(new Date(obj.purchaseDate).getTime())) {
+                                //     message.push({
+                                //         code: constant.errorCode,
+                                //         key: obj.key,
+                                //         message: 'Invalid Date!'
+                                //     });
+                                //     return;
+                                // } 
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     message.push({
                                         code: constant.errorCode,
