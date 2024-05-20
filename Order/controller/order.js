@@ -692,7 +692,18 @@ exports.createOrder1 = async (req, res) => {
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-
+                const readOpts = { // <--- need these settings in readFile options
+                    //cellText:false, 
+                    cellDates:true
+                  };
+                  
+                  const jsonOpts = {
+                    header: 1,
+                    defval: '',
+                    blankrows: true,
+                   // raw: false,
+                    dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                  }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -704,10 +715,10 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile);
+                const wb = XLSX.readFile(pathFile,readOpts);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
