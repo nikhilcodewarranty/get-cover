@@ -693,7 +693,7 @@ exports.createOrder1 = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 const readOpts = { // <--- need these settings in readFile options
-                    //cellText:false, 
+                    cellText:false, 
                     cellDates:true
                   };
                   
@@ -701,7 +701,7 @@ exports.createOrder1 = async (req, res) => {
                     header: 1,
                     defval: '',
                     blankrows: true,
-                   // raw: false,
+                    raw: false,
                     dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                   }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
