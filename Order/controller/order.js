@@ -744,9 +744,9 @@ exports.createOrder1 = async (req, res) => {
                     // Find the minimum date
                     let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                    console.log("The minimum date is:", minDate);
+                    console.log("The minimum date is:",new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
                     let popopo = new Date()
-                    console.log(new Date(popopo.setDate(popopo.getDate() + 10)), "order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new Date(product.coverageStartDate), new Date(dateCheck), product.adh)
+                    // console.log(new Date(popopo.setDate(popopo.getDate() + 10)), "order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new Date(product.coverageStartDate), new Date(dateCheck), product.adh)
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
