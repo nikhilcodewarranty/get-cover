@@ -1687,12 +1687,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file, {
-                            type: 'binary',
-                            cellDates: true,
-                            cellNF: false,
-                            cellText: false
-                        });
+                        const readOpts = { // <--- need these settings in readFile options
+                            //cellText:false, 
+                            cellDates: true
+                        };
+    
+                        var jsonOpts = {
+                            //header: 1,
+                            defval: '',
+                            // blankrows: true,
+                            raw: false,
+                            dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                        }
+                        const wb = XLSX.readFile(productsWithFiles[j].products.file, readOpts);
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
                         const headers = [];
@@ -1715,7 +1722,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" }),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],jsonOpts),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
@@ -1913,14 +1920,14 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                                 // console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
-                                // if (!isNaN(new Date(obj.purchaseDate).getTime())) {
-                                //     message.push({
-                                //         code: constant.errorCode,
-                                //         key: obj.key,
-                                //         message: 'Invalid Date!'
-                                //     });
-                                //     return;
-                                // } 
+                                if (!isNaN(new Date(obj.purchaseDate).getTime())) {
+                                    message.push({
+                                        code: constant.errorCode,
+                                        key: obj.key,
+                                        message: 'Invalid Date!'
+                                    });
+                                    return;
+                                } 
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     message.push({
                                         code: constant.errorCode,
