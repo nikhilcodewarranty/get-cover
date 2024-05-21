@@ -1921,9 +1921,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
-                                // console.log("dsfsddsfsdfd",obj.purchaseDate);
+                                console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
-                                if (!isNaN(new Date(obj.purchaseDate).getTime())) {
+                                if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
