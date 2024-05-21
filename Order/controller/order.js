@@ -782,7 +782,6 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyDate = p_date.setMonth(newLabourMonth)
 
                     console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
-                    // console.log("datesssssssss",)
 
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
@@ -2015,7 +2014,7 @@ exports.editFileCase = async (req, res) => {
                     var jsonOpts = {
                         //header: 1,
                         defval: '',
-                        blankrows: true,
+                       // blankrows: true,
                         raw: false,
                         dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                     }
@@ -3707,7 +3706,7 @@ exports.editOrderDetail = async (req, res) => {
                 const jsonOpts = {
                     //header: 1,
                     defval: '',
-                    blankrows: true,
+                  //  blankrows: true,
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
@@ -3949,7 +3948,7 @@ exports.markAsPaid = async (req, res) => {
             const jsonOpts = {
                 //header: 1,
                 defval: '',
-                blankrows: true,
+               // blankrows: true,
                 raw: false,
                 dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
             }
