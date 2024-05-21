@@ -2274,7 +2274,7 @@ exports.saveBulkClaim = async (req, res) => {
               flag = true
             }
 
-            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.dealer?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
+            if (allDataArray[0]?.order.reseller?.isServicer && allDataArray[0]?.order.reseller?.status && allDataArray[0]?.order.reseller?._id.toString() === servicerData.resellerId?.toString()) {
               flag = true
             }
           }
