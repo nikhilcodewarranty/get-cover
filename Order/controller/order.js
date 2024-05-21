@@ -724,7 +724,7 @@ exports.createOrder1 = async (req, res) => {
                 const jsonOpts = {
                     //header: 1,
                     defval: '',
-                    blankrows: true,
+                    // blankrows: true,
                     raw: false,
                     dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
