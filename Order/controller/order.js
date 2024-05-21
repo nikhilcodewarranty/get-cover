@@ -355,9 +355,33 @@ exports.createOrder = async (req, res) => {
                             let unique_key1 = "OC-" + "2024-" + unique_key_number1
                             let claimStatus = new Date(products.coverageStartDate) < new Date() ? "Active" : "Waiting"
                             claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                            // let dateCheck = new Date(product.coverageStartDate)
+                            // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
+                            // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+
+
                             let dateCheck = new Date(product.coverageStartDate)
-                            dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                            let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                            let adhDays = Number(product.adh ? product.adh : 0)
+                            let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
+                            let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
+
+                            dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
+                            // console.log("The minimum date is:",data);
+
+                            let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
+                            let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                            function findMinDate(d1, d2, d3) {
+                                return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
+                            }
+
+                            // Find the minimum date
+                            let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
+
+                            console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
+                            // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                            console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
+                            let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
                             // let eligibilty = claimStatus == "Active" ? true : false
                             let contractObject = {
                                 orderId: savedResponse._id,
@@ -757,8 +781,6 @@ exports.createOrder1 = async (req, res) => {
                     let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
                     console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
-                    let popopo = new Date()
-                    // console.log(new Date(popopo.setDate(popopo.getDate() + 10)), "order check ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", new Date(product.coverageStartDate), new Date(dateCheck), product.adh)
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
@@ -773,8 +795,8 @@ exports.createOrder1 = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
-                        partsWarranty: data.partsWarranty,
-                        labourWarranty: data.labourWarranty,
+                        partsWarranty: partsWarrantyDate,
+                        labourWarranty: labourWarrantyDate,
                         purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
                         status: claimStatus,
@@ -1977,7 +1999,7 @@ exports.editFileCase = async (req, res) => {
                         cellDates: true
                     };
 
-                    const jsonOpts = {
+                    var jsonOpts = {
                         //header: 1,
                         defval: '',
                         blankrows: true,
@@ -3686,7 +3708,7 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile,readOpts);
+                const wb = XLSX.readFile(pathFile, readOpts);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
@@ -3697,7 +3719,7 @@ exports.editOrderDetail = async (req, res) => {
                             : 0
                     ) + 1;
 
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
+                const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -3721,9 +3743,32 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                    // let dateCheck = new Date(product.coverageStartDate)
+                    // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
+                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+
                     let dateCheck = new Date(product.coverageStartDate)
-                    dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    let adhDays = Number(product.adh ? product.adh : 0)
+                    let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
+                    let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
+
+                    dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
+                    // console.log("The minimum date is:",data);
+
+                    let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
+                    let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                    function findMinDate(d1, d2, d3) {
+                        return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
+                    }
+
+                    // Find the minimum date
+                    let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
+
+                    console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
+                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                    console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
+                    let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3736,8 +3781,8 @@ exports.editOrderDetail = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
-                        partsWarranty: data.partsWarranty,
-                        labourWarranty: data.labourWarranty,
+                        partsWarranty: new Date(partsWarrantyDate),
+                        labourWarranty: new Date(labourWarrantyDate),
                         purchaseDate: new Date(data.purchaseDate),
                         status: claimStatus,
                         eligibilty: eligibilty,
@@ -3905,7 +3950,7 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
-            const wb = XLSX.readFile(pathFile,readOpts);
+            const wb = XLSX.readFile(pathFile, readOpts);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
             // let contractCount =
@@ -3915,7 +3960,7 @@ exports.markAsPaid = async (req, res) => {
             //             : 0
             //     ) + 1;
 
-            const totalDataComing1 = XLSX.utils.sheet_to_json(ws,jsonOpts);
+            const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
@@ -3937,9 +3982,32 @@ exports.markAsPaid = async (req, res) => {
                 let unique_key1 = "OC-" + "2024-" + unique_key_number1
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                 claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                // let dateCheck = new Date(product.coverageStartDate)
+                // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
+                // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+
                 let dateCheck = new Date(product.coverageStartDate)
-                dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                let adhDays = Number(product.adh ? product.adh : 0)
+                let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
+                let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
+
+                dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
+                // console.log("The minimum date is:",data);
+
+                let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
+                let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                function findMinDate(d1, d2, d3) {
+                    return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
+                }
+
+                // Find the minimum date
+                let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
+
+                console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
+                // let eligibilty = new Date(dateCheck) < new Date() ? true : false
+                console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
+                let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
@@ -3952,8 +4020,8 @@ exports.markAsPaid = async (req, res) => {
                     pName: priceBook[0]?.pName,
                     manufacture: data.brand,
                     model: data.model,
-                    partsWarranty: data.partsWarranty,
-                    labourWarranty: data.labourWarranty,
+                    partsWarranty: partsWarrantyDate,
+                    labourWarranty: labourWarrantyDate,
                     purchaseDate: new Date(data.purchaseDate),
                     status: claimStatus,
                     eligibilty: eligibilty,
