@@ -780,6 +780,10 @@ exports.createOrder1 = async (req, res) => {
 
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
                     let labourWarrantyDate = p_date.setMonth(newLabourMonth)
+
+                    console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
+                    // console.log("datesssssssss",)
+
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
