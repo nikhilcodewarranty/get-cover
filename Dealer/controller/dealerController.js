@@ -2150,9 +2150,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     }
 
-
-
-    let IDs = await supportingFunction.getUserIds()
+   let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
 
     IDs.push(getPrimary._id)

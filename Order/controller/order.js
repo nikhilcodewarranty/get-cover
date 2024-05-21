@@ -702,7 +702,7 @@ exports.createOrder1 = async (req, res) => {
                     defval: '',
                     blankrows: true,
                     raw: false,
-                    dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                    dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -1982,7 +1982,7 @@ exports.editFileCase = async (req, res) => {
                         defval: '',
                         blankrows: true,
                         raw: false,
-                        dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                        dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                     }
                     let product = {
                         key: i,
@@ -3674,7 +3674,7 @@ exports.editOrderDetail = async (req, res) => {
                     defval: '',
                     blankrows: true,
                     raw: false,
-                    dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                    dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -3893,7 +3893,7 @@ exports.markAsPaid = async (req, res) => {
                 defval: '',
                 blankrows: true,
                 raw: false,
-                dateNF: 'd"/"m"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
             }
             let priceBookId = product.priceBookId;
             let orderProductId = product._id;
