@@ -772,16 +772,21 @@ exports.createOrder1 = async (req, res) => {
                     let p_date = new Date(data.purchaseDate)
                     // console.log("The minimum date is:",data);
                     let purchaseMonth = p_date.getMonth();
+                    console.log("purchase date month 1------------",purchaseMonth)
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
+                    console.log("purchase with query 1------------",monthsPart,newPartMonth)
 
+                    console.log("purchase date month 1------------",purchaseMonth)
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
+                    console.log("purchase date month 1------------",newLabourMonth,monthsLabour)
 
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
                     let labourWarrantyDate = p_date.setMonth(newLabourMonth)
 
-                    console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
+                    console.log("check on added month ak ++++++++++++++++++++++++",new Date(partsWarrantyDate),new Date(labourWarrantyDate))
+                    // console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
 
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
