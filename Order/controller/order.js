@@ -770,25 +770,26 @@ exports.createOrder1 = async (req, res) => {
 
                     dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
                     let p_date = new Date(data.purchaseDate)
+                    let l_date = new Date(data.purchaseDate)
                     // console.log("The minimum date is:",data);
                     let purchaseMonth = p_date.getMonth();
-                    console.log("purchase date month 1------------",purchaseMonth)
+                    console.log("purchase date month 1------------", purchaseMonth)
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
-                    console.log("purchase with query 1------------",monthsPart,newPartMonth)
+                    console.log("purchase with query 1------------", monthsPart, newPartMonth)
 
-                    console.log("purchase date month 1------------",purchaseMonth)
+                    console.log("purchase date month 1------------", purchaseMonth)
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
-                    console.log("purchase date month 1------------",monthsLabour,newLabourMonth)
+                    console.log("purchase date month 1------------", monthsLabour, newLabourMonth)
 
-                    console.log("purchase date++++++++++++++++++++------------",p_date)
+                    console.log("purchase date++++++++++++++++++++------------", p_date)
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
-                    console.log("purchase date month =========================------------",p_date)
-                    let labourWarrantyDate = p_date.setMonth(newLabourMonth)
-                    console.log("purchase date month +++++++++++++++++++++++++------------",p_date)
+                    console.log("purchase date month =========================------------", p_date)
+                    let labourWarrantyDate = l_date.setMonth(newLabourMonth)
+                    console.log("purchase date month +++++++++++++++++++++++++------------", p_date)
 
-                    console.log("check on added month ak ++++++++++++++++++++++++",new Date(partsWarrantyDate),new Date(labourWarrantyDate))
+                    console.log("check on added month ak ++++++++++++++++++++++++", new Date(partsWarrantyDate), new Date(labourWarrantyDate))
                     // console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
 
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
@@ -2022,7 +2023,7 @@ exports.editFileCase = async (req, res) => {
                     var jsonOpts = {
                         //header: 1,
                         defval: '',
-                       // blankrows: true,
+                        // blankrows: true,
                         raw: false,
                         dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                     }
@@ -3714,7 +3715,7 @@ exports.editOrderDetail = async (req, res) => {
                 const jsonOpts = {
                     //header: 1,
                     defval: '',
-                  //  blankrows: true,
+                    //  blankrows: true,
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
@@ -3956,7 +3957,7 @@ exports.markAsPaid = async (req, res) => {
             const jsonOpts = {
                 //header: 1,
                 defval: '',
-               // blankrows: true,
+                // blankrows: true,
                 raw: false,
                 dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
             }
