@@ -780,10 +780,13 @@ exports.createOrder1 = async (req, res) => {
                     console.log("purchase date month 1------------",purchaseMonth)
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
-                    console.log("purchase date month 1------------",newLabourMonth,monthsLabour)
+                    console.log("purchase date month 1------------",monthsLabour,newLabourMonth)
 
+                    console.log("purchase date++++++++++++++++++++------------",p_date)
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
+                    console.log("purchase date month =========================------------",p_date)
                     let labourWarrantyDate = p_date.setMonth(newLabourMonth)
+                    console.log("purchase date month +++++++++++++++++++++++++------------",p_date)
 
                     console.log("check on added month ak ++++++++++++++++++++++++",new Date(partsWarrantyDate),new Date(labourWarrantyDate))
                     // console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
