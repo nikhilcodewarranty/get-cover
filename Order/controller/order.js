@@ -1921,7 +1921,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
-                                console.log("dsfsddsfsdfd",obj.purchaseDate);
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
@@ -1932,8 +1931,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     return;
                                 } 
                                 if (new Date(obj.purchaseDate) > new Date()) {
-                                    console.log("newDate-------------------------------",new Date())
-                                    console.log("purchaseDate-------------------------------",new Date(obj.purchaseDate))
+                            
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
@@ -2374,9 +2372,6 @@ exports.editFileCase = async (req, res) => {
                                         return;
                                     }
                                 }
-                                // console.log("dsfsddsfsdfd",obj.purchaseDate);
-                                // console.log("new date",new Date());+
-                                console.log("===================================================",obj,obj.purchaseDate)
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     console.log(obj.purchaseDate);
                                     message.push({
@@ -2555,7 +2550,7 @@ exports.getServicerInOrders = async (req, res) => {
     if (checkReseller && checkReseller.isServicer) {
         //Get the servicer name if reseller as servicer
         const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
-        if (checkServicer.status) {
+        if (checkServicer.status || checkReseller.status) {
             servicer.unshift(checkReseller);
         }
     }
@@ -2563,7 +2558,7 @@ exports.getServicerInOrders = async (req, res) => {
     if (checkDealer && checkDealer.isServicer) {
         //Get the servicer name if dealer as servicer
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-        if (checkServicer.status) {
+        if (checkServicer.status || checkDealer.status) {
             servicer.unshift(checkDealer);
         }
     }
