@@ -366,10 +366,17 @@ exports.createOrder = async (req, res) => {
                             let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                             dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-                            // console.log("The minimum date is:",data);
+                            let p_date = new Date(data.purchaseDate)
+                            let l_date = new Date(data.purchaseDate)
+                            let purchaseMonth = p_date.getMonth();
+                            let monthsPart = partWarrantyMonth;
+                            let newPartMonth = purchaseMonth + monthsPart;
 
-                            let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
-                            let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                            let monthsLabour = labourWarrantyMonth;
+                            let newLabourMonth = purchaseMonth + monthsLabour;
+
+                            let partsWarrantyDate = p_date.setMonth(newPartMonth)
+                            let labourWarrantyDate = l_date.setMonth(newLabourMonth)
                             function findMinDate(d1, d2, d3) {
                                 return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                             }
@@ -763,6 +770,9 @@ exports.createOrder1 = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+
+                    // -------------------------------------------------  copy from -----------------------------------------//
+
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
@@ -771,39 +781,30 @@ exports.createOrder1 = async (req, res) => {
                     dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
                     let p_date = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
-                    // console.log("The minimum date is:",data);
                     let purchaseMonth = p_date.getMonth();
-                    console.log("purchase date month 1------------", purchaseMonth)
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
-                    console.log("purchase with query 1------------", monthsPart, newPartMonth)
 
-                    console.log("purchase date month 1------------", purchaseMonth)
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
-                    console.log("purchase date month 1------------", monthsLabour, newLabourMonth)
 
-                    console.log("purchase date++++++++++++++++++++------------", p_date)
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
-                    console.log("purchase date month =========================------------", p_date)
                     let labourWarrantyDate = l_date.setMonth(newLabourMonth)
-                    console.log("purchase date month +++++++++++++++++++++++++------------", p_date)
 
-                    console.log("check on added month ak ++++++++++++++++++++++++", new Date(partsWarrantyDate), new Date(labourWarrantyDate))
-                    // console.log("llllllllllllllllll:","p_date", p_date,"monthsPart",monthsPart,"newPartMonth",newPartMonth,"monthsLabour",monthsLabour,"newLabourMonth",newLabourMonth);
+                    //---------------------------------------- till here ----------------------------------------------
+
+
+
 
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
-                    console.log("The minimum date is:", data);
 
                     // Find the minimum date
                     let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                    console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                    console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3764,20 +3765,23 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                     claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                    // let dateCheck = new Date(product.coverageStartDate)
-                    // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-                    // console.log("The minimum date is:",data);
+                    let p_date = new Date(data.purchaseDate)
+                    let l_date = new Date(data.purchaseDate)
+                    let purchaseMonth = p_date.getMonth();
+                    let monthsPart = partWarrantyMonth;
+                    let newPartMonth = purchaseMonth + monthsPart;
 
-                    let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
-                    let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                    let monthsLabour = labourWarrantyMonth;
+                    let newLabourMonth = purchaseMonth + monthsLabour;
+
+                    let partsWarrantyDate = p_date.setMonth(newPartMonth)
+                    let labourWarrantyDate = l_date.setMonth(newLabourMonth)
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
@@ -4013,10 +4017,17 @@ exports.markAsPaid = async (req, res) => {
                 let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                 dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-                // console.log("The minimum date is:",data);
+                let p_date = new Date(data.purchaseDate)
+                let l_date = new Date(data.purchaseDate)
+                let purchaseMonth = p_date.getMonth();
+                let monthsPart = partWarrantyMonth;
+                let newPartMonth = purchaseMonth + monthsPart;
 
-                let partsWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + partWarrantyMonth))
-                let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                let monthsLabour = labourWarrantyMonth;
+                let newLabourMonth = purchaseMonth + monthsLabour;
+
+                let partsWarrantyDate = p_date.setMonth(newPartMonth)
+                let labourWarrantyDate = l_date.setMonth(newLabourMonth)
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                 }
