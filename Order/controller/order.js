@@ -2373,7 +2373,8 @@ exports.editFileCase = async (req, res) => {
                                     }
                                 }
                                 // console.log("dsfsddsfsdfd",obj.purchaseDate);
-                                // console.log("new date",new Date());
+                                // console.log("new date",new Date());+
+                                console.log("===================================================",obj,obj.purchaseDate)
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     console.log(obj.purchaseDate);
                                     message.push({
