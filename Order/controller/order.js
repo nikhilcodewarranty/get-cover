@@ -1999,7 +1999,7 @@ exports.editFileCase = async (req, res) => {
                         cellDates: true
                     };
 
-                    const jsonOpts = {
+                    var jsonOpts = {
                         //header: 1,
                         defval: '',
                         blankrows: true,
@@ -3781,8 +3781,8 @@ exports.editOrderDetail = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
-                        partsWarranty: partsWarrantyDate,
-                        labourWarranty: labourWarrantyDate,
+                        partsWarranty: new Date(partsWarrantyDate),
+                        labourWarranty: new Date(labourWarrantyDate),
                         purchaseDate: new Date(data.purchaseDate),
                         status: claimStatus,
                         eligibilty: eligibilty,
