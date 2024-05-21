@@ -726,7 +726,7 @@ exports.createOrder1 = async (req, res) => {
                     defval: '',
                     blankrows: true,
                     raw: false,
-                    dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
+                    dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
