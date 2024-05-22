@@ -2388,18 +2388,21 @@ exports.editFileCase = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj.priceType == 'Flat Pricing' &&
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        key: obj.key,
-                                        message: "Retail price should be between start and end range!",
-                                    });
-
-                                    return;
-                                }
+                                if (obj1.priceType == 'Flat Pricing'){
+                                    if(Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)){
+                                        {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                key: obj.key,
+                                                message: "Retail price should be between start and end range!",
+                                            });
+        
+                                            return;
+                                        }
+                                    }
+                                }                  
+                                   
+                             
                             });
                         }
                         // else if (obj.priceType == "Flat Pricing") {
