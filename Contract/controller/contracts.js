@@ -489,11 +489,11 @@ exports.getContracts = async (req, res) => {
       mainQuery
     })
 
-  } catch (err) { 
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
-    }) 
+    })
   }
 }
 
@@ -779,6 +779,7 @@ exports.cronJobEligible = async (req, res) => {
       },
     ];
     let result = await contractService.getAllContracts2(lookupQuery);
+
     // res.send({
     //   code: constant.successCode,
     //   result
@@ -786,19 +787,52 @@ exports.cronJobEligible = async (req, res) => {
     // return;
     let bulk = [];
     let contractIds = []
+    let contractIdsToBeUpdate = []
+    let contractIdToBeUpdate;
     let updateDoc;
     for (let i = 0; i < result.length; i++) {
+      let product = result[i];
+      let dateCheck = new Date(product.coverageStartDate)
+      let adhDays = Number(product.adh ? product.adh : 0)
+      let partWarrantyMonth = Number(product.partsWarranty ? product.partsWarranty : 0)
+      let labourWarrantyMonth = Number(product.labourWarranty ? product.labourWarranty : 0)
+      dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
+      let p_date = new Date(product.purchaseDate)
+      let l_date = new Date(product.purchaseDate)
+      let purchaseMonth = p_date.getMonth();
+      let monthsPart = partWarrantyMonth;
+      let newPartMonth = purchaseMonth + monthsPart;
+      let monthsLabour = labourWarrantyMonth;
+      let newLabourMonth = purchaseMonth + monthsLabour;
+      let partsWarrantyDate = p_date.setMonth(newPartMonth)
+      let labourWarrantyDate = l_date.setMonth(newLabourMonth)
+      let checkDate = new Date(dateCheck);
+      let partsWarantyCheck = new Date(partsWarrantyDate);
+      let labourWarrantyCheck = new Date(labourWarrantyDate);
+      let minDate = new Date(Math.min(checkDate.getTime(), partsWarantyCheck.getTime(), labourWarrantyCheck.getTime()))
       let contractId = result[i]._id;
-      contractIds.push(contractId)
-      let productValue = result[i].productValue;
-      updateDoc = {
-        'updateMany': {
-          'filter': { '_id': contractId },
-          update: { $set: { eligibilty: true } },
-          'upsert': false
+      //let productValue = result[i].productValue;
+      if (new Date(minDate) < new Date()) {
+        contractIds.push(contractId)
+        updateDoc = {
+          'updateMany': {
+            'filter': { '_id': contractId },
+            update: { $set: { eligibilty: true } },
+            'upsert': false
+          }
         }
+        bulk.push(updateDoc)
       }
-      bulk.push(updateDoc)
+      else {
+        updateDoc = {
+          'updateMany': {
+            'filter': { '_id': contractId },
+            update: { $set: { eligibilty: false } },
+            'upsert': false
+          }
+        }
+        bulk.push(updateDoc)
+      }
     }
     // Update when not any claim right now for active contract
     const firstUpdate = await contractService.allUpdate(bulk);

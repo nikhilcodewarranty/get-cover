@@ -359,7 +359,6 @@ exports.createOrder = async (req, res) => {
                             // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                             // let eligibilty = new Date(dateCheck) < new Date() ? true : false
 
-
                             let dateCheck = new Date(product.coverageStartDate)
                             let adhDays = Number(product.adh ? product.adh : 0)
                             let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
@@ -790,7 +789,6 @@ exports.createOrder1 = async (req, res) => {
 
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
                     let labourWarrantyDate = l_date.setMonth(newLabourMonth)
-
                     //---------------------------------------- till here ----------------------------------------------
 
 
@@ -1846,8 +1844,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
                         if (obj.priceType == "Quantity Pricing") {
-                            console.log("obj.checkNumberProducts==========================", obj.checkNumberProducts)
-                            console.log("obj.data==========================", obj.data)
                             if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
@@ -1939,17 +1935,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj1.priceType == 'Flat Pricing' &&
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        key: obj.key,
-                                        message: "Retail price should be between start and end range!",
-                                    });
+                                if (obj1.priceType == 'Flat Pricing') {
+                                    if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
+                                        {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                key: obj.key,
+                                                message: "Retail price should be between start and end range!",
+                                            });
 
-                                    return;
+                                            return;
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -1983,8 +1980,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         //     }
                         // }
                     });
-
-                    console.log("message-------------", message);
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
@@ -2329,6 +2324,7 @@ exports.editFileCase = async (req, res) => {
 
                     // });
 
+                    console.log("allDataComing----------------------------", allDataComing)
                     let checkRetailValue = allDataComing.map((obj1) => {
                         const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
@@ -2389,18 +2385,21 @@ exports.editFileCase = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj1.priceType == 'Flat Pricing' &&
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        key: obj.key,
-                                        message: "Retail price should be between start and end range!",
-                                    });
+                                if (obj1.priceType == 'Flat Pricing') {
+                                    if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
+                                        {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                key: obj.key,
+                                                message: "Retail price should be between start and end range!",
+                                            });
 
-                                    return;
+                                            return;
+                                        }
+                                    }
                                 }
+
+
                             });
                         }
                         // else if (obj.priceType == "Flat Pricing") {
@@ -5475,6 +5474,9 @@ exports.cronJobStatus = async (req, res) => {
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
 
+        // res.json(ordersResult);
+        // return;
+
         let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
@@ -5482,15 +5484,17 @@ exports.cronJobStatus = async (req, res) => {
                 let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
-                if (product.ExpiredCondition) {
+                let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+                claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                if (claimStatus == 'Expired') {
                     eligibilty = false;
                     status = 'Expired'
                 }
-                if (product.WaitingCondition) {
+                if (claimStatus == 'Waiting') {
                     eligibilty = false;
                     status = 'Waiting'
                 }
-                if (product.ActiveCondition) {
+                if (claimStatus == 'Active') {
                     status = 'Active'
                     eligibilty = true;
                 }
