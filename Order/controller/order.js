@@ -789,7 +789,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
                     let labourWarrantyDate = l_date.setMonth(newLabourMonth)
-                 //---------------------------------------- till here ----------------------------------------------
+                    //---------------------------------------- till here ----------------------------------------------
 
 
 
@@ -1844,8 +1844,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     //Check if csv data length equal to no of products
                     const isValidNumberData = allDataComing.map((obj) => {
                         if (obj.priceType == "Quantity Pricing") {
-                            console.log("obj.checkNumberProducts==========================", obj.checkNumberProducts)
-                            console.log("obj.data==========================", obj.data)
                             if (parseInt(obj.checkNumberProducts) != obj.data.length) {
                                 // Handle case where 'noOfProducts' doesn't match the length of 'data'
                                 message.push({
@@ -1937,17 +1935,18 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj1.priceType == 'Flat Pricing' &&
-                                    Number(obj.retailValue) < Number(obj.rangeStart) ||
-                                    Number(obj.retailValue) > Number(obj.rangeEnd)
-                                ) {
-                                    message.push({
-                                        code: constant.errorCode,
-                                        key: obj.key,
-                                        message: "Retail price should be between start and end range!",
-                                    });
+                                if (obj1.priceType == 'Flat Pricing') {
+                                    if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
+                                        {
+                                            message.push({
+                                                code: constant.errorCode,
+                                                key: obj.key,
+                                                message: "Retail price should be between start and end range!",
+                                            });
 
-                                    return;
+                                            return;
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -1981,8 +1980,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         //     }
                         // }
                     });
-
-                    console.log("message-------------", message);
 
                     if (message.length > 0) {
                         // Handle case where the number of properties in 'data' is not valid
@@ -2327,7 +2324,7 @@ exports.editFileCase = async (req, res) => {
 
                     // });
 
-                    console.log("allDataComing----------------------------",allDataComing)
+                    console.log("allDataComing----------------------------", allDataComing)
                     let checkRetailValue = allDataComing.map((obj1) => {
                         const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
@@ -2388,21 +2385,21 @@ exports.editFileCase = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj1.priceType == 'Flat Pricing'){
-                                    if(Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)){
+                                if (obj1.priceType == 'Flat Pricing') {
+                                    if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
                                         {
                                             message.push({
                                                 code: constant.errorCode,
                                                 key: obj.key,
                                                 message: "Retail price should be between start and end range!",
                                             });
-        
+
                                             return;
                                         }
                                     }
-                                }                  
-                                   
-                             
+                                }
+
+
                             });
                         }
                         // else if (obj.priceType == "Flat Pricing") {
@@ -5489,15 +5486,15 @@ exports.cronJobStatus = async (req, res) => {
                 let orderProductId = product._id
                 let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
                 claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                if (claimStatus=='Expired') {
+                if (claimStatus == 'Expired') {
                     eligibilty = false;
                     status = 'Expired'
                 }
-                if (claimStatus=='Waiting') {
+                if (claimStatus == 'Waiting') {
                     eligibilty = false;
                     status = 'Waiting'
                 }
-                if (claimStatus=='Active') {
+                if (claimStatus == 'Active') {
                     status = 'Active'
                     eligibilty = true;
                 }
