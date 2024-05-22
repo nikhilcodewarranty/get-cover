@@ -2327,6 +2327,7 @@ exports.editFileCase = async (req, res) => {
 
                     // });
 
+                    console.log("allDataComing----------------------------",allDataComing)
                     let checkRetailValue = allDataComing.map((obj1) => {
                         const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
