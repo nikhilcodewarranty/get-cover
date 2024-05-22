@@ -2418,8 +2418,8 @@ exports.editFileCase = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
-
+                                console.log("Object---------------------------",obj)
+                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
@@ -2431,7 +2431,21 @@ exports.editFileCase = async (req, res) => {
 
                                         return;
                                     }
-                                }
+                                } 
+                                // if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
+
+                                //     // check if it is float
+                                //     // alter this condition to check the integer
+                                //     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                //         message.push({
+                                //             code: constant.errorCode,
+                                //             key: obj.key,
+                                //             message: "Parts warranty and labour warranty should be an integer.",
+                                //         });
+
+                                //         return;
+                                //     }
+                                // }
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     console.log(obj.purchaseDate);
                                     message.push({
