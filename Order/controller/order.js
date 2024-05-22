@@ -1979,7 +1979,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                         return;
                                     }
-                              //  }
+                              //  } 
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
