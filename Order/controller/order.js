@@ -1967,8 +1967,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                if (!isNaN(obj.partsWarranty)) {
-
+                                //if (!isNaN(obj.partsWarranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
@@ -1980,7 +1979,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                         return;
                                     }
-                                }
+                              //  }
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
