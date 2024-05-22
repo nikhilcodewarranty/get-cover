@@ -1691,7 +1691,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             //cellText:false, 
                             cellDates: true
                         };
-    
+
                         var jsonOpts = {
                             //header: 1,
                             defval: '',
@@ -1722,7 +1722,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
                             rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]],jsonOpts),
+                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], jsonOpts),
                         });
                         allHeaders.push({
                             key: productsWithFiles[j].products.key,
@@ -1929,9 +1929,9 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         message: 'Invalid Date!'
                                     });
                                     return;
-                                } 
+                                }
                                 if (new Date(obj.purchaseDate) > new Date()) {
-                            
+
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
@@ -2380,7 +2380,7 @@ exports.editFileCase = async (req, res) => {
                                         message: 'Invalid Date!'
                                     });
                                     return;
-                                } 
+                                }
                                 if (new Date(obj.purchaseDate) > new Date()) {
                                     message.push({
                                         code: constant.errorCode,

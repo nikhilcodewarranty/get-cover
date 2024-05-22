@@ -194,7 +194,7 @@ exports.createDealerPriceBook = async (req, res) => {
             await LOG(logData).save()
             res.send({
                 code: constant.successCode,
-                message: "Success", 
+                message: "Success",
                 result: createDealerPrice
             })
         }
@@ -700,27 +700,33 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
         let catIdsArray = getCatIds.map(category => category._id)
         let searchName = req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : ''
+        let searchPName = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
         let query
         // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
 
-        if (data.coverageType == "Breakdown & Accidental") {
+
+
+        if (data.coverageType == "") {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                     { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.coverageType': checkDealer.coverageType },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
                     { 'status': true },
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
                 ]
-            };
+            }
         } else {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                     { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                    { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                     { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'priceBooks.coverageType': checkDealer.coverageType },
+                    { 'priceBooks.coverageType': data.coverageType },
                     { 'status': true },
                     { dealerId: new mongoose.Types.ObjectId(req.userId) }
                 ]
@@ -3738,7 +3744,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let data = req.body;
         //check dealer id to get price book
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice({
-            dealerId:  req.userId,
+            dealerId: req.userId,
             status: true,
         });
         if (!getDealerPriceBook) {
@@ -3776,17 +3782,17 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         //         query = { _id: { $in: dealerPriceIds }, status: true, };
         //     }
         // } else {
-            if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-            }
-            else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+        if (data.term != "" && data.pName == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+        }
+        else if (data.pName != "" && data.term == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-            } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-            } else {
-                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
-            }
+        } else if (data.term != "" && data.pName != "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+        } else {
+            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        }
 
         // }
 
@@ -3872,7 +3878,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12  + " Years",
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
             value: term
         })).sort((a, b) => a.value - b.value)
 
