@@ -3262,7 +3262,7 @@ exports.archiveOrder = async (req, res) => {
         //Save Logs
         let logData = {
             endpoint: "order/archiveOrder",
-            body: data,
+            body: req.body,
             userId: req.userId,
             response: {
                 code: constant.successCode,
