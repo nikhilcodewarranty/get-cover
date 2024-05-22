@@ -359,7 +359,6 @@ exports.createOrder = async (req, res) => {
                             // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
                             // let eligibilty = new Date(dateCheck) < new Date() ? true : false
 
-
                             let dateCheck = new Date(product.coverageStartDate)
                             let adhDays = Number(product.adh ? product.adh : 0)
                             let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
@@ -790,8 +789,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let partsWarrantyDate = p_date.setMonth(newPartMonth)
                     let labourWarrantyDate = l_date.setMonth(newLabourMonth)
-
-                    //---------------------------------------- till here ----------------------------------------------
+                 //---------------------------------------- till here ----------------------------------------------
 
 
 
@@ -2389,7 +2387,7 @@ exports.editFileCase = async (req, res) => {
                                     });
                                     return;
                                 }
-                                if (obj1.priceType == 'Flat Pricing' &&
+                                if (obj.priceType == 'Flat Pricing' &&
                                     Number(obj.retailValue) < Number(obj.rangeStart) ||
                                     Number(obj.retailValue) > Number(obj.rangeEnd)
                                 ) {
@@ -5475,6 +5473,9 @@ exports.cronJobStatus = async (req, res) => {
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
 
+        // res.json(ordersResult);
+        // return;
+
         let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
             for (let j = 0; j < ordersResult[i].productsArray.length; j++) {
@@ -5482,15 +5483,17 @@ exports.cronJobStatus = async (req, res) => {
                 let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
-                if (product.ExpiredCondition) {
+                let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+                claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
+                if (claimStatus=='Expired') {
                     eligibilty = false;
                     status = 'Expired'
                 }
-                if (product.WaitingCondition) {
+                if (claimStatus=='Waiting') {
                     eligibilty = false;
                     status = 'Waiting'
                 }
-                if (product.ActiveCondition) {
+                if (claimStatus=='Active') {
                     status = 'Active'
                     eligibilty = true;
                 }
