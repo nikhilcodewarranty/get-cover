@@ -1967,6 +1967,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
+                                console.log("Object---------------------------",obj)
                                 if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
                                     // check if it is float
                                     // alter this condition to check the integer
