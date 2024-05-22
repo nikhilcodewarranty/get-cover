@@ -1967,7 +1967,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
+                                if (!isNaN(obj.partsWarranty)) {
 
                                     // check if it is float
                                     // alter this condition to check the integer
