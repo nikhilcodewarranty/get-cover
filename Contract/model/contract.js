@@ -34,6 +34,10 @@ const contractSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  minDate: {
+    type: Date,
+    default: null
+  },
   orderProductId: {
     type: mongoose.Schema.Types.ObjectId,
     // required: true,
