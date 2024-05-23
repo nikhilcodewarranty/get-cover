@@ -2430,7 +2430,7 @@ exports.editFileCase = async (req, res) => {
                                         });
 
                                         return;
-                                    }
+                                    } 
                                 } 
                                 // if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
 
