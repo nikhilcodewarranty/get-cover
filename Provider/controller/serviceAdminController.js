@@ -1861,6 +1861,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
+              "contracts.pName": 1,
               "contracts.model": 1,
               "contracts.manufacture": 1,
               "contracts.serial": 1,

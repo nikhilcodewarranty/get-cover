@@ -5259,6 +5259,7 @@ exports.getAllClaims = async (req, res, next) => {
                             "contracts.manufacture": 1,
                             "contracts.serial": 1,
                             "contracts.orders.dealerId": 1,
+                            "contracts.pName": 1,
                             "contracts.orders._id": 1,
                             "contracts.orders.servicerId": 1,
                             "contracts.orders.customerId": 1,

@@ -2823,6 +2823,7 @@ exports.getResellerClaims = async (req, res) => {
                             claimType: 1,
                             totalAmount: 1,
                             servicerId: 1,
+                            pName:1,
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
