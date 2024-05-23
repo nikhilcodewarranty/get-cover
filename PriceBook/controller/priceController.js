@@ -1159,14 +1159,14 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
     let queryFilter
-    // if (data.coverageType == "Breakdown & Accidental") {
-    //   queryFilter = {
-    //     $and: [
-    //       { category: new mongoose.Types.ObjectId(req.params.categoryId) },
-    //       { status: true }
-    //     ]
-    //   }
-    // } else {
+    if (data.coverageType == "Breakdown & Accidental") {
+      queryFilter = {
+        $and: [
+          { category: new mongoose.Types.ObjectId(req.params.categoryId) },
+          { status: true }
+        ]
+      }
+    } else {
     queryFilter = {
       $and: [
         { category: new mongoose.Types.ObjectId(req.params.categoryId) },
@@ -1174,7 +1174,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
         { status: true }
       ]
     };
-    // }
+    }
     //console.log("queryFilter=======================",queryFilter)
     let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)
     // console.log("fetchPriceBooks=======================",fetchPriceBooks)
