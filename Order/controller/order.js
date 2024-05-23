@@ -1605,20 +1605,20 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 console.log("check ak ++++++++++++11111++++++++++++++++",l_warranty)
                                 console.log("check ak +++++++++++++++222222222+++++++++++++",isNaN(p_warranty))
 
-                                // if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
-                                //     console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
-                                //     // check if it is float
-                                //     // alter this condition to check the integer
-                                //     if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
-                                //         message.push({
-                                //             code: constant.errorCode,
-                                //             key: obj.key,
-                                //             message: "Parts warranty and labour warranty should be an integer.",
-                                //         });
+                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
+                                    console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
 
-                                //         return;
-                                //     }
-                                // }
+                                        return;
+                                    }
+                                }
                                 if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
                                     // check if it is float
