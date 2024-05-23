@@ -1619,6 +1619,20 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
+                                if (p_warranty == NaN|| l_warranty == NaN) {
+                                    console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
+
+                                        return;
+                                    }
+                                }
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
