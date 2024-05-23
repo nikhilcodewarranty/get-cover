@@ -783,12 +783,17 @@ exports.createOrder1 = async (req, res) => {
                     let purchaseMonth = p_date.getMonth();
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
+                    console.log("labour check ak _____---------------------------",purchaseMonth,monthsPart,newPartMonth)
 
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
+                    console.log("labour check ak _____---------------------------",purchaseMonth,monthsLabour,newLabourMonth)
 
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
+                    let partsWarrantyDate1 = new Date(p_date.setMonth(newPartMonth))
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
+                    let labourWarrantyDate1 = new Date(l_date.setMonth(newLabourMonth))
+                    console.log(labourWarrantyDate,partsWarrantyDate)
                     //---------------------------------------- till here ----------------------------------------------
 
 
@@ -803,8 +808,8 @@ exports.createOrder1 = async (req, res) => {
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                    if (data.coverageType == "Breakdown") {
-                        if (data.serviceCoverageType == "Labour") {
+                    if (req.body.coverageType == "Breakdown") {
+                        if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -812,7 +817,7 @@ exports.createOrder1 = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (data.serviceCoverageType == "Part") {
+                        } else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
@@ -834,7 +839,7 @@ exports.createOrder1 = async (req, res) => {
                             }
                         }
                     } else {
-                        if (data.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -842,7 +847,7 @@ exports.createOrder1 = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (data.serviceCoverageType == "Part") {
+                        } else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
@@ -870,7 +875,7 @@ exports.createOrder1 = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
-                        minDate:minDate,
+                        minDate: minDate,
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
@@ -879,8 +884,8 @@ exports.createOrder1 = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
-                        partsWarranty: new Date(partsWarrantyDate),
-                        labourWarranty: new Date(labourWarrantyDate),
+                        partsWarranty: new Date(partsWarrantyDate1),
+                        labourWarranty: new Date(labourWarrantyDate1),
                         purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
                         status: claimStatus,
@@ -1836,6 +1841,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
+
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
                                     code: constant.errorCode,
@@ -1967,11 +1973,13 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                console.log("Object---------------------------",obj)
-                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
+                                console.log("Object---------------------------", obj)
+                                let p_warranty = Number(obj.partsWarranty)
+                                let l_warranty = Number(obj.labourWarranty)
+                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
-                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
                                         message.push({
                                             code: constant.errorCode,
                                             key: obj.key,
@@ -1980,7 +1988,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                         return;
                                     }
-                                } 
+                                }
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
@@ -2010,7 +2018,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                             return;
                                         }
-                                    } 
+                                    }
                                 }
                             });
                         }
@@ -2418,8 +2426,8 @@ exports.editFileCase = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                console.log("Object---------------------------",obj)
-                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
+                                console.log("Object---------------------------", obj)
+                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
@@ -2430,8 +2438,8 @@ exports.editFileCase = async (req, res) => {
                                         });
 
                                         return;
-                                    } 
-                                } 
+                                    }
+                                }
                                 // if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
 
                                 //     // check if it is float

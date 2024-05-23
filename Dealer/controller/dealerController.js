@@ -2140,15 +2140,15 @@ exports.updateDealerMeta = async (req, res) => {
     }
 
     //Get customer of the dealers
-    if (!data.userAccount) {
-      //Update isAccount for customer when user account false
-      const updateMeta = await customerService.updateCustomerData({ dealerId: checkDealer._id }, { isAccountCreate: false }, { new: true })
-      let customers = await customerService.getAllCustomers({ dealerId: checkDealer._id }, { isDeleted: false });
-      //Update user for customer when user account false
-      const userIds = customers.map(item => item._id.toString())
-      const updateUserMeta = await userService.updateUser({ accountId: { $in: userIds } }, { status: false }, { new: true })
+    // if (!data.userAccount) {
+    //   //Update isAccount for customer when user account false
+    //   const updateMeta = await customerService.updateCustomerData({ dealerId: checkDealer._id }, { isAccountCreate: false }, { new: true })
+    //   let customers = await customerService.getAllCustomers({ dealerId: checkDealer._id }, { isDeleted: false });
+    //   //Update user for customer when user account false
+    //   const userIds = customers.map(item => item._id.toString())
+    //   const updateUserMeta = await userService.updateUser({ accountId: { $in: userIds } }, { status: false }, { new: true })
 
-    }
+    // }
 
    let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
