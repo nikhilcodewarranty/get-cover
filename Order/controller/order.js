@@ -1619,7 +1619,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 //         return;
                                 //     }
                                 // }
-                                if (p_warranty == "NaN"|| l_warranty == "NaN") {
+                                if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
                                     // check if it is float
                                     // alter this condition to check the integer
