@@ -870,7 +870,7 @@ exports.createOrder1 = async (req, res) => {
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
-                        minDate:minDate,
+                        minDate: minDate,
                         venderOrder: savedResponse.venderOrder,
                         orderProductId: orderProductId,
                         coverageStartDate: coverageStartDate,
@@ -1968,9 +1968,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                console.log("Object---------------------------",obj)
+                                console.log("Object---------------------------", obj)
+                                if (!isNaN(Number(obj.partsWarranty)) || !isNaN(Number(obj.labourWarranty))) {
+                                    // check if it is float
                                     // alter this condition to check the integer
-                                    if (!Number.isInteger(Number(obj.partsWarranty)) || !Number.isInteger(Number(obj.labourWarranty))) {
+                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
                                         message.push({
                                             code: constant.errorCode,
                                             key: obj.key,
@@ -1979,7 +1981,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                         return;
                                     }
-                                } 
+                                }
                                 // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
@@ -2009,7 +2011,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                                             return;
                                         }
-                                    } 
+                                    }
                                 }
                             });
                         }
@@ -2417,8 +2419,8 @@ exports.editFileCase = async (req, res) => {
                                     }
                                 }
                                 // check if the input value is a number
-                                console.log("Object---------------------------",obj)
-                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
+                                console.log("Object---------------------------", obj)
+                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
@@ -2430,7 +2432,7 @@ exports.editFileCase = async (req, res) => {
 
                                         return;
                                     }
-                                } 
+                                }
                                 // if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
 
                                 //     // check if it is float
