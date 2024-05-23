@@ -70,381 +70,7 @@ var uploadP = multer({
 }).single("file");
 
 
-exports.createOrder = async (req, res) => {
-    try {
-        upload(req, res, async (err) => {
-            let data = req.body;
-            // let data = {
-            //     "dealerId": "65ce11c8750ebbaea9330274",
-            //     "servicerId": "",
-            //     "customerId": "65cf188810d67d4db2c352a6",
-            //     "resellerId": "",
-            //     "productsArray": [
-            //         {
-            //             "categoryId": "65cf04494e8b028678173521",
-            //             "priceBookId": "65cf04ba4e8b028678173522",
-            //             "unitPrice": "80.00",
-            //             "noOfProducts": "1",
-            //             "price": 160,
-            //             "file": "",
-            //             "manufacture": "Get-Cover123",
-            //             "model": "Inverter123",
-            //             "serial": "S123GHK",
-            //             "condition": "Breakdown",
-            //             "productValue": 123,
-            //             "regDate": "2024-01-18T00:00:00.000Z",
-            //             "coverageStartDate": "2024-01-30T00:00:00.000Z",
-            //             "coverageEndDate": "2025-01-30T00:00:00.000Z",
-            //             "description": "003",
-            //             "term": 12,
-            //             "priceType": "Quantity Pricing",
-            //             "additionalNotes": "this is test ",
-            //             "QuantityPricing": '[{"name":"test","quantity":100,"_id":"65b123f200c340451867e281","enterQuantity":"7878"}]'
 
-            //         }
-
-            //     ],
-            //     "sendNotification": true,
-            //     "paymentStatus": "Paid",
-            //     "dealerPurchaseOrder": "#136789777",
-            //     "serviceCoverageType": "Parts",
-            //     "coverageType": "Breakdown",
-            //     "orderAmount": 144,
-            //     "paidAmount": 123,
-            //     "dueAmount": 21
-            // }
-
-            //check for super admin
-            if (req.role != "Super Admin") {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Only super admin allow to do this action",
-                });
-                return;
-            }
-            // let hhhhh=data.productsArray[0].QuantityPricing.stringify()
-
-            for (let i = 0; i < data.productsArray.length; i++) {
-                if (data.productsArray[i].QuantityPricing) {
-                    let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing);
-                    let jsonFile = JSON.parse(data.productsArray[i].orderFile);
-                    data.productsArray[i].QuantityPricing = jsonArray;
-                    data.productsArray[i].file = jsonFile;
-                }
-            }
-
-            data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
-            data.venderOrder = data.dealerPurchaseOrder;
-            let projection = { isDeleted: 0 };
-            let checkDealer = await dealerService.getDealerById(
-                data.dealerId,
-                projection
-            );
-            if (!checkDealer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Dealer not found",
-                });
-                return;
-            }
-
-            if (data.servicerId) {
-                let query = {
-                    $or: [
-                        { _id: data.servicerId },
-                        { resellerId: data.servicerId },
-                        { dealerId: data.servicerId },
-                    ],
-                };
-                let checkServicer = await servicerService.getServiceProviderById(query);
-                if (!checkServicer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Servicer not found",
-                    });
-                    return;
-                }
-            }
-            if (data.customerId) {
-                let query = { _id: data.customerId };
-                let checkCustomer = await customerService.getCustomerById(query);
-                if (!checkCustomer) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "Customer not found",
-                    });
-                    return;
-                }
-            }
-            if (data.priceBookId) {
-                let query = { _id: data.priceBookId };
-                let checkPriceBook = await priceBookService.findByName1(query);
-                if (!checkPriceBook) {
-                    res.send({
-                        code: constant.errorCode,
-                        message: "PriceBook not found",
-                    });
-                    return;
-                }
-            }
-
-            data.createdBy = req.userId;
-
-            data.servicerId = data.servicerId != "" ? data.servicerId : null;
-            data.resellerId = data.resellerId != "" ? data.resellerId : null;
-            data.customerId = data.customerId != "" ? data.customerId : null;
-            let contractArrrayData = [];
-
-            let count = await orderService.getOrdersCount();
-
-            data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-            data.unique_key_search = "GC" + "2024" + data.unique_key_number
-            data.unique_key = "GC-" + "2024-" + data.unique_key_number
-            if (data.productsArray.length > 0) {
-                const uploadedFiles = data.productsArray.map((fileData) => {
-
-                    let checkFile = JSON.parse(fileData.orderFile)
-                    const fileName = fileData ? checkFile.filename : "";
-                    const name = fileData ? checkFile.name : "";
-                    const filePath = fileData ? process.env.LOCAL_FILE_PATH + "/" + checkFile.fileName : "";
-                    //const size = fileData ? fileData.size : "";
-
-                    return {
-                        fileName: fileName,
-                        name: name,
-                        filePath: filePath,
-                    };
-                });
-
-                const filteredProducts = data.productsArray.filter(
-                    (product) => product.file !== null
-                );
-                const filteredProducts2 = data.productsArray.filter(
-                    (product) => product.file === null
-                );
-
-                const productsWithOrderFiles = filteredProducts.map(
-                    (product, index) => {
-                        const file = uploadedFiles[index];
-
-                        // Check if 'file' is not null
-                        if (file && file.filePath) {
-                            return {
-                                ...product,
-                                file: file.filePath,
-                                orderFile: {
-                                    fileName: file.fileName,
-                                    name: file.name,
-                                    size: file.size,
-                                },
-                            };
-                        } else {
-                            // If 'file' is null, return the original product without modifications
-                            return {
-                                ...product,
-                                orderFile: {
-                                    fileName: "",
-                                    name: "",
-                                    size: "",
-                                },
-                            };
-                        }
-                    }
-                );
-
-                const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
-                data.productsArray = finalOutput;
-            }
-            let checkVenderOrder = await orderService.getOrder(
-                { venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId },
-                {}
-            );
-            if (checkVenderOrder) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "dealer purchase order is already exist",
-                });
-                return;
-            }
-            data.status = "Pending";
-
-
-            // data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
-            let savedResponse = await orderService.addOrder(data);
-            if (!savedResponse) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "unable to create order",
-                });
-                return;
-            }
-            let fileLength = req.files ? req.files.length : 0;
-            if (
-                fileLength === data.productsArray.length &&
-                data.customerId != null &&
-                data.paymentStatus == "Paid"
-            ) {
-
-
-                let updateOrder = await orderService.updateOrder(
-                    { _id: savedResponse._id },
-                    { canProceed: true },
-                    { new: true }
-                );
-
-                const isValidDate = data.productsArray.every((product) => {
-                    const coverageStartDate =
-                        product.coverageStartDate != ""
-                            ? moment(product.coverageStartDate).format("YYYY-MM-DD")
-                            : product.coverageStartDate;
-                    return moment(coverageStartDate, "YYYY-MM-DD", true).isValid();
-                });
-
-
-
-                if (isValidDate) {
-                    let updateStatus = await orderService.updateOrder(
-                        { _id: savedResponse._id },
-                        { status: "Active" },
-                        { new: true }
-                    );
-
-                    let contractArrrayData = [];
-                    for (let i = 0; i < data.productsArray.length; i++) {
-                        let products = data.productsArray[i];
-                        let priceBookId = products.priceBookId;
-                        let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-                        let projection = { isDeleted: 0 };
-                        let priceBook = await priceBookService.getPriceBookById(
-                            query,
-                            projection
-                        );
-                        const wb = XLSX.readFile(products.file);
-                        const sheets = wb.SheetNames;
-                        const ws = wb.Sheets[sheets[0]];
-
-
-                        // let contractCount =
-                        //     Number(
-                        //         count1.length > 0 && count1[0].unique_key
-                        //             ? count1[0].unique_key
-                        //             : 0
-                        //     ) + 1;
-
-                        const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-
-                        const totalDataComing = totalDataComing1.map((item) => {
-                            const keys = Object.keys(item);
-                            return {
-                                brand: item[keys[0]],
-                                model: item[keys[1]],
-                                serial: item[keys[2]],
-                                condition: item[keys[3]],
-                                retailValue: item[keys[4]],
-                                partsWarranty: item[keys[5]],
-                                labourWarranty: item[keys[6]],
-                                purchaseDate: item[keys[7]],
-                            };
-                        });
-                        // let savedDataOrder = savedResponse.toObject()
-                        const matchedObject = await savedResponse.productsArray.find(product => product.orderFile.fileName == products.orderFile.fileName);
-                        let count1 = await contractService.getContractsCount();
-                        totalDataComing.forEach((data, index) => {
-                            let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
-                            let unique_key_search1 = "OC" + "2024" + unique_key_number1
-                            let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                            let claimStatus = new Date(products.coverageStartDate) < new Date() ? "Active" : "Waiting"
-                            claimStatus = new Date(products.coverageEndDate) < new Date() ? "Expired" : claimStatus
-                            // let dateCheck = new Date(product.coverageStartDate)
-                            // dateCheck.setDate(product.coverageStartDate + product.adh ? product.adh : 0)
-                            // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-
-                            let dateCheck = new Date(product.coverageStartDate)
-                            let adhDays = Number(product.adh ? product.adh : 0)
-                            let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
-                            let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
-
-                            dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-                            let p_date = new Date(data.purchaseDate)
-                            let l_date = new Date(data.purchaseDate)
-                            let purchaseMonth = p_date.getMonth();
-                            let monthsPart = partWarrantyMonth;
-                            let newPartMonth = purchaseMonth + monthsPart;
-
-                            let monthsLabour = labourWarrantyMonth;
-                            let newLabourMonth = purchaseMonth + monthsLabour;
-
-                            let partsWarrantyDate = p_date.setMonth(newPartMonth)
-                            let labourWarrantyDate = l_date.setMonth(newLabourMonth)
-                            function findMinDate(d1, d2, d3) {
-                                return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
-                            }
-
-                            // Find the minimum date
-                            let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-                            console.log("The minimum date is:", new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate), minDate);
-                            // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-                            console.log("minDateAll Dateiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", minDate)
-                            let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
-                            // let eligibilty = claimStatus == "Active" ? true : false
-                            let contractObject = {
-                                orderId: savedResponse._id,
-                                orderUniqueKey: savedResponse.unique_key,
-                                venderOrder: savedResponse.venderOrder,
-                                orderProductId: matchedObject._id,
-                                productName: priceBook[0].name,
-                                manufacture: data.brand,
-                                model: data.model,
-                                partsWarranty: data.partsWarranty,
-                                labourWarranty: data.labourWarranty,
-                                purchaseDate: data.purchaseDate,
-                                serial: data.serial,
-                                status: claimStatus,
-                                eligibilty: eligibilty,
-                                condition: data.condition,
-                                productValue: data.retailValue,
-                                unique_key: unique_key1,
-                                unique_key_number: unique_key_number1,
-                                unique_key_search: unique_key_search1,
-                            };
-                            contractArrrayData.push(contractObject);
-                        });
-
-
-                        console.log("Pushing data==================", contractArrrayData)
-
-                        // let contractObject = {
-                        //     orderId: savedResponse._id,
-                        //     orderProductId: matchedObject._id,
-                        //     productName: priceBook[0].name,
-                        //     manufacture: totalDataComing[0]["brand"],
-                        //     model: totalDataComing[0]["model"],
-                        //     serial: totalDataComing[0]["serial"],
-                        //     condition: totalDataComing[0]["condition"],
-                        //     productValue: totalDataComing[0]["retailValue"],
-                        //     unique_key: contractCount,
-                        // };
-                        // contractArrrayData.push(contractObject);
-                    }
-                    let bulkContracts = await contractService.createBulkContracts(
-                        contractArrrayData
-                    );
-                }
-            }
-            res.send({
-                code: constant.successCode,
-                message: "Success",
-            });
-        });
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message,
-        });
-    }
-};
 
 // Create Order
 exports.createOrder1 = async (req, res) => {
@@ -810,7 +436,7 @@ exports.createOrder1 = async (req, res) => {
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour") {
-                            if (new Date(labourWarrantyDate) < new Date()) {
+                            if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else {
@@ -818,20 +444,20 @@ exports.createOrder1 = async (req, res) => {
                             }
 
                         } else if (req.body.serviceCoverageType == "Parts") {
-                            if (new Date(partsWarrantyDate) < new Date()) {
+                            if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                             }
 
                         } else {
-                            if (new Date(labourWarrantyDate) < new Date() && new Date(partsWarrantyDate) > new Date()) {
+                            if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
-                            } else if (new Date(partsWarrantyDate) < new Date() && new Date(labourWarrantyDate) > new Date()) {
+                            } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
-                            } else if (new Date(partsWarrantyDate) < new Date() && new Date(labourWarrantyDate) < new Date()) {
+                            } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else {
@@ -840,7 +466,7 @@ exports.createOrder1 = async (req, res) => {
                         }
                     } else {
                         if (req.body.serviceCoverageType == "Labour") {
-                            if (new Date(labourWarrantyDate) < new Date()) {
+                            if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else {
@@ -848,20 +474,20 @@ exports.createOrder1 = async (req, res) => {
                             }
 
                         } else if (req.body.serviceCoverageType == "Parts") {
-                            if (new Date(partsWarrantyDate) < new Date()) {
+                            if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                             }
 
                         } else {
-                            if (new Date(labourWarrantyDate) < new Date() && new Date(partsWarrantyDate) > new Date()) {
+                            if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
-                            } else if (new Date(partsWarrantyDate) < new Date() && new Date(labourWarrantyDate) > new Date()) {
+                            } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
-                            } else if (new Date(partsWarrantyDate) < new Date() && new Date(labourWarrantyDate) < new Date()) {
+                            } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else {
