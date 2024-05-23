@@ -393,7 +393,7 @@ exports.createOrder1 = async (req, res) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
-                    let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Active" : "Waiting"
+                    let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ?  "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
                     // -------------------------------------------------  copy from -----------------------------------------//
