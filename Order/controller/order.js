@@ -4070,10 +4070,10 @@ exports.getDashboardData = async (req, res) => {
                 // }
             })
             return;
-        }
+        } 
         const claimData = {
             numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0]?.totalAmount
+            valueClaim: valueClaim[0]?.totalAmount 
         }
         // res.send({
         //     code: constant.successCode,
