@@ -790,7 +790,9 @@ exports.createOrder1 = async (req, res) => {
                     console.log("labour check ak _____---------------------------",purchaseMonth,monthsLabour,newLabourMonth)
 
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
+                    let partsWarrantyDate1 = new Date(p_date.setMonth(newPartMonth))
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
+                    let labourWarrantyDate1 = new Date(l_date.setMonth(newLabourMonth))
                     console.log(labourWarrantyDate,partsWarrantyDate)
                     //---------------------------------------- till here ----------------------------------------------
 
@@ -882,8 +884,8 @@ exports.createOrder1 = async (req, res) => {
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
                         model: data.model,
-                        partsWarranty: new Date(partsWarrantyDate),
-                        labourWarranty: new Date(labourWarrantyDate),
+                        partsWarranty: new Date(partsWarrantyDate1),
+                        labourWarranty: new Date(labourWarrantyDate1),
                         purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
                         status: claimStatus,
