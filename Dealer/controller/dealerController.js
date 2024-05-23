@@ -1877,7 +1877,7 @@ exports.createDealerPriceBook = async (req, res) => {
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
     if (checkPriceBook) {
       res.send({
-        code: constant.errorCode,
+        code: constant.errorCode, 
         message: "Dealer price book already created with this product sku"
       })
       return;
