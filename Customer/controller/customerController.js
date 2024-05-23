@@ -1807,6 +1807,7 @@ exports.customerClaims = async (req, res) => {
               "contracts.model": 1,
               "contracts.manufacture": 1,
               "contracts.serial": 1,
+              "contracts.pName": 1,
               "contracts.orders.dealerId": 1,
               "contracts.orders._id": 1,
               "contracts.orders.servicerId": 1,
