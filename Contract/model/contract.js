@@ -23,12 +23,12 @@ const contractSchema = new mongoose.Schema({
     // required: true,
   },
   partsWarranty: {
-    type: Number,
-    default: 0
+    type: Date,
+    default: null
   },
   labourWarranty: {
-    type: Number,
-    default: 0
+    type: Date,
+    default: null
   },
   purchaseDate: {
     type: Date,
