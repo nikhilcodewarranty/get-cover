@@ -1836,7 +1836,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             let labourWarranty = fileData.labourWarranty.toString().replace(/\s+/g, ' ').trim()
                             let purchaseDate = fileData.purchaseDate.toString().replace(/\s+/g, ' ').trim()
                             let model = fileData.model.toString().replace(/\s+/g, ' ').trim()
-                            
+
                             if (brand == '' || serial == '' || condition == '' || retailValue == '' || model == '' || partsWarranty == '' || labourWarranty == '' || purchaseDate == "") {
                                 message.push({
                                     code: constant.errorCode,
@@ -1969,10 +1969,8 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                                 // check if the input value is a number
                                 console.log("Object---------------------------",obj)
-                                if (!isNaN(obj.partsWarranty) || !isNaN(obj.labourWarranty) ) {
-                                    // check if it is float
                                     // alter this condition to check the integer
-                                    if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
+                                    if (!Number.isInteger(Number(obj.partsWarranty)) || !Number.isInteger(Number(obj.labourWarranty))) {
                                         message.push({
                                             code: constant.errorCode,
                                             key: obj.key,
