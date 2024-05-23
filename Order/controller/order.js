@@ -409,37 +409,31 @@ exports.createOrder1 = async (req, res) => {
                     let purchaseMonth = p_date.getMonth();
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
-                    console.log("labour check ak _____---------------------------",purchaseMonth,monthsPart,newPartMonth)
+                    console.log("labour check ak _____---------------------------", purchaseMonth, monthsPart, newPartMonth)
 
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
-                    console.log("labour check ak _____---------------------------",purchaseMonth,monthsLabour,newLabourMonth)
+                    console.log("labour check ak _____---------------------------", purchaseMonth, monthsLabour, newLabourMonth)
 
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
                     let partsWarrantyDate1 = new Date(p_date.setMonth(newPartMonth))
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date.setMonth(newLabourMonth))
-                    console.log(labourWarrantyDate,partsWarrantyDate)
+                    console.log(labourWarrantyDate, partsWarrantyDate)
                     //---------------------------------------- till here ----------------------------------------------
-
-
-
-
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
-
                     // Find the minimum date
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            } else {
+                            }
+                            else {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
@@ -493,7 +487,7 @@ exports.createOrder1 = async (req, res) => {
                             } else {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             }
-                        }
+                        } 
                     }
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
