@@ -1602,10 +1602,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 console.log("Object---------------------------", obj)
                                 let p_warranty = Number(obj.partsWarranty)
                                 let l_warranty = Number(obj.labourWarranty)
-                                console.log("check ak ++++++++++++++++++++++++++++",l_warranty)
+                                console.log("check ak ++++++++++++11111++++++++++++++++",l_warranty)
+                                console.log("check ak +++++++++++++++222222222+++++++++++++",isNaN(p_warranty))
 
                                 if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
-                                    console.log("check ak ++++++++++++++++++++++++++++",isNaN(p_warranty))
+                                    console.log("check ak ++++++++++++++++++233333++++++++++",isNaN(p_warranty))
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
