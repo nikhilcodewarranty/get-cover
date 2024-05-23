@@ -803,8 +803,8 @@ exports.createOrder1 = async (req, res) => {
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                    if (data.coverageType == "Breakdown") {
-                        if (data.serviceCoverageType == "Labour") {
+                    if (req.body.coverageType == "Breakdown") {
+                        if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -812,7 +812,7 @@ exports.createOrder1 = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (data.serviceCoverageType == "Part") {
+                        } else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
@@ -834,7 +834,7 @@ exports.createOrder1 = async (req, res) => {
                             }
                         }
                     } else {
-                        if (data.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -842,7 +842,7 @@ exports.createOrder1 = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (data.serviceCoverageType == "Part") {
+                        } else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate) < new Date()) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
