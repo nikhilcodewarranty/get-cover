@@ -3966,6 +3966,7 @@ exports.getDealerClaims = async (req, res) => {
               note: 1,
               claimType: 1,
               totalAmount: 1,
+              pName:1,
               servicerId: 1,
               customerStatus: 1,
               trackingNumber: 1,

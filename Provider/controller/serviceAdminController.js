@@ -1850,6 +1850,7 @@ exports.paidUnpaidClaim = async (req, res) => {
               "unique_key": 1,
               note: 1,
               totalAmount: 1,
+              pName:1,
               servicerId: 1,
               customerStatus: 1,
               repairParts: 1,
