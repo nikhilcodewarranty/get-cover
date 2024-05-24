@@ -3839,6 +3839,7 @@ exports.getDealerContract = async (req, res) => {
                 model: 1,
                 serial: 1,
                 unique_key: 1,
+                minDate:1,
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,

@@ -3108,6 +3108,7 @@ exports.getAllContracts = async (req, res) => {
                                 productName: 1,
                                 model: 1,
                                 serial: 1,
+                                minDate:1,
                                 unique_key: 1,
                                 status: 1,
                                 manufacture: 1,
