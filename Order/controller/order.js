@@ -4279,6 +4279,8 @@ exports.getOrderContract = async (req, res) => {
                                 status: 1,
                                 minDate:1,
                                 manufacture: 1,
+                                serviceCoverageType:1,
+                                coverageType:1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,

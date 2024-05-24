@@ -3855,12 +3855,8 @@ exports.editOrderDetail = async (req, res) => {
                     let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth)) 
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
-                    //---------------------------------------- till here ----------------------------------------------
-
-
-
-
-                    // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                     //---------------------------------------- till here ----------------------------------------------
+                    //let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
