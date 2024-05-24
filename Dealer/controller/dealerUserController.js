@@ -3175,32 +3175,32 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
         let query;
-        if (checkDealer.coverageType == "Breakdown & Accidental") {
+        // if (checkDealer.coverageType == "Breakdown & Accidental") {
+        //     if (data.term != "" && data.pName == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+        //     }
+        //     else if (data.pName != "" && data.term == "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+
+        //     } else if (data.term != "" && data.pName != "") {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+        //     } else {
+        //         query = { _id: { $in: dealerPriceIds }, status: true, };
+        //     }
+        // } else {
             if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, coverageType: data.coverageType, term: data.term };
             }
             else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
+                query = { _id: { $in: dealerPriceIds }, status: true, coverageType: data.coverageType, pName: data.pName };
 
             } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
+                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: data.coverageType, term: data.term };
             } else {
-                query = { _id: { $in: dealerPriceIds }, status: true, };
-            }
-        } else {
-            if (data.term != "" && data.pName == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, coverageType: checkDealer.coverageType, term: data.term };
-            }
-            else if (data.pName != "" && data.term == "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, coverageType: checkDealer.coverageType, pName: data.pName };
-
-            } else if (data.term != "" && data.pName != "") {
-                query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: checkDealer.coverageType, term: data.term };
-            } else {
-                query = { _id: { $in: dealerPriceIds }, coverageType: checkDealer.coverageType, status: true, };
+                query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
             }
 
-        }
+        // }
 
         console.log(query)
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
