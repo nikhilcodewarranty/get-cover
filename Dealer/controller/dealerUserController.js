@@ -3853,7 +3853,7 @@ exports.editOrderDetail = async (req, res) => {
 
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
                     let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
-                    let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
+                    let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth)) 
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
 
@@ -3878,7 +3878,8 @@ exports.editOrderDetail = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (req.body.serviceCoverageType == "Parts") {
+                        } 
+                        else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
