@@ -64,8 +64,8 @@ const orderSchema = new mongoose.Schema({
           default: ''
         },
         adh:{
-          type:Number,
-          default:0
+          type:String,
+          default:''
         },
         term: {
           type: Number,
