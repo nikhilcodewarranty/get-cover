@@ -714,7 +714,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 
 
         if (data.coverageType == "") {
-            if (checkDealer.coverageTpe == "Breakdown & Accidental") {
+            if (checkDealer.coverageType == "Breakdown & Accidental") {
                 query = {
                     $and: [
                         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
