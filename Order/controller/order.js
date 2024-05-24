@@ -133,6 +133,7 @@ exports.createOrder1 = async (req, res) => {
         //     "paymentStatus": "Paid",
         //     "orderAmount": 700
         // }
+        
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
@@ -4224,6 +4225,7 @@ exports.getOrderContract = async (req, res) => {
                                     serial: 1,
                                     unique_key: 1,
                                     status: 1,
+                                    minDate:1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
