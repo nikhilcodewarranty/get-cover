@@ -316,7 +316,7 @@ exports.getPriceBooks = async (req, res) => {
             query = { isDeleted: false, status: true, coverageType: checkDealer[0]?.coverageType, dealerId: new mongoose.Types.ObjectId(req.userId) }
 
         }
-        console.log('skldjflksjdf',query, checkDealer)
+        console.log('skldjflksjdf', query, checkDealer)
         let lookupQuery
         if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
             lookupQuery = [
@@ -714,17 +714,32 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
 
 
         if (data.coverageType == "") {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
-                    { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-                    { 'priceBooks.coverageType': checkDealer.coverageType },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    { dealerId: new mongoose.Types.ObjectId(req.userId) }
-                ]
+            if (checkDealer.coverageTpe == "Breakdown & Accidental") {
+                query = {
+                    $and: [
+                        { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                        { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
+                        { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                        // { 'priceBooks.coverageType': checkDealer.coverageType },
+                        { 'priceBooks.category._id': { $in: catIdsArray } },
+                        { 'status': true },
+                        { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                    ]
+                }
+            } else {
+                query = {
+                    $and: [
+                        { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                        { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
+                        { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
+                        { 'priceBooks.coverageType': checkDealer.coverageType },
+                        { 'priceBooks.category._id': { $in: catIdsArray } },
+                        { 'status': true },
+                        { dealerId: new mongoose.Types.ObjectId(req.userId) }
+                    ]
+                }
             }
+
         } else {
             query = {
                 $and: [
