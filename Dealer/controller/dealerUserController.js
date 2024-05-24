@@ -3947,6 +3947,8 @@ exports.editOrderDetail = async (req, res) => {
                         // partsWarranty: data.partsWarranty1,
                         partsWarranty: partsWarrantyDate1,
                         labourWarranty: labourWarrantyDate1,
+                        serviceCoverageType:req.body.serviceCoverageType,
+                        coverageType:req.body.coverageType,
                         serial: data.serial,
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,

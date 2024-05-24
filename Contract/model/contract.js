@@ -22,6 +22,14 @@ const contractSchema = new mongoose.Schema({
     default: ''
     // required: true,
   },
+  serviceCoverageType: {
+    type: String,
+    default: ''
+  },
+  coverageType: {
+    type: String,
+    default: ''
+  },
   partsWarranty: {
     type: Date,
     default: null
