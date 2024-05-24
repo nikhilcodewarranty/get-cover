@@ -420,25 +420,19 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-
-
-
-
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
-
                     // Find the minimum date
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            } else {
+                            }
+                            else {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
@@ -492,7 +486,7 @@ exports.createOrder1 = async (req, res) => {
                             } else {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             }
-                        }
+                        } 
                     }
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
@@ -1601,19 +1595,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 let p_warranty = Number(obj.partsWarranty)
                                 let l_warranty = Number(obj.labourWarranty)
 
-                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
-                                    // check if it is float
-                                    // alter this condition to check the integer
-                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
-                                        message.push({
-                                            code: constant.errorCode,
-                                            key: obj.key,
-                                            message: "Parts warranty and labour warranty should be an integer.",
-                                        });
+                                // if (isNaN(p_warranty) || isNaN(l_warranty)) {
+                                //     // check if it is float
+                                //     // alter this condition to check the integer
+                                //     if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
+                                //         message.push({
+                                //             code: constant.errorCode,
+                                //             key: obj.key,
+                                //             message: "Parts warranty and labour warranty should be an integer.",
+                                //         });
 
-                                        return;
-                                    }
-                                }
+                                //         return;
+                                //     }
+                                // }
                                 if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
@@ -2066,7 +2060,7 @@ exports.editFileCase = async (req, res) => {
                                 // check if the input value is a number
                                 let p_warranty = Number(obj.partsWarranty)
                                 let l_warranty = Number(obj.labourWarranty)
-                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
+                                if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
                                     if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
@@ -4076,10 +4070,10 @@ exports.getDashboardData = async (req, res) => {
                 // }
             })
             return;
-        }
+        } 
         const claimData = {
             numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0]?.totalAmount
+            valueClaim: valueClaim[0]?.totalAmount 
         }
         // res.send({
         //     code: constant.successCode,
