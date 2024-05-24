@@ -5345,7 +5345,7 @@ exports.cronJobStatus = async (req, res) => {
                 let eligibilty;
                 let product = ordersResult[i].productsArray[j];
                 let orderProductId = product._id
-                let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
+                let claimStatus = new Date(product.coverageStartDate) > new Date() ? "Waiting" : "Active"
                 claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
                 if (claimStatus == 'Expired') {
                     eligibilty = false;
