@@ -657,6 +657,22 @@ exports.changePrimaryUser = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // }
 
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(getPrimary.email);
+      // const notificationContent = {
+      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+      // }    
+      let emailData = {
+        dealerName: checkUser.firstName,
+        c1: "The Primary User",
+        c2: checkUser.firstName,
+        c3: "has been updated successfully!.",
+        c4: "",
+        c5: "",
+        role: "Servicer"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Primary User", emailData))
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
@@ -980,7 +996,7 @@ exports.getCustomerUsers = async (req, res) => {
       return;
     };
 
-   let checkDealer =  await dealerService.getDealerById(checkCustomer.dealerId,{})
+    let checkDealer = await dealerService.getDealerById(checkCustomer.dealerId, {})
 
 
     res.send({
@@ -989,7 +1005,7 @@ exports.getCustomerUsers = async (req, res) => {
       result: filteredData,
       customerStatus: checkCustomer.status,
       isAccountCreate: checkCustomer.isAccountCreate,
-      userAccount:checkDealer.userAccount
+      userAccount: checkDealer.userAccount
 
     })
   } catch (err) {
