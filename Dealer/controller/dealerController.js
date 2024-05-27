@@ -2182,6 +2182,7 @@ exports.updateDealerMeta = async (req, res) => {
       role: "Servicer"
     }
 
+    
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs update dealer
     let logData = {
