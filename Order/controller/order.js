@@ -428,7 +428,7 @@ exports.createOrder1 = async (req, res) => {
                     // Find the minimum date
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                    if (req.body.coverageType == "Breakdown") {
+                    if (req.body.coverageType != "Accidental") {
                         if (req.body.serviceCoverageType == "Labour") {
                             if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));

@@ -310,12 +310,14 @@ exports.getPriceBooks = async (req, res) => {
 
         }
         let query
-        if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-            query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-        } else {
-            query = { isDeleted: false, status: true, coverageType: checkDealer[0]?.coverageType, dealerId: new mongoose.Types.ObjectId(req.userId) }
+        // if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
+        //     query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
+        // } else {
+        //     query = { isDeleted: false, status: true, coverageType: checkDealer[0]?.coverageType, dealerId: new mongoose.Types.ObjectId(req.userId) }
 
-        }
+        // }
+        query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
+
         console.log('skldjflksjdf', query, checkDealer)
         let lookupQuery
         if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
