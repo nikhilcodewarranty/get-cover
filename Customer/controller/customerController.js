@@ -659,7 +659,9 @@ exports.changePrimaryUser = async (req, res) => {
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(getPrimary.email);
+      notificationEmails.push(updateLastPrimary.email);
+      notificationEmails.push(updatePrimary.email);
+      
       // const notificationContent = {
       //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
       // }    
