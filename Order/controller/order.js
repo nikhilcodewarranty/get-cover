@@ -133,6 +133,7 @@ exports.createOrder1 = async (req, res) => {
         //     "paymentStatus": "Paid",
         //     "orderAmount": 700
         // }
+        
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
@@ -504,6 +505,8 @@ exports.createOrder1 = async (req, res) => {
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
+                        serviceCoverageType:req.body.serviceCoverageType,
+                        coverageType:req.body.coverageType,
                         labourWarranty: new Date(labourWarrantyDate1),
                         purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
@@ -3606,6 +3609,8 @@ exports.editOrderDetail = async (req, res) => {
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
+                        serviceCoverageType:req.body.serviceCoverageType,
+                        coverageType:req.body.coverageType,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
                         labourWarranty: new Date(labourWarrantyDate1),
@@ -3917,6 +3922,8 @@ exports.markAsPaid = async (req, res) => {
                     orderProductId: orderProductId,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
+                    serviceCoverageType:req.body.serviceCoverageType,
+                    coverageType:req.body.coverageType,
                     productName: priceBook[0]?.name,
                     pName: priceBook[0]?.pName,
                     manufacture: data.brand,
@@ -4224,6 +4231,7 @@ exports.getOrderContract = async (req, res) => {
                                     serial: 1,
                                     unique_key: 1,
                                     status: 1,
+                                    minDate:1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -4269,7 +4277,10 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
+                                minDate:1,
                                 manufacture: 1,
+                                serviceCoverageType:1,
+                                coverageType:1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,

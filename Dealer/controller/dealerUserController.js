@@ -3065,6 +3065,7 @@ exports.getAllContracts = async (req, res) => {
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
+                                    minDate:1,
                                     status: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
@@ -3109,6 +3110,7 @@ exports.getAllContracts = async (req, res) => {
                                 productName: 1,
                                 model: 1,
                                 serial: 1,
+                                minDate:1,
                                 unique_key: 1,
                                 status: 1,
                                 manufacture: 1,
@@ -3853,14 +3855,10 @@ exports.editOrderDetail = async (req, res) => {
 
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
                     let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
-                    let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
+                    let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth)) 
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
-                    //---------------------------------------- till here ----------------------------------------------
-
-
-
-
-                    // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
+                     //---------------------------------------- till here ----------------------------------------------
+                    //let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
@@ -3878,7 +3876,8 @@ exports.editOrderDetail = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
-                        } else if (req.body.serviceCoverageType == "Parts") {
+                        } 
+                        else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
@@ -3947,6 +3946,8 @@ exports.editOrderDetail = async (req, res) => {
                         // partsWarranty: data.partsWarranty1,
                         partsWarranty: partsWarrantyDate1,
                         labourWarranty: labourWarrantyDate1,
+                        serviceCoverageType:req.body.serviceCoverageType,
+                        coverageType:req.body.coverageType,
                         serial: data.serial,
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,

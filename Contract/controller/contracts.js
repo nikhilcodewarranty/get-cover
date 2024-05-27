@@ -157,6 +157,7 @@ exports.getAllContracts = async (req, res) => {
               serial: 1,
               unique_key: 1,
               status: 1,
+              minDate:1,
               manufacture: 1,
               eligibilty: 1,
               order: {
@@ -194,6 +195,7 @@ exports.getAllContracts = async (req, res) => {
                 serial: 1,
                 unique_key: 1,
                 status: 1,
+                minDate:1,
                 manufacture: 1,
                 eligibilty: 1,
                 order_unique_key: { $arrayElemAt: ["$order.unique_key", 0] },
@@ -461,6 +463,7 @@ exports.getContracts = async (req, res) => {
                 productName: 1,
                 model: 1,
                 serial: 1,
+                minDate:1,
                 unique_key: 1,
                 status: 1,
                 manufacture: 1,

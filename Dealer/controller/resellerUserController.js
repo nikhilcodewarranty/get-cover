@@ -2571,6 +2571,7 @@ exports.getResellerContract = async (req, res) => {
                                 $project: {
                                     productName: 1,
                                     model: 1,
+                                    minDate:1,
                                     serial: 1,
                                     unique_key: 1,
                                     status: 1,
@@ -2620,6 +2621,7 @@ exports.getResellerContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
+                                minDate:1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
