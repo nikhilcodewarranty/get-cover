@@ -1598,19 +1598,19 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 let p_warranty = Number(obj.partsWarranty)
                                 let l_warranty = Number(obj.labourWarranty)
 
-                                // if (isNaN(p_warranty) || isNaN(l_warranty)) {
-                                //     // check if it is float
-                                //     // alter this condition to check the integer
-                                //     if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
-                                //         message.push({
-                                //             code: constant.errorCode,
-                                //             key: obj.key,
-                                //             message: "Parts warranty and labour warranty should be an integer.",
-                                //         });
+                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
 
-                                //         return;
-                                //     }
-                                // }
+                                        return;
+                                    }
+                                }
                                 if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
@@ -2063,6 +2063,19 @@ exports.editFileCase = async (req, res) => {
                                 // check if the input value is a number
                                 let p_warranty = Number(obj.partsWarranty)
                                 let l_warranty = Number(obj.labourWarranty)
+                                if (!isNaN(p_warranty) || !isNaN(l_warranty)) {
+                                    // check if it is float
+                                    // alter this condition to check the integer
+                                    if (!Number.isInteger(p_warranty) || !Number.isInteger(l_warranty)) {
+                                        message.push({
+                                            code: constant.errorCode,
+                                            key: obj.key,
+                                            message: "Parts warranty and labour warranty should be an integer.",
+                                        });
+
+                                        return;
+                                    }
+                                }
                                 if (isNaN(p_warranty) || isNaN(l_warranty)) {
                                     // check if it is float
                                     // alter this condition to check the integer
