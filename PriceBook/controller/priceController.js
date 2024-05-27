@@ -553,7 +553,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
+    let notificationEmails = await supportingFunction.getUserEmails();    
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
