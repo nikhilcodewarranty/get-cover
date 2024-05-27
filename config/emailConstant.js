@@ -40,7 +40,7 @@ module.exports = {
       //   // Set the subject for the email
       //   subject: 'CSV link',
       // },
-    };
+    }; 
   },
   dealerWelcomeMessage: (toEmail,data) => {
     return {
