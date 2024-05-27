@@ -133,7 +133,7 @@ exports.createOrder1 = async (req, res) => {
         //     "paymentStatus": "Paid",
         //     "orderAmount": 700
         // }
-        
+
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
@@ -434,28 +434,28 @@ exports.createOrder1 = async (req, res) => {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             }
                             else {
-                                minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
+                                minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             }
 
                         } else if (req.body.serviceCoverageType == "Parts") {
                             if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             } else {
-                                minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
+                                minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                             }
  
                         } else {
                             if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                                minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
+                                minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                                minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
+                                minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
                             } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
                             } else {
-                                minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
+                                minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             }
                         }
                     } else {
@@ -487,7 +487,7 @@ exports.createOrder1 = async (req, res) => {
                             } else {
                                 minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             }
-                        } 
+                        }
                     }
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
@@ -505,8 +505,8 @@ exports.createOrder1 = async (req, res) => {
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
-                        serviceCoverageType:req.body.serviceCoverageType,
-                        coverageType:req.body.coverageType,
+                        serviceCoverageType: req.body.serviceCoverageType,
+                        coverageType: req.body.coverageType,
                         labourWarranty: new Date(labourWarrantyDate1),
                         purchaseDate: new Date(data.purchaseDate),
                         serial: data.serial,
@@ -3622,8 +3622,8 @@ exports.editOrderDetail = async (req, res) => {
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
-                        serviceCoverageType:req.body.serviceCoverageType,
-                        coverageType:req.body.coverageType,
+                        serviceCoverageType: req.body.serviceCoverageType,
+                        coverageType: req.body.coverageType,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
                         labourWarranty: new Date(labourWarrantyDate1),
@@ -3935,8 +3935,8 @@ exports.markAsPaid = async (req, res) => {
                     orderProductId: orderProductId,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
-                    serviceCoverageType:req.body.serviceCoverageType,
-                    coverageType:req.body.coverageType,
+                    serviceCoverageType: req.body.serviceCoverageType,
+                    coverageType: req.body.coverageType,
                     productName: priceBook[0]?.name,
                     pName: priceBook[0]?.pName,
                     manufacture: data.brand,
@@ -4090,10 +4090,10 @@ exports.getDashboardData = async (req, res) => {
                 // }
             })
             return;
-        } 
+        }
         const claimData = {
             numberOfClaims: numberOfClaims.length,
-            valueClaim: valueClaim[0]?.totalAmount 
+            valueClaim: valueClaim[0]?.totalAmount
         }
         // res.send({
         //     code: constant.successCode,
@@ -4244,7 +4244,7 @@ exports.getOrderContract = async (req, res) => {
                                     serial: 1,
                                     unique_key: 1,
                                     status: 1,
-                                    minDate:1,
+                                    minDate: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -4290,10 +4290,10 @@ exports.getOrderContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                minDate:1,
+                                minDate: 1,
                                 manufacture: 1,
-                                serviceCoverageType:1,
-                                coverageType:1,
+                                serviceCoverageType: 1,
+                                coverageType: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
                                 venderOrder: 1,
