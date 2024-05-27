@@ -1046,7 +1046,7 @@ exports.updatePriceBookCat = async (req, res) => {
       c5: "",
       role: "Servicer"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Category", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Category", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
