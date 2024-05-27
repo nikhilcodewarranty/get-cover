@@ -255,6 +255,22 @@ exports.createPriceBook = async (req, res, next) => {
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData);
+
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      // const notificationContent = {
+      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+      // }    
+      let emailData = {
+        dealerName: data.name,
+        c1: "PriceBook",
+        c2: data.name,
+        c3: "has been created successfully!.",
+        c4: "",
+        c5: "",
+        role: "PriceBook"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -535,6 +551,22 @@ exports.updatePriceBookById = async (req, res, next) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: existingPriceBook.name,
+      c1: "PriceBook",
+      c2: existingPriceBook.name,
+      c3: "has been updated successfully!.",
+      c4: "",
+      c5: "",
+      role: "PriceBook"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update PriceBook", emailData))
 
     let logData = {
       userId: req.teammateId,
