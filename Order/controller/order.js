@@ -2284,7 +2284,7 @@ exports.getServicerInOrders = async (req, res) => {
     if (checkReseller && checkReseller.isServicer) {
         //Get the servicer name if reseller as servicer
         const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
-        if (checkServicer.status || checkReseller.status) {
+        if (checkReseller.status) {
             servicer.unshift(checkReseller);
         }
     }
@@ -2292,7 +2292,7 @@ exports.getServicerInOrders = async (req, res) => {
     if (checkDealer && checkDealer.isServicer) {
         //Get the servicer name if dealer as servicer
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
-        if (checkServicer.status || checkDealer.status) {
+        if (checkDealer.status) {
             servicer.unshift(checkDealer);
         }
     }

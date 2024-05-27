@@ -938,7 +938,24 @@ exports.statusUpdate = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+    // Send Email code here
+    // let notificationEmails = await supportingFunction.getUserEmails();
+    // let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
+    // notificationEmails.push(dealerPrimary.email)
 
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    // let emailData = {
+    //   dealerName: checkPriceBookMain.name,
+    //   c1: "Dealer Price Book",
+    //   c2: checkPriceBookMain.priceBook,
+    //   c3: "has been created successfully for the dealer!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "PriceBook"
+    // }
+    // let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1117,11 +1134,11 @@ exports.changeDealerStatus = async (req, res) => {
       // }
       let emailData = {
         dealerName: singleDealer.name,
-        c1:"The Dealer",
-        c2:singleDealer.name,
-        c3:"status has been updated successfully!.",
-        c4:"",
-        c5:"",
+        c1: "The Dealer",
+        c2: singleDealer.name,
+        c3: "status has been updated successfully!.",
+        c4: "",
+        c5: "",
         role: "Servicer"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
@@ -1919,7 +1936,7 @@ exports.createDealerPriceBook = async (req, res) => {
 
       let notificationData = {
         title: "New dealer price book created",
-        description: checkDealer.name + " , " + "new price book has been created",
+        description: data.priceBook + " , " + "new price book has been created",
         userId: checkDealer._id,
         flag: 'dealer',
         contentId: createDealerPrice._id,
@@ -1927,6 +1944,25 @@ exports.createDealerPriceBook = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData);
+
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+      notificationEmails.push(dealerPrimary.email)
+
+      // const notificationContent = {
+      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+      // }    
+      let emailData = {
+        dealerName: checkPriceBookMain.name,
+        c1: "Dealer Price Book",
+        c2: checkPriceBookMain.priceBook,
+        c3: "has been created successfully for the dealer!.",
+        c4: "",
+        c5: "",
+        role: "PriceBook"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -2181,13 +2217,13 @@ exports.updateDealerMeta = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
-      let emailData = {
+    let emailData = {
       dealerName: checkDealer.name,
-      c1:"The Dealer",
-      c2:checkDealer.name,
-      c3:"has been updated successfully!.",
-      c4:"",
-      c5:"",
+      c1: "The Dealer",
+      c2: checkDealer.name,
+      c3: "has been updated successfully!.",
+      c4: "",
+      c5: "",
       role: "Servicer"
     }
 
