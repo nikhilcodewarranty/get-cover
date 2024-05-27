@@ -733,6 +733,26 @@ exports.editResellers = async (req, res) => {
         // save notification
         let createNotification = await userService.createNotification(notificationData);
 
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(resellerPrimary.email);
+        notificationEmails.push(dealerPrimary.email);
+        // const notificationContent = {
+        //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+        // }    
+        let emailData = {
+            dealerName: checkReseller.name,
+            c1: "The Reseller",
+            c2: checkReseller.name,
+            c3: "has been updated successfully!.",
+            c4: "",
+            c5: "",
+            role: "Servicer"
+        }
+
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+
         //Save Logs update reseller
         let logData = {
             userId: req.userId,
@@ -1891,14 +1911,14 @@ exports.changeResellerStatus = async (req, res) => {
             // }
             let emailData = {
                 dealerName: singleReseller.name,
-                c1:"The Reseller",
-                c2:singleReseller.name,
-                c3:"has been updated successfully!.",
-                c4:"",
-                c5:"",
+                c1: "The Reseller",
+                c2: singleReseller.name,
+                c3: "has been updated successfully!.",
+                c4: "",
+                c5: "",
                 role: ""
-              }
-          
+            }
+
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
             //Save Logs change reseller status
             let logData = {

@@ -2040,7 +2040,7 @@ exports.updateUserData = async (req, res) => {
       dealerName: updateUser.firstName,
       c1: "The Primary User",
       c2: updateUser.firstName,
-      c3: "status has been updated successfully!.",
+      c3: "has been updated successfully!.",
       c4: "",
       c5: "",
       role: "Servicer"
@@ -2279,6 +2279,26 @@ exports.deleteUser = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(primaryUser.email);
+    notificationEmails.push(checkUser.email);
+
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: checkUser.firstName,
+      c1: "The User",
+      c2: checkUser.firstName,
+      c3: "has been deleted successfully!.",
+      c4: "",
+      c5: "",
+      role: "Servicer"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}
     //Save Logs delete user
     let logData = {
