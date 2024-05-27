@@ -2173,7 +2173,7 @@ exports.updateDealerMeta = async (req, res) => {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
       let emailData = {
-      dealerName: providerMeta.name,
+      dealerName: checkDealer.name,
       c1:"Thank you for",
       c2:"Registering! as a",
       c3:"Your account is currently pending approval from our admin.",
