@@ -607,6 +607,23 @@ exports.editServicerDetail = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(getPrimary.email);
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: checkServicer.name,
+      c1: "The Servicer",
+      c2: checkServicer.name,
+      c3: "has been updated successfully!.",
+      c4: "",
+      c5: "",
+      role: "Servicer"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -738,11 +755,11 @@ exports.updateStatus = async (req, res) => {
         // }
         let emailData = {
           dealerName: checkServicer.name,
-          c1:"The Servicer",
-          c2:checkServicer.name,
-          c3:"has been updated successfully!.",
-          c4:"",
-          c5:"",
+          c1: "The Servicer",
+          c2: checkServicer.name,
+          c3: "has been updated successfully!.",
+          c4: "",
+          c5: "",
           role: "Servicer"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
@@ -757,7 +774,7 @@ exports.updateStatus = async (req, res) => {
             result: updateData
           }
         }
-
+ 
         await LOG(logData).save()
 
         res.send({
