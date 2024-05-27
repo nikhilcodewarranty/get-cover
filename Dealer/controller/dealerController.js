@@ -1112,10 +1112,19 @@ exports.changeDealerStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(getPrimary.email);
       console.log("notificationEmails---------------", notificationEmails)
-      const notificationContent = {
-        content: singleDealer.name + " " + "status has been updated successfully!"
+      // const notificationContent = {
+      //   content: singleDealer.name + " " + "status has been updated successfully!"
+      // }
+      let emailData = {
+        dealerName: singleDealer.name,
+        c1:"The Dealer",
+        c2:singleDealer.name,
+        c3:"status has been updated successfully!.",
+        c4:"",
+        c5:"",
+        role: "Servicer"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", notificationContent))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
 
       let logData = {
         userId: req.teammateId,
@@ -2174,15 +2183,15 @@ exports.updateDealerMeta = async (req, res) => {
     // }    
       let emailData = {
       dealerName: checkDealer.name,
-      c1:"Thank you for",
-      c2:"Registering! as a",
-      c3:"Your account is currently pending approval from our admin.",
-      c4:"Once approved, you will receive a confirmation emai",
-      c5:"We appreciate your patience.",
+      c1:"The Dealer",
+      c2:checkDealer.name,
+      c3:"has been updated successfully!.",
+      c4:"",
+      c5:"",
       role: "Servicer"
     }
 
-    
+
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs update dealer
     let logData = {

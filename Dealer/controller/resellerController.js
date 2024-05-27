@@ -1886,10 +1886,20 @@ exports.changeResellerStatus = async (req, res) => {
             let notificationEmails = await supportingFunction.getUserEmails();
             notificationEmails.push(getPrimary.email);
             console.log("notificationEmails---------------", notificationEmails)
-            const notificationContent = {
-                content: singleReseller.name + " " + "status has been updated successfully!"
-            }
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", notificationContent))
+            // const notificationContent = {
+            //     content: singleReseller.name + " " + "status has been updated successfully!"
+            // }
+            let emailData = {
+                dealerName: singleReseller.name,
+                c1:"The Reseller",
+                c2:singleReseller.name,
+                c3:"has been updated successfully!.",
+                c4:"",
+                c5:"",
+                role: ""
+              }
+          
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,

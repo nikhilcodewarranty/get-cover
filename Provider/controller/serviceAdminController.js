@@ -733,10 +733,19 @@ exports.updateStatus = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
         notificationEmails.push(getPrimary.email);
-        const notificationContent = {
-          content: checkServicer.name + " " + "status has been updated successfully!"
+        // const notificationContent = {
+        //   content: checkServicer.name + " " + "status has been updated successfully!"
+        // }
+        let emailData = {
+          dealerName: checkServicer.name,
+          c1:"The Servicer",
+          c2:checkServicer.name,
+          c3:"has been updated successfully!.",
+          c4:"",
+          c5:"",
+          role: "Servicer"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", notificationContent))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
         //Save Logs
         let logData = {
           userId: req.userId,
