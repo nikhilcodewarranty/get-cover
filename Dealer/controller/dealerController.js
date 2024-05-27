@@ -827,11 +827,6 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
-
-    // Send Email code here
-    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
-
-
     // }
     let logData = {
       endpoint: "register dealer",
@@ -1045,7 +1040,6 @@ exports.changeDealerStatus = async (req, res) => {
       };
       let option = { new: true };
       const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
-
       //Inactive dealer price Books
       // const changeDealerPriceBookStatus = await dealerPriceService.updateDealerPrice({ dealerId: req.params.dealerId }, {
       //   $set: {
@@ -1114,6 +1108,14 @@ exports.changeDealerStatus = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData);
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(getPrimary.email);
+      console.log("notificationEmails---------------", notificationEmails)
+      const notificationContent = {
+        content: singleDealer.name + " " + "status has been updated successfully!"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", notificationContent))
 
       let logData = {
         userId: req.teammateId,
@@ -1877,7 +1879,7 @@ exports.createDealerPriceBook = async (req, res) => {
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
     if (checkPriceBook) {
       res.send({
-        code: constant.errorCode, 
+        code: constant.errorCode,
         message: "Dealer price book already created with this product sku"
       })
       return;
@@ -2138,7 +2140,6 @@ exports.updateDealerMeta = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
-
     //Get customer of the dealers
     // if (!data.userAccount) {
     //   //Update isAccount for customer when user account false
@@ -2150,7 +2151,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     // }
 
-   let IDs = await supportingFunction.getUserIds()
+    let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
 
     IDs.push(getPrimary._id)
@@ -2164,6 +2165,24 @@ exports.updateDealerMeta = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(getPrimary.email);
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+      let emailData = {
+      dealerName: providerMeta.name,
+      c1:"Thank you for",
+      c2:"Registering! as a",
+      c3:"Your account is currently pending approval from our admin.",
+      c4:"Once approved, you will receive a confirmation emai",
+      c5:"We appreciate your patience.",
+      role: "Servicer"
+    }
+
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -2551,7 +2570,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile('amit@codenomad.net', htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(['amit@codenomad.net', 'anil@codenomad.net'], htmlTableString));
       }
       // Send notification when added in bulk
       let IDs = await supportingFunction.getUserIds()
@@ -3791,7 +3810,7 @@ exports.getDealerContract = async (req, res) => {
                   serial: 1,
                   unique_key: 1,
                   status: 1,
-                  minDate:1,
+                  minDate: 1,
                   manufacture: 1,
                   eligibilty: 1,
                   orderUniqueKey: 1,
@@ -3839,7 +3858,7 @@ exports.getDealerContract = async (req, res) => {
                 model: 1,
                 serial: 1,
                 unique_key: 1,
-                minDate:1,
+                minDate: 1,
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,

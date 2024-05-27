@@ -707,8 +707,8 @@ exports.editResellers = async (req, res) => {
                 status: true
             };
         }
- 
-        console.log("$$$------------------------------------------",resellerUserCreateria,newValue)
+
+        console.log("$$$------------------------------------------", resellerUserCreateria, newValue)
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
 
         //Send notification to admin,dealer,reseller
@@ -786,7 +786,7 @@ exports.addResellerUser = async (req, res) => {
         };
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
         if (checkEmail) {
-            res.send({ 
+            res.send({
                 code: constant.errorCode,
                 message: "User already exist with this email"
             })
@@ -1740,7 +1740,7 @@ exports.getResellerContract = async (req, res) => {
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
-                                    minDate:1,
+                                    minDate: 1,
                                     status: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
@@ -1788,7 +1788,7 @@ exports.getResellerContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                minDate:1,
+                                minDate: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
@@ -1881,6 +1881,15 @@ exports.changeResellerStatus = async (req, res) => {
             };
 
             let createNotification = await userService.createNotification(notificationData);
+
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(getPrimary.email);
+            console.log("notificationEmails---------------", notificationEmails)
+            const notificationContent = {
+                content: singleReseller.name + " " + "status has been updated successfully!"
+            }
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", notificationContent))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
@@ -2003,7 +2012,7 @@ exports.getResellerClaims = async (req, res) => {
                             reason: 1,
                             "unique_key": 1,
                             note: 1,
-                            pName:1,
+                            pName: 1,
                             totalAmount: 1,
                             servicerId: 1,
                             claimType: 1,
