@@ -1837,7 +1837,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       console.log(end, start)
       dateQuery = {
         claimDate: {
-          $gte: new Date(start)),
+          $gte: new Date(start),
           $lte: new Date(end),
         }
       }
