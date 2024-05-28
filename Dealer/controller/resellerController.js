@@ -707,8 +707,8 @@ exports.editResellers = async (req, res) => {
                 status: true
             };
         }
- 
-        console.log("$$$------------------------------------------",resellerUserCreateria,newValue)
+
+        console.log("$$$------------------------------------------", resellerUserCreateria, newValue)
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
 
         //Send notification to admin,dealer,reseller
@@ -732,6 +732,26 @@ exports.editResellers = async (req, res) => {
         };
         // save notification
         let createNotification = await userService.createNotification(notificationData);
+
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(resellerPrimary.email);
+        notificationEmails.push(dealerPrimary.email);
+        // const notificationContent = {
+        //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+        // }    
+        let emailData = {
+            dealerName: checkReseller.name,
+            c1: "The Reseller",
+            c2: checkReseller.name,
+            c3: "has been updated successfully!.",
+            c4: "",
+            c5: "",
+            role: "Servicer"
+        }
+
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
 
         //Save Logs update reseller
         let logData = {
@@ -786,7 +806,7 @@ exports.addResellerUser = async (req, res) => {
         };
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
         if (checkEmail) {
-            res.send({ 
+            res.send({
                 code: constant.errorCode,
                 message: "User already exist with this email"
             })
@@ -1740,7 +1760,7 @@ exports.getResellerContract = async (req, res) => {
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
-                                    minDate:1,
+                                    minDate: 1,
                                     status: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
@@ -1788,7 +1808,7 @@ exports.getResellerContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                minDate:1,
+                                minDate: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
@@ -1881,6 +1901,25 @@ exports.changeResellerStatus = async (req, res) => {
             };
 
             let createNotification = await userService.createNotification(notificationData);
+
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(getPrimary.email);
+            console.log("notificationEmails---------------", notificationEmails)
+            // const notificationContent = {
+            //     content: singleReseller.name + " " + "status has been updated successfully!"
+            // }
+            let emailData = {
+                dealerName: singleReseller.name,
+                c1: "The Reseller",
+                c2: singleReseller.name,
+                c3: "has been updated successfully!.",
+                c4: "",
+                c5: "",
+                role: ""
+            }
+
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,
@@ -2003,7 +2042,7 @@ exports.getResellerClaims = async (req, res) => {
                             reason: 1,
                             "unique_key": 1,
                             note: 1,
-                            pName:1,
+                            pName: 1,
                             totalAmount: 1,
                             servicerId: 1,
                             claimType: 1,

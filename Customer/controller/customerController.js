@@ -552,6 +552,25 @@ exports.editCustomer = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(customerPrimary.email);
+    notificationEmails.push(dealerPrimary.email);
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: checkDealer.name,
+      c1: "The Customer",
+      c2: checkDealer.name,
+      c3: "has been updated successfully!.",
+      c4: "",
+      c5: "",
+      role: "Servicer"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+
     //Save Logs editCustomer
     let logData = {
       userId: req.userId,
@@ -657,6 +676,24 @@ exports.changePrimaryUser = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // }
 
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(updateLastPrimary.email);
+      notificationEmails.push(updatePrimary.email);
+
+      // const notificationContent = {
+      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+      // }    
+      let emailData = {
+        dealerName: checkUser.firstName,
+        c1: "The Primary User",
+        c2: checkUser.firstName,
+        c3: "has been updated successfully!.",
+        c4: "",
+        c5: "",
+        role: "Servicer"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Primary User", emailData))
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
@@ -980,7 +1017,7 @@ exports.getCustomerUsers = async (req, res) => {
       return;
     };
 
-   let checkDealer =  await dealerService.getDealerById(checkCustomer.dealerId,{})
+    let checkDealer = await dealerService.getDealerById(checkCustomer.dealerId, {})
 
 
     res.send({
@@ -989,7 +1026,7 @@ exports.getCustomerUsers = async (req, res) => {
       result: filteredData,
       customerStatus: checkCustomer.status,
       isAccountCreate: checkCustomer.isAccountCreate,
-      userAccount:checkDealer.userAccount
+      userAccount: checkDealer.userAccount
 
     })
   } catch (err) {

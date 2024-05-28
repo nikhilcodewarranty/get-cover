@@ -856,7 +856,7 @@ exports.createDealer = async (req, res) => {
               // if (singleDealer?.coverageType == "Breakdown & Accidental") {
               //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
               // } else {
-                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
+              queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
               // }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
@@ -1503,7 +1503,7 @@ exports.createDealer = async (req, res) => {
               // if (createMetaData?.coverageType == "Breakdown & Accidental") {
               //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
               // } else {
-                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
+              queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
               // }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
@@ -2012,22 +2012,41 @@ exports.updateUserData = async (req, res) => {
     };
     //Get role by id
     const checkRole = await userService.getRoleById({ _id: updateUser.roleId }, {});
-   // if (checkRole.role == "Dealer") {
-      //send notification to dealer when status change
-      let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: updateUser.accountId, isPrimary: true })
+    // if (checkRole.role == "Dealer") {
+    //send notification to dealer when status change
+    let IDs = await supportingFunction.getUserIds()
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: updateUser.accountId, isPrimary: true })
 
-      IDs.push(getPrimary._id)
-      let notificationData = {
-        title: checkRole.role +" "+ "user has been change",
-        description: "The  user has been changed!",
-        userId: req.params.userId,
-        flag:checkRole.role,
-        notificationFor: [getPrimary._id]
-      };
+    IDs.push(getPrimary._id)
+    let notificationData = {
+      title: checkRole.role + " " + "user has been change",
+      description: "The  user has been changed!",
+      userId: req.params.userId,
+      flag: checkRole.role,
+      notificationFor: [getPrimary._id]
+    };
 
-      let createNotification = await userService.createNotification(notificationData);
-  //  }
+    let createNotification = await userService.createNotification(notificationData);
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(getPrimary.email);
+    notificationEmails.push(updateUser.email);
+    // notificationEmails.push(getPrimary.email);
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: updateUser.firstName,
+      c1: "The Primary User",
+      c2: updateUser.firstName,
+      c3: "has been updated successfully!.",
+      c4: "",
+      c5: "",
+      role: "Servicer"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update User Info", emailData))
+    //  }
     //Save Logs updateUserData
     let logData = {
       endpoint: "user/updateUserData",
@@ -2227,7 +2246,7 @@ exports.deleteUser = async (req, res) => {
         endpoint: "user/deleteUser",
         userId: req.userId,
         body: criteria,
-        response: { 
+        response: {
           code: constant.errorCode,
           message: "Unable to delete the user"
         }
@@ -2260,6 +2279,26 @@ exports.deleteUser = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(primaryUser.email);
+    notificationEmails.push(checkUser.email);
+
+    // const notificationContent = {
+    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
+    // }    
+    let emailData = {
+      dealerName: checkUser.firstName,
+      c1: "The User",
+      c2: checkUser.firstName,
+      c3: "has been deleted successfully!.",
+      c4: "",
+      c5: "",
+      role: "Servicer"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}
     //Save Logs delete user
     let logData = {
