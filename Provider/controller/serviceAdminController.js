@@ -551,20 +551,20 @@ exports.editServicerDetail = async (req, res) => {
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
     let servicerUserCreateria = { accountId: req.params.servicerId };
-    // let newValue = {
-    //   $set: {
-    //     status: false
-    //   }
-    // };
-    // if (data.isAccountCreate) {
-    //   servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
-    //   newValue = {
-    //     $set: {
-    //       status: true
-    //     }
-    //   };
-    // }
-    // const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
+    let newValue = {
+      $set: {
+        status: false
+      }
+    };
+    if (data.isAccountCreate) {
+      servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
+      newValue = {
+        $set: {
+          status: true
+        }
+      };
+    }
+    const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
     if (!updateData) {
       //Save Logs
       let logData = {
