@@ -819,7 +819,7 @@ exports.createPriceBookCat = async (req, res) => {
     let logData = {
       userId: req.teammateId,
       endpoint: "price/createPriceBookCat  catchError",
-      body: catData,
+      body: req.body,
       response: {
         code: constant.errorCode,
         message: err.message,
