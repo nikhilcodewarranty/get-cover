@@ -261,14 +261,19 @@ exports.createPriceBook = async (req, res, next) => {
       // const notificationContent = {
       //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
       // }    
+      // let emailData = {
+      //   dealerName: data.name,
+      //   c1: "PriceBook",
+      //   c2: data.name,
+      //   c3: "has been created successfully!.",
+      //   c4: "",
+      //   c5: "",
+      //   role: "PriceBook"
+      // }
+      const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
       let emailData = {
-        dealerName: data.name,
-        c1: "PriceBook",
-        c2: data.name,
-        c3: "has been created successfully!.",
-        c4: "",
-        c5: "",
-        role: "PriceBook"
+        senderName: admin.firstName,
+        content: "The priceBook " + data.name + " created successfully! effective immediately."
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
       let logData = {
