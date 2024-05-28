@@ -1135,16 +1135,14 @@ exports.changeDealerStatus = async (req, res) => {
       // const notificationContent = {
       //   content: singleDealer.name + " " + "status has been updated successfully!"
       // }
+      const status_content = req.body.status ? 'Active' : 'Inactive';
       let emailData = {
-        dealerName: singleDealer.name,
-        c1: "The Dealer",
-        c2: singleDealer.name,
-        c3: "status has been updated successfully!.",
-        c4: "",
-        c5: "",
-        role: "Servicer"
+        senderName: singleDealer.name,
+        content: "Status has been changed to " + status_content + " " + ", effective immediately."
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
+
+      
 
       let logData = {
         userId: req.teammateId,
