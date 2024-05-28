@@ -1823,8 +1823,8 @@ exports.paidUnpaidClaim = async (req, res) => {
       console.log(end, start)
       dateQuery = {
         claimDate: {
-          $gte: new Date(start),
-          $lte: new Date(end),
+          $gte: new Date(start).setHours(0, 0, 0, 0),
+          $lte: new Date(end).setHours(0, 0, 0, 0),
         }
       }
     }
