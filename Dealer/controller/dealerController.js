@@ -421,11 +421,11 @@ exports.getDealerById = async (req, res) => {
     ]
     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
 
-    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+    const rejectedQuery = { claimFile: "Completed" }
     //Get number of claims
     let numberOfCompleletedClaims = [
       {
-        $match: rejectedQuery
+        $match: claimQuery
       },
       {
         $lookup: {
