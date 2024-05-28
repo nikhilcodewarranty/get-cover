@@ -42,9 +42,7 @@ var imageUpload = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).single("file");
-
- 
+}).single("file"); 
 
 var uploadP = multer({
   storage: StorageP,
@@ -52,6 +50,7 @@ var uploadP = multer({
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).array("file", 100);
+
 exports.getAllClaims = async (req, res, next) => {
   try {
     // if (req.role != 'Super Admin') {
@@ -1044,9 +1043,6 @@ exports.getClaims = async (req, res) => {
     })
   }
 }
-
-
-
 
 exports.searchClaim = async (req, res, next) => {
   try {
