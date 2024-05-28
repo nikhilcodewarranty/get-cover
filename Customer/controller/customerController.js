@@ -560,14 +560,19 @@ exports.editCustomer = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: checkDealer.name,
+    //   c1: "The Customer",
+    //   c2: checkDealer.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+
     let emailData = {
-      dealerName: checkDealer.name,
-      c1: "The Customer",
-      c2: checkDealer.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: checkDealer.name,
+      content: "The customer " + checkDealer.name + "" + " " + "has been updated successfully."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
 
@@ -684,15 +689,19 @@ exports.changePrimaryUser = async (req, res) => {
       // const notificationContent = {
       //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
       // }    
+      // let emailData = {
+      //   dealerName: checkUser.firstName,
+      //   c1: "The Primary User",
+      //   c2: checkUser.firstName,
+      //   c3: "has been updated successfully!.",
+      //   c4: "",
+      //   c5: "",
+      //   role: "Servicer"
+      // }
       let emailData = {
-        dealerName: checkUser.firstName,
-        c1: "The Primary User",
-        c2: checkUser.firstName,
-        c3: "has been updated successfully!.",
-        c4: "",
-        c5: "",
-        role: "Servicer"
-      }
+        senderName: checkUser.firstName,
+        content: "The primary user for your account has been changed from " + updateLastPrimary + " to " + updatePrimary + "."
+      };
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Primary User", emailData))
       //Save Logs changePrimaryUser
       let logData = {

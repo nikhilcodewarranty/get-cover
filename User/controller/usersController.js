@@ -2305,7 +2305,7 @@ exports.deleteUser = async (req, res) => {
     // }
     let emailData = {
       senderName: checkUser.name,
-      content: "The user has been deleted successfully."
+      content: "The user "+checkUser.name+""+" "+"has been deleted successfully."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}

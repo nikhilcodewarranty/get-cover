@@ -553,18 +553,23 @@ exports.updatePriceBookById = async (req, res, next) => {
     let createNotification = await userService.createNotification(notificationData);
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();    
+    let notificationEmails = await supportingFunction.getUserEmails();
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: existingPriceBook.name,
+    //   c1: "PriceBook",
+    //   c2: existingPriceBook.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "PriceBook"
+    // }
+    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
-      dealerName: existingPriceBook.name,
-      c1: "PriceBook",
-      c2: existingPriceBook.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "PriceBook"
+      senderName: admin.firstName,
+      content: "The priceBook " + existingPriceBook.name + " updated successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update PriceBook", emailData))
 
@@ -771,14 +776,19 @@ exports.createPriceBookCat = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: data.name,
+    //   c1: "Category",
+    //   c2: data.name,
+    //   c3: "has been created successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
-      dealerName: data.name,
-      c1: "Category",
-      c2: data.name,
-      c3: "has been created successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: admin.firstName,
+      content: "The category " + data.name + " created successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Category", emailData))
 
@@ -1069,14 +1079,19 @@ exports.updatePriceBookCat = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: data.name,
+    //   c1: "Category",
+    //   c2: data.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+    const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
-      dealerName: data.name,
-      c1: "Category",
-      c2: data.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: admin.firstName,
+      content: "The category " + data.name + " updated successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Category", emailData))
     let logData = {
