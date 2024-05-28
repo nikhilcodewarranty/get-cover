@@ -1406,7 +1406,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         allDataComing.push({
                             key: productsWithFiles[j].products.key,
                             checkNumberProducts:
-                                productsWithFiles[j].products.checkNumberProducts,
+                            productsWithFiles[j].products.checkNumberProducts,
                             noOfProducts: productsWithFiles[j].products.noOfProducts,
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
@@ -1468,7 +1468,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
-                                    message: "Invalid fields value",
+                                    message: "Invalid fields value", 
                                 });
 
                                 return;
