@@ -1839,6 +1839,8 @@ exports.paidUnpaidClaim = async (req, res) => {
         }
       }
     }
+
+
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1853,6 +1855,12 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
+
+    console.log("flag-------------------------------",flag)
+    console.log("dateQuery-------------------------------",dateQuery)
+
+
+
     let newQuery = [];
     newQuery.push({
       $facet: {
