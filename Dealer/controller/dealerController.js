@@ -1142,7 +1142,7 @@ exports.changeDealerStatus = async (req, res) => {
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
 
-      
+
 
       let logData = {
         userId: req.teammateId,
@@ -1954,14 +1954,18 @@ exports.createDealerPriceBook = async (req, res) => {
       // const notificationContent = {
       //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
       // }    
+      // let emailData = {
+      //   dealerName: checkPriceBookMain.name,
+      //   c1: "Dealer Price Book",
+      //   c2: checkPriceBookMain.priceBook,
+      //   c3: "has been created successfully for the dealer!.",
+      //   c4: "",
+      //   c5: "",
+      //   role: "PriceBook"
+      // }
       let emailData = {
-        dealerName: checkPriceBookMain.name,
-        c1: "Dealer Price Book",
-        c2: checkPriceBookMain.priceBook,
-        c3: "has been created successfully for the dealer!.",
-        c4: "",
-        c5: "",
-        role: "PriceBook"
+        senderName: checkDealer.name,
+        content: "The price book name" + " " + checkPriceBookMain.name + " has been created successfully! effective immediately."
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
       let logData = {
@@ -2218,15 +2222,20 @@ exports.updateDealerMeta = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+
     let emailData = {
-      dealerName: checkDealer.name,
-      c1: "The Dealer",
-      c2: checkDealer.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: checkDealer.name,
+      content: "The information has been updated successfully! effective immediately."
     }
+    // let emailData = {
+    //   dealerName: checkDealer.name,
+    //   c1: "The Dealer",
+    //   c2: checkDealer.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
 
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))

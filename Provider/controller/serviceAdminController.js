@@ -614,14 +614,19 @@ exports.editServicerDetail = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: checkServicer.name,
+    //   c1: "The Servicer",
+    //   c2: checkServicer.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+
     let emailData = {
-      dealerName: checkServicer.name,
-      c1: "The Servicer",
-      c2: checkServicer.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: checkServicer.name,
+      content: "Information has been updated successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs
@@ -753,15 +758,21 @@ exports.updateStatus = async (req, res) => {
         // const notificationContent = {
         //   content: checkServicer.name + " " + "status has been updated successfully!"
         // }
+        const status_content = req.body.status ? 'Active' : 'Inactive';
+
         let emailData = {
-          dealerName: checkServicer.name,
-          c1: "The Servicer",
-          c2: checkServicer.name,
-          c3: "has been updated successfully!.",
-          c4: "",
-          c5: "",
-          role: "Servicer"
+          senderName: checkServicer.name,
+          content: "Status has been changed to " + status_content + " " + ", effective immediately."
         }
+        // let emailData = {
+        //   dealerName: checkServicer.name,
+        //   c1: "The Servicer",
+        //   c2: checkServicer.name,
+        //   c3: "has been updated successfully!.",
+        //   c4: "",
+        //   c5: "",
+        //   role: "Servicer"
+        // }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
         //Save Logs
         let logData = {
