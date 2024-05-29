@@ -585,7 +585,7 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
     if (checkDealer.coverageType == "Breakdown & Accidental") {
-        if (data.coverageType == "Breakdown & Accidental") {
+        if (data.coverageType != "") {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
