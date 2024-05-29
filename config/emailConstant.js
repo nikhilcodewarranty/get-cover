@@ -32,7 +32,7 @@ module.exports = {
       to: toEmail,
       from: process.env.from_email,
       subject: sub,
-      templateId: process.env.main_template,
+      templateId: process.env.update_status,
       // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
        dynamic_template_data:data ,
       // mailSettings: {

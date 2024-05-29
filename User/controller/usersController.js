@@ -2036,14 +2036,19 @@ exports.updateUserData = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: updateUser.firstName,
+    //   c1: "The Primary User",
+    //   c2: updateUser.firstName,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+
     let emailData = {
-      dealerName: updateUser.firstName,
-      c1: "The Primary User",
-      c2: updateUser.firstName,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: updateUser.name,
+      content: "The primary contact information has been updated successfully!."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update User Info", emailData))
     //  }
@@ -2289,14 +2294,18 @@ exports.deleteUser = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: checkUser.firstName,
+    //   c1: "The User",
+    //   c2: checkUser.firstName,
+    //   c3: "has been deleted successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
     let emailData = {
-      dealerName: checkUser.firstName,
-      c1: "The User",
-      c2: checkUser.firstName,
-      c3: "has been deleted successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: checkUser.name,
+      content: "The user "+checkUser.name+""+" "+"has been deleted successfully."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}

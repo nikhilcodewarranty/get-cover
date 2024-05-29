@@ -614,14 +614,19 @@ exports.editServicerDetail = async (req, res) => {
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
+    // let emailData = {
+    //   dealerName: checkServicer.name,
+    //   c1: "The Servicer",
+    //   c2: checkServicer.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+
     let emailData = {
-      dealerName: checkServicer.name,
-      c1: "The Servicer",
-      c2: checkServicer.name,
-      c3: "has been updated successfully!.",
-      c4: "",
-      c5: "",
-      role: "Servicer"
+      senderName: checkServicer.name,
+      content: "Information has been updated successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
     //Save Logs
@@ -753,15 +758,21 @@ exports.updateStatus = async (req, res) => {
         // const notificationContent = {
         //   content: checkServicer.name + " " + "status has been updated successfully!"
         // }
+        const status_content = req.body.status ? 'Active' : 'Inactive';
+
         let emailData = {
-          dealerName: checkServicer.name,
-          c1: "The Servicer",
-          c2: checkServicer.name,
-          c3: "has been updated successfully!.",
-          c4: "",
-          c5: "",
-          role: "Servicer"
+          senderName: checkServicer.name,
+          content: "Status has been changed to " + status_content + " " + ", effective immediately."
         }
+        // let emailData = {
+        //   dealerName: checkServicer.name,
+        //   c1: "The Servicer",
+        //   c2: checkServicer.name,
+        //   c3: "has been updated successfully!.",
+        //   c4: "",
+        //   c5: "",
+        //   role: "Servicer"
+        // }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
         //Save Logs
         let logData = {
@@ -1819,15 +1830,20 @@ exports.paidUnpaidClaim = async (req, res) => {
     let dateQuery = {}
     if (data.noOfDays) {
       const end = moment().startOf('day')
-      const start = moment().subtract(Number(data.noOfDays), 'days').startOf('day')
+      const start = moment().subtract(data.noOfDays, 'days').startOf('day')
+
+      console.log("start-----------------------",start)
+      console.log("end-----------------------",end)
       console.log(end, start)
       dateQuery = {
         claimDate: {
-          $gte: new Date(start).setHours(0, 0, 0, 0),
+          $gte: new Date(start),
           $lte: new Date(end),
         }
       }
     }
+
+
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1842,6 +1858,12 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
+
+    console.log("flag-------------------------------",flag)
+    console.log("dateQuery-------------------------------",dateQuery)
+
+
+
     let newQuery = [];
     newQuery.push({
       $facet: {
