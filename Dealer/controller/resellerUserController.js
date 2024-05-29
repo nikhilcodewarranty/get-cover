@@ -1454,7 +1454,7 @@ exports.getResellerPriceBook = async (req, res) => {
 
    
 
-
+let data = req.body
     if (checkDealer.coverageType == "Breakdown & Accidental") {
         if (req.body.coverageType == "Breakdown & Accidental") {
             query = {
