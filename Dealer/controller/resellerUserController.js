@@ -1452,21 +1452,24 @@ exports.getResellerPriceBook = async (req, res) => {
     let projection = { isDeleted: 0, __v: 0 }
     let query
 
-    // if (checkDealer.coverageType == "Breakdown & Accidental") {
-    //     query = {
-    //         $and: [
-    //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-    //             { 'priceBooks.category._id': { $in: catIdsArray } },
-    //             { 'status': true },
-    //             {
-    //                 dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-    //             },
-    //             {
-    //                 isDeleted: false
-    //             }
-    //         ]
-    //     }
-    // } else {
+   
+
+
+    if (checkDealer.coverageType == "Breakdown & Accidental") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
+    } else {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -1481,9 +1484,29 @@ exports.getResellerPriceBook = async (req, res) => {
                 }
             ]
         }
-    // }
+    }
 
+    if (data.term != '') {
+        query.$and.push({ 'priceBooks.term': Number(data.term) });
+    }
 
+    if (data.priceType != '') {
+        query.$and.push({ 'priceBooks.priceType': data.priceType });
+        if (data.priceType == 'Flat Pricing') {
+            if (data.range != '') {
+                query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+                query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+            }
+
+            // const flatQuery = {
+            //   $and: [
+            //     { 'rangeStart': { $lte: Number(data.range) } },
+            //     { 'rangeEnd': { $gte: Number(data.range) } }, 
+            //   ]
+            // } 
+            // query.$and.push(flatQuery);
+        }
+    }
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {

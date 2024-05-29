@@ -568,19 +568,53 @@ exports.getResellerPriceBook = async (req, res) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let projection = { isDeleted: 0, __v: 0 }
-    let query = {
-        $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            { 'status': true },
-            {
-                dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-            },
-            {
-                isDeleted: false
-            }
-        ]
+    let query
+    //  = {
+    //     $and: [
+    //         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+    //         { 'priceBooks.category._id': { $in: catIdsArray } },
+    //         { 'status': true },
+    //         {
+    //             dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+    //         },
+    //         {
+    //             isDeleted: false
+    //         }
+    //     ]
+    // }
+
+
+    if (checkDealer.coverageType == "Breakdown & Accidental") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
+    } else {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.coverageType': checkDealer.coverageType },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
     }
+
 
     if (data.term != '') {
         query.$and.push({ 'priceBooks.term': Number(data.term) });
@@ -753,7 +787,7 @@ exports.editResellers = async (req, res) => {
         let emailData = {
             senderName: checkReseller.name,
             content: "Information has been updated successfully! effective immediately."
-          }
+        }
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
 
@@ -1916,8 +1950,8 @@ exports.changeResellerStatus = async (req, res) => {
 
             const status_content = req.body.status ? 'Active' : 'Inactive';
             let emailData = {
-              senderName: singleReseller.name,
-              content: "Status has been changed to " + status_content + " " + ", effective immediately."
+                senderName: singleReseller.name,
+                content: "Status has been changed to " + status_content + " " + ", effective immediately."
             }
 
             let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
