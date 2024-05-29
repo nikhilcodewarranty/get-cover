@@ -1455,43 +1455,59 @@ exports.getResellerPriceBook = async (req, res) => {
    
 
 let data = req.body
-    if (checkDealer.coverageType == "Breakdown & Accidental") {
-        if (req.body.coverageType == "Breakdown & Accidental") {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
-        } else {
-            query = {
-                $and: [
-                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                    { 'priceBooks.category._id': { $in: catIdsArray } },
-                    { 'status': true },
-                    { 'priceBooks.coverageType': data.coverageType },
-
-                    {
-                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                    },
-                    {
-                        isDeleted: false
-                    }
-                ]
-            }
+if (checkDealer.coverageType == "Breakdown & Accidental") {
+    if (data.coverageType == "") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
         }
     } else {
         query = {
             $and: [
                 { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
+                { 'status': true },
+                { 'priceBooks.coverageType': data.coverageType },
+
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
+    }
+} else {
+    if (data.coverageType == "") {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'priceBooks.coverageType': checkDealer.coverageType },
+                { 'status': true },
+                {
+                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                },
+                {
+                    isDeleted: false
+                }
+            ]
+        }
+    } else {
+        query = {
+            $and: [
+                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                { 'priceBooks.coverageType': data.coverageType },
                 { 'priceBooks.category._id': { $in: catIdsArray } },
                 { 'status': true },
                 {
@@ -1503,6 +1519,8 @@ let data = req.body
             ]
         }
     }
+
+}
 
     if (data.term != '') {
         query.$and.push({ 'priceBooks.term': Number(data.term) });
