@@ -585,7 +585,7 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
     if (checkDealer.coverageType == "Breakdown & Accidental") {
-        if (data.coverageType != "") {
+        if (data.coverageType == "") {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
@@ -617,7 +617,7 @@ exports.getResellerPriceBook = async (req, res) => {
             }
         }
     } else {
-        if (data.coverageType != "") {
+        if (data.coverageType == "") {
             query = {
                 $and: [
                     { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
