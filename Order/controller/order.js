@@ -76,7 +76,6 @@ var uploadP = multer({
 exports.createOrder1 = async (req, res) => {
     try {
         let data = req.body;
-
         // let data = {
         //     "dealerId": "660e2cb754d348082efaa2ce",
         //     "servicerId": "",
@@ -133,18 +132,14 @@ exports.createOrder1 = async (req, res) => {
         //     "paymentStatus": "Paid",
         //     "orderAmount": 700
         // }
-
-
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
-
         let checkDealer = await dealerService.getDealerById(
             data.dealerId,
             projection
         );
-
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -194,9 +189,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
-
         data.createdBy = req.userId;
-
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
@@ -263,7 +256,6 @@ exports.createOrder1 = async (req, res) => {
                 }
             }
         }
-
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             let logData = {
@@ -1454,7 +1446,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                         allDataComing.push({
                             key: productsWithFiles[j].products.key,
                             checkNumberProducts:
-                            productsWithFiles[j].products.checkNumberProducts,
+                                productsWithFiles[j].products.checkNumberProducts,
                             noOfProducts: productsWithFiles[j].products.noOfProducts,
                             priceType: productsWithFiles[j].products.priceType,
                             rangeStart: productsWithFiles[j].products.rangeStart,
@@ -1516,7 +1508,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 message.push({
                                     code: constant.errorCode,
                                     key: obj.key,
-                                    message: "Invalid fields value", 
+                                    message: "Invalid fields value",
                                 });
 
                                 return;

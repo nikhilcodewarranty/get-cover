@@ -1832,8 +1832,8 @@ exports.paidUnpaidClaim = async (req, res) => {
       const end = moment().startOf('day')
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
 
-      console.log("start-----------------------",start)
-      console.log("end-----------------------",end)
+      // console.log("start-----------------------",start)
+      // console.log("end-----------------------",end)
       console.log(end, start)
       dateQuery = {
         claimDate: {
@@ -1842,7 +1842,6 @@ exports.paidUnpaidClaim = async (req, res) => {
         }
       }
     }
-
 
     const flag = req.body.flag == 1 ? 'Paid' : 'Unpaid'
     let query = { isDeleted: false };
