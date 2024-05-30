@@ -2029,19 +2029,6 @@ exports.updateUserData = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
-    // notificationEmails.push(getPrimary.email);
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: updateUser.firstName,
-    //   c1: "The Primary User",
-    //   c2: updateUser.firstName,
-    //   c3: "has been updated successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
 
     let emailData = {
       senderName: updateUser.name,
