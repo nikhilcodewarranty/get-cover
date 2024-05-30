@@ -889,9 +889,37 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
             return;
         }
-        // price book ids array from dealer price book
+        if (!data.coverageType) {
+            res.send({
+                code: constant.errorCode,
+                message: "Coverage type is required",
+            });
+            return;
+        }
+
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        let query = { _id: { $in: dealerPriceIds } };
+        if (data.priceBookId || data.priceBookId != "") {
+            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
+
+        let query;
+        if (data.term != "" && data.pName == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
+        }
+        else if (data.pName != "" && data.term == "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: data.coverageType };
+
+        } else if (data.term != "" && data.pName != "") {
+            query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term, coverageType: data.coverageType };
+        } else {
+            query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
+        }
+
+        // price book ids array from dealer price book
+        // let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
+        // let query = { _id: { $in: dealerPriceIds } };
         // if(data.priceCatId){
         //     let categories =
         //     query = { _id: { $in: dealerPriceIds } ,}
@@ -977,14 +1005,25 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
+
+
+        const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
+            label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
+            value: term
+        })).sort((a, b) => a.value - b.value)
+
+        const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
+            pName: pName,
+        }));
+
         let result = {
             priceCategories: getCategories,
-            priceBooks: mergedPriceBooks,
+            priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
+            productName: data.priceCatId == "" ? [] : uniqueProductName,
+            terms: data.priceCatId == "" ? [] : uniqueTerms,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
         };
-
-
 
         res.send({
             code: constant.successCode,
@@ -1452,38 +1491,97 @@ exports.getResellerPriceBook = async (req, res) => {
     let projection = { isDeleted: 0, __v: 0 }
     let query
 
-    // if (checkDealer.coverageType == "Breakdown & Accidental") {
-    //     query = {
-    //         $and: [
-    //             { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-    //             { 'priceBooks.category._id': { $in: catIdsArray } },
-    //             { 'status': true },
-    //             {
-    //                 dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-    //             },
-    //             {
-    //                 isDeleted: false
-    //             }
-    //         ]
-    //     }
-    // } else {
-        query = {
-            $and: [
-                { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-                { 'priceBooks.coverageType': checkDealer.coverageType },
-                { 'priceBooks.category._id': { $in: catIdsArray } },
-                { 'status': true },
-                {
-                    dealerId: new mongoose.Types.ObjectId(checkDealer._id)
-                },
-                {
-                    isDeleted: false
-                }
-            ]
+
+
+    let data = req.body
+    if (checkDealer.coverageType == "Breakdown & Accidental") {
+        if (data.coverageType == "") {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    {
+                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                    },
+                    {
+                        isDeleted: false
+                    }
+                ]
+            }
+        } else {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    { 'priceBooks.coverageType': data.coverageType },
+
+                    {
+                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                    },
+                    {
+                        isDeleted: false
+                    }
+                ]
+            }
         }
-    // }
+    } else {
+        if (data.coverageType == "") {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'priceBooks.coverageType': checkDealer.coverageType },
+                    { 'status': true },
+                    {
+                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                    },
+                    {
+                        isDeleted: false
+                    }
+                ]
+            }
+        } else {
+            query = {
+                $and: [
+                    { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+                    { 'priceBooks.coverageType': data.coverageType },
+                    { 'priceBooks.category._id': { $in: catIdsArray } },
+                    { 'status': true },
+                    {
+                        dealerId: new mongoose.Types.ObjectId(checkDealer._id)
+                    },
+                    {
+                        isDeleted: false
+                    }
+                ]
+            }
+        }
 
+    }
 
+    if (data.term != '') {
+        query.$and.push({ 'priceBooks.term': Number(data.term) });
+    }
+
+    if (data.priceType != '') {
+        query.$and.push({ 'priceBooks.priceType': data.priceType });
+        if (data.priceType == 'Flat Pricing') {
+            if (data.range != '') {
+                query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+                query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+            }
+
+            // const flatQuery = {
+            //   $and: [
+            //     { 'rangeStart': { $lte: Number(data.range) } },
+            //     { 'rangeEnd': { $gte: Number(data.range) } }, 
+            //   ]
+            // } 
+            // query.$and.push(flatQuery);
+        }
+    }
     //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
@@ -2571,7 +2669,7 @@ exports.getResellerContract = async (req, res) => {
                                 $project: {
                                     productName: 1,
                                     model: 1,
-                                    minDate:1,
+                                    minDate: 1,
                                     serial: 1,
                                     unique_key: 1,
                                     status: 1,
@@ -2621,7 +2719,7 @@ exports.getResellerContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                minDate:1,
+                                minDate: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
@@ -2825,7 +2923,7 @@ exports.getResellerClaims = async (req, res) => {
                             claimType: 1,
                             totalAmount: 1,
                             servicerId: 1,
-                            pName:1,
+                            pName: 1,
                             customerStatus: 1,
                             trackingNumber: 1,
                             trackingType: 1,
