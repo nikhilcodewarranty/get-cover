@@ -11,9 +11,6 @@ const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const LOG = require('../../User/model/logs')
-
-const supportingFunction = require('../../config/supportingFunction')
-
 const dealerRelation = require("../../Provider/model/dealerServicer")
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
@@ -31,8 +28,8 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
 const path = require('path');
+const supportingFunction = require('../../config/supportingFunction')
 // Promisify fs.createReadStream for asynchronous file reading
-
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
@@ -3500,11 +3497,15 @@ exports.createOrder = async (req, res) => {
             }
         }
         await LOG(logData).save()
- 
+
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        
+
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.userId, isPrimary: true })
+        if (data.resellerId) {
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+            IDs.push(resellerPrimary._id)
+        }
         IDs.push(getPrimary._id)
         let notificationData = {
             title: "New order created",
