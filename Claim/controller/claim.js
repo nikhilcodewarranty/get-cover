@@ -10,6 +10,8 @@ const sgMail = require('@sendgrid/mail');
 const moment = require("moment");
 const LOG = require('../../User/model/logs')
 sgMail.setApiKey(process.env.sendgrid_key);
+const supportingFunction = require('../../config/supportingFunction')
+
 const emailConstant = require('../../config/emailConstant');
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const userService = require("../../User/services/userService");
@@ -42,7 +44,7 @@ var imageUpload = multer({
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
-}).single("file"); 
+}).single("file");
 
 var uploadP = multer({
   storage: StorageP,
@@ -1401,9 +1403,7 @@ exports.addClaim = async (req, res, next) => {
     }
     // Eligibility false when claim open
     const updateContract = await contractService.updateContract({ _id: data.contractId }, { eligibilty: false }, { new: true })
-
     //Save logs add claim
-
     let logData = {
       userId: req.userId,
       endpoint: "claim/addClaim",
@@ -1416,6 +1416,41 @@ exports.addClaim = async (req, res, next) => {
     }
     await LOG(logData).save()
 
+    //Send notification to all
+    let IDs = await supportingFunction.getUserIds()
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+    if (resellerPrimary) {
+      IDs.push(resellerPrimary._id)
+    }
+    if (servicerPrimary) {
+      IDs.push(servicerPrimary._id)
+    }
+    IDs.push(customerPrimary._id)
+    IDs.push(dealerPrimary._id)
+    let notificationData1 = {
+      title: "Add Claim",
+      description: "The claim has been added",
+      userId: req.userId,
+      contentId: claimResponse._id,
+      flag: 'claim',
+      notificationFor: IDs
+    };
+    let createNotification = await userService.createNotification(notificationData1);
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(dealerPrimary.email);
+    notificationEmails.push(resellerPrimary?.email);
+    notificationEmails.push(servicerPrimary?.email);
+    notificationEmails.push(customerPrimary?.email);
+
+    let emailData = {
+      senderName: '',
+      content: "The claim has been added!."
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Archeive Order", emailData))
 
     res.send({
       code: constant.successCode,
@@ -2330,7 +2365,7 @@ exports.saveBulkClaim = async (req, res) => {
             serial: data.contractData.serial,
             productName: data.contractData.productName,
             pName: data.contractData.pName,
-            model: data.contractData.model, 
+            model: data.contractData.model,
             manufacture: data.contractData.manufacture,
             unique_key_number: unique_key_number,
             unique_key_search: "CC" + "2024" + unique_key_number,
