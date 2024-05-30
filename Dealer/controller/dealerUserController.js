@@ -3500,7 +3500,6 @@ exports.createOrder = async (req, res) => {
 
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.userId, isPrimary: true })
         if (data.resellerId) {
             let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
@@ -4019,7 +4018,7 @@ exports.editOrderDetail = async (req, res) => {
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate:minDate,
+                        minDate: minDate,
                         manufacture: data.brand,
                         model: data.model,
                         // partsWarranty: data.partsWarranty1,
@@ -4072,6 +4071,24 @@ exports.editOrderDetail = async (req, res) => {
                         message: "Success",
                     };
                     await LOG(logData).save();
+                    //send notification to dealer,reseller,admin,customer
+                    let IDs = await supportingFunction.getUserIds()
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                    if (resellerPrimary) {
+                        IDs.push(resellerPrimary._id)
+                    }
+                    IDs.push(dealerPrimary._id, customerPrimary._id)
+                    let notificationData1 = {
+                        title: "Order update and processed",
+                        description: "The order has been update and processed",
+                        userId: req.userId,
+                        contentId: savedResponse._id,
+                        flag: 'order',
+                        notificationFor: IDs
+                    };
+                    let createNotification = await userService.createNotification(notificationData1);
                     res.send({
                         code: constant.successCode,
                         message: "Success",
