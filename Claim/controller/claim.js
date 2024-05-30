@@ -2003,6 +2003,28 @@ exports.editServicer = async (req, res) => {
       }
     }
     await LOG(logData).save()
+    //send notification to admin and dealer 
+    let IDs = await supportingFunction.getUserIds()
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.servicerId, isPrimary: true })
+    IDs.push(getPrimary._id)
+    let notificationData = {
+      title: "Servicer Updated",
+      description: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
+      userId: req.userId,
+      contentId: null,
+      flag: 'order',
+      notificationFor: IDs
+    };
+    let createNotification = await userService.createNotification(notificationData);
+
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(getPrimary.email);
+    let emailData = {
+      senderName: getPrimary.firstName,
+      content:"The servicer has been updated for the claim " + checkClaim.unique_key + "",
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Servicer Update", emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
