@@ -1657,7 +1657,7 @@ exports.editClaim = async (req, res) => {
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(servicerPrimary.email);
+      notificationEmails.push(servicerPrimary?.email);
       let emailData = {
         senderName: '',
         content:"The  repair part update for " + checkClaim.unique_key + " claim",
