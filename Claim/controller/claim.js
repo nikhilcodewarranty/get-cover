@@ -1895,6 +1895,42 @@ exports.editClaimStatus = async (req, res) => {
       //     const updateContract = await contractService.updateContract({ _id: checkClaim.contractId }, { eligibilty: false }, { new: true })
       //   }
       // } 
+
+      //Send notification to all
+      let IDs = await supportingFunction.getUserIds()
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      if (resellerPrimary) {
+        IDs.push(resellerPrimary._id)
+      }
+      if (servicerPrimary) {
+        IDs.push(servicerPrimary._id)
+      }
+      IDs.push(customerPrimary._id)
+      IDs.push(dealerPrimary._id)
+      let notificationData1 = {
+        title: "Claim Status Update",
+        description: "The claim status has been updated for " + checkClaim.unique_key + "",
+        userId: req.userId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData1);
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(dealerPrimary.email);
+      notificationEmails.push(customerPrimary?.email);
+      notificationEmails.push(resellerPrimary?.email);
+      notificationEmails.push(servicerPrimary?.email);
+
+      let emailData = {
+        senderName: '',
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Claim Status Update", emailData))
     }
     if (data.hasOwnProperty("claimType")) {
       let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
