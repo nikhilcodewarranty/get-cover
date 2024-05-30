@@ -1792,9 +1792,6 @@ exports.login = async (req, res) => {
       return;
     }
     console.log(user)
-
-
-
     // Generate JWT token
     const token = jwt.sign(
       { userId: user.accountId ? user.accountId : user._id, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
