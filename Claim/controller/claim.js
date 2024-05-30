@@ -1639,6 +1639,30 @@ exports.editClaim = async (req, res) => {
         })
         return;
       }
+      //Send notification to all
+      let IDs = await supportingFunction.getUserIds()
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })   
+      if (servicerPrimary) {
+        IDs.push(servicerPrimary._id)
+      }
+      let notificationData1 = {
+        title: "Repair Parts/ labor update",
+        description: "The  repair part update for " + checkClaim.unique_key + " claim",
+        userId: req.userId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData1);
+
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(servicerPrimary.email);
+      let emailData = {
+        senderName: '',
+        content:"The  repair part update for " + checkClaim.unique_key + " claim",
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Repair Parts/ labor update", emailData))
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
