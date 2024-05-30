@@ -1450,7 +1450,7 @@ exports.addClaim = async (req, res, next) => {
       senderName: '',
       content: "The claim has been added!."
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Archeive Order", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Add Claim", emailData))
 
     res.send({
       code: constant.successCode,
@@ -1783,7 +1783,11 @@ exports.editClaimStatus = async (req, res) => {
       return
     }
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
+
     let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
+
+    const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
+
     let claimTotal = await claimService.checkTotalAmount(query);
     let status = {};
     let updateData = {};
@@ -1817,6 +1821,42 @@ exports.editClaimStatus = async (req, res) => {
           date: new Date()
         }
       ]
+
+      //Send notification to all
+      let IDs = await supportingFunction.getUserIds()
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      if (resellerPrimary) {
+        IDs.push(resellerPrimary._id)
+      }
+      if (servicerPrimary) {
+        IDs.push(servicerPrimary._id)
+      }
+      IDs.push(customerPrimary._id)
+      IDs.push(dealerPrimary._id)
+      let notificationData1 = {
+        title: "Customer Status Update",
+        description: "The customer status has been updated for " + checkClaim.unique_key + "",
+        userId: req.userId,
+        contentId: checkClaim._id,
+        flag: 'claim',
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData1);
+      // Send Email code here
+      let notificationEmails = await supportingFunction.getUserEmails();
+      notificationEmails.push(dealerPrimary.email);
+      notificationEmails.push(customerPrimary?.email);
+      notificationEmails.push(resellerPrimary?.email);
+      notificationEmails.push(servicerPrimary?.email);
+
+      let emailData = {
+        senderName: '',
+        content: "The customer status has been updated for " + checkClaim.unique_key + "",
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Customer Status Update", emailData))
 
     }
     if (data.hasOwnProperty("repairStatus")) {
@@ -2012,17 +2052,16 @@ exports.editServicer = async (req, res) => {
       description: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       userId: req.userId,
       contentId: null,
-      flag: 'order',
+      flag: 'claim',
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
     let emailData = {
       senderName: getPrimary.firstName,
-      content:"The servicer has been updated for the claim " + checkClaim.unique_key + "",
+      content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Servicer Update", emailData))
     res.send({
