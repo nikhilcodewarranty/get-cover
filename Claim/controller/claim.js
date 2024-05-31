@@ -642,68 +642,7 @@ exports.getAllClaims = async (req, res, next) => {
           localField: "contracts.orderId",
           foreignField: "_id",
           as: "contracts.orders",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-            //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-
-            // {
-            //   $lookup: {
-            //     from: "dealers",
-            //     localField: "dealerId",
-            //     foreignField: "_id",
-            //     as: "dealers",
-            //     pipeline: [
-            //       // {
-            //       //   $match:
-            //       //   {
-            //       //     $and: [
-            //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       //       { isDeleted: false },
-            //       //     ]
-            //       //   },
-            //       // },
-            //       {
-            //         $lookup: {
-            //           from: "servicer_dealer_relations",
-            //           localField: "_id",
-            //           foreignField: "dealerId",
-            //           as: "dealerServicer",
-            //         }
-            //       },
-            //     ]
-            //   }
-            // },
-            // {
-            //   $unwind: "$dealers"
-            // },
-            // {
-            //   $lookup: {
-            //     from: "resellers",
-            //     localField: "resellerId",
-            //     foreignField: "_id",
-            //     as: "resellers",
-            //   }
-            // },
-            // {
-            //   $lookup: {
-            //     from: "serviceproviders",
-            //     localField: "servicerId",
-            //     foreignField: "_id",
-            //     as: "servicers",
-            //   }
-            // },
-
-          ]
         },
-
       },
       {
         $unwind: "$contracts.orders"
@@ -716,6 +655,7 @@ exports.getAllClaims = async (req, res, next) => {
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.isDeleted": false },
+            // { "contracts.orders.resellerName": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             match
           ]
         },
