@@ -527,12 +527,10 @@ exports.editCustomer = async (req, res) => {
       return;
     }
     if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-      console.log("I am %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", data.isAccountCreate);
       let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
       console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)
     } else {
       let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
-      console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&", updatePrimaryUser, data.isAccountCreate);
     }
 
     //send notification to dealer,customer,admin,reseller
@@ -572,7 +570,7 @@ exports.editCustomer = async (req, res) => {
 
     let emailData = {
       senderName: checkDealer.name,
-      content: "The customer " + checkDealer.name + "" + " " + "has been updated successfully."
+      content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
 
