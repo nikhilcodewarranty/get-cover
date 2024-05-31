@@ -11,7 +11,6 @@ const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const LOG = require('../../User/model/logs')
-
 const dealerRelation = require("../../Provider/model/dealerServicer")
 const userService = require("../../User/services/userService");
 const role = require("../../User/model/role");
@@ -29,8 +28,8 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
 const path = require('path');
+const supportingFunction = require('../../config/supportingFunction')
 // Promisify fs.createReadStream for asynchronous file reading
-
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
@@ -38,8 +37,6 @@ const { string } = require('joi');
 const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
-
-
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         cb(null, path.join(__dirname, '../../uploads/resultFile'));
@@ -48,7 +45,6 @@ var StorageP = multer.diskStorage({
         cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
     }
 });
-
 var uploadP = multer({
     storage: StorageP,
 }).single('file');
@@ -59,9 +55,7 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
-
 //users api
-
 exports.getDealerUsers = async (req, res) => {
     try {
         let data = req.body
@@ -124,7 +118,6 @@ exports.getDealerUsers = async (req, res) => {
         })
     }
 };
-
 //price api
 exports.createDealerPriceBook = async (req, res) => {
     try {
@@ -216,7 +209,6 @@ exports.createDealerPriceBook = async (req, res) => {
         })
     }
 };
-
 exports.getDealerPriceBookById = async (req, res) => {
     try {
         if (req.role != "Dealer") {
@@ -280,7 +272,6 @@ exports.getDealerPriceBookById = async (req, res) => {
         })
     }
 };
-
 exports.getPriceBooks = async (req, res) => {
     try {
         let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
@@ -437,7 +428,6 @@ exports.getPriceBooks = async (req, res) => {
         })
     }
 };
-
 exports.getResellerCustomers = async (req, res) => {
     try {
         if (req.role !== "Dealer") {
@@ -527,7 +517,6 @@ exports.getResellerCustomers = async (req, res) => {
         })
     }
 };
-
 exports.customerOrders = async (req, res) => {
     try {
         if (req.role != 'Dealer') {
@@ -691,7 +680,6 @@ exports.customerOrders = async (req, res) => {
         })
     }
 };
-
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
         let data = req.body
@@ -787,7 +775,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         })
     }
 };
-
 exports.statusUpdate = async (req, res) => {
     try {
         // Check if the user has the required role
@@ -885,7 +872,6 @@ exports.statusUpdate = async (req, res) => {
         return
     }
 };
-
 exports.getResellerPriceBook = async (req, res) => {
     if (req.role != "Dealer") {
         res.send({
@@ -953,7 +939,6 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
 };
-
 exports.getResellerUsers = async (req, res) => {
     if (req.role != "Dealer") {
         res.send({
@@ -979,7 +964,6 @@ exports.getResellerUsers = async (req, res) => {
     });
     return;
 };
-
 //servicers api
 exports.getResellerServicers = async (req, res) => {
     try {
@@ -1077,8 +1061,6 @@ exports.getResellerServicers = async (req, res) => {
     }
 
 }
-
-
 exports.getDealerServicers = async (req, res) => {
     try {
         let data = req.body
@@ -1308,7 +1290,6 @@ exports.getDealerServicers = async (req, res) => {
         })
     }
 }
-
 exports.getServicersList = async (req, res) => {
     try {
         let data = req.body
@@ -1424,7 +1405,6 @@ exports.createDeleteRelation = async (req, res) => {
         })
     }
 };
-
 //customers api
 exports.createCustomer = async (req, res, next) => {
     try {
@@ -1504,6 +1484,17 @@ exports.createCustomer = async (req, res, next) => {
         }
         const createdCustomer = await customerService.createCustomer(customerObject);
         if (!createdCustomer) {
+            //Save Logs create Customer
+            let logData = {
+                userId: req.userId,
+                endpoint: "dealerPortal/createCustomer",
+                body: data,
+                response: {
+                    code: constant.errorCode,
+                    message: "Unable to create the customer"
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "Unable to create the customer"
@@ -1513,19 +1504,40 @@ exports.createCustomer = async (req, res, next) => {
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+
+        //Save Logs create Customer
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createCustomer",
+            body: data,
+            response: {
+                code: constant.errorCode,
+                message: "Customer created successfully",
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.successCode,
             message: "Customer created successfully",
             result: data
         })
     } catch (err) {
+        //Save Logs create Customer
+        let logData = {
+            userId: req.userId,
+            endpoint: "dealerPortal/createCustomer",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
         res.send({
             code: constant.errorCode,
             message: err.message
         })
     }
 };
-
 exports.getDealerCustomers = async (req, res) => {
     try {
         if (req.role != 'Dealer') {
@@ -1620,7 +1632,6 @@ exports.getDealerCustomers = async (req, res) => {
         })
     }
 };
-
 exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
@@ -1669,9 +1680,6 @@ exports.getCustomerInOrder = async (req, res) => {
         });
     }
 };
-
-
-
 //Get servicer in orders
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
@@ -1920,7 +1928,6 @@ exports.createReseller = async (req, res) => {
         })
     }
 };
-
 exports.getResellerOrders = async (req, res) => {
     try {
         // if (req.role != 'Dealer') {
@@ -2223,7 +2230,6 @@ exports.getResellerOrders = async (req, res) => {
 
     }
 };
-
 exports.getDealerResellers = async (req, res) => {
     try {
         // if (req.role != 'Dealer') {
@@ -2320,7 +2326,6 @@ exports.getDealerResellers = async (req, res) => {
         })
     }
 };
-
 exports.getDealerResellersInOrder = async (req, res) => {
     try {
         // if (req.role != 'Dealer') {
@@ -2694,7 +2699,6 @@ exports.getDealerOrders = async (req, res) => {
         })
     }
 };
-
 exports.getDealerArchievedOrders = async (req, res) => {
     try {
         {
@@ -2954,8 +2958,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
         })
     }
 };
-
-
 exports.getAllContracts = async (req, res) => {
     try {
         let data = req.body
@@ -3154,8 +3156,6 @@ exports.getAllContracts = async (req, res) => {
         })
     }
 };
-
-
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -3325,8 +3325,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
-
-
 exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
@@ -3463,7 +3461,6 @@ exports.createOrder = async (req, res) => {
             }
         }
         let savedResponse = await orderService.addOrder(data);
-
         // Update Term and condtion while create order
         let uploadTermAndCondtion = await orderService.updateOrder(
             { _id: savedResponse._id },
@@ -3501,6 +3498,25 @@ exports.createOrder = async (req, res) => {
         }
         await LOG(logData).save()
 
+        //send notification to admin and dealer 
+        let IDs = await supportingFunction.getUserIds()
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.userId, isPrimary: true })
+        if (data.resellerId) {
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+            IDs.push(resellerPrimary._id)
+        }
+        IDs.push(getPrimary._id)
+        let notificationData = {
+            title: "New order created",
+            description: data.dealerPurchaseOrder + " " + "order has been created",
+            userId: req.userId,
+            contentId: null,
+            flag: 'order',
+            notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
+
         res.send({
             code: constant.successCode,
             message: 'Success!'
@@ -3524,10 +3540,16 @@ exports.createOrder = async (req, res) => {
         })
     }
 };
-
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
+        let logData = {
+            endpoint: "dealerPortal/editOrderDetail",
+            body: data,
+            userId: req.userId,
+            response: {}
+        };
+
         // let data = {
         //     "_id": "65c5f9b57e935a6b4aa10cf9",
         //     "dealerId": "65c49fa82e3394537511528e",
@@ -3681,15 +3703,12 @@ exports.editOrderDetail = async (req, res) => {
                 originalName: file.originalname,
                 filePath: file.path,
             }));
-
             const filteredProducts = data.productsArray.filter(
                 (product) => product.orderFile.fileName !== ""
             );
             const filteredProducts2 = data.productsArray.filter(
                 (product) => product.file === ""
             );
-
-
             const productsWithOrderFiles = filteredProducts.map((product, index) => {
                 const file = uploadedFiles[index];
 
@@ -3747,6 +3766,11 @@ exports.editOrderDetail = async (req, res) => {
             { new: true }
         );
         if (!savedResponse) {
+            logData.response = {
+                code: constant.errorCode,
+                message: "unable to update order",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
                 message: "unable to create order",
@@ -3985,19 +4009,16 @@ exports.editOrderDetail = async (req, res) => {
                             // }
                         }
                     }
-
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
                     // let eligibilty = claimStatus == "Active" ? true : false
-
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
                         productName: priceBook[0].name,
                         pName: priceBook[0]?.pName,
-                        minDate:minDate,
+                        minDate: minDate,
                         manufacture: data.brand,
                         model: data.model,
                         // partsWarranty: data.partsWarranty1,
@@ -4026,6 +4047,11 @@ exports.editOrderDetail = async (req, res) => {
                 let createContract = await contractService.createBulkContracts(contractArray);
                 if (!createContract) {
                     if (!saveContracts) {
+                        logData.response = {
+                            code: constant.errorCode,
+                            message: "unable to create contracts",
+                        };
+                        await LOG(logData).save();
                         let savedResponse = await orderService.updateOrder(
                             { _id: checkOrder._id },
                             { status: "Pending" },
@@ -4039,6 +4065,30 @@ exports.editOrderDetail = async (req, res) => {
                     }
                 }
                 if (createContract) {
+                    //Save Logs create order
+                    logData.response = {
+                        code: constant.successCode,
+                        message: "Success",
+                    };
+                    await LOG(logData).save();
+                    //send notification to dealer,reseller,admin,customer
+                    let IDs = await supportingFunction.getUserIds()
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                    if (resellerPrimary) {
+                        IDs.push(resellerPrimary._id)
+                    }
+                    IDs.push(dealerPrimary._id, customerPrimary._id)
+                    let notificationData1 = {
+                        title: "Order update and processed",
+                        description: "The order has been update and processed",
+                        userId: req.userId,
+                        contentId: savedResponse._id,
+                        flag: 'order',
+                        notificationFor: IDs
+                    };
+                    let createNotification = await userService.createNotification(notificationData1);
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -4047,6 +4097,11 @@ exports.editOrderDetail = async (req, res) => {
 
             })
         } else {
+            logData.response = {
+                code: constant.successCode,
+                message: "Success",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -4074,7 +4129,6 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
@@ -4226,7 +4280,6 @@ exports.getDashboardData = async (req, res) => {
         })
     }
 };
-
 exports.addClaim = async (req, res, next) => {
     try {
         if (req.role != 'Dealer') {
@@ -4326,7 +4379,6 @@ exports.addClaim = async (req, res, next) => {
         })
     }
 };
-
 exports.getAllClaims = async (req, res, next) => {
     try {
         if (req.role != 'Dealer') {

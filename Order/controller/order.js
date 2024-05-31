@@ -2,11 +2,13 @@ const { Order } = require("../model/order");
 require("dotenv").config()
 const orderResourceResponse = require("../utils/constant");
 const pdf = require('html-pdf');
-
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
 
 const orderService = require("../services/orderService");
 const supportingFunction = require('../../config/supportingFunction')
 const LOG = require('../../User/model/logs')
+const emailConstant = require('../../config/emailConstant');
 
 // const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
@@ -80,12 +82,10 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
-
         let checkDealer = await dealerService.getDealerById(
             data.dealerId,
             projection
         );
-
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -135,9 +135,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
-
         data.createdBy = req.userId;
-
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
@@ -204,7 +202,6 @@ exports.createOrder1 = async (req, res) => {
                 }
             }
         }
-
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             let logData = {
@@ -2996,6 +2993,17 @@ exports.archiveOrder = async (req, res) => {
             }
         }
         await LOG(logData).save()
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(dealerPrimary.email);
+        notificationEmails.push(resellerPrimary?.email);
+
+        let emailData = {
+            senderName: '',
+            content: "The order has been archeived!."
+        }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Archeive Order", emailData))
+        //  }
         res.send({
             code: constant.successCode,
             message: "Success!",
