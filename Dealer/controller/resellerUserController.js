@@ -361,6 +361,12 @@ exports.createOrder = async (req, res) => {
             { _id: savedResponse._id },
         );
 
+        let uploadTermAndCondtion = await orderService.updateOrder(
+            { _id: savedResponse._id },
+            { termCondition: checkDealer?.termCondition },
+            { new: true }
+        );
+
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
@@ -612,6 +618,7 @@ exports.createOrder = async (req, res) => {
                 console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
+
 
                 //  console.log("saveContracts==================", saveContracts)
 
