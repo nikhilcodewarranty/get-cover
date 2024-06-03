@@ -3001,6 +3001,9 @@ exports.getAllContracts = async (req, res) => {
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
         }
+        if (resellerIds.length > 0) {
+            orderAndCondition.push({ resellerId: { $in: resellerIds } })
+        }
         if (req.role == 'Dealer') {
             userSearchCheck = 1
             orderAndCondition.push({ dealerId: { $in: [req.userId] } })
