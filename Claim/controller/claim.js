@@ -537,6 +537,7 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.resellerId": 1,
               "contracts.orders.dealers.name": 1,
               "contracts.orders.dealers.isServicer": 1,
+              "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
               // "contracts.orders.dealers.dealerServicer": 1,
@@ -567,7 +568,8 @@ exports.getAllClaims = async (req, res, next) => {
                   in: {
                     "_id": "$$reseller._id",
                     "name": "$$reseller.name",
-                    "isServicer": "$$reseller.isServicer"
+                    "isServicer": "$$reseller.isServicer",
+                    "status": "$$reseller.status"
                   }
                 }
               }
@@ -735,9 +737,6 @@ exports.getAllClaims = async (req, res, next) => {
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
-
-
-
     //   console.log("-----------------------------------------",allServicer)
     // res.json(resultFiter);return;
     const result_Array = resultFiter.map((item1) => {
@@ -757,10 +756,10 @@ exports.getAllClaims = async (req, res, next) => {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
 
-      if (item1.contracts.orders.resellers[0]?.isServicer) {
+      if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
         servicer.unshift(item1.contracts.orders.resellers[0])
       }
-      if (item1.contracts.orders.dealers.isServicer) {
+      if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
       if (item1.servicerId != null) {
