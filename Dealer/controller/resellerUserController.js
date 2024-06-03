@@ -260,6 +260,18 @@ exports.createOrder = async (req, res) => {
             })
             return;
         }
+        let checkDealer = await dealerService.getDealerById(
+            checkReseller.dealerId,
+            projection
+        );
+
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found",
+            });
+            return;
+        }
         if (!checkDealer.status) {
             res.send({
                 code: constant.errorCode,
@@ -273,18 +285,7 @@ exports.createOrder = async (req, res) => {
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
 
-        let checkDealer = await dealerService.getDealerById(
-            checkReseller.dealerId,
-            projection
-        );
-
-        if (!checkDealer) {
-            res.send({
-                code: constant.errorCode,
-                message: "Dealer not found",
-            });
-            return;
-        }
+  
 
         if (data.servicerId) {
             let query = {
