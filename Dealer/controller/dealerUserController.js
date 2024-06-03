@@ -3357,6 +3357,13 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
+        if (!checkDealer.status) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order can not be created, due to the dealer is inactive",
+            });
+            return;
+        }
         if (data.servicerId) {
             let query = {
                 $or: [
