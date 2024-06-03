@@ -3789,6 +3789,9 @@ exports.getDealerContract = async (req, res) => {
     if (servicerIds.length > 0) {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
     }
+    if (resellerIds.length > 0) {
+      orderAndCondition.push({ servicerId: { $in: resellerIds } })
+    }
     if (req.params.dealerId) {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
@@ -3880,9 +3883,6 @@ exports.getDealerContract = async (req, res) => {
         },
       ]
     } else {
-      console.log("sklfjsdlkjflskjflskjdflksj222222222222222222222222222222222222222222222222222222222")
-
-
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
 
