@@ -268,7 +268,7 @@ exports.createOrder1 = async (req, res) => {
             description: data.dealerPurchaseOrder + " " + "order has been created",
             userId: req.userId,
             contentId: null,
-            flag: 'order', 
+            flag: 'order',
             notificationFor: IDs
         };
 
@@ -279,10 +279,10 @@ exports.createOrder1 = async (req, res) => {
         notificationEmails.push(getPrimary.email);
         let emailData = {
             senderName: getPrimary.firstName,
-            content: "The new order has been created for " + getPrimary.firstName + "",
+            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
         }
 
-        console.log("fsdfdfdsfdfsdsdds",notificationEmails);
+        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
 
@@ -583,7 +583,7 @@ exports.createOrder1 = async (req, res) => {
                     notificationEmails.push(resellerPrimary?.email);
                     let emailData = {
                         senderName: '',
-                        content: "The new order has been created and processed for" + dealerPrimary.firstName + "",
+                        content: "The new order " + checkOrder.unique_key + " has been created and processed for" + dealerPrimary.firstName + "",
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
@@ -3454,7 +3454,7 @@ exports.editOrderDetail = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
-            description: "The order has been updated",
+            description: "The order " + savedResponse.unique_key + " has been updated",
             userId: req.userId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -3764,7 +3764,7 @@ exports.editOrderDetail = async (req, res) => {
                 IDs.push(dealerPrimary._id, customerPrimary._id)
                 let notificationData1 = {
                     title: "Order update and processed",
-                    description: "The order has been update and processed",
+                    description: "The order " + savedResponse.unique_key + " has been update and processed",
                     userId: req.userId,
                     contentId: savedResponse._id,
                     flag: 'order',
@@ -4142,7 +4142,7 @@ exports.markAsPaid = async (req, res) => {
             IDs.push(dealerPrimary._id, customerPrimary._id)
             let notificationData1 = {
                 title: "Mark As Paid",
-                description: "The order has been mark as paid",
+                description: "The order " + checkOrder.unique_key + " has been mark as paid",
                 userId: req.userId,
                 contentId: null,
                 flag: 'order',
