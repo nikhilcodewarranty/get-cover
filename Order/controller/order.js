@@ -268,7 +268,7 @@ exports.createOrder1 = async (req, res) => {
             description: data.dealerPurchaseOrder + " " + "order has been created",
             userId: req.userId,
             contentId: null,
-            flag: 'order',
+            flag: 'order', 
             notificationFor: IDs
         };
 
