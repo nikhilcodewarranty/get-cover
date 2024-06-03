@@ -3790,7 +3790,7 @@ exports.getDealerContract = async (req, res) => {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
     }
     if (resellerIds.length > 0) {
-      orderAndCondition.push({ servicerId: { $in: resellerIds } })
+      orderAndCondition.push({ resellerId: { $in: resellerIds } })
     }
     if (req.params.dealerId) {
       userSearchCheck = 1
