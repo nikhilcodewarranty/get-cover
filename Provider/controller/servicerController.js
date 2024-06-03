@@ -18,7 +18,7 @@ const randtoken = require('rand-token').generator()
 exports.getServicerDetail = async (req, res) => {
     try {
         console.log(req.userId)
-        let getMetaData = await userService.findOneUser({ _id: req.userId, isPrimary: true })
+        let getMetaData = await userService.findOneUser({ _id: req.teammateId })
         if (!getMetaData) {
             res.send({
                 code: constant.errorCode,
