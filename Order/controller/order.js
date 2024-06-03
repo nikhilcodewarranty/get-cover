@@ -282,6 +282,8 @@ exports.createOrder1 = async (req, res) => {
             content: "The new order has been created for " + getPrimary.firstName + "",
         }
 
+        console.log("fsdfdfdsfdfsdsdds",notificationEmails);
+
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
 
 
