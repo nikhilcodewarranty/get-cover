@@ -360,13 +360,11 @@ exports.createOrder = async (req, res) => {
         let checkOrder = await orderService.getOrder(
             { _id: savedResponse._id },
         );
-
         let uploadTermAndCondtion = await orderService.updateOrder(
             { _id: savedResponse._id },
             { termCondition: checkDealer?.termCondition },
             { new: true }
         );
-
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );

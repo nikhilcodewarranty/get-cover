@@ -785,7 +785,6 @@ exports.cronJobEligible = async (req, res) => {
     let result = await contractService.getAllContracts2(lookupQuery);
 
     // res.send({
-    //   code: constant.successCode,
     //   result
     // })
     // return;
@@ -936,12 +935,12 @@ exports.cronJobEligible = async (req, res) => {
     }
 
     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-    let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+    let eligibilty =  new Date(minDate) < new Date() ? true : false 
       //let productValue = result[i].productValue;
       if (eligibilty) {
         contractIds.push(contractId)
         updateDoc = {
-          'updateMany': {
+          'updateMany': { 
             'filter': { '_id': contractId },
             update: { $set: { eligibilty: eligibilty } },
             'upsert': false
