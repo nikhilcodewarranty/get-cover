@@ -26,6 +26,7 @@ const contract = require('./Contract/contractServer')
 const order = require('./Order/orderServer')
 const price = require('./PriceBook/priceServer')
 const userRoutes = require("./User/routes/user");
+const reportingRoutes = require("./User/routes/reporting");
 const dealerRoutes = require("./Dealer/routes/dealer");
 const dealerUserRoutes = require("./Dealer/routes/dealerUser");
 const resellerRoutes = require("./Dealer/routes/reseller");
@@ -144,6 +145,7 @@ cron.schedule(' 6 0 * * *', () => {
 });
 //common routing for server
 app.use("/api-v1/user", userRoutes);
+app.use("/api-v1/reporting", reportingRoutes);
 app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
 app.use("/api-v1/reseller", resellerRoutes);
