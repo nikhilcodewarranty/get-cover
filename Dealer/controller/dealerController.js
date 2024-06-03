@@ -3785,7 +3785,7 @@ exports.getDealerContract = async (req, res) => {
         resellerIds.push("1111121ccf9d400000000000")
       }
     };
-    let orderAndCondition = []
+    let orderAndCondition = [] 
     if (servicerIds.length > 0) {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
     }
