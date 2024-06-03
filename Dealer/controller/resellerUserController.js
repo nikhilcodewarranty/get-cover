@@ -260,6 +260,13 @@ exports.createOrder = async (req, res) => {
             })
             return;
         }
+        if (!checkDealer.status) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order can not be created, due to the dealer is inactive",
+            });
+            return;
+        }
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = req.userId;
