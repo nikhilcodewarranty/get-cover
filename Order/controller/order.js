@@ -3469,7 +3469,7 @@ exports.editOrderDetail = async (req, res) => {
         // notificationEmails.push(resellerPrimary?.email);
         let emailData = {
             senderName: '',
-            content: "The new order has been updated",
+            content: "The  order " + savedResponse.unique_key + " has been updated",
         }
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Updated", emailData))
@@ -3779,7 +3779,7 @@ exports.editOrderDetail = async (req, res) => {
                 notificationEmails.push(resellerPrimary?.email);
                 let emailData = {
                     senderName: '',
-                    content: "The new order has been updated and processed",
+                    content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                 }
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))

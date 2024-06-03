@@ -7,7 +7,7 @@ const contractService = require("../../Contract/services/contractService");
 const resellerService = require("../services/resellerService");
 let claimService = require('../../Claim/services/claimService')
 const LOG = require('../../User/model/logs')
-
+const supportingFunction = require('../../config/supportingFunction')
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
@@ -393,6 +393,38 @@ exports.createOrder = async (req, res) => {
         returnField.push(obj);
 
 
+        //send notification to admin and dealer 
+        let IDs = await supportingFunction.getUserIds()
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        if (data.resellerId) {
+            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+            IDs.push(resellerPrimary._id)
+        }
+        IDs.push(getPrimary._id)
+        let notificationData = {
+            title: "New order created",
+            description: "The new order " + checkOrder.unique_key + " has been created",
+            userId: checkDealer._id,
+            contentId: null,
+            flag: 'order',
+            notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
+
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(getPrimary.email);
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
+        }
+
+        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
+
+
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("All condition verify+++++++++++")
             let savedResponse = await orderService.updateOrder(
@@ -406,7 +438,6 @@ exports.createOrder = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
-
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -623,6 +654,38 @@ exports.createOrder = async (req, res) => {
                 console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
+
+                //send notification to dealer,reseller,admin,customer
+                let IDs = await supportingFunction.getUserIds()
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
+                if (resellerPrimary) {
+                    IDs.push(resellerPrimary?._id)
+                }
+                IDs.push(dealerPrimary._id, customerPrimary._id)
+                let notificationData1 = {
+                    title: "Order update and processed",
+                    description: "The order has been update and processed",
+                    userId: req.userId,
+                    contentId: savedResponse._id,
+                    flag: 'order',
+                    notificationFor: IDs
+                };
+                let createNotification = await userService.createNotification(notificationData1);
+
+
+                // Send Email code here
+                let notificationEmails = await supportingFunction.getUserEmails();
+                notificationEmails.push(customerPrimary.email);
+                notificationEmails.push(dealerPrimary.email);
+                notificationEmails.push(resellerPrimary?.email);
+                let emailData = {
+                    senderName: '',
+                    content: "The order has been updated and processed",
+                }
+
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
 
 
                 //  console.log("saveContracts==================", saveContracts)
