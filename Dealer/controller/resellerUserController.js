@@ -253,6 +253,7 @@ exports.createOrder = async (req, res) => {
         let data = req.body;
 
         const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+        let projection = { isDeleted: 0 };
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -283,7 +284,7 @@ exports.createOrder = async (req, res) => {
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = req.userId;
         data.venderOrder = data.dealerPurchaseOrder;
-        let projection = { isDeleted: 0 };
+ 
 
   
 
