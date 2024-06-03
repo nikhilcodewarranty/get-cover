@@ -2265,7 +2265,7 @@ exports.getServicerInOrders = async (req, res) => {
             return;
         }
     }
-    if (data.resellerId) {
+    if (data.resellerId) { 
         var checkReseller = await resellerService.getReseller({
             _id: data.resellerId,
         });

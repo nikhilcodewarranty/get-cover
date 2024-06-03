@@ -7,7 +7,7 @@ const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
 const orderService = require("../../Order/services/orderService");
 // const sgMail = require('@sendgrid/mail');
-const moment = require("moment");
+const moment = require("moment"); 
 const LOG = require('../model/logs')
 // sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
