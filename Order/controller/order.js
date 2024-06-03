@@ -274,6 +274,16 @@ exports.createOrder1 = async (req, res) => {
 
         let createNotification = await userService.createNotification(notificationData);
 
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(getPrimary.email);
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "The new order has been created for " + getPrimary.firstName + "",
+        }
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
+
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
@@ -563,6 +573,18 @@ exports.createOrder1 = async (req, res) => {
                     };
 
                     let createNotification = await userService.createNotification(notificationData1);
+
+                    // Send Email code here
+                    let notificationEmails = await supportingFunction.getUserEmails();
+                    notificationEmails.push(customerPrimary.email);
+                    notificationEmails.push(dealerPrimary.email);
+                    notificationEmails.push(resellerPrimary?.email);
+                    let emailData = {
+                        senderName: '',
+                        content: "The new order has been created and processed for" + dealerPrimary.firstName + "",
+                    }
+
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -2272,7 +2294,7 @@ exports.getServicerInOrders = async (req, res) => {
             return;
         }
     }
-    if (data.resellerId) { 
+    if (data.resellerId) {
         var checkReseller = await resellerService.getReseller({
             _id: data.resellerId,
         });
@@ -3438,6 +3460,18 @@ exports.editOrderDetail = async (req, res) => {
         };
         let createNotification = await userService.createNotification(notificationData);
 
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        // notificationEmails.push(customerPrimary.email);
+        notificationEmails.push(dealerPrimary.email);
+        // notificationEmails.push(resellerPrimary?.email);
+        let emailData = {
+            senderName: '',
+            content: "The new order has been updated",
+        }
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Updated", emailData))
+
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
@@ -3735,6 +3769,18 @@ exports.editOrderDetail = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
+
+                // Send Email code here
+                let notificationEmails = await supportingFunction.getUserEmails();
+                notificationEmails.push(customerPrimary.email);
+                notificationEmails.push(dealerPrimary.email);
+                notificationEmails.push(resellerPrimary?.email);
+                let emailData = {
+                    senderName: '',
+                    content: "The new order has been updated and processed",
+                }
+
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
 
             })
             logData.response = {
@@ -4101,6 +4147,18 @@ exports.markAsPaid = async (req, res) => {
                 notificationFor: IDs
             };
             let createNotification = await userService.createNotification(notificationData1);
+
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            notificationEmails.push(customerPrimary.email);
+            notificationEmails.push(dealerPrimary.email);
+            notificationEmails.push(resellerPrimary?.email);
+            let emailData = {
+                senderName: '',
+                content: "The new order has been marked as paid",
+            }
+
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Mark Paid", emailData))
         })
 
         let paidDate = {
