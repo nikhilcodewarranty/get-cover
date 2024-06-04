@@ -786,7 +786,7 @@ exports.updateStatus = async (req, res) => {
             result: updateData
           }
         }
- 
+
         await LOG(logData).save()
 
         res.send({
@@ -1891,8 +1891,8 @@ exports.paidUnpaidClaim = async (req, res) => {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
 
-    console.log("flag-------------------------------",flag)
-    console.log("dateQuery-------------------------------",dateQuery)
+    console.log("flag-------------------------------", flag)
+    console.log("dateQuery-------------------------------", dateQuery)
 
 
 
