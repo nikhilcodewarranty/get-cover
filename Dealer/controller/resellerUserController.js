@@ -273,7 +273,7 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
-        if (!checkDealer.status) {
+        if (!checkDealer.accountStatus) {
             res.send({
                 code: constant.errorCode,
                 message: "Order can not be created, due to the dealer is inactive",
@@ -283,10 +283,7 @@ exports.createOrder = async (req, res) => {
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = req.userId;
-        data.venderOrder = data.dealerPurchaseOrder;
- 
-
-  
+        data.venderOrder = data.dealerPurchaseOrder; 
 
         if (data.servicerId) {
             let query = {
@@ -824,6 +821,13 @@ exports.editOrderDetail = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "Dealer not found",
+            });
+            return;
+        }
+        if (!checkDealer.accountStatus) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order can not be process, due to the dealer is inactive",
             });
             return;
         }
