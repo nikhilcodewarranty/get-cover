@@ -378,18 +378,18 @@ exports.getServicerDealers = async (req, res) => {
         // return false;
 
         let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
-        let result_Array = dealarUser.map(item1 => {
-            const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+        // let result_Array = dealarUser.map(item1 => {
+        //     const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
 
-            if (matchingItem) {
-                return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    dealerData: matchingItem.toObject()
-                };
-            } else {
-                return dealerData.toObject();
-            }
-        });
+        //     if (matchingItem) {
+        //         return {
+        //             ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+        //             dealerData: matchingItem.toObject()
+        //         };
+        //     } else {
+        //         return dealerData.toObject();
+        //     }
+        // });
 
 
         let orderQuery = { dealerId: { $in: ids }, status: "Active" };
@@ -408,20 +408,20 @@ exports.getServicerDealers = async (req, res) => {
         let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
     
     
-        //  result_Array = dealarUser.map(item1 => {
-        //   const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-        //   const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+        const  result_Array = dealarUser.map(item1 => {
+          const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+          const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
     
-        //   if (matchingItem || orders) {
-        //     return {
-        //       ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-        //       dealerData: matchingItem.toObject(),
-        //       ordersData: orders ? orders : {}
-        //     };
-        //   } else {
-        //     return dealerData.toObject();
-        //   }
-        // });
+          if (matchingItem || orders) {
+            return {
+              ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+              dealerData: matchingItem.toObject(),
+              ordersData: orders ? orders : {}
+            };
+          } else {
+            return dealerData.toObject();
+          }
+        });
 
 
 
