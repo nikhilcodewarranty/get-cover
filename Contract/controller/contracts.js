@@ -692,12 +692,9 @@ exports.getContractById = async (req, res) => {
     if (claimTotal.length > 0) {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
-
-    console.log("getData-------------------", getData)
-
     let orderProductId = getData[0].orderProductId
     let order = getData[0].order
-    //res.json(order);return;
+   // res.json(order);return;
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id?.toString() == orderProductId?.toString())
       if (productsArray.length > 0) {

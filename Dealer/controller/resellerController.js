@@ -1964,12 +1964,12 @@ exports.changeResellerStatus = async (req, res) => {
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
             notificationEmails.push(getPrimary.email);
-            console.log("notificationEmails---------------", notificationEmails)
             // const notificationContent = {
             //     content: singleReseller.name + " " + "status has been updated successfully!"
             // }
 
             const status_content = req.body.status ? 'Active' : 'Inactive';
+            
             let emailData = {
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately."
