@@ -942,23 +942,14 @@ exports.statusUpdate = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
-    // let notificationEmails = await supportingFunction.getUserEmails();
-    // let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
-    // notificationEmails.push(dealerPrimary.email)
+    let notificationEmails = await supportingFunction.getUserEmails();
+    notificationEmails.push(getPrimary.email);
+    let emailData = {
+      senderName: singleReseller.name,
+      content:  getDealerDetail.name + " , " + "your price book has been updated",
+    }
 
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: checkPriceBookMain.name,
-    //   c1: "Dealer Price Book",
-    //   c2: checkPriceBookMain.priceBook,
-    //   c3: "has been created successfully for the dealer!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "PriceBook"
-    // }
-    // let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Data", emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -2419,10 +2410,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
       let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      console.log("data++++++++dddddddddddddddddd+++++++", totalDataComing1)
-
       totalDataComing1 = totalDataComing1.map(item => {
-        console.log("item check )))))))))))))))))))", item)
         if (!item['Product SKU']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
@@ -2444,14 +2432,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return
       }
-      console.log("data++++++++dddddddddddddddddd+++++++", totalDataComing1)
 
       const totalDataComing = totalDataComing1.map(item => {
-        console.log("ccccc++++++++dddddddddddddddddd+++++++", item)
-
         const keys = Object.keys(item);
-        console.log("keys++++++++dddddddddddddddddd+++++++", keys)
-
         return {
           priceBook: item[keys[0]],
           retailPrice: item[keys[1]],
@@ -2626,20 +2609,31 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
 
         const htmlTableString = convertArrayToHTMLTable(csvArray);
-        const mailing = sgMail.send(emailConstant.sendCsvFile(['amit@codenomad.net', 'anil@codenomad.net'], htmlTableString));
-      }
-      // Send notification when added in bulk
-      let IDs = await supportingFunction.getUserIds()
-      IDs.push(req.body.dealerId)
-      let notificationData = {
-        title: "Dealer Price Book Uploaded",
-        description: "The priceBook has been successfully uploaded",
-        userId: req.userId,
-        flag: 'priceBook',
-        notificationFor: IDs
-      };
 
-      let createNotification = await userService.createNotification(notificationData);
+        //Send notification to admin,dealer,reseller
+
+        let IDs = await supportingFunction.getUserIds()
+
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        IDs.push(dealerPrimary._id)
+        let notificationData = {
+          title: "Dealer Price Book Uploaded",
+          description: "The priceBook has been successfully uploaded",
+          userId: checkDealer._id,
+          flag: 'priceBook',
+          notificationFor: IDs
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(dealerPrimary.email);
+        // let emailData = {
+        //   senderName: checkReseller.name,
+        //   content: "Information has been updated successfully! effective immediately."
+        // }
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, htmlTableString));
+      }
       res.send({
         code: constant.successCode,
         message: "Added successfully"

@@ -777,10 +777,7 @@ exports.editResellers = async (req, res) => {
                 status: true
             };
         }
-
-        console.log("$$$------------------------------------------", resellerUserCreateria, newValue)
         const changeResellerUser = await userService.updateUser(resellerUserCreateria, newValue, { new: true });
-
         //Send notification to admin,dealer,reseller
 
         let IDs = await supportingFunction.getUserIds()
@@ -807,19 +804,6 @@ exports.editResellers = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
-        // const notificationContent = {
-        //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-        // }    
-        // let emailData = {
-        //     dealerName: checkReseller.name,
-        //     c1: "The Reseller",
-        //     c2: checkReseller.name,
-        //     c3: "has been updated successfully!.",
-        //     c4: "",
-        //     c5: "",
-        //     role: "Servicer"
-        // }
-
         let emailData = {
             senderName: checkReseller.name,
             content: "Information has been updated successfully! effective immediately."

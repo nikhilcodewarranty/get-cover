@@ -3001,6 +3001,9 @@ exports.getAllContracts = async (req, res) => {
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
         }
+        if (resellerIds.length > 0) {
+            orderAndCondition.push({ resellerId: { $in: resellerIds } })
+        }
         if (req.role == 'Dealer') {
             userSearchCheck = 1
             orderAndCondition.push({ dealerId: { $in: [req.userId] } })
@@ -3515,7 +3518,7 @@ exports.createOrder = async (req, res) => {
         IDs.push(getPrimary._id)
         let notificationData = {
             title: "New order created",
-            description: data.dealerPurchaseOrder + " " + "order has been created",
+            description: "The new order " + savedResponse.unique_key + " has been created",
             userId: req.userId,
             contentId: null,
             flag: 'order',
@@ -3523,6 +3526,18 @@ exports.createOrder = async (req, res) => {
         };
 
         let createNotification = await userService.createNotification(notificationData);
+
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        notificationEmails.push(getPrimary.email);
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
+        }
+
+        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
 
         res.send({
             code: constant.successCode,
@@ -3819,6 +3834,33 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
 
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        IDs.push(dealerPrimary._id)
+        let notificationData = {
+            title: "Order update",
+            description: "The order " + checkOrder.unique_key + " has been updated",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData);
+
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        // notificationEmails.push(customerPrimary.email);
+        notificationEmails.push(dealerPrimary.email);
+        // notificationEmails.push(resellerPrimary?.email);
+        let emailData = {
+            senderName: '',
+            content: "The new order has been updated",
+        }
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Updated", emailData))
+
+
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
@@ -4096,6 +4138,19 @@ exports.editOrderDetail = async (req, res) => {
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData1);
+
+
+                    // Send Email code here
+                    let notificationEmails = await supportingFunction.getUserEmails();
+                    notificationEmails.push(customerPrimary.email);
+                    notificationEmails.push(dealerPrimary.email);
+                    notificationEmails.push(resellerPrimary?.email);
+                    let emailData = {
+                        senderName: '',
+                        content: "The order " + savedResponse.unique_key + " has been updated and processed",
+                    }
+
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
                     res.send({
                         code: constant.successCode,
                         message: "Success",
