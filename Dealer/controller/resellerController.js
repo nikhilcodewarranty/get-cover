@@ -418,7 +418,6 @@ exports.getResellerById = async (req, res) => {
         },
     ]
     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
-
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims
     let numberOfCompleletedClaims = [
@@ -1969,7 +1968,7 @@ exports.changeResellerStatus = async (req, res) => {
             // }
 
             const status_content = req.body.status ? 'Active' : 'Inactive';
-            
+
             let emailData = {
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately."

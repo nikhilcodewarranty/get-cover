@@ -914,7 +914,7 @@ exports.getCustomerById = async (req, res) => {
       //Get number of claims
       let numberOfCompleletedClaims = [
         {
-          $match: rejectedQuery
+          $match: claimQuery
         },
         {
           $lookup: {
