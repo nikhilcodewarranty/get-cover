@@ -377,7 +377,7 @@ exports.getServicerDealers = async (req, res) => {
         // return false;
 
         let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
-        const result_Array = dealarUser.map(item1 => {
+        let result_Array = dealarUser.map(item1 => {
             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
 
             if (matchingItem) {
@@ -389,6 +389,40 @@ exports.getServicerDealers = async (req, res) => {
                 return dealerData.toObject();
             }
         });
+
+
+        let orderQuery = { dealerId: { $in: ids }, status: "Active" };
+        let project = {
+          productsArray: 1,
+          dealerId: 1,
+          unique_key: 1,
+          servicerId: 1,
+          customerId: 1,
+          resellerId: 1,
+          paymentStatus: 1,
+          status: 1,
+          venderOrder: 1,
+          orderAmount: 1,
+        }
+        let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
+    
+    
+        //  result_Array = dealarUser.map(item1 => {
+        //   const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+        //   const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+    
+        //   if (matchingItem || orders) {
+        //     return {
+        //       ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+        //       dealerData: matchingItem.toObject(),
+        //       ordersData: orders ? orders : {}
+        //     };
+        //   } else {
+        //     return dealerData.toObject();
+        //   }
+        // });
+
+
 
         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
