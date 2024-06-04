@@ -3680,9 +3680,6 @@ exports.editOrderDetail = async (req, res) => {
                 return;
             }
         }
-
-
-
         if (data.servicerId != "") {
             if (data.servicerId != checkId.servicerId) {
                 let query = {

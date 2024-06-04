@@ -1904,7 +1904,6 @@ exports.changeResellerStatus = async (req, res) => {
     try {
 
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
-
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1944,6 +1943,8 @@ exports.changeResellerStatus = async (req, res) => {
         };
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
         if (changedResellerStatus) {
+            //Update status if reseller is inactive
+            const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
             //Send notification to reseller,dealer and admin
             let IDs = await supportingFunction.getUserIds()
             let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: singleReseller.dealerId, isPrimary: true })
