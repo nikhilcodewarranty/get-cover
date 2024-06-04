@@ -15,7 +15,8 @@ sgMail.setApiKey('SG.Bu08Ag_jRSeqCeRBnZYOvA.dgQFmbMjFVRQv9ouQFAIgDvigdw31f-1ibcL
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
-const supportingFunction = require('../../config/supportingFunction')
+const supportingFunction = require('../../config/supportingFunction');
+const orderService = require("../../Order/services/orderService");
 
 require("dotenv").config();
 const randtoken = require('rand-token').generator()
@@ -785,7 +786,7 @@ exports.updateStatus = async (req, res) => {
             result: updateData
           }
         }
- 
+
         await LOG(logData).save()
 
         res.send({
@@ -1422,18 +1423,50 @@ exports.getServicerDealers = async (req, res) => {
     // return false;
 
     let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
+    let orderQuery = { dealerId: { $in: ids }, status: "Active" };
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
+
+
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
 
-      if (matchingItem) {
+      if (matchingItem || orders) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject()
+          dealerData: matchingItem.toObject(),
+          ordersData: orders ? orders : {}
         };
       } else {
         return dealerData.toObject();
       }
     });
+
+
+    // const result_Array = dealarUser.map(item1 => {
+    //   const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+    //   if (matchingItem) {
+    //     return {
+    //       ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+    //       dealerData: matchingItem.toObject()
+    //     };
+    //   } else {
+    //     return dealerData.toObject();
+    //   }
+    // });
 
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1858,8 +1891,8 @@ exports.paidUnpaidClaim = async (req, res) => {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
 
-    console.log("flag-------------------------------",flag)
-    console.log("dateQuery-------------------------------",dateQuery)
+    console.log("flag-------------------------------", flag)
+    console.log("dateQuery-------------------------------", dateQuery)
 
 
 
