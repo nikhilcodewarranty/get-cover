@@ -1606,6 +1606,7 @@ exports.getResellerDetails = async (req, res) => {
                     country: 1,
                     isServicer: 1,
                     "dealer.name": 1,
+                    "dealer.userAccount": 1,
                     "dealer.street": 1,
                     "dealer.city": 1,
                     "dealer.zip": 1,
@@ -2064,7 +2065,7 @@ exports.getResellerServicers = async (req, res) => {
         const servicerIds = servicer.map(obj => obj._id);
 
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
@@ -3254,7 +3255,8 @@ exports.getResellerClaims = async (req, res) => {
                                     in: {
                                         "_id": "$$reseller._id",
                                         "name": "$$reseller.name",
-                                        "isServicer": "$$reseller.isServicer"
+                                        "isServicer": "$$reseller.isServicer",
+                                        "status": "$$reseller.status"
                                     }
                                 }
                             }
@@ -3392,22 +3394,26 @@ exports.getResellerClaims = async (req, res) => {
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched.servicerId.toString());
-                servicer.push(dealerOfServicer)
-            });
+                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
+                if (dealerOfServicer) {
+                  servicer.push(dealerOfServicer)
+                }
+        
+              });
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
-            if (item1.contracts.orders.resellers?.isServicer) {
-                servicer.unshift(item1.contracts.orders.resellers)
-            }
+            if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
+                servicer.unshift(item1.contracts.orders.resellers[0])
+              }
             if (item1.contracts.orders.dealers.isServicer) {
                 servicer.unshift(item1.contracts.orders.dealers)
             }
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer?._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-                selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+               // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+                selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
             }
             return {
                 ...item1,
