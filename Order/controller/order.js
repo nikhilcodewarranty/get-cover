@@ -2637,11 +2637,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        if (data.priceBookId || data.priceBookId != "") {
-            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
-            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
-        }
+
         let query;
         // if (data.coverageType == "Breakdown & Accidental") {
         //     if (data.term != "" && data.pName == "") {
@@ -2669,9 +2665,13 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         // }
-
-
+      
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
+        if (data.priceBookId || data.priceBookId != "") {
+            getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
 
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
@@ -3209,7 +3209,7 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
-                message: "Unable to edit the order, please refersh the page",
+                message: "Order is already active",
             });
             return;
         }

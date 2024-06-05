@@ -353,6 +353,47 @@ exports.createOrder = async (req, res) => {
 
         data.status = "Pending";
         console.log("data--------------------", data);
+
+        if (data.billTo == "Dealer") {
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: checkDealer.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Reseller") {
+            let getReseller = await resellerService.getReseller({ _id: data.resellerId })
+            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Reseller",
+                detail: {
+                    name: getReseller.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Custom") {
+            data.billDetail = {
+                billTo: "Custom",
+                detail: {
+                    name: data.name,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
+
+                }
+            }
+        }
+
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({
@@ -1132,11 +1173,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        if (data.priceBookId || data.priceBookId != "") {
-            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
-            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
-        }
+       
 
         let query;
         if (data.term != "" && data.pName == "") {
@@ -1151,6 +1188,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
 
+        console.log('query+++++++++++++++++++++++++',query)
         // price book ids array from dealer price book
         // let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         // let query = { _id: { $in: dealerPriceIds } };
@@ -1160,7 +1198,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
-
+        if (data.priceBookId || data.priceBookId != "") {
+             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            console.log("price book ak-------",getPriceBooks)
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
                 item.priceBook.toString(),

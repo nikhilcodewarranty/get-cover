@@ -22,7 +22,7 @@ const makeNewConnection = (uri) => {
     });
 
     return db;
-} 
+}
 
 // //db's connection strings
 // const userConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); //getcover_test database 
@@ -32,18 +32,20 @@ const makeNewConnection = (uri) => {
 // const claimConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
 // const CustomerConnection = makeNewConnection(`${process.env.DB_URL}getcover_test`); // claim database 
 
-const userConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); //_+process.env.dbNametest database 
-const dealerConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); // dealer database
-const serviceConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); //service provider database
-const orderConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); // order database
-const claimConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); // claim database 
-const CustomerConnection = makeNewConnection(`${process.env.DB_URL}`+process.env.dbName); // claim database 
+const userConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); //user database 
+const dealerConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); // dealer database
+const serviceConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); //service provider database
+const orderConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); // order database
+const claimConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); // claim database 
+const CustomerConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.dbName); // customer database 
+const reportingConnection = makeNewConnection(`${process.env.DB_URL}` + process.env.reportingDbName); // reporting database 
 
-module.exports = { 
+module.exports = {
     userConnection,
     dealerConnection,
     serviceConnection,
     orderConnection,
     claimConnection,
-    CustomerConnection
+    CustomerConnection,
+    reportingConnection
 };
