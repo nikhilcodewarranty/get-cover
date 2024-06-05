@@ -1173,11 +1173,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        if (data.priceBookId || data.priceBookId != "") {
-            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
-            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
-        }
+       
 
         let query;
         if (data.term != "" && data.pName == "") {
@@ -1192,6 +1188,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
 
+        console.log('query+++++++++++++++++++++++++',query)
         // price book ids array from dealer price book
         // let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         // let query = { _id: { $in: dealerPriceIds } };
@@ -1201,7 +1198,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         // }
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
-
+        if (data.priceBookId || data.priceBookId != "") {
+             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            console.log("price book ak-------",getPriceBooks)
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
                 item.priceBook.toString(),
