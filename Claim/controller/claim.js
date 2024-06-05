@@ -2380,7 +2380,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-          if (!contractData) {
+          if (!contractData || allDataArray.length <= 0) {
             item.status = "Contract not found"
             item.exit = true;
           }
@@ -2467,7 +2467,7 @@ exports.saveBulkClaim = async (req, res) => {
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
-            orderId: data.orderData.unique_key,
+            orderId: data.orderData?.unique_key,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
             productName: data.contractData.productName,
