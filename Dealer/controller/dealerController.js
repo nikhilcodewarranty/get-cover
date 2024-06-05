@@ -3100,7 +3100,7 @@ exports.getDealerServicers = async (req, res) => {
             as: "claims",
             pipeline: [
               {
-                $match: { claimFile: { $in: ["Completed"] } }
+                $match: { claimFile: "Completed" }
               }
             ]
           }
