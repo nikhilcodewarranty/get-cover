@@ -3184,11 +3184,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        if (data.priceBookId || data.priceBookId != "") {
-            let getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
-            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
-        }
+
         let query;
         // if (checkDealer.coverageType == "Breakdown & Accidental") {
         //     if (data.term != "" && data.pName == "") {
@@ -3219,6 +3215,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         console.log(query)
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
+
+        if (data.priceBookId || data.priceBookId != "") {
+            getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
+            data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
+        }
 
         const dealerPriceBookMap = new Map(
             getDealerPriceBook.map((item) => [
@@ -3448,7 +3450,7 @@ exports.createOrder = async (req, res) => {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Reseller",
                 detail: {
                     name: getReseller.name,
                     email: getUser.email,
