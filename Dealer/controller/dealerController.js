@@ -3053,11 +3053,8 @@ exports.getDealerServicers = async (req, res) => {
     console.log("-------------------------------------------------------",5)
 
 
-    // res.json(result_Array);
-
-    // return
-
-
+  //  res.json(result_Array);
+   // return
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData?._id;
       let getServicerFromDealer = await servicerService.getAllServiceProvider({
@@ -3066,7 +3063,7 @@ exports.getDealerServicers = async (req, res) => {
           { resellerId: { $in: servicerId } },
         ]
       })
-      console.log("claim check+++++++4444444444444++++++++++++++")
+      console.log("claim check+++++++4444444444444++++++++++++++",getServicerFromDealer)
 
       // Aggregate pipeline to join orders, contracts, and claims
       var aggregateResult = await orderService.getAllOrders1([
@@ -3076,7 +3073,7 @@ exports.getDealerServicers = async (req, res) => {
               {
                 $or: [
                   { servicerId: new mongoose.Types.ObjectId(servicerId) },
-                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?._id) },
+                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?.dealerId) },
                 ]
               },
               { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },

@@ -3674,13 +3674,13 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 return;
             }
-            if (!checkDealer.accountStatus) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Order can not be created, due to the dealer is inactive",
-                });
-                return;
-            }
+            // if (!checkDealer.accountStatus) {
+            //     res.send({
+            //         code: constant.errorCode,
+            //         message: "Order can not be created, due to the dealer is inactive",
+            //     });
+            //     return;
+            // }
         }
         if (data.servicerId != "") {
             if (data.servicerId != checkId.servicerId) {
@@ -3922,14 +3922,11 @@ exports.editOrderDetail = async (req, res) => {
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
-
                     // -------------------------------------------------  copy from -----------------------------------------//
-
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
-
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
