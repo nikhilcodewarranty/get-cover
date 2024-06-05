@@ -3050,12 +3050,22 @@ exports.getDealerServicers = async (req, res) => {
       }
     });
     // console.log("-------------------------------------------------------result_Array",result_Array)
-    // console.log("-------------------------------------------------------",5)
+    console.log("-------------------------------------------------------",5)
+
+
+    // res.json(result_Array);
+
+    // return
 
 
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData?._id;
-      let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
+      let getServicerFromDealer = await servicerService.getAllServiceProvider({
+        $or:[
+          { dealerId: { $in: servicerId } },
+          { resellerId: { $in: servicerId } },
+        ]
+      })
       console.log("claim check+++++++4444444444444++++++++++++++")
 
       // Aggregate pipeline to join orders, contracts, and claims
@@ -3088,11 +3098,11 @@ exports.getDealerServicers = async (req, res) => {
             localField: "contracts._id",
             foreignField: "contractId",
             as: "claims",
-            // pipeline: [
-            //   {
-            //     $match: { claimFile: { $in: ["Open", "Completed"] } }
-            //   }
-            // ]
+            pipeline: [
+              {
+                $match: { claimFile: { $in: ["Completed"] } }
+              }
+            ]
           }
         },
         {
