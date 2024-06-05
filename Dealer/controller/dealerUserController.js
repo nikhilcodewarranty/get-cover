@@ -3656,7 +3656,7 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
-                message: "Unable to edit the order, please refersh the page",
+                message: "Order is already active",
             });
             return;
         }

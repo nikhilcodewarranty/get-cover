@@ -2970,7 +2970,6 @@ exports.createDeleteRelation = async (req, res) => {
 //   }
 // }
 
-
 exports.getDealerServicers = async (req, res) => {
   try {
     let data = req.body
@@ -3160,6 +3159,7 @@ exports.getDealerServicers = async (req, res) => {
     })
   }
 }
+
 exports.unAssignServicer = async (req, res) => {
   try {
     let data = req.body
@@ -3738,7 +3738,6 @@ exports.getDealerRequest = async (req, res) => {
     console.log("Err in getDealerRequest : ", err);
   }
 }
-
 
 exports.getDealerContract = async (req, res) => {
   try {
