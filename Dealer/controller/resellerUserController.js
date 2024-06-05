@@ -2064,7 +2064,7 @@ exports.getResellerServicers = async (req, res) => {
         const servicerIds = servicer.map(obj => obj._id);
 
         // Get servicer with claim
-        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
