@@ -7,6 +7,10 @@ const reportingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    orderId:{
+        type:mongoose.Schema.Types.ObjectId,
+        default:null
+    },
     products: {
         type: Array,
         default: []
