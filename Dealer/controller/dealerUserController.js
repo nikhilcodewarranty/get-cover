@@ -3462,7 +3462,7 @@ exports.createOrder = async (req, res) => {
         }
         if (data.billTo == "Custom") {
             data.billDetail = {
-                billTo: "Dealer",
+                billTo: "Custom",
                 detail: {
                     name: data.name,
                     email: data.email,
