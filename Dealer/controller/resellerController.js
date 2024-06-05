@@ -418,7 +418,6 @@ exports.getResellerById = async (req, res) => {
         },
     ]
     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
-
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims
     let numberOfCompleletedClaims = [
@@ -1904,7 +1903,6 @@ exports.changeResellerStatus = async (req, res) => {
     try {
 
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
-
         if (!singleReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1944,6 +1942,8 @@ exports.changeResellerStatus = async (req, res) => {
         };
         const changedResellerStatus = await resellerService.updateReseller({ _id: req.params.resellerId }, newValue);
         if (changedResellerStatus) {
+            //Update status if reseller is inactive
+            const updateServicer = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, { status: req.body.status })
             //Send notification to reseller,dealer and admin
             let IDs = await supportingFunction.getUserIds()
             let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: singleReseller.dealerId, isPrimary: true })
@@ -1963,12 +1963,12 @@ exports.changeResellerStatus = async (req, res) => {
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
             notificationEmails.push(getPrimary.email);
-            console.log("notificationEmails---------------", notificationEmails)
             // const notificationContent = {
             //     content: singleReseller.name + " " + "status has been updated successfully!"
             // }
 
             const status_content = req.body.status ? 'Active' : 'Inactive';
+
             let emailData = {
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately."

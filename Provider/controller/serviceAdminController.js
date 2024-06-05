@@ -467,7 +467,7 @@ exports.getServiceProviderById = async (req, res, next) => {
     let resultUser = getMetaData.toObject()
 
     let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
-    let numberOfClaims = await claimService.getClaims({ claimFile: { $ne: "Rejected" }, servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
+    let numberOfClaims = await claimService.getClaims({ claimFile:  "Completed" , servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
     const claimData = {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim[0]?.totalAmount

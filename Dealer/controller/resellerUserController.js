@@ -273,7 +273,7 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
-        if (!checkDealer.status) {
+        if (!checkDealer.accountStatus) {
             res.send({
                 code: constant.errorCode,
                 message: "Order can not be created, due to the dealer is inactive",
@@ -283,10 +283,7 @@ exports.createOrder = async (req, res) => {
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = req.userId;
-        data.venderOrder = data.dealerPurchaseOrder;
- 
-
-  
+        data.venderOrder = data.dealerPurchaseOrder; 
 
         if (data.servicerId) {
             let query = {
@@ -824,6 +821,13 @@ exports.editOrderDetail = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "Dealer not found",
+            });
+            return;
+        }
+        if (!checkDealer.accountStatus) {
+            res.send({
+                code: constant.errorCode,
+                message: "Order can not be process, due to the dealer is inactive",
             });
             return;
         }
@@ -3345,7 +3349,7 @@ exports.getResellerClaims = async (req, res) => {
             let servicerName = '';
             let selfServicer = false;
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
-                const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId.toString());
+                const dealerOfServicer = allServicer.find(servicer => servicer?._id.toString() === matched.servicerId.toString());
                 servicer.push(dealerOfServicer)
             });
             if (item1.contracts.orders.servicers[0]?.length > 0) {
@@ -3358,7 +3362,7 @@ exports.getResellerClaims = async (req, res) => {
                 servicer.unshift(item1.contracts.orders.dealers)
             }
             if (item1.servicerId != null) {
-                servicerName = servicer.find(servicer => servicer._id.toString() === item1.servicerId.toString());
+                servicerName = servicer.find(servicer => servicer?._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
                 selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
             }
@@ -3466,7 +3470,7 @@ exports.getDashboardData = async (req, res) => {
         //Get number of claims
         let numberOfCompleletedClaims = [
             {
-                $match: rejectedQuery
+                $match: claimQuery
             },
             {
                 $lookup: {

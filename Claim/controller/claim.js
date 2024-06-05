@@ -1425,7 +1425,7 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     // Get Claim Total of the contract
     const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
+    let claimTotal = await claimService.checkTotalAmount(totalCreteria); 
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
