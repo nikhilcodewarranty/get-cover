@@ -1425,7 +1425,7 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     // Get Claim Total of the contract
     const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(totalCreteria); 
+    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1485,7 +1485,7 @@ exports.getContractById = async (req, res) => {
     let order = getData[0].order
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderId.toString())
-      console.log("+++++++++++++++++++++++++++++++++++++++",order[i],productsArray)
+      console.log("+++++++++++++++++++++++++++++++++++++++", order[i], productsArray)
       productsArray[0].priceBook = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(productsArray[0]?.priceBookId) })
       getData[0].order[i].productsArray = productsArray
     }
@@ -1581,7 +1581,7 @@ exports.editClaim = async (req, res) => {
       }
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })   
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (servicerPrimary) {
         IDs.push(servicerPrimary._id)
       }
@@ -1600,7 +1600,7 @@ exports.editClaim = async (req, res) => {
       notificationEmails.push(servicerPrimary?.email);
       let emailData = {
         senderName: '',
-        content:"The  repair part update for " + checkClaim.unique_key + " claim",
+        content: "The  repair part update for " + checkClaim.unique_key + " claim",
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Repair Parts/ labor update", emailData))
       res.send({
@@ -2139,6 +2139,13 @@ exports.saveBulkClaim = async (req, res) => {
       //   return
       // }
       // console.log(req.files[0].path); return;
+      let match = {}
+      if (req.role == 'Dealer') {
+        match = { "order.dealer._id": req.userId }
+      }
+      if (req.role == 'Reseller') {
+        match = { "order.reseller._id": req.userId }
+      }
       const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
@@ -2332,6 +2339,9 @@ exports.saveBulkClaim = async (req, res) => {
                   },
                 ],
               },
+            },
+            {
+              $match: match
             },
             {
               $project: {

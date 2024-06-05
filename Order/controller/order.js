@@ -285,8 +285,6 @@ exports.createOrder1 = async (req, res) => {
         console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
-
-
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
