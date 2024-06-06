@@ -2069,8 +2069,11 @@ exports.customerClaims = async (req, res) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
-      if (item1.contracts.orders.resellers?.isServicer) {
-        servicer.unshift(item1.contracts.orders.resellers)
+      // if (item1.contracts.orders.resellers?.isServicer) {
+      //   servicer.unshift(item1.contracts.orders.resellers)
+      // }
+      if (item1.contracts.orders.resellers[0]?.isServicer) {
+        servicer.unshift(item1.contracts.orders.resellers[0])
       }
       if (item1.contracts.orders.dealers.isServicer) {
         servicer.unshift(item1.contracts.orders.dealers)
