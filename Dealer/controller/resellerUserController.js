@@ -891,8 +891,8 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-        if (data.customerId != "") {
-            if (data.customerId != '' && data.customerId != checkId.customerId) {
+        if (data.customerId != "" || data.customerId != null) {
+            if ( data.customerId != checkId.customerId) {
                 let query = { _id: data.customerId };
                 let checkCustomer = await customerService.getCustomerById(query);
                 if (!checkCustomer) {
@@ -904,10 +904,17 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-        if (checkId.status == 'Archieved') {
+        if (checkId.status == "Active") {
             res.send({
                 code: constant.errorCode,
-                message: "The order has already archeived!",
+                message: "The order has already  active",
+            });
+            return;
+        }
+        if ( checkId.status == "Archieved") {
+            res.send({
+                code: constant.errorCode,
+                message: "The order has already archeived",
             });
             return;
         }
@@ -976,6 +983,25 @@ exports.editOrderDetail = async (req, res) => {
             const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
             data.productsArray = finalOutput;
         }
+
+        if (checkId.paymentStatus != "Unpaid") {
+            if (Number(data.orderAmount) > Number(checkId.orderAmount)) {
+                data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                data.paymentStatus = "PartlyPaid"
+            }
+            if (Number(data.orderAmount) < Number(checkId.orderAmount)) {
+                let checkDue = Number(data.orderAmount) - Number(checkId.paidAmount)
+                if (checkDue <= 0) {
+                    data.dueAmount = 0
+                    data.paymentStatus = "Paid"
+                } else {
+                    data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                    data.paymentStatus = "PartlyPaid"
+                }
+
+            }
+        }
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
