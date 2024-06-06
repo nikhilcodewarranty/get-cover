@@ -2080,8 +2080,8 @@ exports.customerClaims = async (req, res) => {
       }
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer?._id.toString() === item1?.servicerId.toString());
-        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
+        selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() || item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString() ? true : false
+        //selfResellerServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
       }
       return {
         ...item1,
