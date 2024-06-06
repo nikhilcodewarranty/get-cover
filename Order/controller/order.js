@@ -604,6 +604,7 @@ exports.createOrder1 = async (req, res) => {
 
                 let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+                
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: getPriceBookDetail,
