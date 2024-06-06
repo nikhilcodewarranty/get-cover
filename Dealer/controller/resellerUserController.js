@@ -2315,14 +2315,28 @@ exports.getServicerInOrders = async (req, res) => {
             return;
         }
     }
-
     if (checkReseller && checkReseller.isServicer) {
-        servicer.unshift(checkReseller);
+        //Get the servicer name if reseller as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
+        if (checkReseller.status) {
+            servicer.unshift(checkReseller);
+        }
     }
 
     if (checkDealer && checkDealer.isServicer) {
-        servicer.unshift(checkDealer);
+        //Get the servicer name if dealer as servicer
+        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+        if (checkDealer.accountStatus) {
+            servicer.unshift(checkDealer);
+        }
     }
+    // if (checkReseller && checkReseller.isServicer) {
+    //     servicer.unshift(checkReseller);
+    // }
+
+    // if (checkDealer && checkDealer.isServicer) {
+    //     servicer.unshift(checkDealer);
+    // }
 
     const servicerIds = servicer.map((obj) => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
@@ -2355,6 +2369,116 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
+
+
+// exports.getServicerInOrders = async (req, res) => {
+//     let data = req.body;
+//     let servicer = [];
+//     if (data.dealerId) {
+//         var checkDealer = await dealerService.getDealerById(data.dealerId, {
+//             isDeleted: 0,
+//         });
+//         if (!checkDealer) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Dealer not found!",
+//             });
+//             return;
+//         }
+//         let getServicersIds = await dealerRelationService.getDealerRelations({
+//             dealerId: data.dealerId,
+//         });
+//         let ids = getServicersIds.map((item) => item.servicerId);
+
+//         servicer = await servicerService.getAllServiceProvider(
+//             { _id: { $in: ids }, status: true },
+//             {}
+//         );
+
+//         if (!servicer) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Unable to fetch the servicers",
+//             });
+//             return;
+//         }
+//     }
+//     if (data.resellerId) {
+//         var checkReseller = await resellerService.getReseller({
+//             _id: data.resellerId,
+//         });
+//     }
+//     if (checkReseller && checkReseller.isServicer) {
+//         //Get the servicer name if reseller as servicer
+//         const checkServicer = await servicerService.getServiceProviderById({ resellerId: checkReseller._id })
+//         if (checkReseller.status) {
+//             servicer.unshift(checkReseller);
+//         }
+//     }
+
+//     if (checkDealer && checkDealer.isServicer) {
+//         //Get the servicer name if dealer as servicer
+//         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+//         if (checkDealer.accountStatus) {
+//             servicer.unshift(checkDealer);
+//         }
+//     }
+
+
+
+//     const servicerIds = servicer.map((obj) => obj?._id);
+//     const resellerIdss = servicer.map((obj) => obj?.resellerId);
+//     const dealerIdss = servicer.map((obj) => obj?.dealerId);
+//     // const dealerIdss = servicer.map((obj) => obj?._id);
+//     const query1 = {
+//         $and: [
+//             {
+//                 $or: [
+//                     { accountId: { $in: servicerIds } },
+//                     { accountId: { $in: resellerIdss } },
+//                     { accountId: { $in: dealerIdss } },
+//                 ]
+//             },
+//             { isPrimary: true }
+//         ]
+//     };
+
+//     let servicerUser = await userService.getMembers(query1, {});
+//     if (!servicerUser) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: "Unable to fetch the data",
+//         });
+//         return;
+//     }
+
+//     console.log('hceck', servicer, servicerUser)
+
+//     const result_Array = servicer.map((item1) => {
+//         const matchingItem = servicerUser.find(
+//             (item2) => item2.accountId.toString() === item1?._id.toString());
+//         let matchingItem2 = servicerUser.find(
+//             (item2) => item2.accountId.toString() === item1?.resellerId?.toString() || item2.accountId.toString() === item1?.dealerId?.toString());
+//         if (matchingItem) {
+//             return {
+//                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+//                 servicerData: matchingItem.toObject(),
+//             };
+//         } else if (matchingItem2) {
+//             return {
+//                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+//                 servicerData: matchingItem2.toObject(),
+//             };
+//         } else {
+//             return {}
+//         }
+//     });
+
+//     res.send({
+//         code: constant.successCode,
+//         result: result_Array,
+//     });
+// };
 exports.getResellerOrders = async (req, res) => {
     try {
         // if (req.role != 'Super Admin') {
