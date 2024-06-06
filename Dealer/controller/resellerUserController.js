@@ -904,10 +904,17 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-        if (checkId.status == 'Archieved') {
+        if (checkId.status == "Active") {
             res.send({
                 code: constant.errorCode,
-                message: "The order has already archeived!",
+                message: "The order has already  active",
+            });
+            return;
+        }
+        if ( checkId.status == "Archieved") {
+            res.send({
+                code: constant.errorCode,
+                message: "The order has already archeived",
             });
             return;
         }
@@ -976,6 +983,25 @@ exports.editOrderDetail = async (req, res) => {
             const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
             data.productsArray = finalOutput;
         }
+
+        if (checkId.paymentStatus != "Unpaid") {
+            if (Number(data.orderAmount) > Number(checkId.orderAmount)) {
+                data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                data.paymentStatus = "PartlyPaid"
+            }
+            if (Number(data.orderAmount) < Number(checkId.orderAmount)) {
+                let checkDue = Number(data.orderAmount) - Number(checkId.paidAmount)
+                if (checkDue <= 0) {
+                    data.dueAmount = 0
+                    data.paymentStatus = "Paid"
+                } else {
+                    data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
+                    data.paymentStatus = "PartlyPaid"
+                }
+
+            }
+        }
+
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
