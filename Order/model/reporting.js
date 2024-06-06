@@ -26,4 +26,4 @@ const reportingSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-module.exports = connection.reportingConnection.model("order", reportingSchema);
+module.exports = connection.reportingConnection.model("reporting", reportingSchema);

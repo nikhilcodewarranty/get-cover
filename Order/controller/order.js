@@ -602,6 +602,20 @@ exports.createOrder1 = async (req, res) => {
                     return
                 }
 
+                let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
+                let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+                
+                let reportingData = {
+                    orderId: savedResponse._id,
+                    products: getPriceBookDetail,
+                    orderAmount: data.orderAmount,
+                    dealerId: data.dealerId,
+                    dealerPriceBook: getDealerPriceBookDetail
+                }
+
+                await supportingFunction.reportingData(reportingData)
+
+
             })
 
         } else {
@@ -2663,7 +2677,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         // }
-      
+
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
         if (data.priceBookId || data.priceBookId != "") {
             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
