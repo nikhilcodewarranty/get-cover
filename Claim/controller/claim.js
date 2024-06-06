@@ -2145,11 +2145,13 @@ exports.saveBulkClaim = async (req, res) => {
       // console.log(req.files[0].path); return;
       let match = {}
       if (req.role == 'Dealer') {
-        match = { "order.dealer._id": req.userId }
+        match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Reseller') {
-        match = { "order.reseller._id": req.userId }
+        match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
+
+      console.log("fgdfdgdfdfggffd",match);
       const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
@@ -2372,6 +2374,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+
+      // res.json(contractAllDataArray);
+
+      // return;
 
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
