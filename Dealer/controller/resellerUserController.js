@@ -891,8 +891,8 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-        if (data.customerId != "") {
-            if (data.customerId != '' && data.customerId != checkId.customerId) {
+        if (data.customerId != "" || data.customerId != null) {
+            if ( data.customerId != checkId.customerId) {
                 let query = { _id: data.customerId };
                 let checkCustomer = await customerService.getCustomerById(query);
                 if (!checkCustomer) {
