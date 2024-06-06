@@ -3017,10 +3017,7 @@ exports.getDealerServicers = async (req, res) => {
     // })
     // return;
 
-    console.log("-------------------------------------------------------", 2)
     const servicerIds = servicer.map(obj => obj._id);
-
-
     console.log("-------------------------------------------------------servicerIds", servicerIds)
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
     console.log("-------------------------------------------------------", 3)
@@ -3051,10 +3048,6 @@ exports.getDealerServicers = async (req, res) => {
     });
     // console.log("-------------------------------------------------------result_Array",result_Array)
     console.log("-------------------------------------------------------",5)
-
-
-  //  res.json(result_Array);
-   // return
     for (let i = 0; i < result_Array.length; i++) {
       const servicerId = result_Array[i].servicerData?._id;
       let getServicerFromDealer = await servicerService.getAllServiceProvider({
@@ -3095,11 +3088,11 @@ exports.getDealerServicers = async (req, res) => {
             localField: "contracts._id",
             foreignField: "contractId",
             as: "claims",
-            pipeline: [
-              {
-                $match: { claimFile: "Completed" }
-              }
-            ]
+            // pipeline: [
+            //   {
+            //     $match: { claimFile: "Completed" }
+            //   }
+            // ]
           }
         },
         {
@@ -3113,6 +3106,10 @@ exports.getDealerServicers = async (req, res) => {
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
+
+      res.json(aggregateResult);
+      return;
+      
 
 
       let totalClaimAmount = 0
