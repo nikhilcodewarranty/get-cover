@@ -17,7 +17,7 @@ router.post("/create-customer", [verifyToken], validator('create_customer'), [ve
 router.post('/getCustomerInOrder', [verifyToken], resellerController.getCustomerInOrder)
 router.post('/getServicerInOrders', [verifyToken], resellerController.getServicerInOrders)
 router.post('/createOrder', [verifyToken], resellerController.createOrder)
-
+router.post('/getArchieveOrder', [verifyToken], resellerController.getAllArchieveOrders)
 router.get("/getResellerById", [verifyToken], resellerController.getResellerById);
 router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData);
 router.get("/getDealerByReseller", [verifyToken], resellerController.getDealerByReseller);

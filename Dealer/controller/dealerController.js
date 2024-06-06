@@ -3110,13 +3110,11 @@ exports.getDealerServicers = async (req, res) => {
           }
         }
       ]);
-      console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
 
 
-      console.log("claim check+++++++++++++++++++++", aggregateResult)
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
