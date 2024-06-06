@@ -3030,9 +3030,11 @@ exports.getDealerServicers = async (req, res) => {
     let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
 
     const result_Array = servicer.map(item1 => {
+      console.log("item1----------------------------",item1._id)
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
-      const claimValue = valueClaim.find(claim => claim._id?.toString() === item1.accountId?.toString())
-      const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1.accountId?.toString())
+      const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
+      console.log("=====================================",claimValue)
+      const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
 
       if (matchingItem) {
         return {
