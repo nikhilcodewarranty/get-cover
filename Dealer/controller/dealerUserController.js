@@ -1103,8 +1103,6 @@ exports.getDealerServicers = async (req, res) => {
         if (dealerResellerServicer.length > 0) {
             servicer.unshift(...dealerResellerServicer);
         }
-
-
         //res.json(servicer);return;
         let servicerIds = []
 
@@ -1155,12 +1153,24 @@ exports.getDealerServicers = async (req, res) => {
             return;
         };
 
+        // Get servicer with claim
+        const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+        const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")   
+
         const result_Array = servicer.map(item1 => {
             const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
+            const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
+            const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
             if (matchingItem) {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    servicerData: item1.toObject()
+                    servicerData: item1.toObject(),
+                    claimNumber: claimNumber ? claimNumber : 0,
+                    claimValue: claimValue ? claimValue : 0
                 };
             }
             else {
