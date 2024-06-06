@@ -2981,13 +2981,21 @@ exports.getAllContracts = async (req, res) => {
         };
         if (data.servicerName != "") {
             userSearchCheck = 1
-            let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+            let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
             if (getData.length > 0) {
-                servicerIds = await getData.map(servicer => servicer._id)
+              servicerIds = await getData.map(servicer => servicer._id)
+              let asServicer = await getData.map(servicer => {
+                if (servicer.servicerId !== null && servicer.dealerId === null) {
+                  return servicer.servicerId;
+                } else if (servicer.dealerId !== null && servicer.servicerId === null) {
+                  return servicer.dealerId;
+                }
+              })
+              servicerIds = servicerIds.concat(asServicer)
             } else {
-                servicerIds.push("1111121ccf9d400000000000")
+              servicerIds.push("1111121ccf9d400000000000")
             }
-        };
+          };
         if (data.resellerName != "") {
             userSearchCheck = 1
             let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })

@@ -283,7 +283,7 @@ exports.createOrder = async (req, res) => {
 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         data.resellerId = req.userId;
-        data.venderOrder = data.dealerPurchaseOrder; 
+        data.venderOrder = data.dealerPurchaseOrder;
 
         if (data.servicerId) {
             let query = {
@@ -892,7 +892,7 @@ exports.editOrderDetail = async (req, res) => {
             }
         }
         if (data.customerId != "" || data.customerId != null) {
-            if ( data.customerId != checkId.customerId) {
+            if (data.customerId != checkId.customerId) {
                 let query = { _id: data.customerId };
                 let checkCustomer = await customerService.getCustomerById(query);
                 if (!checkCustomer) {
@@ -911,7 +911,7 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-        if ( checkId.status == "Archieved") {
+        if (checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
                 message: "The order has already archeived",
@@ -1199,7 +1199,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-       
+
 
         let query;
         if (data.term != "" && data.pName == "") {
@@ -1214,7 +1214,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
 
-        console.log('query+++++++++++++++++++++++++',query)
+        console.log('query+++++++++++++++++++++++++', query)
         // price book ids array from dealer price book
         // let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         // let query = { _id: { $in: dealerPriceIds } };
@@ -1225,8 +1225,8 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
         if (data.priceBookId || data.priceBookId != "") {
-             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            console.log("price book ak-------",getPriceBooks)
+            getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
+            console.log("price book ak-------", getPriceBooks)
             data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
@@ -3011,6 +3011,14 @@ exports.getResellerContract = async (req, res) => {
             let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
             if (getData.length > 0) {
                 servicerIds = await getData.map(servicer => servicer._id)
+                let asServicer = await getData.map(servicer => {
+                    if (servicer.servicerId !== null && servicer.dealerId === null) {
+                        return servicer.servicerId;
+                    } else if (servicer.dealerId !== null && servicer.servicerId === null) {
+                        return servicer.dealerId;
+                    }
+                })
+                servicerIds = servicerIds.concat(asServicer)
             } else {
                 servicerIds.push("1111121ccf9d400000000000")
             }
@@ -3546,23 +3554,23 @@ exports.getResellerClaims = async (req, res) => {
             let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
                 const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
                 if (dealerOfServicer) {
-                  servicer.push(dealerOfServicer)
+                    servicer.push(dealerOfServicer)
                 }
-        
-              });
+
+            });
             if (item1.contracts.orders.servicers[0]?.length > 0) {
                 servicer.unshift(item1.contracts.orders.servicers[0])
             }
             if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
                 servicer.unshift(item1.contracts.orders.resellers[0])
-              }
+            }
             if (item1.contracts.orders.dealers.isServicer) {
                 servicer.unshift(item1.contracts.orders.dealers)
             }
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer?._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-               // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
+                // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
                 selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
             }
             return {
