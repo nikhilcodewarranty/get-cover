@@ -2289,7 +2289,7 @@ exports.deleteUser = async (req, res) => {
     // }
     let emailData = {
       senderName: checkUser.name,
-      content: "The user "+checkUser.name+""+" "+"has been deleted successfully."
+      content: "The user " + checkUser.name + "" + " " + "has been deleted successfully."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}
@@ -2474,6 +2474,15 @@ exports.getAllNotifications1 = async (req, res) => {
         isOpen
       };
     });
+
+    if (data.readFlag != "") {
+      if (data.readFlag == "true") {
+        updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
+      } else {
+        updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
+
+      }
+    }
 
     res.send({
       code: constant.successCode,
