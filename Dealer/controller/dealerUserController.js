@@ -3587,7 +3587,7 @@ exports.editOrderDetail = async (req, res) => {
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
-                message: "Order is already archeived or active",
+                message: "Order is already active",
             });
             return;
         }
