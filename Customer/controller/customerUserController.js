@@ -1417,40 +1417,40 @@ exports.getContractById = async (req, res) => {
   }
 }
 
-exports.getDashboardData = async (req, res) => {
-  try {
-    let data = req.body
-    let query = { status: { $ne: "Archieved" }, customerId: new mongoose.Types.ObjectId(req.userId) };
+// exports.getDashboardData = async (req, res) => {
+//   try {
+//     let data = req.body
+//     let query = { status: { $ne: "Archieved" }, customerId: new mongoose.Types.ObjectId(req.userId) };
 
-    let ordersCount = await orderService.getOrdersCount1(query)
-    let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
-    if (!getCustomerOrder) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      })
-      return
-    }
-    let orderIDs = getCustomerOrder.map((ID) => ID._id)
-    // let contractCount = await contractService.findContractCount({ customerId: req.userId, status: { $in: ["Active", "Pending"] } })
-    let contractCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
+//     let ordersCount = await orderService.getOrdersCount1(query)
+//     let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
+//     if (!getCustomerOrder) {
+//       res.send({
+//         code: constant.errorCode,
+//         message: "Unable to fetch the data"
+//       })
+//       return
+//     }
+//     let orderIDs = getCustomerOrder.map((ID) => ID._id)
+//     // let contractCount = await contractService.findContractCount({ customerId: req.userId, status: { $in: ["Active", "Pending"] } })
+//     let contractCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
 
-    console.log("check------------", ordersCount)
-    res.send({
-      code: constant.errorCode,
-      message: "Success",
-      result: {
-        ordersCount: ordersCount,
-        contractCount: contractCount
-      }
-    })
-  } catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
+//     console.log("check------------", ordersCount)
+//     res.send({
+//       code: constant.errorCode,
+//       message: "Success",
+//       result: {
+//         ordersCount: ordersCount,
+//         contractCount: contractCount
+//       }
+//     })
+//   } catch (err) {
+//     res.send({
+//       code: constant.errorCode,
+//       message: err.message
+//     })
+//   }
+// }
 
 
 exports.getDashboardData = async (req, res) => {
