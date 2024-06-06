@@ -39,7 +39,8 @@ const order = require('../../Order/model/order');
 const { constants } = require('buffer');
 const contractService = require('../../Contract/services/contractService');
 const logs = require('../../User/model/logs');
-const supportingFunction = require('../../config/supportingFunction')
+const supportingFunction = require('../../config/supportingFunction');
+const providerService = require('../../Provider/services/providerService');
 
 
 
@@ -1061,6 +1062,10 @@ exports.changeDealerStatus = async (req, res) => {
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
       let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
+
+      //Update servicer also 
+
+      const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
 
       // // Inactive Dealer Customer
       // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
@@ -3030,8 +3035,8 @@ exports.getDealerServicers = async (req, res) => {
     let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
 
     const result_Array = servicer.map(item1 => {
-      console.log("item1----------------------------",item1._id)
-       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+      console.log("item1----------------------------", item1._id)
+      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
       const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
       const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
 
