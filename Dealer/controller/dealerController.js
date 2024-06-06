@@ -3110,13 +3110,11 @@ exports.getDealerServicers = async (req, res) => {
           }
         }
       ]);
-      console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
 
       // If there are results for the current servicerId, update the result array
       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
 
 
-      console.log("claim check+++++++++++++++++++++", aggregateResult)
       let totalClaimAmount = 0
 
       function calculateTotalAmountAndCount(arr) {
@@ -3772,6 +3770,14 @@ exports.getDealerContract = async (req, res) => {
       let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
+        let asServicer = await getData.map(servicer => {
+          if (servicer.servicerId !== null && servicer.dealerId === null) {
+            return servicer.servicerId;
+          } else if (servicer.dealerId !== null && servicer.servicerId === null) {
+            return servicer.dealerId;
+          }
+        })
+        servicerIds = servicerIds.concat(asServicer)
       } else {
         servicerIds.push("1111121ccf9d400000000000")
       }
