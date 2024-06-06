@@ -1633,6 +1633,7 @@ exports.getResellerDetails = async (req, res) => {
                     isServicer: 1,
                     "dealer.name": 1,
                     "dealer.userAccount": 1,
+                    "dealer.accountStatus": 1,
                     "dealer.street": 1,
                     "dealer.city": 1,
                     "dealer.zip": 1,
