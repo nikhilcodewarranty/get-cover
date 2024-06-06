@@ -595,6 +595,17 @@ exports.createOrder1 = async (req, res) => {
                         }
                     }
                     await LOG(logData).save()
+                    let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
+                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })                    
+                    let reportingData = {
+                        orderId: savedResponse._id,
+                        products: getPriceBookDetail,
+                        orderAmount: data.orderAmount,
+                        dealerId: data.dealerId,
+                        dealerPriceBook: getDealerPriceBookDetail
+                    }
+    
+                    await supportingFunction.reportingData(reportingData)
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -602,18 +613,7 @@ exports.createOrder1 = async (req, res) => {
                     return
                 }
 
-                let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
-                
-                let reportingData = {
-                    orderId: savedResponse._id,
-                    products: getPriceBookDetail,
-                    orderAmount: data.orderAmount,
-                    dealerId: data.dealerId,
-                    dealerPriceBook: getDealerPriceBookDetail
-                }
 
-                await supportingFunction.reportingData(reportingData)
 
 
             })
