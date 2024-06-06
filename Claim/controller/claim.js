@@ -995,13 +995,13 @@ exports.searchClaim = async (req, res, next) => {
     //   });
     //   return;
     // }
-    let match = {};
-    if (req.role == 'Dealer') {
-      match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
-    }
-    if (req.role == 'Customer') {
-      match = { 'customerId': new mongoose.Types.ObjectId(req.userId) }
-    }
+    // let match = {};
+    // if (req.role == 'Dealer') {
+    //   match = { 'dealerId': new mongoose.Types.ObjectId(req.userId) }
+    // }
+    // if (req.role == 'Customer') {
+    //   match = { 'customerId': new mongoose.Types.ObjectId(req.userId) }
+    // }
     let lookupCondition = [{ isDeleted: false }]
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -1023,6 +1023,10 @@ exports.searchClaim = async (req, res, next) => {
     if (req.role == 'Dealer') {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.userId] } })
+    }
+    if (req.role == 'Reseller') {
+      userSearchCheck = 1
+      orderAndCondition.push({ resellerId: { $in: [req.userId] } })
     }
     if (req.role == 'Customer') {
       userSearchCheck = 1
@@ -2380,7 +2384,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.contractData = contractData;
           item.servicerData = servicerData;
           item.orderData = allDataArray[0]
-          if (!contractData || allDataArray.length <= 0) {
+          if (!contractData || allDataArray.length == 0) {  
             item.status = "Contract not found"
             item.exit = true;
           }
