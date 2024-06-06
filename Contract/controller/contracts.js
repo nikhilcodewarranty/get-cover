@@ -303,15 +303,19 @@ exports.getContracts = async (req, res) => {
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
+      console.log("check on servicer ak-----------",getData)
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
         let asServicer = await getData.map(servicer => {
-          if (servicer.servicerId !== null && servicer.dealerId === null) {
-            return servicer.servicerId;
-          } else if (servicer.dealerId !== null && servicer.servicerId === null) {
+          if (servicer.resellerId !== null && servicer.dealerId === null) {
+            return servicer.resellerId;
+          } else if (servicer.dealerId !== null && servicer.resellerId === null) {
             return servicer.dealerId;
           }
         })
+
+        console.log("as servicer data +++++++++++++++++++++++++++++++++++",getData,asServicer)
+
         servicerIds = servicerIds.concat(asServicer)
       } else {
         servicerIds.push("1111121ccf9d400000000000")
