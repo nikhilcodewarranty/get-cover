@@ -3031,17 +3031,16 @@ exports.getDealerServicers = async (req, res) => {
 
     const result_Array = servicer.map(item1 => {
       console.log("item1----------------------------",item1._id)
-      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
       const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
-      console.log("=====================================",claimValue)
       const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
 
       if (matchingItem) {
         return {
           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
           servicerData: item1.toObject(),
-          claimValue: claimValue ? claimValue : 0,
-          claimNumber: claimNumber ? claimNumber : 0
+          claimCount: claimNumber ? claimNumber.noOfOrders : 0,
+          totalClaimAmount: claimValue ? claimValue.totalAmount : 0
         };
       }
       else {
@@ -3050,9 +3049,6 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-
-    // console.log("-------------------------------------------------------result_Array",result_Array)
-    // console.log("-------------------------------------------------------",5)
     // for (let i = 0; i < result_Array.length; i++) {
     //   const servicerId = result_Array[i].servicerData?._id;
     //   let getServicerFromDealer = await servicerService.getAllServiceProvider({
@@ -3099,13 +3095,13 @@ exports.getDealerServicers = async (req, res) => {
     //         // ]
     //       }
     //     },
-    //     // {
-    //     //   $project: {
-    //     //     'claims': { $arrayElemAt: ["$claims", 0] },
-    //     //     _id: 0,
-    //     //     servicerId: 1
-    //     //   }
-    //     // }
+    //     {
+    //       $project: {
+    //         'claims': { $arrayElemAt: ["$claims", 0] },
+    //         _id: 0,
+    //         servicerId: 1
+    //       }
+    //     }
     //   ]);
 
     //   // If there are results for the current servicerId, update the result array
