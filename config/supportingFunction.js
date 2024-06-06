@@ -30,6 +30,8 @@ exports.reportingData = async (data) => {
         dealerId: data.dealerId
     }
     const saveData = await REPORTING(reportingData).save()
+    console.log("check ak ------------------",saveData)
+
     return saveData
 }
 
