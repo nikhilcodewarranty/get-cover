@@ -1108,7 +1108,7 @@ exports.changeDealerStatus = async (req, res) => {
         accountStatus: req.body.status
       }
     };
-    if(singleDealer.isPrimary){
+    if(singleDealer.isServicer){
       let updateServicer = await providerService.updateServiceProvider({dealerId:singleDealer._id},newValue)
     }
 
