@@ -2150,10 +2150,11 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == 'Reseller') {
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
-
-      console.log("fgdfdgdfdfggffd",match);
+      if (req.role == 'Customer') {
+        match = { "order.customer._id": new mongoose.Types.ObjectId(req.userId) }
+      }
       const fileUrl = req.files[0].path
-      const jsonOpts = {
+      const jsonOpts = { 
         header: 1,
         defval: '',
         blankrows: true,

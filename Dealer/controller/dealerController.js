@@ -947,7 +947,7 @@ exports.statusUpdate = async (req, res) => {
     notificationEmails.push(getPrimary.email);
     let emailData = {
       senderName: singleReseller.name,
-      content:  getDealerDetail.name + " , " + "your price book has been updated",
+      content: getDealerDetail.name + " , " + "your price book has been updated",
     }
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Data", emailData))
@@ -1062,6 +1062,10 @@ exports.changeDealerStatus = async (req, res) => {
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
       let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
+
+      //Update servicer also 
+
+      const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
 
       // // Inactive Dealer Customer
       // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
@@ -3015,19 +3019,8 @@ exports.getDealerServicers = async (req, res) => {
     if (checkDealer.isServicer) {
       servicer.unshift(checkDealer);
     };
-
-    // res.send({
-    //   servicer
-    // })
-    // return;
-
-    console.log("-------------------------------------------------------", 2)
     const servicerIds = servicer.map(obj => obj._id);
-
-
-    console.log("-------------------------------------------------------servicerIds", servicerIds)
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    console.log("-------------------------------------------------------", 3)
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
       res.send({
@@ -3036,15 +3029,26 @@ exports.getDealerServicers = async (req, res) => {
       });
       return;
     };
-    console.log("-------------------------------------------------------", 4)
+    // Get servicer with claim
+    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+    const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
+    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
 
     const result_Array = servicer.map(item1 => {
+      console.log("item1----------------------------", item1._id)
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+      const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
+      const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
 
       if (matchingItem) {
         return {
           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: item1.toObject()
+          servicerData: item1.toObject(),
+          claimNumber: claimNumber ? claimNumber : 0,
+          claimValue: claimValue ? claimValue : 0
         };
       }
       else {
@@ -3053,90 +3057,81 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-    // console.log("-------------------------------------------------------result_Array",result_Array)
-    console.log("-------------------------------------------------------",5)
+    // for (let i = 0; i < result_Array.length; i++) {
+    //   const servicerId = result_Array[i].servicerData?._id;
+    //   let getServicerFromDealer = await servicerService.getAllServiceProvider({
+    //     $or:[
+    //       { dealerId: { $in: servicerId } },
+    //       { resellerId: { $in: servicerId } },
+    //     ]
+    //   })
 
+    //   // Aggregate pipeline to join orders, contracts, and claims
+    //   var aggregateResult = await orderService.getAllOrders1([
+    //     {
+    //       $match: {
+    //         $and: [
+    //           {
+    //             $or: [
+    //               { servicerId: new mongoose.Types.ObjectId(servicerId) },
+    //               { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?.dealerId) },
+    //             ]
+    //           },
+    //           { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
+    //         ]
+    //       }
+    //     },
+    //     {
+    //       $lookup: {
+    //         from: "contracts",
+    //         localField: "_id",
+    //         foreignField: "orderId",
+    //         as: "contracts"
+    //       }
+    //     },
+    //     { $unwind: "$contracts" },
+    //     {
+    //       $lookup: {
+    //         from: "claims",
+    //         localField: "contracts._id",
+    //         foreignField: "contractId",
+    //         as: "claims",
+    //         // pipeline: [
+    //         //   {
+    //         //     $match: { claimFile: "Completed" }
+    //         //   }
+    //         // ]
+    //       }
+    //     },
+    //     {
+    //       $project: {
+    //         'claims': { $arrayElemAt: ["$claims", 0] },
+    //         _id: 0,
+    //         servicerId: 1
+    //       }
+    //     }
+    //   ]);
 
-  //  res.json(result_Array);
-   // return
-    for (let i = 0; i < result_Array.length; i++) {
-      const servicerId = result_Array[i].servicerData?._id;
-      let getServicerFromDealer = await servicerService.getAllServiceProvider({
-        $or:[
-          { dealerId: { $in: servicerId } },
-          { resellerId: { $in: servicerId } },
-        ]
-      })
-      console.log("claim check+++++++4444444444444++++++++++++++",getServicerFromDealer)
+    //   // If there are results for the current servicerId, update the result array
+    //   aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
+    //         let totalClaimAmount = 0
 
-      // Aggregate pipeline to join orders, contracts, and claims
-      var aggregateResult = await orderService.getAllOrders1([
-        {
-          $match: {
-            $and: [
-              {
-                $or: [
-                  { servicerId: new mongoose.Types.ObjectId(servicerId) },
-                  { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?.dealerId) },
-                ]
-              },
-              { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
-            ]
-          }
-        },
-        {
-          $lookup: {
-            from: "contracts",
-            localField: "_id",
-            foreignField: "orderId",
-            as: "contracts"
-          }
-        },
-        { $unwind: "$contracts" },
-        {
-          $lookup: {
-            from: "claims",
-            localField: "contracts._id",
-            foreignField: "contractId",
-            as: "claims",
-            pipeline: [
-              {
-                $match: { claimFile: "Completed" }
-              }
-            ]
-          }
-        },
-        {
-          $project: {
-            'claims': { $arrayElemAt: ["$claims", 0] },
-            _id: 0,
-            servicerId: 1
-          }
-        }
-      ]);
+    //   function calculateTotalAmountAndCount(arr) {
+    //     let total = 0;
+    //     let count = aggregateResult.length;
+    //     for (let obj of arr) {
+    //       total += obj.claims.totalAmount;
+    //     }
+    //     return { totalAmount: total, totalCount: count };
+    //   }
+    //   const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
+    //   console.log("Total amount:", totalAmount);
+    //   console.log("Total count:", totalCount);
 
-      // If there are results for the current servicerId, update the result array
-      aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
+    //   result_Array[i].claimCount = totalCount;
+    //   result_Array[i].totalClaimAmount = totalAmount;
 
-
-      let totalClaimAmount = 0
-
-      function calculateTotalAmountAndCount(arr) {
-        let total = 0;
-        let count = aggregateResult.length;
-        for (let obj of arr) {
-          total += obj.claims.totalAmount;
-        }
-        return { totalAmount: total, totalCount: count };
-      }
-      const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
-      console.log("Total amount:", totalAmount);
-      console.log("Total count:", totalCount);
-
-      result_Array[i].claimCount = totalCount;
-      result_Array[i].totalClaimAmount = totalAmount;
-
-    }
+    // }
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')

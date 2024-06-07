@@ -404,7 +404,7 @@ exports.getServicer = async (req, res) => {
     };
 
     // Get servicer with claim
-    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: { $ne: "Rejected" } };
+    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
     const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
@@ -1885,6 +1885,10 @@ exports.paidUnpaidClaim = async (req, res) => {
     let match = {};
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
+      servicerId = req.userId
+    }
+    if (req.role == 'Reseller') {
+      match = { 'contracts.orders.resellerId': new mongoose.Types.ObjectId(req.userId) }
       servicerId = req.userId
     }
     if (req.role == 'Customer') {
