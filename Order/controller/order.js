@@ -600,7 +600,7 @@ exports.createOrder1 = async (req, res) => {
 
                     await LOG(logData).save()
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })                    
+                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: getPriceBookDetail,
@@ -608,7 +608,7 @@ exports.createOrder1 = async (req, res) => {
                         dealerId: data.dealerId,
                         dealerPriceBook: getDealerPriceBookDetail
                     }
-    
+
                     await supportingFunction.reportingData(reportingData)
                     res.send({
                         code: constant.successCode,
@@ -3189,6 +3189,18 @@ exports.getSingleOrder = async (req, res) => {
             servicerData: checkServicer ? checkServicer : {},
         };
 
+        // unique code here
+
+        function makeUnique(array, key) {
+            return array.reduce((uniqueArray, currentItem) => {
+                const existingItem = uniqueArray.find(item => item[key] === currentItem[key]);
+                if (!existingItem) {
+                    uniqueArray.push(currentItem);
+                }
+                return uniqueArray;
+            }, []);
+        }
+        result_Array = makeUnique(result_Array, '_id');
         res.send({
             code: constant.successCode,
             message: "Success!",
