@@ -345,6 +345,8 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
+                let pricebookDetail = []
+                let dealerBookDetail = []
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -585,6 +587,7 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -594,6 +597,7 @@ exports.createOrder1 = async (req, res) => {
                             message: "Success",
                         }
                     }
+
                     await LOG(logData).save()
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
                     let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })                    
