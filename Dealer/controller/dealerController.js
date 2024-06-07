@@ -39,7 +39,8 @@ const order = require('../../Order/model/order');
 const { constants } = require('buffer');
 const contractService = require('../../Contract/services/contractService');
 const logs = require('../../User/model/logs');
-const supportingFunction = require('../../config/supportingFunction')
+const supportingFunction = require('../../config/supportingFunction');
+const providerService = require('../../Provider/services/providerService');
 
 
 
@@ -1103,6 +1104,9 @@ exports.changeDealerStatus = async (req, res) => {
         accountStatus: req.body.status
       }
     };
+    if(singleDealer.isPrimary){
+      let updateServicer = await providerService.updateServiceProvider({dealerId:singleDealer._id},newValue)
+    }
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
