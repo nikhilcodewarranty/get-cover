@@ -3165,7 +3165,7 @@ exports.getSingleOrder = async (req, res) => {
         const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(servicerQuery, {});
-        const result_Array = servicer.map((item1) => {
+        let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
                 (item2) => item2.accountId.toString() === item1._id.toString()
             );
