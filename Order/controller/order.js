@@ -4194,7 +4194,7 @@ exports.markAsPaid = async (req, res) => {
                 userId: req.userId,
                 contentId: null,
                 flag: 'order',
-                notificationFor: IDs
+                notificationFor: IDs 
             };
             let createNotification = await userService.createNotification(notificationData1);
 
