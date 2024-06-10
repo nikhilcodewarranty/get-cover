@@ -1169,8 +1169,14 @@ exports.getDealerServicers = async (req, res) => {
                 return {
                     ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
                     servicerData: item1.toObject(),
-                    claimNumber: claimNumber ? claimNumber : 0,
-                    claimValue: claimValue ? claimValue : 0
+                    claimNumber: claimNumber ? claimNumber : {
+                        "_id": "",
+                        "noOfOrders": 0
+                    },
+                    claimValue: claimValue ? claimValue : {
+                        "_id": "",
+                        "totalAmount": 0
+                    }
                 };
             }
             else {
