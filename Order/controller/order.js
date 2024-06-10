@@ -4165,14 +4165,14 @@ exports.markAsPaid = async (req, res) => {
             console.log("contractsLength++++++++++++++++++++++++++++++++++", contractArray.length)
             let saveData = await contractService.createBulkContracts(contractArray)
             if (!saveData) {
-                logData.response = {
+                logData.response = { 
                     code: constant.errorCode,
                     message: "unable to make contracts",
                     result: saveData
                 };
-                await LOG(logData).save();
+                await LOG(logData).save(); 
                 let savedResponse = await orderService.updateOrder(
-                    { _id: checkOrder._id },
+                    { _id: checkOrder._id }, 
                     { status: "Pending" },
                     { new: true }
                 );
