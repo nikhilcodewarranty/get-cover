@@ -509,12 +509,14 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject = priceBook[0].toObject()
+                    pricebookDetailObject = priceBook[0]
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
                     dealerPriceBookObject.retailPrice = product.unitPrice
                     dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    dealerPriceBookObject.dealerPriceId = getDealerPriceBookDetail._id
+                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
 
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
