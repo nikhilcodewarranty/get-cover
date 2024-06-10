@@ -361,8 +361,6 @@ exports.getSingleOrder = async (req, res) => {
     let singleDealerUser = await userService.getUserById1({ accountId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false });
     let singleResellerUser = await userService.getUserById1({ accountId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false });
     let singleCustomerUser = await userService.getUserById1({ accountId: checkOrder.customerId, isPrimary: true }, { isDeleted: false });
-
-
     // ------------------------------------Get Dealer Servicer -----------------------------
     let getServicersIds = await dealerRelationService.getDealerRelations({
       dealerId: checkOrder.dealerId,
