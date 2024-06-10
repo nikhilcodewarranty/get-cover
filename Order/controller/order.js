@@ -345,8 +345,12 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-                let pricebookDetail = []
+                var pricebookDetail = []
                 let dealerBookDetail = []
+
+                let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+
+
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -500,6 +504,21 @@ exports.createOrder1 = async (req, res) => {
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+                    //reporting codes 
+
+                    let pricebookDetailObject = {}
+                    let dealerPriceBookObject = {}
+
+                    pricebookDetailObject = priceBook[0].toObject()
+                    pricebookDetailObject.price = product.price
+                    pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                    dealerPriceBookObject.retailPrice = product.unitPrice
+                    dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+
+                    pricebookDetail.push(pricebookDetailObject)
+                    dealerBookDetail.push(dealerPriceBookObject)
+
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
@@ -526,6 +545,7 @@ exports.createOrder1 = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+
                     increamentNumber++
 
                     contractArray.push(contractObject);
@@ -541,6 +561,7 @@ exports.createOrder1 = async (req, res) => {
                         response: {
                             code: constant.errorCode,
                             message: "Something went wrong in creating the contract",
+                            saveContracts
                         }
                     }
                     await LOG(logData).save()
@@ -595,18 +616,23 @@ exports.createOrder1 = async (req, res) => {
                         response: {
                             code: constant.successCode,
                             message: "Success",
+                            saveContracts
                         }
                     }
 
                     await LOG(logData).save()
+
+
+
+                    //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+                    // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
                     let reportingData = {
                         orderId: savedResponse._id,
-                        products: getPriceBookDetail,
+                        products: pricebookDetail,
                         orderAmount: data.orderAmount,
                         dealerId: data.dealerId,
-                        dealerPriceBook: getDealerPriceBookDetail
+                        dealerPriceBook: dealerBookDetail
                     }
 
                     await supportingFunction.reportingData(reportingData)
@@ -616,10 +642,6 @@ exports.createOrder1 = async (req, res) => {
                     });
                     return
                 }
-
-
-
-
             })
 
         } else {
