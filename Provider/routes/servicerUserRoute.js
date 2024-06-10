@@ -11,6 +11,7 @@ router.post("/getServicerDealers",[verifyToken],servicerController.getServicerDe
 router.put("/changePrimaryUser",[verifyToken],servicerController.changePrimaryUser)
 router.put("/editUserDetail/:userId",[verifyToken],servicerController.editUserDetail)
 router.get("/getServicerDetail",[verifyToken],servicerController.getServicerDetail)
+router.get("/getDashboardData",[verifyToken],servicerController.getDashboardData)
 router.get("/getUserId/:userId",[verifyToken],servicerController.getUserId)
 router.post("/createRelationWithDealer",[verifyToken],servicerController.createDeleteRelation)
 

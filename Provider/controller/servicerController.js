@@ -1,6 +1,7 @@
 const { serviceProvider } = require("../model/serviceProvider");
 const providerService = require("../services/providerService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
+const claimService = require("../../Claim/services/claimService");
 const role = require("../../User/model/role");
 const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
@@ -394,33 +395,33 @@ exports.getServicerDealers = async (req, res) => {
 
         let orderQuery = { dealerId: { $in: ids }, status: "Active" };
         let project = {
-          productsArray: 1,
-          dealerId: 1,
-          unique_key: 1,
-          servicerId: 1,
-          customerId: 1,
-          resellerId: 1,
-          paymentStatus: 1,
-          status: 1,
-          venderOrder: 1,
-          orderAmount: 1,
+            productsArray: 1,
+            dealerId: 1,
+            unique_key: 1,
+            servicerId: 1,
+            customerId: 1,
+            resellerId: 1,
+            paymentStatus: 1,
+            status: 1,
+            venderOrder: 1,
+            orderAmount: 1,
         }
         let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
-    
-    
-        const  result_Array = dealarUser.map(item1 => {
-          const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-          const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
-    
-          if (matchingItem || orders) {
-            return {
-              ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-              dealerData: matchingItem.toObject(),
-              ordersData: orders ? orders : {}
-            };
-          } else {
-            return dealerData.toObject();
-          }
+
+
+        const result_Array = dealarUser.map(item1 => {
+            const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+            const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+
+            if (matchingItem || orders) {
+                return {
+                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+                    dealerData: matchingItem.toObject(),
+                    ordersData: orders ? orders : {}
+                };
+            } else {
+                return dealerData.toObject();
+            }
         });
 
 
@@ -528,3 +529,97 @@ exports.createDeleteRelation = async (req, res) => {
         })
     }
 }
+
+exports.getDashboardData = async (req, res) => {
+    try {
+
+        const claimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId) }
+        //Get claims data
+        let lookupQuery = [
+            {
+                $match: claimQuery
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+        ]
+        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        //Get number of claims
+        let numberOfCompleletedClaims = [
+            {
+                $match: claimQuery
+            },
+        ]
+        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+
+        const paidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Paid" }
+        //Get total paid claim value
+        let paidLookUp = [
+            {
+                $match: paidClaimQuery
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+        ]
+
+        let paidClaimValue = await claimService.valueCompletedClaims(paidLookUp);
+
+        const unPaidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Unpaid" }
+        //Get total Unpaid claim value
+        let unPaidLookUp = [
+            {
+                $match: unPaidClaimQuery
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+        ]
+
+        let unPaidClaimValue = await claimService.valueCompletedClaims(unPaidLookUp);
+
+        const claimData = {
+            numberOfClaims: numberOfClaims.length,
+            valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0,
+            paidClaimValue: paidClaimValue.length > 0 ? paidClaimValue[0]?.totalAmount : 0,
+            unPaidClaimValue: unPaidClaimValue.length > 0 ? unPaidClaimValue[0]?.totalAmount : 0,
+
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: {
+                claimData: claimData,
+            }
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
