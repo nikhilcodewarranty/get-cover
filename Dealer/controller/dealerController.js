@@ -1778,7 +1778,6 @@ exports.uploadPriceBook = async (req, res) => {
             upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
           }
           else {
-
             newArray1 = results
               .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
               .map((obj, index) => {
@@ -2143,14 +2142,7 @@ exports.updateDealerMeta = async (req, res) => {
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
       //Update Meta in servicer also 
-      const servicerMeta = {
-        name: data.accountName,
-        city: data.city,
-        country: data.country,
-        street: data.street,
-        zip: data.zip
-      }
-      const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+
       // if (checkDealer.isServicer) {
       //   const servicerMeta = {
       //     name: data.accountName,
@@ -2161,21 +2153,36 @@ exports.updateDealerMeta = async (req, res) => {
       //   }
       //   const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
       // }
-      if (data.isServicer && !checkDealer.isServicer) {
-        const CountServicer = await servicerService.getServicerCount();
-        let servicerObject = {
-          name: data.accountName,
-          street: data.street,
-          city: data.city,
-          zip: data.zip,
-          dealerId: checkDealer._id,
-          state: data.state,
-          country: data.country,
-          status: data.status,
-          accountStatus: "Approved",
-          unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+      if (data.isServicer) {
+        const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
+        if (!checkServicer) {
+          const CountServicer = await servicerService.getServicerCount();
+          let servicerObject = {
+            name: data.accountName,
+            street: data.street,
+            city: data.city,
+            zip: data.zip,
+            dealerId: checkDealer._id,
+            state: data.state,
+            country: data.country,
+            status: data.status,
+            accountStatus: "Approved",
+            unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+          }
+          let createData = await servicerService.createServiceProvider(servicerObject)
         }
-        let createData = await servicerService.createServiceProvider(servicerObject)
+
+        else {
+          const servicerMeta = {
+            name: data.accountName,
+            city: data.city,
+            country: data.country,
+            street: data.street,
+            zip: data.zip
+          }
+          const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
+        }
+
 
       }
     }

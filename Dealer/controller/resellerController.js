@@ -748,21 +748,35 @@ exports.editResellers = async (req, res) => {
         // if (checkReseller.isServicer) {
         //     const updateServicerMeta = await providerService.updateServiceProvider({ resellerId: req.params.resellerId }, data)
         // }
-        if (data.isServicer && !checkReseller.isServicer) {
-            const CountServicer = await providerService.getServicerCount();
-            let servicerObject = {
-                name: data.accountName,
-                street: data.street,
-                city: data.city,
-                zip: data.zip,
-                resellerId: req.params.resellerId,
-                state: data.state,
-                country: data.country,
-                status: data.status,
-                accountStatus: "Approved",
-                unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
-            }
-            let createData = await providerService.createServiceProvider(servicerObject)
+        if (data.isServicer) {
+            const checkServicer = await providerService.getServiceProviderById({ resellerId: req.params.resellerId })
+            if (!checkServicer) {
+                const CountServicer = await providerService.getServicerCount();
+                let servicerObject = {
+                  name: data.accountName,
+                  street: data.street,
+                  city: data.city,
+                  zip: data.zip,
+                  resellerId: req.params.resellerId,
+                  state: data.state,
+                  country: data.country,
+                  status: data.status,
+                  accountStatus: "Approved",
+                  unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+                }
+                let createData = await providerService.createServiceProvider(servicerObject)
+              }
+      
+              else {
+                const servicerMeta = {
+                  name: data.accountName,
+                  city: data.city,
+                  country: data.country,
+                  street: data.street,
+                  zip: data.zip
+                }
+                const updateServicerMeta = await providerService.updateServiceProvider(criteria, servicerMeta)
+              }
 
         }
         let resellerUserCreateria = { accountId: req.params.resellerId };

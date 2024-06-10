@@ -698,7 +698,7 @@ exports.changePrimaryUser = async (req, res) => {
       // }
       let emailData = {
         senderName: checkUser.firstName,
-        content: "The primary user for your account has been changed from " + updateLastPrimary + " to " + updatePrimary + "."
+        content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + "."
       };
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Primary User", emailData))
       //Save Logs changePrimaryUser
