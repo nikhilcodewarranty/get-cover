@@ -1105,9 +1105,13 @@ exports.changeDealerStatus = async (req, res) => {
     //Update Dealer Status
     newValue = {
       $set: {
-        accountStatus: req.body.status
+        accountStatus: req.body.status,
+        status: req.body.status,
       }
     };
+    if(singleDealer.isServicer){
+      let updateServicer = await providerService.updateServiceProvider({dealerId:singleDealer._id},newValue)
+    }
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {

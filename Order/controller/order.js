@@ -345,6 +345,8 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
+                let pricebookDetail = []
+                let dealerBookDetail = []
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -585,6 +587,7 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -594,9 +597,10 @@ exports.createOrder1 = async (req, res) => {
                             message: "Success",
                         }
                     }
+
                     await LOG(logData).save()
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })                    
+                    let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: getPriceBookDetail,
@@ -604,7 +608,7 @@ exports.createOrder1 = async (req, res) => {
                         dealerId: data.dealerId,
                         dealerPriceBook: getDealerPriceBookDetail
                     }
-    
+
                     await supportingFunction.reportingData(reportingData)
                     res.send({
                         code: constant.successCode,
@@ -3161,7 +3165,7 @@ exports.getSingleOrder = async (req, res) => {
         const servicerQuery = { accountId: { $in: servicerIds }, isPrimary: true };
 
         let servicerUser = await userService.getMembers(servicerQuery, {});
-        const result_Array = servicer.map((item1) => {
+        let result_Array = servicer.map((item1) => {
             const matchingItem = servicerUser.find(
                 (item2) => item2.accountId.toString() === item1._id.toString()
             );
@@ -3185,6 +3189,18 @@ exports.getSingleOrder = async (req, res) => {
             servicerData: checkServicer ? checkServicer : {},
         };
 
+        // unique code here
+
+        function makeUnique(array, key) {
+            return array.reduce((uniqueArray, currentItem) => {
+                const existingItem = uniqueArray.find(item => item[key] === currentItem[key]);
+                if (!existingItem) {
+                    uniqueArray.push(currentItem);
+                }
+                return uniqueArray;
+            }, []);
+        }
+        result_Array = makeUnique(result_Array, '_id');
         res.send({
             code: constant.successCode,
             message: "Success!",
