@@ -3193,13 +3193,13 @@ exports.getResellerContract = async (req, res) => {
 
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body;
-    if (req.role != "Super Admin") {
-        res.send({
-            code: constant.errorCode,
-            message: "Only super admin allow to do this action",
-        });
-        return;
-    }
+    // if (req.role != "Super Admin") {
+    //     res.send({
+    //         code: constant.errorCode,
+    //         message: "Only super admin allow to do this action",
+    //     });
+    //     return;
+    // }
 
     //let query = { status: { $eq: "Archieved" } };
     let query = { status: "Archieved", resellerId: new mongoose.Types.ObjectId(req.userId) };
