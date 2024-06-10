@@ -327,9 +327,13 @@ exports.getSingleOrder = async (req, res) => {
       const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
       if (pricebook) {
         product.name = pricebook.name;
+        product.pName = pricebook.pName;
+        product.term = pricebook.term;
       }
       if (pricebookCat) {
         product.catName = pricebookCat.name;
+        product.pName = pricebook.pName;
+        product.term = pricebook.term;
       }
 
       return product;
