@@ -881,7 +881,7 @@ exports.editOrderDetail = async (req, res) => {
                         { dealerId: data.servicerId },
                     ],
                 };
-                let checkServicer = await servicerService.getServiceProviderById(query);
+                let checkServicer = await providerService.getServiceProviderById(query);
                 if (!checkServicer) {
                     res.send({
                         code: constant.errorCode,
@@ -3262,7 +3262,7 @@ exports.getAllArchieveOrders = async (req, res) => {
         ],
     };
     //Get Respective Servicer
-    let respectiveServicer = await servicerService.getAllServiceProvider(
+    let respectiveServicer = await providerService.getAllServiceProvider(
         servicerCreteria,
         { name: 1 }
     );
