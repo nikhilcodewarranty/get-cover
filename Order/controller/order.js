@@ -5339,6 +5339,8 @@ exports.generateHtmltopdf = async (req, res) => {
 
         let mergeFileName = checkOrder.unique_key + '.pdf'
 
+        console.log(mergeFileName);
+
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<head>
@@ -5400,7 +5402,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
-            console.log("I am dsfsfdssdfsd");
+           // console.log("I am dsfsfdssdfsd");
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
