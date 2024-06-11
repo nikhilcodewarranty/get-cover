@@ -367,7 +367,8 @@ exports.createOrder1 = async (req, res) => {
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
 
-                    console.log("dateCheco----------------------".dateCheck)
+                    console.log("dateCheco----------------------")
+                    console.log("dateCheco----------------------",dateCheck)
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
