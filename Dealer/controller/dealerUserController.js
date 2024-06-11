@@ -3407,7 +3407,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
-        let data = req.body;
+        let data = req.body; 
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
@@ -3461,7 +3461,6 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
-
         if (data.customerId) {
             let query = { _id: data.customerId };
             let checkCustomer = await customerService.getCustomerById(query);
@@ -3505,7 +3504,6 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
-
         data.status = "Pending";
         if (data.billTo == "Dealer") {
             let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
@@ -3611,7 +3609,6 @@ exports.createOrder = async (req, res) => {
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
         }
 
-        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
 
