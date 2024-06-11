@@ -918,6 +918,45 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+        if (data.billTo == "Dealer") {
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: checkDealer.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Reseller") {
+            let getReseller = await resellerService.getReseller({ _id: checkReseller._id })
+            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Reseller",
+                detail: {
+                    name: getReseller.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Custom") {
+            data.billDetail = {
+                billTo: "Custom",
+                detail: {
+                    name: data.name,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
+
+                }
+            }
+        }
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = req.userId;
