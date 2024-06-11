@@ -1961,7 +1961,7 @@ exports.getUserById = async (req, res) => {
 // update user details with ID
 exports.updateUser = async (req, res) => {
   try {
-    let criteria = { _id: req.params.userId };
+    let criteria = { _id: req.teammateId };
     let option = { new: true };
     const updateUser = await userService.updateUser(criteria, req.body, option);
     if (!updateUser) {
@@ -1986,7 +1986,7 @@ exports.updateUser = async (req, res) => {
 exports.updateUserData = async (req, res) => {
   try {
     let data = req.body
-    let criteria = { _id: req.params.userId };
+    let criteria = { _id: req.params.userId ?  req.params.userId : req.teammateId};
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
     if (!updateUser) {
