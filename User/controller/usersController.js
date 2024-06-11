@@ -1968,7 +1968,7 @@ exports.updateUser = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to update the user data"
-      });
+      }); 
       return;
     };
     res.send({
