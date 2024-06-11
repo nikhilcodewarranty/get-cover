@@ -303,7 +303,7 @@ exports.getContracts = async (req, res) => {
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-      console.log("check on servicer ak-----------",getData)
+      console.log("check on servicer ak-----------", getData)
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
         let asServicer = await getData.map(servicer => {
@@ -314,7 +314,7 @@ exports.getContracts = async (req, res) => {
           }
         })
 
-        console.log("as servicer data +++++++++++++++++++++++++++++++++++",getData,asServicer)
+        console.log("as servicer data +++++++++++++++++++++++++++++++++++", getData, asServicer)
 
         servicerIds = servicerIds.concat(asServicer)
       } else {
@@ -497,10 +497,23 @@ exports.getContracts = async (req, res) => {
     let getContracts = await contractService.getAllContracts2(mainQuery, { maxTimeMS: 100000 })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
 
+    let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
+    console.log('sjdsjlfljksfklsjdf')
+    for(let e=0;e<result1.length;e++){
+      result1[e].reason = " "
+      if(result1[e].status != "Active"){
+        result1[e].reason = "Contract is not active"
+      }
+      if(result1[e].minDate < new Date()){
+        result1[e].reason = "Contract will be eligible on 211221" + " " + result1[e].minDate
+      }
+      // let checkClaims = await claimService.getAllClaims()
+    }
+
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      result: result1,
       totalCount,
       mainQuery
     })
