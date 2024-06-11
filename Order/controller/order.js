@@ -366,6 +366,8 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
+
+                    console.log("dateCheco----------------------".dateCheck)
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
