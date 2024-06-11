@@ -368,7 +368,7 @@ exports.createOrder1 = async (req, res) => {
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
 
                     console.log("dateCheco----------------------")
-                    console.log("dateCheco----------------------",dateCheck)
+                    console.log("dateCheco----------------------", dateCheck)
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -387,9 +387,9 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        console.log("d1-------------",d1)
-                        console.log("d2-------------",d2)
-                        console.log("d3-------------",d3)
+                        console.log("d1-------------", d1)
+                        console.log("d2-------------", d2)
+                        console.log("d3-------------", d3)
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
                     // Find the minimum date
@@ -528,7 +528,7 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    console.log("price book object reporting data check ak ------------------",pricebookDetailObject)
+                    console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
 
@@ -566,8 +566,8 @@ exports.createOrder1 = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("saveContracts1233333333333333333333333",saveContracts);
-                if (!saveContracts) {
+                console.log("saveContracts1233333333333333333333333", saveContracts);
+                if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -590,7 +590,12 @@ exports.createOrder1 = async (req, res) => {
                     });
                     return
                 }
-                if (saveContracts) {
+                if (saveContracts.length > 0) {
+                    let savedResponse = await orderService.updateOrder(
+                        { _id: checkOrder._id },
+                        { status: "Active" },
+                        { new: true }
+                    );
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
@@ -4474,7 +4479,7 @@ exports.getOrderContract = async (req, res) => {
                                     unique_key: 1,
                                     status: 1,
                                     minDate: 1,
-                                    productValue:1,
+                                    productValue: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
                                     orderUniqueKey: 1,
@@ -4523,7 +4528,7 @@ exports.getOrderContract = async (req, res) => {
                                 minDate: 1,
                                 manufacture: 1,
                                 serviceCoverageType: 1,
-                                productValue:1,
+                                productValue: 1,
                                 coverageType: 1,
                                 eligibilty: 1,
                                 orderUniqueKey: 1,
@@ -4550,51 +4555,51 @@ exports.getOrderContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
-          result1[e].reason = " "
-          if (result1[e].status != "Active") {
-            result1[e].reason = "Contract is not active"
-          }
-          if (result1[e].minDate < new Date()) {
-            const options = {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            };
-            const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
-            result1[e].reason = "Contract will be eligible on " + " " + formattedDate
-          }
-          let claimQuery = [
-            {
-              $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
-            },
-            {
-              $group: {
-                _id: null,
-                totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
-                openFileClaimsCount: { // Count of claims where claimfile is "Open"
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
-                      then: 1,
-                      else: 0
+            result1[e].reason = " "
+            if (result1[e].status != "Active") {
+                result1[e].reason = "Contract is not active"
+            }
+            if (result1[e].minDate < new Date()) {
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                };
+                const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
+                result1[e].reason = "Contract will be eligible on " + " " + formattedDate
+            }
+            let claimQuery = [
+                {
+                    $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                        openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                            $sum: {
+                                $cond: {
+                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    then: 1,
+                                    else: 0
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
+            ]
+
+            let checkClaims = await claimService.getAllClaims(claimQuery)
+            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+            if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                    result1[e].reason = "Contract has open claim"
+
+                }
+                if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                    result1[e].reason = "Claim value exceed the product value limit"
+                }
             }
-          ]
-    
-          let checkClaims = await claimService.getAllClaims(claimQuery)
-          console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
-          if (checkClaims[0]) {
-            if (checkClaims[0].openFileClaimsCount > 0) {
-              result1[e].reason = "Contract has open claim"
-    
-            }
-            if (checkClaims[0].totalAmount >= result1[e].productValue) {
-              result1[e].reason = "Claim value exceed the product value limit"
-            }
-          }
         }
         //       res.json(getContracts);
         // return;
@@ -5264,7 +5269,7 @@ exports.generateHtmltopdf = async (req, res) => {
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
-       //Get customer primary info
+        //Get customer primary info
         const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
 
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
@@ -5307,7 +5312,7 @@ exports.generateHtmltopdf = async (req, res) => {
             }
 
         }
-       // res.json(productCoveredArray);
+        // res.json(productCoveredArray);
         // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
@@ -5397,7 +5402,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
-           // console.log("I am dsfsfdssdfsd");
+            // console.log("I am dsfsfdssdfsd");
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
