@@ -566,6 +566,7 @@ exports.createOrder1 = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
+                console.log("saveContracts1233333333333333333333333",saveContracts);
                 if (!saveContracts) {
                     let logData = {
                         endpoint: "order/createOrder",
