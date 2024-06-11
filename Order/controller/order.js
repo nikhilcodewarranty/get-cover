@@ -389,7 +389,7 @@ exports.createOrder1 = async (req, res) => {
                         console.log("d1-------------",d1)
                         console.log("d2-------------",d2)
                         console.log("d3-------------",d3)
-                        return new Date(Math.min(d1?.getTime(), d2?.getTime(), d3?.getTime()));
+                        return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
                     // Find the minimum date
                     let minDate;
