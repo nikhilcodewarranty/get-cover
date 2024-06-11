@@ -509,10 +509,10 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject = priceBook[0].frontingFee
-                    pricebookDetailObject = priceBook[0].reserveFutureFee
-                    pricebookDetailObject = priceBook[0].reinsuranceFee
-                    pricebookDetailObject = priceBook[0].adminFee
+                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
+                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
@@ -558,7 +558,7 @@ exports.createOrder1 = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                if (!saveContracts) {
+                if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
