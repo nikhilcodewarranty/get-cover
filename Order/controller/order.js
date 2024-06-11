@@ -512,10 +512,12 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject = priceBook[0].frontingFee
-                    pricebookDetailObject = priceBook[0].reserveFutureFee
-                    pricebookDetailObject = priceBook[0].reinsuranceFee
-                    pricebookDetailObject = priceBook[0].adminFee
+                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
+                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.term = priceBook[0].term
+                    pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
@@ -523,7 +525,7 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-
+                    console.log("price book object reporting data check ak ------------------",pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
 
@@ -561,7 +563,7 @@ exports.createOrder1 = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                if (!saveContracts) {
+                if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
