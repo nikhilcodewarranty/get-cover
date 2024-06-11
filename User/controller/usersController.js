@@ -2476,7 +2476,7 @@ exports.getAllNotifications1 = async (req, res) => {
     });
 
     if (data.readFlag != "") {
-      if (data.readFlag == "true") {
+      if (data.readFlag == "true" || data.readFlag) {
         updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
       } else {
         updatedNotifications = updatedNotifications.filter(item => item.isRead === false)

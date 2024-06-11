@@ -943,7 +943,7 @@ exports.getCustomerContract = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result:result1,
-      totalCount,
+      totalCount, 
       mainQuery
     })
 
