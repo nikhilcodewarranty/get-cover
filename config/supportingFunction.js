@@ -26,7 +26,7 @@ exports.reportingData = async (data) => {
         orderId: data.orderId,
         orderAmount: data.orderAmount,
         products: data.products,
-        dealerPriceBook: data.dealerPriceBook,
+        // dealerPriceBook: data.dealerPriceBook,
         dealerId: data.dealerId
     }
     const saveData = await REPORTING(reportingData).save()
