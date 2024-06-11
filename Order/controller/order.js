@@ -512,6 +512,8 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetailObject.frontingFee = priceBook[0].frontingFee
                     pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.term = priceBook[0].term
                     pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
