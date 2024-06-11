@@ -44,6 +44,7 @@ router.put("/updatePassword", [verifyToken], userController.updatePassword); //U
 
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
+router.put("/updateUser/:userId", [verifyToken], userController.updateUser);
 router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail);
 router.post("/validateData", [verifyToken], userController.validateData);
