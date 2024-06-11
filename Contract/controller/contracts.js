@@ -480,6 +480,7 @@ exports.getContracts = async (req, res) => {
                 unique_key: 1,
                 status: 1,
                 manufacture: 1,
+                productValue: 1,
                 eligibilty: 1,
                 orderUniqueKey: 1,
                 venderOrder: 1,
