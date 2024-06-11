@@ -574,7 +574,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
-      content: "The priceBook " + existingPriceBook.name + " updated successfully! effective immediately."
+      content: "The priceBook " + existingPriceBook.pName + " updated successfully! effective immediately."
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update PriceBook", emailData))
 
