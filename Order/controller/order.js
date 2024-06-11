@@ -286,11 +286,11 @@ exports.createOrder1 = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            let savedResponse = await orderService.updateOrder(
-                { _id: checkOrder._id },
-                { status: "Active" },
-                { new: true }
-            );
+            // let savedResponse = await orderService.updateOrder(
+            //     { _id: checkOrder._id },
+            //     { status: "Active" },
+            //     { new: true }
+            // );
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -384,7 +384,10 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
+                        console.log("d1-------------",d1)
+                        console.log("d2-------------",d2)
+                        console.log("d3-------------",d3)
+                        return new Date(Math.min(d1?.getTime(), d2?.getTime(), d3?.getTime()));
                     }
                     // Find the minimum date
                     let minDate;
