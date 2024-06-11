@@ -1159,7 +1159,7 @@ exports.getDealerServicers = async (req, res) => {
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")   
+        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
 
         const result_Array = servicer.map(item1 => {
             const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
@@ -3742,7 +3742,48 @@ exports.editOrderDetail = async (req, res) => {
 
             }
         }
+        if (data.billTo == "Dealer") {
+            let checkDealer = await dealerService.getDealerById(
+                req.userId
+            );
+            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Dealer",
+                detail: {
+                    name: checkDealer.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: checkDealer.street + ' , ' + checkDealer.city + ' , ' + checkDealer.country + ' , ' + checkDealer.zip
 
+                }
+            }
+        }
+        if (data.billTo == "Reseller") {
+            let getReseller = await resellerService.getReseller({ _id: data.resellerId })
+            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            data.billDetail = {
+                billTo: "Reseller",
+                detail: {
+                    name: getReseller.name,
+                    email: getUser.email,
+                    phoneNumber: getUser.phoneNumber,
+                    address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
+
+                }
+            }
+        }
+        if (data.billTo == "Custom") {
+            data.billDetail = {
+                billTo: "Custom",
+                detail: {
+                    name: data.name,
+                    email: data.email,
+                    phoneNumber: data.phoneNumber,
+                    address: data.address
+
+                }
+            }
+        }
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
