@@ -509,13 +509,16 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject = priceBook[0]
+                    pricebookDetailObject = priceBook[0].frontingFee
+                    pricebookDetailObject = priceBook[0].reserveFutureFee
+                    pricebookDetailObject = priceBook[0].reinsuranceFee
+                    pricebookDetailObject = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
-                    dealerPriceBookObject.retailPrice = product.unitPrice
-                    dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    dealerPriceBookObject.dealerPriceId = getDealerPriceBookDetail._id
+                    pricebookDetailObject.retailPrice = product.unitPrice
+                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
 
                     pricebookDetail.push(pricebookDetailObject)
@@ -634,7 +637,7 @@ exports.createOrder1 = async (req, res) => {
                         products: pricebookDetail,
                         orderAmount: data.orderAmount,
                         dealerId: data.dealerId,
-                        dealerPriceBook: dealerBookDetail
+                        // dealerPriceBook: dealerBookDetail
                     }
 
                     await supportingFunction.reportingData(reportingData)
@@ -4165,14 +4168,14 @@ exports.markAsPaid = async (req, res) => {
             });
             let saveData = await contractService.createBulkContracts(contractArray)
             if (!saveData) {
-                logData.response = { 
+                logData.response = {
                     code: constant.errorCode,
                     message: "unable to make contracts",
                     result: saveData
                 };
-                await LOG(logData).save(); 
+                await LOG(logData).save();
                 let savedResponse = await orderService.updateOrder(
-                    { _id: checkOrder._id }, 
+                    { _id: checkOrder._id },
                     { status: "Pending" },
                     { new: true }
                 );
@@ -4192,7 +4195,7 @@ exports.markAsPaid = async (req, res) => {
                 userId: req.userId,
                 contentId: null,
                 flag: 'order',
-                notificationFor: IDs 
+                notificationFor: IDs
             };
             let createNotification = await userService.createNotification(notificationData1);
 
