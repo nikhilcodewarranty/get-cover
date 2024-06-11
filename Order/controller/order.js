@@ -5246,14 +5246,18 @@ exports.generateHtmltopdf = async (req, res) => {
         let response;
         let link;
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
-
+        console.log("checkOrder-------------------------------",checkOrder);
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
 
+        console.log("checkDealer-----------------------",checkDealer)
+
         //Get customer
         const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
+
+        console.log("checkCustomer-----------------------",checkCustomer)
 
         //Get customer primary info
 
@@ -5262,6 +5266,8 @@ exports.generateHtmltopdf = async (req, res) => {
         const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
 
         const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
+
+        console.log("checkReseller-----------------------",checkReseller)
 
         //Get reseller primary info
 
@@ -5339,7 +5345,6 @@ exports.generateHtmltopdf = async (req, res) => {
 
         let mergeFileName = checkOrder.unique_key + '.pdf'
 
-        console.log(mergeFileName);
 
         const orderFile = 'pdfs/' + mergeFileName;
         //   var html = fs.readFileSync('../template/template.html', 'utf8');
