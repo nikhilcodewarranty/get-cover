@@ -215,7 +215,6 @@ exports.createTerms = async (req, res) => {
   }
 };
 
-
 exports.tryUpload = async (req, res) => {
   try {
     // Check if a file is uploaded

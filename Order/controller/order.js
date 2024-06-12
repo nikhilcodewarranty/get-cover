@@ -366,9 +366,6 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
-
-                    console.log("dateCheco----------------------")
-                    console.log("dateCheco----------------------", dateCheck)
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -387,10 +384,7 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        console.log("d1-------------", d1)
-                        console.log("d2-------------", d2)
-                        console.log("d3-------------", d3)
-                        return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
+                        return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
                     // Find the minimum date
                     let minDate;
@@ -510,6 +504,7 @@ exports.createOrder1 = async (req, res) => {
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
                     //reporting codes 
 
                     let pricebookDetailObject = {}
@@ -566,7 +561,6 @@ exports.createOrder1 = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("saveContracts1233333333333333333333333", saveContracts);
                 if (saveContracts.length == 0) {
                     let logData = {
                         endpoint: "order/createOrder",
@@ -590,7 +584,7 @@ exports.createOrder1 = async (req, res) => {
                     });
                     return
                 }
-                if (saveContracts.length > 0) {
+                if (saveContracts[0]) {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Active" },
@@ -3611,6 +3605,11 @@ exports.editOrderDetail = async (req, res) => {
                 // let savedDataOrder = savedResponse.toObject()
 
                 var contractArray = [];
+                var pricebookDetail = [];
+                var dealerBookDetail = [];
+
+                let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+
                 totalDataComing.forEach((data, index) => {
                     //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_number1 = increamentNumber
@@ -3771,6 +3770,30 @@ exports.editOrderDetail = async (req, res) => {
 
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
 
+                    //reporting codes 
+
+                    let pricebookDetailObject = {}
+                    let dealerPriceBookObject = {}
+
+                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
+                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.term = priceBook[0].term
+                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+                    pricebookDetailObject.price = product.price
+                    pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                    pricebookDetailObject.retailPrice = product.unitPrice
+                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
+                    pricebookDetail.push(pricebookDetailObject)
+                    dealerBookDetail.push(dealerPriceBookObject)
+
+
+
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3805,7 +3828,7 @@ exports.editOrderDetail = async (req, res) => {
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
 
-                if (!saveContracts) {
+                if (!saveContracts[0]) {
                     logData.response = {
                         code: constant.errorCode,
                         message: "unable to create contracts",
@@ -3849,7 +3872,22 @@ exports.editOrderDetail = async (req, res) => {
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
 
+                let reportingData = {
+                    orderId: savedResponse._id,
+                    products: pricebookDetail,
+                    orderAmount: data.orderAmount,
+                    dealerId: data.dealerId,
+                    // dealerPriceBook: dealerBookDetail
+                }
+    
+                await supportingFunction.reportingData(reportingData)
+
             })
+
+            // reporting codes
+           
+
+
             logData.response = {
                 code: constant.successCode,
                 message: "Success",
@@ -3993,6 +4031,11 @@ exports.markAsPaid = async (req, res) => {
             });
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
+            var pricebookDetail = []
+            let dealerBookDetail = []
+
+            let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
+
             totalDataComing.forEach((data, index) => {
                 let unique_key_number1 = increamentNumber
                 let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -4150,6 +4193,30 @@ exports.markAsPaid = async (req, res) => {
 
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
 
+                // reporting codes
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
+
+                pricebookDetailObject.frontingFee = priceBook[0].frontingFee
+                pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                pricebookDetailObject.name = priceBook[0].name
+                pricebookDetailObject.term = priceBook[0].term
+                pricebookDetailObject.adminFee = priceBook[0].adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
+                pricebookDetail.push(pricebookDetailObject)
+                dealerBookDetail.push(dealerPriceBookObject)
+
+
+
+
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
@@ -4181,7 +4248,7 @@ exports.markAsPaid = async (req, res) => {
                 contractArray.push(contractObject);
             });
             let saveData = await contractService.createBulkContracts(contractArray)
-            if (!saveData) {
+            if (!saveData[0]) {
                 logData.response = {
                     code: constant.errorCode,
                     message: "unable to make contracts",
@@ -4193,37 +4260,52 @@ exports.markAsPaid = async (req, res) => {
                     { status: "Pending" },
                     { new: true }
                 );
-            }
-            // send notification to dealer,admin, customer
-            let IDs = await supportingFunction.getUserIds()
-            let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-            let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
-            if (resellerPrimary) {
-                IDs.push(resellerPrimary._id)
-            }
-            IDs.push(dealerPrimary._id, customerPrimary._id)
-            let notificationData1 = {
-                title: "Mark As Paid",
-                description: "The order " + checkOrder.unique_key + " has been mark as paid",
-                userId: req.userId,
-                contentId: null,
-                flag: 'order',
-                notificationFor: IDs
-            };
-            let createNotification = await userService.createNotification(notificationData1);
+            } else {
 
-            // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
-            notificationEmails.push(customerPrimary.email);
-            notificationEmails.push(dealerPrimary.email);
-            notificationEmails.push(resellerPrimary?.email);
-            let emailData = {
-                senderName: '',
-                content: "The new order has been marked as paid",
+                //reporting codes
+                let reportingData = {
+                    orderId: savedResponse._id,
+                    products: pricebookDetail,
+                    orderAmount: data.orderAmount,
+                    dealerId: data.dealerId,
+                    // dealerPriceBook: dealerBookDetail
+                }
+
+                await supportingFunction.reportingData(reportingData)
+               
+
+                // send notification to dealer,admin, customer
+                let IDs = await supportingFunction.getUserIds()
+                let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+                let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
+                let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+                if (resellerPrimary) {
+                    IDs.push(resellerPrimary._id)
+                }
+                IDs.push(dealerPrimary._id, customerPrimary._id)
+                let notificationData1 = {
+                    title: "Mark As Paid",
+                    description: "The order " + checkOrder.unique_key + " has been mark as paid",
+                    userId: req.userId,
+                    contentId: null,
+                    flag: 'order',
+                    notificationFor: IDs
+                };
+                let createNotification = await userService.createNotification(notificationData1);
+
+                // Send Email code here
+                let notificationEmails = await supportingFunction.getUserEmails();
+                notificationEmails.push(customerPrimary.email);
+                notificationEmails.push(dealerPrimary.email);
+                notificationEmails.push(resellerPrimary?.email);
+                let emailData = {
+                    senderName: '',
+                    content: "The new order has been marked as paid",
+                }
+
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Mark Paid", emailData))
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Mark Paid", emailData))
         })
 
         let paidDate = {

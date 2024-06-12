@@ -37,6 +37,10 @@ const supportingFunction = require('../../config/supportingFunction');
 const orderService = require("../../Order/services/orderService");
 
 
+
+const REPORTING = require('../../Order/model/reporting')
+
+
 // daily query for reporting 
 
 
@@ -77,7 +81,7 @@ exports.dailySales = async (req, res) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ]
-        let getOrders = await orderService.getAllOrders1([dailyQuery]);
+        let getOrders = await REPORTING.find();
         if (!getOrders) {
             res.send({
                 code: constant.errorCode,
@@ -85,19 +89,19 @@ exports.dailySales = async (req, res) => {
             })
             return;
         }
-        const result = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0,10);
-            const order = getOrders.find(item => item._id === dateString);
-            return {
-              date: dateString,
-              total_order_amount: order ? order.total_order_amount : 0,
-              total_orders: order ? order.total_orders : 0
-            };
-          });
+        // const result = datesArray.map(date => {
+        //     const dateString = date.toISOString().slice(0,10);
+        //     const order = getOrders.find(item => item._id === dateString);
+        //     return {
+        //       date: dateString,
+        //       total_order_amount: order ? order.total_order_amount : 0,
+        //       total_orders: order ? order.total_orders : 0
+        //     };
+        //   });
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: result
+            result: getOrders
         })
 
 
