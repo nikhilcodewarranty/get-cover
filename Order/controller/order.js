@@ -3605,8 +3605,8 @@ exports.editOrderDetail = async (req, res) => {
                 // let savedDataOrder = savedResponse.toObject()
 
                 var contractArray = [];
-                var pricebookDetail = []
-                let dealerBookDetail = []
+                var pricebookDetail = [];
+                var dealerBookDetail = [];
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
 
@@ -3872,18 +3872,20 @@ exports.editOrderDetail = async (req, res) => {
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
 
+                let reportingData = {
+                    orderId: savedResponse._id,
+                    products: pricebookDetail,
+                    orderAmount: data.orderAmount,
+                    dealerId: data.dealerId,
+                    // dealerPriceBook: dealerBookDetail
+                }
+    
+                await supportingFunction.reportingData(reportingData)
+
             })
 
             // reporting codes
-            let reportingData = {
-                orderId: savedResponse._id,
-                products: pricebookDetail,
-                orderAmount: data.orderAmount,
-                dealerId: data.dealerId,
-                // dealerPriceBook: dealerBookDetail
-            }
-
-            await supportingFunction.reportingData(reportingData)
+           
 
 
             logData.response = {

@@ -1109,8 +1109,8 @@ exports.changeDealerStatus = async (req, res) => {
         // status: req.body.status,
       }
     };
-    if(singleDealer.isServicer){
-      let updateServicer = await providerService.updateServiceProvider({dealerId:singleDealer._id}, { status: req.body.status })
+    if (singleDealer.isServicer) {
+      let updateServicer = await providerService.updateServiceProvider({ dealerId: singleDealer._id }, { status: req.body.status })
     }
 
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
