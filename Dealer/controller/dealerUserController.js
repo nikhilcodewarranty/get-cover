@@ -1104,21 +1104,21 @@ exports.getDealerServicers = async (req, res) => {
             servicer.unshift(...dealerResellerServicer);
         }
         //res.json(servicer);return;
-        let servicerIds = []
+        // let servicerIds = []
 
-        servicer.forEach(obj => {
-            if (obj.dealerId != null) {
-                servicerIds.push(obj.dealerId);
-            }
-            else if (obj.resellerId != null) {
-                servicerIds.push(obj.resellerId);
-            }
-            else {
-                servicerIds.push(obj._id);
-            }
-            // dealerIds.push(obj.dealerId);
-            // resellerIds.push(obj.resellerId);
-        });
+        // servicer.forEach(obj => {
+        //     if (obj.dealerId != null) {
+        //         servicerIds.push(obj.dealerId);
+        //     }
+        //     else if (obj.resellerId != null) {
+        //         servicerIds.push(obj.resellerId);
+        //     }
+        //     else {
+        //         servicerIds.push(obj._id);
+        //     }
+        //     // dealerIds.push(obj.dealerId);
+        //     // resellerIds.push(obj.resellerId);
+        // });
         // const servicerIds = servicer.map(obj => obj._id);
         // const dealerIds = servicer.map(obj => obj.dealerId);
         // const resellerIds = servicer.map(obj => obj.resellerId);
@@ -1135,6 +1135,7 @@ exports.getDealerServicers = async (req, res) => {
         //     { accountId: { $in: resellerIds }, isPrimary: true }
         //   ]
         // }
+        const servicerIds = servicer.map(obj => obj._id);
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
 
         //  res.json(query1);
