@@ -1103,7 +1103,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     option = { new: true };
     //Update Dealer Status
-    newValue = {
+    newValue = { 
       $set: {
         accountStatus: req.body.status,
         // status: req.body.status,
