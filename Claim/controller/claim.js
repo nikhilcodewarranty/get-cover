@@ -1760,8 +1760,10 @@ exports.saveBulkClaim = async (req, res) => {
         match = { "order.reseller._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Customer') {
-        match = { "order.customer._id": new mongoose.Types.ObjectId(req.userId) }
+        match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
+      console.log(match);
+
       const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
@@ -1871,6 +1873,9 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
+      // res.json(totalDataComing);
+
+      // return;
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
@@ -1881,6 +1886,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractArray = await Promise.all(contractArrayPromise);
+
+      // res.json(contractArray);
+
+      // return;
 
       //Check servicer is exist or not using contract id
 
@@ -1947,6 +1956,14 @@ exports.saveBulkClaim = async (req, res) => {
                   },
                   {
                     $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customers"
+                    }
+                  },
+                  {
+                    $lookup: {
                       from: "serviceproviders",
                       localField: "servicerId",
                       foreignField: "_id",
@@ -1963,6 +1980,7 @@ exports.saveBulkClaim = async (req, res) => {
               $project: {
                 orderId: 1,
                 "order.dealerId": 1,
+                "order.customerId": 1,
                 "order._id": 1,
                 "order.unique_key": 1,
                 "order.servicerId": 1,
@@ -1975,6 +1993,7 @@ exports.saveBulkClaim = async (req, res) => {
             { $unwind: { path: "$order", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.dealer", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.reseller", preserveNullAndEmptyArrays: true } },
+            { $unwind: { path: "$order.customers", preserveNullAndEmptyArrays: true } },
             { $unwind: { path: "$order.servicer", preserveNullAndEmptyArrays: true } },
           ]
           return contractService.getAllContracts2(query)
@@ -2158,7 +2177,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile(['yashasvi@codenomad.net', 'amit@codenomad.net'], htmlTableString));
 
       res.send({
         code: constant.successCode,
