@@ -1162,7 +1162,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     else {
       res.send({
-        code: constant.errorCode,
+        code: constant.errorCode, 
         message: 'Unable to update dealer status!',
       })
     }
