@@ -1106,7 +1106,7 @@ exports.changeDealerStatus = async (req, res) => {
     newValue = {
       $set: {
         accountStatus: req.body.status,
-        status: req.body.status,
+       // status: req.body.status,
       }
     };
     if(singleDealer.isServicer){

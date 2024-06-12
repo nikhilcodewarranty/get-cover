@@ -328,7 +328,6 @@ exports.createOrder = async (req, res) => {
         }
 
         data.createdBy = req.userId;
-
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = req.userId;
         data.dealerId = checkReseller.dealerId;
