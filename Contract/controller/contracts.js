@@ -752,6 +752,54 @@ exports.getContractById = async (req, res) => {
       },
     ]
     let getData = await contractService.getContracts(query, skipLimit, pageLimit)
+    for (let e = 0; e < getData.length; e++) {
+      getData[e].reason = " "
+      if (getData[e].status != "Active") {
+        getData[e].reason = "Contract is not active"
+      }
+      if (getData[e].minDate < new Date()) {
+        const options = {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        };
+        const formattedDate = new Date(getData[e].minDate).toLocaleDateString('en-US', options)
+        getData[e].reason = "Contract will be eligible on " + " " + formattedDate
+      }
+      let claimQuery = [
+        {
+          $match: { contractId: new mongoose.Types.ObjectId(getData[e]._id) }
+        },
+        {
+          $group: {
+            _id: null,
+            totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+            openFileClaimsCount: { // Count of claims where claimfile is "Open"
+              $sum: {
+                $cond: {
+                  if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                  then: 1,
+                  else: 0
+                }
+              }
+            }
+          }
+        }
+      ]
+
+      let checkClaims = await claimService.getAllClaims(claimQuery)
+      if (checkClaims[0]) {
+        if (checkClaims[0].openFileClaimsCount > 0) {
+          getData[e].reason = "Contract has open claim"
+
+        }
+        if (checkClaims[0].totalAmount >= getData[e].productValue) {
+          getData[e].reason = "Claim value exceed the product value limit"
+        }
+      }
+    }
+    // res.json(getData);
+    // return;
     getData[0].claimAmount = 0;
     if (claimTotal.length > 0) {
       getData[0].claimAmount = claimTotal[0]?.amount

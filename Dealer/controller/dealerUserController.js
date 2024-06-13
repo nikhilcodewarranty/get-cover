@@ -1137,15 +1137,7 @@ exports.getDealerServicers = async (req, res) => {
         // }
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-        //  res.json(query1);
-        //  return;
-
         let servicerUser = await userService.getMembers(query1, {});
-
-        // res.json(servicerUser);return;
-
-        //res.json(servicerUser); return;
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1565,21 +1557,21 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
-
-        let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
-        const resellerIds = getResellers.map(obj => obj._id.toString());
+        console.log(data.resellerName)
         let query = { isDeleted: false, dealerId: req.userId }
 
-        if(data.resellerName != ""){
-            if(resellerIds.length == 0){
+        if (data.resellerName != "" && data.resellerName != undefined) {
+            console.log("dfsdsddfdfddfsd");
+            let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
+            const resellerIds = getResellers.map(obj => obj._id.toString());
+            if (resellerIds.length == 0) {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
 
-            }else{
+            } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
 
             }
         }
-        console.log("query check ++++++++++++++++=",query)
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
@@ -1592,9 +1584,11 @@ exports.getDealerCustomers = async (req, res) => {
         const customersId = customers.map(obj => obj._id.toString());
 
         const customersOrderId = customers.map(obj => obj._id);
+        const customersResellerId = customers.map(obj => obj.resellerId);
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-
-
+        //Get Customer Resellers
+        let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
+       // res.json(resellerData);
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         let project = {
             productsArray: 1,
@@ -1612,10 +1606,10 @@ exports.getDealerCustomers = async (req, res) => {
 
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
 
-        const result_Array = getPrimaryUser.map(item1 => {
+        let result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = customers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
             const order = ordersData.find(order => order._id?.toString() === item1.accountId?.toString())
-            console.log("order===================", item1._id)
+            
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1626,6 +1620,19 @@ exports.getDealerCustomers = async (req, res) => {
                 return dealerData.toObject();
             }
         });
+
+        result_Array =  result_Array.map(customer=>{
+            const resellerMatch = resellerData.find(reseller => reseller._id?.toString() === customer?.customerData?.resellerId?.toString());
+           // if (resellerMatch) {
+                return {
+                    ...customer, // Use toObject() to convert Mongoose document to plain JavaScript object
+                    resellerInfo:resellerMatch ?  resellerMatch.toObject() : {},
+                };
+            //}
+        })
+
+        // res.json(result_Array);
+        // return
         let name = data.firstName ? data.firstName : ""
         let nameArray = name.split(" ");
 
@@ -1634,7 +1641,6 @@ exports.getDealerCustomers = async (req, res) => {
             f_name: nameArray[0],  // First name
             l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
         };
-        console.log('name check ++++++++++++++++++++++=', newObj)
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
         const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
