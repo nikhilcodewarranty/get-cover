@@ -1564,7 +1564,11 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
-        let query = { isDeleted: false, dealerId: req.userId }
+
+        let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.name, '$options': 'i' } })
+        const resellerIds = getResellers.map(obj => obj._id.toString());
+
+        let query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
@@ -3103,7 +3107,7 @@ exports.getAllContracts = async (req, res) => {
                                     serial: 1,
                                     unique_key: 1,
                                     minDate: 1,
-                                    productValue:1,
+                                    productValue: 1,
                                     status: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
@@ -3150,7 +3154,7 @@ exports.getAllContracts = async (req, res) => {
                                 serial: 1,
                                 minDate: 1,
                                 unique_key: 1,
-                                productValue:1,
+                                productValue: 1,
                                 status: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
@@ -3173,51 +3177,51 @@ exports.getAllContracts = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
-          result1[e].reason = " "
-          if (result1[e].status != "Active") {
-            result1[e].reason = "Contract is not active"
-          }
-          if (result1[e].minDate < new Date()) {
-            const options = {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            };
-            const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
-            result1[e].reason = "Contract will be eligible on " + " " + formattedDate
-          }
-          let claimQuery = [
-            {
-              $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
-            },
-            {
-              $group: {
-                _id: null,
-                totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
-                openFileClaimsCount: { // Count of claims where claimfile is "Open"
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
-                      then: 1,
-                      else: 0
+            result1[e].reason = " "
+            if (result1[e].status != "Active") {
+                result1[e].reason = "Contract is not active"
+            }
+            if (result1[e].minDate < new Date()) {
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                };
+                const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
+                result1[e].reason = "Contract will be eligible on " + " " + formattedDate
+            }
+            let claimQuery = [
+                {
+                    $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                        openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                            $sum: {
+                                $cond: {
+                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    then: 1,
+                                    else: 0
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
+            ]
+
+            let checkClaims = await claimService.getAllClaims(claimQuery)
+            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+            if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                    result1[e].reason = "Contract has open claim"
+
+                }
+                if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                    result1[e].reason = "Claim value exceed the product value limit"
+                }
             }
-          ]
-    
-          let checkClaims = await claimService.getAllClaims(claimQuery)
-          console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
-          if (checkClaims[0]) {
-            if (checkClaims[0].openFileClaimsCount > 0) {
-              result1[e].reason = "Contract has open claim"
-    
-            }
-            if (checkClaims[0].totalAmount >= result1[e].productValue) {
-              result1[e].reason = "Claim value exceed the product value limit"
-            }
-          }
         }
         res.send({
             code: constant.successCode,
@@ -3407,7 +3411,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
-        let data = req.body; 
+        let data = req.body;
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         //console.log("bodyData=================",data)
         // for (let i = 0; i < data.productsArray.length; i++) {
