@@ -1494,13 +1494,13 @@ exports.editClaimStatus = async (req, res) => {
       toEmail.push(resellerPrimary?.email);
       // notificationEmails.push(servicerPrimary?.email);
       let emailData = {
-        senderName: dealerPrimary.email,
+        senderName: dealerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, toEmail, emailData))
       emailData = {
-        senderName: servicerPrimary.email,
+        senderName: servicerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
