@@ -2047,7 +2047,7 @@ exports.changeResellerStatus = async (req, res) => {
                 subject: "Update Status"
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,

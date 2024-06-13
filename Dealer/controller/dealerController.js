@@ -1132,7 +1132,6 @@ exports.changeDealerStatus = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(getPrimary.email);
-      console.log("notificationEmails---------------", notificationEmails)
       // const notificationContent = {
       //   content: singleDealer.name + " " + "status has been updated successfully!"
       // }
@@ -1142,7 +1141,7 @@ exports.changeDealerStatus = async (req, res) => {
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
 
 
