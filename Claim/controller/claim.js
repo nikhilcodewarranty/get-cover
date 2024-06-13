@@ -1009,7 +1009,7 @@ exports.addClaim = async (req, res, next) => {
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
-     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, servicerPrimary?.email, emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, servicerPrimary?.email, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1430,16 +1430,23 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(dealerPrimary.email);
-      notificationEmails.push(customerPrimary?.email);
-      notificationEmails.push(resellerPrimary?.email);
-      notificationEmails.push(servicerPrimary?.email);
-
+      let toEmail = [];
+      toEmail.push(dealerPrimary.email);
+      toEmail.push(customerPrimary?.email);
+      toEmail.push(resellerPrimary?.email);
+      //  notificationEmails.push(servicerPrimary?.email);
       let emailData = {
-        senderName: '',
+        senderName: dealerPrimary.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
+        subject: "Customer Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Customer Status Update", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, toEmail, emailData))
+      emailData = {
+        senderName: servicerPrimary.firstName,
+        content: "The customer status has been updated for " + checkClaim.unique_key + "",
+        subject: "Customer Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, servicerPrimary?.email, emailData))
 
     }
     if (data.hasOwnProperty("repairStatus")) {
@@ -1481,16 +1488,23 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(dealerPrimary.email);
-      notificationEmails.push(customerPrimary?.email);
-      notificationEmails.push(resellerPrimary?.email);
-      notificationEmails.push(servicerPrimary?.email);
-
+      let toEmail = []
+      toEmail.push(dealerPrimary.email);
+      toEmail.push(customerPrimary?.email);
+      toEmail.push(resellerPrimary?.email);
+      // notificationEmails.push(servicerPrimary?.email);
       let emailData = {
-        senderName: '',
+        senderName: dealerPrimary.email,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Repair Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Repair Status Update", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, toEmail, emailData))
+      emailData = {
+        senderName: servicerPrimary.email,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Repair Status Update"
+      }
+       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, servicerPrimary?.email, emailData))
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
@@ -1717,8 +1731,9 @@ exports.editServicer = async (req, res) => {
     let emailData = {
       senderName: getPrimary.firstName,
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
+      subject: "Servicer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Servicer Update", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, getPrimary.email, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
