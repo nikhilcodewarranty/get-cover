@@ -209,6 +209,16 @@ exports.createOrder1 = async (req, res) => {
                 }
             }
         }
+
+        let serviceCoverage;
+        if (req.body.serviceCoverageType == "Labour") {
+            serviceCoverage = "Labor"
+        }
+        if (req.body.serviceCoverageType == "Parts & Labour") {
+            serviceCoverage = "Parts & Labor"
+        }
+
+        data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             let logData = {
@@ -507,16 +517,10 @@ exports.createOrder1 = async (req, res) => {
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-                    let serviceCoverage;
-                    if (req.body.serviceCoverageType == "Labour"){
-                        serviceCoverage = "Labor"
-                    }
-                    if (req.body.serviceCoverageType == "Parts & Labour"){
-                        serviceCoverage = "Parts & Labor"
-                    }
-                        //reporting codes 
 
-                        let pricebookDetailObject = {}
+                    //reporting codes 
+
+                    let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
                     pricebookDetailObject.frontingFee = priceBook[0].frontingFee
@@ -3380,6 +3384,15 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
+        let serviceCoverage;
+        if (req.body.serviceCoverageType == "Labour") {
+            serviceCoverage = "Labor"
+        }
+        if (req.body.serviceCoverageType == "Parts & Labour") {
+            serviceCoverage = "Parts & Labor"
+        }
+
+        data.serviceCoverageType = serviceCoverage
         // if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
         //     checkId.paidAmount = 0
         // }
@@ -3773,13 +3786,13 @@ exports.editOrderDetail = async (req, res) => {
 
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
 
-                    let serviceCoverage;
-                    if (req.body.serviceCoverageType == "Labour"){
-                        serviceCoverage = "Labor"
-                    }
-                    if (req.body.serviceCoverageType == "Parts & Labour"){
-                        serviceCoverage = "Parts & Labor"
-                    }
+                    // let serviceCoverage;
+                    // if (req.body.serviceCoverageType == "Labour") {
+                    //     serviceCoverage = "Labor"
+                    // }
+                    // if (req.body.serviceCoverageType == "Parts & Labour") {
+                    //     serviceCoverage = "Parts & Labor"
+                    // }
 
                     //reporting codes 
 
@@ -3996,9 +4009,6 @@ exports.markAsPaid = async (req, res) => {
                 //cellText:false, 
                 cellDates: true
             };
-
-
-
             const jsonOpts = {
                 //header: 1,
                 defval: '',
@@ -4200,10 +4210,10 @@ exports.markAsPaid = async (req, res) => {
 
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                 let serviceCoverage;
-                if (req.body.serviceCoverageType == "Labour"){
+                if (req.body.serviceCoverageType == "Labour") {
                     serviceCoverage = "Labor"
                 }
-                if (req.body.serviceCoverageType == "Parts & Labour"){
+                if (req.body.serviceCoverageType == "Parts & Labour") {
                     serviceCoverage = "Parts & Labor"
                 }
 
