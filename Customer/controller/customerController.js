@@ -572,9 +572,10 @@ exports.editCustomer = async (req, res) => {
 
     let emailData = {
       senderName: checkDealer.name,
-      content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully."
+      content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
+      subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
     //Save Logs editCustomer
     let logData = {
@@ -700,9 +701,10 @@ exports.changePrimaryUser = async (req, res) => {
       // }
       let emailData = {
         senderName: checkUser.firstName,
-        content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + "."
+        content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
+        subject: "Primary User change"
       };
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Primary User", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",

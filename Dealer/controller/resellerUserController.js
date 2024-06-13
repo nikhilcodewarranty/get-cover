@@ -457,11 +457,12 @@ exports.createOrder = async (req, res) => {
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
+            subject:"Create Order"
         }
 
         console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,[], emailData))
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -722,9 +723,10 @@ exports.createOrder = async (req, res) => {
                 let emailData = {
                     senderName: '',
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
+                    subject:"Order Processed"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
 
                 //  console.log("saveContracts==================", saveContracts)

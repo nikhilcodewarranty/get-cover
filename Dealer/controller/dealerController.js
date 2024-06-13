@@ -948,9 +948,10 @@ exports.statusUpdate = async (req, res) => {
     let emailData = {
       senderName: singleReseller.name,
       content: getDealerDetail.name + " , " + "your price book has been updated",
+      subject: "Update Data"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Data", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1103,7 +1104,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     option = { new: true };
     //Update Dealer Status
-    newValue = { 
+    newValue = {
       $set: {
         accountStatus: req.body.status,
         // status: req.body.status,
@@ -1138,9 +1139,10 @@ exports.changeDealerStatus = async (req, res) => {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       let emailData = {
         senderName: singleDealer.name,
-        content: "Status has been changed to " + status_content + " " + ", effective immediately."
+        content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+        subject: "Update Status"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
 
 
@@ -1162,7 +1164,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     else {
       res.send({
-        code: constant.errorCode, 
+        code: constant.errorCode,
         message: 'Unable to update dealer status!',
       })
     }
@@ -1964,9 +1966,10 @@ exports.createDealerPriceBook = async (req, res) => {
       // }
       let emailData = {
         senderName: checkDealer.name,
-        content: "The price book name" + " " + checkPriceBookMain.name + " has been created successfully! effective immediately."
+        content: "The price book name" + " " + checkPriceBookMain.name + " has been created successfully! effective immediately.",
+        subject: "New Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -2232,7 +2235,8 @@ exports.updateDealerMeta = async (req, res) => {
 
     let emailData = {
       senderName: checkDealer.name,
-      content: "The information has been updated successfully! effective immediately."
+      content: "The information has been updated successfully! effective immediately.",
+      subject: "Update Info"
     }
     // let emailData = {
     //   dealerName: checkDealer.name,
@@ -2245,7 +2249,7 @@ exports.updateDealerMeta = async (req, res) => {
     // }
 
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,[], emailData))
     //Save Logs update dealer
     let logData = {
       userId: req.userId,

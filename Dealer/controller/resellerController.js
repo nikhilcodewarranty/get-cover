@@ -753,30 +753,30 @@ exports.editResellers = async (req, res) => {
             if (!checkServicer) {
                 const CountServicer = await providerService.getServicerCount();
                 let servicerObject = {
-                  name: data.accountName,
-                  street: data.street,
-                  city: data.city,
-                  zip: data.zip,
-                  resellerId: req.params.resellerId,
-                  state: data.state,
-                  country: data.country,
-                  status: data.status,
-                  accountStatus: "Approved",
-                  unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
+                    name: data.accountName,
+                    street: data.street,
+                    city: data.city,
+                    zip: data.zip,
+                    resellerId: req.params.resellerId,
+                    state: data.state,
+                    country: data.country,
+                    status: data.status,
+                    accountStatus: "Approved",
+                    unique_key: Number(CountServicer.length > 0 && CountServicer[0].unique_key ? CountServicer[0].unique_key : 0) + 1
                 }
                 let createData = await providerService.createServiceProvider(servicerObject)
-              }
-      
-              else {
+            }
+
+            else {
                 const servicerMeta = {
-                  name: data.accountName,
-                  city: data.city,
-                  country: data.country,
-                  street: data.street,
-                  zip: data.zip
+                    name: data.accountName,
+                    city: data.city,
+                    country: data.country,
+                    street: data.street,
+                    zip: data.zip
                 }
                 const updateServicerMeta = await providerService.updateServiceProvider(criteria, servicerMeta)
-              }
+            }
 
         }
         let resellerUserCreateria = { accountId: req.params.resellerId };
@@ -819,10 +819,11 @@ exports.editResellers = async (req, res) => {
         notificationEmails.push(dealerPrimary.email);
         let emailData = {
             senderName: checkReseller.name,
-            content: "Information has been updated successfully! effective immediately."
+            content: "Information has been updated successfully! effective immediately.",
+            subject: "Update Info"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
         //Save Logs update reseller
         let logData = {
@@ -1838,7 +1839,7 @@ exports.getResellerContract = async (req, res) => {
                                     model: 1,
                                     serial: 1,
                                     unique_key: 1,
-                                    productValue:1,
+                                    productValue: 1,
                                     minDate: 1,
                                     status: 1,
                                     manufacture: 1,
@@ -1886,7 +1887,7 @@ exports.getResellerContract = async (req, res) => {
                                 model: 1,
                                 serial: 1,
                                 unique_key: 1,
-                                productValue:1,
+                                productValue: 1,
                                 status: 1,
                                 minDate: 1,
                                 manufacture: 1,
@@ -1910,51 +1911,51 @@ exports.getResellerContract = async (req, res) => {
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
-          result1[e].reason = " "
-          if (result1[e].status != "Active") {
-            result1[e].reason = "Contract is not active"
-          }
-          if (result1[e].minDate < new Date()) {
-            const options = {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            };
-            const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
-            result1[e].reason = "Contract will be eligible on " + " " + formattedDate
-          }
-          let claimQuery = [
-            {
-              $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
-            },
-            {
-              $group: {
-                _id: null,
-                totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
-                openFileClaimsCount: { // Count of claims where claimfile is "Open"
-                  $sum: {
-                    $cond: {
-                      if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
-                      then: 1,
-                      else: 0
+            result1[e].reason = " "
+            if (result1[e].status != "Active") {
+                result1[e].reason = "Contract is not active"
+            }
+            if (result1[e].minDate < new Date()) {
+                const options = {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                };
+                const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
+                result1[e].reason = "Contract will be eligible on " + " " + formattedDate
+            }
+            let claimQuery = [
+                {
+                    $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
+                },
+                {
+                    $group: {
+                        _id: null,
+                        totalAmount: { $sum: "$totalAmount" }, // Calculate total amount from all claims
+                        openFileClaimsCount: { // Count of claims where claimfile is "Open"
+                            $sum: {
+                                $cond: {
+                                    if: { $eq: ["$claimFile", "Open"] }, // Assuming "claimFile" field is correct
+                                    then: 1,
+                                    else: 0
+                                }
+                            }
+                        }
                     }
-                  }
                 }
-              }
+            ]
+
+            let checkClaims = await claimService.getAllClaims(claimQuery)
+            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+            if (checkClaims[0]) {
+                if (checkClaims[0].openFileClaimsCount > 0) {
+                    result1[e].reason = "Contract has open claim"
+
+                }
+                if (checkClaims[0].totalAmount >= result1[e].productValue) {
+                    result1[e].reason = "Claim value exceed the product value limit"
+                }
             }
-          ]
-    
-          let checkClaims = await claimService.getAllClaims(claimQuery)
-          console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
-          if (checkClaims[0]) {
-            if (checkClaims[0].openFileClaimsCount > 0) {
-              result1[e].reason = "Contract has open claim"
-    
-            }
-            if (checkClaims[0].totalAmount >= result1[e].productValue) {
-              result1[e].reason = "Claim value exceed the product value limit"
-            }
-          }
         }
         res.send({
             code: constant.successCode,
@@ -2042,10 +2043,11 @@ exports.changeResellerStatus = async (req, res) => {
 
             let emailData = {
                 senderName: singleReseller.name,
-                content: "Status has been changed to " + status_content + " " + ", effective immediately."
+                content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+                subject: "Update Status"
             }
 
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
             //Save Logs change reseller status
             let logData = {
                 userId: req.userId,

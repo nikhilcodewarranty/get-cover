@@ -280,11 +280,12 @@ exports.createOrder1 = async (req, res) => {
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
+            subject: "New Order"
         }
 
         console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             // let savedResponse = await orderService.updateOrder(
             //     { _id: checkOrder._id },
@@ -618,9 +619,10 @@ exports.createOrder1 = async (req, res) => {
                     let emailData = {
                         senderName: '',
                         content: "The new order " + checkOrder.unique_key + " has been created and processed for " + dealerPrimary.firstName + "",
+                        subject: "Process Order"
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
                     let logData = {
                         endpoint: "order/createOrder",
@@ -3080,9 +3082,10 @@ exports.archiveOrder = async (req, res) => {
 
         let emailData = {
             senderName: '',
-            content: "The order has been archeived!."
+            content: "The order has been archeived!.",
+            subject: "Archeive Order"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Archeive Order", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
         //  }
         res.send({
             code: constant.successCode,
@@ -3527,9 +3530,10 @@ exports.editOrderDetail = async (req, res) => {
         let emailData = {
             senderName: '',
             content: "The  order " + savedResponse.unique_key + " has been updated",
+            subject: "Order Update"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Updated", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -3862,9 +3866,10 @@ exports.editOrderDetail = async (req, res) => {
                 let emailData = {
                     senderName: '',
                     content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                    subject: "Process Order"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
                 let reportingData = {
                     orderId: savedResponse._id,
@@ -4288,9 +4293,10 @@ exports.markAsPaid = async (req, res) => {
                 let emailData = {
                     senderName: '',
                     content: "The new order has been marked as paid",
+                    subject:"Mark Paid"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Mark Paid", emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
             }
 
         })

@@ -2333,6 +2333,7 @@ exports.sendMessages = async (req, res) => {
     let emailData = {
       senderName: '',
       content: "The new message for " + checkClaim.unique_key + " claim",
+      subject:"New Message"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     res.send({

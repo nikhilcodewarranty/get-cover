@@ -1588,7 +1588,7 @@ exports.getDealerCustomers = async (req, res) => {
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
-       // res.json(resellerData);
+        // res.json(resellerData);
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         let project = {
             productsArray: 1,
@@ -1609,7 +1609,7 @@ exports.getDealerCustomers = async (req, res) => {
         let result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = customers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
             const order = ordersData.find(order => order._id?.toString() === item1.accountId?.toString())
-            
+
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1621,13 +1621,13 @@ exports.getDealerCustomers = async (req, res) => {
             }
         });
 
-        result_Array =  result_Array.map(customer=>{
+        result_Array = result_Array.map(customer => {
             const resellerMatch = resellerData.find(reseller => reseller._id?.toString() === customer?.customerData?.resellerId?.toString());
-           // if (resellerMatch) {
-                return {
-                    ...customer, // Use toObject() to convert Mongoose document to plain JavaScript object
-                    resellerInfo:resellerMatch ?  resellerMatch.toObject() : {},
-                };
+            // if (resellerMatch) {
+            return {
+                ...customer, // Use toObject() to convert Mongoose document to plain JavaScript object
+                resellerInfo: resellerMatch ? resellerMatch.toObject() : {},
+            };
             //}
         })
 
@@ -3628,10 +3628,11 @@ exports.createOrder = async (req, res) => {
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
+            subject: "New order"
         }
 
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Order", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
         res.send({
             code: constant.successCode,
@@ -3926,9 +3927,10 @@ exports.editOrderDetail = async (req, res) => {
         let emailData = {
             senderName: '',
             content: "The new order has been updated",
+            subject: "Order Updated"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Updated", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
 
 
@@ -4215,9 +4217,10 @@ exports.editOrderDetail = async (req, res) => {
                     let emailData = {
                         senderName: '',
                         content: "The order " + savedResponse.unique_key + " has been updated and processed",
+                        subject: "Order Processed"
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
                     res.send({
                         code: constant.successCode,
                         message: "Success",
