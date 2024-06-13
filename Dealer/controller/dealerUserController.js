@@ -1557,12 +1557,11 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
-
-        let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
-        const resellerIds = getResellers.map(obj => obj._id.toString());
         let query = { isDeleted: false, dealerId: req.userId }
 
         if(data.resellerName != ""){
+            let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
+            const resellerIds = getResellers.map(obj => obj._id.toString());
             if(resellerIds.length == 0){
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
 
