@@ -361,7 +361,7 @@ exports.createOrder1 = async (req, res) => {
                     // -------------------------------------------------  copy from -----------------------------------------//
 
                     let dateCheck = new Date(product.coverageStartDate)
-                    let adhDays = Number(product.adh ? product.adh : 0)
+                    let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -3619,7 +3619,7 @@ exports.editOrderDetail = async (req, res) => {
                     // -------------------------------------------------  copy from -----------------------------------------//
 
                     let dateCheck = new Date(product.coverageStartDate)
-                    let adhDays = Number(product.adh ? product.adh : 0)
+                    let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -3980,7 +3980,7 @@ exports.markAsPaid = async (req, res) => {
             };
 
 
-            
+
             const jsonOpts = {
                 //header: 1,
                 defval: '',
@@ -4039,7 +4039,7 @@ exports.markAsPaid = async (req, res) => {
                 // -------------------------------------------------  copy from -----------------------------------------//
 
                 let dateCheck = new Date(product.coverageStartDate)
-                let adhDays = Number(product.adh ? product.adh : 0)
+                let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
                 let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                 let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -4239,7 +4239,7 @@ exports.markAsPaid = async (req, res) => {
                     code: constant.errorCode,
                     message: "unable to make contracts",
                     result: saveData
-                }; 
+                };
                 await LOG(logData).save();
                 let savedResponse = await orderService.updateOrder(
                     { _id: checkOrder._id },
