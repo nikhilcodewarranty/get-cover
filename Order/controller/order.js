@@ -3642,10 +3642,6 @@ exports.editOrderDetail = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-
-
-
-
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
@@ -4210,10 +4206,6 @@ exports.markAsPaid = async (req, res) => {
                 console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
-
-
-
-
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
@@ -4245,7 +4237,7 @@ exports.markAsPaid = async (req, res) => {
                 contractArray.push(contractObject);
             });
             let saveData = await contractService.createBulkContracts(contractArray)
-            if (!saveData[0]) {
+            if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
                     message: "unable to make contracts",
@@ -4258,19 +4250,19 @@ exports.markAsPaid = async (req, res) => {
                     { new: true }
                 );
             } else {
-
                 //reporting codes
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
                     orderAmount: data.orderAmount,
                     dealerId: data.dealerId,
-                    // dealerPriceBook: dealerBookDetail
                 }
-
+                let savedResponse = await orderService.updateOrder(
+                    { _id: checkOrder._id },
+                    { status: "Active" },
+                    { new: true }
+                );
                 await supportingFunction.reportingData(reportingData)
-
-
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
