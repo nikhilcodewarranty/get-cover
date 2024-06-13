@@ -992,18 +992,24 @@ exports.addClaim = async (req, res, next) => {
     };
     let createNotification = await userService.createNotification(notificationData1);
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(dealerPrimary.email);
-    notificationEmails.push(resellerPrimary?.email);
-    notificationEmails.push(servicerPrimary?.email);
-    notificationEmails.push(customerPrimary?.email);
-
+    let notificationCC = await supportingFunction.getUserEmails();
+    let notificationTo = [customerPrimary?.email]
+    //let cc = notificationEmails;
+    notificationCC.push(dealerPrimary.email);
+    notificationCC.push(resellerPrimary?.email);
     let emailData = {
-      senderName: '',
-      content: "The claim has been added!."
+      senderName: customerPrimary.firstName,
+      content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
+      subject: 'Add Claim'
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Add Claim", emailData))
-
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, notificationTo, emailData))
+    // Email to servicer and cc to admin 
+    emailData = {
+      senderName: servicerPrimary.firstName,
+      content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
+      subject: 'Add Claim'
+    }
+     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, servicerPrimary?.email, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
