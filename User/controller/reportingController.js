@@ -45,7 +45,7 @@ const REPORTING = require('../../Order/model/reporting')
 
 
 
-exports.dailySales = async (req, res) => {
+exports.dailySale = async (req, res) => {
     try {
         let data = req.body
         let query;
@@ -102,6 +102,109 @@ exports.dailySales = async (req, res) => {
             code: constant.successCode,
             message: "Success",
             result: getOrders
+        })
+
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.dailySales = async (req, res) => {
+    try {
+        let data = req.body
+        let query;
+
+        // const today = new Date("2024-05-30");
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+        const datesArray = [];
+        let currentDate = new Date(startOfMonth);
+        while (currentDate <= endOfMonth) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        console.log(startOfMonth,datesArray,endOfMonth)
+        let dailyQuery
+        if(data.filterFlag == "All"){
+             dailyQuery = [
+                {
+                    $match: { 
+                        // status: "Active",
+                        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                      } 
+                },
+                {
+                    $group: {
+                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                      total_order_amount: { $sum: "$orderAmount" },
+                      total_orders: { $sum: 1 }
+                    }
+                  },
+                {
+                    $sort: { _id: -1 } // Sort by date in ascending order
+                }
+            ]
+        }
+        if(data.filterFlag == "BrokerFee"){
+            dailyQuery = [
+                {
+                    $match: { 
+                        // status: "Active",
+                        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                      } 
+                },
+                {
+                    $unwind: "$products" // Deconstruct the products array
+                },
+                {
+                    $group: {
+                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                      total_order_amount1: { $sum: "$products.brokerFee" },
+                    //   total_orders: { $sum: 1 }
+                    }
+                  },
+                  {
+                    $group: {
+                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                      total_order_amount: { $sum: "$orderAmount" },
+                      total_orders: { $sum: 1 }
+                    }
+                  },
+                {
+                    $sort: { _id: -1 } // Sort by date in ascending order
+                }
+            ]
+        }
+
+        
+        let getOrders = await REPORTING.aggregate(dailyQuery);
+        if (!getOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the details"
+            })
+            return;
+        }
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0,10);
+            const order = getOrders.find(item => item._id === dateString);
+            return {
+              date: dateString,
+              total_order_amount: order ? order.total_order_amount : 0,
+              total_orders: order ? order.total_orders : 0
+            };
+          });
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
         })
 
 
