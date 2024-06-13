@@ -363,6 +363,8 @@ exports.createOrder1 = async (req, res) => {
 
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
+                    console.log("dateCheck------------------------",dateCheck)
+                    console.log("adhDays------------------------",adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -610,7 +612,6 @@ exports.createOrder1 = async (req, res) => {
                     };
 
                     let createNotification = await userService.createNotification(notificationData1);
-
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
                     notificationEmails.push(customerPrimary.email);
@@ -623,7 +624,6 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
-
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -636,9 +636,6 @@ exports.createOrder1 = async (req, res) => {
                     }
 
                     await LOG(logData).save()
-
-
-
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
                     // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
