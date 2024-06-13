@@ -3565,6 +3565,15 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
+
+        let serviceCoverage;
+        if (req.body.serviceCoverageType == "Labour") {
+            serviceCoverage = "Labor"
+        }
+        if (req.body.serviceCoverageType == "Parts & Labour") {
+            serviceCoverage = "Parts & Labor"
+        }
+        data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.addOrder(data);
         // Update Term and condtion while create order
         let uploadTermAndCondtion = await orderService.updateOrder(
@@ -3853,6 +3862,14 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
+        let serviceCoverage;
+        if (req.body.serviceCoverageType == "Labour") {
+            serviceCoverage = "Labor"
+        }
+        if (req.body.serviceCoverageType == "Parts & Labour") {
+            serviceCoverage = "Parts & Labor"
+        }
+        data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
@@ -4129,13 +4146,6 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-                    let serviceCoverage;
-                    if (req.body.serviceCoverageType == "Labour"){
-                        serviceCoverage = "Labor"
-                    }
-                    if (req.body.serviceCoverageType == "Parts & Labour"){
-                        serviceCoverage = "Parts & Labor"
-                    }
                     // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {

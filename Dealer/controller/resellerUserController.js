@@ -393,6 +393,14 @@ exports.createOrder = async (req, res) => {
             }
         }
 
+        let serviceCoverage;
+        if (req.body.serviceCoverageType == "Labour") {
+            serviceCoverage = "Labor"
+        }
+        if (req.body.serviceCoverageType == "Parts & Labour") {
+            serviceCoverage = "Parts & Labor"
+        }
+        data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({
