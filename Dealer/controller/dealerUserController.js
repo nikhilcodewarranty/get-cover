@@ -1579,7 +1579,7 @@ exports.getDealerCustomers = async (req, res) => {
 
             }
         }
-
+        console.log("query check ++++++++++++++++=",query)
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
