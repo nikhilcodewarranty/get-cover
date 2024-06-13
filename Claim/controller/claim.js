@@ -998,14 +998,14 @@ exports.addClaim = async (req, res, next) => {
     notificationCC.push(dealerPrimary.email);
     notificationCC.push(resellerPrimary?.email);
     let emailData = {
-      senderName: customerPrimary.firstName,
+      senderName: customerPrimary?.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationTo, notificationCC, emailData))
     // Email to servicer and cc to admin 
     emailData = {
-      senderName: servicerPrimary.firstName,
+      senderName: servicerPrimary?.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
