@@ -617,7 +617,7 @@ exports.createOrder1 = async (req, res) => {
                     notificationEmails.push(resellerPrimary?.email);
                     let emailData = {
                         senderName: '',
-                        content: "The new order " + checkOrder.unique_key + " has been created and processed for" + dealerPrimary.firstName + "",
+                        content: "The new order " + checkOrder.unique_key + " has been created and processed for " + dealerPrimary.firstName + "",
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Order Processed", emailData))
@@ -3879,15 +3879,12 @@ exports.editOrderDetail = async (req, res) => {
                     dealerId: data.dealerId,
                     // dealerPriceBook: dealerBookDetail
                 }
-    
+
                 await supportingFunction.reportingData(reportingData)
 
             })
 
             // reporting codes
-           
-
-
             logData.response = {
                 code: constant.successCode,
                 message: "Success",
@@ -4272,7 +4269,7 @@ exports.markAsPaid = async (req, res) => {
                 }
 
                 await supportingFunction.reportingData(reportingData)
-               
+
 
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()

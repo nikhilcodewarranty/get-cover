@@ -310,7 +310,6 @@ exports.createPriceBook = async (req, res, next) => {
     })
   }
 };
-
 //get price book by id 
 exports.getPriceBookById = async (req, res, next) => {
   try {
@@ -676,7 +675,6 @@ exports.deletePriceBook = async (req, res, next) => {
   }
 };
 
-
 //Search price price books
 exports.searchPriceBook = async (req, res, next) => {
   try {
@@ -710,7 +708,6 @@ exports.searchPriceBook = async (req, res, next) => {
     });
   };
 };
-
 //----------------- price categories api's --------------------------//
 
 // create price category api's
@@ -833,7 +830,6 @@ exports.createPriceBookCat = async (req, res) => {
     });
   }
 };
-
 // get all price category
 exports.getPriceBookCat = async (req, res) => {
   try {
@@ -964,8 +960,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
     })
   }
 }
-
-
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -1132,7 +1126,6 @@ exports.updatePriceBookCat = async (req, res) => {
     });
   }
 };
-
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
@@ -1161,7 +1154,6 @@ exports.getPriceBookCatById = async (req, res) => {
     })
   }
 }
-
 // search price category with name
 exports.searchPriceBookCategories = async (req, res) => {
   try {
@@ -1188,7 +1180,6 @@ exports.searchPriceBookCategories = async (req, res) => {
     })
   }
 }
-
 // Get price book by category name
 exports.getPriceBookByCategory = async (req, res) => {
   try {
@@ -1227,7 +1218,6 @@ exports.getPriceBookByCategory = async (req, res) => {
     })
   }
 }
-
 exports.getPriceBookByCategoryId = async (req, res) => {
   try {
     let data = req.body
@@ -1280,7 +1270,6 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
-
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {

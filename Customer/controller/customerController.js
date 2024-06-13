@@ -526,11 +526,13 @@ exports.editCustomer = async (req, res) => {
       })
       return;
     }
-    if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
-      let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
-      console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)
-    } else {
-      let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
+    if (data.hasOwnProperty("isAccountCreate")) {
+      if ((data.isAccountCreate || data.isAccountCreate == 'true')) {
+        let updatePrimaryUser = await userService.updateSingleUser({ accountId: req.params.customerId, isPrimary: true }, { status: true }, { new: true })
+        console.log("updatePrimaryUser-----------------------------------", updatePrimaryUser, data.isAccountCreate)
+      } else {
+        let updatePrimaryUser = await userService.updateUser({ accountId: req.params.customerId }, { status: false }, { new: true })
+      }
     }
 
     //send notification to dealer,customer,admin,reseller

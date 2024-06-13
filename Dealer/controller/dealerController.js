@@ -1103,7 +1103,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     option = { new: true };
     //Update Dealer Status
-    newValue = {
+    newValue = { 
       $set: {
         accountStatus: req.body.status,
         // status: req.body.status,
@@ -1162,7 +1162,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     else {
       res.send({
-        code: constant.errorCode,
+        code: constant.errorCode, 
         message: 'Unable to update dealer status!',
       })
     }
