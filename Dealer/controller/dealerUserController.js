@@ -1137,15 +1137,7 @@ exports.getDealerServicers = async (req, res) => {
         // }
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-        //  res.json(query1);
-        //  return;
-
         let servicerUser = await userService.getMembers(query1, {});
-
-        // res.json(servicerUser);return;
-
-        //res.json(servicerUser); return;
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
