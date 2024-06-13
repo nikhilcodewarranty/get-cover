@@ -4237,6 +4237,7 @@ exports.markAsPaid = async (req, res) => {
                 contractArray.push(contractObject);
             });
             let saveData = await contractService.createBulkContracts(contractArray)
+            console.log("saveData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", saveData)
             if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
