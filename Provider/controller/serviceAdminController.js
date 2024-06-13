@@ -627,9 +627,10 @@ exports.editServicerDetail = async (req, res) => {
 
     let emailData = {
       senderName: checkServicer.name,
-      content: "Information has been updated successfully! effective immediately."
+      content: "Information has been updated successfully! effective immediately.",
+      subject:"Update Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Info", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -763,7 +764,8 @@ exports.updateStatus = async (req, res) => {
 
         let emailData = {
           senderName: checkServicer.name,
-          content: "Status has been changed to " + status_content + " " + ", effective immediately."
+          content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+          subject:"Update Status"
         }
         // let emailData = {
         //   dealerName: checkServicer.name,
@@ -774,7 +776,7 @@ exports.updateStatus = async (req, res) => {
         //   c5: "",
         //   role: "Servicer"
         // }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Status", emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
         //Save Logs
         let logData = {
           userId: req.userId,
