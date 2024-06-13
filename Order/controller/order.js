@@ -980,7 +980,6 @@ exports.getAllOrders = async (req, res) => {
                 status.test(entry.status)
             );
         });
-        console.log("--------------------------------------------------8", filteredData)
 
         const updatedArray = filteredData.map((item, index) => {
             let isEmptyStartDate = item.productsArray.map(
@@ -1018,7 +1017,6 @@ exports.getAllOrders = async (req, res) => {
             };
         });
 
-        console.log("--------------------------------------------------9")
 
         let orderIdSearch = data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : ''
         const stringWithoutHyphen = orderIdSearch.replace(/-/g, "").trim()
@@ -4203,7 +4201,6 @@ exports.markAsPaid = async (req, res) => {
                 pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                 pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                 // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
                 // let eligibilty = claimStatus == "Active" ? true : false
