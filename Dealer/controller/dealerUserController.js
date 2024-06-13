@@ -1557,20 +1557,22 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
+        console.log(data.resellerName)
         let query = { isDeleted: false, dealerId: req.userId }
 
-        if(data.resellerName != ""){
+        if (data.resellerName != "" && data.resellerName != undefined) {
+            console.log("dfsdsddfdfddfsd");
             let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
             const resellerIds = getResellers.map(obj => obj._id.toString());
-            if(resellerIds.length == 0){
+            if (resellerIds.length == 0) {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: ["1111121ccf9d400000000000"] } }
 
-            }else{
+            } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
 
             }
         }
-        console.log("query check ++++++++++++++++=",query)
+        console.log("query check ++++++++++++++++=", query)
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
         const customers = await customerService.getAllCustomers(query, projection);
         if (!customers) {
