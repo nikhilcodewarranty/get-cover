@@ -1002,14 +1002,14 @@ exports.addClaim = async (req, res, next) => {
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, notificationTo, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationTo, notificationCC, emailData))
     // Email to servicer and cc to admin 
     emailData = {
       senderName: servicerPrimary.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
-    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationCC, servicerPrimary?.email, emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -1220,8 +1220,9 @@ exports.editClaim = async (req, res) => {
       let emailData = {
         senderName: '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
+        subject: "Repair Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Repair Parts/ labor update", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
       res.send({
         code: constant.successCode,
         message: "Updated successfully"
@@ -1562,6 +1563,7 @@ exports.editClaimStatus = async (req, res) => {
       let emailData = {
         senderName: '',
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     }
@@ -1733,7 +1735,7 @@ exports.editServicer = async (req, res) => {
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       subject: "Servicer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, getPrimary.email, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: 'Success!',
@@ -2332,7 +2334,7 @@ exports.sendMessages = async (req, res) => {
       senderName: '',
       content: "The new message for " + checkClaim.unique_key + " claim",
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Message Sent", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
