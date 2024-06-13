@@ -4249,6 +4249,11 @@ exports.markAsPaid = async (req, res) => {
                     { new: true }
                 );
             } else {
+                let savedResponse = await orderService.updateOrder(
+                    { _id: checkOrder._id },
+                    { status: "Active" },
+                    { new: true }
+                );
                 //reporting codes
                 let reportingData = {
                     orderId: savedResponse._id,
@@ -4256,11 +4261,7 @@ exports.markAsPaid = async (req, res) => {
                     orderAmount: data.orderAmount,
                     dealerId: data.dealerId,
                 }
-                let savedResponse = await orderService.updateOrder(
-                    { _id: checkOrder._id },
-                    { status: "Active" },
-                    { new: true }
-                );
+            
                 await supportingFunction.reportingData(reportingData)
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
