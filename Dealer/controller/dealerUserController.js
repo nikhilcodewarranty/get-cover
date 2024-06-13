@@ -4129,6 +4129,13 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+                    let serviceCoverage;
+                    if (req.body.serviceCoverageType == "Labour"){
+                        serviceCoverage = "Labor"
+                    }
+                    if (req.body.serviceCoverageType == "Parts & Labour"){
+                        serviceCoverage = "Parts & Labor"
+                    }
                     // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
@@ -4142,7 +4149,7 @@ exports.editOrderDetail = async (req, res) => {
                         // partsWarranty: data.partsWarranty1,
                         partsWarranty: partsWarrantyDate1,
                         labourWarranty: labourWarrantyDate1,
-                        serviceCoverageType: req.body.serviceCoverageType,
+                        serviceCoverageType: serviceCoverage,
                         coverageType: req.body.coverageType,
                         serial: data.serial,
                         orderUniqueKey: savedResponse.unique_key,

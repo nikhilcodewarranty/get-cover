@@ -363,8 +363,8 @@ exports.createOrder1 = async (req, res) => {
 
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
-                    console.log("dateCheck------------------------",dateCheck)
-                    console.log("adhDays------------------------",adhDays)
+                    console.log("dateCheck------------------------", dateCheck)
+                    console.log("adhDays------------------------", adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -507,10 +507,16 @@ exports.createOrder1 = async (req, res) => {
 
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+                    let serviceCoverage;
+                    if (req.body.serviceCoverageType == "Labour"){
+                        serviceCoverage = "Labor"
+                    }
+                    if (req.body.serviceCoverageType == "Parts & Labour"){
+                        serviceCoverage = "Parts & Labor"
+                    }
+                        //reporting codes 
 
-                    //reporting codes 
-
-                    let pricebookDetailObject = {}
+                        let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
                     pricebookDetailObject.frontingFee = priceBook[0].frontingFee
@@ -530,6 +536,8 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
 
+
+
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
@@ -543,7 +551,7 @@ exports.createOrder1 = async (req, res) => {
                         manufacture: data.brand,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
-                        serviceCoverageType: req.body.serviceCoverageType,
+                        serviceCoverageType: serviceCoverage,
                         coverageType: req.body.coverageType,
                         labourWarranty: new Date(labourWarrantyDate1),
                         purchaseDate: new Date(data.purchaseDate),
@@ -3765,6 +3773,14 @@ exports.editOrderDetail = async (req, res) => {
 
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
 
+                    let serviceCoverage;
+                    if (req.body.serviceCoverageType == "Labour"){
+                        serviceCoverage = "Labor"
+                    }
+                    if (req.body.serviceCoverageType == "Parts & Labour"){
+                        serviceCoverage = "Parts & Labor"
+                    }
+
                     //reporting codes 
 
                     let pricebookDetailObject = {}
@@ -3801,7 +3817,7 @@ exports.editOrderDetail = async (req, res) => {
                         productName: priceBook[0]?.name,
                         pName: priceBook[0]?.pName,
                         manufacture: data.brand,
-                        serviceCoverageType: req.body.serviceCoverageType,
+                        serviceCoverageType: serviceCoverage,
                         coverageType: req.body.coverageType,
                         model: data.model,
                         partsWarranty: new Date(partsWarrantyDate1),
@@ -4183,6 +4199,13 @@ exports.markAsPaid = async (req, res) => {
                 }
 
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+                let serviceCoverage;
+                if (req.body.serviceCoverageType == "Labour"){
+                    serviceCoverage = "Labor"
+                }
+                if (req.body.serviceCoverageType == "Parts & Labour"){
+                    serviceCoverage = "Parts & Labor"
+                }
 
                 // reporting codes
                 let pricebookDetailObject = {}
@@ -4212,7 +4235,7 @@ exports.markAsPaid = async (req, res) => {
                     minDate: minDate,
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
-                    serviceCoverageType: req.body.serviceCoverageType,
+                    serviceCoverageType: serviceCoverage,
                     coverageType: req.body.coverageType,
                     productName: priceBook[0]?.name,
                     pName: priceBook[0]?.pName,
@@ -4290,7 +4313,7 @@ exports.markAsPaid = async (req, res) => {
                 let emailData = {
                     senderName: '',
                     content: "The new order has been marked as paid",
-                    subject:"Mark Paid"
+                    subject: "Mark Paid"
                 }
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
