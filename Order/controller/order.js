@@ -4236,7 +4236,7 @@ exports.markAsPaid = async (req, res) => {
             let saveData = await contractService.createBulkContracts(contractArray)
             console.log("saveData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", saveData.length)
 
-            if (!saveData[0]) {
+            if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
                     message: "unable to make contracts",
@@ -4261,7 +4261,7 @@ exports.markAsPaid = async (req, res) => {
                     orderAmount: data.orderAmount,
                     dealerId: data.dealerId,
                 }
-            
+
                 await supportingFunction.reportingData(reportingData)
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
