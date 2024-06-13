@@ -27,7 +27,7 @@ module.exports = {
     };
   },
 
-  sendEmailTemplate: (ccEmail,toEmail, data) => {
+  sendEmailTemplate: (toEmail,ccEmail, data) => {
     return {
       to: toEmail,
       cc: ccEmail,

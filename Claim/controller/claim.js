@@ -1440,13 +1440,13 @@ exports.editClaimStatus = async (req, res) => {
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, toEmail, emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, notificationEmails, emailData))
       emailData = {
         senderName: servicerPrimary.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, servicerPrimary?.email, emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationEmails, emailData))
 
     }
     if (data.hasOwnProperty("repairStatus")) {
@@ -1498,13 +1498,13 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, toEmail, emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, notificationEmails, emailData))
       emailData = {
         senderName: servicerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
-       mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, servicerPrimary?.email, emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationEmails, emailData))
     }
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
@@ -1563,7 +1563,7 @@ exports.editClaimStatus = async (req, res) => {
         senderName: '',
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Claim Status Update", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     }
     if (data.hasOwnProperty("claimType")) {
       let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
