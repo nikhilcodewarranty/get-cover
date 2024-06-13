@@ -4716,9 +4716,9 @@ exports.getOrderContract = async (req, res) => {
                 result: result1,
                 totalCount: 0,
                 orderUserData: {}
-            })
+            }) 
             return
-        }
+        } 
         // res.json(getContracts);
         // return;
         // checkOrder = checkOrder;
