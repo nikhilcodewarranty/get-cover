@@ -317,8 +317,8 @@ exports.createOrder1 = async (req, res) => {
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
-                        code:contact.errorCode,
-                        message:"Order is created successfully,but unable to create the contract due to the invalid ADH day"
+                        code: contact.errorCode,
+                        message: "Order is created successfully,but unable to create the contract due to the invalid ADH day"
                     })
                     return
                 }
@@ -381,7 +381,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? Number(product.adh) : 0 : 0)
-                    console.log("console on adh day and date",dateCheck,product.coverageStartDate,adhDays)
+                    console.log("console on adh day and date", dateCheck, product.coverageStartDate, adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -404,7 +404,7 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        console.log("min date function +++++++++++++++++++++++++++",d1)
+                        console.log("min date function +++++++++++++++++++++++++++", d1)
 
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
@@ -415,7 +415,7 @@ exports.createOrder1 = async (req, res) => {
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-                            console.log("second on min date+++++++++++++++++====================",new Date(dateCheck).setHours(0, 0, 0, 0))
+                            console.log("second on min date+++++++++++++++++====================", new Date(dateCheck).setHours(0, 0, 0, 0))
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -3095,15 +3095,18 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(dealerPrimary.email);
-        notificationEmails.push(resellerPrimary?.email);
-
         let emailData = {
-            senderName: '',
+            senderName: dealerPrimary.firstName,
             content: "The order has been archeived!.",
             subject: "Archeive Order"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        emailData = {
+            senderName: resellerPrimary?.firstName,
+            content: "The order has been archeived!.",
+            subject: "Archeive Order"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
         //  }
         res.send({
             code: constant.successCode,
@@ -4104,7 +4107,7 @@ exports.markAsPaid = async (req, res) => {
                 // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-                    
+
                     // return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                 }
 
@@ -4680,7 +4683,7 @@ exports.getOrderContract = async (req, res) => {
                 result1[e].reason = "Contract is not active"
             }
             // if (result1[e].minDate < new Date()) {
-      if (new Date(result1[e].minDate) > new Date()) {
+            if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
                     year: 'numeric',
