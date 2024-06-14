@@ -315,7 +315,7 @@ exports.getContracts = async (req, res) => {
           return acc;
         }, []);
 
-        
+
         console.log("as servicer data +++++++++++++++++++++++++++++++++++", getData, asServicer)
 
         servicerIds = servicerIds.concat(asServicer)
@@ -509,7 +509,7 @@ exports.getContracts = async (req, res) => {
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
-      if (result1[e].minDate < new Date()) {
+      if (result1[e].minDate > new Date()) {
         const options = {
           year: 'numeric',
           month: '2-digit',
