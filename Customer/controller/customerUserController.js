@@ -1718,7 +1718,7 @@ exports.getCustomerDetails = async (req, res) => {
         $lookup: {
           from: "dealers",
           foreignField: "_id",
-          localField: "dealerId",
+          localField: "dealerId", 
           as: "dealer"
         }
       },
