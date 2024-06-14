@@ -286,7 +286,6 @@ exports.createOrder1 = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(getPrimary.email);
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
@@ -294,7 +293,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             // let savedResponse = await orderService.updateOrder(
             //     { _id: checkOrder._id },

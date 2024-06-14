@@ -3200,7 +3200,7 @@ exports.getAllContracts = async (req, res) => {
                 result1[e].reason = "Contract is not active"
             }
             // if (result1[e].minDate < new Date()) {
-      if (new Date(result1[e].minDate) > new Date()) {
+            if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
                     year: 'numeric',
@@ -3634,18 +3634,16 @@ exports.createOrder = async (req, res) => {
         };
 
         let createNotification = await userService.createNotification(notificationData);
-
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(getPrimary.email);
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + savedResponse.unique_key + "  has been created for " + getPrimary.firstName + "",
-            subject: "New order"
+            subject: "New Order"
         }
 
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['maneesha@codenomad.net'], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
         res.send({
             code: constant.successCode,
