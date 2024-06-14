@@ -945,7 +945,7 @@ exports.statusUpdate = async (req, res) => {
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
-      senderName: getPrimary.name,
+      senderName: getPrimary.firstName,
       content: "The price book has been updated",
       subject: "Update Data"
     }
