@@ -415,9 +415,9 @@ exports.createOrder1 = async (req, res) => {
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+                            console.log("second on min date+++++++++++++++++====================",new Date(dateCheck).setHours(0, 0, 0, 0))
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            console.log("second on min date+++++++++++++++++====================",minDate,new Date(dateCheck).setHours(0, 0, 0, 0))
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
