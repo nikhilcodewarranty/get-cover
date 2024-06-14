@@ -4196,6 +4196,7 @@ exports.editOrderDetail = async (req, res) => {
                         serviceCoverageType: serviceCoverage,
                         coverageType: req.body.coverageType,
                         serial: data.serial,
+                        purchaseDate: new Date(data.purchaseDate),
                         orderUniqueKey: savedResponse.unique_key,
                         venderOrder: savedResponse.venderOrder,
                         coverageStartDate: coverageStartDate,
