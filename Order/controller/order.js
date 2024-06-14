@@ -293,7 +293,6 @@ exports.createOrder1 = async (req, res) => {
             subject: "New Order"
         }
 
-        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -315,6 +314,15 @@ exports.createOrder1 = async (req, res) => {
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                if (data.adh && isNaN(data.adh)) {
+
+                    res.send({
+                        code:contact.errorCode,
+                        message:"Order is created successfully,but unable to create the contract due to the invalid ADH day"
+                    })
+                    return
+                }
+
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
                     cellDates: true
@@ -372,13 +380,12 @@ exports.createOrder1 = async (req, res) => {
                     // -------------------------------------------------  copy from -----------------------------------------//
 
                     let dateCheck = new Date(product.coverageStartDate)
-                    let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
-                    console.log("dateCheck------------------------", dateCheck)
-                    console.log("adhDays------------------------", adhDays)
+                    let adhDays = Number(product.adh ? product.adh != '' ? Number(product.adh) : 0 : 0)
+                    console.log("console on adh day and date",dateCheck,product.coverageStartDate,adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
-                    dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
+                    dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + Number(adhDays)))
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
                     let l_date = new Date(data.purchaseDate)
@@ -536,7 +543,6 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
 
@@ -4716,9 +4722,9 @@ exports.getOrderContract = async (req, res) => {
                 result: result1,
                 totalCount: 0,
                 orderUserData: {}
-            }) 
+            })
             return
-        } 
+        }
         // res.json(getContracts);
         // return;
         // checkOrder = checkOrder;
