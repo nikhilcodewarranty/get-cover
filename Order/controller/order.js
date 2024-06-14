@@ -3831,9 +3831,6 @@ exports.editOrderDetail = async (req, res) => {
                     console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
-
-
-
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3903,16 +3900,23 @@ exports.editOrderDetail = async (req, res) => {
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 notificationEmails.push(customerPrimary.email);
-                notificationEmails.push(dealerPrimary.email);
-                notificationEmails.push(resellerPrimary?.email);
+                // notificationEmails.push(dealerPrimary.email);
+                //Email to Dealer
                 let emailData = {
-                    senderName: '',
+                    senderName: dealerPrimary.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Process Order"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                //Email to Reseller
+                emailData = {
+                    senderName: resellerPrimary?.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                    subject: "Process Order"
+                }
 
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
