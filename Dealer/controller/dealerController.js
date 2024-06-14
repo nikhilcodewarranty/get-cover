@@ -944,14 +944,13 @@ exports.statusUpdate = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(getPrimary.email);
     let emailData = {
-      senderName: singleReseller.name,
-      content: getDealerDetail.name + " , " + "your price book has been updated",
+      senderName: getPrimary.name,
+      content: "The price book has been updated",
       subject: "Update Data"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
     let logData = {
       userId: req.teammateId,
