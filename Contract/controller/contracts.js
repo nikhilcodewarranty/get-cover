@@ -306,14 +306,16 @@ exports.getContracts = async (req, res) => {
       console.log("check on servicer ak-----------", getData)
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
-        let asServicer = await getData.map(servicer => {
+        let asServicer = (await getData).reduce((acc, servicer) => {
           if (servicer.resellerId !== null && servicer.dealerId === null) {
-            return servicer.resellerId;
+            acc.push(servicer.resellerId);
           } else if (servicer.dealerId !== null && servicer.resellerId === null) {
-            return servicer.dealerId;
+            acc.push(servicer.dealerId);
           }
-        })
+          return acc;
+        }, []);
 
+        
         console.log("as servicer data +++++++++++++++++++++++++++++++++++", getData, asServicer)
 
         servicerIds = servicerIds.concat(asServicer)
@@ -353,6 +355,7 @@ exports.getContracts = async (req, res) => {
       let getOrders = await orderService.getOrders({
         $and: orderAndCondition
       })
+      console.log("oder check",orderAndCondition[0].servicerId)
       if (getOrders.length > 0) {
         orderIds = await getOrders.map(order => order._id)
       }
@@ -389,7 +392,7 @@ exports.getContracts = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    console.log(orderIds)
+    // console.log(orderIds)
     if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
@@ -500,7 +503,7 @@ exports.getContracts = async (req, res) => {
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
 
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-    console.log('sjdsjlfljksfklsjdf')
+    // console.log('sjdsjlfljksfklsjdf')
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
       if (result1[e].status != "Active") {
@@ -537,7 +540,7 @@ exports.getContracts = async (req, res) => {
       ]
 
       let checkClaims = await claimService.getAllClaims(claimQuery)
-      console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+      // console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           result1[e].reason = "Contract has open claim"

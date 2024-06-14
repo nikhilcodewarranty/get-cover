@@ -3958,7 +3958,14 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             let contractArray = [];
+            var pricebookDetail = [];
+            let dealerBookDetail = [];
+
+
+
             await savedResponse.productsArray.map(async (product) => {
+            let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
+
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -4147,6 +4154,27 @@ exports.editOrderDetail = async (req, res) => {
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
+                    let pricebookDetailObject = {}
+                    let dealerPriceBookObject = {}
+
+                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
+                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.term = priceBook[0].term
+                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+                    pricebookDetailObject.price = product.price
+                    pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                    pricebookDetailObject.retailPrice = product.unitPrice
+                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    pricebookDetail.push(pricebookDetailObject)
+                    dealerBookDetail.push(dealerPriceBookObject)
+
+
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -4180,7 +4208,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 let createContract = await contractService.createBulkContracts(contractArray);
-                if (!createContract) {
+                if (!createContract[0]) {
                     if (!saveContracts) {
                         logData.response = {
                             code: constant.errorCode,
@@ -4200,6 +4228,7 @@ exports.editOrderDetail = async (req, res) => {
                     }
                 }
                 if (createContract) {
+
                     //Save Logs create order
                     logData.response = {
                         code: constant.successCode,
@@ -4238,6 +4267,14 @@ exports.editOrderDetail = async (req, res) => {
                     }
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                    let reportingData = {
+                        orderId: savedResponse._id,
+                        products: pricebookDetail,
+                        orderAmount: data.orderAmount,
+                        dealerId: data.dealerId,
+                    }
+
+                    await supportingFunction.reportingData(reportingData)
                     res.send({
                         code: constant.successCode,
                         message: "Success",
