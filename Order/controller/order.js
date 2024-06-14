@@ -4097,8 +4097,8 @@ exports.markAsPaid = async (req, res) => {
                 let minDate;
                 // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                if (req.body.coverageType == "Breakdown") {
-                    if (req.body.serviceCoverageType == "Labour") {
+                if (checkOrder.coverageType == "Breakdown") {
+                    if (checkOrder.serviceCoverageType == "Labour") {
 
                         minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
@@ -4109,7 +4109,7 @@ exports.markAsPaid = async (req, res) => {
                         //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                         // }
 
-                    } else if (req.body.serviceCoverageType == "Parts") {
+                    } else if (checkOrder.serviceCoverageType == "Parts") {
 
                         minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -4138,10 +4138,10 @@ exports.markAsPaid = async (req, res) => {
                         //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         // }
                     }
-                } else if (req.body.coverageType == "Accidental") {
+                } else if (checkOrder.coverageType == "Accidental") {
                     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
-                    // if (req.body.serviceCoverageType == "Labour") {
+                    // if (checkOrder.serviceCoverageType == "Labour") {
                     //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                     //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
@@ -4149,7 +4149,7 @@ exports.markAsPaid = async (req, res) => {
                     //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                     //     }
 
-                    // } else if (req.body.serviceCoverageType == "Parts") {
+                    // } else if (checkOrder.serviceCoverageType == "Parts") {
                     //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                     //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                     //     } else {
@@ -4171,7 +4171,7 @@ exports.markAsPaid = async (req, res) => {
                     //     }
                     // }
                 } else {
-                    if (req.body.serviceCoverageType == "Labour") {
+                    if (checkOrder.serviceCoverageType == "Labour") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
                         // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -4181,7 +4181,7 @@ exports.markAsPaid = async (req, res) => {
                         //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                         // }
 
-                    } else if (req.body.serviceCoverageType == "Parts") {
+                    } else if (checkOrder.serviceCoverageType == "Parts") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
                         // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -4210,10 +4210,10 @@ exports.markAsPaid = async (req, res) => {
 
                 let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                 let serviceCoverage;
-                if (req.body.serviceCoverageType == "Labour") {
+                if (checkOrder.serviceCoverageType == "Labour") {
                     serviceCoverage = "Labor"
                 }
-                if (req.body.serviceCoverageType == "Parts & Labour") {
+                if (checkOrder.serviceCoverageType == "Parts & Labour") {
                     serviceCoverage = "Parts & Labor"
                 }
 
@@ -4246,7 +4246,7 @@ exports.markAsPaid = async (req, res) => {
                     coverageStartDate: coverageStartDate,
                     coverageEndDate: coverageEndDate,
                     serviceCoverageType: serviceCoverage,
-                    coverageType: req.body.coverageType,
+                    coverageType: checkOrder.coverageType,
                     productName: priceBook[0]?.name,
                     pName: priceBook[0]?.pName,
                     manufacture: data.brand,

@@ -759,6 +759,7 @@ exports.createOrder = async (req, res) => {
         })
     }
 };
+
 exports.getAllResellers = async (req, res) => {
     try {
         let data = req.body
@@ -1097,112 +1098,6 @@ exports.editOrderDetail = async (req, res) => {
 
         returnField.push(obj);
 
-
-        // if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-        //     let savedResponse = await orderService.updateOrder(
-        //         { _id: req.params.orderId },
-        //         { status: "Active" },
-        //         { new: true }
-        //     );
-
-        //     //let count1 = await contractService.getContractsCount();
-        //     let count1 = await contractService.getContractsCountNew();
-        //     var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-        //     let save = savedResponse.productsArray.map(async (product) => {
-        //         const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-        //         let priceBookId = product.priceBookId;
-        //         let coverageStartDate = product.coverageStartDate;
-        //         let coverageEndDate = product.coverageEndDate;
-        //         let orderProductId = product._id;
-        //         let query = { _id: new mongoose.Types.ObjectId(priceBookId) };
-        //         let projection = { isDeleted: 0 };
-        //         let priceBook = await priceBookService.getPriceBookById(
-        //             query,
-        //             projection
-        //         );
-        //         const wb = XLSX.readFile(pathFile);
-        //         const sheets = wb.SheetNames;
-        //         const ws = wb.Sheets[sheets[0]];
-        //         let count1 = await contractService.getContractsCount();
-        //         let contractCount =
-        //             Number(
-        //                 count1.length > 0 && count1[0].unique_key
-        //                     ? count1[0].unique_key
-        //                     : 0
-        //             ) + 1;
-
-        //         const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-        //         const totalDataComing = totalDataComing1.map((item) => {
-        //             const keys = Object.keys(item);
-        //             return {
-        //                 brand: item[keys[0]],
-        //                 model: item[keys[1]],
-        //                 serial: item[keys[2]],
-        //                 condition: item[keys[3]],
-        //                 retailValue: item[keys[4]],
-        //             };
-        //         });
-        //         // let savedDataOrder = savedResponse.toObject()
-
-        //         var contractArray = [];
-        //         totalDataComing.forEach((data, index) => {
-        //             //let unique_key_number1 = count1[0]?.unique_key_number ? count1[0].unique_key_number + index + 1 : 100000
-        //             let unique_key_number1 = increamentNumber
-        //             let unique_key_search1 = "OC" + "2024" + unique_key_number1
-        //             let unique_key1 = "OC-" + "2024-" + unique_key_number1
-        //             let claimStatus = new Date(product.coverageStartDate) < new Date() ? "Active" : "Waiting"
-        //             claimStatus = new Date(product.coverageEndDate) < new Date() ? "Expired" : claimStatus
-        //             let eligibilty = claimStatus == "Active" ? true : false
-        //             let contractObject = {
-        //                 orderId: savedResponse._id,
-        //                 orderUniqueKey: savedResponse.unique_key,
-        //                 venderOrder: savedResponse.venderOrder,
-        //                 orderProductId: orderProductId,
-        //                 coverageStartDate: coverageStartDate,
-        //                 coverageEndDate: coverageEndDate,
-        //                 productName: priceBook[0].name,
-        //                 manufacture: data.brand,
-        //                 model: data.model,
-        //                 status: claimStatus,
-        //                 eligibilty: eligibilty,
-        //                 serial: data.serial,
-        //                 condition: data.condition,
-        //                 productValue: data.retailValue,
-        //                 unique_key: unique_key1,
-        //                 unique_key_search: unique_key_search1,
-        //                 unique_key_number: unique_key_number1,
-        //             };
-        //             contractArray.push(contractObject);
-        //             increamentNumber++;
-        //             //let saveData = contractService.createContract(contractObject)
-        //         });
-
-        //         await contractService.createBulkContracts(contractArray);
-
-        //     })
-
-        //     res.send({
-        //         code: constant.successCode,
-        //         message: "Success",
-        //     });
-        // } else {
-        //     res.send({
-        //         code: constant.successCode,
-        //         message: "Success",
-        //     });
-        // }
-
-        //     let checkPriceBook = await priceBookService.findByName1(query)
-        //     if (!checkPriceBook) {
-        //         res.send({
-        //             code: constant.errorCode,
-        //             message: "PriceBook not found"
-        //         })
-        //         return;
-        //     }
-        // }
-
-        // let data = req.body
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1388,6 +1283,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
+
 exports.getResellerByDealerId = async (req, res) => {
     // if (req.role != "Super Admin") {
     //     res.send({
@@ -2554,6 +2450,7 @@ exports.getServicerInOrders = async (req, res) => {
 //         result: result_Array,
 //     });
 // };
+
 exports.getResellerOrders = async (req, res) => {
     try {
         // if (req.role != 'Super Admin') {
