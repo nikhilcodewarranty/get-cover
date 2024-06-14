@@ -1224,7 +1224,7 @@ exports.editClaim = async (req, res) => {
       let emailData = {
         senderName: '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
-        subject: "Repair Status Update"
+        subject: "Repair Part Update"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
       res.send({
@@ -1435,18 +1435,29 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let toEmail = [];
-      toEmail.push(dealerPrimary.email);
-      toEmail.push(customerPrimary?.email);
-      toEmail.push(resellerPrimary?.email);
       //  notificationEmails.push(servicerPrimary?.email);
+      //Email to customer
       let emailData = {
+        senderName: customerPrimary?.firstName,
+        content: "The customer status has been updated for " + checkClaim.unique_key + "",
+        subject: "Customer Status Update"
+      }
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
+      //Email to dealer
+      emailData = {
         senderName: dealerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(toEmail, notificationEmails, emailData))
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.email
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+      //Email to Reseller
+      emailData = {
+        senderName: resellerPrimary?.firstName,
+        content: "The customer status has been updated for " + checkClaim.unique_key + "",
+        subject: "Customer Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
       emailData = {
         senderName: servicerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
@@ -1496,7 +1507,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       let toEmail = []
       //toEmail.push(dealerPrimary.email);
-     // toEmail.push(customerPrimary?.email);
+      // toEmail.push(customerPrimary?.email);
       //toEmail.push(resellerPrimary?.email);
       // notificationEmails.push(servicerPrimary?.email);
       //Email to dealer
@@ -1513,8 +1524,8 @@ exports.editClaimStatus = async (req, res) => {
         subject: "Repair Status Update"
       }
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
-       // Email to Reseller
-       emailData = {
+      // Email to Reseller
+      emailData = {
         senderName: resellerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
