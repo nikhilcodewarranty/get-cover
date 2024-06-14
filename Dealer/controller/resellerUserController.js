@@ -465,12 +465,12 @@ exports.createOrder = async (req, res) => {
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
-            subject:"Create Order"
+            subject: "Create Order"
         }
 
         console.log("fsdfdfdsfdfsdsdds", notificationEmails);
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,[], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
@@ -554,7 +554,8 @@ exports.createOrder = async (req, res) => {
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
                     if (req.body.coverageType == "Breakdown") {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
@@ -627,7 +628,8 @@ exports.createOrder = async (req, res) => {
                         //     }
                         // }
                     } else {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -731,7 +733,7 @@ exports.createOrder = async (req, res) => {
                 let emailData = {
                     senderName: '',
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
-                    subject:"Order Processed"
+                    subject: "Order Processed"
                 }
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
@@ -2957,13 +2959,14 @@ exports.getResellerContract = async (req, res) => {
             let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
             if (getData.length > 0) {
                 servicerIds = await getData.map(servicer => servicer._id)
-                let asServicer = await getData.map(servicer => {
-                    if (servicer.servicerId !== null && servicer.dealerId === null) {
-                        return servicer.servicerId;
-                    } else if (servicer.dealerId !== null && servicer.servicerId === null) {
-                        return servicer.dealerId;
+                let asServicer = (await getData).reduce((acc, servicer) => {
+                    if (servicer.resellerId !== null && servicer.dealerId === null) {
+                      acc.push(servicer.resellerId);
+                    } else if (servicer.dealerId !== null && servicer.resellerId === null) {
+                      acc.push(servicer.dealerId);
                     }
-                })
+                    return acc;
+                  }, []);
                 servicerIds = servicerIds.concat(asServicer)
             } else {
                 servicerIds.push("1111121ccf9d400000000000")
@@ -3054,7 +3057,7 @@ exports.getResellerContract = async (req, res) => {
                                     minDate: 1,
                                     serial: 1,
                                     unique_key: 1,
-                                    productValue:1,
+                                    productValue: 1,
                                     status: 1,
                                     manufacture: 1,
                                     eligibilty: 1,
@@ -3102,7 +3105,7 @@ exports.getResellerContract = async (req, res) => {
                                 serial: 1,
                                 unique_key: 1,
                                 status: 1,
-                                productValue:1,
+                                productValue: 1,
                                 minDate: 1,
                                 manufacture: 1,
                                 eligibilty: 1,
