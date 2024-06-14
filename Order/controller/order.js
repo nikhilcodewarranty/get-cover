@@ -3554,17 +3554,14 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        // notificationEmails.push(customerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
-        // notificationEmails.push(resellerPrimary?.email);
+        //Email to Dealer
         let emailData = {
-            senderName: '',
-            content: "The  order " + savedResponse.unique_key + " has been updated",
+            senderName: dealerPrimary.firstName,
+            content: "The  order " + savedResponse.unique_key + " has been updated and processed",
             subject: "Order Update"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
@@ -3899,7 +3896,6 @@ exports.editOrderDetail = async (req, res) => {
 
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
-                notificationEmails.push(customerPrimary.email);
                 // notificationEmails.push(dealerPrimary.email);
                 //Email to Dealer
                 let emailData = {
@@ -4336,19 +4332,24 @@ exports.markAsPaid = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
-
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
-                notificationEmails.push(customerPrimary.email);
-                notificationEmails.push(dealerPrimary.email);
-                notificationEmails.push(resellerPrimary?.email);
+                //Email to Dealer
                 let emailData = {
-                    senderName: '',
-                    content: "The new order has been marked as paid",
-                    subject: "Mark Paid"
+                    senderName: dealerPrimary.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                    subject: "Process Order"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                //Email to Reseller
+                emailData = {
+                    senderName: resellerPrimary?.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                    subject: "Process Order"
+                }
+
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
             }
 
         })
