@@ -405,7 +405,7 @@ exports.createOrder1 = async (req, res) => {
 
 
                     if (req.body.coverageType == "Breakdown") {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
@@ -478,7 +478,8 @@ exports.createOrder1 = async (req, res) => {
                         //     }
                         // }
                     } else {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -3673,7 +3674,8 @@ exports.editOrderDetail = async (req, res) => {
 
 
                     if (req.body.coverageType == "Breakdown") {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
@@ -3746,7 +3748,8 @@ exports.editOrderDetail = async (req, res) => {
                         //     }
                         // }
                     } else {
-                        if (req.body.serviceCoverageType == "Labour") {
+                        if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
+
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -4716,9 +4719,9 @@ exports.getOrderContract = async (req, res) => {
                 result: result1,
                 totalCount: 0,
                 orderUserData: {}
-            }) 
+            })
             return
-        } 
+        }
         // res.json(getContracts);
         // return;
         // checkOrder = checkOrder;
