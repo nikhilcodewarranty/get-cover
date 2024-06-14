@@ -315,7 +315,7 @@ exports.getContracts = async (req, res) => {
           return acc;
         }, []);
 
-        
+
         console.log("as servicer data +++++++++++++++++++++++++++++++++++", getData, asServicer)
 
         servicerIds = servicerIds.concat(asServicer)
@@ -509,7 +509,8 @@ exports.getContracts = async (req, res) => {
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
-      if (result1[e].minDate < new Date()) {
+      console.log("==================================================",new Date(result1[e].minDate),new Date())
+      if (new Date(result1[e].minDate) > new Date()) {
         const options = {
           year: 'numeric',
           month: '2-digit',
@@ -760,7 +761,8 @@ exports.getContractById = async (req, res) => {
       if (getData[e].status != "Active") {
         getData[e].reason = "Contract is not active"
       }
-      if (getData[e].minDate < new Date()) {
+      // if (getData[e].minDate < new Date()) {
+        if (new Date(getData[e].minDate) > new Date()) {
         const options = {
           year: 'numeric',
           month: '2-digit',
