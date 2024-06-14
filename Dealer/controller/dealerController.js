@@ -3959,7 +3959,9 @@ exports.getDealerContract = async (req, res) => {
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
-      if (result1[e].minDate < new Date()) {
+      // if (result1[e].minDate < new Date()) {
+        if (new Date(result1[e].minDate) > new Date()) {
+
         const options = {
           year: 'numeric',
           month: '2-digit',

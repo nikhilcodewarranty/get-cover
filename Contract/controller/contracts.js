@@ -761,7 +761,8 @@ exports.getContractById = async (req, res) => {
       if (getData[e].status != "Active") {
         getData[e].reason = "Contract is not active"
       }
-      if (getData[e].minDate < new Date()) {
+      // if (getData[e].minDate < new Date()) {
+        if (new Date(getData[e].minDate) > new Date()) {
         const options = {
           year: 'numeric',
           month: '2-digit',
