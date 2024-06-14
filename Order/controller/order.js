@@ -404,6 +404,8 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
+                        console.log("min date function +++++++++++++++++++++++++++",d1)
+
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
                     // Find the minimum date
@@ -415,7 +417,7 @@ exports.createOrder1 = async (req, res) => {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
+                            console.log("second on min date+++++++++++++++++====================",minDate,new Date(dateCheck).setHours(0, 0, 0, 0))
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
