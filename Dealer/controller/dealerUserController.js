@@ -3642,7 +3642,7 @@ exports.createOrder = async (req, res) => {
         }
 
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['maneesha@codenomad.net'], emailData))
 
         res.send({
             code: constant.successCode,
