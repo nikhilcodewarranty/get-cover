@@ -1745,13 +1745,14 @@ exports.getResellerContract = async (req, res) => {
             let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
             if (getData.length > 0) {
                 servicerIds = await getData.map(servicer => servicer._id)
-                let asServicer = await getData.map(servicer => {
-                    if (servicer.servicerId !== null && servicer.dealerId === null) {
-                        return servicer.servicerId;
-                    } else if (servicer.dealerId !== null && servicer.servicerId === null) {
-                        return servicer.dealerId;
+                let asServicer = (await getData).reduce((acc, servicer) => {
+                    if (servicer.resellerId !== null && servicer.dealerId === null) {
+                        acc.push(servicer.resellerId);
+                    } else if (servicer.dealerId !== null && servicer.resellerId === null) {
+                        acc.push(servicer.dealerId);
                     }
-                })
+                    return acc;
+                }, []);
                 servicerIds = servicerIds.concat(asServicer)
             } else {
                 servicerIds.push("1111121ccf9d400000000000")

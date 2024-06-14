@@ -393,14 +393,14 @@ exports.createOrder = async (req, res) => {
             }
         }
 
-        let serviceCoverage;
+        let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
         if (req.body.serviceCoverageType == "Parts & Labour") {
             serviceCoverage = "Parts & Labor"
         }
-        data.serviceCoverageType = serviceCoverage
+        data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             res.send({
@@ -2961,12 +2961,12 @@ exports.getResellerContract = async (req, res) => {
                 servicerIds = await getData.map(servicer => servicer._id)
                 let asServicer = (await getData).reduce((acc, servicer) => {
                     if (servicer.resellerId !== null && servicer.dealerId === null) {
-                      acc.push(servicer.resellerId);
+                        acc.push(servicer.resellerId);
                     } else if (servicer.dealerId !== null && servicer.resellerId === null) {
-                      acc.push(servicer.dealerId);
+                        acc.push(servicer.dealerId);
                     }
                     return acc;
-                  }, []);
+                }, []);
                 servicerIds = servicerIds.concat(asServicer)
             } else {
                 servicerIds.push("1111121ccf9d400000000000")
