@@ -315,6 +315,7 @@ exports.getContracts = async (req, res) => {
           return acc;
         }, []);
 
+        
         console.log("as servicer data +++++++++++++++++++++++++++++++++++", getData, asServicer)
 
         servicerIds = servicerIds.concat(asServicer)
