@@ -210,7 +210,7 @@ exports.createOrder1 = async (req, res) => {
             }
         }
 
-        let serviceCoverage;
+        let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
@@ -218,7 +218,7 @@ exports.createOrder1 = async (req, res) => {
             serviceCoverage = "Parts & Labor"
         }
 
-        data.serviceCoverageType = serviceCoverage
+        data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
             let logData = {
@@ -3385,7 +3385,7 @@ exports.editOrderDetail = async (req, res) => {
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
         data.customerId = data.customerId != "" ? data.customerId : null;
-        let serviceCoverage;
+        let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
@@ -3393,7 +3393,7 @@ exports.editOrderDetail = async (req, res) => {
             serviceCoverage = "Parts & Labor"
         }
 
-        data.serviceCoverageType = serviceCoverage
+        data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         // if (checkId.paymentStatus == "Paid" && data.paymentStatus == "PartlyPaid") {
         //     checkId.paidAmount = 0
         // }

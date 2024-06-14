@@ -3023,12 +3023,12 @@ exports.getAllContracts = async (req, res) => {
                 servicerIds = await getData.map(servicer => servicer._id)
                 let asServicer = (await getData).reduce((acc, servicer) => {
                     if (servicer.resellerId !== null && servicer.dealerId === null) {
-                      acc.push(servicer.resellerId);
+                        acc.push(servicer.resellerId);
                     } else if (servicer.dealerId !== null && servicer.resellerId === null) {
-                      acc.push(servicer.dealerId);
+                        acc.push(servicer.dealerId);
                     }
                     return acc;
-                  }, []);
+                }, []);
                 servicerIds = servicerIds.concat(asServicer)
             } else {
                 servicerIds.push("1111121ccf9d400000000000")
@@ -3567,14 +3567,15 @@ exports.createOrder = async (req, res) => {
             }
         }
 
-        let serviceCoverage;
+        let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
         if (req.body.serviceCoverageType == "Parts & Labour") {
             serviceCoverage = "Parts & Labor"
         }
-        data.serviceCoverageType = serviceCoverage
+        data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+        //  data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.addOrder(data);
         // Update Term and condtion while create order
         let uploadTermAndCondtion = await orderService.updateOrder(
@@ -3863,14 +3864,14 @@ exports.editOrderDetail = async (req, res) => {
                 }
             }
         }
-        let serviceCoverage;
+        let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
         if (req.body.serviceCoverageType == "Parts & Labour") {
             serviceCoverage = "Parts & Labor"
         }
-        data.serviceCoverageType = serviceCoverage
+        data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
@@ -3965,7 +3966,7 @@ exports.editOrderDetail = async (req, res) => {
 
 
             await savedResponse.productsArray.map(async (product) => {
-            let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
+                let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
 
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
