@@ -406,7 +406,7 @@ exports.createOrder1 = async (req, res) => {
                     function findMinDate(d1, d2, d3) {
                         console.log("min date function +++++++++++++++++++++++++++",d1)
 
-                        return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
+                        return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
                     // Find the minimum date
                     let minDate;
