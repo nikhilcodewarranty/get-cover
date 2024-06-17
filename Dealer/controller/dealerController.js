@@ -1895,7 +1895,8 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
-    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(data.priceBook) }, {})
+    console.log("checkPriceBookMain----------------------",checkPriceBookMain)
     if (!checkPriceBookMain) {
       res.send({
         code: constant.errorCode,
@@ -1964,7 +1965,7 @@ exports.createDealerPriceBook = async (req, res) => {
       // }
       let emailData = {
         senderName: checkDealer.name,
-        content: "The price book name" + " " + checkPriceBookMain.name + " has been created successfully! effective immediately.",
+        content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
@@ -2643,8 +2644,11 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         let IDs = await supportingFunction.getUserIds()
 
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-        IDs.push(dealerPrimary._id)
+        console.log(checkDealer._id)
+
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
+        console.log("dealerPrimary------------------",dealerPrimary)
+        IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
           description: "The priceBook has been successfully uploaded",
@@ -2656,7 +2660,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(dealerPrimary.email);
+        notificationEmails.push(dealerPrimary?.email);
         // let emailData = {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."

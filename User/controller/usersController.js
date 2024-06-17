@@ -2029,12 +2029,12 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
 
-    let emailData = { 
-      senderName: updateUser.name,
-      content: "The primary contact information has been updated successfully!.",
+    let emailData = {
+      senderName: updateUser.firstName,
+      content: "The user information has been updated successfully!.",
       subject: "Update User Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
     //  }
     //Save Logs updateUserData
     let logData = {
@@ -2288,11 +2288,11 @@ exports.deleteUser = async (req, res) => {
     //   role: "Servicer"
     // }
     let emailData = {
-      senderName: checkUser.name,
-      content: "The user " + checkUser.name + "" + " " + "has been deleted successfully.",
+      senderName: checkUser.firstName,
+      content: "The user " + checkUser.firstName + "" + " " + "has been deleted successfully.",
       subject: "Delete User"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
     //}
     //Save Logs delete user
     let logData = {
@@ -2477,8 +2477,8 @@ exports.getAllNotifications1 = async (req, res) => {
     });
 
     if (data.readFlag != "") {
-    if (data.readFlag == "true" ) {
-    updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
+      if (data.readFlag == "true") {
+        updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
       } else {
         updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
 

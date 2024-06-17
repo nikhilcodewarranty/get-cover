@@ -273,9 +273,10 @@ exports.createPriceBook = async (req, res, next) => {
       const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
       let emailData = {
         senderName: admin.firstName,
-        content: "The priceBook " + data.name + " created successfully! effective immediately."
+        content: "The priceBook " + data.name + " created successfully! effective immediately.",
+        subject: "Create Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -570,12 +571,23 @@ exports.updatePriceBookById = async (req, res, next) => {
     //   c5: "",
     //   role: "PriceBook"
     // }
+
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
-    let emailData = {
-      senderName: admin.firstName,
-      content: "The priceBook " + existingPriceBook.pName + " updated successfully! effective immediately.",
-      subject:"Update Price Book"
+    if (req.body.priceType) {
+      let emailData = {
+        senderName: admin.firstName,
+        content: "The priceBook " + body.pName + " updated successfully! effective immediately.",
+        subject: "Update Price Book"
+      }
     }
+    else {
+      let emailData = {
+        senderName: admin.firstName,
+        content: "The priceBook " + body.pName + " has been changed to " + body.status + "! effective immediately.",
+        subject: "Update Status"
+      }
+    }
+
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "admin@yopmail.com", emailData))
 
     let logData = {
@@ -791,9 +803,10 @@ exports.createPriceBookCat = async (req, res) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
-      content: "The category " + data.name + " created successfully! effective immediately."
+      content: "The category " + data.name + " created successfully! effective immediately.",
+      subject: "New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Category", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1091,9 +1104,10 @@ exports.updatePriceBookCat = async (req, res) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
-      content: "The category " + data.name + " updated successfully! effective immediately."
+      content: "The category " + data.name + " updated successfully! effective immediately.",
+      subject: "Update Category"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update Category", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePricebookCat",
