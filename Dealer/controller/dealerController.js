@@ -2224,7 +2224,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
-    // Send Email code here
+    // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
 
     console.log("notificationEmails-------------------",notificationEmails);
