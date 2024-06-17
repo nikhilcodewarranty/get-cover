@@ -540,8 +540,10 @@ exports.editCustomer = async (req, res) => {
     //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
     let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.dealerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer.resellerId, isPrimary: true })
     IDs.push(customerPrimary._id)
     IDs.push(dealerPrimary._id)
+    IDs.push(resellerPrimary?._id)
     let notificationData = {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
@@ -555,7 +557,7 @@ exports.editCustomer = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(customerPrimary.email);
+    notificationEmails.push(resellerPrimary?.email);
     notificationEmails.push(dealerPrimary.email);
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
@@ -575,7 +577,7 @@ exports.editCustomer = async (req, res) => {
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, [], emailData))
 
     //Save Logs editCustomer
     let logData = {
