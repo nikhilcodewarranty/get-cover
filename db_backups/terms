@@ -1,0 +1,141 @@
+[{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753e"
+  },
+  "terms": 84,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753d"
+  },
+  "terms": 72,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753a"
+  },
+  "terms": 36,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a65626866187540"
+  },
+  "terms": 108,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a65626866187539"
+  },
+  "terms": 24,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753b"
+  },
+  "terms": 48,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753f"
+  },
+  "terms": 96,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a65626866187541"
+  },
+  "terms": 120,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.663Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a6562686618753c"
+  },
+  "terms": 60,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.662Z"
+  }
+},{
+  "_id": {
+    "$oid": "65ef10c08a65626866187538"
+  },
+  "terms": 12,
+  "status": true,
+  "isDeleted": "false",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2024-03-11T14:10:08.661Z"
+  },
+  "updatedAt": {
+    "$date": "2024-03-11T14:10:08.661Z"
+  }
+}]
