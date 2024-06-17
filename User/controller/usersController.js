@@ -2029,12 +2029,12 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
 
-    let emailData = { 
+    let emailData = {
       senderName: updateUser.name,
-      content: "The primary contact information has been updated successfully!.",
+      content: "The user information has been updated successfully!.",
       subject: "Update User Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.emai, getPrimary.email, emailData))
     //  }
     //Save Logs updateUserData
     let logData = {
@@ -2292,7 +2292,7 @@ exports.deleteUser = async (req, res) => {
       content: "The user " + checkUser.name + "" + " " + "has been deleted successfully.",
       subject: "Delete User"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
     //}
     //Save Logs delete user
     let logData = {
