@@ -2030,7 +2030,7 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(updateUser.email);
 
     let emailData = {
-      senderName: updateUser.name,
+      senderName: updateUser.name ? updateUser.name : updateUser.username,
       content: "The user information has been updated successfully!.",
       subject: "Update User Info"
     }
@@ -2477,8 +2477,8 @@ exports.getAllNotifications1 = async (req, res) => {
     });
 
     if (data.readFlag != "") {
-    if (data.readFlag == "true" ) {
-    updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
+      if (data.readFlag == "true") {
+        updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
       } else {
         updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
 
