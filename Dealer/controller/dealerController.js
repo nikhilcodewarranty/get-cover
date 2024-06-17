@@ -2655,7 +2655,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
         // }
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails,['dealer@yopmail.com'], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, htmlTableString));
       }
       res.send({
         code: constant.successCode,
