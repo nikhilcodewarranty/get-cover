@@ -20,6 +20,7 @@ router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealer
 router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
 router.post("/getAllNotifications", [verifyToken], userController.getAllNotifications1); //get all dealers
+router.get("/readAllNotification", [verifyToken], userController.readAllNotification); //get all dealers
 // router.get("/getAllNotifications1", [verifyToken], userController.getAllNotifications); //get all dealers
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
