@@ -831,6 +831,7 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     // }
     let logData = {
       endpoint: "register dealer",
@@ -2223,12 +2224,14 @@ exports.updateDealerMeta = async (req, res) => {
 
     let createNotification = await userService.createNotification(notificationData);
 
-    // Send Email code here
+    // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
+
+    console.log("notificationEmails-------------------",notificationEmails);
    // notificationEmails.push(getPrimary.email);
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
+    // }     
 
     let emailData = {
       senderName: checkDealer.name,
