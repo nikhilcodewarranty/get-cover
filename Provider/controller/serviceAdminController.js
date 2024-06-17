@@ -756,7 +756,7 @@ exports.updateStatus = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(getPrimary.email);
+        //notificationEmails.push(getPrimary.email);
         // const notificationContent = {
         //   content: checkServicer.name + " " + "status has been updated successfully!"
         // }
@@ -776,7 +776,7 @@ exports.updateStatus = async (req, res) => {
         //   c5: "",
         //   role: "Servicer"
         // }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
         //Save Logs
         let logData = {
           userId: req.userId,

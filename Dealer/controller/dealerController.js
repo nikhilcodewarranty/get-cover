@@ -2225,7 +2225,7 @@ exports.updateDealerMeta = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(getPrimary.email);
+   // notificationEmails.push(getPrimary.email);
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
@@ -2246,7 +2246,7 @@ exports.updateDealerMeta = async (req, res) => {
     // }
 
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,[], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email,notificationEmails, emailData))
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
