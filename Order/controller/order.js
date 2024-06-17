@@ -3080,7 +3080,7 @@ exports.archiveOrder = async (req, res) => {
         IDs.push(dealerPrimary._id)
         let notificationData1 = {
             title: "Order Archieved",
-            description: "The order has been archieved",
+            description: "The order " + checkOrder.unique_key + " has been archeived!.",
             userId: req.userId,
             contentId: checkOrder._id,
             flag: 'order',
@@ -3102,7 +3102,7 @@ exports.archiveOrder = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let emailData = {
             senderName: dealerPrimary.firstName,
-            content: "The order has been archeived!.",
+            content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
@@ -5783,7 +5783,7 @@ exports.cronJobStatus = async (req, res) => {
                 }
                 if (claimStatus == 'Active') {
                     status = 'Active'
-                    eligibilty = true; 
+                    eligibilty = true;
                 }
                 let updateDoc = {
                     'updateMany': {
