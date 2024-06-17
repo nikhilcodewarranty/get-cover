@@ -2226,6 +2226,8 @@ exports.updateDealerMeta = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+
+    console.log("notificationEmails-------------------",notificationEmails);
    // notificationEmails.push(getPrimary.email);
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
