@@ -12,7 +12,7 @@ exports.getUserIds = async () => {
 
 exports.getUserEmails = async () => {
     const getSuperEmails = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true }, { notificationTo: 1 });
-    return getSuperEmails[0]?.notificationTo
+    return getSuperEmails;
 }
 
 exports.getPrimaryUser = async (query) => {
