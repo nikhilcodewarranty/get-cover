@@ -1222,7 +1222,7 @@ exports.editClaim = async (req, res) => {
       //notificationEmails.push(servicerPrimary?.email);
       const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
       let emailData = {
-        senderName: '',
+        senderName: servicerPrimary.firstName ? servicerPrimary.firstName : '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
       }
