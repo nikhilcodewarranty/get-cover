@@ -287,6 +287,7 @@ module.exports = class userService {
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
+      console.log("ddddddddddddddddddddddddddddddddddddddddddddddd",updatedResponse)
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);

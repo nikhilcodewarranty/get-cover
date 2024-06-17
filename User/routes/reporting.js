@@ -11,6 +11,7 @@ const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 
 router.post('/dailyReporting',reportingController.dailySales)
 router.post('/weeklySales',reportingController.weeklySales)
+router.post('/todaySale',reportingController.todaySale)
 
 
 module.exports = router;

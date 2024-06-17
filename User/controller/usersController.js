@@ -1967,7 +1967,7 @@ exports.updateUser = async (req, res) => {
       res.send({
         code: constant.errorCode,
         message: "Unable to update the user data"
-      }); 
+      });
       return;
     };
     res.send({
@@ -1985,7 +1985,7 @@ exports.updateUser = async (req, res) => {
 exports.updateUserData = async (req, res) => {
   try {
     let data = req.body
-    let criteria = { _id: req.params.userId ?  req.params.userId : req.teammateId};
+    let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
     if (!updateUser) {
@@ -2032,7 +2032,7 @@ exports.updateUserData = async (req, res) => {
     let emailData = { 
       senderName: updateUser.name,
       content: "The primary contact information has been updated successfully!.",
-      subject:"Update User Info"
+      subject: "Update User Info"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     //  }
@@ -2290,7 +2290,7 @@ exports.deleteUser = async (req, res) => {
     let emailData = {
       senderName: checkUser.name,
       content: "The user " + checkUser.name + "" + " " + "has been deleted successfully.",
-      subject:"Delete User"
+      subject: "Delete User"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Delete User", emailData))
     //}
@@ -2502,6 +2502,29 @@ exports.readNotification = async (req, res) => {
   try {
     let data = req.body
     let checkId = await userService.updateNotification({ _id: req.params.notificationId }, { $addToSet: { readBy: req.teammateId } }, { new: true })
+    if (!checkId) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid notification ID"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success"
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.readAllNotification = async (req, res) => {
+  try {
+    let data = req.body
+    let checkId = await userService.updateNotification({ notificationFor: new mongoose.Types.ObjectId(req.teammateId) }, { $addToSet: { readBy: req.teammateId } }, { new: true })
     if (!checkId) {
       res.send({
         code: constant.errorCode,
@@ -2854,7 +2877,7 @@ exports.getAccountInfo = async (req, res) => {
       accountInfo = await customerService.getCustomerById({ _id: req.userId }, { username: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })
     }
     if (req.role == 'Reseller') {
-      accountInfo = await resellerService.getReseller({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1,isServicer: 1 })
+      accountInfo = await resellerService.getReseller({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1, isServicer: 1 })
     }
     if (req.role == 'Servicer') {
       accountInfo = await providerService.getServiceProviderById({ _id: req.userId }, { name: 1, city: 1, state: 1, zip: 1, street: 1, country: 1 })

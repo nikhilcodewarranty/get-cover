@@ -361,3 +361,94 @@ exports.weeklySales = async (req, res) => {
         });
     }
 };
+
+exports.todaySale = async (req, res) => {
+    try {
+        let data = req.body;
+
+        // Get the current date
+        const today = new Date();
+
+        // Set the start of the day
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        // Set the end of the day
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+        let dailyQuery;
+        if (data.filterFlag == "All") {
+            dailyQuery = [
+                {
+                    $match: {
+                        createdAt: { $gte: startOfDay, $lt: endOfDay }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount: { $sum: "$orderAmount" },
+                        total_orders: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { _id: -1 } // Sort by date in ascending order
+                }
+            ];
+        }
+        if (data.filterFlag == "BrokerFee") {
+            dailyQuery = [
+                {
+                    $match: {
+                        createdAt: { $gte: startOfDay, $lt: endOfDay }
+                    }
+                },
+                {
+                    $unwind: "$products" // Deconstruct the products array
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount1: { $sum: "$products.brokerFee" }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount: { $sum: "$orderAmount" },
+                        total_orders: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { _id: -1 } // Sort by date in ascending order
+                }
+            ];
+        }
+
+        let getOrders = await REPORTING.aggregate(dailyQuery);
+        if (!getOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the details"
+            });
+            return;
+        }
+
+        const result = [{
+            date: startOfDay.toISOString().slice(0, 10),
+            total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
+            total_orders: getOrders.length ? getOrders[0].total_orders : 0
+        }];
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        });
+    }
+}
