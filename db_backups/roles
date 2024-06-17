@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "656f0550d0d6e08fc82379dc"
+  },
+  "role": "Super Admin",
+  "isDeleted": "false",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "656f08041eb1acda244af8c6"
+  },
+  "role": "Dealer",
+  "isDeleted": "false",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "656f080e1eb1acda244af8c7"
+  },
+  "role": "Customer",
+  "isDeleted": "false",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "65719c8368a8a86ef8e1ae4d"
+  },
+  "isDeleted": "false",
+  "role": "Servicer"
+},{
+  "_id": {
+    "$oid": "65bb94b4b68e5a4a62a0b563"
+  },
+  "role": "Reseller"
+}]

@@ -1732,7 +1732,7 @@ exports.createDealer = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
-    const user = await userService.findOneUser({ email: req.body.email }, {});
+    const user = await userService.findOneUser({ email: req.body.email.toLowerCase() }, {});
     if (!user) {
       res.send({
         code: constant.errorCode,
