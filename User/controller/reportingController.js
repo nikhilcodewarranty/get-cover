@@ -227,7 +227,7 @@ exports.weeklySales = async (req, res) => {
         const endDate = new Date(data.endDate);
 
         // Subtract one day from startDate
-        startDate.setDate(startDate.getDate() - 1);
+        startDate.setDate(startDate.getDate()+1);
 
         // Add one day to endDate
         endDate.setDate(endDate.getDate() + 1);
@@ -339,7 +339,8 @@ exports.weeklySales = async (req, res) => {
         }
 
         const result = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0, 10);
+            const dateString = date.toLocaleDateString('en-US', { year: 'numeric',month: '2-digit', day: '2-digit'
+              });
             const order = getOrders.find(item => item._id.toISOString().slice(0, 10) === dateString);
             return {
                 weekStart: dateString,
@@ -362,12 +363,12 @@ exports.weeklySales = async (req, res) => {
     }
 };
 
-exports.todaySale = async (req, res) => {
+exports.daySale = async (req, res) => {
     try {
         let data = req.body;
 
         // Get the current date
-        const today = new Date();
+        const today = new Date(data.dayDate);
 
         // Set the start of the day
         const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
@@ -433,8 +434,14 @@ exports.todaySale = async (req, res) => {
             return;
         }
 
+        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate()+1);
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          };
         const result = [{
-            date: startOfDay.toISOString().slice(0, 10),
+            date: new Date(checkdate).toLocaleDateString('en-US', options),
             total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
             total_orders: getOrders.length ? getOrders[0].total_orders : 0
         }];
