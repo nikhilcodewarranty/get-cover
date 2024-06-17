@@ -2388,7 +2388,7 @@ exports.sendMessages = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(emailTo.email);
     let emailData = {
-      senderName: '',
+      senderName: emailTo.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
       subject: "New Message"
     }
