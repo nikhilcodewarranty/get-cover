@@ -3108,7 +3108,7 @@ exports.archiveOrder = async (req, res) => {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
         emailData = {
             senderName: resellerPrimary?.firstName,
-            content: "The order has been archeived!.",
+            content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
         mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
