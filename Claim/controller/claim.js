@@ -1415,7 +1415,7 @@ exports.editClaimStatus = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
@@ -1485,7 +1485,7 @@ exports.editClaimStatus = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
@@ -1567,7 +1567,7 @@ exports.editClaimStatus = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
