@@ -1564,6 +1564,7 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
+      const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
@@ -1587,17 +1588,41 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(dealerPrimary.email);
-      notificationEmails.push(customerPrimary?.email);
-      notificationEmails.push(resellerPrimary?.email);
-      notificationEmails.push(servicerPrimary?.email);
-
+      //Email to dealer
       let emailData = {
-        senderName: '',
+        senderName: dealerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['yash@yopmail.com'], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to Reseller
+      emailData = {
+        senderName: resellerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to customer
+      emailData = {
+        senderName: customerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to customer
+      emailData = {
+        senderName: servicerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to admin
+      emailData = {
+        senderName: admin.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['yash@yopmail.com'], emailData))
     }
     if (data.hasOwnProperty("claimType")) {
       let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
