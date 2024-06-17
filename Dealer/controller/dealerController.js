@@ -831,6 +831,7 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     // }
     let logData = {
       endpoint: "register dealer",
