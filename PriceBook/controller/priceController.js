@@ -273,9 +273,10 @@ exports.createPriceBook = async (req, res, next) => {
       const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
       let emailData = {
         senderName: admin.firstName,
-        content: "The priceBook " + data.name + " created successfully! effective immediately."
+        content: "The priceBook " + data.name + " created successfully! effective immediately.",
+        subject:"Create Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create PriceBook", emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails,[], emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "price/createPriceBook",
@@ -791,9 +792,10 @@ exports.createPriceBookCat = async (req, res) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
-      content: "The category " + data.name + " created successfully! effective immediately."
+      content: "The category " + data.name + " created successfully! effective immediately.",
+      subject:"New Category Added"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Create Category", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
     let logData = {
       userId: req.teammateId,
