@@ -2227,7 +2227,7 @@ exports.deleteUser = async (req, res) => {
       }
     };
     let option = { new: true }
-    const checkUser = await userService.getUserById1({ accountId: req.params.userId }, {});
+    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
       //Save Logs delete user
@@ -2288,8 +2288,8 @@ exports.deleteUser = async (req, res) => {
     //   role: "Servicer"
     // }
     let emailData = {
-      senderName: checkUser.name,
-      content: "The user " + checkUser.name + "" + " " + "has been deleted successfully.",
+      senderName: checkUser.firstName,
+      content: "The user " + checkUser.firstName + "" + " " + "has been deleted successfully.",
       subject: "Delete User"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
