@@ -1895,7 +1895,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
-    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+    let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(data.priceBook) }, {})
     console.log("checkPriceBookMain----------------------",checkPriceBookMain)
     if (!checkPriceBookMain) {
       res.send({
