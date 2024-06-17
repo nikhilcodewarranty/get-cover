@@ -573,11 +573,11 @@ exports.editCustomer = async (req, res) => {
     // }
 
     let emailData = {
-      senderName: checkDealer.name,
+      senderName: checkDealer.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
 
     //Save Logs editCustomer
     let logData = {
