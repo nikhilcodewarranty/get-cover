@@ -5783,7 +5783,7 @@ exports.cronJobStatus = async (req, res) => {
                 }
                 if (claimStatus == 'Active') {
                     status = 'Active'
-                    eligibilty = true;
+                    eligibilty = true; 
                 }
                 let updateDoc = {
                     'updateMany': {
