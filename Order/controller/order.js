@@ -3088,7 +3088,7 @@ exports.archiveOrder = async (req, res) => {
         };
         let createNotification = await userService.createNotification(notificationData1);
         //Save Logs
-        let logData = {
+        let logData = { 
             endpoint: "order/archiveOrder",
             body: req.body,
             userId: req.userId,
