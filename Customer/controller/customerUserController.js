@@ -825,6 +825,7 @@ exports.getCustomerContract = async (req, res) => {
                   productName: 1,
                   model: 1,
                   serial: 1,
+                  minDate:1,
                   unique_key: 1,
                   productValue:1,
                   status: 1,
@@ -870,6 +871,7 @@ exports.getCustomerContract = async (req, res) => {
                 productName: 1,
                 model: 1,
                 serial: 1,
+                minDate:1,
                 unique_key: 1,
                 productValue:1,
                 status: 1,
@@ -899,8 +901,9 @@ exports.getCustomerContract = async (req, res) => {
         result1[e].reason = "Contract is not active"
       }
       // if (result1[e].minDate < new Date()) {
-        if (new Date(result1[e].minDate) > new Date()) {
-
+          console.log("min date++++++++++++===11111111===+++++",result1[e])
+          if (new Date(result1[e].minDate) > new Date()) {
+          console.log("min date++++++++++++======+++++")
         const options = {
           year: 'numeric',
           month: '2-digit',

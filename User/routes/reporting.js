@@ -10,6 +10,7 @@ const validator = require('../config/validation');
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 
 router.post('/dailyReporting',reportingController.dailySales)
+router.post('/weeklySales',reportingController.weeklySales)
 
 
 module.exports = router;
