@@ -3096,7 +3096,7 @@ exports.archiveOrder = async (req, res) => {
                 code: constant.successCode,
                 message: "Success!", 
             }
-        }
+        } 
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
