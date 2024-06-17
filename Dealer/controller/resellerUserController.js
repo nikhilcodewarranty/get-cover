@@ -458,21 +458,15 @@ exports.createOrder = async (req, res) => {
         };
 
         let createNotification = await userService.createNotification(notificationData);
-
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(getPrimary.email);
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
-            subject: "Create Order"
+            subject: "New Order"
         }
 
-        console.log("fsdfdfdsfdfsdsdds", notificationEmails);
-
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
-
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("All condition verify+++++++++++")
             let savedResponse = await orderService.updateOrder(
@@ -3133,7 +3127,7 @@ exports.getResellerContract = async (req, res) => {
                 result1[e].reason = "Contract is not active"
             }
             // if (result1[e].minDate < new Date()) {
-      if (new Date(result1[e].minDate) > new Date()) {
+            if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
                     year: 'numeric',

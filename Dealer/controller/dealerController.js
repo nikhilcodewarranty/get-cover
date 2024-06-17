@@ -944,14 +944,13 @@ exports.statusUpdate = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    notificationEmails.push(getPrimary.email);
     let emailData = {
-      senderName: singleReseller.name,
-      content: getDealerDetail.name + " , " + "your price book has been updated",
+      senderName: getPrimary.firstName,
+      content: "The price book has been updated",
       subject: "Update Data"
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
 
     let logData = {
       userId: req.teammateId,
@@ -1949,7 +1948,6 @@ exports.createDealerPriceBook = async (req, res) => {
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-      notificationEmails.push(dealerPrimary.email)
 
       // const notificationContent = {
       //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
@@ -1968,7 +1966,7 @@ exports.createDealerPriceBook = async (req, res) => {
         content: "The price book name" + " " + checkPriceBookMain.name + " has been created successfully! effective immediately.",
         subject: "New Price Book"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -2651,7 +2649,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
         // }
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails,['dealer@yopmail.com'], htmlTableString));
       }
       res.send({
         code: constant.successCode,

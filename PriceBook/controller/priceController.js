@@ -565,7 +565,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     //   dealerName: existingPriceBook.name,
     //   c1: "PriceBook",
     //   c2: existingPriceBook.name,
-    //   c3: "has been updated successfully!.",
+    //   c3: "has been updated successfully!.", 
     //   c4: "",
     //   c5: "",
     //   role: "PriceBook"
@@ -573,9 +573,10 @@ exports.updatePriceBookById = async (req, res, next) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
-      content: "The priceBook " + existingPriceBook.pName + " updated successfully! effective immediately."
+      content: "The priceBook " + existingPriceBook.pName + " updated successfully! effective immediately.",
+      subject:"Update Price Book"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update PriceBook", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "admin@yopmail.com", emailData))
 
     let logData = {
       userId: req.teammateId,

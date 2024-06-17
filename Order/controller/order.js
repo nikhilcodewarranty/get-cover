@@ -286,7 +286,6 @@ exports.createOrder1 = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(getPrimary.email);
         let emailData = {
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
@@ -294,7 +293,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             // let savedResponse = await orderService.updateOrder(
             //     { _id: checkOrder._id },
@@ -317,8 +316,8 @@ exports.createOrder1 = async (req, res) => {
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
-                        code:contact.errorCode,
-                        message:"Order is created successfully,but unable to create the contract due to the invalid ADH day"
+                        code: contact.errorCode,
+                        message: "Order is created successfully,but unable to create the contract due to the invalid ADH day"
                     })
                     return
                 }
@@ -381,7 +380,7 @@ exports.createOrder1 = async (req, res) => {
 
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? Number(product.adh) : 0 : 0)
-                    console.log("console on adh day and date",dateCheck,product.coverageStartDate,adhDays)
+                    console.log("console on adh day and date", dateCheck, product.coverageStartDate, adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -404,7 +403,7 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        console.log("min date function +++++++++++++++++++++++++++",d1)
+                        console.log("min date function +++++++++++++++++++++++++++", d1)
 
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
@@ -415,7 +414,7 @@ exports.createOrder1 = async (req, res) => {
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-                            console.log("second on min date+++++++++++++++++====================",new Date(dateCheck).setHours(0, 0, 0, 0))
+                            console.log("second on min date+++++++++++++++++====================", new Date(dateCheck).setHours(0, 0, 0, 0))
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -635,16 +634,22 @@ exports.createOrder1 = async (req, res) => {
                     let createNotification = await userService.createNotification(notificationData1);
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
-                    notificationEmails.push(customerPrimary.email);
-                    notificationEmails.push(dealerPrimary.email);
-                    notificationEmails.push(resellerPrimary?.email);
+                    //Email to Dealer
                     let emailData = {
-                        senderName: '',
-                        content: "The new order " + checkOrder.unique_key + " has been created and processed for " + dealerPrimary.firstName + "",
+                        senderName: dealerPrimary.firstName,
+                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                    //Email to Reseller
+                    emailData = {
+                        senderName: resellerPrimary?.firstName,
+                        content: "The  order " + checkOrder.unique_key + " has been updated and processed",
+                        subject: "Process Order"
+                    }
+
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     let logData = {
                         endpoint: "order/createOrder",
                         body: data,
@@ -3095,15 +3100,18 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(dealerPrimary.email);
-        notificationEmails.push(resellerPrimary?.email);
-
         let emailData = {
-            senderName: '',
+            senderName: dealerPrimary.firstName,
             content: "The order has been archeived!.",
             subject: "Archeive Order"
         }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+        emailData = {
+            senderName: resellerPrimary?.firstName,
+            content: "The order has been archeived!.",
+            subject: "Archeive Order"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
         //  }
         res.send({
             code: constant.successCode,
@@ -3551,17 +3559,14 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        // notificationEmails.push(customerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
-        // notificationEmails.push(resellerPrimary?.email);
+        //Email to Dealer
         let emailData = {
-            senderName: '',
+            senderName: dealerPrimary.firstName,
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
@@ -3828,9 +3833,6 @@ exports.editOrderDetail = async (req, res) => {
                     console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
-
-
-
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3899,17 +3901,23 @@ exports.editOrderDetail = async (req, res) => {
 
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
-                notificationEmails.push(customerPrimary.email);
-                notificationEmails.push(dealerPrimary.email);
-                notificationEmails.push(resellerPrimary?.email);
+                // notificationEmails.push(dealerPrimary.email);
+                //Email to Dealer
                 let emailData = {
-                    senderName: '',
+                    senderName: dealerPrimary.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Process Order"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                //Email to Reseller
+                emailData = {
+                    senderName: resellerPrimary?.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                    subject: "Process Order"
+                }
 
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -4104,7 +4112,7 @@ exports.markAsPaid = async (req, res) => {
                 // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-                    
+
                     // return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                 }
 
@@ -4329,19 +4337,25 @@ exports.markAsPaid = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
-
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
-                notificationEmails.push(customerPrimary.email);
-                notificationEmails.push(dealerPrimary.email);
-                notificationEmails.push(resellerPrimary?.email);
+                //Email to Dealer
                 let emailData = {
-                    senderName: '',
-                    content: "The new order has been marked as paid",
-                    subject: "Mark Paid"
+                    senderName: dealerPrimary.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been paid",
+                    subject: "Mark as paid"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                //Email to Reseller
+                emailData = {
+                    senderName: resellerPrimary?.firstName,
+                    content: "The  order " + savedResponse.unique_key + " has been paid",
+                    subject: "Mark As paid"
+                }
+
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                //Email to customer code here........
             }
 
         })
@@ -4680,7 +4694,7 @@ exports.getOrderContract = async (req, res) => {
                 result1[e].reason = "Contract is not active"
             }
             // if (result1[e].minDate < new Date()) {
-      if (new Date(result1[e].minDate) > new Date()) {
+            if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
                     year: 'numeric',
