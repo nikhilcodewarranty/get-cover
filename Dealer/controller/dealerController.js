@@ -2636,7 +2636,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         console.log(checkDealer._id)
 
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
         console.log("dealerPrimary------------------",dealerPrimary)
         IDs.push(dealerPrimary?._id)
         let notificationData = {
