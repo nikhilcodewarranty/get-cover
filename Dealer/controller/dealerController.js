@@ -2636,7 +2636,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
         console.log("dealerPrimary------------------",dealerPrimary)
-        IDs.push(dealerPrimary._id)
+        IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
           description: "The priceBook has been successfully uploaded",
@@ -2648,7 +2648,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(dealerPrimary.email);
+        notificationEmails.push(dealerPrimary?.email);
         // let emailData = {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
