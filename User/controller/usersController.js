@@ -2227,7 +2227,7 @@ exports.deleteUser = async (req, res) => {
       }
     };
     let option = { new: true }
-    const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
+    const checkUser = await userService.getUserById1({ accountId: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
     if (!deleteUser) {
       //Save Logs delete user
