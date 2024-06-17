@@ -2029,7 +2029,7 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
 
-    let emailData = {
+    let emailData = { 
       senderName: updateUser.name,
       content: "The primary contact information has been updated successfully!.",
       subject:"Update User Info"
