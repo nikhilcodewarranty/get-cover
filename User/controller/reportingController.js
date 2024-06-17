@@ -62,21 +62,21 @@ exports.dailySale = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        console.log(startOfMonth,endOfMonth)
+        console.log(startOfMonth, endOfMonth)
         let dailyQuery = [
             {
-                $match: { 
+                $match: {
                     status: "Active",
                     updatedAt: { $gte: startOfMonth, $lte: endOfMonth }
-                  } 
+                }
             },
             {
                 $group: {
-                  _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                  total_order_amount: { $sum: "$orderAmount" },
-                  total_orders: { $sum: 1 }
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_order_amount: { $sum: "$orderAmount" },
+                    total_orders: { $sum: 1 }
                 }
-              },
+            },
             {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
@@ -113,6 +113,7 @@ exports.dailySale = async (req, res) => {
     }
 }
 
+//daily data 
 exports.dailySales = async (req, res) => {
     try {
         let data = req.body
@@ -130,60 +131,60 @@ exports.dailySales = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        console.log(startOfMonth,datesArray,endOfMonth)
+        console.log(startOfMonth, datesArray, endOfMonth)
         let dailyQuery
-        if(data.filterFlag == "All"){
-             dailyQuery = [
+        if (data.filterFlag == "All") {
+            dailyQuery = [
                 {
-                    $match: { 
+                    $match: {
                         // status: "Active",
                         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
-                      } 
+                    }
                 },
                 {
                     $group: {
-                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                      total_order_amount: { $sum: "$orderAmount" },
-                      total_orders: { $sum: 1 }
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount: { $sum: "$orderAmount" },
+                        total_orders: { $sum: 1 }
                     }
-                  },
+                },
                 {
                     $sort: { _id: -1 } // Sort by date in ascending order
                 }
             ]
         }
-        if(data.filterFlag == "BrokerFee"){
+        if (data.filterFlag == "BrokerFee") {
             dailyQuery = [
                 {
-                    $match: { 
+                    $match: {
                         // status: "Active",
                         createdAt: { $gte: startOfMonth, $lte: endOfMonth }
-                      } 
+                    }
                 },
                 {
                     $unwind: "$products" // Deconstruct the products array
                 },
                 {
                     $group: {
-                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                      total_order_amount1: { $sum: "$products.brokerFee" },
-                    //   total_orders: { $sum: 1 }
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount1: { $sum: "$products.brokerFee" },
+                        //   total_orders: { $sum: 1 }
                     }
-                  },
-                  {
+                },
+                {
                     $group: {
-                      _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                      total_order_amount: { $sum: "$orderAmount" },
-                      total_orders: { $sum: 1 }
+                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                        total_order_amount: { $sum: "$orderAmount" },
+                        total_orders: { $sum: 1 }
                     }
-                  },
+                },
                 {
                     $sort: { _id: -1 } // Sort by date in ascending order
                 }
             ]
         }
 
-        
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         if (!getOrders) {
             res.send({
@@ -193,14 +194,14 @@ exports.dailySales = async (req, res) => {
             return;
         }
         const result = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0,10);
+            const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
             return {
-              date: dateString,
-              total_order_amount: order ? order.total_order_amount : 0,
-              total_orders: order ? order.total_orders : 0
+                date: dateString,
+                total_order_amount: order ? order.total_order_amount : 0,
+                total_orders: order ? order.total_orders : 0
             };
-          });
+        });
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -215,3 +216,148 @@ exports.dailySales = async (req, res) => {
         })
     }
 }
+
+//weekly grouping of the data
+exports.weeklySales = async (req, res) => {
+    try {
+        let data = req.body;
+        let query;
+
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(data.endDate);
+
+        // Subtract one day from startDate
+        startDate.setDate(startDate.getDate() - 1);
+
+        // Add one day to endDate
+        endDate.setDate(endDate.getDate() + 1);
+
+        console.log("sdjhfjshf",endDate,startDate)
+
+        // Calculate the start of the week (Monday) for the given startDate
+        const startOfWeek = (date) => {
+            const day = date.getUTCDay();
+            const diff = (day === 0 ? -6 : 1) - day;
+            return new Date(date.setUTCDate(date.getUTCDate() + diff));
+        };
+
+        const endOfWeek = (date) => {
+            const day = date.getUTCDay();
+            const diff = 7 - (day === 0 ? 7 : day);
+            return new Date(date.setUTCDate(date.getUTCDate() + diff));
+        };
+
+        const startOfWeekDate = startOfWeek(new Date(startDate));
+        const endOfWeekDate = endOfWeek(new Date(endDate));
+
+        const datesArray = [];
+        let currentDate = new Date(startOfWeekDate);
+        while (currentDate <= endOfWeekDate) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
+
+        console.log(startOfWeekDate, datesArray, endOfWeekDate);
+        let weeklyQuery;
+        if (data.filterFlag == "All") {
+            weeklyQuery = [
+                {
+                    $match: {
+                        // status: "Active",
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    }
+                },
+                {
+                    $addFields: {
+                        weekStart: {
+                            $dateTrunc: {
+                                date: "$createdAt",
+                                unit: "week",
+                                binSize: 1,
+                                timezone: "UTC",
+                                startOfWeek: "monday"
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$weekStart",
+                        total_order_amount: { $sum: "$orderAmount" },
+                        total_orders: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { _id: 1 } // Sort by week start date in ascending order
+                }
+            ];
+        }
+        if (data.filterFlag == "BrokerFee") {
+            weeklyQuery = [
+                {
+                    $match: {
+                        // status: "Active",
+                        createdAt: { $gte: startDate, $lte: endDate }
+                    }
+                },
+                {
+                    $unwind: "$products" // Deconstruct the products array
+                },
+                {
+                    $addFields: {
+                        weekStart: {
+                            $dateTrunc: {
+                                date: "$createdAt",
+                                unit: "week",
+                                binSize: 1,
+                                timezone: "UTC",
+                                startOfWeek: "monday"
+                            }
+                        }
+                    }
+                },
+                {
+                    $group: {
+                        _id: "$weekStart",
+                        total_order_amount: { $sum: "$products.brokerFee" },
+                        total_orders: { $sum: 1 }
+                    }
+                },
+                {
+                    $sort: { _id: 1 } // Sort by week start date in ascending order
+                }
+            ];
+        }
+
+        let getOrders = await REPORTING.aggregate(weeklyQuery);
+        if (!getOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the details"
+            });
+            return;
+        }
+
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getOrders.find(item => item._id.toISOString().slice(0, 10) === dateString);
+            return {
+                weekStart: dateString,
+                total_order_amount: order ? order.total_order_amount : 0,
+                total_orders: order ? order.total_orders : 0
+            };
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        });
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        });
+    }
+};
