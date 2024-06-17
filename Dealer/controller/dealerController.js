@@ -2559,6 +2559,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
+              
              let checkSavedPricebook =  await dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
