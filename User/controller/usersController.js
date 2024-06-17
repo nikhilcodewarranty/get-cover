@@ -2034,7 +2034,7 @@ exports.updateUserData = async (req, res) => {
       content: "The primary contact information has been updated successfully!.",
       subject:"Update User Info"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "Update User Info", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
     //  }
     //Save Logs updateUserData
     let logData = {

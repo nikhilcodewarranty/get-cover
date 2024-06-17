@@ -686,25 +686,12 @@ exports.changePrimaryUser = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(updateLastPrimary.email);
       notificationEmails.push(updatePrimary.email);
-
-      // const notificationContent = {
-      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-      // }    
-      // let emailData = {
-      //   dealerName: checkUser.firstName,
-      //   c1: "The Primary User",
-      //   c2: checkUser.firstName,
-      //   c3: "has been updated successfully!.",
-      //   c4: "",
-      //   c5: "",
-      //   role: "Servicer"
-      // }
       let emailData = {
         senderName: checkUser.firstName,
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"
       };
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(updatePrimary.email, updateLastPrimary.email, emailData))
       //Save Logs changePrimaryUser
       let logData = {
         endpoint: "changePrimaryUser",
@@ -1745,7 +1732,7 @@ exports.getCustomerContract = async (req, res) => {
         result1[e].reason = "Contract is not active"
       }
       // if (result1[e].minDate < new Date()) {
-        if (new Date(result1[e].minDate) > new Date()) {
+      if (new Date(result1[e].minDate) > new Date()) {
 
         const options = {
           year: 'numeric',

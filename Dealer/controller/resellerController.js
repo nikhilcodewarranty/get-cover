@@ -2037,7 +2037,7 @@ exports.changeResellerStatus = async (req, res) => {
 
             // Send Email code here
             let notificationEmails = await supportingFunction.getUserEmails();
-            notificationEmails.push(getPrimary.email);
+            notificationEmails.push(dealerPrimary.email);
             // const notificationContent = {
             //     content: singleReseller.name + " " + "status has been updated successfully!"
             // }
