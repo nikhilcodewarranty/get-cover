@@ -1896,6 +1896,7 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+    console.log("checkPriceBookMain----------------------",checkPriceBookMain)
     if (!checkPriceBookMain) {
       res.send({
         code: constant.errorCode,
