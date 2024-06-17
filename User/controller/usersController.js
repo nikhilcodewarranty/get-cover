@@ -2030,7 +2030,7 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(updateUser.email);
 
     let emailData = {
-      senderName: updateUser.name ? updateUser.name : updateUser.username,
+      senderName: updateUser.firstName,
       content: "The user information has been updated successfully!.",
       subject: "Update User Info"
     }
