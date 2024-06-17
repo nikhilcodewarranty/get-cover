@@ -2558,7 +2558,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
-              await dealerPriceService.createDealerPrice({
+             let checkSavedPricebook =  await dealerPriceService.createDealerPrice({
+                dealerId: data.dealerId,
+                priceBook: totalDataComing[i].priceBookDetail._id,
+                unique_key: unique_key,
+                status: true,
+                retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+                brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+                wholesalePrice
+              })
+              console.log("saved data++++++++++++++++++++",checkSavedPricebook,{
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
                 unique_key: unique_key,
@@ -2652,7 +2661,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
         // }
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails,['dealer@yopmail.com'], htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, htmlTableString));
       }
       res.send({
         code: constant.successCode,
