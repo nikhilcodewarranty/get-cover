@@ -403,6 +403,16 @@ exports.createOrder = async (req, res) => {
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         let savedResponse = await orderService.addOrder(data);
         if (!savedResponse) {
+            let logData = {
+                endpoint: "resellerPortal/createOrder",
+                body: data,
+                userId: req.userId,
+                response: {
+                    code: constant.errorCode,
+                    message: "unable to create order",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.errorCode,
                 message: "unable to create order",
@@ -734,11 +744,31 @@ exports.createOrder = async (req, res) => {
                 //  console.log("saveContracts==================", saveContracts)
 
             })
+            let logData = {
+                endpoint: "resellerPortal/createOrder",
+                body: data,
+                userId: req.userId,
+                response: {
+                    code: constant.successCode,
+                    message: "Success",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Success",
             });
         } else {
+            let logData = {
+                endpoint: "resellerPortal/createOrder",
+                body: data,
+                userId: req.userId,
+                response: {
+                    code: constant.successCode,
+                    message: "Success",
+                }
+            }
+            await LOG(logData).save()
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -747,6 +777,16 @@ exports.createOrder = async (req, res) => {
 
         // })
     } catch (err) {
+        let logData = {
+            endpoint: "resellerPortal/createOrder",
+            body: req.body,
+            userId: req.userId,
+            response: {
+                code: constant.errorCode,
+                message: err.message,
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message
