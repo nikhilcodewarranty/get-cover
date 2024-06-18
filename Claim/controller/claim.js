@@ -1739,6 +1739,7 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
+      req.body.servicerId != null
     }
 
 
@@ -1748,6 +1749,7 @@ exports.editServicer = async (req, res) => {
     // return
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
+    console.log(updateServicer)
     if (!updateServicer) {
       //Save Logs
       let logData = {

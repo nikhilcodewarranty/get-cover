@@ -184,6 +184,24 @@ exports.dailySales = async (req, res) => {
             ]
         }
 
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            console.log("data----------------", dealerId)
+            dailyQuery[0].$match.dealerId = dealerId
+        }
+
+        if (data.priceBookId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.products = data.priceBookId
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+        
+        console.log("ckkkkkkk")
+        res.send({
+            code: constant.errorCode,
+            message: dailyQuery
+        })
+        return;
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
         if (!getOrders) {
@@ -227,12 +245,12 @@ exports.weeklySales = async (req, res) => {
         const endDate = new Date(data.endDate);
 
         // Subtract one day from startDate
-        startDate.setDate(startDate.getDate()+1);
+        startDate.setDate(startDate.getDate() + 1);
 
         // Add one day to endDate
         endDate.setDate(endDate.getDate() + 1);
 
-        console.log("sdjhfjshf",endDate,startDate)
+        console.log("sdjhfjshf", endDate, startDate)
 
         // Calculate the start of the week (Monday) for the given startDate
         const startOfWeek = (date) => {
@@ -339,8 +357,9 @@ exports.weeklySales = async (req, res) => {
         }
 
         const result = datesArray.map(date => {
-            const dateString = date.toLocaleDateString('en-US', { year: 'numeric',month: '2-digit', day: '2-digit'
-              });
+            const dateString = date.toLocaleDateString('en-US', {
+                year: 'numeric', month: '2-digit', day: '2-digit'
+            });
             const order = getOrders.find(item => item._id.toISOString().slice(0, 10) === dateString);
             return {
                 weekStart: dateString,
@@ -434,12 +453,12 @@ exports.daySale = async (req, res) => {
             return;
         }
 
-        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate()+1);
+        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 1);
         const options = {
             year: 'numeric',
             month: '2-digit',
             day: '2-digit'
-          };
+        };
         const result = [{
             date: new Date(checkdate).toLocaleDateString('en-US', options),
             total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
@@ -458,4 +477,6 @@ exports.daySale = async (req, res) => {
             message: err.message
         });
     }
-}
+};
+
+
