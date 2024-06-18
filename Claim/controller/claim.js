@@ -1739,7 +1739,7 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
-      req.body.servicerId != null
+      req.body.servicerId = null
     }
 
 
