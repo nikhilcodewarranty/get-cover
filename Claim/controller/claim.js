@@ -1618,7 +1618,7 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, ['yash@yopmail.com'], emailData))
       //Email to admin
       emailData = {
-        senderName: admin.firstName,
+        senderName: admin?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
