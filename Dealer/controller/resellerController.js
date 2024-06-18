@@ -124,7 +124,7 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
-        notificationEmails
+        
         let emailData = {
             senderName: saveMembers[0]?.firstName,
             content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",

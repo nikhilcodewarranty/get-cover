@@ -84,7 +84,18 @@ exports.createServiceProvider = async (req, res, next) => {
       };
       teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
       let saveMembers = await userService.insertManyUser(teamMembers)
+        // Primary User Welcoime email
+        let notificationEmails = await supportingFunction.getUserEmails();
+       // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
+        
+        let emailData = {
+            senderName: saveMembers[0]?.firstName,
+            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been approved",
+            subject: "Welcome to Get-Cover servicer Registration Approved"
+        }
 
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
       if (data.status) {
         console.log("saveMembers------------------------------", saveMembers);
         for (let i = 0; i < saveMembers.length; i++) {
@@ -94,7 +105,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: data.accountName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Servicer", servicerName: data.accountName }))
           }
 
         }
