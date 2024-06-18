@@ -1,44 +1,13 @@
 require("dotenv").config();
 
-const bcrypt = require("bcrypt");
-
-const jwt = require("jsonwebtoken");
-
-const randtoken = require('rand-token').generator()
 
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-const XLSX = require("xlsx");
-const userResourceResponse = require("../utils/constant");
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const userService = require("../services/userService");
-const userMetaService = require("../services/userMetaService");
-const dealerService = require('../../Dealer/services/dealerService')
-const resellerService = require('../../Dealer/services/resellerService')
-const dealerPriceService = require('../../Dealer/services/dealerPriceService')
-const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
-const priceBookService = require('../../PriceBook/services/priceBookService')
-const providerService = require('../../Provider/services/providerService')
-const users = require("../model/users");
-const role = require("../model/role");
-const constant = require('../../config/constant');
-const emailConstant = require('../../config/emailConstant');
-const mail = require("@sendgrid/mail");
-const fs = require('fs');
-const multer = require('multer');
-const path = require('path');
-// Promisify fs.createReadStream for asynchronous file reading
-const logs = require('../../User/model/logs');
-
-const csvParser = require('csv-parser');
-const customerService = require("../../Customer/services/customerService");
-const supportingFunction = require('../../config/supportingFunction');
-const orderService = require("../../Order/services/orderService");
 
 
-
-const REPORTING = require('../../Order/model/reporting')
+const REPORTING = require('../../Order/model/reporting');
+const constant = require("../../config/constant");
 
 
 // daily query for reporting 
@@ -138,7 +107,7 @@ exports.dailySales = async (req, res) => {
                 {
                     $match: {
                         // status: "Active",
-                        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                        createdAt: { $gte: startOfMonth, $lte: endOfMonth },
                     }
                 },
                 {
@@ -192,16 +161,12 @@ exports.dailySales = async (req, res) => {
 
         if (data.priceBookId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = data.priceBookId
+            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+
+            // products:
+
             console.log("data----------------", dailyQuery[0].$match)
         }
-        
-        console.log("ckkkkkkk")
-        res.send({
-            code: constant.errorCode,
-            message: dailyQuery
-        })
-        return;
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
         if (!getOrders) {
@@ -453,7 +418,7 @@ exports.daySale = async (req, res) => {
             return;
         }
 
-        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 1);
+        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 0);
         const options = {
             year: 'numeric',
             month: '2-digit',
