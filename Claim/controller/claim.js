@@ -1800,7 +1800,7 @@ exports.editServicer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(getPrimary.email);
     let emailData = {
-      senderName: getPrimary.firstName,
+      senderName: getPrimary ? getPrimary.firstName : "",
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       subject: "Servicer Update"
     }
