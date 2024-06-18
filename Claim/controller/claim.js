@@ -1722,7 +1722,9 @@ exports.editServicer = async (req, res) => {
       })
       return
     }
-
+    if(req.body.servicerId == ""){
+      req.body.servicerId = null
+    }
     if (req.body.servicerId != "") {
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
@@ -1748,6 +1750,7 @@ exports.editServicer = async (req, res) => {
     // return
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
+    console.log(updateServicer)
     if (!updateServicer) {
       //Save Logs
       let logData = {
