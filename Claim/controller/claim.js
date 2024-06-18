@@ -1722,21 +1722,27 @@ exports.editServicer = async (req, res) => {
       })
       return
     }
-    criteria = { _id: req.body.servicerId }
-    let checkServicer = await servicerService.getServiceProviderById({
-      $or: [
-        { _id: req.body.servicerId },
-        { dealerId: req.body.servicerId },
-        { resellerId: req.body.servicerId },
-      ]
-    })
-    if (!checkServicer) {
-      res.send({
-        code: constant.errorCode,
-        message: "Servicer not found!"
+
+    if (req.body.servicerId != "") {
+      criteria = { _id: req.body.servicerId }
+      let checkServicer = await servicerService.getServiceProviderById({
+        $or: [
+          { _id: req.body.servicerId },
+          { dealerId: req.body.servicerId },
+          { resellerId: req.body.servicerId },
+        ]
       })
-      return
+      if (!checkServicer) {
+        res.send({
+          code: constant.errorCode,
+          message: "Servicer not found!"
+        })
+        return
+      }
     }
+
+
+
     // console.log('claimId',req.params.claimId)
     // console.log('servicerId',req.body.servicerId);
     // return
