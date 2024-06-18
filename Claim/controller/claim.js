@@ -973,7 +973,7 @@ exports.addClaim = async (req, res, next) => {
     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
     let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: data?.servicerId, isPrimary: true })
     if (resellerPrimary) {
       IDs.push(resellerPrimary._id)
     }
@@ -1222,7 +1222,7 @@ exports.editClaim = async (req, res) => {
       //notificationEmails.push(servicerPrimary?.email);
       const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
       let emailData = {
-        senderName: '',
+        senderName: servicerPrimary.firstName ? servicerPrimary.firstName : '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
       }
@@ -1415,7 +1415,7 @@ exports.editClaimStatus = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
@@ -1485,7 +1485,7 @@ exports.editClaimStatus = async (req, res) => {
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
@@ -1564,10 +1564,11 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
+      const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
       let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
       let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
       }
@@ -1587,17 +1588,41 @@ exports.editClaimStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(dealerPrimary.email);
-      notificationEmails.push(customerPrimary?.email);
-      notificationEmails.push(resellerPrimary?.email);
-      notificationEmails.push(servicerPrimary?.email);
-
+      //Email to dealer
       let emailData = {
-        senderName: '',
+        senderName: dealerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['yash@yopmail.com'], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to Reseller
+      emailData = {
+        senderName: resellerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to customer
+      emailData = {
+        senderName: customerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to customer
+      emailData = {
+        senderName: servicerPrimary.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, ['yash@yopmail.com'], emailData))
+      //Email to admin
+      emailData = {
+        senderName: admin.firstName,
+        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        subject: "Claim Status Update"
+      }
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['yash@yopmail.com'], emailData))
     }
     if (data.hasOwnProperty("claimType")) {
       let claimType = await claimService.updateClaim(criteria, { claimType: data.claimType }, { new: true })
@@ -2369,7 +2394,7 @@ exports.sendMessages = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(emailTo.email);
     let emailData = {
-      senderName: '',
+      senderName: emailTo.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
       subject: "New Message"
     }

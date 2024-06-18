@@ -1963,7 +1963,7 @@ exports.createDealerPriceBook = async (req, res) => {
       //   c5: "",
       //   role: "PriceBook"
       // }
-      let emailData = {
+      let emailData = { 
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
