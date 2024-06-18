@@ -1558,9 +1558,9 @@ exports.createCustomer = async (req, res, next) => {
             userId: createdCustomer._id,
             flag: 'customer',
             notificationFor: IDs
-          };
-      
-          let createNotification = await userService.createNotification(notificationData);
+        };
+
+        let createNotification = await userService.createNotification(notificationData);
 
         //Save Logs create Customer
         let logData = {
@@ -1958,6 +1958,7 @@ exports.createReseller = async (req, res) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
+
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
 
@@ -1975,6 +1976,37 @@ exports.createReseller = async (req, res) => {
             }
 
             let createData = await providerService.createServiceProvider(servicerObject)
+        }
+        // Primary User Welcoime email
+        let notificationEmails = await supportingFunction.getUserEmails();
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        notificationEmails.push(getPrimary.email)
+
+        let emailData = {
+            senderName: saveMembers[0]?.firstName,
+            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
+            subject: "Welcome to Get-Cover reseller Registration Approved"
+        }
+
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+        if (data.status) {
+            for (let i = 0; i < saveMembers.length; i++) {
+                if (saveMembers[i].status) {
+                    let email = saveMembers[i].email
+                    let userId = saveMembers[i]._id
+                    let resetPasswordCode = randtoken.generate(4, '123456789')
+                    let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+                    let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Reseller", servicerName: data?.accountName }))
+                }
+
+            }
+            // let resetPrimaryCode = randtoken.generate(4, '123456789')
+            // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
+
+            // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
+            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
         }
         //Save Logs for create reseller 
         let logData = {
@@ -3667,10 +3699,6 @@ exports.createOrder = async (req, res) => {
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.userId, isPrimary: true })
-        if (data.resellerId) {
-            let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
-            IDs.push(resellerPrimary._id)
-        }
         IDs.push(getPrimary._id)
         let notificationData = {
             title: "New order created",
@@ -3988,19 +4016,14 @@ exports.editOrderDetail = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        // notificationEmails.push(customerPrimary.email);
-        notificationEmails.push(dealerPrimary.email);
-        // notificationEmails.push(resellerPrimary?.email);
+
         let emailData = {
-            senderName: '',
-            content: "The new order has been updated",
+            senderName: dealerPrimary.firstName,
+            content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Updated"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
-
-
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
@@ -4310,16 +4333,23 @@ exports.editOrderDetail = async (req, res) => {
 
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
-                    notificationEmails.push(customerPrimary.email);
-                    notificationEmails.push(dealerPrimary.email);
-                    notificationEmails.push(resellerPrimary?.email);
                     let emailData = {
-                        senderName: '',
-                        content: "The order " + savedResponse.unique_key + " has been updated and processed",
-                        subject: "Order Processed"
+                        senderName: dealerPrimary.firstName,
+                        content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                        subject: "Process Order"
+                    }
+                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+
+                    //Email to Reseller
+                    emailData = {
+                        senderName: resellerPrimary?.firstName,
+                        content: "The  order " + savedResponse.unique_key + " has been updated and processed",
+                        subject: "Process Order"
                     }
 
-                    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+                    mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
+                    // Customer Email here with T and C
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,

@@ -438,8 +438,6 @@ exports.createOrder = async (req, res) => {
         };
 
         returnField.push(obj);
-
-
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
@@ -1093,6 +1091,31 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         returnField.push(obj);
+
+        //send notification to dealer,reseller,admin,customer
+        let IDs = await supportingFunction.getUserIds()
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        IDs.push(dealerPrimary._id)
+        let notificationData = {
+            title: "Order update",
+            description: "The order " + checkOrder.unique_key + " has been updated",
+            userId: req.userId,
+            contentId: checkOrder._id,
+            flag: 'order',
+            notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData);
+
+        // Send Email code here
+        let notificationEmails = await supportingFunction.getUserEmails();
+        //Email to Dealer
+        let emailData = {
+            senderName: dealerPrimary.firstName,
+            content: "The  order " + checkOrder.unique_key + " has been updated",
+            subject: "Order Update"
+        }
+
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         res.send({
             code: constant.successCode,
