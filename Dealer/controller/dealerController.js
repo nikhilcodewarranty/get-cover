@@ -824,6 +824,7 @@ exports.registerDealer = async (req, res) => {
     // if (createNotification) {
     let emailData = {
       dealerName: createdDealer.name,
+      subject: "New Dealer Registration Request Received",
       c1: "Thank you for",
       c2: "Registering! as a",
       c3: "Your account is currently pending approval from our admin.",
@@ -832,6 +833,19 @@ exports.registerDealer = async (req, res) => {
       role: "Dealer"
     }
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
+    const notificationEmail = await supportingFunction.getUserEmails();
+    emailData = {
+      dealerName: admin.name,
+      subject: "Notification of New Dealer Registration",
+      c1: "A new dealer " + createdDealer.name + "",
+      c2: "has been registered",
+      c3: "Please check once from the admin",
+      c4: "and approved",
+      c5: "Thanks.",
+      role: ""
+    }
+    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))
     // }
     let logData = {
       endpoint: "register dealer",
@@ -1896,7 +1910,7 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(data.priceBook) }, {})
-    console.log("checkPriceBookMain----------------------",checkPriceBookMain)
+    console.log("checkPriceBookMain----------------------", checkPriceBookMain)
     if (!checkPriceBookMain) {
       res.send({
         code: constant.errorCode,
@@ -1963,7 +1977,7 @@ exports.createDealerPriceBook = async (req, res) => {
       //   c5: "",
       //   role: "PriceBook"
       // }
-      let emailData = { 
+      let emailData = {
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
@@ -2228,8 +2242,8 @@ exports.updateDealerMeta = async (req, res) => {
     // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
 
-    console.log("notificationEmails-------------------",notificationEmails);
-   // notificationEmails.push(getPrimary.email);
+    console.log("notificationEmails-------------------", notificationEmails);
+    // notificationEmails.push(getPrimary.email);
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }     
@@ -2250,7 +2264,7 @@ exports.updateDealerMeta = async (req, res) => {
     // }
 
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email,notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     //Save Logs update dealer
     let logData = {
       userId: req.userId,
@@ -2559,8 +2573,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
 
-              
-             let checkSavedPricebook =  await dealerPriceService.createDealerPrice({
+
+              let checkSavedPricebook = await dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
                 unique_key: unique_key,
@@ -2569,7 +2583,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              console.log("saved data++++++++++++++++++++",checkSavedPricebook,{
+              console.log("saved data++++++++++++++++++++", checkSavedPricebook, {
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
                 unique_key: unique_key,
@@ -2648,7 +2662,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         console.log(checkDealer._id)
 
         let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
-        console.log("dealerPrimary------------------",dealerPrimary)
+        console.log("dealerPrimary------------------", dealerPrimary)
         IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
@@ -3975,7 +3989,7 @@ exports.getDealerContract = async (req, res) => {
         result1[e].reason = "Contract is not active"
       }
       // if (result1[e].minDate < new Date()) {
-        if (new Date(result1[e].minDate) > new Date()) {
+      if (new Date(result1[e].minDate) > new Date()) {
 
         const options = {
           year: 'numeric',
