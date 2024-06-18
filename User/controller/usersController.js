@@ -678,11 +678,20 @@ exports.createDealer = async (req, res) => {
           };
           let createNotification = await userService.createNotification(notificationData);
 
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: allUserData[0].firstName,
+            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
-              if (createUsers[i].status) {
+              if (createUsers[i].status && i != 0) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
@@ -1067,10 +1076,20 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: allUserData[0].firstName,
+            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
-              if (createUsers[i].status) {
+              if (createUsers[i].status && i != 0) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
@@ -1303,7 +1322,7 @@ exports.createDealer = async (req, res) => {
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
             senderName: createUsers[0].firstName,
-            content: "Dear " + createUsers[0].firstName + "we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + "has been approved",
+            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
             subject: "Welcome to Get-Cover Dealer Registration Approved"
           }
 
@@ -1674,9 +1693,20 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: createUsers[0].firstName,
+            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
+
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
-              if (createUsers[i].status) {
+              if (createUsers[i].status && i != 0) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
