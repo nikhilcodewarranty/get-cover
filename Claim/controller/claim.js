@@ -1722,7 +1722,7 @@ exports.editServicer = async (req, res) => {
       })
       return
     }
-    if(req.body.servicerId == ""){
+    if (req.body.servicerId == "") {
       req.body.servicerId = null
     }
     if (req.body.servicerId != "") {
@@ -1783,7 +1783,10 @@ exports.editServicer = async (req, res) => {
     //send notification to admin and dealer 
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.servicerId, isPrimary: true })
-    IDs.push(getPrimary._id)
+    if (getPrimary) {
+      IDs.push(getPrimary._id)
+
+    }
     let notificationData = {
       title: "Servicer Updated",
       description: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
@@ -1797,7 +1800,7 @@ exports.editServicer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(getPrimary.email);
     let emailData = {
-      senderName: getPrimary.firstName,
+      senderName: getPrimary ? getPrimary.firstName : "",
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       subject: "Servicer Update"
     }
