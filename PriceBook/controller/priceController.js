@@ -573,15 +573,16 @@ exports.updatePriceBookById = async (req, res, next) => {
     // }
 
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    let emailData;
     if (req.body.priceType) {
-      let emailData = {
+       emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + body.pName + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
     }
     else {
-      let emailData = {
+       emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + body.pName + " has been changed to " + body.status + "! effective immediately.",
         subject: "Update Status"
