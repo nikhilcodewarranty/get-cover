@@ -1,13 +1,45 @@
 require("dotenv").config();
 
+const bcrypt = require("bcrypt");
+
+const jwt = require("jsonwebtoken");
+const moment = require('moment')
+
+const randtoken = require('rand-token').generator()
 
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
+const XLSX = require("xlsx");
+const userResourceResponse = require("../utils/constant");
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const userService = require("../services/userService");
+const userMetaService = require("../services/userMetaService");
+const dealerService = require('../../Dealer/services/dealerService')
+const resellerService = require('../../Dealer/services/resellerService')
+const dealerPriceService = require('../../Dealer/services/dealerPriceService')
+const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
+const priceBookService = require('../../PriceBook/services/priceBookService')
+const providerService = require('../../Provider/services/providerService')
+const users = require("../model/users");
+const role = require("../model/role");
+const constant = require('../../config/constant');
+const emailConstant = require('../../config/emailConstant');
+const mail = require("@sendgrid/mail");
+const fs = require('fs');
+const multer = require('multer');
+const path = require('path');
+// Promisify fs.createReadStream for asynchronous file reading
+const logs = require('../../User/model/logs');
+
+const csvParser = require('csv-parser');
+const customerService = require("../../Customer/services/customerService");
+const supportingFunction = require('../../config/supportingFunction');
+const orderService = require("../../Order/services/orderService");
 
 
-const REPORTING = require('../../Order/model/reporting');
-const constant = require("../../config/constant");
+
+const REPORTING = require('../../Order/model/reporting')
 
 
 // daily query for reporting 
@@ -168,6 +200,13 @@ exports.dailySales = async (req, res) => {
             console.log("data----------------", dailyQuery[0].$match)
         }
 
+        console.log("ckkkkkkk")
+        // res.send({
+        //     code: constant.errorCode,
+        //     message: dailyQuery
+        // })
+        // return;
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         if (!getOrders) {
             res.send({
@@ -203,51 +242,43 @@ exports.dailySales = async (req, res) => {
 //weekly grouping of the data
 exports.weeklySales = async (req, res) => {
     try {
-        let data = req.body;
-        let query;
+        const data = req.body;
 
-        const startDate = new Date(data.startDate);
-        const endDate = new Date(data.endDate);
+        // Parse startDate and endDate from request body
+        const startDate = moment(data.startDate).startOf('day');
+        const endDate = moment(data.endDate).endOf('day');
 
-        // Subtract one day from startDate
-        startDate.setDate(startDate.getDate() + 1);
+        // Example: Adjusting dates with moment.js if needed
+        // startDate.subtract(1, 'day');
+        // endDate.add(1, 'day');
 
-        // Add one day to endDate
-        endDate.setDate(endDate.getDate() + 1);
+        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
 
-        console.log("sdjhfjshf", endDate, startDate)
+        // Calculate start and end of the week for the given dates
+        const startOfWeekDate = moment(startDate).startOf('isoWeek');
+        const endOfWeekDate = moment(endDate).endOf('isoWeek');
 
-        // Calculate the start of the week (Monday) for the given startDate
-        const startOfWeek = (date) => {
-            const day = date.getUTCDay();
-            const diff = (day === 0 ? -6 : 1) - day;
-            return new Date(date.setUTCDate(date.getUTCDate() + diff));
-        };
+        // Example: Logging calculated week start and end dates
+        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
 
-        const endOfWeek = (date) => {
-            const day = date.getUTCDay();
-            const diff = 7 - (day === 0 ? 7 : day);
-            return new Date(date.setUTCDate(date.getUTCDate() + diff));
-        };
-
-        const startOfWeekDate = startOfWeek(new Date(startDate));
-        const endOfWeekDate = endOfWeek(new Date(endDate));
-
+        // Create an array of dates for each week within the specified range
         const datesArray = [];
-        let currentDate = new Date(startOfWeekDate);
+        let currentDate = moment(startOfWeekDate);
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 7);
+            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
+            currentDate.add(1, 'week');
         }
 
-        console.log(startOfWeekDate, datesArray, endOfWeekDate);
+        // Example: Logging array of dates for debugging
+        console.log("datesArray:", datesArray.map(date => date.format()));
+
+        // MongoDB aggregation pipeline based on filterFlag
         let weeklyQuery;
-        if (data.filterFlag == "All") {
+        if (data.filterFlag === "All") {
             weeklyQuery = [
                 {
                     $match: {
-                        // status: "Active",
-                        createdAt: { $gte: startDate, $lte: endDate }
+                        createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
                     }
                 },
                 {
@@ -274,13 +305,11 @@ exports.weeklySales = async (req, res) => {
                     $sort: { _id: 1 } // Sort by week start date in ascending order
                 }
             ];
-        }
-        if (data.filterFlag == "BrokerFee") {
+        } else if (data.filterFlag === "BrokerFee") {
             weeklyQuery = [
                 {
                     $match: {
-                        // status: "Active",
-                        createdAt: { $gte: startDate, $lte: endDate }
+                        createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
                     }
                 },
                 {
@@ -310,38 +339,20 @@ exports.weeklySales = async (req, res) => {
                     $sort: { _id: 1 } // Sort by week start date in ascending order
                 }
             ];
+        } else {
+            throw new Error("Invalid filterFlag provided.");
         }
 
-        if (data.dealerId != "") {
-            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
-            weeklyQuery[0].$match.dealerId = dealerId
-        }
-        
+        // Perform aggregation query
+        const getOrders = await REPORTING.aggregate(weeklyQuery);
 
-        if (data.priceBookId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            weeklyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+        // Example: Logging MongoDB aggregation results for debugging
+        console.log("getOrders:", getOrders);
 
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
-        }
-
-        let getOrders = await REPORTING.aggregate(weeklyQuery);
-        if (!getOrders) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the details"
-            });
-            return;
-        }
-
+        // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
-            const dateString = date.toLocaleDateString('en-US', {
-                year: 'numeric', month: '2-digit', day: '2-digit'
-            });
-            const order = getOrders.find(item => item._id.toISOString().slice(0, 10) === dateString);
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getOrders.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
             return {
                 weekStart: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
@@ -349,7 +360,8 @@ exports.weeklySales = async (req, res) => {
             };
         });
 
-        res.send({
+        // Send success response with result
+        res.status(200).json({
             code: constant.successCode,
             message: "Success",
             result: result
@@ -425,21 +437,6 @@ exports.daySale = async (req, res) => {
             ];
         }
 
-        if (data.dealerId != "") {
-            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
-            dailyQuery[0].$match.dealerId = dealerId
-        }
-
-        if (data.priceBookId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
-        }
-
         let getOrders = await REPORTING.aggregate(dailyQuery);
         if (!getOrders) {
             res.send({
@@ -449,7 +446,7 @@ exports.daySale = async (req, res) => {
             return;
         }
 
-        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 0);
+        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 1);
         const options = {
             year: 'numeric',
             month: '2-digit',
