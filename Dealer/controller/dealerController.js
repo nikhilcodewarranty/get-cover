@@ -928,6 +928,8 @@ exports.statusUpdate = async (req, res) => {
 
     const option = { new: true };
 
+    const priceBookData = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(existingDealerPriceBook.priceBook) }, {})
+
     // Update the dealer price status
     const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
 
@@ -952,7 +954,7 @@ exports.statusUpdate = async (req, res) => {
       description: getDealerDetail.name + " , " + "your price book has been updated",
       userId: existingDealerPriceBook.dealerId,
       contentId: req.params.dealerPriceBookId,
-      flag: 'dealer',
+      flag: 'Dealer Price Book',
       notificationFor: IDs
     };
 
@@ -961,8 +963,8 @@ exports.statusUpdate = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
       senderName: getPrimary.firstName,
-      content: "The price book has been updated",
-      subject: "Update Data"
+      content: "The price book " + priceBookData[0]?.pName + " has been updated",
+      subject: "Update Price Book"
     }
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
@@ -1147,7 +1149,7 @@ exports.changeDealerStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       //notificationEmails.push(getPrimary.email);
 
-      console.log("notificationEmails---------------------",notificationEmails);
+      console.log("notificationEmails---------------------", notificationEmails);
       // const notificationContent = {
       //   content: singleDealer.name + " " + "status has been updated successfully!"
       // }
