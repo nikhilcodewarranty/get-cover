@@ -2068,12 +2068,24 @@ exports.updateUserData = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
-
-    let emailData = {
-      senderName: updateUser.firstName,
-      content: "The user information has been updated successfully!.",
-      subject: "Update User Info"
+    if (data.firstName) {
+      let emailData = {
+        senderName: updateUser.firstName,
+        content: "The user information has been updated successfully!.",
+        subject: "Update User Info"
+      }
     }
+
+    else{
+      const status_content = req.body.status ? 'Active' : 'Inactive';
+      let emailData = {
+          senderName: updateUser.firstName,
+          content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+          subject: "Update Status"
+      }
+    }
+
+
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
     //  }
     //Save Logs updateUserData
