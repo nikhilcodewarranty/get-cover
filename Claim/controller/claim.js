@@ -2330,7 +2330,7 @@ exports.sendMessages = async (req, res) => {
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.dealerId, isPrimary: true })
     }
     else if (data.type == 'Customer') {
-      data.commentedTo = orderData.customerId
+      data.commentedTo = orderData.customerId 
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.customerId, isPrimary: true })
     }
     else if (data.type == 'Servicer') {
