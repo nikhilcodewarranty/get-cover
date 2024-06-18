@@ -2320,7 +2320,8 @@ exports.sendMessages = async (req, res) => {
     data.commentedBy = req.userId
     data.commentedTo = req.userId;
     data.commentedByUser = req.teammateId
-    if (data.type == 'Reseller') {
+    emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, isPrimary: true })
+     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.resellerId, isPrimary: true })
     }
@@ -2334,7 +2335,7 @@ exports.sendMessages = async (req, res) => {
     }
     else if (data.type == 'Servicer') {
       data.commentedTo = orderData.servicerId
-      emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.servicerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ accountId: checkClaim.servicerId, isPrimary: true })
     }
 
     let sendMessage = await claimService.addMessage(data)
