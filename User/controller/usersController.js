@@ -2068,8 +2068,9 @@ exports.updateUserData = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
+    let emailData;
     if (data.firstName) {
-      let emailData = {
+       emailData = {
         senderName: updateUser.firstName,
         content: "The user information has been updated successfully!.",
         subject: "Update User Info"
@@ -2078,14 +2079,12 @@ exports.updateUserData = async (req, res) => {
 
     else{
       const status_content = req.body.status ? 'Active' : 'Inactive';
-      let emailData = {
+       emailData = {
           senderName: updateUser.firstName,
           content: "Status has been changed to " + status_content + " " + ", effective immediately.",
           subject: "Update Status"
       }
     }
-
-
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
     //  }
     //Save Logs updateUserData
