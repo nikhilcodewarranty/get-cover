@@ -2400,11 +2400,11 @@ exports.sendMessages = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(emailTo.email);
     let emailData = {
-      senderName: emailTo.firstName,
+      senderName: emailTo?.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
       subject: "New Message"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo.email : process.env.servicerEmail, notificationEmails, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(emailTo ? emailTo?.email : process.env.servicerEmail, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       messages: 'Message Sent!',
