@@ -577,14 +577,14 @@ exports.updatePriceBookById = async (req, res, next) => {
     if (req.body.priceType) {
        emailData = {
         senderName: admin.firstName,
-        content: "The priceBook " + body.pName + " updated successfully! effective immediately.",
+        content: "The priceBook " + existingPriceBook[0]?.pName + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
     }
     else {
        emailData = {
         senderName: admin.firstName,
-        content: "The priceBook " + body.pName + " has been changed to " + body.status + "! effective immediately.",
+        content: "The priceBook " + existingPriceBook[0]?.pName + " has been changed to " + body.status + "! effective immediately.",
         subject: "Update Status"
       }
     }

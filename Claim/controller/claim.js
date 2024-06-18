@@ -1519,14 +1519,14 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       // Email to Customer
       emailData = {
-        senderName: customerPrimary.firstName,
+        senderName: customerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
       // Email to Reseller
       emailData = {
-        senderName: resellerPrimary.firstName,
+        senderName: resellerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
@@ -1597,7 +1597,7 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['yash@yopmail.com'], emailData))
       //Email to Reseller
       emailData = {
-        senderName: resellerPrimary.firstName,
+        senderName: resellerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
@@ -1611,14 +1611,14 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
-        senderName: servicerPrimary.firstName,
+        senderName: servicerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary.email, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to admin
       emailData = {
-        senderName: admin.firstName,
+        senderName: admin?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
