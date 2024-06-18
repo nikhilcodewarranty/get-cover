@@ -691,7 +691,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
-              if (createUsers[i].status && i != 0) {
+              if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
@@ -1089,7 +1089,7 @@ exports.createDealer = async (req, res) => {
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
-              if (createUsers[i].status && i != 0) {
+              if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
@@ -1330,7 +1330,7 @@ exports.createDealer = async (req, res) => {
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
-              if (createUsers[i].status && i != 0) {
+              if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
@@ -1706,7 +1706,7 @@ exports.createDealer = async (req, res) => {
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
-              if (createUsers[i].status && i != 0) {
+              if (createUsers[i].status) {
                 let resetPasswordCode = randtoken.generate(4, '123456789')
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
