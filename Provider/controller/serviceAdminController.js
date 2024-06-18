@@ -1079,7 +1079,7 @@ exports.registerServiceProvider = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
-      dealerName: admin.name,
+      dealerName: admin.firstName,
       subject: "Notification of New Servicer Registration",
       c1: "A new servicer " + ServicerMeta.name + "",
       c2: "has been registered",
