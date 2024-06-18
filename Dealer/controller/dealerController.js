@@ -1145,7 +1145,9 @@ exports.changeDealerStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      notificationEmails.push(getPrimary.email);
+      //notificationEmails.push(getPrimary.email);
+
+      console.log("notificationEmails---------------------",notificationEmails);
       // const notificationContent = {
       //   content: singleDealer.name + " " + "status has been updated successfully!"
       // }

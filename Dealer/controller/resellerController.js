@@ -117,8 +117,22 @@ exports.createReseller = async (req, res) => {
 
         // Create the user
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
+
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
+        // Primary User Welcoime email
+        let notificationEmails = await supportingFunction.getUserEmails();
+        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+        notificationEmails.push(getPrimary.email)
+        
+        let emailData = {
+            senderName: saveMembers[0]?.firstName,
+            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
+            subject: "Welcome to Get-Cover reseller Registration Approved"
+        }
+
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
@@ -127,7 +141,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: data?.accountName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Reseller", servicerName: data?.accountName }))
                 }
 
             }
@@ -1917,7 +1931,7 @@ exports.getResellerContract = async (req, res) => {
                 result1[e].reason = "Contract is not active"
             }
             // if (result1[e].minDate < new Date()) {
-      if (new Date(result1[e].minDate) > new Date()) {
+            if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
                     year: 'numeric',

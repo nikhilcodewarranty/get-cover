@@ -678,6 +678,15 @@ exports.createDealer = async (req, res) => {
           };
           let createNotification = await userService.createNotification(notificationData);
 
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: allUserData[0].firstName,
+            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1067,6 +1076,16 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: allUserData[0].firstName,
+            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
@@ -1299,6 +1318,16 @@ exports.createDealer = async (req, res) => {
           }
           //Approve status 
           console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77", createUsers)
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: createUsers[0].firstName,
+            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               if (createUsers[i].status) {
@@ -1664,6 +1693,17 @@ exports.createDealer = async (req, res) => {
 
           //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: createUsers[0].firstName,
+            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
+            subject: "Welcome to Get-Cover Dealer Registration Approved"
+          }
+
+          // Send Email code here
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
+
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               if (createUsers[i].status) {
@@ -2028,11 +2068,22 @@ exports.updateUserData = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
     notificationEmails.push(updateUser.email);
+    let emailData;
+    if (data.firstName) {
+       emailData = {
+        senderName: updateUser.firstName,
+        content: "The user information has been updated successfully!.",
+        subject: "Update User Info"
+      }
+    }
 
-    let emailData = {
-      senderName: updateUser.firstName,
-      content: "The user information has been updated successfully!.",
-      subject: "Update User Info"
+    else{
+      const status_content = req.body.status ? 'Active' : 'Inactive';
+       emailData = {
+          senderName: updateUser.firstName,
+          content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+          subject: "Update Status"
+      }
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
     //  }

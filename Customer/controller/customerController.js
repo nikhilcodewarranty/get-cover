@@ -123,6 +123,22 @@ exports.createCustomer = async (req, res, next) => {
     teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
+
+    // Primary User Welcoime email
+    let notificationEmails = await supportingFunction.getUserEmails();
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
+    notificationEmails.push(getPrimary.email)
+    notificationEmails.push(resellerPrimary?.email)
+    notificationEmails
+    let emailData = {
+      senderName: saveMembers[0].firstName,
+      content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
+      subject: "Welcome to Get-Cover customer Registration Approved"
+    }
+
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
     if (saveMembers.length > 0) {
       // let saveMembers = await userService.insertManyUser(teamMembers)
       if (data.status) {
@@ -134,7 +150,7 @@ exports.createCustomer = async (req, res, next) => {
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `http://${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
             // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: data?.accountName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Customer", servicerName: data?.accountName }))
 
           }
 
