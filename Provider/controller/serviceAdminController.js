@@ -467,7 +467,7 @@ exports.getServiceProviderById = async (req, res, next) => {
     let resultUser = getMetaData.toObject()
 
     let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
-    let numberOfClaims = await claimService.getClaims({ claimFile:  "Completed" , servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
+    let numberOfClaims = await claimService.getClaims({ claimFile: "Completed", servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
     const claimData = {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim[0]?.totalAmount
@@ -627,7 +627,7 @@ exports.editServicerDetail = async (req, res) => {
     let emailData = {
       senderName: checkServicer.name,
       content: "Information has been updated successfully! effective immediately.",
-      subject:"Update Info"
+      subject: "Update Info"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     //Save Logs
@@ -764,7 +764,7 @@ exports.updateStatus = async (req, res) => {
         let emailData = {
           senderName: checkServicer.name,
           content: "Status has been changed to " + status_content + " " + ", effective immediately.",
-          subject:"Update Status"
+          subject: "Update Status"
         }
         // let emailData = {
         //   dealerName: checkServicer.name,
@@ -1076,6 +1076,19 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Send Email code here
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
+    const notificationEmail = await supportingFunction.getUserEmails();
+    emailData = {
+      dealerName: admin.name,
+      subject: "Notification of New Servicer Registration",
+      c1: "A new servicer " + ServicerMeta.name + "",
+      c2: "has been registered",
+      c3: "Please check once from the admin",
+      c4: "and approved",
+      c5: "Thanks.",
+      role: ""
+    }
+    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "servicer/register",
