@@ -1722,8 +1722,9 @@ exports.editServicer = async (req, res) => {
       })
       return
     }
-
+    req.body.servicerId = null
     if (req.body.servicerId != "") {
+      req.body.servicerId = req.body.servicerId
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
         $or: [
@@ -1739,7 +1740,6 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
-      req.body.servicerId = null
     }
 
 
