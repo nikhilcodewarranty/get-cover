@@ -1601,14 +1601,14 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
         senderName: customerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
         senderName: servicerPrimary?.firstName,
