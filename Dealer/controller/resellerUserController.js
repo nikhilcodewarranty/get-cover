@@ -842,6 +842,12 @@ exports.getAllResellers = async (req, res) => {
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
+        let logData = {
+            endpoint: "resellerPortal/editOrderDetail",
+            body: data,
+            userId: req.userId,
+            response: {}
+        };
         const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
         if (!checkReseller) {
             res.send({
@@ -1051,6 +1057,11 @@ exports.editOrderDetail = async (req, res) => {
             { new: true }
         );
         if (!savedResponse) {
+            logData.response = {
+                code: constant.errorCode,
+                message: "unable to update order",
+            };
+            await LOG(logData).save();
             res.send({
                 code: constant.errorCode,
                 message: "unable to create order",
@@ -1117,11 +1128,29 @@ exports.editOrderDetail = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
+
+        logData.response = {
+            code: constant.successCode,
+            message: "Success",
+        };
+        await LOG(logData).save();
+
         res.send({
             code: constant.successCode,
             message: "Success",
         });
     } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "resellerPortal/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
         res.send({
             code: constant.errorCode,
             message: err.message,
