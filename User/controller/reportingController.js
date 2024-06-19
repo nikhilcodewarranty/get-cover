@@ -115,6 +115,7 @@ exports.dailySale = async (req, res) => {
 }
 
 //daily data 
+//daily data 
 exports.dailySales = async (req, res) => {
     try {
         let data = req.body
@@ -133,57 +134,91 @@ exports.dailySales = async (req, res) => {
         }
 
         console.log(startOfMonth, datesArray, endOfMonth)
-        let dailyQuery
-        if (data.filterFlag == "All") {
-            dailyQuery = [
-                {
-                    $match: {
-                        // status: "Active",
-                        createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-                    }
-                },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                        total_order_amount: { $sum: "$orderAmount" },
-                        total_orders: { $sum: 1 }
-                    }
-                },
-                {
-                    $sort: { _id: -1 } // Sort by date in ascending order
+        // if (data.filterFlag == "All") {
+        //     dailyQuery = [
+        //         {
+        //             $match: {
+        //                 // status: "Active",
+        //                 createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+        //             }
+        //         },
+        //         {
+        //             $group: {
+        //                 _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+        //                 total_order_amount: { $sum: "$orderAmount" },
+        //                 total_orders: { $sum: 1 }
+        //             }
+        //         },
+        //         {
+        //             $sort: { _id: -1 } // Sort by date in ascending order
+        //         }
+        //     ]
+        // }
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
                 }
-            ]
-        }
-        if (data.filterFlag == "BrokerFee") {
-            dailyQuery = [
-                {
-                    $match: {
-                        // status: "Active",
-                        createdAt: { $gte: startOfMonth, $lte: endOfMonth }
-                    }
-                },
-                {
-                    $unwind: "$products" // Deconstruct the products array
-                },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                        total_order_amount1: { $sum: "$products.brokerFee" },
-                        //   total_orders: { $sum: 1 }
-                    }
-                },
-                {
-                    $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                        total_order_amount: { $sum: "$orderAmount" },
-                        total_orders: { $sum: 1 }
-                    }
-                },
-                {
-                    $sort: { _id: -1 } // Sort by date in ascending order
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_order_amount: { $sum: "$orderAmount" },
+                    total_orders: { $sum: 1 },
+                    total_broker_fee: { $sum: "$products.brokerFee" }
                 }
-            ]
-        }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        let dailyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                }
+            },
+            {
+                $unwind: "$products"
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    // total_order_amount: { $sum: "$orderAmount" },
+                    // total_orders: { $sum: 1 },
+                    total_broker_fee: { $sum: "$products.brokerFee" },
+                    total_admin_fee: { $sum: "$products.adminFee" },
+                    total_fronting_fee: { $sum: "$products.frontingFee" },
+                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
+                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                    total_retail_price: { $sum: "$products.retailPrice" },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        // // Debugging step to check the intermediate results after first grouping
+        // const debugQuery = [
+        //     {
+        //         $match: {
+        //             createdAt: { $gte: startOfMonth, $lt: endOfMonth }
+        //         }
+        //     },
+        //     {
+        //         $group: {
+        //             _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+        //             total_order_amount: { $sum: "$orderAmount" },
+        //             total_orders: { $sum: 1 },
+        //             orders: { $push: "$$ROOT" }
+        //         }
+        //     }
+        // ];
+
+        // let debugResult = await REPORTING.aggregate(debugQuery);
+        // console.log("Debugging Result after first $group:", JSON.stringify(debugResult[0], null, 2));
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -200,14 +235,8 @@ exports.dailySales = async (req, res) => {
             console.log("data----------------", dailyQuery[0].$match)
         }
 
-        console.log("ckkkkkkk")
-        // res.send({
-        //     code: constant.errorCode,
-        //     message: dailyQuery
-        // })
-        // return;
-
         let getOrders = await REPORTING.aggregate(dailyQuery);
+        let getOrders1 = await REPORTING.aggregate(dailyQuery1);
         if (!getOrders) {
             res.send({
                 code: constant.errorCode,
@@ -215,19 +244,72 @@ exports.dailySales = async (req, res) => {
             })
             return;
         }
+
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
+            console.log("order-----------------------------------------", order)
             return {
                 date: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
-                total_orders: order ? order.total_orders : 0
+                total_orders: order ? order.total_orders : 0,
+                total_broker_fee: order ? order.total_broker_fee : 0
+
             };
         });
+
+        const result1 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getOrders1.find(item => item._id === dateString);
+            console.log("order-----------------------------------------", order)
+            return {
+
+                total_broker_fee: { $sum: "$products.brokerFee" },
+                total_admin_fee: { $sum: "$products.adminFee" },
+                total_fronting_fee: { $sum: "$products.frontingFee" },
+                total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
+                total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                total_retail_price: { $sum: "$products.retailPrice" },
+
+                date: dateString,
+                // total_order_amount: order ? order.total_order_amount : 0,
+                // total_orders: order ? order.total_orders : 0,
+                total_broker_fee: order ? order.total_broker_fee : 0,
+                total_admin_fee: order ? order.total_admin_fee : 0,
+                total_fronting_fee: order ? order.total_fronting_fee : 0,
+                total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
+                total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
+                total_retail_price: order ? order.total_retail_price : 0,
+
+            };
+        });
+
+        const mergedResult = result.map(item => {
+            const match = result1.find(r1 => r1.date === item.date);
+            return {
+                ...item,
+                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+            };
+        });
+
+
+        // const result = getOrders.map(order => ({
+        //     date: order._id,
+        //     total_order_amount: order.total_order_amount,
+        //     total_orders: order.total_orders,
+        //     total_broker_fee: order.total_broker_fee
+        // }));
+
+
         res.send({
             code: constant.successCode,
             message: "Success",
-            result: result
+            result: result,result1,mergedResult
         })
 
 
