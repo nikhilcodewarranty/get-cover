@@ -84,18 +84,18 @@ exports.createServiceProvider = async (req, res, next) => {
       };
       teamMembers = teamMembers.map(member => ({ ...member, accountId: createServiceProvider._id, metaId: createServiceProvider._id, approvedStatus: "Approved", roleId: "65719c8368a8a86ef8e1ae4d" }));
       let saveMembers = await userService.insertManyUser(teamMembers)
-        // Primary User Welcoime email
-        let notificationEmails = await supportingFunction.getUserEmails();
-       // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
-        
-        let emailData = {
-            senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been approved",
-            subject: "Welcome to Get-Cover servicer Registration Approved"
-        }
+      // Primary User Welcoime email
+      let notificationEmails = await supportingFunction.getUserEmails();
+      // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
 
-        // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+      let emailData = {
+        senderName: saveMembers[0]?.firstName,
+        content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been approved",
+        subject: "Welcome to Get-Cover servicer Registration Approved"
+      }
+
+      // Send Email code here
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
       if (data.status) {
         console.log("saveMembers------------------------------", saveMembers);
         for (let i = 0; i < saveMembers.length; i++) {
@@ -1436,6 +1436,7 @@ exports.getServicerDealers = async (req, res) => {
       return;
     };
     let ids = getDealersIds.map((item) => item.dealerId)
+    let idsq = getDealersIds.map((item) => new mongoose.Types.ObjectId(item.dealerId))
     let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
 
     if (!dealers) {
@@ -1463,6 +1464,98 @@ exports.getServicerDealers = async (req, res) => {
     }
     let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
 
+    //Get Claim Result 
+    const claimQuery = { _id: { $in: idsq } }
+
+    const dealerAggregationQuery = [
+      {
+        $match: claimQuery
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "_id",
+          foreignField: "dealerId",
+          as: "orders",
+        }
+      },
+      {
+        $unwind: "$orders"
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "orders._id",
+          foreignField: "orderId",
+          as: "contracts",
+        }
+      },
+      { "$lookup" : {
+        "from" : "claims" ,
+        "localField" : "contracts._id" ,
+        "foreignField" : "contractId" ,
+        "pipeline" : [ { "$group" : { "_id":null , "totalAmount" : { "$sum" : "totalAmount" } } } ] ,
+        "as" : "result" 
+      } }
+    ]
+
+    const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
+
+    res.json(dealerClaims);
+    return;
+
+    //     let lookupQuery = [
+    //       {
+    //         $match: claimQuery
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "contracts",
+    //           localField: "contractId",
+    //           foreignField: "_id",
+    //           as: "contracts",
+    //         }
+    //       },
+    //       {
+    //         $unwind: "$contracts"
+    //       },
+    //       {
+    //         $lookup: {
+    //           from: "orders",
+    //           localField: "contracts.orderId",
+    //           foreignField: "_id",
+    //           as: "contracts.orders",
+    //         },
+
+    //       },
+    //       {
+    //         $unwind: "$contracts.orders"
+    //       },
+    //       {
+    //         $match:
+    //         {
+    //           $and: [
+    //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+    //             { "contracts.orders.dealerId": { $in:idsq } }
+    //           ]
+    //         },
+    //       },
+    //       {
+    //         "$group": {
+    //           "_id": "",
+    //           "totalAmount": {
+    //             "$sum": {
+    //               "$sum": "$totalAmount"
+    //             }
+    //           },
+    //         },
+
+    //       },
+    //     ]
+    //     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    // res.json(valueClaim);
+
+    // return;
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());

@@ -355,7 +355,7 @@ exports.getContracts = async (req, res) => {
       let getOrders = await orderService.getOrders({
         $and: orderAndCondition
       })
-      console.log("oder check",orderAndCondition[0].servicerId)
+      console.log("oder check", orderAndCondition[0].servicerId)
       if (getOrders.length > 0) {
         orderIds = await getOrders.map(order => order._id)
       }
@@ -509,7 +509,7 @@ exports.getContracts = async (req, res) => {
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
-      console.log("==================================================",new Date(result1[e].minDate),new Date())
+      console.log("==================================================", new Date(result1[e].minDate), new Date())
       if (new Date(result1[e].minDate) > new Date()) {
         const options = {
           year: 'numeric',
@@ -762,7 +762,7 @@ exports.getContractById = async (req, res) => {
         getData[e].reason = "Contract is not active"
       }
       // if (getData[e].minDate < new Date()) {
-        if (new Date(getData[e].minDate) > new Date()) {
+      if (new Date(getData[e].minDate) > new Date()) {
         const options = {
           year: 'numeric',
           month: '2-digit',
@@ -909,154 +909,15 @@ exports.cronJobEligible = async (req, res) => {
     let updateDoc;
     for (let i = 0; i < result.length; i++) {
       let product = result[i];
-      let dateCheck = new Date(product.coverageStartDate)
-      let adhDays = Number(product.adh ? product.adh : 0)
-      let partWarrantyMonth = Number(product.partsWarranty ? product.partsWarranty : 0)
-      let labourWarrantyMonth = Number(product.labourWarranty ? product.labourWarranty : 0)
-      dateCheck = dateCheck.setDate(dateCheck.getDate() + adhDays)
-      let p_date = new Date(product.purchaseDate)
-      let l_date = new Date(product.purchaseDate)
-      let l_date1 = new Date(product.purchaseDate)
-      let p_date1 = new Date(product.purchaseDate)
-      let purchaseMonth = p_date.getMonth();
-      let monthsPart = partWarrantyMonth;
-      let newPartMonth = purchaseMonth + monthsPart;
-      let monthsLabour = labourWarrantyMonth;
-      let newLabourMonth = purchaseMonth + monthsLabour;
-      let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
-      let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
-      let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
-      let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
-      let checkDate = new Date(dateCheck);
-      let partsWarantyCheck = new Date(partsWarrantyDate);
-      let labourWarrantyCheck = new Date(labourWarrantyDate);
-      //    let minDate = new Date(Math.min(checkDate.getTime(), partsWarantyCheck.getTime(), labourWarrantyCheck.getTime()))
-      let contractId = result[i]._id;
-      function findMinDate(d1, d2, d3) {
-        return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
-      }
-      // Find the minimum date
-      let minDate;
-      if (product.coverageType == "Breakdown") {
-        if (product.serviceCoverageType == "Labour") {
-
-          minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-          // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-          // }
-          // else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-          // }
-
-        } else if (product.serviceCoverageType == "Parts") {
-
-          minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-
-          // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-          // } else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-          // }
-
-        } else {
-
-          minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-
-          // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-          // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-          // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-          // } else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-          // }
-        }
-      } else if (product.coverageType == "Accidental") {
-        minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-        // if (req.body.serviceCoverageType == "Labour") {
-        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-        //     } else {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-        //     }
-
-        // } else if (req.body.serviceCoverageType == "Parts") {
-        //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-        //     } else {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-        //     }
-
-        // } else {
-        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-        //     } else {
-        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-        //     }
-        // }
-      } else {
-        if (product.serviceCoverageType == "Labour") {
-          minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-          // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-          // }
-          // else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-          // }
-
-        } else if (product.serviceCoverageType == "Parts") {
-          minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-          // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-          // } else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-          // }
-
-        } else {
-          minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-          // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-          // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-          // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-          // } else {
-          //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-          // }
-        }
-      }
-
-      // let eligibilty = new Date(dateCheck) < new Date() ? true : false
-      let eligibilty = new Date(minDate) < new Date() ? true : false
+      let contractId = product._id
+     // let eligibilty = new Date(product.minDate) < new Date() ? true : false
       //let productValue = result[i].productValue;
-      if (eligibilty) {
-        contractIds.push(contractId)
+      if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+        contractIds.push(product._id)      
         updateDoc = {
           'updateMany': {
             'filter': { '_id': contractId },
-            update: { $set: { eligibilty: eligibilty } },
+            update: { $set: { eligibilty: true } },
             'upsert': false
           }
         }
