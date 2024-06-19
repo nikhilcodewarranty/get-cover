@@ -37,6 +37,8 @@ const { string } = require('joi');
 const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
+const randtoken = require('rand-token').generator()
+
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         cb(null, path.join(__dirname, '../../uploads/resultFile'));
