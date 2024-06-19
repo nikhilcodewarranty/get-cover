@@ -3013,6 +3013,21 @@ const reportingController = require("./reportingController")
 
 exports.saleReporting = async (req, res) => {
   try {
+    console.log("---------",req.body)
+    // if(!req.body.priceBookId ){
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:"Payload values are missing"
+    //   })
+    //   return
+    // }
+    // if(!req.body.dealerId){
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:"Payload values are missing"
+    //   })
+    //   return
+    // }
     if (req.body.flag == "daily") {
       let sales = await reportingController.dailySales1(req.body)
       res.send({
@@ -3021,10 +3036,11 @@ exports.saleReporting = async (req, res) => {
         result: sales
       })
     } else if (req.body.flag == "weekly") {
+      let sales = await reportingController.weeklySales(req.body)
       res.send({
         code: constant.successCode,
         message: "Success",
-        result: { message: "Under process" }
+        result: sales
       })
     } else {
       res.send({
