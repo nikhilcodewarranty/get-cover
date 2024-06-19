@@ -2435,16 +2435,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
       let csvName = req.file.filename
 
-      // from here copy
-      // const csvWriter = createCsvWriter({
-      //   path: './uploads/resultFile/' + csvName,
-      //   header: [
-      //     { id: 'priceBook', title: 'Price Book' },
-      //     { id: 'status', title: 'Status' },
-      //     { id: 'reason', title: 'Reason' },
-      //     // Add more headers as needed
-      //   ],
-      // });
+
       const wb = XLSX.readFile(req.file.path);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
@@ -2455,6 +2446,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
         return item;
       });
+
+      console.log("first++++++++++++++++++++++++++++++++++++++++++", totalDataComing1)
 
       const headers = [];
       for (let cell in ws) {
@@ -2481,13 +2474,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
           exit: false
         };
       });
+
+      // console.log("second++++++++++++++++++++++++++++++++++++++++++",totalDataComing)
+
       //  return;
       // copy to here
       totalDataComing.forEach((data, index) => {
-        // console.log("data+++++++++++++++",data.retailPrice)
 
         if (!data.retailPrice || typeof (data.retailPrice) != 'number' || data.retailPrice <= 0) {
-          // console.log("data2--------------------------",data)
           data.status = "Dealer catalog retail price is not valid";
           totalDataComing[index].retailPrice = data.retailPrice
           data.exit = true;
@@ -2505,12 +2499,13 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
       })
 
-      //  console.log("check empty value", totalDataComing)
+      console.log("second++++++++++++++++++++++++++++++++++++++++++", totalDataComing)
+
+
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
 
         for (let i = totalDataComing.length - 1; i >= 0; i--) {
-          //console.log("uniquw", i, totalDataComing[i]);
           if (totalDataComing[i].exit) {
             continue;
           }
@@ -2527,16 +2522,21 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         const pricebookArrayPromise = totalDataComing.map(item => {
           let queryPrice;
-          // if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-          //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-          // } else {
-          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
-          // }
+          console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",checkDealer[0]?.coverageType)
+          if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
+          console.log("^^^1111111111111111111^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
 
-          console.log("queryPrice)))))))))))))))))))))))))))--------------------", queryPrice, item)
+          } else {
+          console.log("^^^^^^^222222222222222222222222222^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
+
+          }
+
           if (!item.status) return priceBookService.findByName1(queryPrice);
           return null;
         })
+        // console.log("third++++++++++++++++++++++++++++++++++++++++++",pricebookArrayPromise)
 
         const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -2554,13 +2554,17 @@ exports.uploadDealerPriceBook = async (req, res) => {
           }
         }
         const dealerArrayPromise = totalDataComing.map(item => {
+          console.log("forth++++++++++++++++++++++++++++++++++++++++++", item)
 
           if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
+          console.log("forth++++++++++++++++++++++++++++++++++++++++++", item.priceBookDetail)
           return false;
         })
         const dealerArray = await Promise.all(dealerArrayPromise);
 
         for (let i = 0; i < totalDataComing.length; i++) {
+          console.log("fifth++++++++++++++++++++++++++++++++++++++++++", totalDataComing[i])
+
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
               dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
@@ -2576,6 +2580,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
+              console.log("**********************************************************************")
 
 
               let checkSavedPricebook = await dealerPriceService.createDealerPrice({
@@ -2587,17 +2592,17 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              console.log("saved data++++++++++++++++++++", checkSavedPricebook, {
-                dealerId: data.dealerId,
-                priceBook: totalDataComing[i].priceBookDetail._id,
-                unique_key: unique_key,
-                status: true,
-                retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
-                brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
-                wholesalePrice
-              })
+              // console.log("saved data++++++++++++++++++++", checkSavedPricebook, {
+              //   dealerId: data.dealerId,
+              //   priceBook: totalDataComing[i].priceBookDetail._id,
+              //   unique_key: unique_key,
+              //   status: true,
+              //   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
+              //   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
+              //   wholesalePrice
+              // })
               totalDataComing[i].status = "Dealer catalog updated successully!"
-
+              console.log("**********************************************************************")
               totalDataComing[i].duplicates.forEach((index, i) => {
                 let msg = index === 0 ? "Dealer catalog created successully)" : "Dealer catalog created successully%"
                 totalDataComing[index].status = msg;
@@ -2663,10 +2668,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         let IDs = await supportingFunction.getUserIds()
 
-        console.log(checkDealer._id)
 
         let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
-        console.log("dealerPrimary------------------", dealerPrimary)
         IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
