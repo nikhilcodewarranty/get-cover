@@ -1601,14 +1601,14 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
         senderName: customerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
         senderName: servicerPrimary?.firstName,
@@ -2324,13 +2324,13 @@ exports.sendMessages = async (req, res) => {
      if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.resellerId, isPrimary: true })
-    }
+    } 
     else if (data.type == 'Dealer') {
       data.commentedTo = orderData.dealerId
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.dealerId, isPrimary: true })
     }
     else if (data.type == 'Customer') {
-      data.commentedTo = orderData.customerId
+      data.commentedTo = orderData.customerId 
       emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.customerId, isPrimary: true })
     }
     else if (data.type == 'Servicer') {
