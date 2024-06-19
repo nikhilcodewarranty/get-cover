@@ -836,16 +836,11 @@ exports.registerDealer = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
-      dealerName: admin.firstName,
+      senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
-      c1: "A new dealer " + createdDealer.name + "",
-      c2: "has been registered",
-      c3: "",
-      c4: "",
-      c5: "",
-      role: ""
+      content: "A new dealer " + createdDealer.name + " has been registered"
     }
-    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))
+    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, [], emailData))
     // }
     let logData = {
       endpoint: "register dealer",
@@ -2522,14 +2517,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         const pricebookArrayPromise = totalDataComing.map(item => {
           let queryPrice;
-          console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",checkDealer[0]?.coverageType)
+          console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", checkDealer[0]?.coverageType)
           if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-          console.log("^^^1111111111111111111^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+            console.log("^^^1111111111111111111^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
 
           } else {
-          console.log("^^^^^^^222222222222222222222222222^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-          queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
+            console.log("^^^^^^^222222222222222222222222222^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+            queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
 
           }
 
