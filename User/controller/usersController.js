@@ -864,8 +864,12 @@ exports.createDealer = async (req, res) => {
               // if (singleDealer?.coverageType == "Breakdown & Accidental") {
               //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
               // } else {
-              queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
               // }
+              if(singleDealer?.coverageType== "Breakdown & Accidental"){
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              }else{
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
+              }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             })
@@ -1415,11 +1419,7 @@ exports.createDealer = async (req, res) => {
             return item;
           });
           const totalDataComing = totalDataComing1.map(item => {
-            console.log("ccccc++++++++dddddddddddddddddd+++++++", item)
-
             const keys = Object.keys(item);
-            console.log("keys++++++++dddddddddddddddddd+++++++", keys)
-
             return {
               priceBook: item[keys[0]],
               retailPrice: item[keys[1]],
@@ -1528,11 +1528,11 @@ exports.createDealer = async (req, res) => {
 
             const pricebookArrayPromise = totalDataComing.map(item => {
               let queryPrice;
-              // if (createMetaData?.coverageType == "Breakdown & Accidental") {
-              //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-              // } else {
-              queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
-              // }
+              if(createMetaData?.coverageType== "Breakdown & Accidental"){
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
+              }else{
+                queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
+              }
               if (!item.status) return priceBookService.findByName1(queryPrice);
               return null;
             })
