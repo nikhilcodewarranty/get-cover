@@ -1943,7 +1943,7 @@ exports.saveBulkClaim = async (req, res) => {
           data.exit = true
         }
 
-        if (new Date(data.lossDate) > new Date().setDate(0,0,0,0)) {
+        if (moment(data.lossDate) > new Date().setDate(0,0,0,0)) {
           data.status = "Date can not greater than today"
           data.exit = true
         }
