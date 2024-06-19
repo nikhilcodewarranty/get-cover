@@ -359,9 +359,9 @@ exports.dailySales = async (req, res) => {
 }
 
 //weekly grouping of the data
-exports.weeklySales = async (req, res) => {
+exports.weeklySales = async (data, req, res) => {
     try {
-        const data = req.body;
+        // const data = req.body;
 
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
@@ -383,8 +383,11 @@ exports.weeklySales = async (req, res) => {
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
+        let currentDate1 = moment(startDate);
+
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
+            datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
+            currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
 
@@ -392,81 +395,82 @@ exports.weeklySales = async (req, res) => {
         console.log("datesArray:", datesArray.map(date => date.format()));
 
         // MongoDB aggregation pipeline based on filterFlag
-        let weeklyQuery;
-        if (data.filterFlag === "All") {
-            weeklyQuery = [
-                {
-                    $match: {
-                        createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
-                    }
-                },
-                {
-                    $addFields: {
-                        weekStart: {
-                            $dateTrunc: {
-                                date: "$createdAt",
-                                unit: "week",
-                                binSize: 1,
-                                timezone: "UTC",
-                                startOfWeek: "monday"
-                            }
+        let weeklyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
+                }
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
                         }
                     }
-                },
-                {
-                    $group: {
-                        _id: "$weekStart",
-                        total_order_amount: { $sum: "$orderAmount" },
-                        total_orders: { $sum: 1 }
-                    }
-                },
-                {
-                    $sort: { _id: 1 } // Sort by week start date in ascending order
                 }
-            ];
-        } else if (data.filterFlag === "BrokerFee") {
-            weeklyQuery = [
-                {
-                    $match: {
-                        createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
-                    }
-                },
-                {
-                    $unwind: "$products" // Deconstruct the products array
-                },
-                {
-                    $addFields: {
-                        weekStart: {
-                            $dateTrunc: {
-                                date: "$createdAt",
-                                unit: "week",
-                                binSize: 1,
-                                timezone: "UTC",
-                                startOfWeek: "monday"
-                            }
+            },
+            {
+                $group: {
+                    _id: "$weekStart",
+                    total_order_amount: { $sum: "$orderAmount" },
+                    total_orders: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by week start date in ascending order
+            }
+        ];
+
+        let weeklyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
+                }
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
                         }
                     }
-                },
-                {
-                    $group: {
-                        _id: "$weekStart",
-                        total_order_amount: { $sum: "$products.brokerFee" },
-                        total_orders: { $sum: 1 }
-                    }
-                },
-                {
-                    $sort: { _id: 1 } // Sort by week start date in ascending order
                 }
-            ];
-        } else {
-            throw new Error("Invalid filterFlag provided.");
-        }
+            },
+            {
+                $unwind: "$products"
+            },
+            {
+                $group: {
+                    _id: "$weekStart",
+                    total_broker_fee: { $sum: "$products.brokerFee" },
+                    total_admin_fee: { $sum: "$products.adminFee" },
+                    total_fronting_fee: { $sum: "$products.frontingFee" },
+                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
+                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                    total_retail_price: { $sum: "$products.retailPrice" },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
 
         // Perform aggregation query
         const getOrders = await REPORTING.aggregate(weeklyQuery);
+        const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
 
         // Example: Logging MongoDB aggregation results for debugging
-        console.log("getOrders:", getOrders);
+        console.log("getOrders:", getOrders1, getOrders);
 
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
@@ -479,18 +483,59 @@ exports.weeklySales = async (req, res) => {
             };
         });
 
-        // Send success response with result
-        res.status(200).json({
-            code: constant.successCode,
-            message: "Success",
-            result: result
+        const result1 = datesArray.map(date => {
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getOrders1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            return {
+                weekStart: dateString,
+                total_fronting_fee: order ? order.total_fronting_fee : 0,
+                total_broker_fee: order ? order.total_broker_fee : 0,
+                total_admin_fee: order ? order.total_admin_fee : 0,
+                total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
+                total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
+                total_retail_price: order ? order.total_retail_price : 0,
+                // total_orders: order ? order.total_orders : 0
+            };
         });
 
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
+        const mergedResult = result.map(item => {
+            const match = result1.find(r1 => r1.date === item.date);
+            return {
+                ...item,
+                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+            };
         });
+
+
+        const totalFees = mergedResult.reduce((acc, curr) => {
+            acc.total_broker_fee += curr.total_broker_fee || 0;
+            acc.total_admin_fee += curr.total_admin_fee || 0;
+            acc.total_fronting_fee += curr.total_fronting_fee || 0;
+            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
+            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
+            return acc;
+        }, {
+            total_broker_fee: 0,
+            total_admin_fee: 0,
+            total_fronting_fee: 0,
+            total_reserve_future_fee: 0,
+            total_reinsurance_fee: 0
+        });
+
+
+        // Send success response with result
+        return {
+            graphData: mergedResult,
+            totalFees: totalFees
+        }
+
+    } catch (err) {
+        return { code: constant.errorCode, message: err.message }
     }
 };
 
@@ -599,8 +644,15 @@ exports.dailySales1 = async (data, req, res) => {
         // let data = req.body
         let query;
 
-        let startOfMonth = new Date(data.startDate);
-        let endOfMonth = new Date(data.endDate);
+        let startOfMonth2 = new Date(data.startDate);
+        let endOfMonth1 = new Date(data.endDate);
+
+        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+
+        // let startOfMonth1 = new Date(startOfMonth1.setDate(startOfMonth1.getDate()))
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
             return { code: 401, message: "invalid date" };
@@ -612,11 +664,13 @@ exports.dailySales1 = async (data, req, res) => {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
+        datesArray.shift()
+        console.log(datesArray, "000000000000000000000000000000")
 
         let dailyQuery = [
             {
                 $match: {
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth }
                 }
             },
             {
@@ -748,6 +802,7 @@ exports.dailySales1 = async (data, req, res) => {
         });
 
 
+
         // const result = getOrders.map(order => ({
         //     date: order._id,
         //     total_order_amount: order.total_order_amount,
@@ -755,7 +810,10 @@ exports.dailySales1 = async (data, req, res) => {
         //     total_broker_fee: order.total_broker_fee
         // }));
 
-        return mergedResult
+        return {
+            graphData: mergedResult,
+            totalFees: totalFees
+        }
         // res.send({
         //     code: constant.successCode,
         //     message: "Success",
@@ -764,6 +822,6 @@ exports.dailySales1 = async (data, req, res) => {
 
 
     } catch (err) {
-        console.log("error checking +++++++++++++++++++", err.message)
+        return { code: constant.errorCode, message: err.message }
     }
 }
