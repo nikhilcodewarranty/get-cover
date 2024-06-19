@@ -865,9 +865,9 @@ exports.createDealer = async (req, res) => {
               //   queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
               // } else {
               // }
-              if(singleDealer?.coverageType== "Breakdown & Accidental"){
+              if (singleDealer?.coverageType == "Breakdown & Accidental") {
                 queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-              }else{
+              } else {
                 queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: singleDealer?.coverageType }
               }
               if (!item.status) return priceBookService.findByName1(queryPrice);
@@ -1528,9 +1528,9 @@ exports.createDealer = async (req, res) => {
 
             const pricebookArrayPromise = totalDataComing.map(item => {
               let queryPrice;
-              if(createMetaData?.coverageType== "Breakdown & Accidental"){
+              if (createMetaData?.coverageType == "Breakdown & Accidental") {
                 queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
-              }else{
+              } else {
                 queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: createMetaData?.coverageType }
               }
               if (!item.status) return priceBookService.findByName1(queryPrice);
@@ -3013,24 +3013,24 @@ const reportingController = require("./reportingController")
 
 exports.saleReporting = async (req, res) => {
   try {
-    if (req.body.flag == "Daily") {
+    if (req.body.flag == "daily") {
       let sales = await reportingController.dailySales1(req.body)
       res.send({
         code: constant.successCode,
-        message:"Success",
+        message: "Success",
         result: sales
       })
     } else if (req.body.flag == "weekly") {
       res.send({
         code: constant.successCode,
-        message:"Success",
+        message: "Success",
         result: { message: "Under process" }
       })
-    }else{
+    } else {
       res.send({
         code: constant.successCode,
         result: [],
-        message:"Invalid flag value"
+        message: "Invalid flag value"
       })
     }
 
