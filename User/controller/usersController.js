@@ -2070,19 +2070,19 @@ exports.updateUserData = async (req, res) => {
     notificationEmails.push(updateUser.email);
     let emailData;
     if (data.firstName) {
-       emailData = {
+      emailData = {
         senderName: updateUser.firstName,
         content: "The user information has been updated successfully!.",
         subject: "Update User Info"
       }
     }
 
-    else{
+    else {
       const status_content = req.body.status ? 'Active' : 'Inactive';
-       emailData = {
-          senderName: updateUser.firstName,
-          content: "Status has been changed to " + status_content + " " + ", effective immediately.",
-          subject: "Update Status"
+      emailData = {
+        senderName: updateUser.firstName,
+        content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+        subject: "Update Status"
       }
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(updateUser.email, getPrimary.email, emailData))
@@ -3008,4 +3008,36 @@ exports.checkToken = async (req, res) => {
 
 
 
+const reportingController = require("./reportingController")
 
+
+exports.saleReporting = async (req, res) => {
+  try {
+    if (req.body.flag == "Daily") {
+      let sales = await reportingController.dailySales1(req.body)
+      res.send({
+        code: constant.successCode,
+        message:"Success",
+        result: sales
+      })
+    } else if (req.body.flag == "weekly") {
+      res.send({
+        code: constant.successCode,
+        message:"Success",
+        result: { message: "Under process" }
+      })
+    }else{
+      res.send({
+        code: constant.successCode,
+        result: [],
+        message:"Invalid flag value"
+      })
+    }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}

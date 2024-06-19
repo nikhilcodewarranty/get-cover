@@ -61,5 +61,10 @@ router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
 
 
 
+router.post('/saleReporting', userController.saleReporting);
+
+
+
+
 
 module.exports = router;
