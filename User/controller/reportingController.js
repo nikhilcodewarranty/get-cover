@@ -121,19 +121,38 @@ exports.dailySales = async (req, res) => {
         let data = req.body
         let query;
 
-        // const today = new Date("2024-05-30");
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-        const datesArray = [];
+        let startOfMonth = new Date(data.startDate);
+        let endOfMonth = new Date(data.endDate);
+      
+        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+          return res.status(400).send('Invalid date format');
+        }
+      
+        let datesArray = [];
         let currentDate = new Date(startOfMonth);
         while (currentDate <= endOfMonth) {
-            datesArray.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
+          datesArray.push(new Date(currentDate));
+          currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        console.log(startOfMonth, datesArray, endOfMonth)
+
+        // dates extract from the month
+
+// return;
+
+//         // const today = new Date("2024-05-30");
+//         const today = new Date();
+//         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+//         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+
+//         const datesArray = [];
+//         let currentDate = new Date(startOfMonth);
+//         while (currentDate <= endOfMonth) {
+//             datesArray.push(new Date(currentDate));
+//             currentDate.setDate(currentDate.getDate() + 1);
+//         }
+
+//         console.log(startOfMonth, datesArray, endOfMonth)
         // if (data.filterFlag == "All") {
         //     dailyQuery = [
         //         {
@@ -165,7 +184,7 @@ exports.dailySales = async (req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_order_amount: { $sum: "$orderAmount" },
                     total_orders: { $sum: 1 },
-                    total_broker_fee: { $sum: "$products.brokerFee" }
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -224,11 +243,13 @@ exports.dailySales = async (req, res) => {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             console.log("data----------------", dealerId)
             dailyQuery[0].$match.dealerId = dealerId
+            dailyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
 
             // products:
 
