@@ -1090,16 +1090,11 @@ exports.registerServiceProvider = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
-      dealerName: admin.firstName,
-      subject: "Notification of New Servicer Registration",
-      c1: "A new servicer " + ServicerMeta.name + "",
-      c2: "has been registered",
-      c3: "",
-      c4: "",
-      c5: "",
-      role: ""
+      senderName: admin.firstName,
+      content: "A new servicer " + ServicerMeta.name + " has been registered",
+      subject: 'Notification of New Servicer Registration'
     }
-    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "servicer/register",
@@ -1490,7 +1485,7 @@ exports.getServicerDealers = async (req, res) => {
           "from": "claims",
           "localField": "orders.unique_key",
           "foreignField": "orderId",
-          "pipeline": [  {
+          "pipeline": [{
             $group: {
               _id: "$itemNumber",
               count: {
