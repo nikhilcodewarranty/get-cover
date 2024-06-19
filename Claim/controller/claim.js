@@ -1943,7 +1943,7 @@ exports.saveBulkClaim = async (req, res) => {
           data.exit = true
         }
 
-        if (moment(data.lossDate) > new Date()) {
+        if (moment(data.lossDate) > new Date().setDate(0,0,0,0)) {
           data.status = "Date can not greater than today"
           data.exit = true
         }
@@ -2186,15 +2186,17 @@ exports.saveBulkClaim = async (req, res) => {
       // res.json(totalDataComing); 
       // return;
       const updateArray = await Promise.all(updateArrayPromise);
+      let emailServicerId = [];
       totalDataComing.map((data, index) => {
+        let servicerId = data.servicerData?._id
+        if (data.servicerData?.dealerId) {
+          servicerId = data.servicerData?.dealerId
+        }
+        if (data.servicerData?.resellerId) {
+          servicerId = data.servicerData?.resellerId
+        }
+        emailServicerId.push(servicerId)
         if (!data.exit) {
-          let servicerId = data.servicerData?._id
-          if (data.servicerData?.dealerId) {
-            servicerId = data.servicerData?.dealerId
-          }
-          if (data.servicerData?.resellerId) {
-            servicerId = data.servicerData?.resellerId
-          }
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
@@ -2223,6 +2225,8 @@ exports.saveBulkClaim = async (req, res) => {
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //send email to receipient
+      // res.json(totalDataComing);return;
+
       const csvArray = totalDataComing.map((item, i) => {
         return {
           contractId: item.contractId ? item.contractId : "",
@@ -2271,7 +2275,7 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
       const adminEmail = await supportingFunction.getUserEmails();
-      const mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, htmlTableString));
+      const mailing = sgMail.send(emailConstant.sendCsvFile(["yashasvi@codenomad.net"], htmlTableString));
 
       res.send({
         code: constant.successCode,
