@@ -840,9 +840,9 @@ exports.registerDealer = async (req, res) => {
       subject: "Notification of New Dealer Registration",
       c1: "A new dealer " + createdDealer.name + "",
       c2: "has been registered",
-      c3: "Please check once from the admin",
-      c4: "and approved",
-      c5: "Thanks.",
+      c3: "",
+      c4: "",
+      c5: "",
       role: ""
     }
     mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))
