@@ -359,7 +359,7 @@ exports.dailySales = async (req, res) => {
 }
 
 //weekly grouping of the data
-exports.weeklySales = async (data,req, res) => {
+exports.weeklySales = async (data, req, res) => {
     try {
         // const data = req.body;
 
@@ -470,7 +470,7 @@ exports.weeklySales = async (data,req, res) => {
         const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
 
         // Example: Logging MongoDB aggregation results for debugging
-        console.log("getOrders:", getOrders1,getOrders);
+        console.log("getOrders:", getOrders1, getOrders);
 
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
@@ -530,12 +530,12 @@ exports.weeklySales = async (data,req, res) => {
 
         // Send success response with result
         return {
-            graphData:mergedResult,
-            totalFees : totalFees
+            graphData: mergedResult,
+            totalFees: totalFees
         }
 
     } catch (err) {
-        return {code:constant.errorCode,message:err.message}
+        return { code: constant.errorCode, message: err.message }
     }
 };
 
@@ -664,8 +664,8 @@ exports.dailySales1 = async (data, req, res) => {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
-
-        console.log(datesArray, startOfMonth, endOfMonth)
+        datesArray.shift()
+        console.log(datesArray, "000000000000000000000000000000")
 
         let dailyQuery = [
             {
@@ -801,7 +801,7 @@ exports.dailySales1 = async (data, req, res) => {
             total_reinsurance_fee: 0
         });
 
-      
+
 
         // const result = getOrders.map(order => ({
         //     date: order._id,
@@ -811,8 +811,8 @@ exports.dailySales1 = async (data, req, res) => {
         // }));
 
         return {
-            graphData:mergedResult,
-            totalFees : totalFees
+            graphData: mergedResult,
+            totalFees: totalFees
         }
         // res.send({
         //     code: constant.successCode,
@@ -822,6 +822,6 @@ exports.dailySales1 = async (data, req, res) => {
 
 
     } catch (err) {
-        return {code:constant.errorCode,message:err.message}
+        return { code: constant.errorCode, message: err.message }
     }
 }
