@@ -5,25 +5,36 @@ const { $_match } = require("../validators/register_dealer");
 
 module.exports = class dealerService {
   // Get all dealers
-  static async getAllDealers(query,projection) {
+  static async getAllDealers(query, projection) {
     try {
-      const AllDealers = await dealer.find(query,projection).sort({"unique_key":1});
+      const AllDealers = await dealer.find(query, projection).sort({ "unique_key": 1 });
       return AllDealers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch dealers ${error}`);
     }
   }
 
+  static async getDealerAndClaims(query) {
+    try {
+      const singleResellerResponse = await dealer.aggregate(query);
+      return singleResellerResponse;
+    } catch (error) {
+      console.log(`Customer not found. ${error}`);
+    }
+
+  }
   static async getAllDealers1(data) {
     try {
       const AllDealers = await dealer.aggregate(
         [
-          {$match: {
-            'name':{ $regex: /data.name/i }
-        }}
+          {
+            $match: {
+              'name': { $regex: /data.name/i }
+            }
+          }
         ]
       );
-      return AllDealers;  
+      return AllDealers;
     } catch (error) {
       console.log(`Could not fetch dealers ${error}`);
     }
@@ -31,13 +42,13 @@ module.exports = class dealerService {
 
   static async getDealerCount() {
     try {
-      const count = await dealer.find().sort({"unique_key":-1});
+      const count = await dealer.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-  
+
 
   // Create new dealer
   static async createDealer(data) {
@@ -50,17 +61,17 @@ module.exports = class dealerService {
   }
 
   // Get dealer detail with ID
-  static async getDealerById(dealerId,projection) {
+  static async getDealerById(dealerId, projection) {
     try {
-      const singleDealerResponse = await dealer.findOne({_id:dealerId},projection);
+      const singleDealerResponse = await dealer.findOne({ _id: dealerId }, projection);
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
     }
   }
-  static async getSingleDealerById(dealerId,projection) {
+  static async getSingleDealerById(dealerId, projection) {
     try {
-      const singleDealerResponse = await dealer.find(dealerId,projection);
+      const singleDealerResponse = await dealer.find(dealerId, projection);
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
@@ -69,20 +80,20 @@ module.exports = class dealerService {
 
   static async getUserByDealerId(query) {
     try {
-      const singleDealerResponse = await users.find(query).sort({isPrimary:-1,createdAt:-1});
+      const singleDealerResponse = await users.find(query).sort({ isPrimary: -1, createdAt: -1 });
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
     }
   }
 
-  
-  
+
+
 
   // Get dealer detail with Name
-  static async getDealerByName(query,projection) {
+  static async getDealerByName(query, projection) {
     try {
-      const singleDealerResponse = await dealer.findOne(query,projection);
+      const singleDealerResponse = await dealer.findOne(query, projection);
       return singleDealerResponse;
     } catch (error) {
       console.log(`Dealer not found. ${error}`);
@@ -90,18 +101,18 @@ module.exports = class dealerService {
   }
 
   // Update dealer detail with ID
-  static async updateDealer(criteria,newValue,option) {
+  static async updateDealer(criteria, newValue, option) {
     try {
-      const updatedResponse = await dealer.findOneAndUpdate(criteria,newValue,option);
+      const updatedResponse = await dealer.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer ${error}`);
     }
   }
 
-  static async updateDealerStatus(criteria,newValue,option) {
+  static async updateDealerStatus(criteria, newValue, option) {
     try {
-      const updatedResponse = await dealer.findOneAndUpdate(criteria,newValue,option);
+      const updatedResponse = await dealer.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer ${error}`);
@@ -109,7 +120,7 @@ module.exports = class dealerService {
   }
 
 
-  
+
 
   // Delete dealer by id
   static async deleteDealer(criteria) {
@@ -122,13 +133,13 @@ module.exports = class dealerService {
   }
 
   static async createPriceBook(data) {
-      try {
-        console.log('data meta Price---------', data)
-        const response = await new dealerPrice(data).save();
-        return response;
-      } catch (error) {
-        console.log(error);
-      }
+    try {
+      console.log('data meta Price---------', data)
+      const response = await new dealerPrice(data).save();
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
 
@@ -168,8 +179,8 @@ module.exports = class dealerService {
     } catch (error) {
       console.log(error);
     }
-  } 
-  
+  }
+
 };
 
 
