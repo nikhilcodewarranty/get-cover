@@ -1094,9 +1094,9 @@ exports.registerServiceProvider = async (req, res) => {
       subject: "Notification of New Servicer Registration",
       c1: "A new servicer " + ServicerMeta.name + "",
       c2: "has been registered",
-      c3: "Please check once from the admin",
-      c4: "and approved",
-      c5: "Thanks.",
+      c3: "",
+      c4: "",
+      c5: "",
       role: ""
     }
     mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, emailData))

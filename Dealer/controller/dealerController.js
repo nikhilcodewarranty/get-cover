@@ -836,7 +836,7 @@ exports.registerDealer = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
-      dealerName: admin.name,
+      dealerName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       c1: "A new dealer " + createdDealer.name + "",
       c2: "has been registered",
