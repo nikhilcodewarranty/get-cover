@@ -2228,7 +2228,7 @@ exports.saveBulkClaim = async (req, res) => {
           contractId: item.contractId ? item.contractId : "",
           servicerName: item.servicerName ? item.servicerName : "",
           lossDate: item.lossDate ? item.lossDate : '',
-          diagnosis: item.diagnosis ? item.diagnosis : '',
+          diagnosis: item.diagnosis ? item.diagnosis : '', 
           status: item.status ? item.status : '',
         }
       })
@@ -2269,7 +2269,9 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      const mailing = sgMail.send(emailConstant.sendCsvFile(['yashasvi@codenomad.net', 'amit@codenomad.net'], htmlTableString));
+      //send Email to admin 
+      const adminEmail = await supportingFunction.getUserEmails();
+      const mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, htmlTableString));
 
       res.send({
         code: constant.successCode,

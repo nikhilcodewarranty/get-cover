@@ -1472,6 +1472,9 @@ exports.getServicerDealers = async (req, res) => {
         $match: claimQuery
       },
       {
+        $unwind: "$items"
+      },
+      {
         $lookup: {
           from: "orders",
           localField: "_id",
@@ -1483,26 +1486,27 @@ exports.getServicerDealers = async (req, res) => {
         $unwind: "$orders"
       },
       {
-        $lookup: {
-          from: "contracts",
-          localField: "orders._id",
-          foreignField: "orderId",
-          as: "contracts",
+        "$lookup": {
+          "from": "claims",
+          "localField": "orders.unique_key",
+          "foreignField": "orderId",
+          "pipeline": [  {
+            $group: {
+              _id: "$itemNumber",
+              count: {
+                $sum: "$totalAmount"
+              }
+            }
+          }],
+          "as": "result"
         }
-      },
-      { "$lookup" : {
-        "from" : "claims" ,
-        "localField" : "contracts._id" ,
-        "foreignField" : "contractId" ,
-        "pipeline" : [ { "$group" : { "_id":null , "totalAmount" : { "$sum" : "totalAmount" } } } ] ,
-        "as" : "result" 
-      } }
+      }
     ]
 
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
-    // res.json(dealerClaims);
-    // return; 
+    res.json(dealerClaims);
+    return;
 
     //     let lookupQuery = [
     //       {

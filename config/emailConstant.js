@@ -16,7 +16,7 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      subject: `CSV link`,
+      subject: `Bulk Data Report`,
       html:data
       // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
       // dynamic_template_data:data ,
