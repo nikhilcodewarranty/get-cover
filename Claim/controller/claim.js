@@ -1943,7 +1943,7 @@ exports.saveBulkClaim = async (req, res) => {
           data.exit = true
         }
 
-        if (moment(data.lossDate) > new Date().setDate(0,0,0,0)) {
+        if (new Date(data.lossDate) > new Date()){
           data.status = "Date can not greater than today"
           data.exit = true
         }
@@ -2219,13 +2219,11 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
       })
-
-      // res.json(finalArray);
       // return;
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //send email to receipient
-      // res.json(totalDataComing);return;
+    
 
       const csvArray = totalDataComing.map((item, i) => {
         return {
