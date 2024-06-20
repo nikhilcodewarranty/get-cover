@@ -771,29 +771,7 @@ exports.updateStatus = async (req, res) => {
         };
 
         let createNotification = await userService.createNotification(notificationData);
-        // Send Email code here
-        let notificationEmails = await supportingFunction.getUserEmails();
-        //notificationEmails.push(getPrimary.email);
-        // const notificationContent = {
-        //   content: checkServicer.name + " " + "status has been updated successfully!"
-        // }
-        const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
-        let emailData = {
-          senderName: checkServicer.name,
-          content: "Status has been changed to " + status_content + " " + ", effective immediately.",
-          subject: "Update Status"
-        }
-        // let emailData = {
-        //   dealerName: checkServicer.name,
-        //   c1: "The Servicer",
-        //   c2: checkServicer.name,
-        //   c3: "has been updated successfully!.",
-        //   c4: "",
-        //   c5: "",
-        //   role: "Servicer"
-        // }
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
         //Save Logs
         let logData = {
           userId: req.userId,
@@ -815,6 +793,18 @@ exports.updateStatus = async (req, res) => {
         })
       }
     } else {
+      let IDs = await supportingFunction.getUserIds()
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+      IDs.push(getPrimary._id)
+      let notificationData = {
+        title: "Servicer status update",
+        description: checkServicer.name + " , " + "your status has been updated",
+        userId: req.params.servicerId,
+        flag: 'servicer',
+        notificationFor: IDs
+      };
+
+      let createNotification = await userService.createNotification(notificationData);
       if (checkServicer.isAccountCreate) {
         let criteria1 = { accountId: checkServicer._id, isPrimary: true }
         let updateMetaData = await userService.updateSingleUser(criteria1, { status: data.status }, { new: true })
@@ -833,6 +823,30 @@ exports.updateStatus = async (req, res) => {
         }
       }
     }
+
+            // Send Email code here
+            let notificationEmails = await supportingFunction.getUserEmails();
+            //notificationEmails.push(getPrimary.email);
+            // const notificationContent = {
+            //   content: checkServicer.name + " " + "status has been updated successfully!"
+            // }
+            const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
+    
+            let emailData = {
+              senderName: checkServicer.name,
+              content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+              subject: "Update Status"
+            }
+            // let emailData = {
+            //   dealerName: checkServicer.name,
+            //   c1: "The Servicer",
+            //   c2: checkServicer.name,
+            //   c3: "has been updated successfully!.",
+            //   c4: "",
+            //   c5: "",
+            //   role: "Servicer"
+            // }
+            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
