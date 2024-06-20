@@ -2062,8 +2062,9 @@ exports.updateUserData = async (req, res) => {
       notificationFor: [getPrimary._id]
     };
 
+    console.log(notificationData);
     let createNotification = await userService.createNotification(notificationData);
-
+    console.log("notificationData,,,,,,,,,,,,,,,,,,,,",createNotification);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
