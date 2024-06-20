@@ -1022,6 +1022,28 @@ exports.getReportingPriceBooks = async (req, res) => {
     }
 };
 
+exports.getReportingCategories = async(req,res)=>{
+    try{
+        let getCategories = await priceBookService.getAllPriceCat({},{name:1})
+        if(!getCategories){
+            res.send({
+                code:constant.errorCode,
+                message:"Unable to fetch the catogories"
+            })
+            retrun
+        }
+        res.send({
+            code:constant.successCode,
+            message:"Success",
+            result:getCategories
+        })
+    }catch(err){
+        res.send({
+            code:constant.errorCode,
+            message:err.message
+        })
+    }
+}
 
 exports.claimReporting = async (req, res) => {
     try {
