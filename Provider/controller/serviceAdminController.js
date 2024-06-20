@@ -90,7 +90,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let emailData = {
         senderName: saveMembers[0]?.firstName,
-        content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been approved",
+        content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been created",
         subject: "Welcome to Get-Cover servicer Registration Approved"
       }
 
@@ -210,14 +210,21 @@ exports.createServiceProvider = async (req, res, next) => {
         return;
       };
 
-
-
+      let notificationEmails = await supportingFunction.getUserEmails();
       let primaryEmail = teamMembers[0].email
+      let emailData = {
+        senderName: teamMembers[0]?.firstName,
+        content: "Dear " + teamMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + updateServicer.name + " has been approved",
+        subject: "Welcome to Get-Cover servicer Registration Approved"
+      }
+
+      // Send Email code here
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryEmail, notificationEmails, emailData))
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-      const mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       //let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
@@ -232,7 +239,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
               // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: req.role, servicerName: saveMembers[i].firstName }))
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
 
             }
 
@@ -770,7 +777,7 @@ exports.updateStatus = async (req, res) => {
         // const notificationContent = {
         //   content: checkServicer.name + " " + "status has been updated successfully!"
         // }
-        const status_content = req.body.status ? 'Active' : 'Inactive';
+        const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
         let emailData = {
           senderName: checkServicer.name,

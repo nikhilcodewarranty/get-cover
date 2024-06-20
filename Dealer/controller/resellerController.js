@@ -130,7 +130,7 @@ exports.createReseller = async (req, res) => {
         
         let emailData = {
             senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
+            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
             subject: "Welcome to Get-Cover reseller Registration Approved"
         }
 

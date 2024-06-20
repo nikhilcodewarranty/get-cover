@@ -3767,10 +3767,18 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
 
-        if (checkId.status == "Active" || checkId.status == "Archieved") {
+        if (checkId.status == "Active" ) {
             res.send({
                 code: constant.errorCode,
                 message: "Order is already active",
+            });
+            return;
+        }
+
+        if(checkId.status == "Archieved"){
+            res.send({
+                code: constant.errorCode,
+                message: "Order is already archieved",
             });
             return;
         }
