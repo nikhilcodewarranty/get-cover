@@ -515,6 +515,14 @@ exports.weeklySales = async (data, req, res) => {
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.date === item.date);
+
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
             return {
                 ...item,
                 total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -523,6 +531,7 @@ exports.weeklySales = async (data, req, res) => {
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price:wholesale_price
             };
         });
 
@@ -659,6 +668,13 @@ exports.daySale = async (data) => {
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.date === item.date);
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
             return {
                 ...item,
                 total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -667,6 +683,7 @@ exports.daySale = async (data) => {
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price:wholesale_price
             };
         });
 
