@@ -124,6 +124,9 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
+
+        console.log("notificationEmails--------------------------",notificationEmails);
+        console.log("saveMembers--------------------------",saveMembers);
         
         let emailData = {
             senderName: saveMembers[0]?.firstName,

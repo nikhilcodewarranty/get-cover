@@ -2189,9 +2189,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
-      let existArray = {
-        data:[]
-      }
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2200,14 +2197,15 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
+        emailServicerId.push(servicerId)
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
             servicerId: servicerId,
-            orderId: data.orderData?.unique_key,
-            dealerId: data.orderData?.dealerId,
-            resellerId: data.orderData?.resellerId,
-            customerId: data.orderData?.customerId,
+            orderId: data.orderData?.order?.unique_key,
+            dealerId: data.orderData?.order?.dealerId,
+            resellerId: data.orderData?.order?.resellerId,
+            customerId: data.orderData?.order?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
             productName: data.contractData.productName,
@@ -2229,35 +2227,42 @@ exports.saveBulkClaim = async (req, res) => {
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
       //save bulk claim
-      //const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //Build data for particular servicer and send mail
+      let existArray = {
+        data: {}
+      };
 
-      let emailObj = {
-
-      }
-      
       totalDataComing.map((data, i) => {
-        let servicerId = data.servicerData?._id
+        let servicerId = data.servicerData?._id;
         if (data.servicerData?.dealerId) {
-          servicerId = data.servicerData?.dealerId
+          servicerId = data.servicerData?.dealerId;
         }
         if (data.servicerData?.resellerId) {
-          servicerId = data.servicerData?.resellerId
+          servicerId = data.servicerData?.resellerId;
         }
-        if (existArray[servicerId]) {
-          existArray.data.push(servicerId)
-          emailObj[servicerId].push(servicerId);
-        } else {
-          emailObj[servicerId] = servicerId
-          existArray[servicerId] = true;          
+
+        if (!existArray.data[servicerId]) {
+          existArray.data[servicerId] = [];
         }
-        console.log(emailObj)
-        existArray.data.push(emailObj)
-        const matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString())
-   
-      })
-      res.json(existArray);
-      return;
+        existArray.data[servicerId].push({
+          contractId: data.contractId ? data.contractId : "",
+          lossDate: data.lossDate ? data.lossDate : '',
+          diagnosis: data.diagnosis ? data.diagnosis : '',
+          status: data.status ? data.status : '',
+        });
+
+      });
+      // If you need to convert existArray.data to a flat array format
+      let flatArray = [];
+      for (let servicerId in existArray.data) {
+        let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+        let email = matchData ? matchData.email : servicerId; // Replace servicerId with email if matchData is found
+        flatArray.push({
+          email: email,
+          response: existArray.data[servicerId]
+        });
+      }
       const csvArray = totalDataComing.map((item, i) => {
         return {
           contractId: item.contractId ? item.contractId : "",
@@ -2267,47 +2272,14 @@ exports.saveBulkClaim = async (req, res) => {
           status: item.status ? item.status : '',
         }
       })
-      function convertArrayToHTMLTable(array) {
-        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-        const rows = array.map(obj => {
-          const values = Object.values(obj).map(value => `<td>${value}</td>`);
-          values[2] = `${values[2]}`;
-          return values.join('');
-        });
-
-        const htmlContent = `<html>
-            <head>
-                <style>
-                    table {
-                        border-collapse: collapse;
-                        width: 100%; 
-                    }
-                    th, td {
-                        border: 1px solid #dddddd;
-                        text-align: left;
-                        padding: 8px;
-                    }
-                    th {
-                        background-color: #f2f2f2;
-                    }
-                </style>
-            </head>
-            <body>
-                <table>
-                    <thead><tr>${header}</tr></thead>
-                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-                </table>
-            </body>
-        </html>`;
-
-        return htmlContent;
-      }
-
+     
       const htmlTableString = convertArrayToHTMLTable(csvArray);
+      res.json(htmlTableString);return;
       //send Email to admin 
       const adminEmail = await supportingFunction.getUserEmails();
       const mailing = sgMail.send(emailConstant.sendCsvFile(["yashasvi@codenomad.net"], htmlTableString));
-
+      //send email to servicer      
+       sendEamilToServicer(flatArray);
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -2322,6 +2294,51 @@ exports.saveBulkClaim = async (req, res) => {
     }
   })
 
+}
+
+
+async function sendEamilToServicer(data) {
+  console.log(data)
+  for (const item of data) {
+    const htmlTableString = await convertArrayToHTMLTable(item.response);
+    const mailing = await sgMail.send(emailConstant.sendCsvFile([item.email], htmlTableString));
+  }
+}
+function convertArrayToHTMLTable(array) {
+  console.log("sdasdasdsadsa")
+  const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+  const rows = array.map(obj => {
+    const values = Object.values(obj).map(value => `<td>${value}</td>`);
+    values[2] = `${values[2]}`;
+    return values.join('');
+  });
+
+  const htmlContent = `<html>
+      <head>
+          <style>
+              table {
+                  border-collapse: collapse;
+                  width: 100%; 
+              }
+              th, td {
+                  border: 1px solid #dddddd;
+                  text-align: left;
+                  padding: 8px;
+              }
+              th {
+                  background-color: #f2f2f2;
+              }
+          </style>
+      </head>
+      <body>
+          <table>
+              <thead><tr>${header}</tr></thead>
+              <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+          </table>
+      </body>
+  </html>`;
+
+  return htmlContent;
 }
 //Send message
 exports.sendMessages = async (req, res) => {
