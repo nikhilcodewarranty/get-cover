@@ -664,8 +664,10 @@ exports.changePrimaryUser = async (req, res) => {
     };
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
     //Get role by id
-    const checkRole = await userService.getRoleById({ roleId: checkUser.roleId }, {});
+    const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
+
+    console.log("checkRole--------------------------------",checkRole)
     if (!updatePrimary) {
       //Save Logs changePrimaryUser
       let logData = {
