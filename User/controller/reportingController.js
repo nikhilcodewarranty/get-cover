@@ -257,6 +257,16 @@ exports.dailySales = async (req, res) => {
             console.log("data----------------", dailyQuery[0].$match)
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
         if (!getOrders) {
@@ -480,6 +490,16 @@ exports.weeklySales = async (data, req, res) => {
             // console.log("data----------------", dailyQuery[0].$match)
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         // Perform aggregation query
         const getOrders = await REPORTING.aggregate(weeklyQuery);
         const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
@@ -531,7 +551,7 @@ exports.weeklySales = async (data, req, res) => {
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price:wholesale_price
+                wholesale_price: wholesale_price
             };
         });
 
@@ -633,6 +653,30 @@ exports.daySale = async (data) => {
             }
         ];
 
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.dealerId = dealerId
+            dailyQuery1[0].$match.dealerId = dealerId
+        }
+
+        if (data.priceBookId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+
+            // products:
+
+        }
+
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
 
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -683,7 +727,7 @@ exports.daySale = async (data) => {
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price:wholesale_price
+                wholesale_price: wholesale_price
             };
         });
 
@@ -809,6 +853,16 @@ exports.dailySales1 = async (data, req, res) => {
 
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
         if (!getOrders) {
@@ -874,7 +928,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price:wholesale_price
+                wholesale_price: wholesale_price
             };
         });
 
@@ -967,3 +1021,16 @@ exports.getReportingPriceBooks = async (req, res) => {
         })
     }
 };
+
+
+exports.claimReporting = async (req, res) => {
+    try {
+        let data = req.body
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
