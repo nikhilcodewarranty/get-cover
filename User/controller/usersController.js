@@ -2299,9 +2299,6 @@ exports.deleteUser = async (req, res) => {
       });
       return;
     };
-
-
-
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
     let primaryUser = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })

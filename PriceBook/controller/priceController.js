@@ -549,7 +549,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     let IDs = await supportingFunction.getUserIds()
     let notificationData = {
       title: "Price Book Updated",
-      description: existingPriceBook.pName + " " + "has been successfully updated",
+      description: existingPriceBook[0]?.pName + " " + "has been successfully updated",
       userId: req.userId,
       flag: 'priceBook',
       notificationFor: IDs
