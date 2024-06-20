@@ -840,7 +840,7 @@ exports.editResellers = async (req, res) => {
             subject: "Update Info"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
 
         //Save Logs update reseller
         let logData = {
