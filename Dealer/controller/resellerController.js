@@ -832,7 +832,7 @@ exports.editResellers = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(resellerPrimary.email);
+        //notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
         let emailData = {
             senderName: checkReseller.name,
