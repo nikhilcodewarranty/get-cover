@@ -530,7 +530,7 @@ exports.weeklySales = async (data, req, res) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
                 wholesale_price:wholesale_price
             };
         });
@@ -651,13 +651,13 @@ exports.daySale = async (data) => {
             day: '2-digit'
         };
         let result = [{
-            date: new Date(checkdate).toLocaleDateString('en-US', options),
+            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
             total_orders: getOrders.length ? getOrders[0].total_orders : 0
         }];
 
         let result1 = [{
-            date: new Date(checkdate).toLocaleDateString('en-US', options),
+            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_broker_fee: getOrders1.length ? getOrders1[0].total_broker_fee : 0,
             total_admin_fee: getOrders1.length ? getOrders1[0].total_admin_fee : 0,
             total_fronting_fee: getOrders1.length ? getOrders1[0].total_fronting_fee : 0,
@@ -667,7 +667,7 @@ exports.daySale = async (data) => {
         }];
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
             const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
@@ -682,7 +682,7 @@ exports.daySale = async (data) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
                 wholesale_price:wholesale_price
             };
         });
@@ -721,7 +721,6 @@ exports.daySale = async (data) => {
         });
     }
 };
-
 
 exports.dailySales1 = async (data, req, res) => {
     try {
@@ -823,7 +822,7 @@ exports.dailySales1 = async (data, req, res) => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
             return {
-                date: dateString,
+                weekStart: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
                 total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0
@@ -843,7 +842,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
 
-                date: dateString,
+                weekStart: dateString,
                 // total_order_amount: order ? order.total_order_amount : 0,
                 // total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0,
@@ -857,7 +856,7 @@ exports.dailySales1 = async (data, req, res) => {
         });
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
 
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
@@ -874,7 +873,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
                 wholesale_price:wholesale_price
             };
         });
