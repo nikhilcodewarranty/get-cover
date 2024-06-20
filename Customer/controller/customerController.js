@@ -634,7 +634,7 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
-    console.log(checkUser)
+    console.log(checkUser);
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -686,9 +686,9 @@ exports.changePrimaryUser = async (req, res) => {
       })
     } else {
       //Send notification for dealer change primary user
-      // if (checkRole.role == "Dealer") {
       let IDs = await supportingFunction.getUserIds()
       //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
+      console.log("checkRole00000000000000000000000000000000",checkRole);
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
       let notificationData = {
         title: checkRole?.role + " primary user change",
@@ -697,9 +697,7 @@ exports.changePrimaryUser = async (req, res) => {
         flag: checkRole?.role,
         notificationFor: [getPrimary._id]
       };
-
       let createNotification = await userService.createNotification(notificationData);
-      // }
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
