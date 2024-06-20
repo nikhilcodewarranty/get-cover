@@ -64,6 +64,24 @@ const claimSchema = new mongoose.Schema({
     default: null,
     index: true
   },
+  dealerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "dealers",
+    default: null,
+    index: true
+  },
+  resellerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "resellers",
+    default: null,
+    index: true
+  },
+  customerId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "customers",
+    default: null,
+    index: true
+  },
   action: {
     type: String,
     default: ''
