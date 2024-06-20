@@ -634,6 +634,7 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
+    console.log(checkUser)
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -690,10 +691,10 @@ exports.changePrimaryUser = async (req, res) => {
       //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
       let notificationData = {
-        title: checkRole.role + " primary user change",
+        title: checkRole?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.params.userId,
-        flag: checkRole.role,
+        flag: checkRole?.role,
         notificationFor: [getPrimary._id]
       };
 
