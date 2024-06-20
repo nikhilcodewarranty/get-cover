@@ -2189,6 +2189,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
+      let existArray = {
+        data:[]
+      }
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2197,7 +2200,6 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
-        emailServicerId.push(servicerId)
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
@@ -2227,19 +2229,35 @@ exports.saveBulkClaim = async (req, res) => {
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
       //save bulk claim
-      const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      //const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //Build data for particular servicer and send mail
-      const emailCsvArray = totalDataComing.map((item, i) => {
-        return {
-          contractId: item.contractId ? item.contractId : "",
-          servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? item.lossDate : '',
-          diagnosis: item.diagnosis ? item.diagnosis : '',
-          status: item.status ? item.status : '',
+
+      let emailObj = {
+
+      }
+      
+      totalDataComing.map((data, i) => {
+        let servicerId = data.servicerData?._id
+        if (data.servicerData?.dealerId) {
+          servicerId = data.servicerData?.dealerId
         }
+        if (data.servicerData?.resellerId) {
+          servicerId = data.servicerData?.resellerId
+        }
+        if (existArray[servicerId]) {
+          existArray.data.push(servicerId)
+          emailObj[servicerId].push(servicerId);
+        } else {
+          emailObj[servicerId] = servicerId
+          existArray[servicerId] = true;          
+        }
+        console.log(emailObj)
+        existArray.data.push(emailObj)
+        const matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString())
+   
       })
-
-
+      res.json(existArray);
+      return;
       const csvArray = totalDataComing.map((item, i) => {
         return {
           contractId: item.contractId ? item.contractId : "",
@@ -2249,7 +2267,7 @@ exports.saveBulkClaim = async (req, res) => {
           status: item.status ? item.status : '',
         }
       })
-      function convertArrayToHTMLTable(array) { 
+      function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
           const values = Object.values(obj).map(value => `<td>${value}</td>`);
