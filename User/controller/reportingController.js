@@ -39,7 +39,8 @@ const orderService = require("../../Order/services/orderService");
 
 
 
-const REPORTING = require('../../Order/model/reporting')
+const REPORTING = require('../../Order/model/reporting');
+const { message } = require("../../Dealer/validators/register_dealer");
 
 
 // daily query for reporting 
@@ -567,7 +568,7 @@ exports.daySale = async (data) => {
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
-        console.log(startOfDay,endOfDay)
+        console.log(startOfDay, endOfDay)
 
         let dailyQuery = [
             {
@@ -587,7 +588,7 @@ exports.daySale = async (data) => {
             }
         ];
 
-        console.log("check+++++++++++++++++++++++++++",dailyQuery[0].$match,dailyQuery[1].$group)
+        console.log("check+++++++++++++++++++++++++++", dailyQuery[0].$match, dailyQuery[1].$group)
 
         let dailyQuery1 = [
             {
@@ -683,7 +684,7 @@ exports.daySale = async (data) => {
             total_reserve_future_fee: 0,
             total_reinsurance_fee: 0
         });
-console.log('+++++++++++++++++++++++++++++++++++++++++++++++++++',mergedResult)
+        console.log('+++++++++++++++++++++++++++++++++++++++++++++++++++', mergedResult)
 
         return {
             graphData: mergedResult,
@@ -889,5 +890,54 @@ exports.dailySales1 = async (data, req, res) => {
 
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
+    }
+}
+
+exports.getReportingDealers = async (req, res) => {
+    try {
+        let data = req.body
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" },{name:1})
+        if (!getDealers) {
+            res.send({
+                code: constant.successCode,
+                message: "Unable to fetch the dealers"
+            })
+            return
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: getDealers
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getReportingPriceBooks = async (req, res) => {
+    try {
+        let data = req.body
+        let getPriceBooks = await priceBookService.getAllPriceIds({},{_id:0,name:1,pName:1,coverageType:1})
+        if (!getPriceBooks) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the price books"
+            })
+            return
+        }
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: getPriceBooks
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
 }

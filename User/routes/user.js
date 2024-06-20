@@ -61,7 +61,7 @@ router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
 
 
 
-router.post('/saleReporting', userController.saleReporting);
+router.post('/saleReporting',[verifyToken], userController.saleReporting);
 
 
 
