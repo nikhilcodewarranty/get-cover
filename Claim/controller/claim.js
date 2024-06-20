@@ -930,6 +930,9 @@ exports.addClaim = async (req, res, next) => {
     data.serial = checkContract.serial
     data.productName = checkContract.productName
     data.pName = checkContract?.pName
+    data.dealerId = checkOrder.dealerId
+    data.resellerId = checkOrder?.resellerId
+    data.customerId = checkOrder.customerId
     data.model = checkContract.model
     data.manufacture = checkContract.manufacture
 
@@ -2200,6 +2203,9 @@ exports.saveBulkClaim = async (req, res) => {
             contractId: data.contractData._id,
             servicerId: servicerId,
             orderId: data.orderData?.unique_key,
+            dealerId: data.orderData?.dealerId,
+            resellerId: data.orderData?.resellerId,
+            customerId: data.orderData?.customerId,
             venderOrder: data.contractData.venderOrder,
             serial: data.contractData.serial,
             productName: data.contractData.productName,
@@ -2221,7 +2227,7 @@ exports.saveBulkClaim = async (req, res) => {
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
       res.json(emailServicer);
-      return;
+      //return;
       // return;
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
