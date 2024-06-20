@@ -705,6 +705,7 @@ exports.updateStatus = async (req, res) => {
   try {
     let data = req.body
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+    
     if (!checkServicer) {
       res.send({
         code: constant.errorCode,
@@ -712,6 +713,7 @@ exports.updateStatus = async (req, res) => {
       })
       return;
     }
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
     if (!updateData) {
@@ -794,7 +796,7 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
+    
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "Servicer status update",
