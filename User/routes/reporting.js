@@ -9,9 +9,11 @@ const { verifyToken } = require('../../middleware/auth');  // authentication wit
 const validator = require('../config/validation');
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
 
-router.post('/dailyReporting',reportingController.dailySales)
-router.post('/weeklySales',reportingController.weeklySales)
-router.post('/daySale',reportingController.daySale)
+router.post('/dailyReporting', reportingController.dailySales)
+router.post('/weeklySales', reportingController.weeklySales)
+router.post('/daySale', reportingController.daySale)
+router.get('/getReportingDealers', [verifyToken], reportingController.getReportingDealers)
+router.get('/getReportingPriceBooks', [verifyToken], reportingController.getReportingPriceBooks)
 
 
 module.exports = router;
