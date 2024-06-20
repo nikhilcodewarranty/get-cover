@@ -514,7 +514,7 @@ exports.weeklySales = async (data, req, res) => {
         });
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
 
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
