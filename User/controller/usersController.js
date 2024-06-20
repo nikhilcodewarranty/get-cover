@@ -3042,7 +3042,14 @@ exports.saleReporting = async (req, res) => {
         message: "Success",
         result: sales
       })
-    } else {
+    } else if(req.body.flag == "day"){
+      let sales = await reportingController.daySale(req.body)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    }else {
       res.send({
         code: constant.successCode,
         result: [],
