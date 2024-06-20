@@ -476,7 +476,7 @@ exports.weeklySales = async (data, req, res) => {
             weeklyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
 
-            console.log("data----------------", dailyQuery[0].$match)
+            // console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query

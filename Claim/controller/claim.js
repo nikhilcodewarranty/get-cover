@@ -2226,12 +2226,18 @@ exports.saveBulkClaim = async (req, res) => {
       })
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
-      res.json(emailServicer);
-      //return;
-      // return;
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
-      //send email to receipient
+      //Build data for particular servicer and send mail
+      const emailCsvArray = totalDataComing.map((item, i) => {
+        return {
+          contractId: item.contractId ? item.contractId : "",
+          servicerName: item.servicerName ? item.servicerName : "",
+          lossDate: item.lossDate ? item.lossDate : '',
+          diagnosis: item.diagnosis ? item.diagnosis : '',
+          status: item.status ? item.status : '',
+        }
+      })
 
 
       const csvArray = totalDataComing.map((item, i) => {
@@ -2243,7 +2249,7 @@ exports.saveBulkClaim = async (req, res) => {
           status: item.status ? item.status : '',
         }
       })
-      function convertArrayToHTMLTable(array) {
+      function convertArrayToHTMLTable(array) { 
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
           const values = Object.values(obj).map(value => `<td>${value}</td>`);
