@@ -257,6 +257,16 @@ exports.dailySales = async (req, res) => {
             console.log("data----------------", dailyQuery[0].$match)
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
         if (!getOrders) {
@@ -480,6 +490,16 @@ exports.weeklySales = async (data, req, res) => {
             // console.log("data----------------", dailyQuery[0].$match)
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         // Perform aggregation query
         const getOrders = await REPORTING.aggregate(weeklyQuery);
         const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
@@ -514,7 +534,15 @@ exports.weeklySales = async (data, req, res) => {
         });
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
+
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
             return {
                 ...item,
                 total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -522,7 +550,8 @@ exports.weeklySales = async (data, req, res) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price: wholesale_price
             };
         });
 
@@ -624,6 +653,30 @@ exports.daySale = async (data) => {
             }
         ];
 
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.dealerId = dealerId
+            dailyQuery1[0].$match.dealerId = dealerId
+        }
+
+        if (data.priceBookId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+
+            // products:
+
+        }
+
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
 
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -642,13 +695,13 @@ exports.daySale = async (data) => {
             day: '2-digit'
         };
         let result = [{
-            date: new Date(checkdate).toLocaleDateString('en-US', options),
+            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
             total_orders: getOrders.length ? getOrders[0].total_orders : 0
         }];
 
         let result1 = [{
-            date: new Date(checkdate).toLocaleDateString('en-US', options),
+            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_broker_fee: getOrders1.length ? getOrders1[0].total_broker_fee : 0,
             total_admin_fee: getOrders1.length ? getOrders1[0].total_admin_fee : 0,
             total_fronting_fee: getOrders1.length ? getOrders1[0].total_fronting_fee : 0,
@@ -658,7 +711,14 @@ exports.daySale = async (data) => {
         }];
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
             return {
                 ...item,
                 total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -666,7 +726,8 @@ exports.daySale = async (data) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price: wholesale_price
             };
         });
 
@@ -704,7 +765,6 @@ exports.daySale = async (data) => {
         });
     }
 };
-
 
 exports.dailySales1 = async (data, req, res) => {
     try {
@@ -793,6 +853,16 @@ exports.dailySales1 = async (data, req, res) => {
 
         }
 
+        if (data.categoryId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
         if (!getOrders) {
@@ -806,7 +876,7 @@ exports.dailySales1 = async (data, req, res) => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
             return {
-                date: dateString,
+                weekStart: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
                 total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0
@@ -826,7 +896,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
 
-                date: dateString,
+                weekStart: dateString,
                 // total_order_amount: order ? order.total_order_amount : 0,
                 // total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0,
@@ -840,7 +910,16 @@ exports.dailySales1 = async (data, req, res) => {
         });
 
         const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
+
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
+
             return {
                 ...item,
                 total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -848,7 +927,8 @@ exports.dailySales1 = async (data, req, res) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price: wholesale_price
             };
         });
 
@@ -891,12 +971,12 @@ exports.dailySales1 = async (data, req, res) => {
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
-}
+};
 
 exports.getReportingDealers = async (req, res) => {
     try {
         let data = req.body
-        let getDealers = await dealerService.getAllDealers({ status: "Approved" },{name:1})
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
         if (!getDealers) {
             res.send({
                 code: constant.successCode,
@@ -916,12 +996,12 @@ exports.getReportingDealers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getReportingPriceBooks = async (req, res) => {
     try {
         let data = req.body
-        let getPriceBooks = await priceBookService.getAllPriceIds({},{_id:0,name:1,pName:1,coverageType:1})
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
         if (!getPriceBooks) {
             res.send({
                 code: constant.errorCode,
@@ -934,6 +1014,19 @@ exports.getReportingPriceBooks = async (req, res) => {
             message: "Success",
             result: getPriceBooks
         })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+
+exports.claimReporting = async (req, res) => {
+    try {
+        let data = req.body
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
