@@ -917,7 +917,7 @@ exports.dailySales1 = async (data, req, res) => {
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
-}
+};
 
 exports.getReportingDealers = async (req, res) => {
     try {
@@ -942,7 +942,7 @@ exports.getReportingDealers = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getReportingPriceBooks = async (req, res) => {
     try {
@@ -966,4 +966,4 @@ exports.getReportingPriceBooks = async (req, res) => {
             message: err.message
         })
     }
-}
+};

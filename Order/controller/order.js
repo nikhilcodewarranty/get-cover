@@ -535,7 +535,9 @@ exports.createOrder1 = async (req, res) => {
                     pricebookDetailObject.frontingFee = priceBook[0].frontingFee
                     pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject._id = priceBook[0]._id
                     pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.categoryId = priceBook[0].category
                     pricebookDetailObject.term = priceBook[0].term
                     pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
@@ -3088,15 +3090,15 @@ exports.archiveOrder = async (req, res) => {
         };
         let createNotification = await userService.createNotification(notificationData1);
         //Save Logs
-        let logData = { 
+        let logData = {
             endpoint: "order/archiveOrder",
             body: req.body,
             userId: req.userId,
             response: {
                 code: constant.successCode,
-                message: "Success!", 
+                message: "Success!",
             }
-        } 
+        }
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
@@ -3820,7 +3822,9 @@ exports.editOrderDetail = async (req, res) => {
                     pricebookDetailObject.frontingFee = priceBook[0].frontingFee
                     pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                    pricebookDetailObject._id = priceBook[0]._id
                     pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject.categoryId = priceBook[0].category
                     pricebookDetailObject.term = priceBook[0].term
                     pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
@@ -4247,7 +4251,9 @@ exports.markAsPaid = async (req, res) => {
                 pricebookDetailObject.frontingFee = priceBook[0].frontingFee
                 pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
                 pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
+                pricebookDetailObject._id = priceBook[0]._id
                 pricebookDetailObject.name = priceBook[0].name
+                pricebookDetailObject.categoryId = priceBook[0].category
                 pricebookDetailObject.term = priceBook[0].term
                 pricebookDetailObject.adminFee = priceBook[0].adminFee
                 pricebookDetailObject.price = product.price

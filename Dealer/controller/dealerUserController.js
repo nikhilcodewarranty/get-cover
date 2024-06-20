@@ -4240,6 +4240,8 @@ exports.editOrderDetail = async (req, res) => {
                     pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
                     pricebookDetailObject.name = priceBook[0].name
+                    pricebookDetailObject._id = priceBook[0]._id
+                    pricebookDetailObject.categoryId = priceBook[0].category
                     pricebookDetailObject.term = priceBook[0].term
                     pricebookDetailObject.adminFee = priceBook[0].adminFee
                     pricebookDetailObject.price = product.price
