@@ -667,7 +667,6 @@ exports.changePrimaryUser = async (req, res) => {
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
 
-    console.log("checkRole--------------------------------",updateLastPrimary)
     if (!updatePrimary) {
       //Save Logs changePrimaryUser
       let logData = {
@@ -693,10 +692,10 @@ exports.changePrimaryUser = async (req, res) => {
       console.log("checkRole00000000000000000000000000000000",checkRole);
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
       let notificationData = {
-        title: checkRole?.role + " primary user change",
+        title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.params.userId,
-        flag: checkRole?.role,
+        flag: updateLastPrimary?.role,
         notificationFor: [getPrimary._id]
       };
       let createNotification = await userService.createNotification(notificationData);
