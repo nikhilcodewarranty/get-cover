@@ -508,7 +508,10 @@ exports.getServiceProviderById = async (req, res, next) => {
 exports.rejectServicer = async (req, res) => {
   try {
     let data = req.body
+    let IDs = await supportingFunction.getUserIds()
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkServicer._id, isPrimary: true })
+    IDs.push(getPrimary._id)
     if (!checkServicer) {
       res.send({
         code: constant.errorCode,
@@ -517,6 +520,24 @@ exports.rejectServicer = async (req, res) => {
       return;
     };
     let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
+    let notificationData = {
+      title: "Rejection Servicer Account",
+      description: "The " + checkServicer.name + " account has been rejected",
+      userId: checkServicer._id,
+      flag: 'dealer',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
+    // Primary User Welcoime email
+    let notificationEmails = await supportingFunction.getUserEmails();
+    let emailData = {
+      senderName: checkServicer.name,
+      content: "Dear " + checkServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + checkServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+      subject: "Rejection Account"
+    }
+    // Send Email code here
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
       message: "Deleted"

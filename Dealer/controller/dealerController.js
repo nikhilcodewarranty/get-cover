@@ -2090,7 +2090,6 @@ exports.rejectDealer = async (req, res) => {
         return;
       }
 
-      console.log("==================================================================1")
 
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
@@ -2109,11 +2108,7 @@ exports.rejectDealer = async (req, res) => {
         notificationFor: IDs
       };
 
-      console.log("==================================================================2")
-
       let createNotification = await userService.createNotification(notificationData);
-
-      console.log("==================================================================3",createNotification)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
       let emailData = {
@@ -2121,9 +2116,6 @@ exports.rejectDealer = async (req, res) => {
         content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
         subject: "Rejection Account"
       }
-
-      console.log("emailData-------------------------------", emailData)
-      console.log("emailPrimary-------------------------------", getPrimary.email)
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
       //Delete the user
