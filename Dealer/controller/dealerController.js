@@ -2090,6 +2090,8 @@ exports.rejectDealer = async (req, res) => {
         return;
       }
 
+      console.log("==================================================================1")
+
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
       if (!deleteDealer) {
@@ -2099,17 +2101,19 @@ exports.rejectDealer = async (req, res) => {
         })
         return;
       }
-
-
       let notificationData = {
         title: "Rejection Dealer Account",
         description: "The " + singleDealer.name + " account has been rejected",
         userId: singleDealer._id,
         flag: 'dealer',
-        contentId: createDealerPrice._id,
         notificationFor: IDs
       };
+
+      console.log("==================================================================2")
+
       let createNotification = await userService.createNotification(notificationData);
+
+      console.log("==================================================================3",createNotification)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
       let emailData = {
