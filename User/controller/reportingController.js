@@ -487,17 +487,17 @@ exports.weeklySales = async (data, req, res) => {
             weeklyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
 
-            // console.log("data----------------", dailyQuery[0].$match)
+            // console.log("data----------------", weeklyQuery[0].$match)
         }
 
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            weeklyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            weeklyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
 
             // products:
 
-            console.log("data----------------", dailyQuery[0].$match)
+            console.log("data----------------", weeklyQuery[0].$match)
         }
 
         // Perform aggregation query
