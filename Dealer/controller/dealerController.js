@@ -2081,28 +2081,6 @@ exports.rejectDealer = async (req, res) => {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: singleDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
-      let notificationData = {
-        title: "Rejection Dealer Account",
-        description: "The " + singleDealer.name + " account has been rejected",
-        userId: singleDealer._id,
-        flag: 'dealer',
-        contentId: createDealerPrice._id,
-        notificationFor: IDs
-      };
-      let createNotification = await userService.createNotification(notificationData);
-      // Primary User Welcoime email
-      let notificationEmails = await supportingFunction.getUserEmails();
-      let emailData = {
-        senderName: singleDealer.name,
-        content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
-        subject: "Rejection Account"
-      }
-
-      console.log(emailData)
-      console.log(getPrimary.email)
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-      //Delete the user
       const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
       if (!deleteUser) {
         res.send({
@@ -2121,6 +2099,31 @@ exports.rejectDealer = async (req, res) => {
         })
         return;
       }
+
+
+      let notificationData = {
+        title: "Rejection Dealer Account",
+        description: "The " + singleDealer.name + " account has been rejected",
+        userId: singleDealer._id,
+        flag: 'dealer',
+        contentId: createDealerPrice._id,
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData);
+      // Primary User Welcoime email
+      let notificationEmails = await supportingFunction.getUserEmails();
+      let emailData = {
+        senderName: singleDealer.name,
+        content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+        subject: "Rejection Account"
+      }
+
+      console.log("emailData-------------------------------", emailData)
+      console.log("emailPrimary-------------------------------", getPrimary.email)
+      // Send Email code here
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      //Delete the user
+
       res.send({
         code: constant.successCode,
         data: "Rejected Successful"
