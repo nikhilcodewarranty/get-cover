@@ -2272,14 +2272,53 @@ exports.saveBulkClaim = async (req, res) => {
           status: item.status ? item.status : '',
         }
       })
-     
-      const htmlTableString = convertArrayToHTMLTable(csvArray);
-      res.json(htmlTableString);return;
+      function convertArrayToHTMLTable(array) {
+        console.log("sdasdasdsadsa")
+        const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
+        const rows = array.map(obj => {
+          const values = Object.values(obj).map(value => `<td>${value}</td>`);
+          values[2] = `${values[2]}`;
+          return values.join('');
+        });
+      
+        const htmlContent = `<html>
+            <head>
+                <style>
+                    table {
+                        border-collapse: collapse;
+                        width: 100%; 
+                    }
+                    th, td {
+                        border: 1px solid #dddddd;
+                        text-align: left;
+                        padding: 8px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                    }
+                </style>
+            </head>
+            <body>
+                <table>
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
+                </table>
+            </body>
+        </html>`;
+      
+        return htmlContent;
+      }
+      const htmlTableString =  convertArrayToHTMLTable(csvArray);
       //send Email to admin 
       const adminEmail = await supportingFunction.getUserEmails();
-      const mailing = sgMail.send(emailConstant.sendCsvFile(["yashasvi@codenomad.net"], htmlTableString));
+      let mailing = sgMail.send(emailConstant.sendCsvFile("amit@codenomad.net", htmlTableString));
       //send email to servicer      
-       sendEamilToServicer(flatArray);
+      for (const item of flatArray) {
+        console.log(item.email)
+        console.log(item.response)
+        const htmlTableString =  convertArrayToHTMLTable(item.response);
+         mailing = await sgMail.send(emailConstant.sendCsvFile(item.email, htmlTableString));
+      }
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -2299,47 +2338,9 @@ exports.saveBulkClaim = async (req, res) => {
 
 async function sendEamilToServicer(data) {
   console.log(data)
-  for (const item of data) {
-    const htmlTableString = await convertArrayToHTMLTable(item.response);
-    const mailing = await sgMail.send(emailConstant.sendCsvFile([item.email], htmlTableString));
-  }
-}
-function convertArrayToHTMLTable(array) {
-  console.log("sdasdasdsadsa")
-  const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
-  const rows = array.map(obj => {
-    const values = Object.values(obj).map(value => `<td>${value}</td>`);
-    values[2] = `${values[2]}`;
-    return values.join('');
-  });
 
-  const htmlContent = `<html>
-      <head>
-          <style>
-              table {
-                  border-collapse: collapse;
-                  width: 100%; 
-              }
-              th, td {
-                  border: 1px solid #dddddd;
-                  text-align: left;
-                  padding: 8px;
-              }
-              th {
-                  background-color: #f2f2f2;
-              }
-          </style>
-      </head>
-      <body>
-          <table>
-              <thead><tr>${header}</tr></thead>
-              <tbody>${rows.map(row => `<tr>${row}</tr>`).join('')}</tbody>
-          </table>
-      </body>
-  </html>`;
-
-  return htmlContent;
 }
+
 //Send message
 exports.sendMessages = async (req, res) => {
   try {
