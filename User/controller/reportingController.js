@@ -533,8 +533,8 @@ exports.weeklySales = async (data, req, res) => {
             };
         });
 
-        const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.weekStart === item.weekStart);
+        const mergedResult = getOrders.map(item => {
+            const match = getOrders1.find(r1 => r1.weekStart === item.weekStart);
 
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
@@ -1022,25 +1022,25 @@ exports.getReportingPriceBooks = async (req, res) => {
     }
 };
 
-exports.getReportingCategories = async(req,res)=>{
-    try{
-        let getCategories = await priceBookService.getAllPriceCat({},{name:1})
-        if(!getCategories){
+exports.getReportingCategories = async (req, res) => {
+    try {
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1 })
+        if (!getCategories) {
             res.send({
-                code:constant.errorCode,
-                message:"Unable to fetch the catogories"
+                code: constant.errorCode,
+                message: "Unable to fetch the catogories"
             })
             retrun
         }
         res.send({
-            code:constant.successCode,
-            message:"Success",
-            result:getCategories
+            code: constant.successCode,
+            message: "Success",
+            result: getCategories
         })
-    }catch(err){
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
