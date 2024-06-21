@@ -130,7 +130,7 @@ exports.createReseller = async (req, res) => {
         
         let emailData = {
             senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
+            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
             subject: "Welcome to Get-Cover reseller Registration Approved"
         }
 
@@ -832,7 +832,7 @@ exports.editResellers = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(resellerPrimary.email);
+        //notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
         let emailData = {
             senderName: checkReseller.name,
@@ -840,7 +840,7 @@ exports.editResellers = async (req, res) => {
             subject: "Update Info"
         }
 
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary.email, notificationEmails, emailData))
 
         //Save Logs update reseller
         let logData = {

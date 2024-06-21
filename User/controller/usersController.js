@@ -2062,8 +2062,9 @@ exports.updateUserData = async (req, res) => {
       notificationFor: [getPrimary._id]
     };
 
+    console.log(notificationData);
     let createNotification = await userService.createNotification(notificationData);
-
+    console.log("notificationData,,,,,,,,,,,,,,,,,,,,",createNotification);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
@@ -2298,9 +2299,6 @@ exports.deleteUser = async (req, res) => {
       });
       return;
     };
-
-
-
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
     let primaryUser = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
