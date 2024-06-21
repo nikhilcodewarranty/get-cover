@@ -2311,13 +2311,13 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString =  convertArrayToHTMLTable(csvArray);
       //send Email to admin 
       const adminEmail = await supportingFunction.getUserEmails();
-      let mailing = sgMail.send(emailConstant.sendCsvFile("amit@codenomad.net", htmlTableString));
+      let mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail,['ram@yopmail.com'], htmlTableString));
       //send email to servicer      
       for (const item of flatArray) {
         console.log(item.email)
         console.log(item.response)
         const htmlTableString =  convertArrayToHTMLTable(item.response);
-         mailing = await sgMail.send(emailConstant.sendCsvFile(item.email, htmlTableString));
+         mailing = await sgMail.send(emailConstant.sendCsvFile(item.email,adminEmail, htmlTableString));
       }
       res.send({
         code: constant.successCode,

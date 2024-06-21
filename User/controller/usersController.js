@@ -983,7 +983,7 @@ exports.createDealer = async (req, res) => {
             }
 
             const htmlTableString = convertArrayToHTMLTable(csvArray);
-            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], htmlTableString));
           }
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
@@ -1098,14 +1098,14 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, dealerName:createUsers[i].firstName }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, dealerName: createUsers[i].firstName }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, dealerName:singleDealerUser.firstName }))
+            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, dealerName: singleDealerUser.firstName }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
@@ -1647,7 +1647,7 @@ exports.createDealer = async (req, res) => {
             }
 
             const htmlTableString = convertArrayToHTMLTable(csvArray);
-            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', htmlTableString));
+            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], htmlTableString));
           }
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
@@ -2064,7 +2064,7 @@ exports.updateUserData = async (req, res) => {
 
     console.log(notificationData);
     let createNotification = await userService.createNotification(notificationData);
-    console.log("notificationData,,,,,,,,,,,,,,,,,,,,",createNotification);
+    console.log("notificationData,,,,,,,,,,,,,,,,,,,,", createNotification);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
@@ -3011,7 +3011,7 @@ const reportingController = require("./reportingController")
 
 exports.saleReporting = async (req, res) => {
   try {
-    console.log("---------",req.body)
+    console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
     //     code:constant.errorCode,
@@ -3040,14 +3040,14 @@ exports.saleReporting = async (req, res) => {
         message: "Success",
         result: sales
       })
-    } else if(req.body.flag == "day"){
+    } else if (req.body.flag == "day") {
       let sales = await reportingController.daySale(req.body)
       res.send({
         code: constant.successCode,
         message: "Success",
         result: sales
       })
-    }else {
+    } else {
       res.send({
         code: constant.successCode,
         result: [],

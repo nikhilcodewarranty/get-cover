@@ -1862,7 +1862,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       // Send email with the CSV file link
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', entriesData));
+      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], entriesData));
       if (mailing) {
         //  console.log('Email sent successfully');
         res.send({
@@ -2097,6 +2097,28 @@ exports.rejectDealer = async (req, res) => {
         })
         return;
       }
+
+      let IDs = await supportingFunction.getUserIds()
+      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: singleDealer._id, isPrimary: true })
+      IDs.push(getPrimary._id)
+      let notificationData = {
+        title: "Rejection Dealer Account",
+        description: "The " + singleDealer.name + " account has been rejected",
+        userId: singleDealer._id,
+        flag: 'dealer',
+        contentId: createDealerPrice._id,
+        notificationFor: IDs
+      };
+      let createNotification = await userService.createNotification(notificationData);
+      // Primary User Welcoime email
+      let notificationEmails = await supportingFunction.getUserEmails();
+      let emailData = {
+        senderName: singleDealer.name,
+        content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+        subject: "Rejection Account"
+      }
+      // Send Email code here
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
       res.send({
         code: constant.successCode,
         data: "Rejected Successful"
@@ -2682,7 +2704,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
         // }
-        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmails, [], htmlTableString));
       }
       res.send({
         code: constant.successCode,
