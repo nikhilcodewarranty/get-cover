@@ -519,6 +519,7 @@ exports.rejectServicer = async (req, res) => {
       })
       return;
     };
+    console.log("checkServicer1-----------------------------------",checkServicer)
     let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
     let notificationData = {
       title: "Rejection Servicer Account",
@@ -528,6 +529,7 @@ exports.rejectServicer = async (req, res) => {
       notificationFor: IDs
     };
 
+    console.log("checkServicer2-----------------------------------",checkServicer)
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
