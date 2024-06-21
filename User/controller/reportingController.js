@@ -379,7 +379,7 @@ exports.weeklySales = async (data, req, res) => {
         let currentDate1 = moment(startDate);
 
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
+            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
             currentDate = currentDate
             currentDate.add(1, 'week');
         }
