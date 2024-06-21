@@ -686,7 +686,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
         let data = req.body
         //data.status = typeof (data.status) == "string" ? "all" : data.status
-        console.log(data)
         let categorySearch = req.body.category ? req.body.category : ''
         let checkDealer = await dealerService.getDealerById(req.userId, { isDeleted: false });
         let queryCategories = {
@@ -1544,7 +1543,7 @@ exports.createCustomer = async (req, res, next) => {
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `http://${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
                         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: Customer, servicerName:saveMembers[i].firstName }))
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Customer", servicerName:saveMembers[i].firstName }))
 
                     }
 
