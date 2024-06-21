@@ -33,6 +33,15 @@ module.exports = class dealerService {
         }
     }
 
+    static async getDealerRelationsAggregate(query, projection) {
+        try {
+            const relations = await relationTable.aggregate(query)
+            return relations;
+        } catch (error) {
+            console.log(`Could not fetch the relations ${error}`);
+        }
+    }
+
     static async getDealerRelation(query, projection) {
         try {
             const relations = await relationTable.findOne(query, projection)

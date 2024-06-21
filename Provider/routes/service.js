@@ -23,6 +23,7 @@ router.post("/getServicerClaims/:servicerId", [verifyToken], servicerAdminContro
 
 router.post("/createRelationWithDealer/:servicerId",[verifyToken],servicerAdminController.createDeleteRelation)
 router.post("/getServicerDealers/:servicerId",[verifyToken],servicerAdminController.getServicerDealers)
+router.post("/getServicerDealers1/:servicerId",[verifyToken],servicerAdminController.getServicerDealers1)
 router.get("/getDealerList/:servicerId",[verifyToken],servicerAdminController.getDealerList)
 
 

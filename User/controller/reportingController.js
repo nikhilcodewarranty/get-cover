@@ -220,25 +220,7 @@ exports.dailySales = async (req, res) => {
             }
         ];
 
-        // // Debugging step to check the intermediate results after first grouping
-        // const debugQuery = [
-        //     {
-        //         $match: {
-        //             createdAt: { $gte: startOfMonth, $lt: endOfMonth }
-        //         }
-        //     },
-        //     {
-        //         $group: {
-        //             _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-        //             total_order_amount: { $sum: "$orderAmount" },
-        //             total_orders: { $sum: 1 },
-        //             orders: { $push: "$$ROOT" }
-        //         }
-        //     }
-        // ];
-
-        // let debugResult = await REPORTING.aggregate(debugQuery);
-        // console.log("Debugging Result after first $group:", JSON.stringify(debugResult[0], null, 2));
+      
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -397,8 +379,8 @@ exports.weeklySales = async (data, req, res) => {
         let currentDate1 = moment(startDate);
 
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
-            currentDate1 = currentDate
+            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
+            currentDate = currentDate
             currentDate.add(1, 'week');
         }
 
@@ -487,17 +469,17 @@ exports.weeklySales = async (data, req, res) => {
             weeklyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
 
-            // console.log("data----------------", dailyQuery[0].$match)
+            // console.log("data----------------", weeklyQuery[0].$match)
         }
 
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            weeklyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            weeklyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
 
             // products:
 
-            console.log("data----------------", dailyQuery[0].$match)
+            console.log("data----------------", weeklyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -518,6 +500,7 @@ exports.weeklySales = async (data, req, res) => {
             };
         });
 
+
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
             const order = getOrders1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
@@ -532,6 +515,7 @@ exports.weeklySales = async (data, req, res) => {
                 // total_orders: order ? order.total_orders : 0
             };
         });
+        console.log(result,result1,"+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
@@ -1022,25 +1006,25 @@ exports.getReportingPriceBooks = async (req, res) => {
     }
 };
 
-exports.getReportingCategories = async(req,res)=>{
-    try{
-        let getCategories = await priceBookService.getAllPriceCat({},{name:1})
-        if(!getCategories){
+exports.getReportingCategories = async (req, res) => {
+    try {
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1 })
+        if (!getCategories) {
             res.send({
-                code:constant.errorCode,
-                message:"Unable to fetch the catogories"
+                code: constant.errorCode,
+                message: "Unable to fetch the catogories"
             })
             retrun
         }
         res.send({
-            code:constant.successCode,
-            message:"Success",
-            result:getCategories
+            code: constant.successCode,
+            message: "Success",
+            result: getCategories
         })
-    }catch(err){
+    } catch (err) {
         res.send({
-            code:constant.errorCode,
-            message:err.message
+            code: constant.errorCode,
+            message: err.message
         })
     }
 }
