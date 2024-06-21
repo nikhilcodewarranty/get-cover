@@ -2078,26 +2078,6 @@ exports.rejectDealer = async (req, res) => {
 
     //if status is rejected
     if (req.body.status == 'Rejected') {
-      //Delete the user
-      const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
-      if (!deleteUser) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to delete the user"
-        })
-        return;
-      }
-
-      //Delete the dealer
-      const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
-      if (!deleteDealer) {
-        res.send({
-          code: constant.errorCode,
-          message: "Unable to delete the dealer"
-        })
-        return;
-      }
-
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: singleDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
@@ -2122,6 +2102,25 @@ exports.rejectDealer = async (req, res) => {
       console.log(getPrimary.email)
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
+      //Delete the user
+      const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
+      if (!deleteUser) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to delete the user"
+        })
+        return;
+      }
+
+      //Delete the dealer
+      const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
+      if (!deleteDealer) {
+        res.send({
+          code: constant.errorCode,
+          message: "Unable to delete the dealer"
+        })
+        return;
+      }
       res.send({
         code: constant.successCode,
         data: "Rejected Successful"
