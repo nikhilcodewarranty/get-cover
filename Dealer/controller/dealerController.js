@@ -2117,6 +2117,9 @@ exports.rejectDealer = async (req, res) => {
         content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
         subject: "Rejection Account"
       }
+
+      console.log(emailData)
+      console.log(getPrimary.email)
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
       res.send({
