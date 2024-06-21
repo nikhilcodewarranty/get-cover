@@ -524,7 +524,7 @@ exports.rejectServicer = async (req, res) => {
       title: "Rejection Servicer Account",
       description: "The " + checkServicer.name + " account has been rejected",
       userId: checkServicer._id,
-      flag: 'dealer',
+      flag: 'servicer',
       notificationFor: IDs
     };
 
@@ -536,11 +536,13 @@ exports.rejectServicer = async (req, res) => {
       content: "Dear " + checkServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + checkServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
       subject: "Rejection Account"
     }
+    console.log("emailData-------------------------",emailData)
+    console.log("notificationEmails-------------------------",notificationEmails)
     // Send Email code here
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
-      message: "Deleted"
+      message: "Deleted" 
     })
 
   } catch (err) {
