@@ -220,25 +220,7 @@ exports.dailySales = async (req, res) => {
             }
         ];
 
-        // // Debugging step to check the intermediate results after first grouping
-        // const debugQuery = [
-        //     {
-        //         $match: {
-        //             createdAt: { $gte: startOfMonth, $lt: endOfMonth }
-        //         }
-        //     },
-        //     {
-        //         $group: {
-        //             _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-        //             total_order_amount: { $sum: "$orderAmount" },
-        //             total_orders: { $sum: 1 },
-        //             orders: { $push: "$$ROOT" }
-        //         }
-        //     }
-        // ];
-
-        // let debugResult = await REPORTING.aggregate(debugQuery);
-        // console.log("Debugging Result after first $group:", JSON.stringify(debugResult[0], null, 2));
+      
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -398,7 +380,7 @@ exports.weeklySales = async (data, req, res) => {
 
         while (currentDate <= endOfWeekDate) {
             datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
-            currentDate1 = currentDate
+            currentDate = currentDate
             currentDate.add(1, 'week');
         }
 
@@ -533,8 +515,8 @@ exports.weeklySales = async (data, req, res) => {
             };
         });
 
-        const mergedResult = getOrders.map(item => {
-            const match = getOrders1.find(r1 => r1.weekStart === item.weekStart);
+        const mergedResult = result.map(item => {
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
 
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
