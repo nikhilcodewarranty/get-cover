@@ -509,8 +509,9 @@ exports.rejectServicer = async (req, res) => {
   try {
     let data = req.body
     let IDs = await supportingFunction.getUserIds()
+    let getServicer = await providerService.getServiceProviderById({_id:req.params.servicerId});
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkServicer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
     if (!checkServicer) {
       res.send({
@@ -519,23 +520,22 @@ exports.rejectServicer = async (req, res) => {
       })
       return;
     };
-    console.log("checkServicer1-----------------------------------",checkServicer)
-    let deleteUser = await userService.deleteUser({ accountId: checkServicer._id })
+    let deleteUser = await userService.deleteUser({ accountId:getServicer._id})
     let notificationData = {
       title: "Rejection Servicer Account",
-      description: "The " + checkServicer.name + " account has been rejected",
-      userId: checkServicer._id,
+      description: "The " + getServicer.name + " account has been rejected",
+      userId: getServicer._id,
       flag: 'servicer',
       notificationFor: IDs
     };
 
-    console.log("checkServicer2-----------------------------------",checkServicer)
+    console.log("checkServicer2-----------------------------------",getServicer)
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
-      senderName: checkServicer.name,
-      content: "Dear " + checkServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + checkServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+      senderName: getServicer.name,
+      content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
       subject: "Rejection Account"
     }
     console.log("emailData-------------------------",emailData)
