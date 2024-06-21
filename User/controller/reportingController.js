@@ -500,6 +500,7 @@ exports.weeklySales = async (data, req, res) => {
             };
         });
 
+
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
             const order = getOrders1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
@@ -514,6 +515,7 @@ exports.weeklySales = async (data, req, res) => {
                 // total_orders: order ? order.total_orders : 0
             };
         });
+        console.log(result,result1,"+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);

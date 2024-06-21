@@ -438,6 +438,32 @@ exports.getServicerDealers = async (req, res) => {
     }
 }
 
+exports.getServicerDealers1 = async (req, res) => {
+    try {
+        let data = req.body
+        
+        let filteredData = await dealerRelationService.getDealerRelationsAggregate([
+            {
+                $match:{
+                    servicerId:"sdfsdfs"
+                }
+            }
+        ])
+
+        res.send({
+            code: constant.successCode,
+            data: filteredData
+        });
+
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
 exports.createDeleteRelation = async (req, res) => {
     try {
         let data = req.body

@@ -705,7 +705,7 @@ exports.updateStatus = async (req, res) => {
   try {
     let data = req.body
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
-    
+
     if (!checkServicer) {
       res.send({
         code: constant.errorCode,
@@ -796,7 +796,7 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-    
+
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "Servicer status update",
@@ -826,29 +826,29 @@ exports.updateStatus = async (req, res) => {
       }
     }
 
-            // Send Email code here
-            let notificationEmails = await supportingFunction.getUserEmails();
-            //notificationEmails.push(getPrimary.email);
-            // const notificationContent = {
-            //   content: checkServicer.name + " " + "status has been updated successfully!"
-            // }
-            const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
-    
-            let emailData = {
-              senderName: checkServicer.name,
-              content: "Status has been changed to " + status_content + " " + ", effective immediately.",
-              subject: "Update Status"
-            }
-            // let emailData = {
-            //   dealerName: checkServicer.name,
-            //   c1: "The Servicer",
-            //   c2: checkServicer.name,
-            //   c3: "has been updated successfully!.",
-            //   c4: "",
-            //   c5: "",
-            //   role: "Servicer"
-            // }
-            let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
+    // Send Email code here
+    let notificationEmails = await supportingFunction.getUserEmails();
+    //notificationEmails.push(getPrimary.email);
+    // const notificationContent = {
+    //   content: checkServicer.name + " " + "status has been updated successfully!"
+    // }
+    const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
+
+    let emailData = {
+      senderName: checkServicer.name,
+      content: "Status has been changed to " + status_content + " " + ", effective immediately.",
+      subject: "Update Status"
+    }
+    // let emailData = {
+    //   dealerName: checkServicer.name,
+    //   c1: "The Servicer",
+    //   c2: checkServicer.name,
+    //   c3: "has been updated successfully!.",
+    //   c4: "",
+    //   c5: "",
+    //   role: "Servicer"
+    // }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1619,6 +1619,109 @@ exports.getServicerDealers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
+
+    res.send({
+      code: constant.successCode,
+      data: filteredData
+    });
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+exports.getServicerDealers1 = async (req, res) => {
+  try {
+    let data = req.body
+    let query = [
+      {
+        $match: {
+          servicerId: new mongoose.Types.ObjectId(req.params.servicerId)
+        }
+      },
+      {
+        $lookup: {
+          from: "dealers",
+          localField: "dealerId",
+          foreignField: "_id",
+          as: "dealerData",
+          pipeline: [
+            {
+              $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "userData",
+                pipeline: [
+                  {
+                    $match: {
+                      isPrimary: true
+                    }
+                  }
+                ]
+              }
+            },
+            {$unwind:"$userData"},
+            {
+              $lookup: {
+                from: "claims",
+                // let: { dealerId: "$_id" },
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "claimsData",
+                pipeline: [
+                  {
+                    $group: {
+                      _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
+                      totalAmount: { $sum: "$totalAmount" },
+                      numberOfClaims: { $sum: 1 }
+                    }
+                  },
+                  {
+                    $project: {
+                      _id:0,
+                      totalAmount: 1,
+                      numberOfClaims: 1
+                    }
+                  }
+                ]
+
+                //   {
+                //     $match: {
+                //       $expr: {
+                //         $and: [
+                //           { $eq: ["$dealerId", "$dealerId"] },
+                //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
+                //         ]
+                //       }
+                //     }
+                //   },
+
+                // {
+                //   $group: {
+                //     _id: null,
+                //     totalAmount: { $sum: "$amount" },
+                //     numberOfClaims: { $sum: 1 }
+                //   }
+                // }
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: "$dealerData"
+      },
+      // {
+      //   $project:{
+
+      //   }
+      // }
+    ]
+    let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
 
     res.send({
       code: constant.successCode,
