@@ -615,6 +615,9 @@ exports.createOrder1 = async (req, res) => {
                         { status: "Active" },
                         { new: true }
                     );
+                    //generate T anc C
+                    const tcResponse = await generateTC(savedResponse);
+                    console.log("generateTC=========================================",tcResponse)
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
@@ -5356,15 +5359,211 @@ exports.generatePDF = async (req, res) => {
     }
 };
 
+
+async function generateTC(orderData) {
+    try {
+        let response;
+        let link;
+        const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
+        let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
+        let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+        //Get Dealer
+        const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+        //Get customer
+        const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
+        //Get customer primary info
+        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+
+        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+
+        const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
+        //Get reseller primary info
+        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        //Get contract info of the order
+        let productCoveredArray = []
+        //Check contract is exist or not using contract id
+        const contractArrayPromise = checkOrder?.productsArray.map(item => {
+            if (!item.exit) return contractService.getContractById({
+                orderProductId: item._id
+            });
+            else {
+                return null;
+            }
+        })
+        const contractArray = await Promise.all(contractArrayPromise);
+        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
+                for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
+                    let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
+                    let obj = {
+                        productName: quanitityProduct.name,
+                        noOfProducts: quanitityProduct.enterQuantity
+                    }
+                    productCoveredArray.push(obj)
+                }
+
+            }
+            else {
+                let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
+
+                let obj = {
+                    productName: findContract.productName,
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                }
+                productCoveredArray.push(obj)
+            }
+
+        }
+        // res.json(productCoveredArray);
+        // return;
+        const tableRows = productCoveredArray.map(product => `
+        <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
+
+`).join('');
+
+        const checkServicer = await servicerService.getServiceProviderById({
+            $or: [
+                { "_id": checkOrder.servicerId },
+                { "dealerId": checkOrder.servicerId },
+                { "resellerId": checkOrder.servicerId }
+            ]
+        }, { isDeleted: false })
+
+        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        //res.json(checkDealer);return
+        const options = {
+            format: 'A4',
+            orientation: 'portrait',
+            border: '10mm',
+            childProcessOptions: {
+                env: {
+                    OPENSSL_CONF: '/dev/null',
+                },
+            }
+        }
+        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '.pdf'
+        const orderFile = 'pdfs/' + mergeFileName;
+        //   var html = fs.readFileSync('../template/template.html', 'utf8');
+        const html = `<head>
+        <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
+        </head>
+        <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
+                            <tr>
+                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
+                                <td style="font-size:13px;"> 
+                                    <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+                                    <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                </td>
+                            </tr>
+                        <tr>
+                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;">
+                            <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+                            <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            </td>
+                        </tr>
+                    <tr>
+                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
+                   </tr>
+                <tr>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                </tr>
+            <tr>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;">
+                ${checkOrder.productsArray[0]?.term / 12} 
+                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
+                </td>
+            </tr>
+            <tr>
+            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+          </tr>
+            <tr>
+                <td style="font-size:13px;padding:15px;">Number of covered components:</td>
+               <td> ${tableRows}   </td>                 
+            </tr >
+            
+        </table > `;
+        if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+            link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            response = { link: link, fileName: mergeFileName }
+
+            return 1
+            // res.send({
+            //     code: constant.successCode,
+            //     message: 'Success!',
+            //     result: response
+            // })
+        } else {
+            pdf.create(html, options).toFile(orderFile, async (err, result) => {
+                if (err) return console.log(err);
+                // -------------------merging pdfs 
+                const { PDFDocument, rgb } = require('pdf-lib');
+                const fs = require('fs').promises;
+
+                async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                    // Load the PDFs
+                    const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                    const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+                    const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                    const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+                    // Create a new PDF Document
+                    const mergedPdf = await PDFDocument.create();
+
+                    // Add the pages of the first PDF
+                    const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                    pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+                    // Add the pages of the second PDF
+                    const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                    pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+                    // Serialize the PDF
+                    const mergedPdfBytes = await mergedPdf.save();
+
+                    // Write the merged PDF to a file
+                    await fs.writeFile(outputPath, mergedPdfBytes);
+                }
+
+                //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
+
+                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
+                // Usage
+                const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
+                const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+                const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+                link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+                let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+                response = { link: link, fileName: mergeFileName }
+                return 1
+
+            });
+        }
+
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+        return;
+    }
+}
+
 exports.generateHtmltopdf = async (req, res) => {
     try {
-        // if (req.role != 'Super Admin') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only super allow to do this action!'
-        //     })
-        //     return;
-        // }
         let response;
         let link;
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
@@ -5441,7 +5640,7 @@ exports.generateHtmltopdf = async (req, res) => {
             childProcessOptions: {
                 env: {
                     OPENSSL_CONF: '/dev/null',
-                }, 
+                },
             }
         }
         // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
@@ -5506,7 +5705,6 @@ exports.generateHtmltopdf = async (req, res) => {
                 result: response
             })
         } else {
-            // console.log("I am dsfsfdssdfsd");
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
