@@ -580,7 +580,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
-    }
+    } 
     else {
        emailData = {
         senderName: admin.firstName,

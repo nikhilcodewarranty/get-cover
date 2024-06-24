@@ -12,9 +12,10 @@ module.exports = {
     };
   },
 
-  sendCsvFile: (toEmail, data) => {
+  sendCsvFile: (toEmail,ccMail, data) => {
     return {
       to: toEmail,
+      cc:ccMail,
       from: process.env.from_email,
       subject: `Bulk Data Report`,
       html:data
