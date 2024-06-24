@@ -625,8 +625,8 @@ exports.createOrder1 = async (req, res) => {
                     }
                     IDs.push(dealerPrimary._id, customerPrimary._id)
                     let notificationData1 = {
-                        title: "New order created",
-                        description: data.dealerPurchaseOrder + " " + "order has been created",
+                        title: "Order Update and Processed",
+                        description: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         userId: req.userId,
                         contentId: null,
                         flag: 'order',
