@@ -5511,7 +5511,7 @@ exports.generateHtmltopdf = async (req, res) => {
                         </tr>
                     <tr>
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
