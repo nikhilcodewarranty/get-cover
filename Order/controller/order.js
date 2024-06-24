@@ -5550,37 +5550,36 @@ async function generateTC(orderData) {
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
-            //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
-                fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function(err, data) {
-                //Email to Customer
-               const emailData = {
-                    senderName: 'Testing',
-                    attachments: [
-                        {
-                          content: data,
-                          filename: "attachment.pdf",
-                          type: "application/pdf",
-                          disposition: "attachment"
-                        }
-                      ],
-                    subject: "T and C"
-                }
-                const mailing = sgMail.send(emailConstant.sendEmailTemplate('amit@codenomad.net', 'yashasvi@codenomad.net', emailData))
+                //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
+                fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function (err, data) {
+                    //Email to Customer
+                    sgMail.send({
+                        to: 'amit@codenomad.net',
+                        from: process.env.from_email,
+                        subject: 'Report',
+                        attachments: [{
+                            filename: 'Report.pdf',
+                            content: data,
+                            type: 'application/pdf',
+                        }],
+                        html: 'bla bla'
+                    })
+                })
 
             })
-                return 1
+            return 1
 
-            });
-        }
+        
+    }
 
     }
     catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-        return;
-    }
+    res.send({
+        code: constant.errorCode,
+        message: err.message
+    })
+    return;
+}
 }
 
 exports.generateHtmltopdf = async (req, res) => {
