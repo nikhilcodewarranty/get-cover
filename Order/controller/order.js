@@ -613,7 +613,7 @@ exports.createOrder1 = async (req, res) => {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Active" },
-                        { new: true }
+                        { new: true } 
                     );
                     //generate T anc C
                     const tcResponse = await generateTC(savedResponse);
