@@ -898,10 +898,10 @@ exports.cronJobEligible = async (req, res) => {
     // ];
     let result = await contractService.findContracts1(query);
 
-    res.send({
-      result
-    })
-    return;
+    // res.send({
+    //   result
+    // })
+    // return;
     console.log("========================================================1")
     let bulk = [];
     let contractIds = []

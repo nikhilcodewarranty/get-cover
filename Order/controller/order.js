@@ -618,7 +618,7 @@ exports.createOrder1 = async (req, res) => {
                     //generate T anc C
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
-                        console.log("tcResponse-----------------------------------",tcResponse)
+                        console.log("tcResponse-----------------------------------", tcResponse)
                     }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
@@ -5497,8 +5497,7 @@ async function generateTC(orderData) {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            console.log("I am hereerererer")
-            link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
 
             return 1
@@ -5508,7 +5507,6 @@ async function generateTC(orderData) {
             //     result: response
             // })
         } else {
-            console.log("I am elsevvvvvvv")
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
@@ -5548,13 +5546,30 @@ async function generateTC(orderData) {
                 const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
                 const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
                 const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-                link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+                link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-                response = { link: link, fileName: mergeFileName }
+
+                const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
+                const attachment = fs.readFileSync(pathToAttachment).toString("base64");
+                //Email to Customer
+               const emailData = {
+                    senderName: 'Testing',
+                    attachments: [
+                        {
+                          content: attachment,
+                          filename: "attachment.pdf",
+                          type: "application/pdf",
+                          disposition: "attachment"
+                        }
+                      ],
+                    subject: "T and C"
+                }
+
+                const mailing = sgMail.send(emailConstant.sendEmailTemplate('amit@codenomad.net', 'yashasvi@codenomad.net', emailData))
                 return 1
 
             });
-        } 
+        }
 
     }
     catch (err) {
@@ -5701,7 +5716,7 @@ exports.generateHtmltopdf = async (req, res) => {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
             res.send({
                 code: constant.successCode,
@@ -5748,7 +5763,7 @@ exports.generateHtmltopdf = async (req, res) => {
                 const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
                 const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
                 const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-                link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+                link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
                 response = { link: link, fileName: mergeFileName }
                 res.send({
