@@ -41,6 +41,7 @@ const orderService = require("../../Order/services/orderService");
 
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
+const claimService = require("../../Claim/services/claimService");
 
 
 // daily query for reporting 
@@ -220,7 +221,7 @@ exports.dailySales = async (req, res) => {
             }
         ];
 
-      
+
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -464,22 +465,23 @@ exports.weeklySales = async (data, req, res) => {
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
-        if (data.priceBookId != "") {
+        if (data.priceBookId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            weeklyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-            weeklyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-
-            // console.log("data----------------", weeklyQuery[0].$match)
-        }
-
-        if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            weeklyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
-            weeklyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
 
             // products:
 
-            console.log("data----------------", weeklyQuery[0].$match)
+        }
+
+        if (data.categoryId.length != 0) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -515,7 +517,7 @@ exports.weeklySales = async (data, req, res) => {
                 // total_orders: order ? order.total_orders : 0
             };
         });
-        console.log(result,result1,"+++++++++++++++++++++++++++++")
+        console.log(result, result1, "+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
@@ -643,19 +645,19 @@ exports.daySale = async (data) => {
             dailyQuery1[0].$match.dealerId = dealerId
         }
 
-        if (data.priceBookId != "") {
+        if (data.priceBookId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
 
             // products:
 
         }
 
-        if (data.categoryId != "") {
+        if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
 
             // products:
 
@@ -828,19 +830,19 @@ exports.dailySales1 = async (data, req, res) => {
             dailyQuery1[0].$match.dealerId = dealerId
         }
 
-        if (data.priceBookId != "") {
+        if (data.priceBookId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
 
             // products:
 
         }
 
-        if (data.categoryId != "") {
+        if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: data.categoryId } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
 
             // products:
 
@@ -1029,14 +1031,136 @@ exports.getReportingCategories = async (req, res) => {
     }
 }
 
-exports.claimReporting = async (req, res) => {
+exports.claimDailyReporting = async (data) => {
     try {
-        let data = req.body
+        // let data = req.body
+        let startOfMonth2 = new Date(data.startDate);
+        let endOfMonth1 = new Date(data.endDate);
+
+        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+
+        // let startOfMonth1 = new Date(startOfMonth1.setDate(startOfMonth1.getDate()))
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+            return { code: 401, message: "invalid date" };
+        }
+
+        let datesArray = [];
+        let currentDate = new Date(startOfMonth);
+        while (currentDate <= endOfMonth) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.dealerId = dealerId
+        }
+
+        if (data.servicerId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.servicerId)
+
+            dailyQuery[0].$match.servicerId = servicerId
+        }
+
+        if (data.claimPaymentStatus != "") {
+            dailyQuery[0].$match.claimPaymentStatus = data.claimPaymentStatus
+        }
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_amount: order ? order.total_amount : 0,
+                total_claim: order ? order.total_claim : 0,
+
+            };
+        });
+
+        const totalFees = result.reduce((acc, curr) => {
+            acc.total_amount += curr.total_amount || 0;
+            acc.total_claim += curr.total_claim || 0;
+            return acc;
+        }, {
+            total_amount: 0,
+            total_claim: 0,
+        });
+
+        return { result, totalFees }
+
 
     } catch (err) {
-        res.send({
+        return {
             code: constant.errorCode,
             message: err.message
-        })
+        }
+    }
+}
+
+
+exports.claimWeeklyReporting = async (data) => {
+    try {
+        let data = req.body
+        // const data = req.body;
+
+        // Parse startDate and endDate from request body
+        const startDate = moment(data.startDate).startOf('day');
+        const endDate = moment(data.endDate).endOf('day');
+
+        // Example: Adjusting dates with moment.js if needed
+        // startDate.subtract(1, 'day');
+        // endDate.add(1, 'day');
+
+        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
+
+        // Calculate start and end of the week for the given dates
+        const startOfWeekDate = moment(startDate).startOf('isoWeek');
+        const endOfWeekDate = moment(endDate).endOf('isoWeek');
+
+        // Example: Logging calculated week start and end dates
+        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
+
+        // Create an array of dates for each week within the specified range
+        const datesArray = [];
+        let currentDate = moment(startOfWeekDate);
+        let currentDate1 = moment(startDate);
+
+        while (currentDate <= endOfWeekDate) {
+            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
+            currentDate = currentDate
+            currentDate.add(1, 'week');
+        }
+
+    } catch (err) {
+        return { code: constant.errorCode, message: err.message }
     }
 }
