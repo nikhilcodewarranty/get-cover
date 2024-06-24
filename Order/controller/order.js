@@ -5554,7 +5554,7 @@ async function generateTC(orderData) {
                 return 1
 
             });
-        }
+        } 
 
     }
     catch (err) {
