@@ -569,6 +569,222 @@ exports.weeklySales = async (data, req, res) => {
     }
 };
 
+exports.weeklySalesOrder = async (data, req, res) => {
+    try {
+        // const data = req.body;
+
+        // Parse startDate and endDate from request body
+        const startDate = moment(data.startDate).startOf('day');
+        const endDate = moment(data.endDate).endOf('day');
+
+        // Example: Adjusting dates with moment.js if needed
+        // startDate.subtract(1, 'day');
+        // endDate.add(1, 'day');
+
+        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
+
+        // Calculate start and end of the week for the given dates
+        const startOfWeekDate = moment(startDate).startOf('isoWeek');
+        const endOfWeekDate = moment(endDate).endOf('isoWeek');
+
+        // Example: Logging calculated week start and end dates
+        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
+
+        // Create an array of dates for each week within the specified range
+        const datesArray = [];
+        let currentDate = moment(startOfWeekDate);
+        let currentDate1 = moment(startDate);
+
+        while (currentDate <= endOfWeekDate) {
+            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
+            currentDate = currentDate
+            currentDate.add(1, 'week');
+        }
+
+        // Example: Logging array of dates for debugging
+        console.log("datesArray:", datesArray.map(date => date.format()));
+
+        // MongoDB aggregation pipeline based on filterFlag
+        let weeklyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
+                }
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$weekStart",
+                    total_order_amount: { $sum: "$orderAmount" },
+                    total_orders: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by week start date in ascending order
+            }
+        ];
+
+        let weeklyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
+                }
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $unwind: "$products"
+            },
+            {
+                $group: {
+                    _id: "$weekStart",
+                    total_broker_fee: { $sum: "$products.brokerFee" },
+                    total_admin_fee: { $sum: "$products.adminFee" },
+                    total_fronting_fee: { $sum: "$products.frontingFee" },
+                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
+                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                    total_retail_price: { $sum: "$products.retailPrice" },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            console.log("data----------------", dealerId)
+            weeklyQuery[0].$match.dealerId = dealerId
+            weeklyQuery1[0].$match.dealerId = dealerId
+        }
+
+        if (data.priceBookId.length != 0) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+
+            // products:
+
+        }
+
+        if (data.categoryId.length != 0) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+
+            // products:
+
+            console.log("data----------------", dailyQuery[0].$match)
+        }
+
+        // Perform aggregation query
+        const getOrders = await REPORTING.aggregate(weeklyQuery);
+        const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
+
+        // Example: Logging MongoDB aggregation results for debugging
+        console.log("getOrders:", getOrders1, getOrders);
+
+        // Prepare response data based on datesArray and MongoDB results
+        const result = datesArray.map(date => {
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getOrders.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            return {
+                weekStart: dateString,
+                // total_order_amount: order ? order.total_order_amount : 0,
+                total_orders: order ? order.total_orders : 0
+            };
+        });
+
+
+        const result1 = datesArray.map(date => {
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getOrders1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            return {
+                weekStart: dateString,
+                total_fronting_fee: order ? order.total_fronting_fee : 0,
+                total_broker_fee: order ? order.total_broker_fee : 0,
+                total_admin_fee: order ? order.total_admin_fee : 0,
+                total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
+                total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
+                total_retail_price: order ? order.total_retail_price : 0,
+                // total_orders: order ? order.total_orders : 0
+            };
+        });
+        console.log(result, result1, "+++++++++++++++++++++++++++++")
+
+        const mergedResult = result.map(item => {
+            const match = result1.find(r1 => r1.weekStart === item.weekStart);
+
+            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
+            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
+            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
+            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
+
+            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
+
+            return {
+                ...item,
+                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                wholesale_price: wholesale_price
+            };
+        });
+
+
+        const totalFees = mergedResult.reduce((acc, curr) => {
+            acc.total_broker_fee += curr.total_broker_fee || 0;
+            acc.total_admin_fee += curr.total_admin_fee || 0;
+            acc.total_fronting_fee += curr.total_fronting_fee || 0;
+            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
+            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
+            return acc;
+        }, {
+            total_broker_fee: 0,
+            total_admin_fee: 0,
+            total_fronting_fee: 0,
+            total_reserve_future_fee: 0,
+            total_reinsurance_fee: 0
+        });
+
+
+        // Send success response with result
+        return {
+            graphData: result,
+            // totalFees: totalFees
+        }
+
+    } catch (err) {
+        return { code: constant.errorCode, message: err.message }
+    }
+};
+
 exports.daySale = async (data) => {
     try {
         // let data = req.body;
