@@ -42,22 +42,7 @@ module.exports = {
       // },
     }; 
   },
-  sendAttachment: (toEmail,ccEmail, data) => {
-    return {
-      to: toEmail,
-      cc: ccEmail,
-      from: process.env.from_email,
-      subject: 'Term and Condition',
-      templateId: process.env.update_status,
-      // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
-       dynamic_template_data:data ,
-      // mailSettings: {
-      //   // Set the subject for the email
-      //   subject: 'CSV link',
-      // },
-    }; 
-  },
-  :
+
   dealerWelcomeMessage: (toEmail,data) => {
     return {
       to: toEmail,
