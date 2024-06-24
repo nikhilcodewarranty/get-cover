@@ -877,31 +877,32 @@ exports.cronJobEligible = async (req, res) => {
     // let claimQuery = { 'claims.claimStatus': 'Open' };
     let data = req.body;
 
-    let lookupQuery = [
-      {
-        $match: query // Your match condition here
-      },
-      {
-        $lookup: {
-          from: "claims",
-          localField: "_id",
-          foreignField: "contractId",
-          as: "claims"
-        }
-      },
-      // {
-      //   $match: claimQuery // Your match condition here
-      // },
-      {
-        $sort: { unique_key: -1 } // Sorting if required
-      },
-    ];
-    let result = await contractService.getAllContracts2(lookupQuery);
+    // let lookupQuery = [
+    //   {
+    //     $match: query // Your match condition here
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "claims",
+    //       localField: "_id",
+    //       foreignField: "contractId",
+    //       as: "claims"
+    //     }
+    //   },
+    //   {
+    //     $match: claimQuery // Your match condition here
+    //   },
+    //   {
+    //     $sort: { unique_key: -1 } // Sorting if required
+    //   },
+    // ];
+    let result = await contractService.findContracts1(query);
 
-    // res.send({
-    //   result
-    // })
-    // return;
+    res.send({
+      result
+    })
+    return;
+    console.log("========================================================1")
     let bulk = [];
     let contractIds = []
     let contractIdsToBeUpdate = []
@@ -934,6 +935,7 @@ exports.cronJobEligible = async (req, res) => {
         bulk.push(updateDoc)
       }
     }
+    console.log("========================================================2")
     // Update when not any claim right now for active contract
     const firstUpdate = await contractService.allUpdate(bulk);
     bulk = [];
@@ -982,6 +984,7 @@ exports.cronJobEligible = async (req, res) => {
     }
     // Update when claim is not open but completed claim and product value still less than claim value
     const updatedData1 = await contractService.allUpdate(bulk);
+    console.log("========================================================3")
     res.send({
       code: constant.successCode,
     })

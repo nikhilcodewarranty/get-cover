@@ -86,7 +86,6 @@ exports.createCustomer = async (req, res, next) => {
       accountStatus: "Approved",
       dealerName: checkDealer.name,
     }
-
     let teamMembers = data.members
     const emailSet = new Set();
     let isDuplicate = false;
@@ -130,7 +129,7 @@ exports.createCustomer = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
-    notificationEmails
+    
     let emailData = {
       senderName: saveMembers[0].firstName,
       content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
