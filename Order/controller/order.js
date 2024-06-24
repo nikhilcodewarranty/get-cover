@@ -618,6 +618,7 @@ exports.createOrder1 = async (req, res) => {
                     //generate T anc C
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
+                        console.log("tcResponse-----------------------------------",tcResponse)
                     }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
@@ -5496,6 +5497,7 @@ async function generateTC(orderData) {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+            console.log("I am hereerererer")
             link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
 
@@ -5506,6 +5508,7 @@ async function generateTC(orderData) {
             //     result: response
             // })
         } else {
+            console.log("I am elsevvvvvvv")
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
