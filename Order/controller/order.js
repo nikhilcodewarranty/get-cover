@@ -5550,7 +5550,7 @@ async function generateTC(orderData) {
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
-                const attachment = fs.readFileSync(pathToAttachment,"utf-8");
+            //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
                 fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function(err, data) {
                 //Email to Customer
                const emailData = {
