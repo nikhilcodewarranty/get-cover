@@ -5550,7 +5550,9 @@ async function generateTC(orderData) {
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
-                const attachment = fs.readFileSync(pathToAttachment).toString("base64");
+                console.log("pathToAttachment--------------------------",pathToAttachment)
+                const attachment = fs.readFileSync(pathToAttachment,"utf-8");
+                console.log("attachment--------------------------",attachment)
                 //Email to Customer
                const emailData = {
                     senderName: 'Testing',
@@ -5565,6 +5567,7 @@ async function generateTC(orderData) {
                     subject: "T and C"
                 }
 
+                console.log("emailData----------------------------",emailData)
                 const mailing = sgMail.send(emailConstant.sendEmailTemplate('amit@codenomad.net', 'yashasvi@codenomad.net', emailData))
                 return 1
 
