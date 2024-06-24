@@ -1689,7 +1689,7 @@ exports.getServicerDealers1 = async (req, res) => {
                 ]
               }
             },
-            {$unwind:"$userData"},
+            { $unwind: "$userData" },
             {
               $lookup: {
                 from: "claims",
@@ -1707,7 +1707,7 @@ exports.getServicerDealers1 = async (req, res) => {
                   },
                   {
                     $project: {
-                      _id:0,
+                      _id: 0,
                       totalAmount: 1,
                       numberOfClaims: 1
                     }

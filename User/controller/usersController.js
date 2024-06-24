@@ -3062,3 +3062,22 @@ exports.saleReporting = async (req, res) => {
     })
   }
 }
+
+exports.claimReporting = async(req,res)=>{
+  try{
+    let data = req.body
+    if(data.flag == "daily"){
+      let claim = await reportingController.claimDailyReporting(data)
+      res.send({
+        code:constant.successCode,
+        message:"Success",
+        result:claim
+      })
+    }
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
