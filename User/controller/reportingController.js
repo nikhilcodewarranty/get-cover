@@ -476,8 +476,8 @@ exports.weeklySales = async (data, req, res) => {
 
         if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
 
             // products:
 
@@ -569,9 +569,10 @@ exports.weeklySales = async (data, req, res) => {
     }
 };
 
-exports.weeklySalesOrder = async (data, req, res) => {
+exports.weeklySalesOrder = async (req, res) => {
     try {
-        // const data = req.body;
+         const data = req.body;
+        console.log("================================", data)
 
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
@@ -692,8 +693,8 @@ exports.weeklySalesOrder = async (data, req, res) => {
 
         if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
 
             // products:
 
@@ -756,6 +757,7 @@ exports.weeklySalesOrder = async (data, req, res) => {
                 wholesale_price: wholesale_price
             };
         });
+
 
 
         const totalFees = mergedResult.reduce((acc, curr) => {
@@ -872,8 +874,8 @@ exports.daySale = async (data) => {
 
         if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
 
             // products:
 
@@ -1057,8 +1059,8 @@ exports.dailySales1 = async (data, req, res) => {
 
         if (data.categoryId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
-            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: {$in:data.categoryId} } }
+            dailyQuery[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
+            dailyQuery1[0].$match.categoryId = { $elemMatch: { name: { $in: data.categoryId } } }
 
             // products:
 

@@ -3063,6 +3063,61 @@ exports.saleReporting = async (req, res) => {
   }
 }
 
+
+exports.saleReporting1 = async (req, res) => {
+  try {
+    console.log("---------", req.body)
+    // if(!req.body.priceBookId ){
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:"Payload values are missing"
+    //   })
+    //   return
+    // }
+    // if(!req.body.dealerId){
+    //   res.send({
+    //     code:constant.errorCode,
+    //     message:"Payload values are missing"
+    //   })
+    //   return
+    // }
+    if (req.body.flag == "daily") {
+      let sales = await reportingController.dailySales1(req.body)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else if (req.body.flag == "weekly") {
+      let sales = await reportingController.weeklySalesOrder(req.body)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else if (req.body.flag == "day") {
+      let sales = await reportingController.daySale(req.body)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        result: [],
+        message: "Invalid flag value"
+      })
+    }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
 exports.claimReporting = async(req,res)=>{
   try{
     let data = req.body
