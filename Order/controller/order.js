@@ -613,11 +613,12 @@ exports.createOrder1 = async (req, res) => {
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Active" },
-                        { new: true } 
+                        { new: true }
                     );
                     //generate T anc C
-                    const tcResponse = await generateTC(savedResponse);
-                    console.log("generateTC=========================================",tcResponse)
+                    if (checkDealer?.termCondition) {
+                        const tcResponse = await generateTC(savedResponse);
+                    }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
                     let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
