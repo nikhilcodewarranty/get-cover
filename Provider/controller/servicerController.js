@@ -355,89 +355,190 @@ exports.getServicerContract = async (req, res) => {
     }
 }
 
+// exports.getServicerDealers = async (req, res) => {
+//     try {
+//         let data = req.body
+//         let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.userId })
+//         if (!getDealersIds) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Unable to fetch the dealers"
+//             })
+//             return;
+//         };
+//         let ids = getDealersIds.map((item) => item.dealerId)
+//         let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
+
+//         if (!dealers) {
+//             res.send({
+//                 code: constant.errorCode,
+//                 message: "Unable to fetch the data"
+//             });
+//             return;
+//         };
+//         // return false;
+
+//         let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
+//         let orderQuery = { dealerId: { $in: ids }, status: "Active" };
+//         let project = {
+//             productsArray: 1,
+//             dealerId: 1,
+//             unique_key: 1,
+//             servicerId: 1,
+//             customerId: 1,
+//             resellerId: 1,
+//             paymentStatus: 1,
+//             status: 1,
+//             venderOrder: 1,
+//             orderAmount: 1,
+//         }
+//         let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
+
+
+//         const result_Array = dealarUser.map(item1 => {
+//             const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+//             const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+
+//             if (matchingItem || orders) {
+//                 return {
+//                     ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+//                     dealerData: matchingItem.toObject(),
+//                     ordersData: orders ? orders : {}
+//                 };
+//             } else {
+//                 return dealerData.toObject();
+//             }
+//         });
+
+//         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+//         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+//         const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
+
+//         const filteredData = result_Array.filter(entry => {
+//             return (
+//                 nameRegex.test(entry.dealerData.name) &&
+//                 emailRegex.test(entry.email) &&
+//                 phoneRegex.test(entry.phoneNumber)
+//             );
+//         });
+
+//         res.send({
+//             code: constant.successCode,
+//             data: filteredData
+//         });
+
+
+//     } catch (err) {
+//         res.send({
+//             code: constant.errorCode,
+//             message: err.message
+//         })
+//     }
+// }
+
 exports.getServicerDealers = async (req, res) => {
     try {
-        let data = req.body
-        let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.userId })
-        if (!getDealersIds) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the dealers"
-            })
-            return;
-        };
-        let ids = getDealersIds.map((item) => item.dealerId)
-        let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
-
-        if (!dealers) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the data"
-            });
-            return;
-        };
-        // return false;
-
-        let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
-        let orderQuery = { dealerId: { $in: ids }, status: "Active" };
-        let project = {
-            productsArray: 1,
-            dealerId: 1,
-            unique_key: 1,
-            servicerId: 1,
-            customerId: 1,
-            resellerId: 1,
-            paymentStatus: 1,
-            status: 1,
-            venderOrder: 1,
-            orderAmount: 1,
-        }
-        let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
-
-
-        const result_Array = dealarUser.map(item1 => {
-            const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
-
-            if (matchingItem || orders) {
-                return {
-                    ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-                    dealerData: matchingItem.toObject(),
-                    ordersData: orders ? orders : {}
-                };
-            } else {
-                return dealerData.toObject();
-            }
-        });
-
-
-
-        const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-        const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-        const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
-
-        const filteredData = result_Array.filter(entry => {
-            return (
-                nameRegex.test(entry.dealerData.name) &&
-                emailRegex.test(entry.email) &&
-                phoneRegex.test(entry.phoneNumber)
-            );
-        });
-
-        res.send({
-            code: constant.successCode,
-            data: filteredData
-        });
-
-
+      let data = req.body
+      let query = [
+        {
+          $match: {
+            servicerId: new mongoose.Types.ObjectId(req.userId)
+          }
+        },
+        {
+          $lookup: {
+            from: "dealers",
+            localField: "dealerId",
+            foreignField: "_id",
+            as: "dealerData",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "_id",
+                  foreignField: "metaId",
+                  as: "userData",
+                  pipeline: [
+                    {
+                      $match: {
+                        isPrimary: true
+                      }
+                    }
+                  ]
+                }
+              },
+              {$unwind:"$userData"},
+              {
+                $lookup: {
+                  from: "claims",
+                  // let: { dealerId: "$_id" },
+                  localField: "_id",
+                  foreignField: "dealerId",
+                  as: "claimsData",
+                  pipeline: [
+                    {
+                      $group: {
+                        _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
+                        totalAmount: { $sum: "$totalAmount" },
+                        numberOfClaims: { $sum: 1 }
+                      }
+                    },
+                    {
+                      $project: {
+                        _id:0,
+                        totalAmount: 1,
+                        numberOfClaims: 1
+                      }
+                    }
+                  ]
+  
+                  //   {
+                  //     $match: {
+                  //       $expr: {
+                  //         $and: [
+                  //           { $eq: ["$dealerId", "$dealerId"] },
+                  //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
+                  //         ]
+                  //       }
+                  //     }
+                  //   },
+  
+                  // {
+                  //   $group: {
+                  //     _id: null,
+                  //     totalAmount: { $sum: "$amount" },
+                  //     numberOfClaims: { $sum: 1 }
+                  //   }
+                  // }
+                }
+              }
+            ]
+          }
+        },
+        {
+          $unwind: "$dealerData"
+        },
+        // {
+        //   $project:{
+  
+        //   }
+        // }
+      ]
+      let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+  
+      res.send({
+        code: constant.successCode,
+        data: filteredData
+      });
+  
+  
     } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
+      res.send({
+        code: constant.errorCode,
+        message: err.message
+      })
     }
-}
-
+  }
 exports.getServicerDealers1 = async (req, res) => {
     try {
         let data = req.body

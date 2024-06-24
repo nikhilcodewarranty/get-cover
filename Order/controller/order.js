@@ -805,25 +805,6 @@ exports.getAllOrders = async (req, res) => {
             return;
         }
 
-        let project = {
-            productsArray: 1,
-            dealerId: 1,
-            unique_key: 1,
-            unique_key_number: 1,
-            unique_key_search: 1,
-            servicerId: 1,
-            customerId: 1,
-            serviceCoverageType: 1,
-            coverageType: 1,
-            resellerId: 1,
-            paymentStatus: 1,
-            status: 1,
-            createdAt: 1,
-            venderOrder: 1,
-            orderAmount: 1,
-            contract: "$contract"
-        };
-
         let query = { status: { $ne: "Archieved" } };
 
         let lookupQuery = [
@@ -836,21 +817,6 @@ exports.getAllOrders = async (req, res) => {
                         "$sum": "$productsArray.checkNumberProducts"
                     },
                     totalOrderAmount: { $sum: "$orderAmount" },
-                    // flag: {
-                    //     $cond: {
-                    //         if: {
-                    //             $and: [
-                    //                 // { $eq: ["$payment.status", "paid"] },
-                    //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                    //                 { $ne: ["$customerId", null] },
-                    //                 { $ne: ["$paymentStatus", 'Paid'] },
-                    //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                    //             ]
-                    //         },
-                    //         then: true,
-                    //         else: false
-                    //     }
-                    // }
 
                 }
             },
@@ -859,8 +825,6 @@ exports.getAllOrders = async (req, res) => {
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
-
-
         let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
@@ -869,7 +833,6 @@ exports.getAllOrders = async (req, res) => {
             .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
-
 
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
         //Get Respective Dealers
@@ -1068,7 +1031,7 @@ exports.getAllOrders = async (req, res) => {
         });
 
 
-
+        console.log(filteredData1.length)
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -5478,7 +5441,7 @@ exports.generateHtmltopdf = async (req, res) => {
             childProcessOptions: {
                 env: {
                     OPENSSL_CONF: '/dev/null',
-                },
+                }, 
             }
         }
         // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
@@ -5535,7 +5498,6 @@ exports.generateHtmltopdf = async (req, res) => {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            console.log("I am here");
             link = `http://${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
             res.send({
