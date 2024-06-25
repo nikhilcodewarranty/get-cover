@@ -3066,55 +3066,52 @@ exports.saleReporting = async (req, res) => {
 
 exports.saleReporting1 = async (req, res) => {
   try {
-    var send1 = await sgMail.send(emailConstant.term_condition('amit@codenomad.net') )         
-
-
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
     console.log("pathTosave--------------------------", pathToAttachment)
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
     // console.log("attachment-----------------------------------",attachment)
-    fs.readFile(pathToAttachment, async (err, fileData)=> {
-        console.log("pdfdata----------------------------", process.env.from_email,err, fileData)
-        //Email to Customer
-        try{
-          var send = await sgMail.send(      
-            {
-              to: 'amit@codenomad.net',
-              from: process.env.from_email,
-              subject: 'Report',
-              text:"sssssssssssssssss"
-              // files: [
-              //     {
-              //       content: fileData,
-              //       filename: "file-1718782172826.xlsx",
-              //       type: 'application/pdf',
-              //       disposition: 'attachment',
-              //       contentId: 'mytext'
-              //     },
-              //   ],
+    fs.readFile(pathToAttachment, async (err, fileData) => {
+      console.log("pdfdata----------------------------", process.env.from_email, err, fileData)
+      //Email to Customer
+      try {
+        var send = await sgMail.send(
+          {
+            to: 'amit@codenomad.net',
+            from: process.env.from_email,
+            subject: 'Report',
+            text: "sssssssssssssssss"
+            // files: [
+            //     {
+            //       content: fileData,
+            //       filename: "file-1718782172826.xlsx",
+            //       type: 'application/pdf',
+            //       disposition: 'attachment',
+            //       contentId: 'mytext'
+            //     },
+            //   ],
           }
-          )
+        )
 
-          console.log('Email sent successfully:', send);
-        }catch(error){
-          console.error('Error sending email:', error);
+        console.log('Email sent successfully:', send);
+      } catch (error) {
+        console.error('Error sending email:', error);
 
-          if (error.response) {
-              console.error('Error response:', error.response.body);
-          }
+        if (error.response) {
+          console.error('Error response:', error.response.body);
         }
-        
+      }
 
-        // console.log("-----------------------------", send);
-        // res.send({
-        //   code:300,
-        //   send
-        // })
+
+      // console.log("-----------------------------", send);
+      // res.send({
+      //   code:300,
+      //   send
+      // })
     })
 
-   
 
-return
+
+    return
 
 
     console.log("---------", req.body)
@@ -3169,21 +3166,21 @@ return
   }
 }
 
-exports.claimReporting = async(req,res)=>{
-  try{
+exports.claimReporting = async (req, res) => {
+  try {
     let data = req.body
-    if(data.flag == "daily"){
+    if (data.flag == "daily") {
       let claim = await reportingController.claimDailyReporting(data)
       res.send({
-        code:constant.successCode,
-        message:"Success",
-        result:claim
+        code: constant.successCode,
+        message: "Success",
+        result: claim
       })
     }
-  }catch(err){
+  } catch (err) {
     res.send({
-      code:constant.errorCode,
-      message:err.message
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }
