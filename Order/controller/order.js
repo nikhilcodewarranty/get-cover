@@ -3879,7 +3879,7 @@ exports.editOrderDetail = async (req, res) => {
                     subject: "Process Order"
                 }
 
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary?.email, notificationEmails, emailData))
                 //Email to Reseller
                 emailData = {
                     senderName: resellerPrimary?.firstName,
