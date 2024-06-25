@@ -3083,7 +3083,7 @@ exports.saleReporting1 = async (req, res) => {
             attachments: [
               {
                 content: "fileData",
-                filename: pathToAttachment,
+                filename: fileData,
                 type: 'application/pdf',
                 disposition: 'attachment',
                 contentId: 'mytext'

@@ -5557,7 +5557,7 @@ async function generateTC(orderData) {
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
                 console.log("attachment-----------------------------------",pathToAttachment)
                 fs.readFile(pathToAttachment, async (err, fileData) =>{
-                    console.log("pdfdata----------------------------", fileData)
+                    console.log("pdfdata----------------------------", fileData,"fsdfsdfsdfsffsd123")
                     //Email to Customer
                     var send = await sgMail.send(
                         {
@@ -5568,25 +5568,19 @@ async function generateTC(orderData) {
                           attachments: [
                             {
                               content: "Term and Condition",
-                              filename: pathToAttachment,
+                              filename: fileData,
                               type: 'application/pdf',
                               disposition: 'attachment',
                               contentId: 'mytext'
                             },
                           ],
-                          // file: 
-                          //     {
-                          //       content: fileData,
-                          //       filename: "file-1718782172826.xlsx",
-                          //       type: 'application/pdf',
-                          //       disposition: 'attachment',
-                          //       contentId: 'mytext'
-                          //     },
                         }
                       )
 
                 //     console.log("-----------------------------", send);
                 })
+                console.log('Email sent successfully:', send);
+
 
             })
             return 1
