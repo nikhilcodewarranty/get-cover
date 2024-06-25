@@ -2810,9 +2810,9 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }));
         let priceBookDetail
         if (mergedPriceBooks.length == 0) {
-             priceBookDetail = mergedPriceBooks[0]
+            priceBookDetail = mergedPriceBooks[0]
         } else {
-             priceBookDetail = {}
+            priceBookDetail = {}
         }
 
         let result = {
@@ -3782,20 +3782,8 @@ exports.editOrderDetail = async (req, res) => {
                             // }
                         }
                     }
-
-
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
-                    // let serviceCoverage;
-                    // if (req.body.serviceCoverageType == "Labour") {
-                    //     serviceCoverage = "Labor"
-                    // }
-                    // if (req.body.serviceCoverageType == "Parts & Labour") {
-                    //     serviceCoverage = "Parts & Labor"
-                    // }
-
                     //reporting codes 
-
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
@@ -3881,7 +3869,6 @@ exports.editOrderDetail = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
-
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 // notificationEmails.push(dealerPrimary.email);
@@ -3900,14 +3887,6 @@ exports.editOrderDetail = async (req, res) => {
                     subject: "Process Order"
                 }
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-
-                //Send email to customer with term and condtion
-                //generate T anc C
-                console.log("checkDealer-------------------------",checkDealer)
-                console.log("savedResponse-------------------------",savedResponse)
-                if (checkDealer?.termCondition) {
-                    const tcResponse = await generateTC(savedResponse);
-                }
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -3920,6 +3899,13 @@ exports.editOrderDetail = async (req, res) => {
 
             })
 
+            //Send email to customer with term and condtion
+            //generate T anc C
+            console.log("checkDealer-------------------------", checkDealer)
+            console.log("savedResponse-------------------------", savedResponse)
+            if (checkDealer?.termCondition) {
+                const tcResponse = await generateTC(updatePaidDate);
+            }
             // reporting codes
             logData.response = {
                 code: constant.successCode,
@@ -4295,7 +4281,7 @@ exports.markAsPaid = async (req, res) => {
             if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
-                    message: "unable to make contracts", 
+                    message: "unable to make contracts",
                     result: saveData
                 };
                 await LOG(logData).save();
@@ -4317,7 +4303,7 @@ exports.markAsPaid = async (req, res) => {
                     products: pricebookDetail,
                     orderAmount: data.orderAmount,
                     dealerId: data.dealerId,
-                } 
+                }
 
                 await supportingFunction.reportingData(reportingData)
                 //Send email to customer with term and condtion
