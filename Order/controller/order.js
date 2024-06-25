@@ -5497,6 +5497,7 @@ async function generateTC(orderData) {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
+            console.log("If-----------------------------------",mergeFileName)
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
 
@@ -5510,6 +5511,8 @@ async function generateTC(orderData) {
             pdf.create(html, options).toFile(orderFile, async (err, result) => {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
+
+                console.log("else-----------------------------------",orderFile)
                 const { PDFDocument, rgb } = require('pdf-lib');
                 const fs = require('fs').promises;
 
@@ -5551,6 +5554,8 @@ async function generateTC(orderData) {
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
                 //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
+                console.log("pathToAttachment-----------------------------------",pathToAttachment)
+
                 fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function (err, data) {
                     console.log("pdfdata----------------------------",data)
                     //Email to Customer
