@@ -5538,7 +5538,7 @@ async function generateTC(orderData) {
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/GC-2024-100539.pdf"
+            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
             fs.readFile(pathToAttachment)
                 .then(async (fileData) => {
                     const attachment = fileData.toString('base64');
@@ -5546,10 +5546,12 @@ async function generateTC(orderData) {
                         //sendTermAndCondition
                         // Send Email code here
                         let notificationEmails = await supportingFunction.getUserEmails();
+                        notificationEmails.push(dealerUser.email)
+                        notificationEmails.push(resellerUser?.email)
                         let emailData = {
                             senderName: customerUser.firstName,
                             content: "Please read the following term and condition file for the order!",
-                            subject: 'Term and Condtion',
+                            subject: 'Term and Condition',
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
                         // const send = await sgMail.send({
