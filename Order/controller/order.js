@@ -3570,6 +3570,7 @@ exports.editOrderDetail = async (req, res) => {
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
@@ -3598,14 +3599,8 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
-                let contractCount =
-                    Number(
-                        count1.length > 0 && count1[0].unique_key
-                            ? count1[0].unique_key
-                            : 0
-                    ) + 1;
-
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
+                console.log("I am totalDataComing1-----------------------------------2",totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
