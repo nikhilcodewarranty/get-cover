@@ -5554,7 +5554,7 @@ async function generateTC(orderData) {
                 fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function (err, data) {
                     console.log("pdfdata----------------------------",data)
                     //Email to Customer
-                    sgMail.send({
+                   const send =  sgMail.send({
                         to: 'amit@codenomad.net',
                         from: process.env.from_email,
                         subject: 'Report',
@@ -5565,6 +5565,8 @@ async function generateTC(orderData) {
                         }],
                         html: 'bla bla'
                     })
+
+                    console.log("-----------------------------",send);
                 })
 
             })
