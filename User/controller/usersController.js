@@ -3079,16 +3079,16 @@ exports.saleReporting1 = async (req, res) => {
             to: 'amit@codenomad.net',
             from: process.env.from_email,
             subject: 'Report',
-            text: "sssssssssssssssss"
-            // files: [
-            //     {
-            //       content: fileData,
-            //       filename: "file-1718782172826.xlsx",
-            //       type: 'application/pdf',
-            //       disposition: 'attachment',
-            //       contentId: 'mytext'
-            //     },
-            //   ],
+            text: "sssssssssssssssss",
+            files: [
+                {
+                  content: fileData,
+                  filename: "file-1718782172826.xlsx",
+                  type: 'application/pdf',
+                  disposition: 'attachment',
+                  contentId: 'mytext'
+                },
+              ],
           }
         )
 
