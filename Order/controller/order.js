@@ -3565,6 +3565,7 @@ exports.editOrderDetail = async (req, res) => {
             console.log("fsdfsdfsdfsdfdsfsdfdsfdsf",savedResponse)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let save = savedResponse.productsArray.map(async (product) => {
+                console.log(product.orderFile.fileName)
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
