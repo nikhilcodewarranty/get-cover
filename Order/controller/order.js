@@ -5552,6 +5552,7 @@ async function generateTC(orderData) {
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
                 //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
                 fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function (err, data) {
+                    console.log("pdfdata----------------------------",data)
                     //Email to Customer
                     sgMail.send({
                         to: 'amit@codenomad.net',

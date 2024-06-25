@@ -356,7 +356,6 @@ exports.dailySales = async (req, res) => {
 exports.weeklySales = async (data, req, res) => {
     try {
         // const data = req.body;
-
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
@@ -364,7 +363,6 @@ exports.weeklySales = async (data, req, res) => {
         // Example: Adjusting dates with moment.js if needed
         // startDate.subtract(1, 'day');
         // endDate.add(1, 'day');
-
         console.log("startDate:", startDate.format(), "endDate:", endDate.format());
 
         // Calculate start and end of the week for the given dates
@@ -372,7 +370,6 @@ exports.weeklySales = async (data, req, res) => {
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
 
         // Example: Logging calculated week start and end dates
-        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
 
         // Create an array of dates for each week within the specified range
         const datesArray = [];
@@ -380,8 +377,8 @@ exports.weeklySales = async (data, req, res) => {
         let currentDate1 = moment(startDate);
 
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
-            currentDate = currentDate
+            datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
+            currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
 
@@ -419,6 +416,7 @@ exports.weeklySales = async (data, req, res) => {
                 $sort: { _id: 1 } // Sort by week start date in ascending order
             }
         ];
+
 
         let weeklyQuery1 = [
             {
@@ -485,11 +483,12 @@ exports.weeklySales = async (data, req, res) => {
         }
 
         // Perform aggregation query
-        const getOrders = await REPORTING.aggregate(weeklyQuery);
-        const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
+        let getOrders = await REPORTING.aggregate(weeklyQuery);
+        let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
+         getOrders[0]._id = datesArray[0]
+         getOrders1[0]._id = datesArray[0]
 
         // Example: Logging MongoDB aggregation results for debugging
-        console.log("getOrders:", getOrders1, getOrders);
 
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
@@ -517,7 +516,6 @@ exports.weeklySales = async (data, req, res) => {
                 // total_orders: order ? order.total_orders : 0
             };
         });
-        console.log(result, result1, "+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
