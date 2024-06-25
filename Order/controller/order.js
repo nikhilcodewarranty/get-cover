@@ -3253,6 +3253,7 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.userId,
             response: {}
         };
+        let checkDealer;
         data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -3262,6 +3263,7 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
@@ -3270,8 +3272,11 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
         if (data.dealerId != "") {
+            checkDealer = await dealerService.getDealerById(
+                data.dealerId
+            );
             if (data.dealerId.toString() != checkId.dealerId.toString()) {
-                let checkDealer = await dealerService.getDealerById(
+                checkDealer = await dealerService.getDealerById(
                     data.dealerId
                 );
                 if (!checkDealer) {
@@ -3888,8 +3893,13 @@ exports.editOrderDetail = async (req, res) => {
                     content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Process Order"
                 }
-
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
+                //Send email to customer with term and condtion
+                //generate T anc C
+                if (checkDealer?.termCondition) {
+                    const tcResponse = await generateTC(savedResponse);
+                }
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -3971,6 +3981,16 @@ exports.markAsPaid = async (req, res) => {
             res.send({
                 code: constant.errorCode,
                 message: "The order has already archeived!",
+            });
+            return;
+        }
+        const checkDealer = await dealerService.getDealerById(
+            checkOrder.dealerId
+        );
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found",
             });
             return;
         }
@@ -4264,8 +4284,6 @@ exports.markAsPaid = async (req, res) => {
                 contractArray.push(contractObject);
             });
             let saveData = await contractService.createBulkContracts(contractArray)
-            console.log("saveData+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++", saveData.length)
-
             if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
@@ -4284,6 +4302,7 @@ exports.markAsPaid = async (req, res) => {
                     { status: "Active" },
                     { new: true }
                 );
+
                 //reporting codes
                 let reportingData = {
                     orderId: savedResponse._id,
@@ -4293,6 +4312,11 @@ exports.markAsPaid = async (req, res) => {
                 }
 
                 await supportingFunction.reportingData(reportingData)
+                //Send email to customer with term and condtion
+                //generate T anc C
+                if (checkDealer?.termCondition) {
+                    const tcResponse = await generateTC(savedResponse);
+                }
                 // send notification to dealer,admin, customer
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
@@ -5550,7 +5574,7 @@ async function generateTC(orderData) {
                         notificationEmails.push(resellerUser?.email)
                         let emailData = {
                             senderName: customerUser.firstName,
-                            content: "Please read the following term and condition file for the order!",
+                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                             subject: 'Term and Condition',
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
