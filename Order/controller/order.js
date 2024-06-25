@@ -5552,7 +5552,7 @@ async function generateTC(orderData) {
                 link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
-                const pathToAttachment = rocess.env.MAIN_FILE_PATH + "/uploads/mergedFile/GC-2024-100539.pdf"
+                const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/GC-2024-100539.pdf"
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
                 console.log("attachment-----------------------------------", pathToAttachment)
