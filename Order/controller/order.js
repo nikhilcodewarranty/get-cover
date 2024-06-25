@@ -5556,7 +5556,7 @@ async function generateTC(orderData) {
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
                 console.log("attachment-----------------------------------", pathToAttachment)
-                fs.promises.readFile(pathToAttachment)
+                fs.readFile(pathToAttachment)
                     .then(async (fileData) => {
                         const attachment = fileData.toString('base64');
                         console.log("attachment-----------------------------------", attachment);
