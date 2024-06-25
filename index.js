@@ -129,7 +129,7 @@ var cronOptions = {
 // }, null, true, 'America/Los_Angeles');
 
 
-
+  console.log("direcotory------------------------",__dirname)
 cron.schedule(' 2 0 * * *', () => {
   axios.get(`${process.env.SITE_URL}:3002/api-v1/order/cronJobStatus`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 

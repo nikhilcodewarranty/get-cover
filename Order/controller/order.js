@@ -5554,28 +5554,28 @@ async function generateTC(orderData) {
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/GC-2024-100539.pdf"
                 console.log("pathTosave--------------------------", pathToAttachment)
-                //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
-                // console.log("pathToAttachment-----------------------------------",pathToAttachment)
-                fs.readFile(pathToAttachment, function (err, data) {
-                    console.log("pdfdata----------------------------", data)
-                    //Email to Customer
-                    const send = sgMail.send({
-                        to: 'amit@codenomad.net',
-                        from: process.env.from_email,
-                        subject: 'Report',
-                        attachments: [
-                            {
-                              content: 'Some base 64 encoded attachment content',
-                              filename: pathToAttachment,
-                              type: 'application/pdf',
-                              disposition: 'attachment',
-                              contentId: 'mytext'
-                            },
-                          ],
-                    })
+                 const attachment = fs.readFileSync(pathToAttachment).toString("base64");
+                console.log("attachment-----------------------------------",attachment)
+                // fs.readFile(pathToAttachment, function (err, data) {
+                //     console.log("pdfdata----------------------------", data)
+                //     //Email to Customer
+                //     const send = sgMail.send({
+                //         to: 'amit@codenomad.net',
+                //         from: process.env.from_email,
+                //         subject: 'Report',
+                //         attachments: [
+                //             {
+                //               content: 'Some base 64 encoded attachment content',
+                //               filename: pathToAttachment,
+                //               type: 'application/pdf',
+                //               disposition: 'attachment',
+                //               contentId: 'mytext'
+                //             },
+                //           ],
+                //     })
 
-                    console.log("-----------------------------", send);
-                })
+                //     console.log("-----------------------------", send);
+                // })
 
             })
             return 1
