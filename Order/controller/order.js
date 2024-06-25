@@ -3550,7 +3550,10 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
-
+            let checkDealer1 = await dealerService.getDealerById(
+                savedResponse.dealerId
+            );
+ 
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -4214,7 +4217,7 @@ exports.editOrderDetail = async (req, res) => {
                     await supportingFunction.reportingData(reportingData)
                     //Send email to customer with term and condtion
                     //generate T anc C
-                    if (checkDealer?.termCondition) {
+                    if (checkDealer1?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
                     // send notification to dealer,admin, customer
