@@ -5553,26 +5553,27 @@ async function generateTC(orderData) {
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
+                console.log("pathTosave--------------------------",pathTosave)
                 //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
-                console.log("pathToAttachment-----------------------------------",pathToAttachment)
+                // console.log("pathToAttachment-----------------------------------",pathToAttachment)
 
-                fs.readFile(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName, function (err, data) {
-                    console.log("pdfdata----------------------------",data)
-                    //Email to Customer
-                   const send =  sgMail.send({
-                        to: 'amit@codenomad.net',
-                        from: process.env.from_email,
-                        subject: 'Report',
-                        attachments: [{
-                            filename: 'Report.pdf',
-                            content: data,
-                            type: 'application/pdf',
-                        }],
-                        html: 'bla bla'
-                    })
+                // fs.readFile(pathToAttachment, function (err, data) {
+                //     console.log("pdfdata----------------------------",data)
+                //     //Email to Customer
+                //    const send =  sgMail.send({
+                //         to: 'amit@codenomad.net',
+                //         from: process.env.from_email,
+                //         subject: 'Report',
+                //         attachments: [{
+                //             filename: 'Report.pdf',
+                //             content: data,
+                //             type: 'application/pdf',
+                //         }],
+                //         html: 'bla bla'
+                //     })
 
-                    console.log("-----------------------------",send);
-                })
+                //     console.log("-----------------------------",send);
+                // })
 
             })
             return 1
