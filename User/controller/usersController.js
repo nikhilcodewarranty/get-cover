@@ -3066,6 +3066,7 @@ exports.saleReporting = async (req, res) => {
 
 exports.saleReporting1 = async (req, res) => {
   try {
+    var send1 = await sgMail.send(emailConstant.term_condition('amit@codenomad.net') )         
 
 
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
