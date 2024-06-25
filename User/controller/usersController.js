@@ -3075,20 +3075,23 @@ exports.saleReporting1 = async (req, res) => {
     fs.readFile(pathToAttachment, function (err, fileData) {
         console.log("pdfdata----------------------------",err, fileData)
         //Email to Customer
-        const send = sgMail.send({
-            to: 'amit@codenomad.net',
-            from: process.env.from_email,
-            subject: 'Report',
-            // files: [
-            //     {
-            //       content: fileData,
-            //       filename: "file-1718782172826.xlsx",
-            //       type: 'application/pdf',
-            //       disposition: 'attachment',
-            //       contentId: 'mytext'
-            //     },
-            //   ],
-        })
+        const send = sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
+          
+        //   {
+        //     to: 'amit@codenomad.net',
+        //     from: process.env.from_email,
+        //     subject: 'Report',
+        //     // files: [
+        //     //     {
+        //     //       content: fileData,
+        //     //       filename: "file-1718782172826.xlsx",
+        //     //       type: 'application/pdf',
+        //     //       disposition: 'attachment',
+        //     //       contentId: 'mytext'
+        //     //     },
+        //     //   ],
+        // }
+        )
 
         console.log("-----------------------------", send);
     })
