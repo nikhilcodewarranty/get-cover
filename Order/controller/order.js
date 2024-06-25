@@ -3250,7 +3250,6 @@ exports.getSingleOrder = async (req, res) => {
         });
     }
 };
-//Edit order detail
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3260,7 +3259,6 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.userId,
             response: {}
         };
-        let checkDealer;
         data.venderOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
@@ -3270,7 +3268,6 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-
         if (checkId.status == "Active" || checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
@@ -3279,11 +3276,8 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
         if (data.dealerId != "") {
-            checkDealer = await dealerService.getDealerById(
-                data.dealerId
-            );
             if (data.dealerId.toString() != checkId.dealerId.toString()) {
-                checkDealer = await dealerService.getDealerById(
+                let checkDealer = await dealerService.getDealerById(
                     data.dealerId
                 );
                 if (!checkDealer) {
@@ -3551,8 +3545,7 @@ exports.editOrderDetail = async (req, res) => {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("I am here-----------------------------------1")
-             savedResponse = await orderService.updateOrder(
+            let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
                 { new: true }
@@ -3570,7 +3563,6 @@ exports.editOrderDetail = async (req, res) => {
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
@@ -3599,8 +3591,14 @@ exports.editOrderDetail = async (req, res) => {
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 let count1 = await contractService.getContractsCount();
+                let contractCount =
+                    Number(
+                        count1.length > 0 && count1[0].unique_key
+                            ? count1[0].unique_key
+                            : 0
+                    ) + 1;
+
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
-                console.log("I am totalDataComing1-----------------------------------2",totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -3615,7 +3613,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("I am here-----------------------------------2")
+
                 var contractArray = [];
                 var pricebookDetail = [];
                 var dealerBookDetail = [];
@@ -3778,8 +3776,20 @@ exports.editOrderDetail = async (req, res) => {
                             // }
                         }
                     }
+
+
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
+
+                    // let serviceCoverage;
+                    // if (req.body.serviceCoverageType == "Labour") {
+                    //     serviceCoverage = "Labor"
+                    // }
+                    // if (req.body.serviceCoverageType == "Parts & Labour") {
+                    //     serviceCoverage = "Parts & Labor"
+                    // }
+
                     //reporting codes 
+
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
@@ -3798,6 +3808,7 @@ exports.editOrderDetail = async (req, res) => {
                     pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
                     // let eligibilty = claimStatus == "Active" ? true : false
@@ -3833,7 +3844,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-                console.log("I am here-----------------------------------3")
+
                 if (!saveContracts[0]) {
                     logData.response = {
                         code: constant.errorCode,
@@ -3848,16 +3859,14 @@ exports.editOrderDetail = async (req, res) => {
                 }
 
                 //send notification to dealer,reseller,admin,customer
-                console.log("I am here-----------------------------------4")
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
                 let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
                 let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
                 if (resellerPrimary) {
-                    IDs.push(resellerPrimary?._id)
+                    IDs.push(resellerPrimary._id)
                 }
                 IDs.push(dealerPrimary._id, customerPrimary._id)
-                console.log("I am here-----------------------------------5",IDs)
                 let notificationData1 = {
                     title: "Order update and processed",
                     description: "The order " + savedResponse.unique_key + " has been update and processed",
@@ -3866,8 +3875,8 @@ exports.editOrderDetail = async (req, res) => {
                     flag: 'order',
                     notificationFor: IDs
                 };
-                console.log("I am here-----------------------------------6",notificationData1)
                 let createNotification = await userService.createNotification(notificationData1);
+
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 // notificationEmails.push(dealerPrimary.email);
@@ -3878,17 +3887,15 @@ exports.editOrderDetail = async (req, res) => {
                     subject: "Process Order"
                 }
 
-                
-                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary?.email, notificationEmails, emailData))
+                let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                 //Email to Reseller
                 emailData = {
                     senderName: resellerPrimary?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Process Order"
                 }
-                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-                console.log("I am here-----------------------------------7",mailing)
 
+                mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -3896,11 +3903,10 @@ exports.editOrderDetail = async (req, res) => {
                     dealerId: data.dealerId,
                     // dealerPriceBook: dealerBookDetail
                 }
+
                 await supportingFunction.reportingData(reportingData)
 
-                console.log("I am here-----------------------------------8",reportingData)
             })
-
 
             // reporting codes
             logData.response = {
@@ -3956,6 +3962,9 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
+
+
 // Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
