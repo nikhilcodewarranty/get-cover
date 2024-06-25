@@ -5553,7 +5553,7 @@ async function generateTC(orderData) {
                         //sendTermAndCondition
                         // Send Email code here
                         let notificationEmails = await supportingFunction.getUserEmails();
-                        notificationEmails.push(dealerUser.email)
+                        notificationEmails.push(DealerUser.email)
                         notificationEmails.push(resellerUser?.email)
                         let emailData = {
                             senderName: customerUser.firstName,
