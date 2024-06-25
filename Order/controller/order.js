@@ -5556,7 +5556,7 @@ async function generateTC(orderData) {
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
                 console.log("attachment-----------------------------------",attachment)
-                fs.readFile(pathToAttachment, function (err, fileData) {
+                fs.readFile(pathToAttachment, async (err, fileData) =>{
                     console.log("pdfdata----------------------------", fileData)
                     //Email to Customer
                     var send = await sgMail.send(
