@@ -5564,7 +5564,7 @@ async function generateTC(orderData) {
                         try {
                             const send = await sgMail.send({
                                 to: 'amit@codenomad.net',
-                                from: process.env.FROM_EMAIL,
+                                from: process.env.from_email,
                                 subject: 'Report',
                                 text: "sssssssssssssssss",
                                 attachments: [
