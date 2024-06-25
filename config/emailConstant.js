@@ -89,7 +89,7 @@ module.exports = {
 
 
 
-  term_condition: (toEmail,data) => {
+  term_condition: (toEmail) => {
     return {
       to: toEmail,
       from: process.env.from_email,
