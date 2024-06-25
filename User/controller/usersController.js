@@ -3094,12 +3094,13 @@ exports.saleReporting1 = async (req, res) => {
         )
 
         console.log("-----------------------------", send);
+        res.send({
+          code:300,
+          send
+        })
     })
 
-    res.send({
-      code:300,
-      send
-    })
+   
 
 return
 
