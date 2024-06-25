@@ -3075,7 +3075,7 @@ exports.saleReporting1 = async (req, res) => {
     fs.readFile(pathToAttachment, function (err, fileData) {
         console.log("pdfdata----------------------------",err, fileData)
         //Email to Customer
-        const send = sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
+        var send = sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
           
         //   {
         //     to: 'amit@codenomad.net',
