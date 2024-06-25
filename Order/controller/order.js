@@ -2808,6 +2808,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         const uniqueProductName = [...new Set(mergedPriceBooks.map(item => item?.pName))].map(pName => ({
             pName: pName,
         }));
+        let priceBookDetail
+        if (mergedPriceBooks.length == 0) {
+             priceBookDetail = mergedPriceBooks[0]
+        } else {
+             priceBookDetail = {}
+        }
 
         let result = {
             priceCategories: getCategories,
@@ -2816,6 +2822,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             terms: data.priceCatId == "" ? [] : uniqueTerms,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
+            priceBookDetail
         };
 
         res.send({

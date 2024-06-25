@@ -53,6 +53,14 @@ const orderSchema = new mongoose.Schema({
         priceBookId: {
           type: mongoose.Schema.Types.ObjectId,
         },
+        priceBookDetails:{
+          type:{},
+          // default:{}
+        },
+        dealerPriceBookDetails:{
+          type:{},
+          // default:{}
+        },
         unitPrice: {
           type: Number,
         },
