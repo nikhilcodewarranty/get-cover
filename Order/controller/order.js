@@ -5559,20 +5559,31 @@ async function generateTC(orderData) {
                 fs.readFile(pathToAttachment, function (err, fileData) {
                     console.log("pdfdata----------------------------", fileData)
                     //Email to Customer
-                    const send = sgMail.send({
-                        to: 'amit@codenomad.net',
-                        from: process.env.from_email,
-                        subject: 'Report',
-                        files: [
+                    var send = await sgMail.send(
+                        {
+                          to: 'amit@codenomad.net',
+                          from: process.env.from_email,
+                          subject: 'Report',
+                          text: "sssssssssssssssss",
+                          attachments: [
                             {
-                              content: fileData,
-                              filename: "GC-2024-100539.pdf",
+                              content: "Term and Condition",
+                              filename: pathToAttachment,
                               type: 'application/pdf',
                               disposition: 'attachment',
                               contentId: 'mytext'
                             },
                           ],
-                    })
+                          // file: 
+                          //     {
+                          //       content: fileData,
+                          //       filename: "file-1718782172826.xlsx",
+                          //       type: 'application/pdf',
+                          //       disposition: 'attachment',
+                          //       contentId: 'mytext'
+                          //     },
+                        }
+                      )
 
                 //     console.log("-----------------------------", send);
                 })
