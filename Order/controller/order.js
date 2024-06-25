@@ -5563,12 +5563,15 @@ async function generateTC(orderData) {
                         to: 'amit@codenomad.net',
                         from: process.env.from_email,
                         subject: 'Report',
-                        attachments: [{
-                            filename: 'Report.pdf',
-                            content: data,
-                            type: 'application/pdf',
-                        }],
-                        html: 'bla bla'
+                        attachments: [
+                            {
+                              content: 'Some base 64 encoded attachment content',
+                              filename: pathToAttachment,
+                              type: 'application/pdf',
+                              disposition: 'attachment',
+                              contentId: 'mytext'
+                            },
+                          ],
                     })
 
                     console.log("-----------------------------", send);
