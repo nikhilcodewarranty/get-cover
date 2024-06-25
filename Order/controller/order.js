@@ -3552,7 +3552,7 @@ exports.editOrderDetail = async (req, res) => {
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             console.log("I am here-----------------------------------1")
-            let savedResponse = await orderService.updateOrder(
+             savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
                 { new: true }
