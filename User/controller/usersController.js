@@ -3072,10 +3072,10 @@ exports.saleReporting1 = async (req, res) => {
     console.log("pathTosave--------------------------", pathToAttachment)
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
     // console.log("attachment-----------------------------------",attachment)
-    fs.readFile(pathToAttachment, function (err, fileData) {
+    fs.readFile(pathToAttachment, async (err, fileData)=> {
         console.log("pdfdata----------------------------",err, fileData)
         //Email to Customer
-        var send = sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
+        var send = await sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
           
         //   {
         //     to: 'amit@codenomad.net',
