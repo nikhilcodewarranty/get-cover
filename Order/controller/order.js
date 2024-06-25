@@ -4230,8 +4230,8 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     IDs.push(dealerPrimary._id, customerPrimary._id)
                     let notificationData1 = {
-                        title: "Mark As Paid",
-                        description: "The order " + checkOrder.unique_key + " has been mark as paid",
+                        title: "Process Order",
+                        description: "The order " + checkOrder.unique_key + " has been updated and processed",
                         userId: req.userId,
                         contentId: null,
                         flag: 'order',
@@ -4243,8 +4243,8 @@ exports.editOrderDetail = async (req, res) => {
                     //Email to Dealer
                     let emailData = {
                         senderName: dealerPrimary.firstName,
-                        content: "The  order " + savedResponse.unique_key + " has been paid",
-                        subject: "Mark as paid"
+                        content: "The  order " + savedResponse.unique_key + " updated and processed",
+                        subject: "Process Order"
                     }
     
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
@@ -4252,12 +4252,15 @@ exports.editOrderDetail = async (req, res) => {
                     emailData = {
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been paid",
-                        subject: "Mark As paid"
+                        subject: "Process Order"
                     }
     
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     //Email to customer code here........
+
+                    
                 }
+
     
             })
 
