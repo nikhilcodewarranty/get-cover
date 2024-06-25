@@ -3066,6 +3066,40 @@ exports.saleReporting = async (req, res) => {
 
 exports.saleReporting1 = async (req, res) => {
   try {
+
+
+    const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
+    console.log("pathTosave--------------------------", pathToAttachment)
+    //  const attachment = fs.readFile(pathToAttachment).toString("base64");
+    // console.log("attachment-----------------------------------",attachment)
+    fs.readFile(pathToAttachment, function (err, fileData) {
+        console.log("pdfdata----------------------------",err, fileData)
+        //Email to Customer
+        const send = sgMail.send({
+            to: 'amit@codenomad.net',
+            from: process.env.from_email,
+            subject: 'Report',
+            files: [
+                {
+                  content: fileData,
+                  filename: "file-1718782172826.xlsx",
+                  type: 'application/pdf',
+                  disposition: 'attachment',
+                  contentId: 'mytext'
+                },
+              ],
+        })
+
+    //     console.log("-----------------------------", send);
+    })
+
+    res.send({
+      code:300
+    })
+
+return
+
+
     console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
