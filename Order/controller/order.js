@@ -3814,7 +3814,6 @@ exports.editOrderDetail = async (req, res) => {
                     pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    console.log("price book object reporting data check ak ------------------", pricebookDetailObject)
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
                     // let eligibilty = claimStatus == "Active" ? true : false
@@ -3904,6 +3903,8 @@ exports.editOrderDetail = async (req, res) => {
 
                 //Send email to customer with term and condtion
                 //generate T anc C
+                console.log("checkDealer-------------------------",checkDealer)
+                console.log("savedResponse-------------------------",savedResponse)
                 if (checkDealer?.termCondition) {
                     const tcResponse = await generateTC(savedResponse);
                 }
