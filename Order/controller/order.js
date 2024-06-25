@@ -3562,6 +3562,7 @@ exports.editOrderDetail = async (req, res) => {
             );
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
+            console.log("fsdfsdfsdfsdfdsfsdfdsfdsf")
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
@@ -3598,7 +3599,9 @@ exports.editOrderDetail = async (req, res) => {
                             : 0
                     ) + 1;
 
+         
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
+                console.log("totalDataComing1=================", totalDataComing1)
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -3612,6 +3615,7 @@ exports.editOrderDetail = async (req, res) => {
                         purchaseDate: item[keys[7]],
                     };
                 });
+                console.log("totalDataComing=================", totalDataComing)
                 // let savedDataOrder = savedResponse.toObject()
 
                 var contractArray = [];
@@ -3843,8 +3847,9 @@ exports.editOrderDetail = async (req, res) => {
                     //let saveData = contractService.createContract(contractObject)
                 });
 
+                console.log("contractArray=================", contractArray)
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-
+                console.log("saveContracts=================", saveContracts)
                 if (!saveContracts[0]) {
                     logData.response = {
                         code: constant.errorCode,
