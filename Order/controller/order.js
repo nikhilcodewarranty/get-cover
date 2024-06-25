@@ -3551,6 +3551,7 @@ exports.editOrderDetail = async (req, res) => {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+            console.log("I am here-----------------------------------1")
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
@@ -3619,7 +3620,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-
+                console.log("I am here-----------------------------------2")
                 var contractArray = [];
                 var pricebookDetail = [];
                 var dealerBookDetail = [];
@@ -3837,7 +3838,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-
+                console.log("I am here-----------------------------------3")
                 if (!saveContracts[0]) {
                     logData.response = {
                         code: constant.errorCode,
@@ -3852,6 +3853,7 @@ exports.editOrderDetail = async (req, res) => {
                 }
 
                 //send notification to dealer,reseller,admin,customer
+                console.log("I am here-----------------------------------4")
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
                 let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
@@ -3860,6 +3862,7 @@ exports.editOrderDetail = async (req, res) => {
                     IDs.push(resellerPrimary?._id)
                 }
                 IDs.push(dealerPrimary._id, customerPrimary._id)
+                console.log("I am here-----------------------------------5",IDs)
                 let notificationData1 = {
                     title: "Order update and processed",
                     description: "The order " + savedResponse.unique_key + " has been update and processed",
@@ -3868,7 +3871,7 @@ exports.editOrderDetail = async (req, res) => {
                     flag: 'order',
                     notificationFor: IDs
                 };
-                console.log("notificationData1--------------------------------------",notificationData1)
+                console.log("I am here-----------------------------------6",notificationData1)
                 let createNotification = await userService.createNotification(notificationData1);
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
@@ -3880,6 +3883,7 @@ exports.editOrderDetail = async (req, res) => {
                     subject: "Process Order"
                 }
 
+                
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary?.email, notificationEmails, emailData))
                 //Email to Reseller
                 emailData = {
@@ -3888,6 +3892,8 @@ exports.editOrderDetail = async (req, res) => {
                     subject: "Process Order"
                 }
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+                console.log("I am here-----------------------------------7",mailing)
+
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -3895,9 +3901,9 @@ exports.editOrderDetail = async (req, res) => {
                     dealerId: data.dealerId,
                     // dealerPriceBook: dealerBookDetail
                 }
-
                 await supportingFunction.reportingData(reportingData)
 
+                console.log("I am here-----------------------------------8",reportingData)
             })
 
 
