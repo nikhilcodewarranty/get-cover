@@ -4287,7 +4287,7 @@ exports.markAsPaid = async (req, res) => {
             if (saveData.length == 0) {
                 logData.response = {
                     code: constant.errorCode,
-                    message: "unable to make contracts",
+                    message: "unable to make contracts", 
                     result: saveData
                 };
                 await LOG(logData).save();
