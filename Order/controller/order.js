@@ -3916,6 +3916,7 @@ exports.editOrderDetail = async (req, res) => {
 
             let save = savedResponse.productsArray.map(async (product) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                console.log("savedResponse------------------------------------------1")
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
                     cellDates: true
@@ -3938,6 +3939,7 @@ exports.editOrderDetail = async (req, res) => {
                     projection
                 );
                 const wb = XLSX.readFile(pathFile, readOpts);
+                console.log("savedResponse------------------------------------------2")
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 // let contractCount =
