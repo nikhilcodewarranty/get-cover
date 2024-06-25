@@ -5568,7 +5568,7 @@ async function generateTC(orderData) {
                           attachments: [
                             {
                               content: "Term and Condition",
-                              filename: fileData,
+                              filename: "GC-2024-100539.pdf",
                               type: 'application/pdf',
                               disposition: 'attachment',
                               contentId: 'mytext'
