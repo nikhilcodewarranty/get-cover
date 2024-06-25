@@ -5556,12 +5556,12 @@ async function generateTC(orderData) {
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
                 console.log("attachment-----------------------------------",pathToAttachment)
-                fs.readFile(pathToAttachment, async (err, fileData) =>{
+                fs.readFile(pathToAttachment, async (err, fileData) => {
                     console.log("pdfdata----------------------------", fileData,"fsdfsdfsdfsffsd123")
                     //Email to Customer
                     var send = await sgMail.send(
                         {
-                          to: 'amit@codenomad.net',
+                          to: 'amit@codenomad.net', 
                           from: process.env.from_email,
                           subject: 'Report',
                           text: "sssssssssssssssss",
@@ -5576,10 +5576,11 @@ async function generateTC(orderData) {
                           ],
                         }
                       )
+                      console.log('Email sent successfully:', send);
+
 
                 //     console.log("-----------------------------", send);
                 })
-                console.log('Email sent successfully:', send);
 
 
             })
