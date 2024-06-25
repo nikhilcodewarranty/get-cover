@@ -3857,7 +3857,7 @@ exports.editOrderDetail = async (req, res) => {
                 let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.customerId, isPrimary: true })
                 let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.resellerId, isPrimary: true })
                 if (resellerPrimary) {
-                    IDs.push(resellerPrimary._id)
+                    IDs.push(resellerPrimary?._id)
                 }
                 IDs.push(dealerPrimary._id, customerPrimary._id)
                 let notificationData1 = {
@@ -3868,6 +3868,7 @@ exports.editOrderDetail = async (req, res) => {
                     flag: 'order',
                     notificationFor: IDs
                 };
+                console.log("notificationData1--------------------------------------",notificationData1)
                 let createNotification = await userService.createNotification(notificationData1);
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
