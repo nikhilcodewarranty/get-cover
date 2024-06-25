@@ -87,6 +87,20 @@ module.exports = {
     };
   },
 
+
+
+  term_condition: (toEmail,data) => {
+    return {
+      to: toEmail,
+      from: process.env.from_email,
+      text:"ssssssssssssssssssssssss"
+      // subject: `Sending an email using SendGrid`,
+      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
+      // templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
+      // dynamic_template_data:data
+    };
+  },
+
   // sendMissingProduct: (toEmail, missingProductNames, sub) => {
   //   const htmlContent = `
   //         <p>Please check the following missing products:</p>
