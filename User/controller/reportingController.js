@@ -485,9 +485,12 @@ exports.weeklySales = async (data, req, res) => {
         // Perform aggregation query
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
-         getOrders[0]._id = datesArray[0]
-         getOrders1[0]._id = datesArray[0]
-
+        if(getOrders[0]){
+            getOrders[0]._id = datesArray[0]
+            getOrders1[0]._id = datesArray[0]
+   
+        }
+         
         // Example: Logging MongoDB aggregation results for debugging
 
         // Prepare response data based on datesArray and MongoDB results
@@ -1345,7 +1348,7 @@ exports.claimDailyReporting = async (data) => {
 
 exports.claimWeeklyReporting = async (data) => {
     try {
-        let data = req.body
+        // let data = req.body
         // const data = req.body;
 
         // Parse startDate and endDate from request body
@@ -1371,12 +1374,156 @@ exports.claimWeeklyReporting = async (data) => {
         let currentDate1 = moment(startDate);
 
         while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
-            currentDate = currentDate
+            datesArray.push(currentDate1.clone()); // Use clone to avoid mutating currentDate
+            currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
 
+        console.log("dates array==================",datesArray)
+
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt:{ $gte: startDate.toDate(), $lte: endDate.toDate() },
+                    // claimStatus: {
+                    //     $elemMatch: { status: "Completed" }
+                    // },
+                },
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: "$weekStart",
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+
+        if(getData[0]){
+            getData[0]._id = datesArray[0]
+        }
+        console.log("data+++++++111111111111111++++++++++++++++++++++++",getData)
+
+        const result = datesArray.map(date => {
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getData.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            return {
+                weekStart: dateString,
+                total_amount: order ? order.total_amount : 0,
+                total_claim: order ? order.total_claim : 0
+            };
+        });
+        console.log("data++++++++++++++656666666666666666666+++++++++++++++++",result)
+
+
+        const totalFees = result.reduce((acc, curr) => {
+            acc.total_amount += curr.total_amount || 0;
+            acc.total_claim += curr.total_claim || 0;
+            return acc;
+        }, {
+            total_amount: 0,
+            total_claim: 0,
+        });
+
+        return { result, totalFees }
+
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
+    }
+}
+
+exports.claimDayReporting = async(data)=>{
+    try{
+        data.dayDate = data.startDate
+        const today = new Date(data.dayDate);
+
+        // Set the start of the day
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+        // Set the end of the day
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+
+        console.log(startOfDay, endOfDay)
+
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfDay, $lt: endOfDay }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 }
+                }
+            },
+            {
+                $sort: { _id: -1 } // Sort by date in ascending order
+            }
+        ];
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+        
+        let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 0);
+        const options = {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        };
+
+        let result = [{
+            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+            total_amount: getData.length ? getData[0].total_amount : 0,
+            total_claim: getData.length ? getData[0].total_claim : 0
+        }];
+
+        // const result = datesArray.map(date => {
+        //     const dateString = date.format('YYYY-MM-DD');
+        //     const order = getData.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+        //     return {
+        //         weekStart: dateString,
+        //         total_amount: order ? order.total_amount : 0,
+        //         total_claim: order ? order.total_claim : 0
+        //     };
+        // });
+
+
+        const totalFees = result.reduce((acc, curr) => {
+            acc.total_amount += curr.total_amount || 0;
+            acc.total_claim += curr.total_claim || 0;
+            return acc;
+        }, {
+            total_amount: 0,
+            total_claim: 0,
+        });
+
+        return { result, totalFees }
+
+    }catch(err){
+        return{
+            code:constant.errorCode,
+            message:err.message
+        }
     }
 }

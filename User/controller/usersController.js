@@ -3184,6 +3184,20 @@ exports.claimReporting = async (req, res) => {
         message: "Success",
         result: claim
       })
+    }else if(data.flag == "weekly"){
+      let claim = await reportingController.claimWeeklyReporting(data)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: claim
+      })
+    }else if(data.flag == "day"){
+      let claim = await reportingController.claimDayReporting(data)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: claim
+      })
     }
   } catch (err) {
     res.send({
