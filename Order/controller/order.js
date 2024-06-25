@@ -5497,7 +5497,7 @@ async function generateTC(orderData) {
             
         </table > `;
         if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            console.log("If-----------------------------------",mergeFileName)
+            console.log("If-----------------------------------", mergeFileName)
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             response = { link: link, fileName: mergeFileName }
 
@@ -5512,7 +5512,7 @@ async function generateTC(orderData) {
                 if (err) return console.log(err);
                 // -------------------merging pdfs 
 
-                console.log("else-----------------------------------",orderFile)
+                console.log("else-----------------------------------", orderFile)
                 const { PDFDocument, rgb } = require('pdf-lib');
                 const fs = require('fs').promises;
 
@@ -5552,43 +5552,42 @@ async function generateTC(orderData) {
                 link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
-                const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName
-                console.log("pathTosave--------------------------",pathTosave)
+                const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/GC-2024-100539.pdf"
+                console.log("pathTosave--------------------------", pathToAttachment)
                 //   const attachment = fs.readFileSync(pathToAttachment,"utf-8");
                 // console.log("pathToAttachment-----------------------------------",pathToAttachment)
+                fs.readFile(pathToAttachment, function (err, data) {
+                    console.log("pdfdata----------------------------", data)
+                    //Email to Customer
+                    const send = sgMail.send({
+                        to: 'amit@codenomad.net',
+                        from: process.env.from_email,
+                        subject: 'Report',
+                        attachments: [{
+                            filename: 'Report.pdf',
+                            content: data,
+                            type: 'application/pdf',
+                        }],
+                        html: 'bla bla'
+                    })
 
-                // fs.readFile(pathToAttachment, function (err, data) {
-                //     console.log("pdfdata----------------------------",data)
-                //     //Email to Customer
-                //    const send =  sgMail.send({
-                //         to: 'amit@codenomad.net',
-                //         from: process.env.from_email,
-                //         subject: 'Report',
-                //         attachments: [{
-                //             filename: 'Report.pdf',
-                //             content: data,
-                //             type: 'application/pdf',
-                //         }],
-                //         html: 'bla bla'
-                //     })
-
-                //     console.log("-----------------------------",send);
-                // })
+                    console.log("-----------------------------", send);
+                })
 
             })
             return 1
 
-        
-    }
+
+        }
 
     }
     catch (err) {
-    res.send({
-        code: constant.errorCode,
-        message: err.message
-    })
-    return;
-}
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+        return;
+    }
 }
 
 exports.generateHtmltopdf = async (req, res) => {
