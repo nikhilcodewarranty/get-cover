@@ -5496,106 +5496,94 @@ async function generateTC(orderData) {
             </tr >
             
         </table > `;
-        if (fs.existsSync(process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName)) {
-            console.log("If-----------------------------------", mergeFileName)
+
+        pdf.create(html, options).toFile(orderFile, async (err, result) => {
+            if (err) return console.log(err);
+            // -------------------merging pdfs 
+            const { PDFDocument, rgb } = require('pdf-lib');
+            const fs = require('fs').promises;
+
+            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                // Load the PDFs
+                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+                // Create a new PDF Document
+                const mergedPdf = await PDFDocument.create();
+
+                // Add the pages of the first PDF
+                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Add the pages of the second PDF
+                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Serialize the PDF
+                const mergedPdfBytes = await mergedPdf.save();
+
+                // Write the merged PDF to a file
+                await fs.writeFile(outputPath, mergedPdfBytes);
+            }
+
+            //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
+
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
+            // Usage
+            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-            response = { link: link, fileName: mergeFileName }
-
-            return 1
-            // res.send({
-            //     code: constant.successCode,
-            //     message: 'Success!',
-            //     result: response
-            // })
-        } else {
-            pdf.create(html, options).toFile(orderFile, async (err, result) => {
-                if (err) return console.log(err);
-                // -------------------merging pdfs 
-
-                console.log("else-----------------------------------", orderFile)
-                const { PDFDocument, rgb } = require('pdf-lib');
-                const fs = require('fs').promises;
-
-                async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
-                    // Load the PDFs
-                    const pdfDoc1Bytes = await fs.readFile(pdfPath1);
-                    const pdfDoc2Bytes = await fs.readFile(pdfPath2);
-
-                    const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
-                    const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
-
-                    // Create a new PDF Document
-                    const mergedPdf = await PDFDocument.create();
-
-                    // Add the pages of the first PDF
-                    const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
-                    pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
-
-                    // Add the pages of the second PDF
-                    const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
-                    pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
-
-                    // Serialize the PDF
-                    const mergedPdfBytes = await mergedPdf.save();
-
-                    // Write the merged PDF to a file
-                    await fs.writeFile(outputPath, mergedPdfBytes);
-                }
-
-                //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-
-                const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
-                // Usage
-                const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
-                const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
-                const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
-                link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
-                let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
-
-                const pathToAttachment = rocess.env.MAIN_FILE_PATH + "/uploads/mergedFile/GC-2024-100539.pdf"
-                console.log("pathTosave--------------------------", pathToAttachment)
-                //  const attachment = fs.readFile(pathToAttachment).toString("base64");
-                console.log("attachment-----------------------------------", pathToAttachment)
-                fs.promises.readFile(pathToAttachment)
-                    .then(async (fileData) => {
-                        const attachment = fileData.toString('base64');
-                        console.log("attachment-----------------------------------", attachment);
-
-                        try {
-                            const send = await sgMail.send({
-                                to: 'amit@codenomad.net',
-                                from: process.env.from_email,
-                                subject: 'Report',
-                                text: "sssssssssssssssss",
-                                attachments: [
-                                    {
-                                        content: attachment,
-                                        filename: "GC-2024-100539.pdf",
-                                        type: 'application/pdf',
-                                        disposition: 'attachment',
-                                        contentId: 'mytext'
-                                    },
-                                ],
-                            });
-
-                            console.log('Email sent successfully:', send);
-                        } catch (error) {
-                            console.error('Error sending email:', error);
-                            if (error.response) {
-                                console.error('Error response:', error.response.body);
-                            }
+            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
+            fs.readFile(pathToAttachment)
+                .then(async (fileData) => {
+                    const attachment = fileData.toString('base64');
+                    try {
+                        //sendTermAndCondition
+                        // Send Email code here
+                        let notificationEmails = await supportingFunction.getUserEmails();
+                        notificationEmails.push(dealerUser.email)
+                        notificationEmails.push(resellerUser?.email)
+                        let emailData = {
+                            senderName: customerUser.firstName,
+                            content: "Please read the following term and condition file for the order!",
+                            subject: 'Term and Condition',
                         }
-                    })
-                    .catch(err => {
-                        console.error("Error reading the file:", err);
-                    });
+                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                        // const send = await sgMail.send({
+                        //     to: customerUser.email,
+                        //     from: process.env.from_email,
+                        //     subject: 'Term and Condtion',
+                        //     text: "sssssssssssssssss",
+                        //     attachments: [
+                        //         {
+                        //             content: attachment,
+                        //             filename: "Get-Cover term and condition",
+                        //             type: 'application/pdf',
+                        //             disposition: 'attachment',
+                        //             contentId: 'mytext'
+                        //         },
+                        //     ],
+                        // });
+
+                    } catch (error) {
+                        console.error('Error sending email:', error);
+                        if (error.response) {
+                            console.error('Error response:', error.response.body);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error reading the file:", err);
+                });
 
 
-            })
-            return 1
-
-
-        }
+        })
+        return 1
 
     }
     catch (err) {

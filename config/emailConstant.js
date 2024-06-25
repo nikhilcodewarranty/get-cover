@@ -12,13 +12,13 @@ module.exports = {
     };
   },
 
-  sendCsvFile: (toEmail,ccMail, data) => {
+  sendCsvFile: (toEmail, ccMail, data) => {
     return {
       to: toEmail,
-      cc:ccMail,
+      cc: ccMail,
       from: process.env.from_email,
       subject: `Bulk Data Report`,
-      html:data
+      html: data
       // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
       // dynamic_template_data:data ,
       // mailSettings: {
@@ -28,29 +28,48 @@ module.exports = {
     };
   },
 
-  sendEmailTemplate: (toEmail,ccEmail, data) => {
+  sendEmailTemplate: (toEmail, ccEmail, data) => {
     return {
       to: toEmail,
       cc: ccEmail,
       from: process.env.from_email,
       templateId: process.env.update_status,
       // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
-       dynamic_template_data:data ,
+      dynamic_template_data: data,
       // mailSettings: {
       //   // Set the subject for the email
       //   subject: 'CSV link',
       // },
-    }; 
+    };
   },
 
-  dealerWelcomeMessage: (toEmail,data) => {
+  sendTermAndCondition: (toEmail, ccEmail, data, attachment) => {
+    return {
+      to: toEmail,
+      cc: ccEmail,
+      from: process.env.from_email,
+      templateId: process.env.update_status,
+      dynamic_template_data: data,
+      attachments: [
+        {
+          content: attachment,
+          filename: "Get-Cover term and condition",
+          type: 'application/pdf',
+          disposition: 'attachment',
+          contentId: 'mytext'
+        },
+      ],
+    };
+  },
+
+  dealerWelcomeMessage: (toEmail, data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.main_template,
-      dynamic_template_data:data
+      dynamic_template_data: data
 
     };
   },
@@ -65,25 +84,25 @@ module.exports = {
     };
   },
 
-  dealerApproval: (toEmail,data) => {
+  dealerApproval: (toEmail, data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.approval_mail,
-      dynamic_template_data:data
+      dynamic_template_data: data
     };
   },
 
-  servicerApproval: (toEmail,data) => {
+  servicerApproval: (toEmail, data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
-      dynamic_template_data:data
+      dynamic_template_data: data
     };
   },
 
@@ -93,7 +112,7 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      text:"ssssssssssssssssssssssss"
+      text: "ssssssssssssssssssssssss"
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       // templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
