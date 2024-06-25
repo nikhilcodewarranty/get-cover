@@ -5555,7 +5555,7 @@ async function generateTC(orderData) {
                 const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/GC-2024-100539.pdf"
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
-                console.log("attachment-----------------------------------",attachment)
+                console.log("attachment-----------------------------------",pathToAttachment)
                 fs.readFile(pathToAttachment, async (err, fileData) =>{
                     console.log("pdfdata----------------------------", fileData)
                     //Email to Customer
