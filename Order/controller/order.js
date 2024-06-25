@@ -4316,7 +4316,7 @@ exports.markAsPaid = async (req, res) => {
                     products: pricebookDetail,
                     orderAmount: data.orderAmount,
                     dealerId: data.dealerId,
-                }
+                } 
 
                 await supportingFunction.reportingData(reportingData)
                 //Send email to customer with term and condtion
