@@ -5552,35 +5552,43 @@ async function generateTC(orderData) {
                 link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
                 let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
 
-                const pathToAttachment = "uploads/mergedFile/GC-2024-100539.pdf"
+                const pathToAttachment = rocess.env.MAIN_FILE_PATH + "/uploads/mergedFile/GC-2024-100539.pdf"
                 console.log("pathTosave--------------------------", pathToAttachment)
                 //  const attachment = fs.readFile(pathToAttachment).toString("base64");
-                console.log("attachment-----------------------------------",pathToAttachment)
-                fs.readFile(pathToAttachment, async (err, fileData) => {
-                    console.log("pdfdata----------------------------", fileData,"fsdfsdfsdfsffsd123")
-                    //Email to Customer
-                    var send = await sgMail.send(
-                        {
-                          to: 'amit@codenomad.net', 
-                          from: process.env.from_email,
-                          subject: 'Report',
-                          text: "sssssssssssssssss",
-                          attachments: [
-                            {
-                              content: "Term and Condition",
-                              filename: "GC-2024-100539.pdf",
-                              type: 'application/pdf',
-                              disposition: 'attachment',
-                              contentId: 'mytext'
-                            },
-                          ],
+                console.log("attachment-----------------------------------", pathToAttachment)
+                fs.promises.readFile(pathToAttachment)
+                    .then(async (fileData) => {
+                        const attachment = fileData.toString('base64');
+                        console.log("attachment-----------------------------------", attachment);
+
+                        try {
+                            const send = await sgMail.send({
+                                to: 'amit@codenomad.net',
+                                from: process.env.FROM_EMAIL,
+                                subject: 'Report',
+                                text: "sssssssssssssssss",
+                                attachments: [
+                                    {
+                                        content: attachment,
+                                        filename: "GC-2024-100539.pdf",
+                                        type: 'application/pdf',
+                                        disposition: 'attachment',
+                                        contentId: 'mytext'
+                                    },
+                                ],
+                            });
+
+                            console.log('Email sent successfully:', send);
+                        } catch (error) {
+                            console.error('Error sending email:', error);
+                            if (error.response) {
+                                console.error('Error response:', error.response.body);
+                            }
                         }
-                      )
-                      console.log('Email sent successfully:', send);
-
-
-                //     console.log("-----------------------------", send);
-                })
+                    })
+                    .catch(err => {
+                        console.error("Error reading the file:", err);
+                    });
 
 
             })
