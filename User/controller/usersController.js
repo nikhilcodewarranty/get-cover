@@ -3074,31 +3074,42 @@ exports.saleReporting1 = async (req, res) => {
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
     // console.log("attachment-----------------------------------",attachment)
     fs.readFile(pathToAttachment, async (err, fileData)=> {
-        console.log("pdfdata----------------------------",err, fileData)
+        console.log("pdfdata----------------------------", process.env.from_email,err, fileData)
         //Email to Customer
-        var send = await sgMail.send(emailConstant.term_condition('amit@codenomad.net')          
-          
-        //   {
-        //     to: 'amit@codenomad.net',
-        //     from: process.env.from_email,
-        //     subject: 'Report',
-        //     // files: [
-        //     //     {
-        //     //       content: fileData,
-        //     //       filename: "file-1718782172826.xlsx",
-        //     //       type: 'application/pdf',
-        //     //       disposition: 'attachment',
-        //     //       contentId: 'mytext'
-        //     //     },
-        //     //   ],
-        // }
-        )
+        try{
+          var send = await sgMail.send(      
+            {
+              to: 'amit@codenomad.net',
+              from: process.env.from_email,
+              subject: 'Report',
+              text:"sssssssssssssssss"
+              // files: [
+              //     {
+              //       content: fileData,
+              //       filename: "file-1718782172826.xlsx",
+              //       type: 'application/pdf',
+              //       disposition: 'attachment',
+              //       contentId: 'mytext'
+              //     },
+              //   ],
+          }
+          )
 
-        console.log("-----------------------------", send);
-        res.send({
-          code:300,
-          send
-        })
+          console.log('Email sent successfully:', send);
+        }catch(error){
+          console.error('Error sending email:', error);
+
+          if (error.response) {
+              console.error('Error response:', error.response.body);
+          }
+        }
+        
+
+        // console.log("-----------------------------", send);
+        // res.send({
+        //   code:300,
+        //   send
+        // })
     })
 
    
