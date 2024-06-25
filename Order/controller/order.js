@@ -3897,15 +3897,17 @@ exports.editOrderDetail = async (req, res) => {
 
                 await supportingFunction.reportingData(reportingData)
 
+                //Send email to customer with term and condtion
+                //generate T anc C
+                console.log("checkDealer-------------------------", checkDealer)
+                console.log("savedResponse-------------------------", checkOrder)
+                if (checkDealer?.termCondition) {
+                    const tcResponse = await generateTC(checkOrder);
+                }
+
             })
 
-            //Send email to customer with term and condtion
-            //generate T anc C
-            console.log("checkDealer-------------------------", checkDealer)
-            console.log("savedResponse-------------------------", checkOrder)
-            if (checkDealer?.termCondition) {
-                const tcResponse = await generateTC(checkOrder);
-            }
+
             // reporting codes
             logData.response = {
                 code: constant.successCode,
