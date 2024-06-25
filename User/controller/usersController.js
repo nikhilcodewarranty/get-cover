@@ -3080,7 +3080,16 @@ exports.saleReporting1 = async (req, res) => {
             from: process.env.from_email,
             subject: 'Report',
             text: "sssssssssssssssss",
-            files: [
+            attachments: [
+              {
+                content: fileData,
+                filename: "file-1718782172826.xlsx",
+                type: 'application/pdf',
+                disposition: 'attachment',
+                contentId: 'mytext'
+              },
+            ],
+            file: [
                 {
                   content: fileData,
                   filename: "file-1718782172826.xlsx",
