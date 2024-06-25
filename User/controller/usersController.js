@@ -3090,7 +3090,7 @@ exports.saleReporting1 = async (req, res) => {
               ],
         })
 
-    //     console.log("-----------------------------", send);
+        console.log("-----------------------------", send);
     })
 
     res.send({
