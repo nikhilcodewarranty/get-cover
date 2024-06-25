@@ -5572,7 +5572,7 @@ async function generateTC(orderData) {
                                         content: attachment,
                                         filename: "GC-2024-100539.pdf",
                                         type: 'application/pdf',
-                                        disposition: 'attachment',
+                                        disposition: 'attachment', 
                                         contentId: 'mytext'
                                     },
                                 ],
