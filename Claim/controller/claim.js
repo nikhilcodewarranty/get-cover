@@ -1857,8 +1857,6 @@ exports.saveBulkClaim = async (req, res) => {
       if (req.role == 'Customer') {
         match = { "order.customers._id": new mongoose.Types.ObjectId(req.userId) }
       }
-      console.log(match);
-
       const fileUrl = req.files[0].path
       const jsonOpts = {
         header: 1,
@@ -2098,11 +2096,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
-
-      // res.json(contractAllDataArray);
-
-      // return;
-
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -2128,8 +2121,6 @@ exports.saveBulkClaim = async (req, res) => {
               item.status = "Claim is already open of this contract"
               item.exit = true;
             }
-            // item.status = "Claim is already open of this contract"
-            // item.exit = true;
           }
 
           if (allDataArray.length > 0 && servicerData) {
@@ -2224,8 +2215,10 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
       })
+
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       //Build data for particular servicer and send mail
@@ -2254,14 +2247,23 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
       // If you need to convert existArray.data to a flat array format
-      let flatArray = [];
-      for (let servicerId in existArray.data) {
-        let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
-        let email = matchData ? matchData.email : servicerId; // Replace servicerId with email if matchData is found
-        flatArray.push({
-          email: email,
-          response: existArray.data[servicerId]
-        });
+      if (emailServicer.length > 0) {
+        let flatArray = [];
+        for (let servicerId in existArray.data) {
+          let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+          let email = matchData ? matchData.email : servicerId; // Replace servicerId with email if matchData is found
+          flatArray.push({
+            email: email,
+            response: existArray.data[servicerId]
+          });
+        }
+        //send email to servicer      
+        for (const item of flatArray) {
+          console.log(item.email)
+          console.log(item.response)
+          const htmlTableString = convertArrayToHTMLTable(item.response);
+          mailing = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+        }
       }
       const csvArray = totalDataComing.map((item, i) => {
         return {
@@ -2273,14 +2275,13 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       function convertArrayToHTMLTable(array) {
-        console.log("sdasdasdsadsa")
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
           const values = Object.values(obj).map(value => `<td>${value}</td>`);
           values[2] = `${values[2]}`;
           return values.join('');
         });
-      
+
         const htmlContent = `<html>
             <head>
                 <style>
@@ -2305,20 +2306,14 @@ exports.saveBulkClaim = async (req, res) => {
                 </table>
             </body>
         </html>`;
-      
+
         return htmlContent;
       }
-      const htmlTableString =  convertArrayToHTMLTable(csvArray);
+      const htmlTableString = convertArrayToHTMLTable(csvArray);
       //send Email to admin 
       const adminEmail = await supportingFunction.getUserEmails();
-      let mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail,['ram@yopmail.com'], htmlTableString));
-      //send email to servicer      
-      for (const item of flatArray) {
-        console.log(item.email)
-        console.log(item.response)
-        const htmlTableString =  convertArrayToHTMLTable(item.response);
-         mailing = await sgMail.send(emailConstant.sendCsvFile(item.email,adminEmail, htmlTableString));
-      }
+      let mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ['ram@yopmail.com'], htmlTableString));
+
       res.send({
         code: constant.successCode,
         message: 'Success!',
