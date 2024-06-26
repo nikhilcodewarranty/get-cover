@@ -2319,8 +2319,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       let new_admin_array = adminEmail.concat(emailArray)
 
-      console.log("new_admin_array--------------------",new_admin_array)
-
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
