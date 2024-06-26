@@ -2507,7 +2507,7 @@ exports.getAllNotifications1 = async (req, res) => {
   try {
     let data = req.body
 
-    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
+    let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let getNotifications = await userService.getAllNotifications({ notificationFor: new mongoose.Types.ObjectId(req.teammateId) }, skipLimit, limitData)
@@ -2524,15 +2524,25 @@ exports.getAllNotifications1 = async (req, res) => {
         isOpen
       };
     });
+    console.log("read flag data -------------------true",data)
 
-    if (data.readFlag != "") {
-      if (data.readFlag == "true") {
-        updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
-      } else {
-        updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
-
+    if(data.readFlag || data.readFlag == false){
+      console.log("inside the query +++++++++++++++++")
+      if (data.readFlag != "") {
+      console.log("inside the query +++++22222222222++++++++++++")
+      if (data.readFlag == "true" || data.readFlag ==true || data.readFlag != "false") {
+          console.log("read flag data true",data)
+          updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
+        } else {
+          console.log("read flag data false",data)
+  
+          updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
+  
+        }
       }
     }
+
+   
 
     res.send({
       code: constant.successCode,
