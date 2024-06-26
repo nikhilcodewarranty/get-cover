@@ -1839,6 +1839,7 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
+      console.log("postData----------------",data)
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
