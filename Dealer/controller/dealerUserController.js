@@ -4036,10 +4036,12 @@ exports.editOrderDetail = async (req, res) => {
             let dealerBookDetail = [];
 
 
+            console.log("=========================================================1")
+
 
             await savedResponse.productsArray.map(async (product) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
-
+                console.log("=========================================================2")
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -4077,7 +4079,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-
+                console.log("=========================================================3")
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -4285,7 +4287,7 @@ exports.editOrderDetail = async (req, res) => {
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-
+                console.log("=========================================================4")
                 let createContract = await contractService.createBulkContracts(contractArray);
                 if (!createContract[0]) {
                     if (!saveContracts) {
@@ -4348,10 +4350,12 @@ exports.editOrderDetail = async (req, res) => {
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     // Customer Email here with T and C
                     //generate T anc C
+                    console.log("=========================================================5")
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                         console.log("tcResponse-----------------------------------", tcResponse)
                     }
+                    console.log("=========================================================6")
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,
