@@ -2264,7 +2264,7 @@ exports.saveBulkClaim = async (req, res) => {
           });
         }
         //send email to servicer      
-        for (const item of flatArray) {
+        for (const item of flatArray) { 
           console.log(item.email)
           console.log(item.response)
           const htmlTableString = convertArrayToHTMLTable(item.response);
