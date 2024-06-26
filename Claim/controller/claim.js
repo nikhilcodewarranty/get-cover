@@ -2316,7 +2316,7 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      adminEmail.concat(req.body.email)
+      adminEmail.concat(emailArray)
 
       console.log("adminEmailfdgdgfdgdfgf",adminEmail)
       //send Email to admin 
