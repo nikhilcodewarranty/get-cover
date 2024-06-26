@@ -4351,11 +4351,7 @@ exports.editOrderDetail = async (req, res) => {
                     // Customer Email here with T and C
                     //generate T anc C
                     console.log("=========================================================5")
-                    if (checkDealer?.termCondition) {
-                        const tcResponse = await generateTC(savedResponse);
-                        console.log("tcResponse-----------------------------------", tcResponse)
-                    }
-                    console.log("=========================================================6")
+          
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,
@@ -4364,6 +4360,11 @@ exports.editOrderDetail = async (req, res) => {
                     }
 
                     await supportingFunction.reportingData(reportingData)
+                    if (checkDealer?.termCondition) {
+                        const tcResponse = await generateTC(savedResponse);
+                        console.log("tcResponse-----------------------------------", tcResponse)
+                    }
+                    console.log("=========================================================6")
                     res.send({
                         code: constant.successCode,
                         message: "Success",
