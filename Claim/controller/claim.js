@@ -2252,7 +2252,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
       // If you need to convert existArray.data to a flat array format
-      const adminEmail = await supportingFunction.getUserEmails();
+      let adminEmail = await supportingFunction.getUserEmails();
       if (emailServicer.length > 0) {
         let flatArray = [];
         for (let servicerId in existArray.data) {
