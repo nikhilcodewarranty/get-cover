@@ -1776,7 +1776,7 @@ exports.login = async (req, res) => {
     if (!user) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid Credentials"
+        message: "Invalid Credentials1"
       })
       return;
     }
@@ -1826,7 +1826,7 @@ exports.login = async (req, res) => {
     if (!passwordMatch) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid Credentials"
+        message: "Invalid Credentials2"
       })
       return;
     }
@@ -2190,7 +2190,7 @@ exports.sendLinkToEmail = async (req, res) => {
   try {
     let data = req.body
     let resetPasswordCode = randtoken.generate(4, '123456789')
-    let checkEmail = await userService.findOneUser({ email: data.email }, {})
+    let checkEmail = await userService.findOneUser({ email: data.email.toLowerCase() }, {})
     if (!checkEmail) {
       res.send({
         code: constant.errorCode,

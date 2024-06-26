@@ -2809,7 +2809,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             pName: pName,
         }));
         let priceBookDetail
-        if (mergedPriceBooks.length == 0) {
+        if (mergedPriceBooks.length == 1) {
              priceBookDetail = mergedPriceBooks[0]
         } else {
              priceBookDetail = {}
