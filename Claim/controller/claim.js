@@ -2316,9 +2316,9 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
+
       let new_admin_array = adminEmail.concat(emailArray)
 
-      console.log("adminEmailfdgdgfdgdfgf",new_admin_array)
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
@@ -2327,7 +2327,7 @@ exports.saveBulkClaim = async (req, res) => {
         code: constant.successCode,
         message: 'Success!',
         result: saveBulkClaim
-      })
+      }) 
     }
     catch (err) {
       res.send({
