@@ -4400,7 +4400,7 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-async function generateTC(orderData) {
+async function generateTC(orderData,res) {
     try {
         let response;
         let link;
