@@ -1839,7 +1839,11 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      console.log("postData----------------",data)
+      const emailField = req.body.email;
+
+      // Parse the email field
+      const emailArray = JSON.parse(emailField);
+      console.log("emailArray------------------",emailArray)
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
