@@ -2263,7 +2263,7 @@ exports.saveBulkClaim = async (req, res) => {
           console.log(item.email)
           console.log(item.response)
           const htmlTableString = convertArrayToHTMLTable(item.response);
-          mailing = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+         let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
         }
       }
       const csvArray = totalDataComing.map((item, i) => {
