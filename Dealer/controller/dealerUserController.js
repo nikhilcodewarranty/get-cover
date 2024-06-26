@@ -4056,13 +4056,8 @@ exports.editOrderDetail = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                let count1 = await contractService.getContractsCount();
-                let contractCount =
-                    Number(
-                        count1.length > 0 && count1[0].unique_key
-                            ? count1[0].unique_key
-                            : 0
-                    ) + 1;
+                let count1 = await contractService.getContractsCountNew();
+                var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
@@ -4081,7 +4076,7 @@ exports.editOrderDetail = async (req, res) => {
                 // let savedDataOrder = savedResponse.toObject()
                 console.log("=========================================================3")
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 =increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
