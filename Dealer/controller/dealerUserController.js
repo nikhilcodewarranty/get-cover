@@ -7,7 +7,7 @@ const orderController = require("../../Order/controller/order")
 const servicerService = require("../../Provider/services/providerService")
 const claimService = require("../../Claim/services/claimService")
 const moment = require("moment");
-
+const pdf = require('html-pdf');
 const contractService = require("../../Contract/services/contractService")
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
