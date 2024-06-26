@@ -2312,6 +2312,8 @@ exports.saveBulkClaim = async (req, res) => {
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
       adminEmail.concat(req.body.email)
+
+      console.log("adminEmailfdgdgfdgdfgf",adminEmail)
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ['ram@yopmail.com'], htmlTableString));
