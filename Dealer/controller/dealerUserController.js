@@ -4578,6 +4578,7 @@ async function generateTC(orderData) {
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
+            console.log("pathToAttachment----------------------------",pathToAttachment)
             fs.readFile(pathToAttachment)
                 .then(async (fileData) => {
                     const attachment = fileData.toString('base64');
@@ -4623,14 +4624,13 @@ async function generateTC(orderData) {
 
         })
         return 1
-
+ 
     }
-    catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-        return;
+    catch (error) {
+        console.error('Error :', error);
+        if (error.response) {
+            console.error('Error:', error.response.body);
+        }
     }
 }
 exports.getDashboardData = async (req, res) => {
