@@ -1843,7 +1843,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       // Parse the email field
       const emailArray = JSON.parse(emailField);
-      console.log("emailArray------------------",emailArray)
+      //console.log("emailArray------------------",emailArray)
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
@@ -2316,12 +2316,12 @@ exports.saveBulkClaim = async (req, res) => {
         return htmlContent;
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-      adminEmail.concat(emailArray)
+      let new_admin_array = adminEmail.concat(emailArray)
 
-      console.log("adminEmailfdgdgfdgdfgf",adminEmail)
+      console.log("adminEmailfdgdgfdgdfgf",new_admin_array)
       //send Email to admin 
 
-      let mailing = sgMail.send(emailConstant.sendCsvFile(adminEmail, ['ram@yopmail.com'], htmlTableString));
+      let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
 
       res.send({
         code: constant.successCode,
