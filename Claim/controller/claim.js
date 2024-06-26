@@ -1843,7 +1843,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       // Parse the email field
       const emailArray = JSON.parse(emailField);
-      //console.log("emailArray------------------",emailArray)
+      console.log("emailArray------------------", emailArray)
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
@@ -2264,11 +2264,11 @@ exports.saveBulkClaim = async (req, res) => {
           });
         }
         //send email to servicer      
-        for (const item of flatArray) { 
+        for (const item of flatArray) {
           console.log(item.email)
           console.log(item.response)
           const htmlTableString = convertArrayToHTMLTable(item.response);
-         let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+          let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
         }
       }
       const csvArray = totalDataComing.map((item, i) => {
@@ -2327,7 +2327,7 @@ exports.saveBulkClaim = async (req, res) => {
         code: constant.successCode,
         message: 'Success!',
         result: saveBulkClaim
-      }) 
+      })
     }
     catch (err) {
       res.send({
