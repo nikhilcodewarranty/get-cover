@@ -4400,10 +4400,11 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-async function generateTC(orderData,res) {
+async function generateTC(orderData) {
     try {
         let response;
         let link;
+        console.log("34234234234234233223232332",orderData)
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
