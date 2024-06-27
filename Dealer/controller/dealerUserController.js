@@ -3,8 +3,11 @@ const USER = require('../../User/model/users')
 const dealerResourceResponse = require("../utils/constant");
 const dealerService = require("../services/dealerService");
 const orderService = require("../../Order/services/orderService")
+const orderController = require("../../Order/controller/order")
 const servicerService = require("../../Provider/services/providerService")
 const claimService = require("../../Claim/services/claimService")
+const moment = require("moment");
+const pdf = require('html-pdf');
 const contractService = require("../../Contract/services/contractService")
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
@@ -1543,7 +1546,7 @@ exports.createCustomer = async (req, res, next) => {
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
                         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Customer", servicerName:saveMembers[i].firstName }))
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Customer", servicerName: saveMembers[i].firstName }))
 
                     }
 
@@ -1999,7 +2002,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Reseller", servicerName:saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Reseller", servicerName: saveMembers[i].firstName }))
                 }
 
             }
@@ -3766,7 +3769,7 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
 
-        if (checkId.status == "Active" ) {
+        if (checkId.status == "Active") {
             res.send({
                 code: constant.errorCode,
                 message: "Order is already active",
@@ -3774,32 +3777,22 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
 
-        if(checkId.status == "Archieved"){
+        if (checkId.status == "Archieved") {
             res.send({
                 code: constant.errorCode,
                 message: "Order is already archieved",
             });
             return;
         }
-
-        if (req.userId.toString() != checkId.dealerId.toString()) {
-            let checkDealer = await dealerService.getDealerById(
-                req.userId
-            );
-            if (!checkDealer) {
-                res.send({
-                    code: constant.errorCode,
-                    message: "Dealer not found",
-                });
-                return;
-            }
-            // if (!checkDealer.accountStatus) {
-            //     res.send({
-            //         code: constant.errorCode,
-            //         message: "Order can not be created, due to the dealer is inactive",
-            //     });
-            //     return;
-            // }
+        let checkDealer = await dealerService.getDealerById(
+            req.userId
+        );
+        if (!checkDealer) {
+            res.send({
+                code: constant.errorCode,
+                message: "Dealer not found",
+            });
+            return;
         }
         if (data.servicerId != "") {
             if (data.servicerId != checkId.servicerId) {
@@ -4045,10 +4038,12 @@ exports.editOrderDetail = async (req, res) => {
             let dealerBookDetail = [];
 
 
+            console.log("=========================================================1")
+
 
             await savedResponse.productsArray.map(async (product) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
-
+                console.log("=========================================================2")
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -4063,13 +4058,8 @@ exports.editOrderDetail = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                let count1 = await contractService.getContractsCount();
-                let contractCount =
-                    Number(
-                        count1.length > 0 && count1[0].unique_key
-                            ? count1[0].unique_key
-                            : 0
-                    ) + 1;
+                let count1 = await contractService.getContractsCountNew();
+                var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
@@ -4086,9 +4076,9 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-
+                console.log("=========================================================3")
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 = count1[0] ? count1[0].unique_key_number + index + 1 : 100000
+                    let unique_key_number1 =increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
@@ -4294,7 +4284,7 @@ exports.editOrderDetail = async (req, res) => {
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-
+                console.log("=========================================================4")
                 let createContract = await contractService.createBulkContracts(contractArray);
                 if (!createContract[0]) {
                     if (!saveContracts) {
@@ -4316,7 +4306,6 @@ exports.editOrderDetail = async (req, res) => {
                     }
                 }
                 if (createContract) {
-
                     //Save Logs create order
                     logData.response = {
                         code: constant.successCode,
@@ -4341,8 +4330,6 @@ exports.editOrderDetail = async (req, res) => {
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData1);
-
-
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
                     let emailData = {
@@ -4351,17 +4338,17 @@ exports.editOrderDetail = async (req, res) => {
                         subject: "Process Order"
                     }
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-
                     //Email to Reseller
                     emailData = {
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been updated and processed",
                         subject: "Process Order"
                     }
-
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
-
                     // Customer Email here with T and C
+                    //generate T anc C
+                    console.log("=========================================================5")
+          
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,
@@ -4370,6 +4357,11 @@ exports.editOrderDetail = async (req, res) => {
                     }
 
                     await supportingFunction.reportingData(reportingData)
+                    if (checkDealer?.termCondition) {
+                        const tcResponse = await generateTC(savedResponse);
+                        console.log("tcResponse-----------------------------------", tcResponse)
+                    }
+                    console.log("=========================================================6")
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -4410,6 +4402,239 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+async function generateTC(orderData) {
+    try {
+        let response;
+        let link;
+        console.log("34234234234234233223232332",orderData)
+        const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
+        let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
+        let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+        //Get Dealer
+        const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
+        //Get customer
+        const checkCustomer = await customerService.getCustomerById({ _id: checkOrder.customerId }, { isDeleted: false })
+        //Get customer primary info
+        const customerUser = await userService.getUserById1({ metaId: checkOrder.customerId, isPrimary: true }, { isDeleted: false })
+
+        const DealerUser = await userService.getUserById1({ metaId: checkOrder.dealerId, isPrimary: true }, { isDeleted: false })
+
+        const checkReseller = await resellerService.getReseller({ _id: checkOrder.resellerId }, { isDeleted: false })
+        //Get reseller primary info
+        const resellerUser = await userService.getUserById1({ metaId: checkOrder.resellerId, isPrimary: true }, { isDeleted: false })
+        //Get contract info of the order
+        let productCoveredArray = []
+        //Check contract is exist or not using contract id
+        const contractArrayPromise = checkOrder?.productsArray.map(item => {
+            if (!item.exit) return contractService.getContractById({
+                orderProductId: item._id
+            });
+            else {
+                return null;
+            }
+        })
+        const contractArray = await Promise.all(contractArrayPromise);
+        for (let i = 0; i < checkOrder?.productsArray.length; i++) {
+            if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
+                for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
+                    let quanitityProduct = checkOrder?.productsArray[i].QuantityPricing[j];
+                    let obj = {
+                        productName: quanitityProduct.name,
+                        noOfProducts: quanitityProduct.enterQuantity
+                    }
+                    productCoveredArray.push(obj)
+                }
+
+            }
+            else {
+                let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
+
+                let obj = {
+                    productName: findContract.productName,
+                    noOfProducts: checkOrder?.productsArray[i].noOfProducts
+                }
+                productCoveredArray.push(obj)
+            }
+
+        }
+        // res.json(productCoveredArray);
+        // return;
+        const tableRows = productCoveredArray.map(product => `
+        <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
+
+`).join('');
+
+        const checkServicer = await servicerService.getServiceProviderById({
+            $or: [
+                { "_id": checkOrder.servicerId },
+                { "dealerId": checkOrder.servicerId },
+                { "resellerId": checkOrder.servicerId }
+            ]
+        }, { isDeleted: false })
+
+        const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
+        //res.json(checkDealer);return
+        const options = {
+            format: 'A4',
+            orientation: 'portrait',
+            border: '10mm',
+            childProcessOptions: {
+                env: {
+                    OPENSSL_CONF: '/dev/null',
+                },
+            }
+        }
+        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
+        let mergeFileName = checkOrder.unique_key + '.pdf'
+        const orderFile = 'pdfs/' + mergeFileName;
+        //   var html = fs.readFileSync('../template/template.html', 'utf8');
+        const html = `<head>
+        <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
+        </head>
+        <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
+                            <tr>
+                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+                                <td style="font-size:13px;">${checkOrder.unique_key}</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:13px;padding:15px;">${checkReseller ? "Reseller Name" : "Dealer Name"}:</td>
+                                <td style="font-size:13px;"> 
+                                    <p><b>Attention –</b> ${checkReseller ? checkReseller.name : checkDealer.name}</p>
+                                    <p> <b>Email Address – </b>${resellerUser ? resellerUser?.email : DealerUser.email}</p>
+                                    <p><b>Telephone :</b> +1 ${resellerUser ? resellerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : DealerUser.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3")}</p>
+                                </td>
+                            </tr>
+                        <tr>
+                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;">
+                            <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
+                            <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
+                            <p><b>Telephone :</b> +1${checkCustomer ? customerUser?.phoneNumber.replace(/(\d{3})(\d{3})(\d{4})/, "($1)$2-$3") : ''}</p>
+                            </td>
+                        </tr>
+                    <tr>
+                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
+                   </tr>
+                <tr>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
+                </tr>
+            <tr>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;">
+                ${checkOrder.productsArray[0]?.term / 12} 
+                ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
+                </td>
+            </tr>
+            <tr>
+            <td style="font-size:13px;padding:15px;">Coverage End Date:</td>
+            <td style="font-size:13px;">${moment(coverageEndDate).format("MM/DD/YYYY")}</td>
+          </tr>
+            <tr>
+                <td style="font-size:13px;padding:15px;">Number of covered components:</td>
+               <td> ${tableRows}   </td>                 
+            </tr >
+            
+        </table > `;
+
+        pdf.create(html, options).toFile(orderFile, async (err, result) => {
+            if (err) return console.log(err);
+            // -------------------merging pdfs 
+            const { PDFDocument, rgb } = require('pdf-lib');
+            const fs = require('fs').promises;
+
+            async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
+                // Load the PDFs
+                const pdfDoc1Bytes = await fs.readFile(pdfPath1);
+                const pdfDoc2Bytes = await fs.readFile(pdfPath2);
+
+                const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
+                const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
+
+                // Create a new PDF Document
+                const mergedPdf = await PDFDocument.create();
+
+                // Add the pages of the first PDF
+                const pdfDoc1Pages = await mergedPdf.copyPages(pdfDoc1, pdfDoc1.getPageIndices());
+                pdfDoc1Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Add the pages of the second PDF
+                const pdfDoc2Pages = await mergedPdf.copyPages(pdfDoc2, pdfDoc2.getPageIndices());
+                pdfDoc2Pages.forEach((page) => mergedPdf.addPage(page));
+
+                // Serialize the PDF
+                const mergedPdfBytes = await mergedPdf.save();
+
+                // Write the merged PDF to a file
+                await fs.writeFile(outputPath, mergedPdfBytes);
+            }
+
+            //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
+
+            const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
+            // Usage
+            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
+            const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+            const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
+            link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
+            let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
+            const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
+            console.log("pathToAttachment----------------------------",pathToAttachment)
+            fs.readFile(pathToAttachment)
+                .then(async (fileData) => {
+                    const attachment = fileData.toString('base64');
+                    try {
+                        //sendTermAndCondition
+                        // Send Email code here
+                        let notificationEmails = await supportingFunction.getUserEmails();
+                        notificationEmails.push(DealerUser.email)
+                        notificationEmails.push(resellerUser?.email)
+                        let emailData = {
+                            senderName: customerUser.firstName,
+                            content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
+                            subject: 'Term and Condition',
+                        }
+                        let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                        // const send = await sgMail.send({
+                        //     to: customerUser.email,
+                        //     from: process.env.from_email,
+                        //     subject: 'Term and Condtion',
+                        //     text: "sssssssssssssssss",
+                        //     attachments: [
+                        //         {
+                        //             content: attachment,
+                        //             filename: "Get-Cover term and condition",
+                        //             type: 'application/pdf',
+                        //             disposition: 'attachment',
+                        //             contentId: 'mytext'
+                        //         },
+                        //     ],
+                        // });
+
+                    } catch (error) {
+                        console.error('Error sending email:', error);
+                        if (error.response) {
+                            console.error('Error response:', error.response.body);
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error("Error reading the file:", err);
+                });
+
+
+        })
+        return 1
+ 
+    }
+    catch (error) {
+        console.error('Error :', error);
+        if (error.response) {
+            console.error('Error:', error.response.body);
+        }
+    }
+}
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
