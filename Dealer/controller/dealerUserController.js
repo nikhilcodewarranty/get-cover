@@ -4406,7 +4406,6 @@ async function generateTC(orderData) {
     try {
         let response;
         let link;
-        console.log("34234234234234233223232332",orderData)
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
@@ -4514,8 +4513,7 @@ async function generateTC(orderData) {
                         </tr>
                     <tr>
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
-                   </tr>
+                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                   </tr>
                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
