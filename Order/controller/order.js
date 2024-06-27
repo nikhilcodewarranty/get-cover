@@ -4138,7 +4138,7 @@ exports.editOrderDetail = async (req, res) => {
                     // reporting codes
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
-
+                    console.log("check product array products ak ------------------------",product)
                     pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
                     pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
