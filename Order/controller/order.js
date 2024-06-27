@@ -404,7 +404,6 @@ exports.createOrder1 = async (req, res) => {
 
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? Number(product.adh) : 0 : 0)
-                    console.log("console on adh day and date", dateCheck, product.coverageStartDate, adhDays)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
 
@@ -427,7 +426,6 @@ exports.createOrder1 = async (req, res) => {
                     //---------------------------------------- till here ----------------------------------------------
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        console.log("min date function +++++++++++++++++++++++++++", d1)
 
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
@@ -438,7 +436,6 @@ exports.createOrder1 = async (req, res) => {
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-                            console.log("second on min date+++++++++++++++++====================", new Date(dateCheck).setHours(0, 0, 0, 0))
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
@@ -623,7 +620,6 @@ exports.createOrder1 = async (req, res) => {
                     //generate T anc C
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
-                        console.log("tcResponse-----------------------------------", tcResponse)
                     }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
@@ -685,7 +681,10 @@ exports.createOrder1 = async (req, res) => {
                     // return
                 }
             })
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------",checkOrder.status)
             if (checkOrder.status == "Active") {
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------")
+
                 let reportingData = {
                     orderId: savedResponse._id,
                     products: pricebookDetail,
@@ -696,6 +695,8 @@ exports.createOrder1 = async (req, res) => {
 
                 await supportingFunction.reportingData(reportingData)
             }
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=3rd--------------------------")
+
              res.send({
                         code: constant.successCode,
                         message: "Success",
