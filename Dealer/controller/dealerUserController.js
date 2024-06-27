@@ -4345,10 +4345,12 @@ exports.editOrderDetail = async (req, res) => {
                         dealerId: data.dealerId,
                     }
 
+                    console.log("reportin check data ------------------------------------------------------------",reportingData)
+
                     await supportingFunction.reportingData(reportingData)
+
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
-                        console.log("tcResponse-----------------------------------", tcResponse)
                     }
                     res.send({
                         code: constant.successCode,
