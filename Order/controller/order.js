@@ -325,9 +325,6 @@ exports.createOrder1 = async (req, res) => {
 
                 let pricebookDetailObject = {}
                 let dealerPriceBookObject = {}
-
-                console.log("create order check ++++++++++++++++++++++++++++++++++++++++++++", product)
-
                 pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
                 pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
                 pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
@@ -549,11 +546,6 @@ exports.createOrder1 = async (req, res) => {
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
 
                     //reporting codes 
-
-
-
-
-
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderUniqueKey: savedResponse.unique_key,
@@ -612,6 +604,22 @@ exports.createOrder1 = async (req, res) => {
                     return
                 }
                 if (saveContracts[0]) {
+
+                    let checkLength = savedResponse.productsArray.length - 1 
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
+            if(index == checkLength){
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
+            let reportingData = {
+                            orderId: savedResponse._id,
+                            products: pricebookDetail,
+                            orderAmount: data.orderAmount,
+                            dealerId: data.dealerId,
+                            // dealerPriceBook: dealerBookDetail
+                        }
+        
+                        await supportingFunction.reportingData(reportingData)
+                    }
+
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Active" },
@@ -687,17 +695,8 @@ exports.createOrder1 = async (req, res) => {
             console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------",checkOrder2.status)
 
             if (checkOrder2.status == "Active") {
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------")
 
-                let reportingData = {
-                    orderId: savedResponse._id,
-                    products: pricebookDetail,
-                    orderAmount: data.orderAmount,
-                    dealerId: data.dealerId,
-                    // dealerPriceBook: dealerBookDetail
-                }
-
-                await supportingFunction.reportingData(reportingData)
+              
             }
             console.log("check ak +++++++++++++++++++++++++++++++++++++=3rd--------------------------")
 
