@@ -312,6 +312,7 @@ exports.createOrder1 = async (req, res) => {
 
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+            var pricebookDetail = []
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 if (data.adh && isNaN(data.adh)) {
 
@@ -321,6 +322,29 @@ exports.createOrder1 = async (req, res) => {
                     })
                     return
                 }
+
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
+
+                console.log("create order check ++++++++++++++++++++++++++++++++++++++++++++", product)
+
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                pricebookDetail.push(pricebookDetailObject)
+                // dealerBookDetail.push(dealerPriceBookObject)
 
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
@@ -363,7 +387,7 @@ exports.createOrder1 = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-                var pricebookDetail = []
+
                 let dealerBookDetail = []
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
@@ -529,28 +553,7 @@ exports.createOrder1 = async (req, res) => {
 
                     //reporting codes 
 
-                    let pricebookDetailObject = {}
-                    let dealerPriceBookObject = {}
 
-                    console.log("create order check ++++++++++++++++++++++++++++++++++++++++++++",product)
-
-                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                    pricebookDetailObject._id = product?.priceBookDetails._id
-                    pricebookDetailObject.name = product?.priceBookDetails.name
-                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                    pricebookDetailObject.term = product?.priceBookDetails.term
-                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                    pricebookDetailObject.price = product.price
-                    pricebookDetailObject.noOfProducts = product.noOfProducts
-
-                    pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetail.push(pricebookDetailObject)
-                    dealerBookDetail.push(dealerPriceBookObject)
 
 
 
@@ -674,22 +677,30 @@ exports.createOrder1 = async (req, res) => {
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
                     // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
-                    let reportingData = {
-                        orderId: savedResponse._id,
-                        products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
-                        // dealerPriceBook: dealerBookDetail
-                    }
 
-                    await supportingFunction.reportingData(reportingData)
-                    res.send({
+                    // res.send({
+                    //     code: constant.successCode,
+                    //     message: "Success",
+                    // });
+                    // return
+                }
+            })
+            if (checkOrder.status == "Active") {
+                let reportingData = {
+                    orderId: savedResponse._id,
+                    products: pricebookDetail,
+                    orderAmount: data.orderAmount,
+                    dealerId: data.dealerId,
+                    // dealerPriceBook: dealerBookDetail
+                }
+
+                await supportingFunction.reportingData(reportingData)
+            }
+             res.send({
                         code: constant.successCode,
                         message: "Success",
                     });
                     return
-                }
-            })
 
         } else {
             let logData = {
@@ -4140,7 +4151,7 @@ exports.editOrderDetail = async (req, res) => {
                     // reporting codes
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
-                    console.log("check product array products ak ------------------------",product)
+                    console.log("check product array products ak ------------------------", product)
                     pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
                     pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
