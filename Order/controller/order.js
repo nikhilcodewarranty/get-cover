@@ -313,7 +313,8 @@ exports.createOrder1 = async (req, res) => {
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             var pricebookDetail = []
-            let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                    let checkLength = savedResponse.productsArray.length - 1 
+                    let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
@@ -605,7 +606,6 @@ exports.createOrder1 = async (req, res) => {
                 }
                 if (saveContracts[0]) {
 
-                    let checkLength = savedResponse.productsArray.length - 1 
             console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
             if(index == checkLength){
             console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
