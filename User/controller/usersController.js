@@ -672,7 +672,7 @@ exports.createDealer = async (req, res) => {
           let notificationData = {
             title: "Dealer Approval",
             description: req.body.name + " " + "has been successfully approved",
-            userId: req.body.dealerId,
+            userId: req.userId,
             flag: 'dealer',
             notificationFor: IDs
           };
@@ -1068,7 +1068,7 @@ exports.createDealer = async (req, res) => {
           let notificationData = {
             title: "Dealer Approved",
             description: req.body.name + " " + "has been successfully approved",
-            userId: req.body.dealerId,
+            userId: req.userId,
             flag: 'dealer',
             notificationFor: IDs
           };
@@ -1244,7 +1244,7 @@ exports.createDealer = async (req, res) => {
           let notificationData = {
             title: "Dealer Creation",
             description: createMetaData.name + " " + "has been successfully created",
-            userId: createMetaData._id,
+            userId: req.userId,
             flag: 'dealer',
             notificationFor: IDs
           };
@@ -1484,7 +1484,7 @@ exports.createDealer = async (req, res) => {
           let notificationData = {
             title: "Dealer Creation",
             description: createMetaData.name + " " + "has been successfully created",
-            userId: createMetaData._id,
+            userId: req.userId,
             flag: 'dealer',
             notificationFor: IDs
           };
@@ -2057,7 +2057,7 @@ exports.updateUserData = async (req, res) => {
     let notificationData = {
       title: checkRole.role + " " + "user has been change",
       description: "The  user has been changed!",
-      userId: req.params.userId,
+      userId: req.userId,
       flag: checkRole.role,
       notificationFor: [getPrimary._id]
     };

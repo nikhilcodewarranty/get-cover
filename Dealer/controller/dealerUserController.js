@@ -1559,7 +1559,7 @@ exports.createCustomer = async (req, res, next) => {
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
-            userId: createdCustomer._id,
+            userId: req.userId,
             flag: 'customer',
             notificationFor: IDs
         };

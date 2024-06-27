@@ -459,7 +459,7 @@ exports.createOrder = async (req, res) => {
         let notificationData = {
             title: "New order created",
             description: "The new order " + checkOrder.unique_key + " has been created",
-            userId: checkDealer._id,
+            userId: req.userId,
             contentId: null,
             flag: 'order',
             notificationFor: IDs

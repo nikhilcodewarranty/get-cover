@@ -947,7 +947,7 @@ exports.statusUpdate = async (req, res) => {
     let notificationData = {
       title: "Dealer price book updated",
       description: getDealerDetail.name + " , " + "your price book has been updated",
-      userId: existingDealerPriceBook.dealerId,
+      userId: req.userId,
       contentId: req.params.dealerPriceBookId,
       flag: 'Dealer Price Book',
       notificationFor: IDs
@@ -1134,7 +1134,7 @@ exports.changeDealerStatus = async (req, res) => {
       let notificationData = {
         title: "Dealer status update",
         description: singleDealer.name + " , " + "your status has been updated",
-        userId: req.params.dealerId,
+        userId: req.userId,
         flag: 'dealer',
         notificationFor: IDs
       };
@@ -1952,7 +1952,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let notificationData = {
         title: "New dealer price book created",
         description: data.priceBook + " , " + "new price book has been created",
-        userId: checkDealer._id,
+        userId: req.userId,
         flag: 'dealer',
         contentId: createDealerPrice._id,
         notificationFor: IDs
@@ -2103,7 +2103,7 @@ exports.rejectDealer = async (req, res) => {
       let notificationData = {
         title: "Rejection Dealer Account",
         description: "The " + singleDealer.name + " account has been rejected",
-        userId: singleDealer._id,
+        userId: req.userId,
         flag: 'dealer',
         notificationFor: IDs
       };
@@ -2254,7 +2254,7 @@ exports.updateDealerMeta = async (req, res) => {
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
-      userId: checkDealer._id,
+      userId: req.userId,
       flag: 'dealer',
       notificationFor: IDs
     };
@@ -2380,7 +2380,7 @@ exports.addDealerUser = async (req, res) => {
       let notificationData = {
         title: "New user added",
         description: checkDealer.name + " , " + "new user has been added",
-        userId: checkDealer._id,
+        userId: req.userId,
         contentId: saveData._id,
         flag: 'dealer',
         notificationFor: IDs
@@ -2692,7 +2692,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let notificationData = {
           title: "Dealer Price Book Uploaded",
           description: "The priceBook has been successfully uploaded",
-          userId: checkDealer._id,
+          userId: req.userId,
           flag: 'priceBook',
           notificationFor: IDs
         };

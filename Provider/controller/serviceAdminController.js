@@ -122,7 +122,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationData = {
         title: "Servicer Account Creation",
         description: data.accountName + " " + "servicer account has been created successfully!",
-        userId: createServiceProvider._id,
+        userId: req.userId,
         flag: 'servicer',
         notificationFor: IDs
       };
@@ -259,7 +259,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationData = {
         title: "Servicer Account Approved",
         description: data.accountName + " " + "servicer account has been approved successfully!",
-        userId: data.providerId,
+        userId: req.userId,
         flag: 'servicer',
         notificationFor: IDs
       };
@@ -509,7 +509,7 @@ exports.rejectServicer = async (req, res) => {
   try {
     let data = req.body
     let IDs = await supportingFunction.getUserIds()
-    let getServicer = await providerService.getServiceProviderById({_id:req.params.servicerId});
+    let getServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
@@ -520,16 +520,16 @@ exports.rejectServicer = async (req, res) => {
       })
       return;
     };
-    let deleteUser = await userService.deleteUser({ accountId:getServicer._id})
+    let deleteUser = await userService.deleteUser({ accountId: getServicer._id })
     let notificationData = {
       title: "Rejection Servicer Account",
       description: "The " + getServicer.name + " account has been rejected",
-      userId: getServicer._id,
+      userId: req.userId,
       flag: 'servicer',
       notificationFor: IDs
     };
 
-    console.log("checkServicer2-----------------------------------",getServicer)
+    console.log("checkServicer2-----------------------------------", getServicer)
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
@@ -538,13 +538,13 @@ exports.rejectServicer = async (req, res) => {
       content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
       subject: "Rejection Account"
     }
-    console.log("emailData-------------------------",emailData)
-    console.log("notificationEmails-------------------------",notificationEmails)
+    console.log("emailData-------------------------", emailData)
+    console.log("notificationEmails-------------------------", notificationEmails)
     // Send Email code here
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
-      message: "Deleted" 
+      message: "Deleted"
     })
 
   } catch (err) {
@@ -645,7 +645,7 @@ exports.editServicerDetail = async (req, res) => {
     let notificationData = {
       title: "Servicer Detail Update",
       description: "The servicer information has been changed!",
-      userId: req.params.customerId,
+      userId: req.userId,
       flag: "Servicer",
       notificationFor: IDs
     };
@@ -792,7 +792,7 @@ exports.updateStatus = async (req, res) => {
         let notificationData = {
           title: "Servicer status update",
           description: checkServicer.name + " , " + "your status has been updated",
-          userId: req.params.servicerId,
+          userId: req.userId,
           flag: 'servicer',
           notificationFor: IDs
         };
@@ -826,7 +826,7 @@ exports.updateStatus = async (req, res) => {
       let notificationData = {
         title: "Servicer status update",
         description: checkServicer.name + " , " + "your status has been updated",
-        userId: req.params.servicerId,
+        userId: req.userId,
         flag: 'servicer',
         notificationFor: IDs
       };
