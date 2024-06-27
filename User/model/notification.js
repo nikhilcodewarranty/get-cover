@@ -26,7 +26,7 @@ const notificationSchema = new mongoose.Schema({
     default: ''
   },
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,ref:"user",
     default: ''
   },
   contentId:{
