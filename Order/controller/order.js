@@ -609,16 +609,7 @@ exports.createOrder1 = async (req, res) => {
             console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
             if(index == checkLength){
             console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
-            let reportingData = {
-                            orderId: savedResponse._id,
-                            products: pricebookDetail,
-                            orderAmount: data.orderAmount,
-                            dealerId: data.dealerId,
-                            // dealerPriceBook: dealerBookDetail
-                        }
-        
-                        await supportingFunction.reportingData(reportingData)
-                    }
+            
 
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
@@ -680,6 +671,16 @@ exports.createOrder1 = async (req, res) => {
                     await LOG(logData).save()
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
+                    let reportingData = {
+                        orderId: savedResponse._id,
+                        products: pricebookDetail,
+                        orderAmount: data.orderAmount,
+                        dealerId: data.dealerId,
+                        // dealerPriceBook: dealerBookDetail
+                    }
+    
+                    await supportingFunction.reportingData(reportingData)
+                }
                     // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
 
                     // res.send({
