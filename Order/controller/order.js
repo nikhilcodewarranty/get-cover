@@ -532,20 +532,20 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
-                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
-                    pricebookDetailObject._id = priceBook[0]._id
-                    pricebookDetailObject.name = priceBook[0].name
-                    pricebookDetailObject.categoryId = priceBook[0].category
-                    pricebookDetailObject.term = priceBook[0].term
-                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                    pricebookDetailObject._id = product?.priceBookDetails._id
+                    pricebookDetailObject.name = product?.priceBookDetails.name
+                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                    pricebookDetailObject.term = product?.priceBookDetails.term
+                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
                     pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
@@ -2810,7 +2810,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }));
         let priceBookDetail
         if (mergedPriceBooks.length == 1) {
-             priceBookDetail = mergedPriceBooks[0]
+            priceBookDetail = mergedPriceBooks[0]
         } else {
             priceBookDetail = {}
         }
@@ -3553,7 +3553,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer1 = await dealerService.getDealerById(
                 savedResponse.dealerId
             );
- 
+
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -3565,7 +3565,7 @@ exports.editOrderDetail = async (req, res) => {
             );
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
-            console.log("fsdfsdfsdfsdfdsfsdfdsfdsf",savedResponse)
+            console.log("fsdfsdfsdfsdfdsfsdfdsfdsf", savedResponse)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             // let save = savedResponse.productsArray.map(async (product) => {
             //     console.log(product.orderFile.fileName)
@@ -3603,7 +3603,7 @@ exports.editOrderDetail = async (req, res) => {
             //                 : 0
             //         ) + 1;
 
-         
+
             //     const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
             //     console.log("totalDataComing1=================", totalDataComing1)
             //     const totalDataComing = totalDataComing1.map((item) => {
@@ -3951,7 +3951,7 @@ exports.editOrderDetail = async (req, res) => {
                 //             ? count1[0].unique_key
                 //             : 0
                 //     ) + 1;
-    
+
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -3970,23 +3970,23 @@ exports.editOrderDetail = async (req, res) => {
                 var contractArray = [];
                 var pricebookDetail = []
                 let dealerBookDetail = []
-    
+
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
-    
+
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
-    
+
                     // -------------------------------------------------  copy from -----------------------------------------//
-    
+
                     let dateCheck = new Date(product.coverageStartDate)
                     let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
                     let partWarrantyMonth = Number(data.partsWarranty ? data.partsWarranty : 0)
                     let labourWarrantyMonth = Number(data.labourWarranty ? data.labourWarranty : 0)
-    
+
                     dateCheck = new Date(dateCheck.setDate(dateCheck.getDate() + adhDays))
                     let p_date = new Date(data.purchaseDate)
                     let p_date1 = new Date(data.purchaseDate)
@@ -3995,10 +3995,10 @@ exports.editOrderDetail = async (req, res) => {
                     let purchaseMonth = p_date.getMonth();
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
-    
+
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
-    
+
                     let partsWarrantyDate = new Date(p_date.setMonth(newPartMonth))
                     let partsWarrantyDate1 = new Date(p_date1.setMonth(newPartMonth))
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
@@ -4007,83 +4007,83 @@ exports.editOrderDetail = async (req, res) => {
                     // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-    
+
                         // return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
-    
+
                     // Find the minimum date
                     let minDate;
                     // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-    
+
                     if (checkOrder.coverageType == "Breakdown") {
                         if (checkOrder.serviceCoverageType == "Labour") {
-    
+
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-    
+
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
                             // else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
-    
+
                         } else if (checkOrder.serviceCoverageType == "Parts") {
-    
+
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-    
-    
+
+
                             // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             // } else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                             // }
-    
+
                         } else {
-    
+
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-    
-    
+
+
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                             // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-    
+
                             // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                             // } else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             // }
                         }
                     } else if (checkOrder.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                         // if (checkOrder.serviceCoverageType == "Labour") {
                         //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                         //     } else {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                         //     }
-    
+
                         // } else if (checkOrder.serviceCoverageType == "Parts") {
                         //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                         //     } else {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                         //     }
-    
+
                         // } else {
                         //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                         //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-    
+
                         //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                         //     } else {
                         //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         //     }
@@ -4091,41 +4091,41 @@ exports.editOrderDetail = async (req, res) => {
                     } else {
                         if (checkOrder.serviceCoverageType == "Labour") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-    
+
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
                             // else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
                             // }
-    
+
                         } else if (checkOrder.serviceCoverageType == "Parts") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                             // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
                             // } else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
                             // }
-    
+
                         } else {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-    
+
                             // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                             // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-    
+
                             // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-    
+
                             // } else {
                             //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                             // }
                         }
                     }
-    
+
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let serviceCoverage;
                     if (checkOrder.serviceCoverageType == "Labour") {
@@ -4134,25 +4134,25 @@ exports.editOrderDetail = async (req, res) => {
                     if (checkOrder.serviceCoverageType == "Parts & Labour") {
                         serviceCoverage = "Parts & Labor"
                     }
-    
+
                     // reporting codes
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
-    
-                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
-                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
-                    pricebookDetailObject._id = priceBook[0]._id
-                    pricebookDetailObject.name = priceBook[0].name
-                    pricebookDetailObject.categoryId = priceBook[0].category
-                    pricebookDetailObject.term = priceBook[0].term
-                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+
+                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                    pricebookDetailObject._id = product?.priceBookDetails._id
+                    pricebookDetailObject.name = product?.priceBookDetails.name
+                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                    pricebookDetailObject.term = product?.priceBookDetails.term
+                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
-    
+
                     pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
@@ -4205,7 +4205,7 @@ exports.editOrderDetail = async (req, res) => {
                         { status: "Active" },
                         { new: true }
                     );
-    
+
                     //reporting codes
                     let reportingData = {
                         orderId: savedResponse._id,
@@ -4213,7 +4213,7 @@ exports.editOrderDetail = async (req, res) => {
                         orderAmount: data.orderAmount,
                         dealerId: data.dealerId,
                     }
-    
+
                     await supportingFunction.reportingData(reportingData)
                     //Send email to customer with term and condtion
                     //generate T anc C
@@ -4246,7 +4246,7 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " updated and processed",
                         subject: "Process Order"
                     }
-    
+
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
                     emailData = {
@@ -4254,14 +4254,14 @@ exports.editOrderDetail = async (req, res) => {
                         content: "The  order " + savedResponse.unique_key + " has been paid",
                         subject: "Process Order"
                     }
-    
+
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     //Email to customer code here........
 
-                    
+
                 }
 
-    
+
             })
 
             // reporting codes
@@ -4591,20 +4591,20 @@ exports.markAsPaid = async (req, res) => {
                 let pricebookDetailObject = {}
                 let dealerPriceBookObject = {}
 
-                pricebookDetailObject.frontingFee = priceBook[0].frontingFee
-                pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
-                pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
-                pricebookDetailObject._id = priceBook[0]._id
-                pricebookDetailObject.name = priceBook[0].name
-                pricebookDetailObject.categoryId = priceBook[0].category
-                pricebookDetailObject.term = priceBook[0].term
-                pricebookDetailObject.adminFee = priceBook[0].adminFee
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
                 pricebookDetailObject.noOfProducts = product.noOfProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)

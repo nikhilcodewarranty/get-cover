@@ -4224,20 +4224,20 @@ exports.editOrderDetail = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
-                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
-                    pricebookDetailObject.name = priceBook[0].name
-                    pricebookDetailObject._id = priceBook[0]._id
-                    pricebookDetailObject.categoryId = priceBook[0].category
-                    pricebookDetailObject.term = priceBook[0].term
-                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                    pricebookDetailObject._id = product?.priceBookDetails._id
+                    pricebookDetailObject.name = product?.priceBookDetails.name
+                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                    pricebookDetailObject.term = product?.priceBookDetails.term
+                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
                     pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
