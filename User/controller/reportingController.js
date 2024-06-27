@@ -1525,13 +1525,13 @@ exports.claimDailyReporting = async (data) => {
         }, {
             total_amount: 0,
             total_claim: 0,
-            total_unpaid_amount:0,
+            total_unpaid_amount: 0,
             total_unpaid_claim: 0,
             total_paid_amount: 0,
             total_paid_claim: 0,
         });
 
-        return { graphData:mergedArray, totalFees }
+        return { graphData: mergedArray, totalFees }
         // return { mergedArray, result, result1, result2, totalFees }
 
 
@@ -1576,15 +1576,14 @@ exports.claimWeeklyReporting = async (data) => {
             currentDate.add(1, 'week');
         }
 
-        console.log("dates array==================", datesArray)
 
         let dailyQuery = [
             {
                 $match: {
                     createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
-                    // claimStatus: {
-                    //     $elemMatch: { status: "Completed" }
-                    // },
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
                 },
             },
             {
@@ -1613,11 +1612,91 @@ exports.claimWeeklyReporting = async (data) => {
             }
         ];
 
+        let dailyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+                    claimPaymentStatus: "Unpaid",
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_unpaid_amount: { $sum: "$totalAmount" },
+                    total_unpaid_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        let dailyQuery2 = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+                    claimPaymentStatus: "Paid",
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_paid_amount: { $sum: "$totalAmount" },
+                    total_paid_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
 
         let getData = await claimService.getAllClaims(dailyQuery)
+        let getData1 = await claimService.getAllClaims(dailyQuery1)
+        let getData2 = await claimService.getAllClaims(dailyQuery2)
+        console.log("data+++++++111111111111111++++++++++++++++++++++++", getData,getData1,getData2)
 
         if (getData[0]) {
             getData[0]._id = datesArray[0]
+        }
+        if (getData1[0]) {
+            getData1[0]._id = datesArray[0]
+        }
+        if (getData2[0]) {
+            getData2[0]._id = datesArray[0]
         }
         console.log("data+++++++111111111111111++++++++++++++++++++++++", getData)
 
@@ -1630,19 +1709,77 @@ exports.claimWeeklyReporting = async (data) => {
                 total_claim: order ? order.total_claim : 0
             };
         });
+
+        const result1 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData1.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_unpaid_amount: order ? order.total_unpaid_amount : 0,
+                total_unpaid_claim: order ? order.total_unpaid_claim : 0,
+
+            };
+        });
+
+        const result2 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData2.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_paid_amount: order ? order.total_paid_amount : 0,
+                total_paid_claim: order ? order.total_paid_claim : 0,
+
+            };
+        });
+
         console.log("data++++++++++++++656666666666666666666+++++++++++++++++", result)
 
 
-        const totalFees = result.reduce((acc, curr) => {
+        const mergedArray = result.map(item => {
+            const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
+            const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
+
+            return {
+                weekStart: item.weekStart,
+                total_amount: item.total_amount,
+                total_claim: item.total_claim,
+                total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0
+            };
+        });
+
+        const totalFees = mergedArray.reduce((acc, curr) => {
             acc.total_amount += curr.total_amount || 0;
             acc.total_claim += curr.total_claim || 0;
+            acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
+            acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
+            acc.total_paid_amount += curr.total_paid_amount || 0;
+            acc.total_paid_claim += curr.total_paid_claim || 0;
             return acc;
         }, {
             total_amount: 0,
             total_claim: 0,
+            total_unpaid_amount: 0,
+            total_unpaid_claim: 0,
+            total_paid_amount: 0,
+            total_paid_claim: 0,
         });
 
-        return { result, totalFees }
+        return { graphData: mergedArray, totalFees }
+
+
+        // const totalFees = result.reduce((acc, curr) => {
+        //     acc.total_amount += curr.total_amount || 0;
+        //     acc.total_claim += curr.total_claim || 0;
+        //     return acc;
+        // }, {
+        //     total_amount: 0,
+        //     total_claim: 0,
+        // });
+
+        // return { result, totalFees }
 
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
