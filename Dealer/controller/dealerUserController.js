@@ -4033,8 +4033,8 @@ exports.editOrderDetail = async (req, res) => {
             let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
-
-            await savedResponse.productsArray.map(async (product) => {
+                let checkLength = savedResponse.productsArray.length -1
+            await savedResponse.productsArray.map(async (product,index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -4338,16 +4338,18 @@ exports.editOrderDetail = async (req, res) => {
                     // Customer Email here with T and C
                     //generate T anc C
           
-                    let reportingData = {
-                        orderId: savedResponse._id,
-                        products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
+                    if(index == checkLength){
+
+                        let reportingData = {
+                            orderId: savedResponse._id,
+                            products: pricebookDetail,
+                            orderAmount: data.orderAmount,
+                            dealerId: data.dealerId,
+                            // dealerPriceBook: dealerBookDetail
+                        }
+        
+                        await supportingFunction.reportingData(reportingData)
                     }
-
-                    console.log("reportin check data ------------------------------------------------------------",reportingData)
-
-                    await supportingFunction.reportingData(reportingData)
 
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);

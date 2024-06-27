@@ -313,8 +313,8 @@ exports.createOrder1 = async (req, res) => {
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             var pricebookDetail = []
-                    let checkLength = savedResponse.productsArray.length - 1 
-                    let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+            let checkLength = savedResponse.productsArray.length - 1
+            let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
@@ -606,10 +606,9 @@ exports.createOrder1 = async (req, res) => {
                 }
                 if (saveContracts[0]) {
 
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
-            if(index == checkLength){
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------",index)
-            
+                    console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------", index)
+                    console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------", index)
+
 
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
@@ -671,16 +670,18 @@ exports.createOrder1 = async (req, res) => {
                     await LOG(logData).save()
                     //reporting codes 
                     let getPriceBookDetail = await priceBookService.findByName1({ _id: priceBookId })
-                    let reportingData = {
-                        orderId: savedResponse._id,
-                        products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
-                        // dealerPriceBook: dealerBookDetail
+                    if (index == checkLength) {
+
+                        let reportingData = {
+                            orderId: savedResponse._id,
+                            products: pricebookDetail,
+                            orderAmount: data.orderAmount,
+                            dealerId: data.dealerId,
+                            // dealerPriceBook: dealerBookDetail
+                        }
+
+                        await supportingFunction.reportingData(reportingData)
                     }
-    
-                    await supportingFunction.reportingData(reportingData)
-                }
                     // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
 
                     // res.send({
@@ -690,22 +691,22 @@ exports.createOrder1 = async (req, res) => {
                     // return
                 }
             })
-             let checkOrder2 = await orderService.getOrder(
+            let checkOrder2 = await orderService.getOrder(
                 { _id: savedResponse._id },
             );
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------",checkOrder2.status)
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------", checkOrder2.status)
 
             if (checkOrder2.status == "Active") {
 
-              
+
             }
             console.log("check ak +++++++++++++++++++++++++++++++++++++=3rd--------------------------")
 
-             res.send({
-                        code: constant.successCode,
-                        message: "Success",
-                    });
-                    return
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+            });
+            return
 
         } else {
             let logData = {
@@ -3935,7 +3936,8 @@ exports.editOrderDetail = async (req, res) => {
 
             // })
 
-            let save = savedResponse.productsArray.map(async (product) => {
+            let checkLength = savedResponse.productsArray.length - 1
+            let save = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 console.log("savedResponse------------------------------------------1")
                 const readOpts = { // <--- need these settings in readFile options
@@ -4224,15 +4226,7 @@ exports.editOrderDetail = async (req, res) => {
                         { new: true }
                     );
 
-                    //reporting codes
-                    let reportingData = {
-                        orderId: savedResponse._id,
-                        products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
-                    }
-
-                    await supportingFunction.reportingData(reportingData)
+                    // 
                     //Send email to customer with term and condtion
                     //generate T anc C
                     if (checkDealer1?.termCondition) {
@@ -4275,7 +4269,18 @@ exports.editOrderDetail = async (req, res) => {
 
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     //Email to customer code here........
+                    if (index == checkLength) {
 
+                        let reportingData = {
+                            orderId: savedResponse._id,
+                            products: pricebookDetail,
+                            orderAmount: data.orderAmount,
+                            dealerId: data.dealerId,
+                            // dealerPriceBook: dealerBookDetail
+                        }
+
+                        await supportingFunction.reportingData(reportingData)
+                    }
 
                 }
 
@@ -4389,7 +4394,8 @@ exports.markAsPaid = async (req, res) => {
         //let count1 = await contractService.getContractsCount();
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-        let save = savedResponse.productsArray.map(async (product) => {
+        let checkLength = savedResponse.productsArray.length - 1
+        let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             const readOpts = { // <--- need these settings in readFile options
                 //cellText:false, 
@@ -4676,15 +4682,7 @@ exports.markAsPaid = async (req, res) => {
                     { new: true }
                 );
 
-                //reporting codes
-                let reportingData = {
-                    orderId: savedResponse._id,
-                    products: pricebookDetail,
-                    orderAmount: data.orderAmount,
-                    dealerId: data.dealerId,
-                }
-
-                await supportingFunction.reportingData(reportingData)
+            
                 //Send email to customer with term and condtion
                 //generate T anc C
                 if (checkDealer?.termCondition) {
@@ -4727,6 +4725,19 @@ exports.markAsPaid = async (req, res) => {
 
                 mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                 //Email to customer code here........
+                if (index == checkLength) {
+
+                    let reportingData = {
+                        orderId: savedResponse._id,
+                        products: pricebookDetail,
+                        orderAmount: data.orderAmount,
+                        dealerId: data.dealerId,
+                        // dealerPriceBook: dealerBookDetail
+                    }
+
+                    await supportingFunction.reportingData(reportingData)
+                }
+
             }
 
         })
