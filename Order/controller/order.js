@@ -532,6 +532,8 @@ exports.createOrder1 = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
+                    console.log("create order check ++++++++++++++++++++++++++++++++++++++++++++",product)
+
                     pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
                     pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
                     pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee

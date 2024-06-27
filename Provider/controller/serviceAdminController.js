@@ -1031,7 +1031,7 @@ exports.registerServiceProvider = async (req, res) => {
     if (existingServicer2) {
       res.send({
         code: constant.errorCode,
-        message: "You have registered already with this name!"
+        message: "Account name already exist"
       })
       return;
     }
