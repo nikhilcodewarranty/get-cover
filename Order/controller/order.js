@@ -681,10 +681,10 @@ exports.createOrder1 = async (req, res) => {
                     // return
                 }
             })
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------",checkOrder.status)
              let checkOrder2 = await orderService.getOrder(
                 { _id: savedResponse._id },
             );
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------",checkOrder2.status)
 
             if (checkOrder2.status == "Active") {
             console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------")
