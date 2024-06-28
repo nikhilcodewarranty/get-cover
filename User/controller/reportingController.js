@@ -1233,6 +1233,11 @@ exports.getReportingCategories = async (req, res) => {
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let categoriesId = getCategories.map(ID => ID._id)
         let getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId } }, { name: 1, pName: 1, _id: 1, category: 1 })
+        if (data.priceBookId.length != 0) {
+            getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId }, _id: { $in: data.priceBookId } }, { name: 1, pName: 1, _id: 1, category: 1 })
+            let priceBookIds = getPriceBooks.map(ID => ID._id)
+            let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice({ priceBookId: { $in: priceBookIds } })
+        }
         let dealerQuery = [
             {
                 $match: {
@@ -1250,15 +1255,15 @@ exports.getReportingCategories = async (req, res) => {
         ]
         let getDealers = await dealerService.getDealerAndClaims(dealerQuery)
 
-        let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice()
+        // let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice()
 
-        getPriceBooks = getPriceBooks.map(pricebook => {
-            const matchedPriceBooks = getDealerPriceBooks.filter(priceBook => priceBook.priceBook.toString() === pricebook._id.toString());
-            return {
-                ...pricebook._doc,
-                dealerIds: matchedPriceBooks
-            };
-        });
+        // getPriceBooks = getPriceBooks.map(pricebook => {
+        //     const matchedPriceBooks = getDealerPriceBooks.filter(priceBook => priceBook.priceBook.toString() === pricebook._id.toString());
+        //     return {
+        //         ...pricebook._doc,
+        //         dealerIds: matchedPriceBooks
+        //     };
+        // });
 
         // console.log(getPriceBooks)
         if (!getCategories) {
@@ -1274,16 +1279,27 @@ exports.getReportingCategories = async (req, res) => {
         // chooose conditions on filters
         if (data.dealerId != "" && data.categoryId == "" && data.priceBookId.length == 0) {
             let filteredPriceBooks = []
+            let filteredCategories = []
             for (let i = 0; i < getPriceBooks.length; i++) {
                 let dealers = getPriceBooks[i].dealerIds
-
                 for (d = 0; d < dealers.length; d++) {
                     if (data.dealerId.toString() == dealers[d].dealerId.toString()) {
+                        let ccc = getCategories.filter(category => category._id.toString() === getPriceBooks[i].category.toString());
+                        filteredCategories.push(ccc[0])
+                        console.log(ccc)
                         filteredPriceBooks.push(getPriceBooks[i])
                     }
                 }
             }
             getPriceBooks = filteredPriceBooks
+            const uniqueCategories = Object.values(
+                filteredCategories.reduce((acc, category) => {
+                    acc[category._id] = category;
+                    return acc;
+                }, {})
+            );
+            getCategories = uniqueCategories
+
             result = {
                 getCategories, getPriceBooks, getDealers
             }
@@ -1339,6 +1355,75 @@ exports.getReportingCategories = async (req, res) => {
             message: "Success",
             result: result, merged
         })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.getReportingDropdowns = async (req, res) => {
+    try {
+        let data = req.body
+        let result;
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+
+        result = {
+            getDealers,
+            getPriceBooks,
+            getCategories
+        }
+
+        if (data.dealerId != "") {
+            console.log("1st condition_--------------------------------------------------")
+            // let dealerPriceQuery
+
+            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
+            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
+            result = {
+                getDealers,
+                getPriceBooks: getPriceBooks1,
+                getCategories: getCategories1
+            }
+
+            if (data.categoryId != "") {
+                getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                result = {
+                    getDealers,
+                    getPriceBooks: getPriceBooks2,
+                    getCategories: getCategories1
+                }
+            }
+
+
+
+        }
+
+        if (data.categoryId != "" && data.dealerId == "") {
+            let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
+            console.log(getPriceBooks)
+            result = {
+                getDealers:[],
+                getPriceBooks: getPriceBooks2,
+                getCategories: getCategories
+            }
+        }
+
+
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+
     } catch (err) {
         res.send({
             code: constant.errorCode,

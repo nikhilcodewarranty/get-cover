@@ -93,6 +93,17 @@ module.exports = class dealerPriceService {
     }
   }
 
+  static async aggregateAllDealerPrice(query) {
+    try {
+      const AllDealerPrice = await dealerPrice.aggregate(query)
+
+      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
+      return AllDealerPrice;
+    } catch (error) {
+      console.log(`Could not fetch dealer price ${error}`);
+    }
+  }
+
   static async getDealerPriceBookById(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate([
@@ -128,7 +139,7 @@ module.exports = class dealerPriceService {
         },
         { $unwind: "$dealer" },
         {
-          $project:projection
+          $project: projection
         },
         {
           $addFields: {
