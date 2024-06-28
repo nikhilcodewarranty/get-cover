@@ -203,7 +203,6 @@ exports.getAllClaims = async (req, res, next) => {
       }
     }
     // Get Claim for servicer
-
     if (req.role == 'Servicer') {
       servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
@@ -321,8 +320,6 @@ exports.getAllClaims = async (req, res, next) => {
     }
     let allClaims = await claimService.getAllClaims(lookupQuery);
 
-    //res.json(allClaims);return;
-
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -431,7 +428,6 @@ exports.getClaims = async (req, res) => {
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
-      console.log('2222222222222222222222222222222', getData)
 
       if (getData.length > 0) {
         servicerIds = await getData.map(servicer => servicer._id)
@@ -442,7 +438,6 @@ exports.getClaims = async (req, res) => {
 
     let orderAndCondition = []
 
-    console.log('2222222222222222222222222222222', servicerIds)
 
     if (dealerIds.length > 0) {
       orderAndCondition.push({ dealerId: { $in: dealerIds } })
@@ -459,7 +454,6 @@ exports.getClaims = async (req, res) => {
       orderAndCondition.push({ resellerId: { $in: resellerIds } })
 
     }
-    console.log('3333333333333333333333333333333333')
 
     let orderIds = []
     if (orderAndCondition.length > 0) {
@@ -478,7 +472,6 @@ exports.getClaims = async (req, res) => {
       { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
       { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
     ]
-    console.log('44444444444444444444444444444444444444', orderIds)
 
     let contractIds = []
     let contractFilterWithEligibilty = []
@@ -493,13 +486,11 @@ exports.getClaims = async (req, res) => {
         contractIds.push("1111121ccf9d400000000000")
       }
     }
-    console.log('555555555555555555555555555555555')
 
     if (userSearchCheck == 1) {
       claimFilter.push({ orderId: { $in: orderIds } })
     }
     if (contractCheck == 1) {
-      console.log("contractIds------------------------------------", contractIds)
       claimFilter.push({ contractId: { $in: contractIds } })
     }
 
@@ -577,7 +568,8 @@ exports.getClaims = async (req, res) => {
     }
 
     let getClaims = await claimService.getAllClaims(mainQuery)
-
+    // res.json(getClaims);
+    // return;
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -678,7 +670,6 @@ exports.searchClaim = async (req, res, next) => {
         { eligibilty: true }
       ]
     }
-    // res.json(contractFilter);return;
     let query = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -2329,7 +2320,7 @@ exports.saveBulkClaim = async (req, res) => {
         result: saveBulkClaim
       })
     }
-    catch (err) { 
+    catch (err) {
       res.send({
         code: constant.errorCode,
         message: err.message
