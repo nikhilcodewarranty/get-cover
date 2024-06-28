@@ -17,6 +17,7 @@ router.get('/getReportingDealers', [verifyToken], reportingController.getReporti
 router.get('/getReportingPriceBooks', [verifyToken], reportingController.getReportingPriceBooks)
 router.get('/getReportingCategories', [verifyToken], reportingController.getReportingCategories)
 router.post('/getReportingDropdowns', [verifyToken], reportingController.getReportingDropdowns)
+router.post('/claimReportinDropdown', [verifyToken], reportingController.claimReportinDropdown)
 
 
 module.exports = router;
