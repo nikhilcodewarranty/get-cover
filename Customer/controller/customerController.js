@@ -163,7 +163,7 @@ exports.createCustomer = async (req, res, next) => {
     let notificationData = {
       title: "New Customer Created",
       description: data.accountName + " " + "customer account has been created successfully!",
-      userId: createdCustomer._id,
+      userId: req.userId,
       flag: 'customer',
       notificationFor: IDs
     };
@@ -562,7 +562,7 @@ exports.editCustomer = async (req, res) => {
     let notificationData = {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
-      userId: req.params.customerId,
+      userId: req.userId,
       flag: "Customer",
       notificationFor: IDs
     };
@@ -693,7 +693,7 @@ exports.changePrimaryUser = async (req, res) => {
       let notificationData = {
         title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
-        userId: req.params.userId,
+        userId: req.userId,
         flag: updateLastPrimary?.role,
         notificationFor: [getPrimary._id]
       };

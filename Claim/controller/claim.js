@@ -2339,12 +2339,6 @@ exports.saveBulkClaim = async (req, res) => {
 
 }
 
-
-async function sendEamilToServicer(data) {
-  console.log(data)
-
-}
-
 //Send message
 exports.sendMessages = async (req, res) => {
   try {

@@ -781,7 +781,7 @@ exports.createPriceBookCat = async (req, res) => {
     let notificationData = {
       title: "New Category Created",
       description: req.body.name + " " + "has been successfully created",
-      userId: req.teammateId,
+      userId: req.userId,
       flag: 'category',
       notificationFor: IDs
     };
@@ -1081,7 +1081,7 @@ exports.updatePriceBookCat = async (req, res) => {
     let notificationData = {
       title: "Category Updated",
       description: "The category has been successfully updated",
-      userId: req.body.dealerId,
+      userId: req.userId,
       contentId: req.params.catId,
       flag: 'category',
       notificationFor: IDs

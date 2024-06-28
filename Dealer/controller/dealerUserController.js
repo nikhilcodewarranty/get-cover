@@ -1559,7 +1559,7 @@ exports.createCustomer = async (req, res, next) => {
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
-            userId: createdCustomer._id,
+            userId: req.userId,
             flag: 'customer',
             notificationFor: IDs
         };
@@ -1822,9 +1822,6 @@ exports.getServicerInOrders = async (req, res) => {
             servicer.unshift(checkDealer);
         }
     }
-
-
-
     const servicerIds = servicer.map((obj) => obj?._id);
     const resellerIdss = servicer.map((obj) => obj?.resellerId);
     const dealerIdss = servicer.map((obj) => obj?.dealerId);
@@ -1850,9 +1847,6 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     }
-
-    console.log('hceck', servicer, servicerUser)
-
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
             (item2) => item2.accountId.toString() === item1?._id.toString());
@@ -3082,7 +3076,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
 exports.getAllContracts = async (req, res) => {
     try {
         let data = req.body
-        console.log("data------------------", data)
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
@@ -3139,7 +3132,6 @@ exports.getAllContracts = async (req, res) => {
             orderAndCondition.push({ dealerId: { $in: [req.userId] } })
         };
 
-        console.log("orderAndCondition-------------------", orderAndCondition)
         let orderIds = []
         if (orderAndCondition.length > 0) {
             let getOrders = await orderService.getOrders({
@@ -3149,7 +3141,6 @@ exports.getAllContracts = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
-        console.log("getOrders-------------------", orderIds)
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
@@ -3185,7 +3176,6 @@ exports.getAllContracts = async (req, res) => {
         }
         let mainQuery = []
         if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-            console.log('check_--------dssssssssssssssssssssss--------')
             mainQuery = [
                 {
                     $facet: {
@@ -3277,7 +3267,6 @@ exports.getAllContracts = async (req, res) => {
         let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
         let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-        console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
             if (result1[e].status != "Active") {
@@ -3316,7 +3305,6 @@ exports.getAllContracts = async (req, res) => {
             ]
 
             let checkClaims = await claimService.getAllClaims(claimQuery)
-            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                     result1[e].reason = "Contract has open claim"
@@ -3466,7 +3454,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
 
             dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({
-                dealerId: req.params.dealerId,
+                dealerId: req.userId,
                 priceBook: data.priceBookId,
             });
         }
@@ -3491,6 +3479,14 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             pName: pName,
         }));
 
+        let priceBookDetail
+        if (mergedPriceBooks.length == 1) {
+             priceBookDetail = mergedPriceBooks[0]
+        } else {
+            priceBookDetail = {}
+        }
+
+
         let result = {
             priceCategories: getCategories,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
@@ -3498,6 +3494,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             terms: data.priceCatId == "" ? [] : uniqueTerms,
             selectedCategory: checkSelectedCategory ? checkSelectedCategory : "",
             dealerPriceBookDetail: dealerPriceBookDetail,
+            priceBookDetail
         };
 
         res.send({
@@ -4036,14 +4033,9 @@ exports.editOrderDetail = async (req, res) => {
             let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
-
-
-            console.log("=========================================================1")
-
-
-            await savedResponse.productsArray.map(async (product) => {
+                let checkLength = savedResponse.productsArray.length -1
+            await savedResponse.productsArray.map(async (product,index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
-                console.log("=========================================================2")
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -4076,7 +4068,6 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 // let savedDataOrder = savedResponse.toObject()
-                console.log("=========================================================3")
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 =increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -4233,20 +4224,20 @@ exports.editOrderDetail = async (req, res) => {
                     let pricebookDetailObject = {}
                     let dealerPriceBookObject = {}
 
-                    pricebookDetailObject.frontingFee = priceBook[0].frontingFee
-                    pricebookDetailObject.reserveFutureFee = priceBook[0].reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = priceBook[0].reinsuranceFee
-                    pricebookDetailObject.name = priceBook[0].name
-                    pricebookDetailObject._id = priceBook[0]._id
-                    pricebookDetailObject.categoryId = priceBook[0].category
-                    pricebookDetailObject.term = priceBook[0].term
-                    pricebookDetailObject.adminFee = priceBook[0].adminFee
+                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                    pricebookDetailObject._id = product?.priceBookDetails._id
+                    pricebookDetailObject.name = product?.priceBookDetails.name
+                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                    pricebookDetailObject.term = product?.priceBookDetails.term
+                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                     pricebookDetailObject.price = product.price
                     pricebookDetailObject.noOfProducts = product.noOfProducts
 
                     pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetailObject.dealerPriceId = getDealerPriceBookDetail._id
+                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                     // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                     pricebookDetail.push(pricebookDetailObject)
                     dealerBookDetail.push(dealerPriceBookObject)
@@ -4284,7 +4275,6 @@ exports.editOrderDetail = async (req, res) => {
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
-                console.log("=========================================================4")
                 let createContract = await contractService.createBulkContracts(contractArray);
                 if (!createContract[0]) {
                     if (!saveContracts) {
@@ -4347,21 +4337,23 @@ exports.editOrderDetail = async (req, res) => {
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     // Customer Email here with T and C
                     //generate T anc C
-                    console.log("=========================================================5")
           
-                    let reportingData = {
-                        orderId: savedResponse._id,
-                        products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
+                    if(index == checkLength){
+
+                        let reportingData = {
+                            orderId: savedResponse._id,
+                            products: pricebookDetail,
+                            orderAmount: data.orderAmount,
+                            dealerId: data.dealerId,
+                            // dealerPriceBook: dealerBookDetail
+                        }
+        
+                        await supportingFunction.reportingData(reportingData)
                     }
 
-                    await supportingFunction.reportingData(reportingData)
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
-                        console.log("tcResponse-----------------------------------", tcResponse)
                     }
-                    console.log("=========================================================6")
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -4406,7 +4398,6 @@ async function generateTC(orderData) {
     try {
         let response;
         let link;
-        console.log("34234234234234233223232332",orderData)
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
@@ -4514,8 +4505,9 @@ async function generateTC(orderData) {
                         </tr>
                     <tr>
                         <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
-                        <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
-                   </tr>
+                        <td style="font-size:13px;">
+                        ${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                
+                          </tr>
                 <tr>
                     <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
