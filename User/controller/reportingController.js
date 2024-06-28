@@ -44,11 +44,7 @@ const orderService = require("../../Order/services/orderService");
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");
-
-
 // daily query for reporting 
-
-
 
 exports.dailySale = async (req, res) => {
     try {
@@ -118,8 +114,6 @@ exports.dailySale = async (req, res) => {
     }
 }
 
-//daily data 
-//daily data 
 exports.dailySales = async (req, res) => {
     try {
         let data = req.body
@@ -1358,11 +1352,6 @@ exports.getReportingCategories = async (req, res) => {
                 priceBooks: matchedPriceBooks
             };
         });
-
-
-
-
-
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1454,8 +1443,6 @@ exports.claimDailyReporting = async (data) => {
         let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
 
 
-
-        // let startOfMonth1 = new Date(startOfMonth1.setDate(startOfMonth1.getDate()))
         let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
