@@ -3882,9 +3882,6 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-
-
-
 // Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
@@ -5220,7 +5217,6 @@ exports.generatePDF = async (req, res) => {
         })
     }
 };
-
 
 async function generateTC(orderData) {
     try {

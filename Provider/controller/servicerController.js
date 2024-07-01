@@ -477,8 +477,13 @@ exports.getServicerDealers = async (req, res) => {
                   as: "claimsData",
                   pipeline: [
                     {
+                        $match:{
+                            servicerId: new mongoose.Types.ObjectId(req.userId)
+                        }
+                    },
+                    {
                       $group: {
-                        _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
+                        _id: { servicerId: new mongoose.Types.ObjectId(req.userId) },
                         totalAmount: { $sum: "$totalAmount" },
                         numberOfClaims: { $sum: 1 }
                       }
