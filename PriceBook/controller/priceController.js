@@ -984,7 +984,7 @@ const checkObjectId = async (Id) => {
   }
 }
 
-// Function to check if the user is a Super Admin
+// Function to check if the user is a Super Admin 
 const isSuperAdmin = (role) => role === "Super Admin";
 
 // Exported function to update price book category
