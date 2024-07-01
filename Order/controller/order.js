@@ -3553,12 +3553,10 @@ exports.editOrderDetail = async (req, res) => {
             );
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
-            console.log("fsdfsdfsdfsdfdsfsdfdsfdsf", savedResponse)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             let save = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-                console.log("savedResponse------------------------------------------1")
                 const readOpts = { // <--- need these settings in readFile options
                     //cellText:false, 
                     cellDates: true
@@ -3581,7 +3579,6 @@ exports.editOrderDetail = async (req, res) => {
                     projection
                 );
                 const wb = XLSX.readFile(pathFile, readOpts);
-                console.log("savedResponse------------------------------------------2")
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
                 // let contractCount =
@@ -3853,7 +3850,6 @@ exports.editOrderDetail = async (req, res) => {
                 message: "Success",
             });
         }
-
 
         // if (data.priceBookId!=checkId.) {
         //     let query = { _id: data.priceBookId }
