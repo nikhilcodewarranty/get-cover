@@ -478,7 +478,8 @@ exports.getServicerDealers = async (req, res) => {
                   pipeline: [
                     {
                         $match:{
-                            servicerId: new mongoose.Types.ObjectId(req.userId)
+                            servicerId: new mongoose.Types.ObjectId(req.userId),
+                            
                         }
                     },
                     {

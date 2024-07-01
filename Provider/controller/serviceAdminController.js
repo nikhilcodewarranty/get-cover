@@ -1548,8 +1548,8 @@ exports.getServicerDealers = async (req, res) => {
 
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
-    res.json(dealerClaims);
-    return;
+    // res.json(dealerClaims);
+    // return;
 
     //     let lookupQuery = [
     //       {
@@ -1698,6 +1698,12 @@ exports.getServicerDealers1 = async (req, res) => {
                 foreignField: "dealerId",
                 as: "claimsData",
                 pipeline: [
+                  {
+                    $match:{
+                        servicerId: new mongoose.Types.ObjectId(req.params.serviceId),
+                        
+                    }
+                },
                   {
                     $group: {
                       _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
