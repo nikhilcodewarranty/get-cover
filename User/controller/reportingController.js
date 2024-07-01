@@ -1932,7 +1932,7 @@ exports.claimWeeklyReporting = async (data) => {
                 total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
                 total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
                 total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
-                total_rejected_claim: result2Item ? result2Item.total_rejected_claim : 0,
+                total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0,
             };
         });
 
