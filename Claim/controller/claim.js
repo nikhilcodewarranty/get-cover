@@ -671,7 +671,7 @@ exports.searchClaim = async (req, res, next) => {
       ]
     }
     let query = [
-      { $sort: { unique_key_number: -1 } },
+      // { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
