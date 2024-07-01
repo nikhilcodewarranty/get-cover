@@ -27,6 +27,7 @@ const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
+const { createDeflate } = require("zlib");
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -671,13 +672,15 @@ exports.searchClaim = async (req, res, next) => {
       ]
     }
     let query = [
-      { $sort: { unique_key_number: -1 } },
+
       {
         $match:
         {
           $and: contractFilter
         },
       },
+      // { $sort: { unique_key_number: -1 } },
+
       {
         $facet: {
           totalRecords: [
@@ -710,32 +713,39 @@ exports.searchClaim = async (req, res, next) => {
             //       { $unwind: "$customers" },
             //     ]
 
-            //   }
-            // },
-            // {
-            //   $unwind: "$order"
-            // },
-            // {
-            //   $project: {
-            //     unique_key: 1,
-            //     serial: 1,
-            //     orderId: 1,
-            //     "order.unique_key": 1,
-            //     "order.venderOrder": 1,
-            //   }
-            // }
+              }
+            },
+            {
+              $unwind: "$order"
+            },
+            {
+              $project: {
+                unique_key: 1,
+                serial: 1,
+                orderId: 1,
+                "order.customers.username": 1,
+                "order.unique_key": 1,
+                "order.venderOrder": 1,
+                createdAt:1
+              }
+            }
           ]
         }
       },
+
 
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
+    let resultData = getContracts[0]?.data ? getContracts[0]?.data : []
+
+    resultData = resultData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     res.send({
       code: constant.successCode,
-      result: getContracts[0]?.data ? getContracts[0]?.data : [],
+      result: resultData,
       totalCount
       // count: getContracts2.length
     })
