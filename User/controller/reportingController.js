@@ -15,7 +15,9 @@ const userResourceResponse = require("../utils/constant");
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const userService = require("../services/userService");
 const userMetaService = require("../services/userMetaService");
+const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const dealerService = require('../../Dealer/services/dealerService')
+const servicerService = require("../../Provider/services/providerService")
 const resellerService = require('../../Dealer/services/resellerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
@@ -443,6 +445,7 @@ exports.weeklySales = async (data, req, res) => {
                     total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                     total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                     total_retail_price: { $sum: "$products.retailPrice" },
+                    total_contracts: { $sum: "$products.noOfProducts" },
                 }
             },
             {
@@ -479,6 +482,7 @@ exports.weeklySales = async (data, req, res) => {
         // Perform aggregation query
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
+        console.log("check ++++++++++++++++++++++++++++++++++++++++++++++++++++++", getOrders1)
         if (getOrders[0]) {
             getOrders[0]._id = datesArray[0]
             getOrders1[0]._id = datesArray[0]
@@ -509,7 +513,7 @@ exports.weeklySales = async (data, req, res) => {
                 total_admin_fee: order ? order.total_admin_fee : 0,
                 total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
                 total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
-                total_retail_price: order ? order.total_retail_price : 0,
+                total_contracts: order ? order.total_contracts : 0,
                 // total_orders: order ? order.total_orders : 0
             };
         });
@@ -531,7 +535,7 @@ exports.weeklySales = async (data, req, res) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                total_contracts: match ? match.total_contracts : item.total_contracts,
                 wholesale_price: wholesale_price
             };
         });
@@ -663,6 +667,7 @@ exports.weeklySalesOrder = async (req, res) => {
                     total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                     total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                     total_retail_price: { $sum: "$products.retailPrice" },
+                    total_contracts: { $sum: "$products.noOfProducts" },
                 }
             },
             {
@@ -837,6 +842,7 @@ exports.daySale = async (data) => {
                     total_fronting_fee: { $sum: "$products.frontingFee" },
                     total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                     total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
+                    total_contracts: { $sum: "$products.noOfProducts" },
                     total_retail_price: { $sum: "$products.retailPrice" },
                 }
             },
@@ -907,6 +913,7 @@ exports.daySale = async (data) => {
             total_reserve_future_fee: getOrders1.length ? getOrders1[0].total_reserve_future_fee : 0,
             total_reinsurance_fee: getOrders1.length ? getOrders1[0].total_reinsurance_fee : 0,
             total_retail_price: getOrders1.length ? getOrders1[0].total_retail_price : 0,
+            total_contracts: getOrders1.length ? getOrders1[0].total_contracts : 0,
         }];
 
         const mergedResult = result.map(item => {
@@ -925,7 +932,7 @@ exports.daySale = async (data) => {
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+                total_contracts: match ? match.total_contracts : item.total_contracts,
                 wholesale_price: wholesale_price
             };
         });
@@ -1030,6 +1037,7 @@ exports.dailySales1 = async (data, req, res) => {
                     total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                     total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                     total_retail_price: { $sum: "$products.retailPrice" },
+                    total_contracts: { $sum: "$products.noOfProducts" },
                 }
             },
             {
@@ -1071,6 +1079,8 @@ exports.dailySales1 = async (data, req, res) => {
             }
         }
 
+        console.log("getOrders++++++++++++++++++", getOrders, getOrders1)
+
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
@@ -1094,6 +1104,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
+                total_contracts: { $sum: "$products.noOfProducts" },
 
                 weekStart: dateString,
                 // total_order_amount: order ? order.total_order_amount : 0,
@@ -1104,6 +1115,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
                 total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
                 total_retail_price: order ? order.total_retail_price : 0,
+                total_contracts: order ? order.total_contracts : 0,
 
             };
         });
@@ -1125,6 +1137,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                 total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                 total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                total_contracts: match ? match.total_contracts : item.total_contracts,
                 total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
                 // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
                 wholesale_price: wholesale_price
@@ -1399,7 +1412,7 @@ exports.getReportingDropdowns = async (req, res) => {
             let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
             console.log(getPriceBooks)
             result = {
-                getDealers:[],
+                getDealers: [],
                 getPriceBooks: getPriceBooks2,
                 getCategories: getCategories
             }
@@ -1498,6 +1511,7 @@ exports.claimDailyReporting = async (data) => {
                     },
                 },
             },
+
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
@@ -1511,12 +1525,38 @@ exports.claimDailyReporting = async (data) => {
             }
         ];
 
+        let dailyQuery3 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    // claimPaymentStatus: "Paid",
+                    claimStatus: {
+                        $elemMatch: { status: "Rejected" }
+                    },
+                },
+            },
+
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    // total_paid_amount: { $sum: "$totalAmount" },
+                    total_rejected_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        console.log("sksksk+++++++++++++++", dailyQuery2[0].$match)
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = data.dealerId
             dailyQuery1[0].$match.dealerId = data.dealerId
             dailyQuery2[0].$match.dealerId = data.dealerId
+            dailyQuery3[0].$match.dealerId = data.dealerId
         }
 
         if (data.servicerId != "") {
@@ -1526,6 +1566,7 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery[0].$match.servicerId = data.servicerId
             dailyQuery1[0].$match.servicerId = data.servicerId
             dailyQuery2[0].$match.servicerId = data.servicerId
+            dailyQuery3[0].$match.servicerId = data.servicerId
         }
 
         // if (data.claimPaymentStatus != "") {
@@ -1537,6 +1578,8 @@ exports.claimDailyReporting = async (data) => {
         let getData = await claimService.getAllClaims(dailyQuery)
         let getData1 = await claimService.getAllClaims(dailyQuery1)
         let getData2 = await claimService.getAllClaims(dailyQuery2)
+        let getData3 = await claimService.getAllClaims(dailyQuery3)
+        console.log("getData3----------------------------", getData3)
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
@@ -1571,9 +1614,23 @@ exports.claimDailyReporting = async (data) => {
             };
         });
 
+        const result3 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData3.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                // total_paid_amount: order ? order.total_paid_amount : 0,
+                total_rejected_claim: order ? order.total_rejected_claim : 0,
+
+            };
+        });
+
+        console.log(result3)
+
         const mergedArray = result.map(item => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
+            const result3Item = result3.find(r2 => r2.weekStart === item.weekStart);
 
             return {
                 weekStart: item.weekStart,
@@ -1582,7 +1639,8 @@ exports.claimDailyReporting = async (data) => {
                 total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
                 total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
                 total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
-                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0
+                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
             };
         });
 
@@ -1593,6 +1651,7 @@ exports.claimDailyReporting = async (data) => {
             acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
             acc.total_paid_amount += curr.total_paid_amount || 0;
             acc.total_paid_claim += curr.total_paid_claim || 0;
+            acc.total_rejected_claim += curr.total_rejected_claim || 0;
             return acc;
         }, {
             total_amount: 0,
@@ -1601,6 +1660,7 @@ exports.claimDailyReporting = async (data) => {
             total_unpaid_claim: 0,
             total_paid_amount: 0,
             total_paid_claim: 0,
+            total_rejected_claim: 0,
         });
 
         return { graphData: mergedArray, totalFees }
@@ -1756,21 +1816,60 @@ exports.claimWeeklyReporting = async (data) => {
             }
         ];
 
+        let dailyQuery3 = [
+            {
+                $match: {
+                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() },
+                    claimStatus: {
+                        $elemMatch: { status: "Rejected" }
+                    },
+                },
+            },
+            {
+                $addFields: {
+                    weekStart: {
+                        $dateTrunc: {
+                            date: "$createdAt",
+                            unit: "week",
+                            binSize: 1,
+                            timezone: "UTC",
+                            startOfWeek: "monday"
+                        }
+                    }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_rejected_claim: { $sum: 1 },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
         let getData = await claimService.getAllClaims(dailyQuery)
         let getData1 = await claimService.getAllClaims(dailyQuery1)
         let getData2 = await claimService.getAllClaims(dailyQuery2)
-        console.log("data+++++++111111111111111++++++++++++++++++++++++", getData,getData1,getData2)
+        let getData3 = await claimService.getAllClaims(dailyQuery3)
 
         if (getData[0]) {
             getData[0]._id = datesArray[0]
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", getData[0]._id)
         }
         if (getData1[0]) {
             getData1[0]._id = datesArray[0]
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData1[0]._id)
         }
         if (getData2[0]) {
             getData2[0]._id = datesArray[0]
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData[0]._id)
         }
-        console.log("data+++++++111111111111111++++++++++++++++++++++++", getData)
+        if (getData3[0]) {
+            getData3[0]._id = datesArray[0]
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData[0]._id)
+        }
 
         const result = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -1783,8 +1882,11 @@ exports.claimWeeklyReporting = async (data) => {
         });
 
         const result1 = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0, 10);
-            const order = getData1.find(item => item._id === dateString);
+            const dateString = date.format('YYYY-MM-DD');
+            // console.log("date check +++++++++++++++++++==",getData1,dateString)
+            const order = getData1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            console.log("date check +++++++++++++++++++==", getData1, datesArray)
+
             return {
                 weekStart: dateString,
                 total_unpaid_amount: order ? order.total_unpaid_amount : 0,
@@ -1794,8 +1896,8 @@ exports.claimWeeklyReporting = async (data) => {
         });
 
         const result2 = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0, 10);
-            const order = getData2.find(item => item._id === dateString);
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getData2.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
             return {
                 weekStart: dateString,
                 total_paid_amount: order ? order.total_paid_amount : 0,
@@ -1804,12 +1906,23 @@ exports.claimWeeklyReporting = async (data) => {
             };
         });
 
-        console.log("data++++++++++++++656666666666666666666+++++++++++++++++", result)
+        const result3 = datesArray.map(date => {
+            const dateString = date.format('YYYY-MM-DD');
+            const order = getData3.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
+            return {
+                weekStart: dateString,
+                total_rejected_claim: order ? order.total_rejected_claim : 0,
+
+            };
+        });
+
+        console.log("-------------------------------------------------", result, result1, result2, getData1, getData2)
 
 
         const mergedArray = result.map(item => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
+            const result3Item = result3.find(r3 => r3.weekStart === item.weekStart);
 
             return {
                 weekStart: item.weekStart,
@@ -1818,7 +1931,8 @@ exports.claimWeeklyReporting = async (data) => {
                 total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
                 total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
                 total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
-                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0
+                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0,
             };
         });
 
@@ -1829,6 +1943,7 @@ exports.claimWeeklyReporting = async (data) => {
             acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
             acc.total_paid_amount += curr.total_paid_amount || 0;
             acc.total_paid_claim += curr.total_paid_claim || 0;
+            acc.total_rejected_claim += curr.total_rejected_claim || 0;
             return acc;
         }, {
             total_amount: 0,
@@ -1837,6 +1952,7 @@ exports.claimWeeklyReporting = async (data) => {
             total_unpaid_claim: 0,
             total_paid_amount: 0,
             total_paid_claim: 0,
+            total_rejected_claim: 0,
         });
 
         return { graphData: mergedArray, totalFees }
@@ -1889,7 +2005,96 @@ exports.claimDayReporting = async (data) => {
             }
         ];
 
+        let dailyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfDay, $lt: endOfDay },
+                    claimPaymentStatus: "Unpaid",
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_unpaid_amount: { $sum: "$totalAmount" },
+                    total_unpaid_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: -1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        let dailyQuery2 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfDay, $lt: endOfDay },
+                    claimPaymentStatus: "Paid",
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_paid_amount: { $sum: "$totalAmount" },
+                    total_paid_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: -1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        let dailyQuery3 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfDay, $lt: endOfDay },
+                    claimStatus: {
+                        $elemMatch: { status: "Rejected" }
+                    },
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_rejected_claim: { $sum: 1 },
+                }
+            },
+            {
+                $sort: { _id: -1 } // Sort by date in ascending order
+            }
+        ];
+
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.dealerId = data.dealerId
+            dailyQuery1[0].$match.dealerId = data.dealerId
+            dailyQuery2[0].$match.dealerId = data.dealerId
+            dailyQuery3[0].$match.dealerId = data.dealerId
+        }
+
+        if (data.servicerId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.servicerId)
+
+            dailyQuery[0].$match.servicerId = data.servicerId
+            dailyQuery1[0].$match.servicerId = data.servicerId
+            dailyQuery2[0].$match.servicerId = data.servicerId
+            dailyQuery3[0].$match.servicerId = data.servicerId
+        }
+
         let getData = await claimService.getAllClaims(dailyQuery)
+        let getData1 = await claimService.getAllClaims(dailyQuery1)
+        let getData2 = await claimService.getAllClaims(dailyQuery2)
+        let getData3 = await claimService.getAllClaims(dailyQuery3)
 
         let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 0);
         const options = {
@@ -1901,18 +2106,14 @@ exports.claimDayReporting = async (data) => {
         let result = [{
             weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_amount: getData.length ? getData[0].total_amount : 0,
-            total_claim: getData.length ? getData[0].total_claim : 0
+            total_claim: getData.length ? getData[0].total_claim : 0,
+            total_unpaid_amount: getData1.length ? getData1[0].total_unpaid_amount : 0,
+            total_unpaid_claim: getData1.length ? getData1[0].total_unpaid_claim : 0,
+            total_paid_amount: getData2.length ? getData2[0].total_paid_amount : 0,
+            total_paid_claim: getData2.length ? getData2[0].total_paid_claim : 0,
+            total_rejected_claim: getData3.length ? getData3[0].total_rejected_claim : 0,
         }];
 
-        // const result = datesArray.map(date => {
-        //     const dateString = date.format('YYYY-MM-DD');
-        //     const order = getData.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
-        //     return {
-        //         weekStart: dateString,
-        //         total_amount: order ? order.total_amount : 0,
-        //         total_claim: order ? order.total_claim : 0
-        //     };
-        // });
 
 
         const totalFees = result.reduce((acc, curr) => {
@@ -1931,5 +2132,81 @@ exports.claimDayReporting = async (data) => {
             code: constant.errorCode,
             message: err.message
         }
+    }
+}
+
+exports.claimReportinDropdown = async (req, res) => {
+    try {
+        let data = req.body
+        let result;
+
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" })
+        let getServicer = await providerService.getAllServiceProvider({ accountStatus: "accountStatus" })
+
+        result = {
+            dealers: getDealers,
+            servicers: getServicer
+        }
+
+        if (data.dealerId != "" && data.servicerId == "") {
+            let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
+            if (!checkDealer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid dealer ID"
+                })
+                return;
+            }
+            let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
+            if (!getServicersIds) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to fetch the servicer"
+                })
+                return;
+            }
+            console.log("-------------------------------------------------------", 1)
+            let ids = getServicersIds.map((item) => item.servicerId)
+            let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+            if (!servicer) {
+                res.send({
+                    code: constant.errorCode,
+                    message: "Unable to fetch the servicers"
+                })
+                return;
+            }
+            // Get Dealer Reseller Servicer
+
+            let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
+
+            if (dealerResellerServicer.length > 0) {
+                servicer.unshift(...dealerResellerServicer);
+            }
+
+            if (checkDealer.isServicer) {
+                servicer.unshift(checkDealer);
+            };
+            result = {
+                dealers: getDealers,
+                servicers: servicer
+
+            }
+
+        }
+        if (data.dealerId != "" && data.servicerId == "") {
+
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
 }
