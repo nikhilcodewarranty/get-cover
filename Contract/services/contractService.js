@@ -13,7 +13,7 @@ module.exports = class contractService {
   static async getAllContracts2(query, pageLimit, page) {
     try {
      // console.log("query+++++++++++++++++",query,pageLimit)
-      const allContracts = await contract.aggregate(query,pageLimit)
+      const allContracts = await contract.aggregate(query)
     //  console.log("query------------------------",query)
       return allContracts;
     } catch (error) {
