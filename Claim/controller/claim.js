@@ -27,7 +27,6 @@ const dealerService = require("../../Dealer/services/dealerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
-const { createDeflate } = require("zlib");
 var StorageP = multer.diskStorage({
   destination: function (req, files, cb) {
     cb(null, path.join(__dirname, "../../uploads/claimFile"));
@@ -653,7 +652,7 @@ exports.searchClaim = async (req, res, next) => {
       contractFilter = [
         { orderId: { $in: orderIds } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { "orderId": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -664,7 +663,7 @@ exports.searchClaim = async (req, res, next) => {
       contractFilter = [
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { "orderId": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
@@ -672,15 +671,13 @@ exports.searchClaim = async (req, res, next) => {
       ]
     }
     let query = [
-
+      { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
           $and: contractFilter
         },
       },
-      // { $sort: { unique_key_number: -1 } },
-
       {
         $facet: {
           totalRecords: [
@@ -695,23 +692,23 @@ exports.searchClaim = async (req, res, next) => {
             {
               $limit: pageLimit
             },
-            // {
-            //   $lookup: {
-            //     from: "orders",
-            //     localField: "orderId",
-            //     foreignField: "_id",
-            //     as: "order",
-            //     pipeline: [
-            //       {
-            //         $lookup: {
-            //           from: "customers",
-            //           localField: "customerId",
-            //           foreignField: "_id",
-            //           as: "customers",
-            //         }
-            //       },
-            //       { $unwind: "$customers" },
-            //     ]
+            {
+              $lookup: {
+                from: "orders",
+                localField: "orderId",
+                foreignField: "_id",
+                as: "order",
+                pipeline: [
+                  {
+                    $lookup: {
+                      from: "customers",
+                      localField: "customerId",
+                      foreignField: "_id",
+                      as: "customers",
+                    }
+                  },
+                  { $unwind: "$customers" },
+                ]
 
               }
             },
@@ -726,26 +723,20 @@ exports.searchClaim = async (req, res, next) => {
                 "order.customers.username": 1,
                 "order.unique_key": 1,
                 "order.venderOrder": 1,
-                createdAt:1
               }
             }
           ]
         }
       },
 
-
     ]
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-    let resultData = getContracts[0]?.data ? getContracts[0]?.data : []
-
-    resultData = resultData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
     res.send({
       code: constant.successCode,
-      result: resultData,
+      result: getContracts[0]?.data ? getContracts[0]?.data : [],
       totalCount
       // count: getContracts2.length
     })
