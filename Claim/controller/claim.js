@@ -741,7 +741,7 @@ exports.searchClaim = async (req, res, next) => {
     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
     let resultData = getContracts[0]?.data ? getContracts[0]?.data : []
 
-    resultData = resultData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // resultData = resultData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     res.send({
       code: constant.successCode,

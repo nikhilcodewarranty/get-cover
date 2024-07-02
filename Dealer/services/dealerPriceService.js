@@ -85,7 +85,7 @@ module.exports = class dealerPriceService {
   static async findAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.find(query)
-
+      console.log("check ak +++++++++++++++++==",AllDealerPrice)
       // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
