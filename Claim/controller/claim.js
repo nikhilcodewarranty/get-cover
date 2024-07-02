@@ -1971,7 +1971,7 @@ exports.saveBulkClaim = async (req, res) => {
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
-          unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' }
+          unique_key: item.contractId.toUpperCase()
         });
         else {
           return null;
