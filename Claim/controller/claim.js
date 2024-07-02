@@ -1833,10 +1833,10 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      // const emailField = req.body.email;
+      const emailField = req.body.email;
 
       // // Parse the email field
-      // const emailArray = JSON.parse(emailField);
+      const emailArray = JSON.parse(emailField);
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
@@ -2163,6 +2163,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
 
+
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
@@ -2178,6 +2179,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
+
 
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
@@ -2313,7 +2315,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
-      //  let new_admin_array = adminEmail.concat(emailArray)
+      let new_admin_array = adminEmail.concat(emailArray)
 
       //send Email to admin 
 
