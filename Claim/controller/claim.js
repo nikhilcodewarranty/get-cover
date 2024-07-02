@@ -2226,7 +2226,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       if (saveBulkClaim.length > 0) {
         let IDs = await supportingFunction.getUserIds()
-        emailServicerId.concat(IDs)
+        IDs.concat(emailServicerId)
         let notificationData1 = {
           title: "Bulk Report",
           description: "The Bulk claim file has been registered!",
