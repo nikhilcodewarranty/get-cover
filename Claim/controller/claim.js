@@ -1833,10 +1833,10 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      const emailField = req.body.email;
+      // const emailField = req.body.email;
 
-      // Parse the email field
-      const emailArray = JSON.parse(emailField);
+      // // Parse the email field
+      // const emailArray = JSON.parse(emailField);
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
@@ -1901,7 +1901,7 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      // res.json(totalDataComing);return;
+
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
@@ -1964,6 +1964,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
+
       // res.json(totalDataComing);
 
       // return;
@@ -1978,10 +1979,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
       const contractArray = await Promise.all(contractArrayPromise);
 
-      // res.json(contractArray);
-
-      // return;
-
       //Check servicer is exist or not using contract id
 
       const servicerArrayPromise = totalDataComing.map(item => {
@@ -1992,25 +1989,30 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      //console.log(servicerArrayPromise);return;
       const servicerArray = await Promise.all(servicerArrayPromise);
+
       // console.log(servicerArray);return;
       //check claim is already open by contract id
-      const claimArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return claimService.getClaims({
-          claimFile: 'Open'
-        });
-        else {
-          return null;
-        }
-      })
-      const claimArray = await Promise.all(claimArrayPromise)
+      console.log("------------------------------------------------------------1")
+      // const claimArrayPromise = totalDataComing.map(item => {
+      //   console.log("item------------------------",item)
+      //   if (!item.exit) return claimService.getClaims({
+      //     claimFile: 'Open'
+      //   });
+      //   else {
+      //     return null;
+      //   }
+      // })
+      const claimArray = await claimService.getClaims({
+        claimFile: 'Open'
+      });
+
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
         if (!item.exit) {
           let query = [
             {
-              $match: { unique_key:  item.contractId.toUpperCase() },
+              $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
             },
             {
               $lookup: {
@@ -2094,6 +2096,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+      // res.json(contractAllDataArray);
+
+      // return;
+
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -2156,10 +2162,7 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-      // res.send({
-      //   totalDataComing
-      // })
-      // return;
+
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
@@ -2310,7 +2313,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
-      let new_admin_array = adminEmail.concat(emailArray)
+      //  let new_admin_array = adminEmail.concat(emailArray)
 
       //send Email to admin 
 
