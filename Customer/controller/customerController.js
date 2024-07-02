@@ -563,6 +563,7 @@ exports.editCustomer = async (req, res) => {
       title: "Customer Detail Update",
       description: "The customer information has been changed!",
       userId: req.userId,
+      redirectionId: req.params.customerId,
       flag: "Customer",
       notificationFor: IDs
     };
@@ -688,13 +689,13 @@ exports.changePrimaryUser = async (req, res) => {
       //Send notification for dealer change primary user
       let IDs = await supportingFunction.getUserIds()
       //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
-      console.log("checkRole00000000000000000000000000000000",checkRole);
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
       let notificationData = {
         title: updateLastPrimary?.role + " primary user change",
         description: "The primary user has been changed!",
         userId: req.userId,
         flag: updateLastPrimary?.role,
+        redirectionId: checkUser.accountId,
         notificationFor: [getPrimary._id]
       };
       let createNotification = await userService.createNotification(notificationData);

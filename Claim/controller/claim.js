@@ -1837,7 +1837,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       // Parse the email field
       const emailArray = JSON.parse(emailField);
-      console.log("emailArray------------------", emailArray)
       // if (req.role != 'Super Admin') {
       //   res.send({
       //     code: constant.errorCode,
@@ -2011,7 +2010,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (!item.exit) {
           let query = [
             {
-              $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+              $match: { unique_key:  item.contractId.toUpperCase() },
             },
             {
               $lookup: {
