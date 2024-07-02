@@ -979,7 +979,7 @@ exports.addClaim = async (req, res, next) => {
       userId: req.userId,
       contentId: claimResponse._id,
       flag: 'claim',
-      redirectionId:claimResponse.unique_key,
+      redirectionId: claimResponse.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData1);
@@ -1205,7 +1205,7 @@ exports.editClaim = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
-        redirectionId:checkClaim.unique_key,
+        redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1423,7 +1423,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
-        redirectionId:checkClaim.unique_key,
+        redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1494,7 +1494,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
-        redirectionId:checkClaim.unique_key,
+        redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1578,7 +1578,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
-        redirectionId:checkClaim.unique_key,
+        redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1789,7 +1789,7 @@ exports.editServicer = async (req, res) => {
       userId: req.userId,
       contentId: null,
       flag: 'claim',
-      redirectionId:checkClaim.unique_key,
+      redirectionId: checkClaim.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
@@ -2440,7 +2440,7 @@ exports.sendMessages = async (req, res) => {
       userId: req.userId,
       contentId: checkClaim._id,
       flag: 'claim',
-      redirectionId:checkClaim.unique_key,
+      redirectionId: checkClaim.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData1);
