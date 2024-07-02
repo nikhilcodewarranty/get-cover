@@ -1993,7 +1993,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       // console.log(servicerArray);return;
       //check claim is already open by contract id
-      console.log("------------------------------------------------------------1")
       // const claimArrayPromise = totalDataComing.map(item => {
       //   console.log("item------------------------",item)
       //   if (!item.exit) return claimService.getClaims({
@@ -2224,6 +2223,21 @@ exports.saveBulkClaim = async (req, res) => {
 
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+
+      if (saveBulkClaim.length > 0) {
+        let IDs = await supportingFunction.getUserIds()
+        emailServicerId.concat(IDs)
+        let notificationData1 = {
+          title: "Bulk Report",
+          description: "The Bulk claim file has been registered!",
+          userId: req.userId,
+          flag: 'Bulk Claim',
+          notificationFor: emailServicerId
+        };
+        let createNotification = await userService.createNotification(notificationData1);
+      }
+
+
       //Build data for particular servicer and send mail
       let existArray = {
         data: {}
