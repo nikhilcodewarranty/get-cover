@@ -279,6 +279,7 @@ exports.createOrder1 = async (req, res) => {
             userId: req.userId,
             contentId: null,
             flag: 'order',
+            redirectionId: savedResponse.unique_key,
             notificationFor: IDs
         };
 
@@ -632,7 +633,8 @@ exports.createOrder1 = async (req, res) => {
                         title: "Order Update and Processed",
                         description: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         userId: req.userId,
-                        contentId: null,
+                        contentId: checkOrder._id,
+                        redirectionId: checkOrder.unique_key,
                         flag: 'order',
                         notificationFor: IDs
                     };
@@ -3080,6 +3082,7 @@ exports.archiveOrder = async (req, res) => {
             userId: req.userId,
             contentId: checkOrder._id,
             flag: 'order',
+            redirectionId: checkOrder.unique_key,
             notificationFor: IDs
         };
         let createNotification = await userService.createNotification(notificationData1);
@@ -3405,7 +3408,7 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
-        
+
 
         if (data.paymentStatus == "Paid") {
             data.paidAmount = data.orderAmount
@@ -3517,6 +3520,7 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.userId,
             contentId: checkOrder._id,
             flag: 'order',
+            redirectionId: savedResponse.unique_key,
             notificationFor: IDs
         };
         let createNotification = await userService.createNotification(notificationData);
@@ -3656,35 +3660,35 @@ exports.editOrderDetail = async (req, res) => {
 
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
-                        
+
 
                         } else if (checkOrder.serviceCoverageType == "Parts") {
 
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
 
-                        
+
 
                         } else {
 
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
-                   
+
                         }
                     } else if (checkOrder.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
 
-                     
+
                     } else {
                         if (checkOrder.serviceCoverageType == "Labour") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
 
                         } else if (checkOrder.serviceCoverageType == "Parts") {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));              
+                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
                         } else {
-                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));                       
+                            minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         }
                     }
 
@@ -3787,8 +3791,9 @@ exports.editOrderDetail = async (req, res) => {
                         title: "Process Order",
                         description: "The order " + checkOrder.unique_key + " has been updated and processed",
                         userId: req.userId,
-                        contentId: null,
+                        contentId: checkOrder._id,
                         flag: 'order',
+                        redirectionId: checkOrder.unique_key,
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData1);
@@ -3882,9 +3887,6 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
-
-
-
 // Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
@@ -4153,8 +4155,9 @@ exports.markAsPaid = async (req, res) => {
                     title: "Mark As Paid",
                     description: "The order " + checkOrder.unique_key + " has been mark as paid",
                     userId: req.userId,
-                    contentId: null,
+                    contentId: checkOrder._id,
                     flag: 'order',
+                    redirectionId: checkOrder.unique_key,
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
@@ -5220,7 +5223,6 @@ exports.generatePDF = async (req, res) => {
         })
     }
 };
-
 
 async function generateTC(orderData) {
     try {

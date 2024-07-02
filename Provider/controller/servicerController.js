@@ -438,115 +438,122 @@ exports.getServicerContract = async (req, res) => {
 
 exports.getServicerDealers = async (req, res) => {
     try {
-      let data = req.body
-      let query = [
-        {
-          $match: {
-            servicerId: new mongoose.Types.ObjectId(req.userId)
-          }
-        },
-        {
-          $lookup: {
-            from: "dealers",
-            localField: "dealerId",
-            foreignField: "_id",
-            as: "dealerData",
-            pipeline: [
-              {
-                $lookup: {
-                  from: "users",
-                  localField: "_id",
-                  foreignField: "metaId",
-                  as: "userData",
-                  pipeline: [
-                    {
-                      $match: {
-                        isPrimary: true
-                      }
-                    }
-                  ]
+        let data = req.body
+        let query = [
+            {
+                $match: {
+                    servicerId: new mongoose.Types.ObjectId(req.userId)
                 }
-              },
-              {$unwind:"$userData"},
-              {
+            },
+            {
                 $lookup: {
-                  from: "claims",
-                  // let: { dealerId: "$_id" },
-                  localField: "_id",
-                  foreignField: "dealerId",
-                  as: "claimsData",
-                  pipeline: [
-                    {
-                      $group: {
-                        _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
-                        totalAmount: { $sum: "$totalAmount" },
-                        numberOfClaims: { $sum: 1 }
-                      }
-                    },
-                    {
-                      $project: {
-                        _id:0,
-                        totalAmount: 1,
-                        numberOfClaims: 1
-                      }
-                    }
-                  ]
-  
-                  //   {
-                  //     $match: {
-                  //       $expr: {
-                  //         $and: [
-                  //           { $eq: ["$dealerId", "$dealerId"] },
-                  //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
-                  //         ]
-                  //       }
-                  //     }
-                  //   },
-  
-                  // {
-                  //   $group: {
-                  //     _id: null,
-                  //     totalAmount: { $sum: "$amount" },
-                  //     numberOfClaims: { $sum: 1 }
-                  //   }
-                  // }
+                    from: "dealers",
+                    localField: "dealerId",
+                    foreignField: "_id",
+                    as: "dealerData",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "_id",
+                                foreignField: "metaId",
+                                as: "userData",
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            isPrimary: true
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        { $unwind: "$userData" },
+                        {
+                            $lookup: {
+                                from: "claims",
+                                // let: { dealerId: "$_id" },
+                                localField: "_id",
+                                foreignField: "dealerId",
+                                as: "claimsData",
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            servicerId: new mongoose.Types.ObjectId(req.userId),
+                                            claimFile: "Completed"
+
+                                        }
+                                    },
+                                    {
+                                        $group: {
+                                            _id: { servicerId: new mongoose.Types.ObjectId(req.userId) },
+                                            totalAmount: { $sum: "$totalAmount" },
+                                            numberOfClaims: { $sum: 1 }
+                                        }
+                                    },
+                                    {
+                                        $project: {
+                                            _id: 0,
+                                            totalAmount: 1,
+                                            numberOfClaims: 1
+                                        }
+                                    }
+                                ]
+
+                                //   {
+                                //     $match: {
+                                //       $expr: {
+                                //         $and: [
+                                //           { $eq: ["$dealerId", "$dealerId"] },
+                                //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
+                                //         ]
+                                //       }
+                                //     }
+                                //   },
+
+                                // {
+                                //   $group: {
+                                //     _id: null,
+                                //     totalAmount: { $sum: "$amount" },
+                                //     numberOfClaims: { $sum: 1 }
+                                //   }
+                                // }
+                            }
+                        }
+                    ]
                 }
-              }
-            ]
-          }
-        },
-        {
-          $unwind: "$dealerData"
-        },
-        // {
-        //   $project:{
-  
-        //   }
-        // }
-      ]
-      let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
-  
-      res.send({
-        code: constant.successCode,
-        data: filteredData
-      });
-  
-  
+            },
+            {
+                $unwind: "$dealerData"
+            },
+            // {
+            //   $project:{
+
+            //   }
+            // }
+        ]
+        let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+
+        res.send({
+            code: constant.successCode,
+            data: filteredData
+        });
+
+
     } catch (err) {
-      res.send({
-        code: constant.errorCode,
-        message: err.message
-      })
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
-  }
+}
 exports.getServicerDealers1 = async (req, res) => {
     try {
         let data = req.body
-        
+
         let filteredData = await dealerRelationService.getDealerRelationsAggregate([
             {
-                $match:{
-                    servicerId:"sdfsdfs"
+                $match: {
+                    servicerId: "sdfsdfs"
                 }
             }
         ])

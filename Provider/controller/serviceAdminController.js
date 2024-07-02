@@ -529,7 +529,6 @@ exports.rejectServicer = async (req, res) => {
       notificationFor: IDs
     };
 
-    console.log("checkServicer2-----------------------------------", getServicer)
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
@@ -538,8 +537,6 @@ exports.rejectServicer = async (req, res) => {
       content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
       subject: "Rejection Account"
     }
-    console.log("emailData-------------------------", emailData)
-    console.log("notificationEmails-------------------------", notificationEmails)
     // Send Email code here
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
@@ -1548,8 +1545,8 @@ exports.getServicerDealers = async (req, res) => {
 
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
-    res.json(dealerClaims);
-    return;
+    // res.json(dealerClaims);
+    // return;
 
     //     let lookupQuery = [
     //       {
@@ -1698,6 +1695,11 @@ exports.getServicerDealers1 = async (req, res) => {
                 foreignField: "dealerId",
                 as: "claimsData",
                 pipeline: [
+                  {
+                    $match: {
+                      servicerId: new mongoose.Types.ObjectId(req.params.serviceId),
+                    }
+                  },
                   {
                     $group: {
                       _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },

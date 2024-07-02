@@ -1371,53 +1371,68 @@ exports.getReportingDropdowns = async (req, res) => {
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        const convertedData = getDealers.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+
+        let priceBook = getPriceBooks.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+        let categories = getCategories.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
 
         result = {
-            getDealers,
-            getPriceBooks,
-            getCategories
+            getDealers: convertedData,
+            getPriceBooks: priceBook,
+            getCategories: categories
         }
 
         if (data.dealerId != "") {
-            console.log("1st condition_--------------------------------------------------")
             // let dealerPriceQuery
-
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
             let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
+            priceBook = getPriceBooks1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+            categories = getCategories1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
             result = {
-                getDealers,
-                getPriceBooks: getPriceBooks1,
-                getCategories: getCategories1
+                getDealers: convertedData,
+                getPriceBooks: priceBook,
+                getCategories: categories
             }
-
             if (data.categoryId != "") {
                 let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
                 result = {
-                    getDealers,
-                    getPriceBooks: getPriceBooks2,
-                    getCategories: getCategories1
+                    getDealers: convertedData,
+                    getPriceBooks: priceBook,
+                    getCategories: categories
                 }
             }
-
-
-
         }
 
         if (data.categoryId != "" && data.dealerId == "") {
             let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
-            console.log(getPriceBooks)
+            priceBook = getPriceBooks2.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
             result = {
                 getDealers: [],
-                getPriceBooks: getPriceBooks2,
-                getCategories: getCategories
+                getPriceBooks: priceBook,
+                getCategories: categories
             }
         }
-
-
 
         res.send({
             code: constant.successCode,

@@ -898,10 +898,10 @@ exports.cronJobEligible = async (req, res) => {
     // ];
     let result = await contractService.findContracts1(query);
 
-    // res.send({
-    //   result
-    // })
-    // return;
+    res.send({
+      result
+    })
+    return;
     console.log("========================================================1")
     let bulk = [];
     let contractIds = []
@@ -914,6 +914,7 @@ exports.cronJobEligible = async (req, res) => {
      // let eligibilty = new Date(product.minDate) < new Date() ? true : false
       //let productValue = result[i].productValue;
       if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+        console.log("========================================================if")
         contractIds.push(product._id)      
         updateDoc = {
           'updateMany': {
@@ -925,6 +926,7 @@ exports.cronJobEligible = async (req, res) => {
         bulk.push(updateDoc)
       }
       else {
+        console.log("========================================================elif")
         updateDoc = {
           'updateMany': {
             'filter': { '_id': contractId },

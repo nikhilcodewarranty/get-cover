@@ -538,9 +538,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       if (body.status == false) {
         const newValue = { status: body.status };
         const option = { new: true };
-        console.log(body.status)
         let updateOrder = await orderService.updateManyOrder({ 'productsArray.priceBookId': params.priceBookId, status: 'Pending' }, { status: 'Archieved' }, option)
-        console.log("updateOrder================", updateOrder);
         const updatedPriceBook = await dealerPriceService.updateDealerPrice({ priceBook: params.priceBookId }, newValue, { new: true });
       }
     }
@@ -624,41 +622,6 @@ exports.updatePriceBookById = async (req, res, next) => {
     })
   }
 };
-// Function to update price book by me
-const updatePriceBookStatus = async (priceId, newData) => {
-  const criteria = { _id: priceId };
-  let projection = { isDeleted: 0, __v: 0 }
-  const existingPriceBook = await priceBookService.getPriceBookById(criteria, projection);
-
-  if (!existingPriceBook) {
-    return {
-      success: false,
-      message: "Invalid Price Book ID"
-    };
-  }
-
-  const newValue = {
-    $set: {
-      status: newData.status,
-      frontingFee: newData.frontingFee || existingPriceBook.frontingFee,
-      reserveFutureFee: newData.reserveFutureFee || existingPriceBook.reserveFutureFee,
-      reinsuranceFee: newData.reinsuranceFee || existingPriceBook.reinsuranceFee,
-      adminFee: newData.adminFee || existingPriceBook.adminFee,
-      category: newData.category || existingPriceBook.category,
-      description: newData.description || existingPriceBook.description,
-    }
-  };
-  const statusCreateria = { _id: { $in: [priceId] } }
-  const option = { new: true };
-  const updatedCat = await priceBookService.updatePriceBook(statusCreateria, newValue, option);
-  console.log(updatedCat);
-  return {
-    success: !!updatedCat,
-    message: updatedCat ? "Successfully updated" : "Unable to update the data",
-  };
-};
-
-
 //delete price 
 exports.deletePriceBook = async (req, res, next) => {
   try {
@@ -925,10 +888,10 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
 
-    console.log('cat id -----------------', getPriceBook1)
+
 
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
-    console.log('cat id -----------------', catIds)
+ 
     let query;
 
 
@@ -948,10 +911,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
         ]
       }
     }
-
-    console.log('cat id +++++++++++++++', query)
-
-
     let projection = { __v: 0 }
     let getCategories = await priceBookService.getAllActivePriceCat(query, projection)
 
@@ -984,7 +943,7 @@ const checkObjectId = async (Id) => {
   }
 }
 
-// Function to check if the user is a Super Admin
+// Function to check if the user is a Super Admin 
 const isSuperAdmin = (role) => role === "Super Admin";
 
 // Exported function to update price book category
@@ -1285,13 +1244,12 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       message: err.message
     })
   }
-}
+} 
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body
     let checkPriceBook = await priceBookService.getPriceBookById({ name: req.params.name }, {})
-    console.log('checkPriceBook==================', checkPriceBook);
     if (!checkPriceBook) {
       res.send({
         code: constant.errorCode,
