@@ -37,6 +37,10 @@ const notificationSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  redirectionId: {
+    type: String,
+    default: ''
+  },
   flagId: {
     type: mongoose.Schema.Types.ObjectId,
     default: null

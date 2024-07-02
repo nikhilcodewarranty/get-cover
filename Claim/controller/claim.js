@@ -336,15 +336,12 @@ exports.getAllClaims = async (req, res, next) => {
     // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
-    // console.log("servicerIds=================", allServicerIds);
-    // res.json(resultFiter)
-    // return
+
     allServicer = await servicerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
-    //   console.log("-----------------------------------------",allServicer)
-    // res.json(resultFiter);return;
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
@@ -982,6 +979,7 @@ exports.addClaim = async (req, res, next) => {
       userId: req.userId,
       contentId: claimResponse._id,
       flag: 'claim',
+      redirectionId:claimResponse.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData1);
@@ -1207,6 +1205,7 @@ exports.editClaim = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
+        redirectionId:checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1424,6 +1423,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
+        redirectionId:checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1494,6 +1494,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
+        redirectionId:checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1577,6 +1578,7 @@ exports.editClaimStatus = async (req, res) => {
         userId: req.userId,
         contentId: checkClaim._id,
         flag: 'claim',
+        redirectionId:checkClaim.unique_key,
         notificationFor: IDs
       };
       let createNotification = await userService.createNotification(notificationData1);
@@ -1787,6 +1789,7 @@ exports.editServicer = async (req, res) => {
       userId: req.userId,
       contentId: null,
       flag: 'claim',
+      redirectionId:checkClaim.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
@@ -2437,6 +2440,7 @@ exports.sendMessages = async (req, res) => {
       userId: req.userId,
       contentId: checkClaim._id,
       flag: 'claim',
+      redirectionId:checkClaim.unique_key,
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData1);
