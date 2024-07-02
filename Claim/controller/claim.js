@@ -2252,7 +2252,7 @@ exports.saveBulkClaim = async (req, res) => {
       // If you need to convert existArray.data to a flat array format
       let adminEmail = await supportingFunction.getUserEmails();
       if (emailServicer.length > 0) {
-        IDs.concat(emailServicerId)
+        IDs =  IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
           let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
