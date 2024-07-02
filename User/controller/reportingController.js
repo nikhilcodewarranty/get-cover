@@ -112,7 +112,7 @@ exports.dailySale = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.dailySales = async (req, res) => {
     try {
@@ -346,7 +346,7 @@ exports.dailySales = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 //weekly grouping of the data
 exports.weeklySales = async (data, req, res) => {
@@ -462,8 +462,8 @@ exports.weeklySales = async (data, req, res) => {
 
         if (data.priceBookId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
 
             // products:
 
@@ -471,12 +471,11 @@ exports.weeklySales = async (data, req, res) => {
 
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = data.categoryId
-            dailyQuery1[0].$match.categoryId = data.categoryId
+            weeklyQuery[0].$match.categoryId = data.categoryId
+            weeklyQuery1[0].$match.categoryId = data.categoryId
 
             // products:
 
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -684,8 +683,8 @@ exports.weeklySalesOrder = async (req, res) => {
 
         if (data.priceBookId.length != 0) {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
 
             // products:
 
@@ -693,12 +692,12 @@ exports.weeklySalesOrder = async (req, res) => {
 
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
-            dailyQuery[0].$match.categoryId = data.categoryId
-            dailyQuery1[0].$match.categoryId = data.categoryId
+            weeklyQuery[0].$match.categoryId = data.categoryId
+            weeklyQuery1[0].$match.categoryId = data.categoryId
 
             // products:
 
-            console.log("data----------------", dailyQuery[0].$match)
+            // console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -1363,7 +1362,7 @@ exports.getReportingCategories = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.getReportingDropdowns = async (req, res) => {
     try {
@@ -1413,7 +1412,7 @@ exports.getReportingDropdowns = async (req, res) => {
                 getCategories: categories
             }
             if (data.categoryId != "") {
-                getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
                 result = {
                     getDealers: convertedData,
                     getPriceBooks: priceBook,
@@ -1447,7 +1446,7 @@ exports.getReportingDropdowns = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 exports.claimDailyReporting = async (data) => {
     try {
@@ -1688,7 +1687,7 @@ exports.claimDailyReporting = async (data) => {
             message: err.message
         }
     }
-}
+};
 
 exports.claimWeeklyReporting = async (data) => {
     try {
@@ -1987,7 +1986,7 @@ exports.claimWeeklyReporting = async (data) => {
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
-}
+};
 
 exports.claimDayReporting = async (data) => {
     try {
@@ -2148,7 +2147,7 @@ exports.claimDayReporting = async (data) => {
             message: err.message
         }
     }
-}
+};
 
 exports.claimReportinDropdown = async (req, res) => {
     try {
@@ -2156,14 +2155,18 @@ exports.claimReportinDropdown = async (req, res) => {
         let result;
 
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
-        let getServicer = await providerService.getAllServiceProvider({ accountStatus: "accountStatus" })
+        let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved" })
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
 
         result = {
             dealers: getDealers,
-            servicers: getServicer
+            servicers: getServicer,
+            priceBooks:getPriceBooks,
+            categories:getCategories
         }
 
-        if (data.dealerId != "" && data.servicerId == "") {
+        if (data.dealerId != "") {
             let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
             if (!checkDealer) {
                 res.send({
@@ -2201,14 +2204,89 @@ exports.claimReportinDropdown = async (req, res) => {
             if (checkDealer.isServicer) {
                 servicer.unshift(checkDealer);
             };
+
+            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
+            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
+
             result = {
                 dealers: getDealers,
-                servicers: servicer
+                priceBooks: getPriceBooks1,
+                servicers: servicer,
+                categories: getCategories1
+            }
 
+
+            if (data.categoryId != "") {
+                let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                result = {
+                    dealers: getDealers,
+                    servicers: servicer,
+                    priceBooks: getPriceBooks2,
+                    categories: getCategories1
+                }
             }
 
         }
-        if (data.dealerId != "" && data.servicerId == "") {
+        if (data.dealerId == "" && data.servicerId != "") {
+            let query = [
+                {
+                    $match: {
+                        servicerId: new mongoose.Types.ObjectId(data.servicerId)
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "dealers",
+                        localField: "dealerId",
+                        foreignField: "_id",
+                        as: "dealerData",
+                        pipeline: [
+                            {
+                                $lookup: {
+                                    from: "users",
+                                    localField: "_id",
+                                    foreignField: "metaId",
+                                    as: "userData",
+                                    pipeline: [
+                                        {
+                                            $match: {
+                                                isPrimary: true
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            { $unwind: "$userData" },
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$dealerData"
+                },
+            ]
+            let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+            let dealerIds = filteredData.map(ID => ID._id)
+            let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds} })
+            let priceBookIds = getDealerPriceBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+            result = {
+                dealers: filteredData,
+                priceBooks: getPriceBooks1,
+                servicers: getServicer,
+                categories: getCategories1
+            }
+
+        }
+        if (data.dealerId == "" && data.servicerId == "") {
+
+        }
+        if (data.dealerId != "" && data.servicerId != "") {
 
         }
 
@@ -2224,4 +2302,4 @@ exports.claimReportinDropdown = async (req, res) => {
             message: err.message
         })
     }
-}
+};
