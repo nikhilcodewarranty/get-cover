@@ -2223,21 +2223,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
-
-      if (saveBulkClaim.length > 0) {
-        let IDs = await supportingFunction.getUserIds()
-        IDs.concat(emailServicerId)
-        let notificationData1 = {
-          title: "Bulk Report",
-          description: "The Bulk claim file has been registered!",
-          userId: req.userId,
-          flag: 'Bulk Claim',
-          notificationFor: emailServicerId
-        };
-        let createNotification = await userService.createNotification(notificationData1);
-      }
-
-
+      let IDs = await supportingFunction.getUserIds()
       //Build data for particular servicer and send mail
       let existArray = {
         data: {}
@@ -2266,6 +2252,7 @@ exports.saveBulkClaim = async (req, res) => {
       // If you need to convert existArray.data to a flat array format
       let adminEmail = await supportingFunction.getUserEmails();
       if (emailServicer.length > 0) {
+        IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
           let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
@@ -2334,6 +2321,18 @@ exports.saveBulkClaim = async (req, res) => {
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
+
+      if (saveBulkClaim.length > 0) {  
+     
+        let notificationData1 = {
+          title: "Bulk Report",
+          description: "The Bulk claim file has been registered!",
+          userId: req.userId,
+          flag: 'Bulk Claim',
+          notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData1);
+      }
 
       res.send({
         code: constant.successCode,
