@@ -813,7 +813,8 @@ exports.registerDealer = async (req, res) => {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
       userId: createdDealer._id,
-      flag: 'dealer',
+      redirectionId: createdDealer._id,
+      flag: 'Dealer Request',
       notificationFor: IDs
     };
 
@@ -949,6 +950,7 @@ exports.statusUpdate = async (req, res) => {
       description: getDealerDetail.name + " , " + "your price book has been updated",
       userId: req.userId,
       contentId: req.params.dealerPriceBookId,
+     // redirectionId: createdDealer._id,
       flag: 'Dealer Price Book',
       notificationFor: IDs
     };
@@ -1135,6 +1137,7 @@ exports.changeDealerStatus = async (req, res) => {
         title: "Dealer status update",
         description: singleDealer.name + " , " + "your status has been updated",
         userId: req.userId,
+        redirectionId: singleDealer.name,
         flag: 'dealer',
         notificationFor: IDs
       };
@@ -1955,6 +1958,7 @@ exports.createDealerPriceBook = async (req, res) => {
         userId: req.userId,
         flag: 'dealer',
         contentId: createDealerPrice._id,
+        redirectionId: createDealerPrice._id,
         notificationFor: IDs
       };
 
@@ -2255,6 +2259,7 @@ exports.updateDealerMeta = async (req, res) => {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
       userId: req.userId,
+    //  redirectionId:
       flag: 'dealer',
       notificationFor: IDs
     };
