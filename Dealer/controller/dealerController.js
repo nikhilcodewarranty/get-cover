@@ -950,7 +950,7 @@ exports.statusUpdate = async (req, res) => {
       description: getDealerDetail.name + " , " + "your price book has been updated",
       userId: req.userId,
       contentId: req.params.dealerPriceBookId,
-     // redirectionId: createdDealer._id,
+      redirectionId: getDealerDetail._id,
       flag: 'Dealer Price Book',
       notificationFor: IDs
     };
@@ -2259,7 +2259,7 @@ exports.updateDealerMeta = async (req, res) => {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
       userId: req.userId,
-    //  redirectionId:
+      redirectionId: data.dealerId,
       flag: 'dealer',
       notificationFor: IDs
     };

@@ -1473,7 +1473,6 @@ exports.editClaimStatus = async (req, res) => {
           date: new Date()
         }
       ]
-
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
@@ -1497,14 +1496,12 @@ exports.editClaimStatus = async (req, res) => {
         redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
+      console.log("notificationData1--------------------------",notificationData1)
       let createNotification = await userService.createNotification(notificationData1);
+      console.log("createNotification--------------------------",createNotification)
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let toEmail = []
-      //toEmail.push(dealerPrimary.email);
-      // toEmail.push(customerPrimary?.email);
-      //toEmail.push(resellerPrimary?.email);
-      // notificationEmails.push(servicerPrimary?.email);
       //Email to dealer
       let emailData = {
         senderName: dealerPrimary.firstName,
