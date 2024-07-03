@@ -108,7 +108,7 @@ exports.createReseller = async (req, res) => {
         let notificationData = {
             title: "Reseller Account Creation",
             description: data.accountName + " " + "reseller account has been created successfully!",
-            userId: req.userId,
+            userId: req.teammateId,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -823,7 +823,7 @@ exports.editResellers = async (req, res) => {
         let notificationData = {
             title: "Reseller updated",
             description: checkReseller.name + " , " + "details has been updated",
-            userId: req.userId,
+            userId: req.teammateId,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -2045,7 +2045,7 @@ exports.changeResellerStatus = async (req, res) => {
             let notificationData = {
                 title: "Reseller status update",
                 description: singleReseller.name + " , " + "your status has been updated",
-                userId: req.userId,
+                userId: req.teammateId,
                 flag: 'reseller',
                 notificationFor: IDs
             };

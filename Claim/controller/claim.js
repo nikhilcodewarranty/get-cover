@@ -976,7 +976,7 @@ exports.addClaim = async (req, res, next) => {
     let notificationData1 = {
       title: "Add Claim",
       description: "The claim has been added",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: claimResponse._id,
       flag: 'claim',
       redirectionId: claimResponse.unique_key,
@@ -1202,7 +1202,7 @@ exports.editClaim = async (req, res) => {
       let notificationData1 = {
         title: "Repair Parts/ labor update",
         description: "The  repair part update for " + checkClaim.unique_key + " claim",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1420,7 +1420,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Customer Status Update",
         description: "The customer status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1490,7 +1490,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Repair Status Update",
         description: "The repair status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1572,7 +1572,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Claim Status Update",
         description: "The claim status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1783,7 +1783,7 @@ exports.editServicer = async (req, res) => {
     let notificationData = {
       title: "Servicer Updated",
       description: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: null,
       flag: 'claim',
       redirectionId: checkClaim.unique_key,
@@ -2324,7 +2324,7 @@ exports.saveBulkClaim = async (req, res) => {
         let notificationData1 = {
           title: "Bulk Report",
           description: "The Bulk claim file has been registered!",
-          userId: req.userId,
+          userId: req.teammateId,
           flag: 'Bulk Claim',
           notificationFor: IDs
         };
@@ -2451,7 +2451,7 @@ exports.sendMessages = async (req, res) => {
     let notificationData1 = {
       title: "Message sent",
       description: "The one new message for " + checkClaim.unique_key + "",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: checkClaim._id,
       flag: 'claim',
       redirectionId: checkClaim.unique_key,
