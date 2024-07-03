@@ -873,129 +873,145 @@ exports.deleteOrdercontractbulk = async (req, res) => {
 
 exports.cronJobEligible = async (req, res) => {
   try {
-    let query = { status: 'Active' };
-    // let claimQuery = { 'claims.claimStatus': 'Open' };
-    let data = req.body;
+    const query = { status: 'Active' };
+    const limit = 10000; // Adjust the limit based on your needs
+    let page = 0;
+    let hasMore = true;
 
-    // let lookupQuery = [
-    //   {
-    //     $match: query // Your match condition here
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "claims",
-    //       localField: "_id",
-    //       foreignField: "contractId",
-    //       as: "claims"
-    //     }
-    //   },
-    //   {
-    //     $match: claimQuery // Your match condition here
-    //   },
-    //   {
-    //     $sort: { unique_key: -1 } // Sorting if required
-    //   },
-    // ];
-    let result = await contractService.findContracts1(query);
+    while (hasMore) {
+      const result = await contractService.findContracts2(query, limit, page);
 
-    res.send({
-      result
-    })
-    return;
-    console.log("========================================================1")
-    let bulk = [];
-    let contractIds = []
-    let contractIdsToBeUpdate = []
-    let contractIdToBeUpdate;
-    let updateDoc;
-    for (let i = 0; i < result.length; i++) {
-      let product = result[i];
-      let contractId = product._id
-     // let eligibilty = new Date(product.minDate) < new Date() ? true : false
-      //let productValue = result[i].productValue;
-      if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
-        console.log("========================================================if")
-        contractIds.push(product._id)      
-        updateDoc = {
-          'updateMany': {
-            'filter': { '_id': contractId },
-            update: { $set: { eligibilty: true } },
-            'upsert': false
-          }
-        }
-        bulk.push(updateDoc)
+      if (result.length === 0) {
+        hasMore = false;
+        break;
       }
-      else {
-        console.log("========================================================elif")
-        updateDoc = {
-          'updateMany': {
-            'filter': { '_id': contractId },
-            update: { $set: { eligibilty: false } },
-            'upsert': false
-          }
-        }
-        bulk.push(updateDoc)
-      }
-    }
-    console.log("========================================================2")
-    // Update when not any claim right now for active contract
-    const firstUpdate = await contractService.allUpdate(bulk);
-    bulk = [];
-    let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } })
-    const openContractIds = checkClaim.filter(claim => claim.claimFile === 'Open').map(claim => claim.contractId);
-    let updateDocument = openContractIds.map((openContract) => {
-      updateDoc = {
-        'updateMany': {
-          'filter': { '_id': openContract },
-          update: { $set: { eligibilty: false } },
-          'upsert': false
-        }
-      }
-      bulk.push(updateDoc)
-    })
-    // Update when claim is open for contract
-    const update = await contractService.allUpdate(bulk);
-    bulk = [];
-    //const updatedData = await contractService.allUpdate(bulk);
-    const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
-    if (notOpenContractIds.length > 0) {
-      for (let j = 0; j < notOpenContractIds.length; j++) {
-        let claimTotal = await claimService.checkTotalAmount({ contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) });
-        let obj = result.filter(el => el._id.toString() === notOpenContractIds[j].toString())
-        if (obj[0]?.productValue > claimTotal[0]?.amount) {
+
+      let bulk = [];
+      let contractIds = [];
+      let contractIdsToBeUpdate = [];
+      let contractIdToBeUpdate;
+      let updateDoc;
+
+
+      console.log("result------------------------", result)
+
+      for (let i = 0; i < result.length; i++) {
+        let product = result[i];
+        let contractId = product._id;
+
+        if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
+          contractIds.push(product._id);
           updateDoc = {
             'updateMany': {
-              'filter': { '_id': notOpenContractIds[j] },
-              update: { $set: { eligibilty: true } },
+              'filter': { '_id': contractId },
+              'update': { $set: { eligibilty: true } },
               'upsert': false
             }
-          }
-          bulk.push(updateDoc)
-        }
-        else {
+          };
+        } else {
           updateDoc = {
             'updateMany': {
-              'filter': { '_id': notOpenContractIds[j] },
-              update: { $set: { eligibilty: false } },
+              'filter': { '_id': contractId },
+              'update': { $set: { eligibilty: false } },
               'upsert': false
             }
+          };
+        }
+        bulk.push(updateDoc);
+      }
+
+      // Update when not any claim right now for active contract
+      await contractService.allUpdate(bulk);
+      bulk = [];
+
+      // Fetch claims for contracts
+      let checkClaim = await claimService.getClaims({ contractId: { $in: contractIds } });
+      const openContractIds = checkClaim.filter(claim => claim.claimFile === 'Open').map(claim => claim.contractId);
+
+      openContractIds.forEach(openContract => {
+        bulk.push({
+          'updateMany': {
+            'filter': { '_id': openContract },
+            'update': { $set: { eligibilty: false } },
+            'upsert': false
           }
-          bulk.push(updateDoc)
+        });
+      });
+
+      // Update when claim is open for contract
+      await contractService.allUpdate(bulk);
+      bulk = [];
+
+      const notOpenContractIds = checkClaim.filter(claim => claim.claimFile !== 'Open').map(claim => claim.contractId);
+
+      if (notOpenContractIds.length > 0) {
+        for (let j = 0; j < notOpenContractIds.length; j++) {
+          let claimTotal = await claimService.checkTotalAmount({ contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) });
+          let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
+
+          if (obj?.productValue > claimTotal[0]?.amount) {
+            bulk.push({
+              'updateMany': {
+                'filter': { '_id': notOpenContractIds[j] },
+                'update': { $set: { eligibilty: true } },
+                'upsert': false
+              }
+            });
+          } else {
+            bulk.push({
+              'updateMany': {
+                'filter': { '_id': notOpenContractIds[j] },
+                'update': { $set: { eligibilty: false } },
+                'upsert': false
+              }
+            });
+          }
         }
       }
+
+      // Update when claim is not open but completed claim and product value still less than claim value
+      await contractService.allUpdate(bulk);
+      page++;
     }
-    // Update when claim is not open but completed claim and product value still less than claim value
-    const updatedData1 = await contractService.allUpdate(bulk);
-    console.log("========================================================3")
+
     res.send({
       code: constant.successCode,
-    })
+    });
 
-  }
-  catch (err) {
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
-    })
+    });
   }
-}
+};
+
+// const processContracts = async () => {
+//   const limit = 100; // Adjust the limit based on your needs
+//   let page = 0;
+//   let hasMore = true;
+
+//   while (hasMore) {
+//     try {
+//       const contracts = await Contract.find()
+//         .skip(page * limit)
+//         .limit(limit)
+//         .lean()
+//         .exec();
+
+//       if (contracts.length > 0) {
+//         // Process your contracts here
+//         contracts.forEach(contract => {
+//           // Your processing logic here
+//           console.log(contract);
+//         });
+//         page++;
+//       } else {
+//         hasMore = false;
+//       }
+//     } catch (error) {
+//       console.log(`Error processing contracts: ${error}`);
+//       hasMore = false;
+//     }
+//   }
+// };
