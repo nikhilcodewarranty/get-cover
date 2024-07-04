@@ -60,4 +60,4 @@ const serviceProviderSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("serviceProvider", serviceProviderSchema);
+module.exports = connection.userConnection.model("serviceProvider", serviceProviderSchema);

@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
 const productOrderSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,4 +26,4 @@ const productOrderSchema = new mongoose.Schema({
   },
 },{timestamps:true});
 
-module.exports = mongoose.model("productOrder", productOrderSchema);
+module.exports = connection.userConnection.model("productOrder", productOrderSchema);

@@ -15,7 +15,7 @@ const connection = {
 mongoose
     .connect(dbUrl, connection)
     .then((res) => {
-        console.info('Connected to db Contracts')
+        console.info('Connected to db Contractsss')
     })
     .catch((e) => {
         console.log('Unable to connect to the db', e)

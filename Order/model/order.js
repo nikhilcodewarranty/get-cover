@@ -1,5 +1,7 @@
 const { string } = require("joi");
 const mongoose = require("mongoose");
+const connection = require('../../db')
+
 const orderSchema = new mongoose.Schema({
 
   dealerId: {
@@ -227,4 +229,4 @@ const orderSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model("order", orderSchema);
+module.exports = connection.userConnection.model("order", orderSchema);

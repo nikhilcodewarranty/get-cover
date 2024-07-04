@@ -3525,7 +3525,6 @@ exports.getDealerOrders = async (req, res) => {
       let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
       let limitData = Number(pageLimit)
 
-
       let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
       let dealerIdsArray = ordersResult.map((result) => result.dealerId);
       let userDealerIds = ordersResult.map((result) => result.dealerId.toString());

@@ -1,5 +1,7 @@
 const { string } = require("joi");
 const mongoose = require("mongoose");
+const connection = require('../../db')
+
 const commentSchema = new mongoose.Schema({
     claimId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -53,4 +55,4 @@ const commentSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model("comment", commentSchema);
+module.exports = connection.userConnection.model("comment", commentSchema);

@@ -82,4 +82,4 @@ const dealarSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = connection.dealerConnection.model("dealer", dealarSchema);
+module.exports = connection.userConnection.model("dealer", dealarSchema);

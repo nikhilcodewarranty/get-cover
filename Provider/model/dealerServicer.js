@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const connection = require('../../db')
 
 const servicerDealerRelation = new Schema({
     dealerId:{
@@ -14,4 +15,4 @@ const servicerDealerRelation = new Schema({
     }
 },{timestamps:true})
 
-module.exports = mongoose.model('servicer_dealer_relation',servicerDealerRelation)
+module.exports = connection.userConnection.model('servicer_dealer_relation',servicerDealerRelation)

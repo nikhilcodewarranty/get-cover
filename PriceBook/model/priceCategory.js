@@ -22,4 +22,4 @@ const priceCategorySchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = connection.dealerConnection.model("priceCategory", priceCategorySchema);
+module.exports = connection.userConnection.model("priceCategory", priceCategorySchema);
