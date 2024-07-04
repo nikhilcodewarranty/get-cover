@@ -3014,7 +3014,9 @@ exports.checkToken = async (req, res) => {
   }
 }
 
-const reportingController = require("./reportingController")
+const reportingController = require("./reportingController");
+const orderService = require("../../Order/services/orderService");
+const claimService = require("../../Claim/services/claimService");
 
 exports.saleReporting = async (req, res) => {
   try {
@@ -3077,8 +3079,127 @@ exports.getDashboardInfo = async (req, res) => {
       code: constant.errorCode,
       message: "Only Super admin allow to do this action"
     })
-    return; 
+    return;
   }
+  const query = { status: "Active" }
+  const lastFiveOrder = await orderService.getLastFive(query, {})
+  const getLastNumberOfClaims = await claimService.getLastNumberOfClaims({}, {})
+  let lookupQuery = [
+    { "$limit": 5 },
+    {
+      $lookup:{
+        from:"users",
+        localField:"_id",
+        foreignField:"metaId",
+        as: "users",
+      }
+    },
+    {
+      $lookup: {
+        from: "orders",
+        localField: "_id",
+        foreignField: "dealerId",
+        as: "order",
+        pipeline: [
+          {
+            $match: { status: "Active" }
+          },
+          {
+            "$group": {
+              _id: "$dealerId",
+              "totalOrder": { "$sum": 1 },
+              "totalAmount": {
+                "$sum": "$orderAmount"
+              }
+            }
+          },
+        ]
+      }
+    },
+    {
+      $unwind: "$order"
+    },
+    {
+      $unwind: "$users"
+    },
+    {
+      $addFields: {
+        totalAmount: "$order.totalAmount"
+      }
+    },
+    { "$sort": { totalAmount: -1 } },
+    { "$limit": 5 }  // Apply limit again after sorting
+  ]
+
+  const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
+
+  let lookupClaim = [
+    { "$limit": 5 },
+    {
+      $lookup:{
+        from:"users",
+        localField: "_id",
+        foreignField: "metaId",
+        as: "users",
+      }
+    },
+    {
+      $lookup: {
+        from: "claims",
+        localField: "_id",
+        foreignField: "servicerId",
+        as: "claims",
+        pipeline: [
+          {
+            $match: { claimFile: "Completed" }
+          },
+          {
+            $lookup:{
+              from:"users",
+              localField:"_id",
+              foreignField:"accountId",
+              as: "users",
+            }
+          },
+          {
+            "$group": {
+              _id: "$servicerId",
+              "totalClaim": { "$sum": 1 },
+              "totalClaimAmount": {
+                "$sum": "$totalAmount"
+              }
+            }
+          },
+        ]
+      }
+    },
+    {
+      $unwind: "$claims"
+    },
+    {
+      $unwind: "$users"
+    },
+    {
+      $addFields: {
+        totalClaimAmount: "$claims.totalAmount"
+      }
+    },
+    { "$sort": { totalClaimAmount: -1 } },
+    { "$limit": 5 }  // Apply limit again after sorting
+  ]
+  const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
+
+  const result = {
+    lastFiveOrder: lastFiveOrder,
+    lastFiveClaims: getLastNumberOfClaims,
+    topFiveDealer: topFiveDealer,
+    topFiveServicer: topFiveServicer
+
+  }
+  res.send({
+    code: constant.successCode,
+    result: result
+  })
 }
 
 exports.saleReporting1 = async (req, res) => {
