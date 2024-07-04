@@ -3521,7 +3521,7 @@ exports.getDealerOrders = async (req, res) => {
         { $sort: { unique_key: -1 } }
       ]
 
-      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 1000000
       let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
       let limitData = Number(pageLimit)
 
