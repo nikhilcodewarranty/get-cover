@@ -2023,11 +2023,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (!item.exit) {
           let query = [
             {
-<<<<<<< HEAD
-              $match: { unique_key: item.contractId.toUpperCase() },
-=======
               $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
->>>>>>> a447627f4c01e43d623db4aeef6be00469ac5cb3
             },
             {
               $lookup: {
