@@ -649,7 +649,7 @@ exports.searchClaim = async (req, res, next) => {
       data.contractId = data.contractId.replace(/-/g, '')
     }
 
-    console.log("skldjfklsdjfslkjflksdjf", data.contractId)
+    // console.log("skldjfklsdjfslkjflksdjf", data.contractId)
 
     if (userSearchCheck == 1) {
       console.log("If")
