@@ -40,7 +40,6 @@ const supportingFunction = require('../../config/supportingFunction');
 const orderService = require("../../Order/services/orderService");
 
 
-
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");
@@ -1563,14 +1562,14 @@ exports.claimDailyReporting = async (data) => {
             }
         ];
 
-        console.log("sksksk+++++++++++++++", dailyQuery2[0].$match)
+
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            dailyQuery[0].$match.dealerId = data.dealerId
-            dailyQuery1[0].$match.dealerId = data.dealerId
-            dailyQuery2[0].$match.dealerId = data.dealerId
-            dailyQuery3[0].$match.dealerId = data.dealerId
+            dailyQuery[0].$match.dealerId =dealerId
+            dailyQuery1[0].$match.dealerId =dealerId
+            dailyQuery2[0].$match.dealerId =dealerId
+            dailyQuery3[0].$match.dealerId =dealerId
         }
 
         if (data.servicerId != "") {
@@ -1583,11 +1582,24 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = data.servicerId
         }
 
+        if (data.priceBookId.length != 0) {
+            let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
+            let orderIds = getOrders.map(ID => ID.unique_key)
+            console.log("getOrderIds--------------------",orderIds)
+            dailyQuery[0].$match.orderId = {$in:orderIds}
+            dailyQuery1[0].$match.orderId = {$in:orderIds}
+            dailyQuery2[0].$match.orderId = {$in:orderIds}
+            dailyQuery3[0].$match.orderId = {$in:orderIds}
+
+        }
+
         // if (data.claimPaymentStatus != "") {
         //     dailyQuery[0].$match.claimPaymentStatus = data.claimPaymentStatus
         //     dailyQuery1[0].$match.claimPaymentStatus = data.claimPaymentStatus
         //     dailyQuery2[0].$match.claimPaymentStatus = data.claimPaymentStatus
         // }
+
+        console.log(dailyQuery[0].$match)
 
         let getData = await claimService.getAllClaims(dailyQuery)
         let getData1 = await claimService.getAllClaims(dailyQuery1)
@@ -2214,9 +2226,9 @@ exports.claimReportinDropdown = async (req, res) => {
 
 
             let getPriceBooks2;
-            if (data.categories != "" && data.dealerId == "") {
-                getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
-            }
+            // if (data.categories != "" && data.dealerId == "") {
+            //     getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            // }
             result = {
                 dealers: filteredData,
                 priceBooks: getPriceBooks1,

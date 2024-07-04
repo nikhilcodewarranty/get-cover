@@ -651,7 +651,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
@@ -662,7 +662,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        // { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
       ]
@@ -670,11 +670,18 @@ exports.searchClaim = async (req, res, next) => {
     let query = [
       // { $sort: { unique_key_number: -1 } },
       {
-        $match:
-        {
-          $and: contractFilter
-        },
+        index: 'default',
+        text: {
+          query: 'oc-',
+          path: 'unique_key'
+        }
       },
+      // {
+      //   $match:
+      //   {
+      //     $and: contractFilter
+      //   },
+      // },
       {
         $facet: {
           totalRecords: [
@@ -1491,7 +1498,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Repair Status Update",
         description: "The repair status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -2010,7 +2017,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (!item.exit) {
           let query = [
             {
-              $match: { unique_key:  item.contractId.toUpperCase() },
+              $match: { unique_key: item.contractId.toUpperCase() },
             },
             {
               $lookup: {
