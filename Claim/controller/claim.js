@@ -678,11 +678,18 @@ exports.searchClaim = async (req, res, next) => {
     let query = [
       // { $sort: { unique_key_number: -1 } },
       {
-        $match:
-        {
-          $and: contractFilter
-        },
+        index: 'default',
+        text: {
+          query: 'oc-',
+          path: 'unique_key'
+        }
       },
+      // {
+      //   $match:
+      //   {
+      //     $and: contractFilter
+      //   },
+      // },
       {
         $facet: {
           totalRecords: [

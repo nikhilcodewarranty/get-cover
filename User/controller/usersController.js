@@ -2524,25 +2524,25 @@ exports.getAllNotifications1 = async (req, res) => {
         isOpen
       };
     });
-    console.log("read flag data -------------------true",data)
+    console.log("read flag data -------------------true", data)
 
-    if(data.readFlag || data.readFlag == false){
+    if (data.readFlag || data.readFlag == false) {
       console.log("inside the query +++++++++++++++++")
       if (data.readFlag != "") {
-      console.log("inside the query +++++22222222222++++++++++++")
-      if (data.readFlag == "true" || data.readFlag ==true || data.readFlag != "false") {
-          console.log("read flag data true",data)
+        console.log("inside the query +++++22222222222++++++++++++")
+        if (data.readFlag == "true" || data.readFlag == true || data.readFlag != "false") {
+          console.log("read flag data true", data)
           updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
         } else {
-          console.log("read flag data false",data)
-  
+          console.log("read flag data false", data)
+
           updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
-  
+
         }
       }
     }
 
-   
+
 
     res.send({
       code: constant.successCode,
@@ -3014,10 +3014,7 @@ exports.checkToken = async (req, res) => {
   }
 }
 
-
-
 const reportingController = require("./reportingController")
-
 
 exports.saleReporting = async (req, res) => {
   try {
@@ -3194,14 +3191,14 @@ exports.claimReporting = async (req, res) => {
         message: "Success",
         result: claim
       })
-    }else if(data.flag == "weekly"){
+    } else if (data.flag == "weekly") {
       let claim = await reportingController.claimWeeklyReporting(data)
       res.send({
         code: constant.successCode,
         message: "Success",
         result: claim
       })
-    }else if(data.flag == "day"){
+    } else if (data.flag == "day") {
       let claim = await reportingController.claimDayReporting(data)
       res.send({
         code: constant.successCode,
