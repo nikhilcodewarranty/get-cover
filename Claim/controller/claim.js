@@ -675,21 +675,17 @@ exports.searchClaim = async (req, res, next) => {
         { eligibilty: true }
       ]
     }
+
+    console.log("check ak+++++++++++++++++++++++++++++++++++++")
     let query = [
       // { $sort: { unique_key_number: -1 } },
+     
       {
-        index: 'default',
-        text: {
-          query: 'oc-',
-          path: 'unique_key'
-        }
+        $match:
+        {
+          $and: contractFilter
+        },
       },
-      // {
-      //   $match:
-      //   {
-      //     $and: contractFilter
-      //   },
-      // },
       {
         $facet: {
           totalRecords: [
@@ -742,6 +738,7 @@ exports.searchClaim = async (req, res, next) => {
       },
 
     ]
+    console.log("check ak+++++++++++++++++++++++++++++++++++++",query)
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
@@ -1862,7 +1859,7 @@ exports.saveBulkClaim = async (req, res) => {
       };
       let match = {}
       if (req.role == 'Dealer') {
-       
+
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Reseller') {
@@ -2245,7 +2242,7 @@ exports.saveBulkClaim = async (req, res) => {
         IDs = IDs.concat(emailDealerId)
         totalDataComing.map((data, i) => {
           let dealerId = data.orderData?.order?.dealerId;
-          if (!existDealerId.data[dealerId]) { 
+          if (!existDealerId.data[dealerId]) {
             existDealerId.data[dealerId] = [];
           }
           existDealerId.data[dealerId].push({
@@ -2298,7 +2295,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
       // If you need to convert existArray.data to a flat array format
-   
+
       if (emailServicer.length > 0) {
         IDs = IDs.concat(emailServicerId)
         let flatArray = [];
