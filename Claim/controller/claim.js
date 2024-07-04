@@ -2239,7 +2239,7 @@ exports.saveBulkClaim = async (req, res) => {
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
       //get email of dealers and send email 
-      if (req.role != 'Dealer') {
+      if (req.role == 'Dealer') {
         const emailDealer = await userService.getMembers({ accountId: { $in: emailDealerId }, isPrimary: true }, {})
         IDs = IDs.concat(emailDealerId)
         totalDataComing.map((data, i) => {
