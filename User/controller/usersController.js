@@ -3071,6 +3071,16 @@ exports.saleReporting = async (req, res) => {
 }
 
 
+exports.getDashboardInfo = async (req, res) => {
+  if (req.role != 'Super Admin') {
+    res.send({
+      code: constant.errorCode,
+      message: "Only Super admin allow to do this action"
+    })
+    return; 
+  }
+}
+
 exports.saleReporting1 = async (req, res) => {
   try {
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"

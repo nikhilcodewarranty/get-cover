@@ -25,9 +25,11 @@ router.get("/readAllNotification", [verifyToken], userController.readAllNotifica
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
 router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
+router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); //get dashboard info
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
+
 router.post("/addMember", [verifyToken], userController.addMembers); //to create the super admin credentials //notification
 router.post("/getMembers", [verifyToken], userController.getMembers); //to create the super admin credentials
 router.post("/createTerms", userController.createTerms); //to create the super admin credentials
