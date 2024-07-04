@@ -2244,7 +2244,7 @@ exports.saveBulkClaim = async (req, res) => {
         IDs = IDs.concat(emailDealerId)
         totalDataComing.map((data, i) => {
           let dealerId = data.orderData?.order?.dealerId;
-          if (!existDealerId.data[dealerId]) {
+          if (!existDealerId.data[dealerId]) { 
             existDealerId.data[dealerId] = [];
           }
           existDealerId.data[dealerId].push({
