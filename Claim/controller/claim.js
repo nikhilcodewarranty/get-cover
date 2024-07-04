@@ -645,11 +645,11 @@ exports.searchClaim = async (req, res, next) => {
       }
     }
     let contractFilter;
-    if(data.contractId != ""){
-      data.contractId= data.contractId.replace(/-/g, '')
+    if (data.contractId != "") {
+      data.contractId = data.contractId.replace(/-/g, '')
     }
 
-    console.log("skldjfklsdjfslkjflksdjf",data.contractId)
+    console.log("skldjfklsdjfslkjflksdjf", data.contractId)
 
     if (userSearchCheck == 1) {
       console.log("If")
@@ -658,7 +658,7 @@ exports.searchClaim = async (req, res, next) => {
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key_search': { '$regex': data.contractId ? data.contractId: '', '$options': 'i' } },
+        { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
@@ -1504,9 +1504,9 @@ exports.editClaimStatus = async (req, res) => {
         redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
-      console.log("notificationData1--------------------------",notificationData1)
+      console.log("notificationData1--------------------------", notificationData1)
       let createNotification = await userService.createNotification(notificationData1);
-      console.log("createNotification--------------------------",createNotification)
+      console.log("createNotification--------------------------", createNotification)
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let toEmail = []
@@ -1852,6 +1852,9 @@ exports.saveBulkClaim = async (req, res) => {
       // console.log(req.files[0].path); return;
       let match = {}
       if (req.role == 'Dealer') {
+        let existDealerId = {
+          data: {}
+        };
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Reseller') {
@@ -2183,10 +2186,9 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-
-
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
+      let emailDealerId = [];
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2195,7 +2197,8 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
-        emailServicerId.push(servicerId)
+        emailServicerId.push(servicerId);
+        emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
@@ -2222,13 +2225,45 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
       })
-
-      //get email of all servicer
-      const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
-
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       let IDs = await supportingFunction.getUserIds()
+      let adminEmail = await supportingFunction.getUserEmails();
+      //get email of all servicer
+      const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+      //get email of dealers and send email 
+      if (req.role != 'Dealer') {
+        const emailDealer = await userService.getMembers({ accountId: { $in: emailDealerId }, isPrimary: true }, {})
+        IDs = IDs.concat(emailDealerId)
+        totalDataComing.map((data, i) => {
+          let dealerId = data.orderData?.order?.dealerId;
+          if (!existDealerId.data[dealerId]) {
+            existDealerId.data[dealerId] = [];
+          }
+          existDealerId.data[dealerId].push({
+            contractId: data.contractId ? data.contractId : "",
+            lossDate: data.lossDate ? data.lossDate : '',
+            diagnosis: data.diagnosis ? data.diagnosis : '',
+            status: data.status ? data.status : '',
+          });
+
+        });
+        let flatDealerArray = [];
+        for (let dealerId in existDealerId.data) {
+          let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === dealerId.toString());
+          let email = matchData ? matchData.email : dealerId; // Replace servicerId with email if matchData is found
+          flatDealerArray.push({
+            email: email,
+            response: existDealerId.data[dealerId]
+          });
+        }
+        //send email to servicer      
+        for (const item of flatDealerArray) {
+          const htmtToString = convertArrayToHTMLTable(item.response);
+          let mailing_dealer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+        }
+
+      }
       //Build data for particular servicer and send mail
       let existArray = {
         data: {}
@@ -2255,9 +2290,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       });
       // If you need to convert existArray.data to a flat array format
-      let adminEmail = await supportingFunction.getUserEmails();
+   
       if (emailServicer.length > 0) {
-        IDs =  IDs.concat(emailServicerId)
+        IDs = IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
           let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
@@ -2269,8 +2304,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
         //send email to servicer      
         for (const item of flatArray) {
-          console.log(item.email)
-          console.log(item.response)
           const htmlTableString = convertArrayToHTMLTable(item.response);
           let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
         }
@@ -2327,8 +2360,8 @@ exports.saveBulkClaim = async (req, res) => {
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
 
-      if (saveBulkClaim.length > 0) {  
-     
+      if (saveBulkClaim.length > 0) {
+
         let notificationData1 = {
           title: "Bulk Report",
           description: "The Bulk claim file has been registered!",
