@@ -10,7 +10,7 @@ const cors = require('cors')
 var path = require('path');
 const createHttpError = require('http-errors')
 
-const { databaseConnect } = require("./db");
+// const { databaseConnect } = require("./db");
 const customerRoutes = require("./routes/customer");
 
 

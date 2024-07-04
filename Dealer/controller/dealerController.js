@@ -812,7 +812,7 @@ exports.registerDealer = async (req, res) => {
     let notificationData = {
       title: "New Dealer Registration",
       description: data.name + " " + "has finished registering as a new dealer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
-      userId: createdDealer._id,
+      userId: req.teammateId,
       redirectionId: createdDealer._id,
       flag: 'Dealer Request',
       notificationFor: IDs
@@ -948,9 +948,9 @@ exports.statusUpdate = async (req, res) => {
     let notificationData = {
       title: "Dealer price book updated",
       description: getDealerDetail.name + " , " + "your price book has been updated",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: req.params.dealerPriceBookId,
-     // redirectionId: createdDealer._id,
+      redirectionId: getDealerDetail._id,
       flag: 'Dealer Price Book',
       notificationFor: IDs
     };
@@ -1136,7 +1136,7 @@ exports.changeDealerStatus = async (req, res) => {
       let notificationData = {
         title: "Dealer status update",
         description: singleDealer.name + " , " + "your status has been updated",
-        userId: req.userId,
+        userId: req.teammateId,
         redirectionId: singleDealer.name,
         flag: 'dealer',
         notificationFor: IDs
@@ -1955,7 +1955,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let notificationData = {
         title: "New dealer price book created",
         description: data.priceBook + " , " + "new price book has been created",
-        userId: req.userId,
+        userId: req.teammateId,
         flag: 'dealer',
         contentId: createDealerPrice._id,
         redirectionId: createDealerPrice._id,
@@ -2107,7 +2107,7 @@ exports.rejectDealer = async (req, res) => {
       let notificationData = {
         title: "Rejection Dealer Account",
         description: "The " + singleDealer.name + " account has been rejected",
-        userId: req.userId,
+        userId: req.teammateId,
         flag: 'dealer',
         notificationFor: IDs
       };
@@ -2258,8 +2258,8 @@ exports.updateDealerMeta = async (req, res) => {
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
-      userId: req.userId,
-    //  redirectionId:
+      userId: req.teammateId,
+      redirectionId: data.dealerId,
       flag: 'dealer',
       notificationFor: IDs
     };
@@ -2385,7 +2385,7 @@ exports.addDealerUser = async (req, res) => {
       let notificationData = {
         title: "New user added",
         description: checkDealer.name + " , " + "new user has been added",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: saveData._id,
         flag: 'dealer',
         notificationFor: IDs
@@ -2697,7 +2697,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let notificationData = {
           title: "Dealer Price Book Uploaded",
           description: "The priceBook has been successfully uploaded",
-          userId: req.userId,
+          userId: req.teammateId,
           flag: 'priceBook',
           notificationFor: IDs
         };
@@ -3521,10 +3521,9 @@ exports.getDealerOrders = async (req, res) => {
         { $sort: { unique_key: -1 } }
       ]
 
-      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+      let pageLimit = data.pageLimit ? Number(data.pageLimit) : 1000000
       let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
       let limitData = Number(pageLimit)
-
 
       let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
       let dealerIdsArray = ordersResult.map((result) => result.dealerId);

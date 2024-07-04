@@ -42,13 +42,24 @@ module.exports = class contractService {
   }
     static async findContracts1(query) {
     try {
-      const contracts = await contract.find(query, {});
+      const contracts = await contract.find(query, {})
       return contracts
     } catch (error) {
       console.log(`Could not fetch contract count ${error}`);
     }
   }
 
+  static async findContracts2(query,limit,page) {
+    try {
+      const contracts = await contract.find(query).sort({ createdAt: -1 })
+      .skip(page * limit)
+      .limit(limit).lean()
+      .exec();
+      return contracts
+    } catch (error) {
+      console.log(`Could not fetch contract count ${error}`);
+    }
+  }
 
   static async getContractsCountNew() {
     try {

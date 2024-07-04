@@ -1559,7 +1559,7 @@ exports.createCustomer = async (req, res, next) => {
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
-            userId: req.userId,
+            userId: req.teammateId,
             flag: 'customer',
             notificationFor: IDs
         };
@@ -3704,7 +3704,7 @@ exports.createOrder = async (req, res) => {
         let notificationData = {
             title: "New order created",
             description: "The new order " + savedResponse.unique_key + " has been created",
-            userId: req.userId,
+            userId: req.teammateId,
             contentId: null,
             flag: 'order',
             notificationFor: IDs
@@ -4007,7 +4007,7 @@ exports.editOrderDetail = async (req, res) => {
         let notificationData = {
             title: "Order update",
             description: "The order " + checkOrder.unique_key + " has been updated",
-            userId: req.userId,
+            userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
             notificationFor: IDs
@@ -4314,7 +4314,7 @@ exports.editOrderDetail = async (req, res) => {
                     let notificationData1 = {
                         title: "Order update and processed",
                         description: "The order has been update and processed",
-                        userId: req.userId,
+                        userId: req.teammateId,
                         contentId: savedResponse._id,
                         flag: 'order',
                         notificationFor: IDs

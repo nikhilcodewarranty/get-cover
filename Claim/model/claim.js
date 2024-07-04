@@ -1,5 +1,7 @@
 const { string } = require("joi");
 const mongoose = require("mongoose");
+const connection = require('../../db')
+
 const claimSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -295,4 +297,4 @@ const claimSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model("claim", claimSchema);
+module.exports = connection.userConnection.model("claim", claimSchema);

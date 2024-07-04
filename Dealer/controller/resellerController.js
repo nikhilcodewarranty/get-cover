@@ -108,7 +108,7 @@ exports.createReseller = async (req, res) => {
         let notificationData = {
             title: "Reseller Account Creation",
             description: data.accountName + " " + "reseller account has been created successfully!",
-            userId: req.userId,
+            userId: req.teammateId,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -823,7 +823,7 @@ exports.editResellers = async (req, res) => {
         let notificationData = {
             title: "Reseller updated",
             description: checkReseller.name + " , " + "details has been updated",
-            userId: req.userId,
+            userId: req.teammateId,
             flag: 'reseller',
             notificationFor: IDs
         };
@@ -1269,7 +1269,7 @@ exports.getResellerOrders = async (req, res) => {
             { $sort: { unique_key: -1 } }
         ]
 
-        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
+        let pageLimit = data.pageLimit ? Number(data.pageLimit) : 1000000
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
 
@@ -2045,7 +2045,7 @@ exports.changeResellerStatus = async (req, res) => {
             let notificationData = {
                 title: "Reseller status update",
                 description: singleReseller.name + " , " + "your status has been updated",
-                userId: req.userId,
+                userId: req.teammateId,
                 flag: 'reseller',
                 notificationFor: IDs
             };

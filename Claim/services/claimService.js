@@ -21,6 +21,7 @@ module.exports = class claimService {
   static async getClaims(query) {
     try {
       const allClaims = await claim.find(query);
+      console.log(allClaims.length,"--------------00000000000000000000000000000000000000000000000000000000000000000000000000000000")
       return allClaims;
     } catch (error) {
       console.log(`Could not fetch claims ${error}`);

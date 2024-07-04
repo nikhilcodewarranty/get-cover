@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const connection = require('../../db')
 
 const reseller = new Schema({
     name: {
@@ -66,4 +67,4 @@ const reseller = new Schema({
     },
 }, { timestamps: true })
 
-module.exports = mongoose.model('reseller', reseller)
+module.exports = connection.userConnection.model('reseller', reseller)

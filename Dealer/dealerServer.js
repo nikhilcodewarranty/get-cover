@@ -10,7 +10,7 @@ const http = require('http')
 const cors = require('cors')
 var path = require('path');
 
-const db = require('./db')
+// const db = require('./db')
 const dealerRoutes = require("./routes/dealer");
 
 

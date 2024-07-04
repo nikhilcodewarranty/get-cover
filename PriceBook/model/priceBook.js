@@ -87,4 +87,4 @@ const priceSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = connection.dealerConnection.model("priceBook", priceSchema);
+module.exports = connection.userConnection.model("priceBook", priceSchema);

@@ -122,7 +122,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationData = {
         title: "Servicer Account Creation",
         description: data.accountName + " " + "servicer account has been created successfully!",
-        userId: req.userId,
+        userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs
       };
@@ -259,7 +259,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationData = {
         title: "Servicer Account Approved",
         description: data.accountName + " " + "servicer account has been approved successfully!",
-        userId: req.userId,
+        userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs
       };
@@ -524,7 +524,7 @@ exports.rejectServicer = async (req, res) => {
     let notificationData = {
       title: "Rejection Servicer Account",
       description: "The " + getServicer.name + " account has been rejected",
-      userId: req.userId,
+      userId: req.teammateId,
       flag: 'servicer',
       notificationFor: IDs
     };
@@ -642,7 +642,7 @@ exports.editServicerDetail = async (req, res) => {
     let notificationData = {
       title: "Servicer Detail Update",
       description: "The servicer information has been changed!",
-      userId: req.userId,
+      userId: req.teammateId,
       flag: "Servicer",
       notificationFor: IDs
     };
@@ -789,7 +789,7 @@ exports.updateStatus = async (req, res) => {
         let notificationData = {
           title: "Servicer status update",
           description: checkServicer.name + " , " + "your status has been updated",
-          userId: req.userId,
+          userId: req.teammateId,
           flag: 'servicer',
           notificationFor: IDs
         };
@@ -823,7 +823,7 @@ exports.updateStatus = async (req, res) => {
       let notificationData = {
         title: "Servicer status update",
         description: checkServicer.name + " , " + "your status has been updated",
-        userId: req.userId,
+        userId: req.teammateId,
         flag: 'servicer',
         notificationFor: IDs
       };
@@ -1106,7 +1106,7 @@ exports.registerServiceProvider = async (req, res) => {
     const notificationData = {
       title: "New Servicer Registration",
       description: data.name + " " + "has finished registering as a new servicer. For the onboarding process to proceed more quickly, kindly review and give your approval.",
-      userId: createMetaData._id,
+      userId: req.teammateId,
       flag: 'servicer',
       notificationFor: IDs
     };

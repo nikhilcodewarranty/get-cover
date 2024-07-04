@@ -69,4 +69,4 @@ const userMetaSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = connection.dealerConnection.model("userMeta", userMetaSchema);
+module.exports = connection.userConnection.model("userMeta", userMetaSchema);

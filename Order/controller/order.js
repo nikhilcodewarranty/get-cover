@@ -276,7 +276,7 @@ exports.createOrder1 = async (req, res) => {
         let notificationData = {
             title: "New order created",
             description: data.dealerPurchaseOrder + " " + "order has been created",
-            userId: req.userId,
+            userId: req.teammateId,
             contentId: null,
             flag: 'order',
             redirectionId: savedResponse.unique_key,
@@ -632,7 +632,7 @@ exports.createOrder1 = async (req, res) => {
                     let notificationData1 = {
                         title: "Order Update and Processed",
                         description: "The  order " + checkOrder.unique_key + " has been updated and processed",
-                        userId: req.userId,
+                        userId: req.teammateId,
                         contentId: checkOrder._id,
                         redirectionId: checkOrder.unique_key,
                         flag: 'order',
@@ -3079,7 +3079,7 @@ exports.archiveOrder = async (req, res) => {
         let notificationData1 = {
             title: "Order Archieved",
             description: "The order " + checkOrder.unique_key + " has been archeived!.",
-            userId: req.userId,
+            userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
             redirectionId: checkOrder.unique_key,
@@ -3517,7 +3517,7 @@ exports.editOrderDetail = async (req, res) => {
         let notificationData = {
             title: "Order update",
             description: "The order " + savedResponse.unique_key + " has been updated",
-            userId: req.userId,
+            userId: req.teammateId,
             contentId: checkOrder._id,
             flag: 'order',
             redirectionId: savedResponse.unique_key,
@@ -3790,7 +3790,7 @@ exports.editOrderDetail = async (req, res) => {
                     let notificationData1 = {
                         title: "Process Order",
                         description: "The order " + checkOrder.unique_key + " has been updated and processed",
-                        userId: req.userId,
+                        userId: req.teammateId,
                         contentId: checkOrder._id,
                         flag: 'order',
                         redirectionId: checkOrder.unique_key,
@@ -4154,7 +4154,7 @@ exports.markAsPaid = async (req, res) => {
                 let notificationData1 = {
                     title: "Mark As Paid",
                     description: "The order " + checkOrder.unique_key + " has been mark as paid",
-                    userId: req.userId,
+                    userId: req.teammateId,
                     contentId: checkOrder._id,
                     flag: 'order',
                     redirectionId: checkOrder.unique_key,
@@ -6043,4 +6043,5 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
         })
     }
 }
+
 

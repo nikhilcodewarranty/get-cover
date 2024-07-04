@@ -40,7 +40,7 @@ const dealerBookSchema = new mongoose.Schema({
     default: 0
   }
 },{timestamps:true});
-module.exports = connection.dealerConnection.model("dealerPriceBook", dealerBookSchema);
+module.exports = connection.userConnection.model("dealerPriceBook", dealerBookSchema);
 
 
 

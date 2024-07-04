@@ -645,24 +645,32 @@ exports.searchClaim = async (req, res, next) => {
       }
     }
     let contractFilter;
+    if(data.contractId != ""){
+      data.contractId= data.contractId.replace(/-/g, '')
+    }
+
+    console.log("skldjfklsdjfslkjflksdjf",data.contractId)
+
     if (userSearchCheck == 1) {
+      console.log("If")
       contractFilter = [
         { orderId: { $in: orderIds } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        // { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key_search': { '$regex': data.contractId ? data.contractId: '', '$options': 'i' } },
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
       ]
     } else {
+      console.log("rwerweewr")
       contractFilter = [
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        // { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
       ]
@@ -983,7 +991,7 @@ exports.addClaim = async (req, res, next) => {
     let notificationData1 = {
       title: "Add Claim",
       description: "The claim has been added",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: claimResponse._id,
       flag: 'claim',
       redirectionId: claimResponse.unique_key,
@@ -1209,7 +1217,7 @@ exports.editClaim = async (req, res) => {
       let notificationData1 = {
         title: "Repair Parts/ labor update",
         description: "The  repair part update for " + checkClaim.unique_key + " claim",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1427,7 +1435,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Customer Status Update",
         description: "The customer status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1480,7 +1488,6 @@ exports.editClaimStatus = async (req, res) => {
           date: new Date()
         }
       ]
-
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
@@ -1504,14 +1511,12 @@ exports.editClaimStatus = async (req, res) => {
         redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
+      console.log("notificationData1--------------------------",notificationData1)
       let createNotification = await userService.createNotification(notificationData1);
+      console.log("createNotification--------------------------",createNotification)
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let toEmail = []
-      //toEmail.push(dealerPrimary.email);
-      // toEmail.push(customerPrimary?.email);
-      //toEmail.push(resellerPrimary?.email);
-      // notificationEmails.push(servicerPrimary?.email);
       //Email to dealer
       let emailData = {
         senderName: dealerPrimary.firstName,
@@ -1582,7 +1587,7 @@ exports.editClaimStatus = async (req, res) => {
       let notificationData1 = {
         title: "Claim Status Update",
         description: "The claim status has been updated for " + checkClaim.unique_key + "",
-        userId: req.userId,
+        userId: req.teammateId,
         contentId: checkClaim._id,
         flag: 'claim',
         redirectionId: checkClaim.unique_key,
@@ -1793,7 +1798,7 @@ exports.editServicer = async (req, res) => {
     let notificationData = {
       title: "Servicer Updated",
       description: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: null,
       flag: 'claim',
       redirectionId: checkClaim.unique_key,
@@ -1842,7 +1847,7 @@ exports.saveBulkClaim = async (req, res) => {
       let data = req.body
       const emailField = req.body.email;
 
-      // Parse the email field
+      // // Parse the email field
       const emailArray = JSON.parse(emailField);
       // if (req.role != 'Super Admin') {
       //   res.send({
@@ -1908,7 +1913,7 @@ exports.saveBulkClaim = async (req, res) => {
           exit: false
         };
       });
-      // res.json(totalDataComing);return;
+
       if (totalDataComing.length === 0) {
         res.send({
           code: constant.errorCode,
@@ -1971,6 +1976,7 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
+
       // res.json(totalDataComing);
 
       // return;
@@ -1985,10 +1991,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
       const contractArray = await Promise.all(contractArrayPromise);
 
-      // res.json(contractArray);
-
-      // return;
-
       //Check servicer is exist or not using contract id
 
       const servicerArrayPromise = totalDataComing.map(item => {
@@ -1999,25 +2001,33 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      //console.log(servicerArrayPromise);return;
       const servicerArray = await Promise.all(servicerArrayPromise);
+
       // console.log(servicerArray);return;
       //check claim is already open by contract id
-      const claimArrayPromise = totalDataComing.map(item => {
-        if (!item.exit) return claimService.getClaims({
-          claimFile: 'Open'
-        });
-        else {
-          return null;
-        }
-      })
-      const claimArray = await Promise.all(claimArrayPromise)
+      // const claimArrayPromise = totalDataComing.map(item => {
+      //   console.log("item------------------------",item)
+      //   if (!item.exit) return claimService.getClaims({
+      //     claimFile: 'Open'
+      //   });
+      //   else {
+      //     return null;
+      //   }
+      // })
+      const claimArray = await claimService.getClaims({
+        claimFile: 'Open'
+      });
+
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
         if (!item.exit) {
           let query = [
             {
+<<<<<<< HEAD
               $match: { unique_key: item.contractId.toUpperCase() },
+=======
+              $match: { unique_key: { '$regex': item.contractId ? item.contractId : '', '$options': 'i' } },
+>>>>>>> a447627f4c01e43d623db4aeef6be00469ac5cb3
             },
             {
               $lookup: {
@@ -2101,6 +2111,10 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const contractAllDataArray = await Promise.all(contractAllDataPromise)
+      // res.json(contractAllDataArray);
+
+      // return;
+
       //Filter data which is contract , servicer and not active
       totalDataComing.forEach((item, i) => {
         if (!item.exit) {
@@ -2163,10 +2177,8 @@ exports.saveBulkClaim = async (req, res) => {
           item.servicerData = null
         }
       })
-      // res.send({
-      //   totalDataComing
-      // })
-      // return;
+
+
       let finalArray = []
       //Save bulk claim
       let count = await claimService.getClaimCount();
@@ -2182,6 +2194,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
+
 
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
@@ -2226,6 +2239,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      let IDs = await supportingFunction.getUserIds()
       //Build data for particular servicer and send mail
       let existArray = {
         data: {}
@@ -2254,6 +2268,7 @@ exports.saveBulkClaim = async (req, res) => {
       // If you need to convert existArray.data to a flat array format
       let adminEmail = await supportingFunction.getUserEmails();
       if (emailServicer.length > 0) {
+        IDs =  IDs.concat(emailServicerId)
         let flatArray = [];
         for (let servicerId in existArray.data) {
           let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
@@ -2322,6 +2337,18 @@ exports.saveBulkClaim = async (req, res) => {
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
+
+      if (saveBulkClaim.length > 0) {  
+     
+        let notificationData1 = {
+          title: "Bulk Report",
+          description: "The Bulk claim file has been registered!",
+          userId: req.teammateId,
+          flag: 'Bulk Claim',
+          notificationFor: IDs
+        };
+        let createNotification = await userService.createNotification(notificationData1);
+      }
 
       res.send({
         code: constant.successCode,
@@ -2443,7 +2470,7 @@ exports.sendMessages = async (req, res) => {
     let notificationData1 = {
       title: "Message sent",
       description: "The one new message for " + checkClaim.unique_key + "",
-      userId: req.userId,
+      userId: req.teammateId,
       contentId: checkClaim._id,
       flag: 'claim',
       redirectionId: checkClaim.unique_key,

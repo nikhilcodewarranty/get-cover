@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
 const contractSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -129,4 +130,4 @@ const contractSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-module.exports = mongoose.model("contract", contractSchema);
+module.exports = connection.userConnection.model("contract", contractSchema);

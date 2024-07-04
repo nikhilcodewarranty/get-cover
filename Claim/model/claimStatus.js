@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const connection = require('../../db')
+
 const claimStatusSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -19,4 +21,4 @@ const claimStatusSchema = new mongoose.Schema({
   },
 },{timestamps:true});
 
-module.exports = mongoose.model("claimStatus", claimStatusSchema);
+module.exports = connection.userConnection.model("claimStatus", claimStatusSchema);
