@@ -1842,9 +1842,9 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-      const emailField = req.body.email;
+       const emailField = req.body.email;
 
-      // // Parse the email field
+      // // // Parse the email field
       const emailArray = JSON.parse(emailField);
       // if (req.role != 'Super Admin') {
       //   res.send({
@@ -1977,10 +1977,6 @@ exports.saveBulkClaim = async (req, res) => {
           }
         }
       })
-
-      // res.json(totalDataComing);
-
-      // return;
       //Check contract is exist or not using contract id
       const contractArrayPromise = totalDataComing.map(item => {
         if (!item.exit) return contractService.getContractById({
@@ -2018,6 +2014,9 @@ exports.saveBulkClaim = async (req, res) => {
       const claimArray = await claimService.getClaims({
         claimFile: 'Open'
       });
+
+      // res.json(claimArray);
+      // return;
 
       // Get Contract with dealer, customer, reseller
       const contractAllDataPromise = totalDataComing.map(item => {
@@ -2118,7 +2117,7 @@ exports.saveBulkClaim = async (req, res) => {
           const contractData = contractArray[i];
           const servicerData = servicerArray[i]
           const allDataArray = contractAllDataArray[i];
-          const claimData = claimArray[i];
+          const claimData = claimArray;
           let flag;
           item.contractData = contractData;
           item.servicerData = servicerData;
