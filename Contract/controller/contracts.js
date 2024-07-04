@@ -891,10 +891,6 @@ exports.cronJobEligible = async (req, res) => {
       let contractIdsToBeUpdate = [];
       let contractIdToBeUpdate;
       let updateDoc;
-
-
-      console.log("result------------------------", result)
-
       for (let i = 0; i < result.length; i++) {
         let product = result[i];
         let contractId = product._id;

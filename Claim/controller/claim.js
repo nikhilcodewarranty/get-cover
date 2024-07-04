@@ -645,24 +645,32 @@ exports.searchClaim = async (req, res, next) => {
       }
     }
     let contractFilter;
+    if(data.contractId != ""){
+      data.contractId= data.contractId.replace(/-/g, '')
+    }
+
+    console.log("skldjfklsdjfslkjflksdjf",data.contractId)
+
     if (userSearchCheck == 1) {
+      console.log("If")
       contractFilter = [
         { orderId: { $in: orderIds } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key_search': { '$regex': data.contractId ? data.contractId: '', '$options': 'i' } },
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
       ]
     } else {
+      console.log("rwerweewr")
       contractFilter = [
         // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'venderOrder': { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { "orderUniqueKey": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { 'serial': { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { 'unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { 'unique_key_search': { '$regex': data.contractId ? data.contractId : '', '$options': 'i' } },
         { status: 'Active' },
         { eligibilty: true }
       ]
