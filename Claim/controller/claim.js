@@ -1857,11 +1857,12 @@ exports.saveBulkClaim = async (req, res) => {
       //   return
       // }
       // console.log(req.files[0].path); return;
+      let existDealerId = {
+        data: {}
+      };
       let match = {}
       if (req.role == 'Dealer') {
-        let existDealerId = {
-          data: {}
-        };
+       
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
       if (req.role == 'Reseller') {
