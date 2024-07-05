@@ -1984,7 +1984,6 @@ exports.getUserById = async (req, res) => {
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
-    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2064,9 +2063,7 @@ exports.updateUserData = async (req, res) => {
       notificationFor: [getPrimary._id]
     };
 
-    console.log(notificationData);
     let createNotification = await userService.createNotification(notificationData);
-    console.log("notificationData,,,,,,,,,,,,,,,,,,,,", createNotification);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
@@ -2458,13 +2455,6 @@ exports.getAllNotifications = async (req, res) => {
     let servicerMeta = await providerService.getAllServiceProvider(query2, projection)
     dealerData = [...dealerMeta, ...servicerMeta];
 
-    // console.log("dealerData============================",dealerData)
-    // console.log("allNotification============================",allNotification);
-
-    //  return false;
-
-    //console.log(dealerData);return false;
-
     const result_Array = dealerData.map(item1 => {
       const matchingItem = allNotification.find(item2 => item2.userId.toString() == item1._id.toString());
       if (matchingItem) {
@@ -2483,9 +2473,6 @@ exports.getAllNotifications = async (req, res) => {
 
       return createdAtB - createdAtA;
     });
-
-    // console.log(sortedResultArray);
-
 
 
     res.send({
@@ -2526,17 +2513,12 @@ exports.getAllNotifications1 = async (req, res) => {
         isOpen
       };
     });
-    console.log("read flag data -------------------true", data)
 
     if (data.readFlag || data.readFlag == false) {
-      console.log("inside the query +++++++++++++++++")
       if (data.readFlag != "") {
-        console.log("inside the query +++++22222222222++++++++++++")
         if (data.readFlag == "true" || data.readFlag == true || data.readFlag != "false") {
-          console.log("read flag data true", data)
           updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
         } else {
-          console.log("read flag data false", data)
 
           updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
 
@@ -2609,7 +2591,6 @@ exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ 'email': req.body.email }, {});
-    // console.log(existingUser)
     if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
         code: constant.errorCode,
@@ -2808,7 +2789,6 @@ exports.getUserByToken = async (req, res) => {
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
-    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2869,7 +2849,6 @@ exports.addMembers = async (req, res) => {
 
   } catch (err) {
     const lineNumber = err.stack.split('\n')[1].split(':')[1];
-    console.log(`Error occurred at line ${lineNumber}:`, err);
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2881,7 +2860,6 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    console.log("data----------", data)
     let query = {
       $and: [
         {
@@ -3015,12 +2993,13 @@ exports.checkToken = async (req, res) => {
     })
   }
 }
-
-
+ 
+const reportingController = require("./reportingController");
+const orderService = require("../../Order/services/orderService");
+const claimService = require("../../Claim/services/claimService");
 
 exports.saleReporting = async (req, res) => {
   try {
-    console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
     //     code:constant.errorCode,
@@ -3072,7 +3051,6 @@ exports.saleReporting = async (req, res) => {
   }
 }
 
-
 exports.getDashboardInfo = async (req, res) => {
   if (req.role != 'Super Admin') {
     res.send({
@@ -3095,8 +3073,37 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
     { $sort: { unique_key: -1 } }]
-  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5,5)
-  const getLastNumberOfClaims = await claimService.getLastNumberOfClaims({}, {})
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+  const claimQuery = [
+    {
+      $sort: {
+        unique_key_number: -1
+      }
+    },
+    {
+      $limit: 5
+    },
+    {
+      $lookup: {
+        from: "contracts",
+        localField: "contractId",
+        foreignField: "_id",
+        as: "contract"
+      }
+    },
+    {
+      $unwind: "$contract"
+    },
+    {
+      $project: {
+        unique_key: 1,
+        "contract.unique_key": 1,
+        unique_key_number: 1,
+        totalAmount: 1
+      }
+    },
+  ]
+  const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
   let lookupQuery = [
     {
       $lookup: {
@@ -3135,17 +3142,39 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
+    // {
+    //   $unwind: "$order"
+    // },
     {
-      $unwind: "$order"
-    },
-    {
-      $unwind: "$users"
-    },
-    {
-      $addFields: {
-        totalAmount: "$order.totalAmount"
+      $project: {
+        name: 1,
+        totalAmount: {
+          $cond: {
+            if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
+            then: { $arrayElemAt: ["$order.totalAmount", 0] },
+            else: 0
+          }
+        },
+        totalOrder: {
+          $cond: {
+            if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
+            then: { $arrayElemAt: ["$order.totalOrder", 0] },
+            else: 0
+          }
+        },
+        'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
       }
     },
+    // {
+    //   $unwind: "$users"
+    // },
+    // {
+    //   $addFields: {
+    //     totalAmount: "$order.totalAmount"
+    //   }
+    // },
+
     { "$sort": { totalAmount: -1 } },
     { "$limit": 5 }  // Apply limit again after sorting
   ]
@@ -3174,7 +3203,7 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
-    
+
     {
       $lookup: {
         from: "claims",
@@ -3202,14 +3231,14 @@ exports.getDashboardInfo = async (req, res) => {
         name: 1,
         totalClaimAmount: {
           $cond: {
-            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 1000] },
+            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
             then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
             else: 0
           }
         },
         totalClaim: {
           $cond: {
-            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 1000] },
+            if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
             then: { $arrayElemAt: ["$claims.totalClaim", 0] },
             else: 0
           }
@@ -3246,15 +3275,11 @@ exports.getDashboardInfo = async (req, res) => {
     result: result
   })
 }
-
 exports.saleReporting1 = async (req, res) => {
   try {
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
-    console.log("pathTosave--------------------------", pathToAttachment)
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
-    // console.log("attachment-----------------------------------",attachment)
     fs.readFile(pathToAttachment, async (err, fileData) => {
-      console.log("pdfdata----------------------------", process.env.from_email, err, fileData)
       //Email to Customer
       try {
         var send = await sgMail.send(
@@ -3283,29 +3308,15 @@ exports.saleReporting1 = async (req, res) => {
           }
         )
 
-        console.log('Email sent successfully:', send);
       } catch (error) {
-        console.error('Error sending email:', error);
 
         if (error.response) {
           console.error('Error response:', error.response.body);
         }
       }
-
-
-      // console.log("-----------------------------", send);
-      // res.send({
-      //   code:300,
-      //   send
-      // })
     })
 
 
-
-    return
-
-
-    console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
     //     code:constant.errorCode,
@@ -3356,7 +3367,6 @@ exports.saleReporting1 = async (req, res) => {
     })
   }
 }
-
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
