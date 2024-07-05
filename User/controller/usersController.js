@@ -1982,7 +1982,6 @@ exports.getUserById = async (req, res) => {
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
-    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2062,9 +2061,7 @@ exports.updateUserData = async (req, res) => {
       notificationFor: [getPrimary._id]
     };
 
-    console.log(notificationData);
     let createNotification = await userService.createNotification(notificationData);
-    console.log("notificationData,,,,,,,,,,,,,,,,,,,,", createNotification);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
     notificationEmails.push(getPrimary.email);
@@ -2456,13 +2453,6 @@ exports.getAllNotifications = async (req, res) => {
     let servicerMeta = await providerService.getAllServiceProvider(query2, projection)
     dealerData = [...dealerMeta, ...servicerMeta];
 
-    // console.log("dealerData============================",dealerData)
-    // console.log("allNotification============================",allNotification);
-
-    //  return false;
-
-    //console.log(dealerData);return false;
-
     const result_Array = dealerData.map(item1 => {
       const matchingItem = allNotification.find(item2 => item2.userId.toString() == item1._id.toString());
       if (matchingItem) {
@@ -2481,9 +2471,6 @@ exports.getAllNotifications = async (req, res) => {
 
       return createdAtB - createdAtA;
     });
-
-    // console.log(sortedResultArray);
-
 
 
     res.send({
@@ -2524,17 +2511,12 @@ exports.getAllNotifications1 = async (req, res) => {
         isOpen
       };
     });
-    console.log("read flag data -------------------true", data)
 
     if (data.readFlag || data.readFlag == false) {
-      console.log("inside the query +++++++++++++++++")
       if (data.readFlag != "") {
-        console.log("inside the query +++++22222222222++++++++++++")
         if (data.readFlag == "true" || data.readFlag == true || data.readFlag != "false") {
-          console.log("read flag data true", data)
           updatedNotifications = updatedNotifications.filter(item => item.isRead === true)
         } else {
-          console.log("read flag data false", data)
 
           updatedNotifications = updatedNotifications.filter(item => item.isRead === false)
 
@@ -2607,7 +2589,6 @@ exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ 'email': req.body.email }, {});
-    // console.log(existingUser)
     if (existingUser && existingUser.approvedStatus == 'Approved') {
       res.send({
         code: constant.errorCode,
@@ -2806,7 +2787,6 @@ exports.getUserByToken = async (req, res) => {
     let checkReseller = await resellerService.getReseller(criteria, {})
     let checkCustomer = await customerService.getCustomerByName(criteria)
     mainStatus = checkStatus ? checkStatus.status : checkDealer ? checkDealer.accountStatus : checkReseller ? checkReseller.status : checkCustomer ? checkCustomer.status : false
-    console.log("check1---------------------------------------", mainStatus, checkStatus, checkDealer, checkReseller)
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2867,7 +2847,6 @@ exports.addMembers = async (req, res) => {
 
   } catch (err) {
     const lineNumber = err.stack.split('\n')[1].split(':')[1];
-    console.log(`Error occurred at line ${lineNumber}:`, err);
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -2879,7 +2858,6 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    console.log("data----------", data)
     let query = {
       $and: [
         {
@@ -3020,7 +2998,6 @@ const claimService = require("../../Claim/services/claimService");
 
 exports.saleReporting = async (req, res) => {
   try {
-    console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
     //     code:constant.errorCode,
@@ -3072,7 +3049,6 @@ exports.saleReporting = async (req, res) => {
   }
 }
 
-
 exports.getDashboardInfo = async (req, res) => {
   if (req.role != 'Super Admin') {
     res.send({
@@ -3098,8 +3074,8 @@ exports.getDashboardInfo = async (req, res) => {
   const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
   const claimQuery = [
     {
-      $sort:{
-        unique_key_number:-1
+      $sort: {
+        unique_key_number: -1
       }
     },
     {
@@ -3120,7 +3096,7 @@ exports.getDashboardInfo = async (req, res) => {
       $project: {
         unique_key: 1,
         "contract.unique_key": 1,
-        unique_key_number:1,
+        unique_key_number: 1,
         totalAmount: 1
       }
     },
@@ -3297,15 +3273,12 @@ exports.getDashboardInfo = async (req, res) => {
     result: result
   })
 }
-
 exports.saleReporting1 = async (req, res) => {
   try {
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
-    console.log("pathTosave--------------------------", pathToAttachment)
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
     // console.log("attachment-----------------------------------",attachment)
     fs.readFile(pathToAttachment, async (err, fileData) => {
-      console.log("pdfdata----------------------------", process.env.from_email, err, fileData)
       //Email to Customer
       try {
         var send = await sgMail.send(
@@ -3334,9 +3307,7 @@ exports.saleReporting1 = async (req, res) => {
           }
         )
 
-        console.log('Email sent successfully:', send);
       } catch (error) {
-        console.error('Error sending email:', error);
 
         if (error.response) {
           console.error('Error response:', error.response.body);
@@ -3352,11 +3323,6 @@ exports.saleReporting1 = async (req, res) => {
     })
 
 
-
-    return
-
-
-    console.log("---------", req.body)
     // if(!req.body.priceBookId ){
     //   res.send({
     //     code:constant.errorCode,
@@ -3407,7 +3373,6 @@ exports.saleReporting1 = async (req, res) => {
     })
   }
 }
-
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
