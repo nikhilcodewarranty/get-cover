@@ -3081,8 +3081,21 @@ exports.getDashboardInfo = async (req, res) => {
     })
     return;
   }
-  const query = { status: "Active" }
-  const lastFiveOrder = await orderService.getLastFive(query, {})
+  let orderQuery = [
+    {
+      $match: { status: "Active" }
+    },
+    {
+      "$addFields": {
+        "noOfProducts": {
+          "$sum": "$productsArray.checkNumberProducts"
+        },
+        totalOrderAmount: { $sum: "$orderAmount" },
+
+      }
+    },
+    { $sort: { unique_key: -1 } }]
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5,5)
   const getLastNumberOfClaims = await claimService.getLastNumberOfClaims({}, {})
   let lookupQuery = [
     {
