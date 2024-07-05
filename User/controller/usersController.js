@@ -2991,7 +2991,7 @@ exports.checkToken = async (req, res) => {
     })
   }
 }
-
+ 
 const reportingController = require("./reportingController");
 const orderService = require("../../Order/services/orderService");
 const claimService = require("../../Claim/services/claimService");
@@ -3277,7 +3277,6 @@ exports.saleReporting1 = async (req, res) => {
   try {
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
     //  const attachment = fs.readFile(pathToAttachment).toString("base64");
-    // console.log("attachment-----------------------------------",attachment)
     fs.readFile(pathToAttachment, async (err, fileData) => {
       //Email to Customer
       try {
@@ -3313,13 +3312,6 @@ exports.saleReporting1 = async (req, res) => {
           console.error('Error response:', error.response.body);
         }
       }
-
-
-      // console.log("-----------------------------", send);
-      // res.send({
-      //   code:300,
-      //   send
-      // })
     })
 
 
