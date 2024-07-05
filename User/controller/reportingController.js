@@ -2186,7 +2186,7 @@ exports.claimReportinDropdown = async (req, res) => {
                 let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
 
                 console.log("-------------------------------------------------------",getServicersIds, 1)
-                let ids = getServicersIds.map((item) => item.servicerId)
+                let ids = getServicersIds?.map((item) => item.servicerId)
                 let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
 
                 // Get Dealer Reseller Servicer
@@ -2210,9 +2210,9 @@ exports.claimReportinDropdown = async (req, res) => {
                 };
 
                 let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
-                let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+                let priceBookIds = getDealerBooks?.map(ID => ID.priceBook)
                 let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
-                let categoriesIds = getPriceBooks1.map(ID => ID.category)
+                let categoriesIds = getPriceBooks1?.map(ID => ID.category)
                 let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
 
                 if (data.categoryId != "") {
