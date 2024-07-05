@@ -3135,6 +3135,7 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
+    
     {
       $unwind: "$order"
     },
@@ -3146,6 +3147,7 @@ exports.getDashboardInfo = async (req, res) => {
         totalAmount: "$order.totalAmount"
       }
     },
+
     { "$sort": { totalAmount: -1 } },
     { "$limit": 5 }  // Apply limit again after sorting
   ]
