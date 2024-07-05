@@ -3154,6 +3154,12 @@ exports.getDashboardInfo = async (req, res) => {
 
   let lookupClaim = [
     {
+      $match: {
+        dealerId: null,
+        resellerId: null
+      }
+    },
+    {
       $lookup: {
         from: "users",
         localField: "_id",
@@ -3192,16 +3198,37 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
     {
-      $unwind: "$claims"
-    },
-    {
-      $unwind: "$users"
-    },
-    {
-      $addFields: {
-        totalClaimAmount: "$claims.totalClaimAmount"
+      $project: {
+        name: 1,
+        totalClaimAmount: {
+          $cond: {
+            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 1000] },
+            then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
+            else: 0
+          }
+        },
+        totalClaim: {
+          $cond: {
+            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 1000] },
+            then: { $arrayElemAt: ["$claims.totalClaim", 0] },
+            else: 0
+          }
+        },
+        'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
       }
     },
+    // {
+    //   $unwind: "$claims"
+    // },
+    // {
+    //   $unwind: "$users"
+    // },
+    // {
+    //   $addFields: {
+    //     totalClaimAmount: "$claims.totalClaimAmount"
+    //   }
+    // },
     { "$sort": { totalClaimAmount: -1 } },
     { "$limit": 5 }  // Apply limit again after sorting
   ]
