@@ -3204,14 +3204,14 @@ exports.getDashboardInfo = async (req, res) => {
         name: 1,
         totalClaimAmount: {
           $cond: {
-            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 1000] },
+            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
             then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
             else: 0
           }
         },
         totalClaim: {
           $cond: {
-            if: { $gte: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 1000] },
+            if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
             then: { $arrayElemAt: ["$claims.totalClaim", 0] },
             else: 0
           }
