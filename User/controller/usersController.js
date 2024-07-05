@@ -3085,13 +3085,19 @@ exports.getDashboardInfo = async (req, res) => {
   const lastFiveOrder = await orderService.getLastFive(query, {})
   const getLastNumberOfClaims = await claimService.getLastNumberOfClaims({}, {})
   let lookupQuery = [
-    { "$limit": 5 },
     {
-      $lookup:{
-        from:"users",
-        localField:"_id",
-        foreignField:"metaId",
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "metaId",
         as: "users",
+        pipeline: [
+          {
+            $match: {
+              isPrimary: true
+            }
+          }
+        ]
       }
     },
     {
@@ -3106,7 +3112,7 @@ exports.getDashboardInfo = async (req, res) => {
           },
           {
             "$group": {
-              _id: "$dealerId",
+              _id: "$order.dealerId",
               "totalOrder": { "$sum": 1 },
               "totalAmount": {
                 "$sum": "$orderAmount"
@@ -3134,13 +3140,19 @@ exports.getDashboardInfo = async (req, res) => {
   const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
 
   let lookupClaim = [
-    { "$limit": 5 },
     {
-      $lookup:{
-        from:"users",
+      $lookup: {
+        from: "users",
         localField: "_id",
         foreignField: "metaId",
         as: "users",
+        pipeline: [
+          {
+            $match: {
+              isPrimary: true
+            }
+          }
+        ]
       }
     },
     {
@@ -3154,10 +3166,10 @@ exports.getDashboardInfo = async (req, res) => {
             $match: { claimFile: "Completed" }
           },
           {
-            $lookup:{
-              from:"users",
-              localField:"_id",
-              foreignField:"accountId",
+            $lookup: {
+              from: "users",
+              localField: "_id",
+              foreignField: "accountId",
               as: "users",
             }
           },
@@ -3181,7 +3193,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
     {
       $addFields: {
-        totalClaimAmount: "$claims.totalAmount"
+        totalClaimAmount: "$claims.totalClaimAmount"
       }
     },
     { "$sort": { totalClaimAmount: -1 } },
