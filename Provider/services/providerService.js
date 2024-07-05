@@ -20,6 +20,16 @@ module.exports = class providerService {
     }
   }
 
+  static async getTopFiveServicer(query){
+    try {
+      const topServicer = await serviceProvider.aggregate(query);
+      return topServicer;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+
+  }
+
   static async createServiceProvider(data) {
     try {
       console.log(data)

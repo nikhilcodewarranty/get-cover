@@ -87,7 +87,6 @@ module.exports = class orderService {
 
   static async getAllOrderInCustomers(query, project, groupBy) {
     try {
-      console.log('query++++++++++++++++++++++', query)
       const allOrders = await order.aggregate([
         {
           $match: query
@@ -181,8 +180,17 @@ module.exports = class orderService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
-  //Add order
 
+  static async getLastFive(query) {
+    try {
+      const lastFive = await order.find(query).sort({unique_key_number: -1}).limit(5)
+      return lastFive;
+    } catch (error) {
+      console.log(`Could not fetch order count ${error}`);
+    }
+  }
+
+  //Add order
   static async addOrder(data) {
     try {
       const createOrder = await order(data).save();

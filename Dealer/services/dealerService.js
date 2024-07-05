@@ -40,6 +40,17 @@ module.exports = class dealerService {
     }
   }
 
+
+  static async getTopFiveDealers(query){
+    try {
+      const topDealers = await dealer.aggregate(query);
+      return topDealers;
+    } catch (error) {
+      console.log(`Dealer not found. ${error}`);
+    }
+
+  }
+
   static async getDealerCount() {
     try {
       const count = await dealer.find().sort({ "unique_key": -1 });

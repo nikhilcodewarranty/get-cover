@@ -27,6 +27,14 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
+  static async getLastNumberOfClaims(query) {
+    try {
+      const getLastNumberOfClaims = await claim.find(query).sort({unique_key_number:-1}).limit(5)
+      return getLastNumberOfClaims;
+    } catch (error) {
+      console.log(`Could not fetch claims ${error}`);
+    }
+  }
   static async getClaimCount() {
     try {
       const count = await claim.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
