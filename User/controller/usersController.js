@@ -3096,7 +3096,30 @@ exports.getDashboardInfo = async (req, res) => {
     },
     { $sort: { unique_key: -1 } }]
   const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5,5)
-  const getLastNumberOfClaims = await claimService.getLastNumberOfClaims({}, {})
+  const claimQuery = [
+    {
+      $limit:5
+    },
+    {
+      $lookup: {
+        from: "contracts",
+        localField: "contractId",
+        foreignField: "_id",
+        as: "contract"
+      }
+    },
+    {
+      $unwind:"$contract"
+    },
+    {
+      $project:{
+        unique_key:1,
+        "contract.unique_key":1,
+        totalAmount:1
+      }
+    }
+  ]
+  const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
   let lookupQuery = [
     {
       $lookup: {
