@@ -3095,10 +3095,15 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
     { $sort: { unique_key: -1 } }]
-  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5,5)
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
   const claimQuery = [
     {
-      $limit:5
+      $sort:{
+        unique_key_number:-1
+      }
+    },
+    {
+      $limit: 5
     },
     {
       $lookup: {
@@ -3109,15 +3114,16 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
     {
-      $unwind:"$contract"
+      $unwind: "$contract"
     },
     {
-      $project:{
-        unique_key:1,
-        "contract.unique_key":1,
-        totalAmount:1
+      $project: {
+        unique_key: 1,
+        "contract.unique_key": 1,
+        unique_key_number:1,
+        totalAmount: 1
       }
-    }
+    },
   ]
   const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
   let lookupQuery = [
@@ -3158,18 +3164,38 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
-    
+    // {
+    //   $unwind: "$order"
+    // },
     {
-      $unwind: "$order"
-    },
-    {
-      $unwind: "$users"
-    },
-    {
-      $addFields: {
-        totalAmount: "$order.totalAmount"
+      $project: {
+        name: 1,
+        totalAmount: {
+          $cond: {
+            if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
+            then: { $arrayElemAt: ["$order.totalAmount", 0] },
+            else: 0
+          }
+        },
+        totalOrder: {
+          $cond: {
+            if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
+            then: { $arrayElemAt: ["$order.totalOrder", 0] },
+            else: 0
+          }
+        },
+        'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
       }
     },
+    // {
+    //   $unwind: "$users"
+    // },
+    // {
+    //   $addFields: {
+    //     totalAmount: "$order.totalAmount"
+    //   }
+    // },
 
     { "$sort": { totalAmount: -1 } },
     { "$limit": 5 }  // Apply limit again after sorting
@@ -3199,7 +3225,7 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
-    
+
     {
       $lookup: {
         from: "claims",
