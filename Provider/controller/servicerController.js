@@ -453,6 +453,11 @@ exports.getServicerDealers = async (req, res) => {
                     as: "dealerData",
                     pipeline: [
                         {
+                            $match: {
+                                "name": { '$regex': data.name ? data.name : '', '$options': 'i' },
+                            }
+                        },
+                        {
                             $lookup: {
                                 from: "users",
                                 localField: "_id",
@@ -461,7 +466,9 @@ exports.getServicerDealers = async (req, res) => {
                                 pipeline: [
                                     {
                                         $match: {
-                                            isPrimary: true
+                                            isPrimary: true,
+                                            "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
+                                            "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
                                         }
                                     }
                                 ]
@@ -526,11 +533,18 @@ exports.getServicerDealers = async (req, res) => {
                 $unwind: "$dealerData"
             },
             // {
+            //     $match: {
+            //         "$dealerData.name": { '$regex': data.name ? data.name : '', '$options': 'i' },
+            //     }
+            // },
+
+            // {
             //   $project:{
 
             //   }
             // }
         ]
+        console.log("running+++++++++++++++++++++++++++")
         let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
 
         res.send({
