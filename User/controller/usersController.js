@@ -3168,6 +3168,7 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
+    
     {
       $lookup: {
         from: "claims",
@@ -3177,14 +3178,6 @@ exports.getDashboardInfo = async (req, res) => {
         pipeline: [
           {
             $match: { claimFile: "Completed" }
-          },
-          {
-            $lookup: {
-              from: "users",
-              localField: "_id",
-              foreignField: "accountId",
-              as: "users",
-            }
           },
           {
             "$group": {
