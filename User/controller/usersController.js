@@ -3353,6 +3353,7 @@ exports.getDashboardGraph = async (req, res) => {
         $group: {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
           order_amount: { $sum: "$orderAmount" },
+          total_order: { $sum: 1 },
         }
       },
       {
@@ -3377,11 +3378,23 @@ exports.getDashboardGraph = async (req, res) => {
 
       };
     });
+    const result1 = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData2.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        order_amount: order ? order.order_amount : 0,
+        total_order: order ? order.total_order : 0,
+
+
+      };
+    });
 
     res.send({
       code: constant.successCode,
       message: "Success",
-      result: result
+      claim_result: result,
+      order_result: result1
     })
     // return { mergedArray, result, result1, result2, totalFees }
 
