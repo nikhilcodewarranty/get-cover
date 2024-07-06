@@ -1470,6 +1470,7 @@ exports.claimDailyReporting = async (data) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
+
         let dailyQuery = [
             {
                 $match: {
@@ -1491,6 +1492,7 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
+        console.log("date check +++++++++++++++++=",startOfMonth,endOfMonth,dailyQuery)
 
         let dailyQuery1 = [
             {
