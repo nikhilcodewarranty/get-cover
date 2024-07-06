@@ -2993,10 +2993,10 @@ exports.checkToken = async (req, res) => {
     })
   }
 }
- 
-const reportingController = require("./reportingController");
-const orderService = require("../../Order/services/orderService");
-const claimService = require("../../Claim/services/claimService");
+
+// const reportingController = require("./reportingController");
+// const orderService = require("../../Order/services/orderService");
+// const claimService = require("../../Claim/services/claimService");
 
 exports.saleReporting = async (req, res) => {
   try {
@@ -3275,6 +3275,368 @@ exports.getDashboardInfo = async (req, res) => {
     result: result
   })
 }
+
+exports.getDashboardGraph = async (req, res) => {
+  try {
+    let data = req.body
+    // let data = req.body
+    let endOfMonth1  = new Date();
+    let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+    let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+    if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+      return { code: 401, message: "invalid date" };
+    }
+
+    let datesArray = [];
+    let currentDate = new Date(startOfMonth);
+    while (currentDate <= endOfMonth) {
+      datesArray.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // let dailyQuery = [
+    //   {
+    //     $match: {
+    //       createdAt: { $gte: "2024-06-05T18:30:00.000Z", $lt: "2024-07-06T18:30:00.000Z" },
+    //       claimStatus: {
+    //         $elemMatch: { status: "Completed" }
+    //       },
+    //     },
+    //   },
+    //   // {
+    //   //   $group: {
+    //   //     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+    //   //     total_amount: { $sum: "$totalAmount" },
+    //   //     total_claim: { $sum: 1 },
+    //   //     // total_broker_fee: { $sum: "$products.brokerFee" }
+    //   //   }
+    //   // },
+    //   {
+    //     $sort: { _id: 1 } // Sort by date in ascending order
+    //   }
+    // ];
+    let dailyQuery = [
+      {
+          $match: {
+              createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+              claimStatus: {
+                  $elemMatch: { status: "Completed" }
+              },
+          },
+      },
+      {
+          $group: {
+              _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+              total_amount: { $sum: "$totalAmount" },
+              total_claim: { $sum: 1 },
+              // total_broker_fee: { $sum: "$products.brokerFee" }
+          }
+      },
+      {
+          $sort: { _id: 1 } // Sort by date in ascending order
+      }
+  ];
+    
+    
+    
+    console.log(startOfMonth,endOfMonth,dailyQuery)
+
+    let getData = await claimService.getAllClaims(dailyQuery)
+
+console.log(startOfMonth,endOfMonth,getData)
+    const result = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        total_amount: order ? order.total_amount : 0,
+        total_claim: order ? order.total_claim : 0,
+
+      };
+    });
+
+
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: result
+    })
+    // return { mergedArray, result, result1, result2, totalFees }
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+exports.claimDailyReporting = async (data) => {
+  try {
+    // let data = req.body
+    let startOfMonth2 = new Date(data.startDate);
+    let endOfMonth1 = new Date(data.endDate);
+
+    let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+    let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+    if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+      return { code: 401, message: "invalid date" };
+    }
+
+    let datesArray = [];
+    let currentDate = new Date(startOfMonth);
+    while (currentDate <= endOfMonth) {
+      datesArray.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    let dailyQuery = [
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          claimStatus: {
+            $elemMatch: { status: "Completed" }
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          total_amount: { $sum: "$totalAmount" },
+          total_claim: { $sum: 1 },
+          // total_broker_fee: { $sum: "$products.brokerFee" }
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+    let dailyQuery1 = [
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          claimPaymentStatus: "Unpaid",
+          claimStatus: {
+            $elemMatch: { status: "Completed" }
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          total_unpaid_amount: { $sum: "$totalAmount" },
+          total_unpaid_claim: { $sum: 1 },
+          // total_broker_fee: { $sum: "$products.brokerFee" }
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+    let dailyQuery2 = [
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          claimPaymentStatus: "Paid",
+          claimStatus: {
+            $elemMatch: { status: "Completed" }
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          total_paid_amount: { $sum: "$totalAmount" },
+          total_paid_claim: { $sum: 1 },
+          // total_broker_fee: { $sum: "$products.brokerFee" }
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+    let dailyQuery3 = [
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          // claimPaymentStatus: "Paid",
+          claimStatus: {
+            $elemMatch: { status: "Rejected" }
+          },
+        },
+      },
+
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          // total_paid_amount: { $sum: "$totalAmount" },
+          total_rejected_claim: { $sum: 1 },
+          // total_broker_fee: { $sum: "$products.brokerFee" }
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+
+
+    if (data.dealerId != "") {
+      let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+      dailyQuery[0].$match.dealerId = dealerId
+      dailyQuery1[0].$match.dealerId = dealerId
+      dailyQuery2[0].$match.dealerId = dealerId
+      dailyQuery3[0].$match.dealerId = dealerId
+    }
+
+    if (data.servicerId != "") {
+      // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+      let servicerId = new mongoose.Types.ObjectId(data.servicerId)
+
+      dailyQuery[0].$match.servicerId = data.servicerId
+      dailyQuery1[0].$match.servicerId = data.servicerId
+      dailyQuery2[0].$match.servicerId = data.servicerId
+      dailyQuery3[0].$match.servicerId = data.servicerId
+    }
+
+    if (data.priceBookId.length != 0) {
+      let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
+      let orderIds = getOrders.map(ID => ID.unique_key)
+      console.log("getOrderIds--------------------", orderIds)
+      dailyQuery[0].$match.orderId = { $in: orderIds }
+      dailyQuery1[0].$match.orderId = { $in: orderIds }
+      dailyQuery2[0].$match.orderId = { $in: orderIds }
+      dailyQuery3[0].$match.orderId = { $in: orderIds }
+
+    }
+
+    // if (data.claimPaymentStatus != "") {
+    //     dailyQuery[0].$match.claimPaymentStatus = data.claimPaymentStatus
+    //     dailyQuery1[0].$match.claimPaymentStatus = data.claimPaymentStatus
+    //     dailyQuery2[0].$match.claimPaymentStatus = data.claimPaymentStatus
+    // }
+
+    console.log(dailyQuery[0].$match)
+
+    let getData = await claimService.getAllClaims(dailyQuery)
+    let getData1 = await claimService.getAllClaims(dailyQuery1)
+    let getData2 = await claimService.getAllClaims(dailyQuery2)
+    let getData3 = await claimService.getAllClaims(dailyQuery3)
+    console.log("getData3----------------------------", getData3)
+
+    const result = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        total_amount: order ? order.total_amount : 0,
+        total_claim: order ? order.total_claim : 0,
+
+      };
+    });
+
+    const result1 = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData1.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        total_unpaid_amount: order ? order.total_unpaid_amount : 0,
+        total_unpaid_claim: order ? order.total_unpaid_claim : 0,
+
+      };
+    });
+
+    const result2 = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData2.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        total_paid_amount: order ? order.total_paid_amount : 0,
+        total_paid_claim: order ? order.total_paid_claim : 0,
+
+      };
+    });
+
+    const result3 = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData3.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        // total_paid_amount: order ? order.total_paid_amount : 0,
+        total_rejected_claim: order ? order.total_rejected_claim : 0,
+
+      };
+    });
+
+    console.log(result3)
+
+    const mergedArray = result.map(item => {
+      const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
+      const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
+      const result3Item = result3.find(r2 => r2.weekStart === item.weekStart);
+
+      return {
+        weekStart: item.weekStart,
+        total_amount: item.total_amount,
+        total_claim: item.total_claim,
+        total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+        total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+        total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+        total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+      };
+    });
+
+    const totalFees = mergedArray.reduce((acc, curr) => {
+      acc.total_amount += curr.total_amount || 0;
+      acc.total_claim += curr.total_claim || 0;
+      acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
+      acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
+      acc.total_paid_amount += curr.total_paid_amount || 0;
+      acc.total_paid_claim += curr.total_paid_claim || 0;
+      acc.total_rejected_claim += curr.total_rejected_claim || 0;
+      return acc;
+    }, {
+      total_amount: 0,
+      total_claim: 0,
+      total_unpaid_amount: 0,
+      total_unpaid_claim: 0,
+      total_paid_amount: 0,
+      total_paid_claim: 0,
+      total_rejected_claim: 0,
+    });
+
+    return { graphData: mergedArray, totalFees }
+    // return { mergedArray, result, result1, result2, totalFees }
+
+
+  } catch (err) {
+    return {
+      code: constant.errorCode,
+      message: err.message
+    }
+  }
+};
+
+
+
+
+
+
 exports.saleReporting1 = async (req, res) => {
   try {
     const pathToAttachment = process.env.MAIN_FILE_PATH + "uploads/" + "file-1718782172826.xlsx"
@@ -3367,6 +3729,7 @@ exports.saleReporting1 = async (req, res) => {
     })
   }
 }
+
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
@@ -3399,3 +3762,4 @@ exports.claimReporting = async (req, res) => {
     })
   }
 }
+
