@@ -2710,7 +2710,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
         // }
-        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email., notificationEmails, htmlTableString));
+        const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
       }
       res.send({
         code: constant.successCode,
