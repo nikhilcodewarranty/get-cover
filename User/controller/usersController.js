@@ -2994,7 +2994,7 @@ exports.checkToken = async (req, res) => {
   }
 }
  
-const reportingController = require("./reportingController");
+// const reportingController = require("./reportingController");
 const orderService = require("../../Order/services/orderService");
 const claimService = require("../../Claim/services/claimService");
 
