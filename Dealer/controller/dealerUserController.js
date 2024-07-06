@@ -4033,6 +4033,8 @@ exports.editOrderDetail = async (req, res) => {
             let contractArray = [];
             var pricebookDetail = [];
             let dealerBookDetail = [];
+            let count1 = await contractService.getContractsCountNew();
+            var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
                 let checkLength = savedResponse.productsArray.length -1
             await savedResponse.productsArray.map(async (product,index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
@@ -4050,8 +4052,8 @@ exports.editOrderDetail = async (req, res) => {
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                let count1 = await contractService.getContractsCountNew();
-                var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
+                // let count1 = await contractService.getContractsCountNew();
+                // var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
 
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
@@ -4272,6 +4274,7 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+                    increamentNumber++;
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
@@ -4509,11 +4512,11 @@ async function generateTC(orderData) {
                         ${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                
                           </tr>
                 <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}

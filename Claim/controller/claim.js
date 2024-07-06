@@ -386,7 +386,6 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
 
-    // console.log("servicer====================",servicer);return;
 
     let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
     res.send({
