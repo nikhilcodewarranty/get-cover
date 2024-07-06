@@ -3931,17 +3931,17 @@ exports.markAsPaid = async (req, res) => {
 
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
-            { status: "Active" },
+            { status: "Active" }, 
             { new: true }
         );
-        //let count1 = await contractService.getContractsCount();
+        //let count1 = await contractService.getContractsCount(); 
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let checkLength = savedResponse.productsArray.length - 1
         let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-            const readOpts = { // <--- need these settings in readFile options
-                //cellText:false, 
+            const readOpts = {
+                 // <--- need these settings in readFile options //cellText:false, 
                 cellDates: true
             };
             const jsonOpts = {
@@ -3999,7 +3999,7 @@ exports.markAsPaid = async (req, res) => {
                 let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                 claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
 
-                // -------------------------------------------------  copy from -----------------------------------------//
+                // ----------------------------------------------------------------      copy from    ---------------------------------------------------//
 
                 let dateCheck = new Date(product.coverageStartDate)
                 let adhDays = Number(product.adh ? product.adh != '' ? product.adh : 0 : 0)
