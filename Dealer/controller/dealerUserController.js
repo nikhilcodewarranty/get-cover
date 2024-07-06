@@ -4274,6 +4274,7 @@ exports.editOrderDetail = async (req, res) => {
                         unique_key_search: unique_key_search1,
                         unique_key_number: unique_key_number1,
                     };
+                    increamentNumber++;
                     contractArray.push(contractObject);
                     //let saveData = contractService.createContract(contractObject)
                 });
