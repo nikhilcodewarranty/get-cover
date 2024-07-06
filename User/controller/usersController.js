@@ -2828,6 +2828,20 @@ exports.addMembers = async (req, res) => {
       return;
     };
 
+    let notificationEmails = await supportingFunction.getUserEmails();
+
+    let emailData = {
+      senderName: data.firstName,
+      content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please reset the password for the system login",
+      subject: "Admin Account Creation"
+    }
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
+
+    let resetPasswordCode = randtoken.generate(4, '123456789')
+    let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
+    let resetLink = `http://${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+    // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
+    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink, role: "Admin", servicerName: data.firstName }))
     // let adminId = new mongoose.Types.ObjectId()
 
     // const notificationData = {
@@ -2993,7 +3007,7 @@ exports.checkToken = async (req, res) => {
     })
   }
 }
- 
+
 // const reportingController = require("./reportingController");
 // const orderService = require("../../Order/services/orderService");
 // const claimService = require("../../Claim/services/claimService");
