@@ -4509,11 +4509,11 @@ async function generateTC(orderData) {
                         ${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                
                           </tr>
                 <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}

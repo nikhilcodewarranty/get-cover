@@ -5338,11 +5338,11 @@ async function generateTC(orderData) {
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
                 <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
@@ -5373,7 +5373,7 @@ async function generateTC(orderData) {
                 const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
                 const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
 
-                // Create a new PDF Document
+                 // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
                 // Add the pages of the first PDF
@@ -5571,11 +5571,11 @@ exports.generateHtmltopdf = async (req, res) => {
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
-                    <td style="font-size:13px;padding:15px;">Coverage Start Date</td>
+                    <td style="font-size:13px;padding:15px;">Coverage Start Date:</td>
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period</td>
+                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
