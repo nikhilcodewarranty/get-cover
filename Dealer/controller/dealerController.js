@@ -2705,7 +2705,9 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        notificationEmails.push(dealerPrimary?.email);
+        //notificationEmails.push(dealerPrimary?.email);
+        console.log("notificationEmails-----------------------");   
+        console.log("dealerPrimary-----------------------",dealerPrimary.email);   
         // let emailData = {
         //   senderName: checkReseller.name,
         //   content: "Information has been updated successfully! effective immediately."
