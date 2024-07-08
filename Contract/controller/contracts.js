@@ -894,7 +894,6 @@ exports.cronJobEligible = async (req, res) => {
       for (let i = 0; i < result.length; i++) {
         let product = result[i];
         let contractId = product._id;
-
         if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
           contractIds.push(product._id);
           updateDoc = {
