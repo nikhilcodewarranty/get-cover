@@ -2839,7 +2839,7 @@ exports.addMembers = async (req, res) => {
 
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
-    let resetLink = `http://${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+    let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
     // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
     const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink, role: "Admin", servicerName: data.firstName }))
     // let adminId = new mongoose.Types.ObjectId()
