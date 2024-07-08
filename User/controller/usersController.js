@@ -3466,8 +3466,17 @@ exports.getDashboardGraph = async (req, res) => {
     let priceBookNames = getOrders.map(ID => ID.priceBookName)
     let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
 
-    let getPriceBooks = await priceBookService.findByName(priceBookNames)
-    let getPriceBooks1 = await priceBookService.getAllPriceCat(priceBookName1)
+    let priceQuery = {
+      name: { $in: priceBookNames }
+    }
+
+    let priceQuery1 = {
+      name: { $in: priceBookName1 }
+    }
+
+
+    let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
+    let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
     console.log(priceBookNames)
     const result = datesArray.map(date => {

@@ -1492,7 +1492,7 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-        console.log("date check +++++++++++++++++=",startOfMonth,endOfMonth,dailyQuery)
+        console.log("date check +++++++++++++++++=", startOfMonth, endOfMonth, dailyQuery)
 
         let dailyQuery1 = [
             {
@@ -1662,7 +1662,7 @@ exports.claimDailyReporting = async (data) => {
 
             return {
                 weekStart: item.weekStart,
-                total_amount: item.total_amount,
+                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 101,
                 total_claim: item.total_claim,
                 total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
                 total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
@@ -2186,7 +2186,7 @@ exports.claimReportinDropdown = async (req, res) => {
 
                 let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
 
-                console.log("-------------------------------------------------------",getServicersIds, 1)
+                console.log("-------------------------------------------------------", getServicersIds, 1)
                 let ids = getServicersIds?.map((item) => item.servicerId)
                 let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
 
@@ -2237,7 +2237,7 @@ exports.claimReportinDropdown = async (req, res) => {
                     servicers: servicer,
                     categories: getCategories1
                 }
-            }else{
+            } else {
                 result = {
                     dealers: getDealers,
                     priceBooks: [],
@@ -2248,7 +2248,7 @@ exports.claimReportinDropdown = async (req, res) => {
 
 
 
-            
+
 
 
 
