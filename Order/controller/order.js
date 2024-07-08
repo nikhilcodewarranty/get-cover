@@ -278,7 +278,7 @@ exports.createOrder1 = async (req, res) => {
             description: data.dealerPurchaseOrder + " " + "order has been created",
             userId: req.teammateId,
             contentId: null,
-            flag: 'order',
+            flag: 'order', 
             redirectionId: savedResponse.unique_key,
             notificationFor: IDs
         };
