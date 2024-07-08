@@ -3548,3 +3548,93 @@ exports.claimReporting = async (req, res) => {
   }
 }
 
+
+exports.getSkuData = async (req, res) => {
+  try {
+    let data = req.body
+    let endOfMonth1 = new Date();
+    let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    let startOfYear2 = new Date(new Date().setFullYear(startOfMonth2.getFullYear() - 1));
+
+
+    let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+    let startOfMonth1 = new Date(startOfYear2.getFullYear(), startOfYear2.getMonth(), startOfYear2.getDate());
+
+
+    let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+    let orderQuery = [
+      {
+        $match: {
+          updatedAt: { $gte: startOfMonth, $lte: endOfMonth }
+        }
+      },
+      {
+        $unwind: "$productsArray"
+      },
+      {
+        $group: {
+          _id: "$productsArray.priceBookDetails.name",
+          totalPrice: { $sum: "$productsArray.price" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          priceBookName: "$_id",
+          totalPrice: 1
+        }
+      },
+      {
+        $sort: { totalPrice: -1 }
+      }
+
+    ]
+
+    let orderQuery1 = [
+      {
+        $match: {
+          updatedAt: { $gte: startOfMonth1, $lte: endOfMonth }
+        }
+      },
+      {
+        $unwind: "$productsArray"
+      },
+      {
+        $group: {
+          _id: "$productsArray.priceBookDetails.name",
+          totalPrice: { $sum: "$productsArray.price" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          priceBookName: "$_id",
+          totalPrice: 1
+        }
+      },
+      {
+        $sort: { totalPrice: -1 }
+      }
+
+    ]
+    let getOrders = await orderService.getAllOrders1(orderQuery)
+    let getOrders1 = await orderService.getAllOrders1(orderQuery1)
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result1: getOrders,
+      result2: getOrders1,
+    })
+
+
+    console.log(startOfMonth, endOfMonth)
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
