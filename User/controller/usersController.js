@@ -3293,6 +3293,79 @@ exports.getDashboardInfo = async (req, res) => {
 exports.getDashboardGraph = async (req, res) => {
   try {
     let data = req.body
+    // sku data query ++++++++
+
+    let endOfMonth1s = new Date();
+    let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
+
+
+    let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
+    let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
+
+
+    let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
+
+    let orderQuery = [
+      {
+        $match: {
+          updatedAt: { $gte: startOfMonths, $lte: endOfMonths }
+        }
+      },
+      {
+        $unwind: "$productsArray"
+      },
+      {
+        $group: {
+          _id: "$productsArray.priceBookDetails.name",
+          totalPrice: { $sum: "$productsArray.price" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          priceBookName: "$_id",
+          totalPrice: 1
+        }
+      },
+      {
+        $sort: { totalPrice: -1 }
+      }
+
+    ]
+
+    let orderQuery1 = [
+      {
+        $match: {
+          updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths }
+        }
+      },
+      {
+        $unwind: "$productsArray"
+      },
+      {
+        $group: {
+          _id: "$productsArray.priceBookDetails.name",
+          totalPrice: { $sum: "$productsArray.price" }
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          priceBookName: "$_id",
+          totalPrice: 1
+        }
+      },
+      {
+        $sort: { totalPrice: -1 }
+      }
+
+    ]
+   
+
+
+
     // let data = req.body
     let endOfMonth1 = new Date();
     let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
@@ -3381,6 +3454,9 @@ exports.getDashboardGraph = async (req, res) => {
     let getData = await claimService.getAllClaims(dailyQuery)
     let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
+    let getOrders = await orderService.getAllOrders1(orderQuery)
+    let getOrders1 = await orderService.getAllOrders1(orderQuery1)
+
     console.log(startOfMonth, endOfMonth, getData2)
     const result = datesArray.map(date => {
       const dateString = date.toISOString().slice(0, 10);
@@ -3408,7 +3484,9 @@ exports.getDashboardGraph = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       claim_result: result,
-      order_result: result1
+      order_result: result1,
+      monthly_sku:getOrders,
+      yealy_sku:getOrders1
     })
     // return { mergedArray, result, result1, result2, totalFees }
 
@@ -3551,23 +3629,22 @@ exports.claimReporting = async (req, res) => {
 
 exports.getSkuData = async (req, res) => {
   try {
-    let data = req.body
-    let endOfMonth1 = new Date();
-    let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+    let endOfMonth1s = new Date();
+    let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
 
-    let startOfYear2 = new Date(new Date().setFullYear(startOfMonth2.getFullYear() - 1));
-
-
-    let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-    let startOfMonth1 = new Date(startOfYear2.getFullYear(), startOfYear2.getMonth(), startOfYear2.getDate());
+    let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
 
 
-    let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+    let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
+    let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
+
+
+    let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
 
     let orderQuery = [
       {
         $match: {
-          updatedAt: { $gte: startOfMonth, $lte: endOfMonth }
+          updatedAt: { $gte: startOfMonths, $lte: endOfMonths }
         }
       },
       {
@@ -3595,7 +3672,7 @@ exports.getSkuData = async (req, res) => {
     let orderQuery1 = [
       {
         $match: {
-          updatedAt: { $gte: startOfMonth1, $lte: endOfMonth }
+          updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths }
         }
       },
       {
