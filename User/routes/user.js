@@ -27,6 +27,7 @@ router.get("/getCountNotification", [verifyToken], userController.getCountNotifi
 router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
 router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); //get dashboard info
 router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); //get dashboard info
+router.get("/getSkuData", [verifyToken], userController.getSkuData); //get dashboard info
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
