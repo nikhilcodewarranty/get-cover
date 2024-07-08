@@ -1588,7 +1588,6 @@ exports.claimDailyReporting = async (data) => {
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             let orderIds = getOrders.map(ID => ID.unique_key)
-            console.log("getOrderIds--------------------", orderIds)
             dailyQuery[0].$match.orderId = { $in: orderIds }
             dailyQuery1[0].$match.orderId = { $in: orderIds }
             dailyQuery2[0].$match.orderId = { $in: orderIds }

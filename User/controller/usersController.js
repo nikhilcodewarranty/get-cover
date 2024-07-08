@@ -3310,7 +3310,9 @@ exports.getDashboardGraph = async (req, res) => {
     let orderQuery = [
       {
         $match: {
-          updatedAt: { $gte: startOfMonths, $lte: endOfMonths }
+          updatedAt: { $gte: startOfMonths, $lte: endOfMonths },
+          status: "Active"
+
         }
       },
       {
@@ -3319,14 +3321,17 @@ exports.getDashboardGraph = async (req, res) => {
       {
         $group: {
           _id: "$productsArray.priceBookDetails.name",
-          totalPrice: { $sum: "$productsArray.price" }
+          totalPrice: { $sum: "$productsArray.price" },
+          // term: "$productsArray.term",
         }
       },
       {
         $project: {
           _id: 0,
           priceBookName: "$_id",
-          totalPrice: 1
+          totalPrice: 1,
+          term: 1,
+
         }
       },
       {
@@ -3338,7 +3343,8 @@ exports.getDashboardGraph = async (req, res) => {
     let orderQuery1 = [
       {
         $match: {
-          updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths }
+          updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths },
+          status: "Active"
         }
       },
       {
@@ -3362,7 +3368,7 @@ exports.getDashboardGraph = async (req, res) => {
       }
 
     ]
-   
+
 
 
 
@@ -3457,7 +3463,13 @@ exports.getDashboardGraph = async (req, res) => {
     let getOrders = await orderService.getAllOrders1(orderQuery)
     let getOrders1 = await orderService.getAllOrders1(orderQuery1)
 
-    console.log(startOfMonth, endOfMonth, getData2)
+    let priceBookNames = getOrders.map(ID => ID.priceBookName)
+    let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
+
+    let getPriceBooks = await priceBookService.findByName(priceBookNames)
+    let getPriceBooks1 = await priceBookService.getAllPriceCat(priceBookName1)
+
+    console.log(priceBookNames)
     const result = datesArray.map(date => {
       const dateString = date.toISOString().slice(0, 10);
       const order = getData.find(item => item._id === dateString);
@@ -3485,8 +3497,8 @@ exports.getDashboardGraph = async (req, res) => {
       message: "Success",
       claim_result: result,
       order_result: result1,
-      monthly_sku:getOrders,
-      yealy_sku:getOrders1
+      monthly_sku: getPriceBooks,
+      yealy_sku: getPriceBooks1
     })
     // return { mergedArray, result, result1, result2, totalFees }
 

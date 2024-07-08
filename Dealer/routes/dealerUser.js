@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const dealerUserController = require("../controller/dealerUserController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
-const validator = require('../config/validation'); 
+const validator = require('../config/validation');
 
 router.post('/getDealerUsers', [verifyToken], dealerUserController.getDealerUsers)
 router.post('/createOrder', [verifyToken], dealerUserController.createOrder)
@@ -41,5 +41,7 @@ router.post('/getDealerArchievedOrders', [verifyToken], dealerUserController.get
 router.post("/createClaim", [verifyToken], dealerUserController.addClaim)
 
 router.post("/getAllClaims", [verifyToken], dealerUserController.getAllClaims)
+router.post("/saleReporting", [verifyToken], dealerUserController.saleReporting)
+router.post("/claimReporting", [verifyToken], dealerUserController.claimReporting)
 
 module.exports = router; 

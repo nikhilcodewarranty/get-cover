@@ -37,6 +37,8 @@ const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
 const { string } = require('joi');
+const reportingController = require("../../User/controller/reportingController");
+
 const providerService = require('../../Provider/services/providerService');
 const { getServicer } = require('../../Provider/controller/serviceAdminController');
 const resellerService = require('../services/resellerService');
@@ -3481,7 +3483,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
 
         let priceBookDetail
         if (mergedPriceBooks.length == 1) {
-             priceBookDetail = mergedPriceBooks[0]
+            priceBookDetail = mergedPriceBooks[0]
         } else {
             priceBookDetail = {}
         }
@@ -4035,8 +4037,8 @@ exports.editOrderDetail = async (req, res) => {
             let dealerBookDetail = [];
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
-                let checkLength = savedResponse.productsArray.length -1
-            await savedResponse.productsArray.map(async (product,index) => {
+            let checkLength = savedResponse.productsArray.length - 1
+            await savedResponse.productsArray.map(async (product, index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
@@ -4071,7 +4073,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 // let savedDataOrder = savedResponse.toObject()
                 totalDataComing.forEach((data, index) => {
-                    let unique_key_number1 =increamentNumber
+                    let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
@@ -4340,8 +4342,8 @@ exports.editOrderDetail = async (req, res) => {
                     mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
                     // Customer Email here with T and C
                     //generate T anc C
-          
-                    if(index == checkLength){
+
+                    if (index == checkLength) {
 
                         let reportingData = {
                             orderId: savedResponse._id,
@@ -4350,7 +4352,7 @@ exports.editOrderDetail = async (req, res) => {
                             dealerId: data.dealerId,
                             // dealerPriceBook: dealerBookDetail
                         }
-        
+
                         await supportingFunction.reportingData(reportingData)
                     }
 
@@ -4575,7 +4577,7 @@ async function generateTC(orderData) {
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            console.log("pathToAttachment----------------------------",pathToAttachment)
+            console.log("pathToAttachment----------------------------", pathToAttachment)
             fs.readFile(pathToAttachment)
                 .then(async (fileData) => {
                     const attachment = fileData.toString('base64');
@@ -4621,7 +4623,7 @@ async function generateTC(orderData) {
 
         })
         return 1
- 
+
     }
     catch (error) {
         console.error('Error :', error);
@@ -5616,6 +5618,103 @@ exports.getAllClaims = async (req, res, next) => {
         })
     }
 };
+
+exports.saleReporting = async (req, res) => {
+    try {
+        // if(!req.body.priceBookId ){
+        //   res.send({
+        //     code:constant.errorCode,
+        //     message:"Payload values are missing"
+        //   })
+        //   return
+        // }
+        // if(!req.body.dealerId){
+        //   res.send({
+        //     code:constant.errorCode,
+        //     message:"Payload values are missing"
+        //   })
+        //   return
+        // }
+        if (req.body.flag == "daily") {
+            let bodyData = req.body
+            bodyData.dealerId = req.userId
+            let sales = await reportingController.dailySales1(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else if (req.body.flag == "weekly") {
+            let bodyData = req.body
+            bodyData.dealerId = req.userId
+            let sales = await reportingController.weeklySales(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else if (req.body.flag == "day") {
+            let bodyData = req.body
+            bodyData.dealerId = req.userId
+            let sales = await reportingController.daySale(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                result: [],
+                message: "Invalid flag value"
+            })
+        }
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.claimReporting = async (req, res) => {
+    try {
+        let data = req.body
+        if (data.flag == "daily") {
+            data.dealerId = req.userId
+            let claim = await reportingController.claimDailyReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        } else if (data.flag == "weekly") {
+            data.dealerId = req.userId
+            let claim = await reportingController.claimWeeklyReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        } else if (data.flag == "day") {
+            data.dealerId = req.userId
+            let claim = await reportingController.claimDayReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+
 
 
 
