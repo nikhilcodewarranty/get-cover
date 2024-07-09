@@ -43,5 +43,6 @@ router.post("/createClaim", [verifyToken], dealerUserController.addClaim)
 router.post("/getAllClaims", [verifyToken], dealerUserController.getAllClaims)
 router.post("/saleReporting", [verifyToken], dealerUserController.saleReporting)
 router.post("/claimReporting", [verifyToken], dealerUserController.claimReporting)
+router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleReportinDropDown)
 
 module.exports = router; 
