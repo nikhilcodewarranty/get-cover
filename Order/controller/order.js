@@ -5255,6 +5255,7 @@ async function generateTC(orderData) {
             }
         })
         const contractArray = await Promise.all(contractArrayPromise);
+        
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
