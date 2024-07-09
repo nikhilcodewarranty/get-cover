@@ -821,6 +821,21 @@ exports.saleReporting = async (req, res) => {
 exports.claimReporting = async (req, res) => {
     try {
         let data = req.body
+
+        let returnValue = {
+            weekStart: 1,
+            total_amount: 1,
+            total_claim: 1,
+            total_unpaid_amount: 1,
+            total_unpaid_claim: 1,
+            total_paid_amount: 1,
+            total_paid_claim: 1,
+            total_rejected_claim: 1
+        };
+
+
+        data.returnValue = returnValue
+
         if (data.flag == "daily") {
             data.servicerId = req.userId
             let claim = await reportingController.claimDailyReporting(data)

@@ -3014,36 +3014,36 @@ exports.checkToken = async (req, res) => {
 
 exports.saleReporting = async (req, res) => {
   try {
-    // if(!req.body.priceBookId ){
-    //   res.send({
-    //     code:constant.errorCode,
-    //     message:"Payload values are missing"
-    //   })
-    //   return
-    // }
-    // if(!req.body.dealerId){
-    //   res.send({
-    //     code:constant.errorCode,
-    //     message:"Payload values are missing"
-    //   })
-    //   return
-    // }
-    if (req.body.flag == "daily") {
-      let sales = await reportingController.dailySales1(req.body)
+
+    let bodyData = req.body
+
+    bodyData.returnValue = {
+      total_broker_fee: 1,
+      total_admin_fee: 1,
+      total_fronting_fee: 1,
+      total_reserve_future_fee: 1,
+      total_contracts: 1,
+      total_reinsurance_fee: 1,
+      // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+      wholesale_price: 1
+    };
+
+    if (bodyData.flag == "daily") {
+      let sales = await reportingController.dailySales1(bodyData)
       res.send({
         code: constant.successCode,
         message: "Success",
         result: sales
       })
-    } else if (req.body.flag == "weekly") {
-      let sales = await reportingController.weeklySales(req.body)
+    } else if (bodyData.flag == "weekly") {
+      let sales = await reportingController.weeklySales(bodyData)
       res.send({
         code: constant.successCode,
         message: "Success",
         result: sales
       })
-    } else if (req.body.flag == "day") {
-      let sales = await reportingController.daySale(req.body)
+    } else if (bodyData.flag == "day") {
+      let sales = await reportingController.daySale(bodyData)
       res.send({
         code: constant.successCode,
         message: "Success",
@@ -3617,6 +3617,21 @@ exports.saleReporting1 = async (req, res) => {
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
+
+    let returnValue = {
+      weekStart: 1,
+      total_amount: 1,
+      total_claim: 1,
+      total_unpaid_amount: 1,
+      total_unpaid_claim: 1,
+      total_paid_amount: 1,
+      total_paid_claim: 1,
+      total_rejected_claim: 1
+    };
+
+
+    data.returnValue = returnValue
+
     if (data.flag == "daily") {
       let claim = await reportingController.claimDailyReporting(data)
       res.send({

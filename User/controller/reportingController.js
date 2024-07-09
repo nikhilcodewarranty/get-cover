@@ -529,13 +529,13 @@ exports.weeklySales = async (data, req, res) => {
 
             return {
                 ...item,
-                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
-                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
-                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
-                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_contracts: match ? match.total_contracts : item.total_contracts,
-                wholesale_price: wholesale_price
+                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
+                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
+                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
+                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
+                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
+                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
             };
         });
 
@@ -926,13 +926,13 @@ exports.daySale = async (data) => {
 
             return {
                 ...item,
-                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
-                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
-                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
-                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_contracts: match ? match.total_contracts : item.total_contracts,
-                wholesale_price: wholesale_price
+                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
+                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
+                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
+                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
+                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
+                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
             };
         });
 
@@ -1132,14 +1132,14 @@ exports.dailySales1 = async (data, req, res) => {
 
             return {
                 ...item,
-                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
-                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
-                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
-                total_contracts: match ? match.total_contracts : item.total_contracts,
-                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
+                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
+                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
+                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
+                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
                 // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price: wholesale_price
+                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
             };
         });
 
@@ -1662,13 +1662,13 @@ exports.claimDailyReporting = async (data) => {
 
             return {
                 weekStart: item.weekStart,
-                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 101,
-                total_claim: item.total_claim,
-                total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
-                total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
-                total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
-                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
-                total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
+                total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
+                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
+                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
+                total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
+                total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
+                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
             };
         });
 
@@ -1954,14 +1954,14 @@ exports.claimWeeklyReporting = async (data) => {
 
             return {
                 weekStart: item.weekStart,
-                total_amount: item.total_amount,
-                total_claim: item.total_claim,
-                total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
-                total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
-                total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
-                total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
-                total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0,
-            };
+                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
+                total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
+                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
+                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
+                total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
+                total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
+                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
+            };;
         });
 
         const totalFees = mergedArray.reduce((acc, curr) => {
@@ -2133,13 +2133,13 @@ exports.claimDayReporting = async (data) => {
 
         let result = [{
             weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
-            total_amount: getData.length ? getData[0].total_amount : 0,
-            total_claim: getData.length ? getData[0].total_claim : 0,
-            total_unpaid_amount: getData1.length ? getData1[0].total_unpaid_amount : 0,
-            total_unpaid_claim: getData1.length ? getData1[0].total_unpaid_claim : 0,
-            total_paid_amount: getData2.length ? getData2[0].total_paid_amount : 0,
-            total_paid_claim: getData2.length ? getData2[0].total_paid_claim : 0,
-            total_rejected_claim: getData3.length ? getData3[0].total_rejected_claim : 0,
+            total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+            total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+            total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+            total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+            total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+            total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+            total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
         }];
 
 
