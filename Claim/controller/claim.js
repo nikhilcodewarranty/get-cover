@@ -1857,6 +1857,9 @@ exports.saveBulkClaim = async (req, res) => {
       let existDealerId = {
         data: {}
       };
+      let existCustomerId = {
+        data: {}
+      };
       let match = {}
       if (req.role == 'Dealer') {
 

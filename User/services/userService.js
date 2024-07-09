@@ -1,5 +1,6 @@
 const user = require("../model/users");
 const role = require("../model/role");
+const setting = require("../model/setting");
 const notification = require("../model/notification");
 const terms = require("../model/terms");
 const dealerModel = require("../../Dealer/model/dealer");
@@ -51,7 +52,7 @@ module.exports = class userService {
   }
 
   //find user
-  static async findUser(query,sorting) {
+  static async findUser(query, sorting) {
     try {
       const allUsers = await user.find(query).sort(sorting);
       return allUsers;
@@ -266,7 +267,7 @@ module.exports = class userService {
   };
 
   //get all roles
-  static async getAllNotifications(query, skipLimit,limitData) {
+  static async getAllNotifications(query, skipLimit, limitData) {
     try {
       const roles = await notification.find(query).populate("userId").sort({ "createdAt": -1 }).skip(skipLimit).limit(limitData);
       return roles;
@@ -287,7 +288,7 @@ module.exports = class userService {
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
-      console.log("ddddddddddddddddddddddddddddddddddddddddddddddd",updatedResponse)
+      console.log("ddddddddddddddddddddddddddddddddddddddddddddddd", updatedResponse)
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
@@ -335,13 +336,41 @@ module.exports = class userService {
   }
 
 
+  static async getSetting(query) {
+    try {
+      const settingData = await setting.find(query);
+      return settingData;
+    }
+    catch (error) {
+      console.log(`Could not fetch setting ${error}`);
+    }
+  }
 
+  static async saveSetting(data) {
+    try {
+      const saveSetting = await new setting(data).save();
+      return saveSetting;
+    }
+    catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
+
+  static async updateSetting(creteria,data,option) {
+    try {
+      const saveSetting = await setting.findOneAndUpdate(creteria,data,option);
+      return saveSetting;
+    }
+    catch (error) {
+      console.log(`Could not fetch users ${error}`);
+    }
+  }
   //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
-  static async findOneUser(query,projection) {
+  static async findOneUser(query, projection) {
     try {
-      projection = projection ? projection :{}
-      const loggedInUser = await user.findOne(query,projection);
+      projection = projection ? projection : {}
+      const loggedInUser = await user.findOne(query, projection);
       return loggedInUser;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -350,7 +379,7 @@ module.exports = class userService {
 
   static async getMembers(query, projection) {
     try {
-      const response = await user.find(query, projection).sort({isPrimary:-1,"createdAt": -1 });
+      const response = await user.find(query, projection).sort({ isPrimary: -1, "createdAt": -1 });
       return response
     } catch (err) {
       console.log(err);

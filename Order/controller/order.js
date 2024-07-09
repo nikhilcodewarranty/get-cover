@@ -209,7 +209,6 @@ exports.createOrder1 = async (req, res) => {
                 }
             }
         }
-
         let serviceCoverage = '';
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
@@ -606,11 +605,6 @@ exports.createOrder1 = async (req, res) => {
                     return
                 }
                 if (saveContracts[0]) {
-
-                    console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------", index)
-                    console.log("check ak +++++++++++++++++++++++++++++++++++++=2nd--------------------------", index)
-
-
                     let savedResponse = await orderService.updateOrder(
                         { _id: checkOrder._id },
                         { status: "Active" },

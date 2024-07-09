@@ -69,6 +69,13 @@ router.post('/saleReporting',[verifyToken], userController.saleReporting);
 router.post('/saleReporting1',[verifyToken], userController.saleReporting1);
 router.post('/claimReporting',[verifyToken], userController.claimReporting);
 
+// Setting Routes
+
+router.post('/setting', userController.accountSetting);
+router.post('/setting/uploadLogo', userController.uploadLogo);
+
+
+
 
 
 

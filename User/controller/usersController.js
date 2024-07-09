@@ -22,6 +22,7 @@ const priceBookService = require('../../PriceBook/services/priceBookService')
 const providerService = require('../../Provider/services/providerService')
 const users = require("../model/users");
 const role = require("../model/role");
+const setting = require("../model/setting");
 const constant = require('../../config/constant');
 const emailConstant = require('../../config/emailConstant');
 const mail = require("@sendgrid/mail");
@@ -55,6 +56,20 @@ var upload = multer({
   { name: "file" },
   { name: "termCondition" },
 ])
+
+var logoImageStorage = multer.diskStorage({
+  destination: function (req, files, cb) {
+    cb(null, path.join(__dirname, '../../uploads/logo/'));
+  },
+  filename: function (req, files, cb) {
+    // console.log('file++++++++++', files)
+    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+  }
+})
+
+var logoImageUpload = multer({
+  storage: logoImageStorage,
+}).single("file");
 
 
 
@@ -3745,6 +3760,66 @@ exports.getSkuData = async (req, res) => {
     console.log(startOfMonth, endOfMonth)
 
   } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+// Setting Function
+
+exports.accountSetting = async (req, res) => {
+  try {
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
+    const data = req.body;
+    let response;
+    const getData = await userService.getSetting({});
+    if (getData.length > 0) {
+      response = await userService.updateSetting({ _id: data.updateId }, data, { new: true })
+
+    }
+    else {
+      response = await userService.saveSetting(data)
+    }
+
+    res.send({
+      code:constant.successCode,
+      message:"Success!",
+      result:response
+    })
+
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+exports.uploadLogo = async (req, res) => {
+  try {
+    logoImageUpload(req, res, async (err) => {
+      let file = req.file;
+      res.send({
+        code: constant.successCode,
+        message: 'Success!',
+        messageFile: {
+          fileName: file.filename,
+          name: file.originalname,
+          size: file.size
+        }
+      })
+    })
+  }
+  catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
