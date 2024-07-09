@@ -46,5 +46,6 @@ router.post("/claimReporting", [verifyToken], dealerUserController.claimReportin
 router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleReportinDropDown)
 router.post("/claimReportinDropdown", [verifyToken], dealerUserController.claimReportinDropdown)
 router.get("/getDashboardGraph", [verifyToken], dealerUserController.getDashboardGraph)
+router.get("/getDashboardInfo", [verifyToken], dealerUserController.getDashboardInfo)
 
 module.exports = router; 
