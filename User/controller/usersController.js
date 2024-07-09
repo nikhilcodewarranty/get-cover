@@ -3772,13 +3772,13 @@ exports.getSkuData = async (req, res) => {
 
 exports.accountSetting = async (req, res) => {
   try {
-    // if (req.role != "Super Admin") {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Only super admin allow to do this action!"
-    //   });
-    //   return
-    // }
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action!"
+      });
+      return
+    }
     const data = req.body;
     let response;
     const getData = await userService.getSetting({});
@@ -3791,11 +3791,35 @@ exports.accountSetting = async (req, res) => {
     }
 
     res.send({
-      code:constant.successCode,
-      message:"Success!",
-      result:response
+      code: constant.successCode,
+      message: "Success!",
+      result: response
     })
 
+  }
+  catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.getSetting = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+      res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action!"
+      });
+      return
+    }
+    const setting = await userService.getSetting({});
+    res.send({
+      code: constant.successCode,
+      message: "Success!",
+      result: setting
+    });
   }
   catch (err) {
     res.send({
