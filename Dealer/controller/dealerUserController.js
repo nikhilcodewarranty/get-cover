@@ -5801,7 +5801,16 @@ exports.claimReportinDropdown = async (req, res) => {
 
 
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }) // not using
-        let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", _id: { $in: ids } })
+        let getServicer = await providerService.getAllServiceProvider({
+            $or: [
+                { dealerId: req.userId },
+                {
+                    $and: [
+                        { accountStatus: "Approved" }, { _id: { $in: ids } }
+                    ]
+                }
+            ]
+        })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
 
@@ -5984,6 +5993,220 @@ exports.claimReportinDropdown = async (req, res) => {
             message: "Success",
             result: result
         })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+exports.getDashboardGraph = async (req, res) => {
+    try {
+        let data = req.body
+        // sku data query ++++++++
+
+        let endOfMonth1s = new Date();
+        let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
+
+
+        let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
+        let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
+
+
+        let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
+
+        let orderQuery = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonths, $lte: endOfMonths },
+                    status: "Active",
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+
+
+                }
+            },
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" },
+                    // term: "$productsArray.term",
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1,
+                    term: 1,
+
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+        let orderQuery1 = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths },
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    status: "Active"
+                }
+            },
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+
+
+
+        // let data = req.body
+        let endOfMonth1 = new Date();
+        let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+            return { code: 401, message: "invalid date" };
+        }
+
+        let datesArray = [];
+        let currentDate = new Date(startOfMonth);
+        while (currentDate <= endOfMonth) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        let dailyQuery1 = [
+            {
+                $match: {
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    status: "Active"
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    order_amount: { $sum: "$orderAmount" },
+                    total_order: { $sum: 1 },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        console.log(startOfMonth, endOfMonth, dailyQuery)
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData2 = await orderService.getAllOrders1(dailyQuery1)
+
+        let getOrders = await orderService.getAllOrders1(orderQuery)
+        let getOrders1 = await orderService.getAllOrders1(orderQuery1)
+
+        let priceBookNames = getOrders.map(ID => ID.priceBookName)
+        let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
+
+        let priceQuery = {
+            name: { $in: priceBookNames }
+        }
+
+        let priceQuery1 = {
+            name: { $in: priceBookName1 }
+        }
+
+
+        let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
+        let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
+
+        console.log(priceBookNames)
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_amount: order ? order.total_amount : 0,
+                total_claim: order ? order.total_claim : 0,
+
+            };
+        });
+        const result1 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData2.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                order_amount: order ? order.order_amount : 0,
+                total_order: order ? order.total_order : 0,
+
+
+            };
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            claim_result: result,
+            order_result: result1,
+            monthly_sku: getPriceBooks,
+            yealy_sku: getPriceBooks1
+        })
+        // return { mergedArray, result, result1, result2, totalFees }
+
 
     } catch (err) {
         res.send({
