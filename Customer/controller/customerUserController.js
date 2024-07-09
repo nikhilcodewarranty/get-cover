@@ -14,6 +14,7 @@ let orderService = require('../../Order/services/orderService')
 const constant = require("../../config/constant");
 const { default: mongoose } = require("mongoose");
 const serviceProvider = require("../../Provider/model/serviceProvider");
+const reportingController = require('../../User/controller/reportingController')
 
 const LOG = require('../../User/model/logs')
 
@@ -748,7 +749,7 @@ exports.getCustomerContract = async (req, res) => {
         servicerIds.push("1111121ccf9d400000000000")
       }
     };
-   
+
     let orderAndCondition = []
     if (servicerIds.length > 0) {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
@@ -825,9 +826,9 @@ exports.getCustomerContract = async (req, res) => {
                   productName: 1,
                   model: 1,
                   serial: 1,
-                  minDate:1,
+                  minDate: 1,
                   unique_key: 1,
-                  productValue:1,
+                  productValue: 1,
                   status: 1,
                   manufacture: 1,
                   eligibilty: 1,
@@ -871,9 +872,9 @@ exports.getCustomerContract = async (req, res) => {
                 productName: 1,
                 model: 1,
                 serial: 1,
-                minDate:1,
+                minDate: 1,
                 unique_key: 1,
-                productValue:1,
+                productValue: 1,
                 status: 1,
                 manufacture: 1,
                 eligibilty: 1,
@@ -901,9 +902,9 @@ exports.getCustomerContract = async (req, res) => {
         result1[e].reason = "Contract is not active"
       }
       // if (result1[e].minDate < new Date()) {
-          console.log("min date++++++++++++===11111111===+++++",result1[e])
-          if (new Date(result1[e].minDate) > new Date()) {
-          console.log("min date++++++++++++======+++++")
+      console.log("min date++++++++++++===11111111===+++++", result1[e])
+      if (new Date(result1[e].minDate) > new Date()) {
+        console.log("min date++++++++++++======+++++")
         const options = {
           year: 'numeric',
           month: '2-digit',
@@ -948,8 +949,8 @@ exports.getCustomerContract = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: "Success",
-      result:result1,
-      totalCount, 
+      result: result1,
+      totalCount,
       mainQuery
     })
 
@@ -1032,7 +1033,7 @@ exports.addCustomerUser = async (req, res) => {
     let logData = {
       userId: req.userId,
       endpoint: "addCustomerUser catch",
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
@@ -1184,7 +1185,7 @@ exports.changePrimaryUser = async (req, res) => {
     let logData = {
       endpoint: "changePrimaryUser catch",
       userId: req.userId,
-      body: req.body ? req.body : {"type":"Catch Error"},
+      body: req.body ? req.body : { "type": "Catch Error" },
       response: {
         code: constant.errorCode,
         message: err.message
@@ -1428,7 +1429,7 @@ exports.getContractById = async (req, res) => {
         getData[e].reason = "Contract is not active"
       }
       // if (getData[e].minDate < new Date()) {
-        if (new Date(getData[e].minDate) > new Date()) {
+      if (new Date(getData[e].minDate) > new Date()) {
 
         const options = {
           year: 'numeric',
@@ -1561,153 +1562,153 @@ exports.getContractById = async (req, res) => {
 
 exports.getDashboardData = async (req, res) => {
   try {
-      let data = req.body;
-      let project = {
-          productsArray: 1,
-          dealerId: 1,
-          unique_key: 1,
-          unique_key_number: 1,
-          unique_key_search: 1,
-          servicerId: 1,
-          customerId: 1,
-          resellerId: 1,
-          paymentStatus: 1,
-          status: 1,
-          venderOrder: 1,
-          orderAmount: 1,
-      };
+    let data = req.body;
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      unique_key_number: 1,
+      unique_key_search: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    };
 
-      let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
-      const claimQuery = { claimFile: 'Completed' }
-      var checkOrders_ = await orderService.getDashboardData(query, project);
-      //Get claims data
-      let lookupQuery = [
-          {
-              $match: claimQuery
-          },
-          {
-              $lookup: {
-                  from: "contracts",
-                  localField: "contractId",
-                  foreignField: "_id",
-                  as: "contracts",
-              }
-          },
-          {
-              $unwind: "$contracts"
-          },
-          {
-              $lookup: {
-                  from: "orders",
-                  localField: "contracts.orderId",
-                  foreignField: "_id",
-                  as: "contracts.orders",
-              },
+    let query = { status: 'Active', customerId: new mongoose.Types.ObjectId(req.userId) };
+    const claimQuery = { claimFile: 'Completed' }
+    var checkOrders_ = await orderService.getDashboardData(query, project);
+    //Get claims data
+    let lookupQuery = [
+      {
+        $match: claimQuery
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts",
+        }
+      },
+      {
+        $unwind: "$contracts"
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "contracts.orderId",
+          foreignField: "_id",
+          as: "contracts.orders",
+        },
 
+      },
+      {
+        $unwind: "$contracts.orders"
+      },
+      {
+        $match:
+        {
+          $and: [
+            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
+          ]
+        },
+      },
+      {
+        "$group": {
+          "_id": "",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
           },
-          {
-              $unwind: "$contracts.orders"
-          },
-          {
-              $match:
-              {
-                  $and: [
-                      // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                      { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-                  ]
-              },
-          },
-          {
-              "$group": {
-                  "_id": "",
-                  "totalAmount": {
-                      "$sum": {
-                          "$sum": "$totalAmount"
-                      }
-                  },
-              },
+        },
 
-          },
-      ]
-      let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+      },
+    ]
+    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
 
-      const rejectedQuery = { claimFile: { $ne: "Rejected" } }
-      //Get number of claims
-      let numberOfCompleletedClaims = [
-          {
-              $match: claimQuery
-          },
-          {
-              $lookup: {
-                  from: "contracts",
-                  localField: "contractId",
-                  foreignField: "_id",
-                  as: "contracts",
-              }
-          },
-          {
-              $unwind: "$contracts"
-          },
-          {
-              $lookup: {
-                  from: "orders",
-                  localField: "contracts.orderId",
-                  foreignField: "_id",
-                  as: "contracts.orders",
-              },
+    const rejectedQuery = { claimFile: { $ne: "Rejected" } }
+    //Get number of claims
+    let numberOfCompleletedClaims = [
+      {
+        $match: claimQuery
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts",
+        }
+      },
+      {
+        $unwind: "$contracts"
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "contracts.orderId",
+          foreignField: "_id",
+          as: "contracts.orders",
+        },
 
-          },
-          {
-              $unwind: "$contracts.orders"
-          },
-          {
-              $match:
-              {
-                  $and: [
-                      // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                      { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
-                  ]
-              },
-          },
-      ]
-      let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
-      const claimData = {
-          numberOfClaims: numberOfClaims.length,
-          valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
-      }
-      if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
-          res.send({
-              code: constant.errorCode,
-              message: "Unable to fetch order data",
-              result: {
-                  claimData: claimData,
-                  orderData: {
-                      "_id": "",
-                      "totalAmount": 0,
-                      "totalOrder": 0
-                  }
-              }
-              // result: {
-              //     "_id": "",
-              //     "totalAmount": 0,
-              //     "totalOrder": 0
-              // }
-          })
-          return;
-      }
+      },
+      {
+        $unwind: "$contracts.orders"
+      },
+      {
+        $match:
+        {
+          $and: [
+            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
+            { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
+          ]
+        },
+      },
+    ]
+    let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+    const claimData = {
+      numberOfClaims: numberOfClaims.length,
+      valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
+    }
+    if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
       res.send({
-          code: constant.successCode,
-          message: "Success",
-          result: {
-              claimData: claimData,
-              orderData: checkOrders_[0]
+        code: constant.errorCode,
+        message: "Unable to fetch order data",
+        result: {
+          claimData: claimData,
+          orderData: {
+            "_id": "",
+            "totalAmount": 0,
+            "totalOrder": 0
           }
+        }
+        // result: {
+        //     "_id": "",
+        //     "totalAmount": 0,
+        //     "totalOrder": 0
+        // }
       })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: {
+        claimData: claimData,
+        orderData: checkOrders_[0]
+      }
+    })
   } catch (err) {
-      res.send({
-          code: constant.errorCode,
-          message: err.message
-      })
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
   }
 };
 
@@ -1726,7 +1727,7 @@ exports.getCustomerDetails = async (req, res) => {
         $lookup: {
           from: "dealers",
           foreignField: "_id",
-          localField: "dealerId", 
+          localField: "dealerId",
           as: "dealer"
         }
       },
@@ -1762,6 +1763,65 @@ exports.getCustomerDetails = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message
+    })
+  }
+}
+
+exports.saleReporting = async (req, res) => {
+  try {
+
+    let bodyData = req.body
+
+    let getOrders = await orderService.getOrders({ customerId: req.userId })
+    let orderIds = getOrders.map(ID => new mongoose.Types.ObjectId(ID._id))
+    bodyData.orderId = orderIds
+    bodyData.dealerId = ""
+ 
+
+    bodyData.returnValue = {
+      total_broker_fee: 0,
+      total_admin_fee: 0,
+      total_fronting_fee: 0,
+      total_reserve_future_fee: 0,
+      total_contracts: 0,
+      total_reinsurance_fee: 0,
+      // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+      wholesale_price: 0
+    };
+
+    if (bodyData.flag == "daily") {
+      let sales = await reportingController.dailySales1(bodyData)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else if (bodyData.flag == "weekly") {
+      let sales = await reportingController.weeklySales(bodyData)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else if (bodyData.flag == "day") {
+      let sales = await reportingController.daySale(bodyData)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: sales
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        result: [],
+        message: "Invalid flag value"
+      })
+    }
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message,
     })
   }
 }

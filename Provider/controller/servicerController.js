@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const orderService = require("../../Order/services/orderService");
 const resellerService = require("../../Dealer/services/resellerService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
+const priceBookService = require("../../PriceBook/services/priceBookService");
 require("dotenv").config();
 
 const randtoken = require('rand-token').generator()
@@ -879,7 +880,7 @@ exports.claimReportinDropdown = async (req, res) => {
         let query = [
             {
                 $match: {
-                    servicerId: { $in: servicerId }
+                    servicerId: new mongoose.Types.ObjectId(req.userId)
                 }
             },
             {
@@ -914,12 +915,12 @@ exports.claimReportinDropdown = async (req, res) => {
         let getDealers = filteredData
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
         let getPriceBooks = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } }, { _id: 0, name: 1, pName: 1, coverageType: 1 })
-        let cateId = getPriceBooks.map(ID = ID._id)
+        let cateId = getPriceBooks.map(ID => ID._id)
         let getCategories = await priceBookService.getAllPriceCat({ _id: { $in: cateId } }, { name: 1, _id: 1 })
 
         result = {
             dealers: getDealers,
-            servicers: getServicer,
+            // servicers: getServicer,
             priceBooks: getPriceBooks,
             categories: getCategories
         }
@@ -928,31 +929,6 @@ exports.claimReportinDropdown = async (req, res) => {
 
             if (data.dealerId != "") {
 
-                // let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
-
-                // console.log("-------------------------------------------------------", getServicersIds, 1)
-                // let ids = getServicersIds?.map((item) => item.servicerId)
-                // let servicer = await providerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-
-                // // Get Dealer Reseller Servicer
-
-                // let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
-
-                // if (dealerResellerServicer.length > 0) {
-                //     servicer.unshift(...dealerResellerServicer);
-                // }
-
-                // let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
-                // if (!checkDealer) {
-                //     res.send({
-                //         code: constant.errorCode,
-                //         message: "Invalid dealer ID"
-                //     })
-                //     return;
-                // }
-                // if (checkDealer.isServicer) {
-                //     servicer.unshift(checkDealer);
-                // };
 
                 let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
                 let priceBookIds = getDealerBooks?.map(ID => ID.priceBook)
@@ -1083,7 +1059,6 @@ exports.claimReportinDropdown = async (req, res) => {
 
             result = {
                 dealers: [],
-                servicers: [],
                 priceBooks: getPriceBooks,
                 categories: getCategories
             }
@@ -1101,7 +1076,7 @@ exports.claimReportinDropdown = async (req, res) => {
     } catch (err) {
         res.send({
             code: constant.errorCode,
-            message: err.message
+            message: err.stack
         })
     }
 };

@@ -12,10 +12,11 @@ router.post('/getOrderContract/:orderId', [verifyToken], customerController.getO
 
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser)
 router.get('/getCustomerById', [verifyToken], customerController.getCustomerById)
-router.get('/getContractById/:contractId',[verifyToken],customerController.getContractById)
+router.get('/getContractById/:contractId', [verifyToken], customerController.getContractById)
 router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingleOrder)
-router.get('/getDashboardData',[verifyToken],customerController.getDashboardData)
-router.get('/getCustomerDetails',[verifyToken],customerController.getCustomerDetails)
+router.get('/getDashboardData', [verifyToken], customerController.getDashboardData)
+router.get('/getCustomerDetails', [verifyToken], customerController.getCustomerDetails)
+router.post('/saleReporting', [verifyToken], customerController.saleReporting)
 
 
 

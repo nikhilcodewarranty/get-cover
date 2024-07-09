@@ -478,6 +478,12 @@ exports.weeklySales = async (data, req, res) => {
 
         }
 
+        if (data.orderId) {
+            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.orderId = { $in: data.orderId }
+            dailyQuery1[0].$match.orderId = { $in: data.orderId }
+        }
+
         // Perform aggregation query
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
@@ -691,6 +697,12 @@ exports.weeklySalesOrder = async (req, res) => {
 
         }
 
+        if (data.orderId) {
+            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.orderId = { $in: data.orderId }
+            dailyQuery1[0].$match.orderId = { $in: data.orderId }
+        }
+
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
@@ -872,7 +884,11 @@ exports.daySale = async (data) => {
             // products:
 
         }
-
+        if (data.orderId) {
+            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.orderId = { $in: data.orderId }
+            dailyQuery1[0].$match.orderId = { $in: data.orderId }
+        }
         if (data.categoryId != "") {
             // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
@@ -999,7 +1015,6 @@ exports.dailySales1 = async (data, req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
         datesArray.shift()
-        console.log(datesArray, "000000000000000000000000000000")
 
         let dailyQuery = [
             {
@@ -1045,11 +1060,16 @@ exports.dailySales1 = async (data, req, res) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = dealerId
             dailyQuery1[0].$match.dealerId = dealerId
+        }
+
+        if (data.orderId) {
+            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.orderId = { $in: data.orderId }
+            dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
 
         if (data.priceBookId.length != 0) {
@@ -1068,7 +1088,6 @@ exports.dailySales1 = async (data, req, res) => {
 
             // products:
 
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -1080,7 +1099,6 @@ exports.dailySales1 = async (data, req, res) => {
             }
         }
 
-        console.log("getOrders++++++++++++++++++", getOrders, getOrders1)
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
