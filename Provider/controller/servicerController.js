@@ -758,3 +758,114 @@ exports.getDashboardData = async (req, res) => {
         })
     }
 };
+
+exports.saleReporting = async (req, res) => {
+    try {
+        // if(!req.body.priceBookId ){
+        //   res.send({
+        //     code:constant.errorCode,
+        //     message:"Payload values are missing"
+        //   })
+        //   return
+        // }
+        // if(!req.body.dealerId){
+        //   res.send({
+        //     code:constant.errorCode,
+        //     message:"Payload values are missing"
+        //   })
+        //   return
+        // }
+        if (req.body.flag == "daily") {
+            let bodyData = req.body
+            bodyData.servicerId = req.userId
+            let sales = await reportingController.dailySales1(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else if (req.body.flag == "weekly") {
+            let bodyData = req.body
+            bodyData.servicerId = req.userId
+            let sales = await reportingController.weeklySales(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else if (req.body.flag == "day") {
+            let bodyData = req.body
+            bodyData.servicerId = req.userId
+            let sales = await reportingController.daySale(bodyData)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: sales
+            })
+        } else {
+            res.send({
+                code: constant.successCode,
+                result: [],
+                message: "Invalid flag value"
+            })
+        }
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.claimReporting = async (req, res) => {
+    try {
+        let data = req.body
+
+        let returnValue = {
+            weekStart: 1,
+            total_amount: 1,
+            total_claim: 1,
+            total_unpaid_amount: 1,
+            total_unpaid_claim: 1,
+            total_paid_amount: 1,
+            total_paid_claim: 1,
+            total_rejected_claim: 1
+        };
+
+
+        data.returnValue = returnValue
+
+        if (data.flag == "daily") {
+            data.servicerId = req.userId
+            let claim = await reportingController.claimDailyReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        } else if (data.flag == "weekly") {
+            data.servicerId = req.userId
+            let claim = await reportingController.claimWeeklyReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        } else if (data.flag == "day") {
+            data.servicerId = req.userId
+            let claim = await reportingController.claimDayReporting(data)
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: claim
+            })
+        }
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+

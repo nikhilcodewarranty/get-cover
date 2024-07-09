@@ -5621,41 +5621,37 @@ exports.getAllClaims = async (req, res, next) => {
 
 exports.saleReporting = async (req, res) => {
     try {
-        // if(!req.body.priceBookId ){
-        //   res.send({
-        //     code:constant.errorCode,
-        //     message:"Payload values are missing"
-        //   })
-        //   return
-        // }
-        // if(!req.body.dealerId){
-        //   res.send({
-        //     code:constant.errorCode,
-        //     message:"Payload values are missing"
-        //   })
-        //   return
-        // }
-        if (req.body.flag == "daily") {
-            let bodyData = req.body
-            bodyData.dealerId = req.userId
+
+        let bodyData = req.body
+        bodyData.returnValue = {
+            total_broker_fee: 1,
+            total_admin_fee: 1,
+            total_fronting_fee: 1,
+            total_reserve_future_fee: 1,
+            total_contracts: 1,
+            total_reinsurance_fee: 1,
+            // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+            wholesale_price: 1
+        };
+
+        bodyData.dealerId = new mongoose.Types.ObjectId(req.userId)
+
+
+        if (bodyData.flag == "daily") {
             let sales = await reportingController.dailySales1(bodyData)
             res.send({
                 code: constant.successCode,
                 message: "Success",
                 result: sales
             })
-        } else if (req.body.flag == "weekly") {
-            let bodyData = req.body
-            bodyData.dealerId = req.userId
+        } else if (bodyData.flag == "weekly") {
             let sales = await reportingController.weeklySales(bodyData)
             res.send({
                 code: constant.successCode,
                 message: "Success",
                 result: sales
             })
-        } else if (req.body.flag == "day") {
-            let bodyData = req.body
-            bodyData.dealerId = req.userId
+        } else if (bodyData.flag == "day") {
             let sales = await reportingController.daySale(bodyData)
             res.send({
                 code: constant.successCode,
@@ -5681,6 +5677,20 @@ exports.saleReporting = async (req, res) => {
 exports.claimReporting = async (req, res) => {
     try {
         let data = req.body
+
+        let returnValue = {
+            weekStart: 1,
+            total_amount: 1,
+            total_claim: 1,
+            total_unpaid_amount: 1,
+            total_unpaid_claim: 1,
+            total_paid_amount: 1,
+            total_paid_claim: 1,
+            total_rejected_claim: 1
+        };
+
+        data.returnValue = returnValue
+
         if (data.flag == "daily") {
             data.dealerId = req.userId
             let claim = await reportingController.claimDailyReporting(data)
@@ -5713,6 +5723,729 @@ exports.claimReporting = async (req, res) => {
         })
     }
 }
+
+exports.saleReportinDropDown = async (req, res) => {
+    try {
+        let data = req.body
+        let result;
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        const convertedData = getDealers.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+
+        let priceBook = getPriceBooks.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+        let categories = getCategories.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+
+        result = {
+            getPriceBooks: priceBook,
+            getCategories: categories
+        }
+        data.dealerId = req.userId
+        if (data.dealerId != "") {
+            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
+            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+            priceBook = getPriceBooks1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+            categories = getCategories1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+            result = {
+                getPriceBooks: priceBook,
+                getCategories: categories
+            }
+            if (data.categoryId != "") {
+                let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                result = {
+                    getPriceBooks: priceBook,
+                    getCategories: categories
+                }
+            }
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
+exports.claimReportinDropdown = async (req, res) => {
+    try {
+        let data = req.body
+        let result;
+
+        let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+        let ids = getServicersIds?.map((item) => item.servicerId)
+
+
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" }) // not using
+        let getServicer = await providerService.getAllServiceProvider({
+            $or: [
+                { dealerId: req.userId },
+                {
+                    $and: [
+                        { accountStatus: "Approved" }, { _id: { $in: ids } }
+                    ]
+                }
+            ]
+        })
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+
+        result = {
+            servicers: getServicer,
+            priceBooks: getPriceBooks,
+            categories: getCategories
+        }
+
+        // if (data.primary == "dealer") {
+
+        //     if (data.dealerId != "") {
+
+        //         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
+
+        //         console.log("-------------------------------------------------------", getServicersIds, 1)
+        //         let ids = getServicersIds?.map((item) => item.servicerId)
+        //         let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+
+        //         // Get Dealer Reseller Servicer
+
+        //         let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
+
+        //         if (dealerResellerServicer.length > 0) {
+        //             servicer.unshift(...dealerResellerServicer);
+        //         }
+
+        //         let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
+        //         if (!checkDealer) {
+        //             res.send({
+        //                 code: constant.errorCode,
+        //                 message: "Invalid dealer ID"
+        //             })
+        //             return;
+        //         }
+        //         if (checkDealer.isServicer) {
+        //             servicer.unshift(checkDealer);
+        //         };
+
+        //         let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
+        //         let priceBookIds = getDealerBooks?.map(ID => ID.priceBook)
+        //         let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+        //         let categoriesIds = getPriceBooks1?.map(ID => ID.category)
+        //         let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
+        //         if (data.categoryId != "") {
+        //             getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+        //             // result = {
+        //             //     dealers: getDealers,
+        //             //     servicers: servicer,
+        //             //     priceBooks: getPriceBooks2,
+        //             //     categories: getCategories1
+        //             // }
+        //         }
+        //         if (data.priceBookId.length != 0) {
+        //             getCategories1 = []
+        //         }
+
+
+
+        //         result = {
+        //             dealers: getDealers,
+        //             priceBooks: getPriceBooks1,
+        //             servicers: servicer,
+        //             categories: getCategories1
+        //         }
+        //     } else {
+        //         result = {
+        //             dealers: getDealers,
+        //             priceBooks: [],
+        //             servicers: [],
+        //             categories: []
+        //         }
+        //     }
+        // }
+
+        if (data.primary == "servicer") {
+            let servicerId;
+            if (data.servicerId != "") {
+                servicerId = [new mongoose.Types.ObjectId(req.body.servicerId)]
+            } else {
+                servicerId = getServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
+            }
+
+            //getting servicers dealers ----------
+            // let query = [
+            //     {
+            //         $match: {
+            //             servicerId: { $in: servicerId }
+            //         }
+            //     },
+            //     {
+            //         $lookup: {
+            //             from: "dealers",
+            //             localField: "dealerId",
+            //             foreignField: "_id",
+            //             as: "dealerData",
+            //         }
+            //     },
+            //     {
+            //         $unwind: "$dealerData"
+            //     },
+            //     {
+            //         $project: {
+            //             "dealerData": 1,
+            //             _id: 0
+            //         }
+            //     }
+
+            // ]
+            // let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
+
+
+            // let dealerIds = filteredData.map(ID => ID.dealerData._id)
+            // console.log("checking dealerIds--------------------", filteredData, dealerIds)
+
+            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: req.userId })
+            console.log("checking dealerIds--------------------", { dealerId: req.userId })
+            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
+            // if (data.dealerId != "") {
+            //     let getDealerBooks1 = await dealerPriceService.findAllDealerPrice({ dealerId: req.userId })
+            //     let priceBookIds1 = getDealerBooks1.map(ID => ID.priceBook)
+            //     getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds1 } })
+            //     let categoriesIds1 = getPriceBooks1.map(ID => ID.category)
+            //     getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds1 } })
+
+            // }
+
+            if (data.categoryId != "") {
+                getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+            }
+            if (data.priceBookId.length != 0) {
+                getCategories1 = []
+            }
+
+            // filteredData = {
+            //     dealers: filteredData.map(dealer => {
+            //         return {
+            //             _id: dealer.dealerData._id,
+            //             name: dealer.dealerData.name
+            //         };
+            //     })
+            // };
+
+            result = {
+                // dealers: filteredData.dealers,
+                priceBooks: getPriceBooks1,
+                servicers: getServicer,
+                categories: getCategories1
+            }
+
+        }
+
+        if (data.primary == "category") {
+            if (data.categoryId != "") {
+                getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
+            }
+
+            if (data.priceBookId.length != 0) {
+                getCategories = []
+            }
+
+            result = {
+                // dealers: [],
+                servicers: [],
+                priceBooks: getPriceBooks,
+                categories: getCategories
+            }
+
+        }
+
+
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+exports.getDashboardGraph = async (req, res) => {
+    try {
+        let data = req.body
+        // sku data query ++++++++
+
+        let endOfMonth1s = new Date();
+        let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
+
+
+        let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
+        let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
+
+
+        let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
+
+        let orderQuery = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonths, $lte: endOfMonths },
+                    status: "Active",
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+
+
+                }
+            },
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" },
+                    // term: "$productsArray.term",
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1,
+                    term: 1,
+
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+        let orderQuery1 = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths },
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    status: "Active"
+                }
+            },
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+
+
+
+        // let data = req.body
+        let endOfMonth1 = new Date();
+        let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+            return { code: 401, message: "invalid date" };
+        }
+
+        let datesArray = [];
+        let currentDate = new Date(startOfMonth);
+        while (currentDate <= endOfMonth) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        let dailyQuery1 = [
+            {
+                $match: {
+                    dealerId: new mongoose.Types.ObjectId(req.userId),
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    status: "Active"
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    order_amount: { $sum: "$orderAmount" },
+                    total_order: { $sum: 1 },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        console.log(startOfMonth, endOfMonth, dailyQuery)
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData2 = await orderService.getAllOrders1(dailyQuery1)
+
+        let getOrders = await orderService.getAllOrders1(orderQuery)
+        let getOrders1 = await orderService.getAllOrders1(orderQuery1)
+
+        let priceBookNames = getOrders.map(ID => ID.priceBookName)
+        let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
+
+        let priceQuery = {
+            name: { $in: priceBookNames }
+        }
+
+        let priceQuery1 = {
+            name: { $in: priceBookName1 }
+        }
+
+
+        let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
+        let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
+
+        console.log(priceBookNames)
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_amount: order ? order.total_amount : 0,
+                total_claim: order ? order.total_claim : 0,
+
+            };
+        });
+        const result1 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData2.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                order_amount: order ? order.order_amount : 0,
+                total_order: order ? order.total_order : 0,
+
+
+            };
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            claim_result: result,
+            order_result: result1,
+            monthly_sku: getPriceBooks,
+            yealy_sku: getPriceBooks1
+        })
+        // return { mergedArray, result, result1, result2, totalFees }
+
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+exports.getDashboardInfo = async (req, res) => {
+    // if (req.role != 'Super Admin') {
+    //     res.send({
+    //         code: constant.errorCode,
+    //         message: "Only Super admin allow to do this action"
+    //     })
+    //     return;
+    // }
+    let orderQuery = [
+        {
+            $match: { status: "Active",dealerId: new mongoose.Types.ObjectId(req.userId) },
+            
+        },
+        {
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+
+            }
+        },
+        { $sort: { unique_key: -1 } }]
+    const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+    const claimQuery = [
+        {
+            $match: {
+                dealerId: new mongoose.Types.ObjectId(req.userId)
+            },
+        },
+        {
+            $sort: {
+                unique_key_number: -1
+            }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "contractId",
+                foreignField: "_id",
+                as: "contract"
+            }
+        },
+        {
+            $unwind: "$contract"
+        },
+        {
+            $project: {
+                unique_key: 1,
+                "contract.unique_key": 1,
+                unique_key_number: 1,
+                totalAmount: 1
+            }
+        },
+    ]
+    const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+    // let lookupQuery = [
+    //     {
+    //         $lookup: {
+    //             from: "users",
+    //             localField: "_id",
+    //             foreignField: "metaId",
+    //             as: "users",
+    //             pipeline: [
+    //                 {
+    //                     $match: {
+    //                         isPrimary: true
+    //                     }
+    //                 }
+    //             ]
+    //         }
+    //     },
+    //     {
+    //         $lookup: {
+    //             from: "orders",
+    //             localField: "_id",
+    //             foreignField: "dealerId",
+    //             as: "order",
+    //             pipeline: [
+    //                 {
+    //                     $match: { status: "Active" }
+    //                 },
+    //                 {
+    //                     "$group": {
+    //                         _id: "$order.dealerId",
+    //                         "totalOrder": { "$sum": 1 },
+    //                         "totalAmount": {
+    //                             "$sum": "$orderAmount"
+    //                         }
+    //                     }
+    //                 },
+    //             ]
+    //         }
+    //     },
+    //     // {
+    //     //   $unwind: "$order"
+    //     // },
+    //     {
+    //         $project: {
+    //             name: 1,
+    //             totalAmount: {
+    //                 $cond: {
+    //                     if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
+    //                     then: { $arrayElemAt: ["$order.totalAmount", 0] },
+    //                     else: 0
+    //                 }
+    //             },
+    //             totalOrder: {
+    //                 $cond: {
+    //                     if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
+    //                     then: { $arrayElemAt: ["$order.totalOrder", 0] },
+    //                     else: 0
+    //                 }
+    //             },
+    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+    //         }
+    //     },
+    //     // {
+    //     //   $unwind: "$users"
+    //     // },
+    //     // {
+    //     //   $addFields: {
+    //     //     totalAmount: "$order.totalAmount"
+    //     //   }
+    //     // },
+
+    //     { "$sort": { totalAmount: -1 } },
+    //     { "$limit": 5 }  // Apply limit again after sorting
+    // ]
+
+    // const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
+
+    // let lookupClaim = [
+    //     {
+    //         $match: {
+    //             dealerId: null,
+    //             resellerId: null
+    //         }
+    //     },
+    //     {
+    //         $lookup: {
+    //             from: "users",
+    //             localField: "_id",
+    //             foreignField: "metaId",
+    //             as: "users",
+    //             pipeline: [
+    //                 {
+    //                     $match: {
+    //                         isPrimary: true
+    //                     }
+    //                 }
+    //             ]
+    //         }
+    //     },
+
+    //     {
+    //         $lookup: {
+    //             from: "claims",
+    //             localField: "_id",
+    //             foreignField: "servicerId",
+    //             as: "claims",
+    //             pipeline: [
+    //                 {
+    //                     $match: { claimFile: "Completed" }
+    //                 },
+    //                 {
+    //                     "$group": {
+    //                         _id: "$servicerId",
+    //                         "totalClaim": { "$sum": 1 },
+    //                         "totalClaimAmount": {
+    //                             "$sum": "$totalAmount"
+    //                         }
+    //                     }
+    //                 },
+    //             ]
+    //         }
+    //     },
+    //     {
+    //         $project: {
+    //             name: 1,
+    //             totalClaimAmount: {
+    //                 $cond: {
+    //                     if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
+    //                     then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
+    //                     else: 0
+    //                 }
+    //             },
+    //             totalClaim: {
+    //                 $cond: {
+    //                     if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
+    //                     then: { $arrayElemAt: ["$claims.totalClaim", 0] },
+    //                     else: 0
+    //                 }
+    //             },
+    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+    //         }
+    //     },
+    //     // {
+    //     //   $unwind: "$claims"
+    //     // },
+    //     // {
+    //     //   $unwind: "$users"
+    //     // },
+    //     // {
+    //     //   $addFields: {
+    //     //     totalClaimAmount: "$claims.totalClaimAmount"
+    //     //   }
+    //     // },
+    //     { "$sort": { totalClaimAmount: -1 } },
+    //     { "$limit": 5 }  // Apply limit again after sorting
+    // ]
+    // const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
+
+    const result = {
+        lastFiveOrder: lastFiveOrder,
+        lastFiveClaims: getLastNumberOfClaims,
+
+    }
+    res.send({
+        code: constant.successCode,
+        result: result
+    })
+}
+
+
 
 
 
