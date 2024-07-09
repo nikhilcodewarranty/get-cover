@@ -530,6 +530,7 @@ exports.weeklySales = async (data, req, res) => {
             return {
                 ...item,
                 total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+                total_broker_fee1: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
                 total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
                 total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
                 total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
@@ -907,6 +908,7 @@ exports.daySale = async (data) => {
         let result1 = [{
             weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_broker_fee: getOrders1.length ? getOrders1[0].total_broker_fee : 0,
+            total_broker_fee1: getOrders1.length ? getOrders1[0].total_broker_fee : 0,
             total_admin_fee: getOrders1.length ? getOrders1[0].total_admin_fee : 0,
             total_fronting_fee: getOrders1.length ? getOrders1[0].total_fronting_fee : 0,
             total_reserve_future_fee: getOrders1.length ? getOrders1[0].total_reserve_future_fee : 0,
@@ -1133,6 +1135,7 @@ exports.dailySales1 = async (data, req, res) => {
             return {
                 ...item,
                 total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+                total_broker_fee1: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
                 total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
                 total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
                 total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,

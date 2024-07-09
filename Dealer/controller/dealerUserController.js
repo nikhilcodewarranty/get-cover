@@ -6217,17 +6217,11 @@ exports.getDashboardGraph = async (req, res) => {
 };
 
 exports.getDashboardInfo = async (req, res) => {
-    // if (req.role != 'Super Admin') {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only Super admin allow to do this action"
-    //     })
-    //     return;
-    // }
+
     let orderQuery = [
         {
-            $match: { status: "Active",dealerId: new mongoose.Types.ObjectId(req.userId) },
-            
+            $match: { status: "Active", dealerId: new mongoose.Types.ObjectId(req.userId) },
+
         },
         {
             "$addFields": {
@@ -6275,164 +6269,6 @@ exports.getDashboardInfo = async (req, res) => {
         },
     ]
     const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
-    // let lookupQuery = [
-    //     {
-    //         $lookup: {
-    //             from: "users",
-    //             localField: "_id",
-    //             foreignField: "metaId",
-    //             as: "users",
-    //             pipeline: [
-    //                 {
-    //                     $match: {
-    //                         isPrimary: true
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     },
-    //     {
-    //         $lookup: {
-    //             from: "orders",
-    //             localField: "_id",
-    //             foreignField: "dealerId",
-    //             as: "order",
-    //             pipeline: [
-    //                 {
-    //                     $match: { status: "Active" }
-    //                 },
-    //                 {
-    //                     "$group": {
-    //                         _id: "$order.dealerId",
-    //                         "totalOrder": { "$sum": 1 },
-    //                         "totalAmount": {
-    //                             "$sum": "$orderAmount"
-    //                         }
-    //                     }
-    //                 },
-    //             ]
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$order"
-    //     // },
-    //     {
-    //         $project: {
-    //             name: 1,
-    //             totalAmount: {
-    //                 $cond: {
-    //                     if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$order.totalAmount", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             totalOrder: {
-    //                 $cond: {
-    //                     if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$order.totalOrder", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
-
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$users"
-    //     // },
-    //     // {
-    //     //   $addFields: {
-    //     //     totalAmount: "$order.totalAmount"
-    //     //   }
-    //     // },
-
-    //     { "$sort": { totalAmount: -1 } },
-    //     { "$limit": 5 }  // Apply limit again after sorting
-    // ]
-
-    // const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
-
-    // let lookupClaim = [
-    //     {
-    //         $match: {
-    //             dealerId: null,
-    //             resellerId: null
-    //         }
-    //     },
-    //     {
-    //         $lookup: {
-    //             from: "users",
-    //             localField: "_id",
-    //             foreignField: "metaId",
-    //             as: "users",
-    //             pipeline: [
-    //                 {
-    //                     $match: {
-    //                         isPrimary: true
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     },
-
-    //     {
-    //         $lookup: {
-    //             from: "claims",
-    //             localField: "_id",
-    //             foreignField: "servicerId",
-    //             as: "claims",
-    //             pipeline: [
-    //                 {
-    //                     $match: { claimFile: "Completed" }
-    //                 },
-    //                 {
-    //                     "$group": {
-    //                         _id: "$servicerId",
-    //                         "totalClaim": { "$sum": 1 },
-    //                         "totalClaimAmount": {
-    //                             "$sum": "$totalAmount"
-    //                         }
-    //                     }
-    //                 },
-    //             ]
-    //         }
-    //     },
-    //     {
-    //         $project: {
-    //             name: 1,
-    //             totalClaimAmount: {
-    //                 $cond: {
-    //                     if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             totalClaim: {
-    //                 $cond: {
-    //                     if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$claims.totalClaim", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
-
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$claims"
-    //     // },
-    //     // {
-    //     //   $unwind: "$users"
-    //     // },
-    //     // {
-    //     //   $addFields: {
-    //     //     totalClaimAmount: "$claims.totalClaimAmount"
-    //     //   }
-    //     // },
-    //     { "$sort": { totalClaimAmount: -1 } },
-    //     { "$limit": 5 }  // Apply limit again after sorting
-    // ]
-    // const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
 
     const result = {
         lastFiveOrder: lastFiveOrder,
