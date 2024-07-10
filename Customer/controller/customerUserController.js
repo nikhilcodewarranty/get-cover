@@ -1776,7 +1776,7 @@ exports.saleReporting = async (req, res) => {
     let orderIds = getOrders.map(ID => new mongoose.Types.ObjectId(ID._id))
     bodyData.orderId = orderIds
     bodyData.dealerId = ""
- 
+
 
     bodyData.returnValue = {
       total_broker_fee: 0,
@@ -1822,6 +1822,59 @@ exports.saleReporting = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: err.message,
+    })
+  }
+}
+
+exports.claimReporting = async (req, res) => {
+  try {
+    let data = req.body
+
+    let returnValue = {
+      weekStart: 1,
+      total_amount: 1,
+      total_claim: 1,
+      total_unpaid_amount: 0,
+      total_unpaid_claim: 0,
+      total_paid_amount: 0,
+      total_paid_claim: 0,
+      total_rejected_claim: 0
+    };
+
+    data.returnValue = returnValue
+    data.servicerId = ""
+    data.dealerId = ""
+    data.customerId = req.userId
+
+    if (data.flag == "daily") {
+      data.dealerId = req.userId
+      let claim = await reportingController.claimDailyReporting(data)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: claim
+      })
+    } else if (data.flag == "weekly") {
+      data.dealerId = req.userId
+      let claim = await reportingController.claimWeeklyReporting(data)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: claim
+      })
+    } else if (data.flag == "day") {
+      data.dealerId = req.userId
+      let claim = await reportingController.claimDayReporting(data)
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: claim
+      })
+    }
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
     })
   }
 }

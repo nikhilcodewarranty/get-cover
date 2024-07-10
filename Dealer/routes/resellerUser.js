@@ -30,4 +30,9 @@ router.post('/getCategoryAndPriceBooks', [verifyToken], resellerController.getCa
 router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail)
 
 router.put("/editResellers", [verifyToken], resellerController.editResellers);
+
+router.post('/saleReporting', [verifyToken], resellerController.saleReporting)
+router.get('/testFunction', [verifyToken], resellerController.testFunction)
+
+
 module.exports = router; 

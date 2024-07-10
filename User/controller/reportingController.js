@@ -1606,6 +1606,16 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = data.servicerId
         }
 
+        if (data.customerId) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.customerId)
+
+            dailyQuery[0].$match.customerId = data.customerId
+            dailyQuery1[0].$match.customerId = data.customerId
+            dailyQuery2[0].$match.customerId = data.customerId
+            dailyQuery3[0].$match.customerId = data.customerId
+        }
+
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             let orderIds = getOrders.map(ID => ID.unique_key)
@@ -1898,6 +1908,45 @@ exports.claimWeeklyReporting = async (data) => {
             }
         ];
 
+
+        if (data.dealerId != "") {
+            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
+            dailyQuery[0].$match.dealerId = dealerId
+            dailyQuery1[0].$match.dealerId = dealerId
+            dailyQuery2[0].$match.dealerId = dealerId
+            dailyQuery3[0].$match.dealerId = dealerId
+        }
+
+        if (data.servicerId != "") {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.servicerId)
+
+            dailyQuery[0].$match.servicerId = data.servicerId
+            dailyQuery1[0].$match.servicerId = data.servicerId
+            dailyQuery2[0].$match.servicerId = data.servicerId
+            dailyQuery3[0].$match.servicerId = data.servicerId
+        }
+
+        if (data.customerId) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.customerId)
+
+            dailyQuery[0].$match.customerId = data.customerId
+            dailyQuery1[0].$match.customerId = data.customerId
+            dailyQuery2[0].$match.customerId = data.customerId
+            dailyQuery3[0].$match.customerId = data.customerId
+        }
+
+        if (data.priceBookId.length != 0) {
+            let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
+            let orderIds = getOrders.map(ID => ID.unique_key)
+            dailyQuery[0].$match.orderId = { $in: orderIds }
+            dailyQuery1[0].$match.orderId = { $in: orderIds }
+            dailyQuery2[0].$match.orderId = { $in: orderIds }
+            dailyQuery3[0].$match.orderId = { $in: orderIds }
+
+        }
+
         let getData = await claimService.getAllClaims(dailyQuery)
         let getData1 = await claimService.getAllClaims(dailyQuery1)
         let getData2 = await claimService.getAllClaims(dailyQuery2)
@@ -2138,6 +2187,16 @@ exports.claimDayReporting = async (data) => {
             dailyQuery1[0].$match.servicerId = data.servicerId
             dailyQuery2[0].$match.servicerId = data.servicerId
             dailyQuery3[0].$match.servicerId = data.servicerId
+        }
+
+        if (data.customerId) {
+            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
+            let servicerId = new mongoose.Types.ObjectId(data.customerId)
+
+            dailyQuery[0].$match.customerId = data.customerId
+            dailyQuery1[0].$match.customerId = data.customerId
+            dailyQuery2[0].$match.customerId = data.customerId
+            dailyQuery3[0].$match.customerId = data.customerId
         }
 
         let getData = await claimService.getAllClaims(dailyQuery)
@@ -2392,5 +2451,7 @@ exports.claimReportinDropdown = async (req, res) => {
         })
     }
 };
+
+
 
 

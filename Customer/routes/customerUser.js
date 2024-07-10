@@ -17,6 +17,7 @@ router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingle
 router.get('/getDashboardData', [verifyToken], customerController.getDashboardData)
 router.get('/getCustomerDetails', [verifyToken], customerController.getCustomerDetails)
 router.post('/saleReporting', [verifyToken], customerController.saleReporting)
+router.post('/claimReporting', [verifyToken], customerController.claimReporting)
 
 
 

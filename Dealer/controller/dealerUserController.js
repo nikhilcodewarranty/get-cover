@@ -5677,6 +5677,7 @@ exports.saleReporting = async (req, res) => {
 exports.claimReporting = async (req, res) => {
     try {
         let data = req.body
+        let checkDealer = await dealerService.getDealerById({ _id: req.userId })
 
         let returnValue = {
             weekStart: 1,
@@ -5697,7 +5698,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         } else if (data.flag == "weekly") {
             data.dealerId = req.userId
@@ -5705,7 +5707,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         } else if (data.flag == "day") {
             data.dealerId = req.userId
@@ -5713,7 +5716,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         }
     } catch (err) {
