@@ -32,7 +32,11 @@ router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editO
 router.put("/editResellers", [verifyToken], resellerController.editResellers);
 
 router.post('/saleReporting', [verifyToken], resellerController.saleReporting)
-router.get('/testFunction', [verifyToken], resellerController.testFunction)
+router.post('/claimReporting', [verifyToken], resellerController.claimReporting)
+router.post('/saleReportinDropDown', [verifyToken], resellerController.saleReportinDropDown)
+router.post('/claimReportinDropdown', [verifyToken], resellerController.claimReportinDropdown)
+router.get('/getDashboardGraph', [verifyToken], resellerController.getDashboardGraph)
+router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
 
 
 module.exports = router; 
