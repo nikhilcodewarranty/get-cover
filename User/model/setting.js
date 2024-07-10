@@ -25,7 +25,7 @@ const settingSchema = new mongoose.Schema({
                     type: String,
                     default: ''
                 },
-            },
+            }, 
 
         ]
     },
