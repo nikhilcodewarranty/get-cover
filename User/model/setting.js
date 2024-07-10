@@ -30,8 +30,8 @@ const settingSchema = new mongoose.Schema({
         ]
     },
     favIcon: {
-        type: String,
-        default: ''
+        type: {},
+        default: {}
     },
     colorScheme: {
         type: [

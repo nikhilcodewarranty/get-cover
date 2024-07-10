@@ -72,8 +72,8 @@ router.post('/claimReporting', [verifyToken], userController.claimReporting);
 // Setting Routes
 
 router.post('/setting', [verifyToken], userController.accountSetting);
-router.post('/setting/uploadLogo', [verifyToken], userController.uploadLogo);
-router.get('/setting/getSetting', [verifyToken], userController.getSetting);
+router.post('/setting/uploadLogo', userController.uploadLogo);
+router.get('/setting/getSetting', userController.getSetting);
 
 
 

@@ -3807,13 +3807,13 @@ exports.accountSetting = async (req, res) => {
 
 exports.getSetting = async (req, res) => {
   try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action!"
-      });
-      return
-    }
+    // if (req.role != "Super Admin") {
+    //   res.send({
+    //     code: constant.errorCode,
+    //     message: "Only super admin allow to do this action!"
+    //   });
+    //   return
+    // }
     const setting = await userService.getSetting({});
     res.send({
       code: constant.successCode,
@@ -3835,7 +3835,7 @@ exports.uploadLogo = async (req, res) => {
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        messageFile: {
+        result: {
           fileName: file.filename,
           name: file.originalname,
           size: file.size
