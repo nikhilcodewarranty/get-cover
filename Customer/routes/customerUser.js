@@ -18,6 +18,8 @@ router.get('/getDashboardData', [verifyToken], customerController.getDashboardDa
 router.get('/getCustomerDetails', [verifyToken], customerController.getCustomerDetails)
 router.post('/saleReporting', [verifyToken], customerController.saleReporting)
 router.post('/claimReporting', [verifyToken], customerController.claimReporting)
+router.get('/getDashboardGraph', [verifyToken], customerController.getDashboardGraph)
+router.get('/getDashboardInfo', [verifyToken], customerController.getDashboardInfo)
 
 
 

@@ -1878,3 +1878,190 @@ exports.claimReporting = async (req, res) => {
     })
   }
 }
+
+exports.getDashboardGraph = async (req, res) => {
+  try {
+    let data = req.body
+    // sku data query ++++++++
+
+    let endOfMonth1s = new Date();
+    let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
+
+    // let data = req.body
+    let endOfMonth1 = new Date();
+    let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+    let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+    let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+    if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+      return { code: 401, message: "invalid date" };
+    }
+
+    let datesArray = [];
+    let currentDate = new Date(startOfMonth);
+    while (currentDate <= endOfMonth) {
+      datesArray.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    let dailyQuery = [
+      {
+        $match: {
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          claimStatus: {
+            $elemMatch: { status: "Completed" }
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          total_amount: { $sum: "$totalAmount" },
+          total_claim: { $sum: 1 },
+          // total_broker_fee: { $sum: "$products.brokerFee" }
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+    let dailyQuery1 = [
+      {
+        $match: {
+          customerId: new mongoose.Types.ObjectId(req.userId),
+          createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+          status: "Active"
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+          order_amount: { $sum: "$orderAmount" },
+          total_order: { $sum: 1 },
+        }
+      },
+      {
+        $sort: { _id: 1 } // Sort by date in ascending order
+      }
+    ];
+
+
+    console.log(startOfMonth, endOfMonth, dailyQuery)
+
+    let getData = await claimService.getAllClaims(dailyQuery)
+    let getData2 = await orderService.getAllOrders1(dailyQuery1)
+
+
+    const result = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        total_amount: order ? order.total_amount : 0,
+        total_claim: order ? order.total_claim : 0,
+
+      };
+    });
+    const result1 = datesArray.map(date => {
+      const dateString = date.toISOString().slice(0, 10);
+      const order = getData2.find(item => item._id === dateString);
+      return {
+        weekStart: dateString,
+        order_amount: order ? order.order_amount : 0,
+        total_order: order ? order.total_order : 0,
+
+
+      };
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      claim_result: result,
+      order_result: result1,
+    })
+    // return { mergedArray, result, result1, result2, totalFees }
+
+
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+
+exports.getDashboardInfo = async (req, res) => {
+
+  let orderQuery = [
+    {
+      $match: { status: "Active", customerId: new mongoose.Types.ObjectId(req.userId) },
+
+    },
+    {
+      "$addFields": {
+        "noOfProducts": {
+          "$sum": "$productsArray.checkNumberProducts"
+        },
+        totalOrderAmount: { $sum: "$orderAmount" },
+
+      }
+    },
+    { $sort: { unique_key: -1 } }]
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+  const claimQuery = [
+    {
+      $match: {
+        customerId: new mongoose.Types.ObjectId(req.userId)
+      },
+    },
+    {
+      $sort: {
+        unique_key_number: -1
+      }
+    },
+    {
+      $limit: 5
+    },
+    {
+      $lookup: {
+        from: "contracts",
+        localField: "contractId",
+        foreignField: "_id",
+        as: "contract"
+      }
+    },
+    {
+      $unwind: "$contract"
+    },
+    {
+      $project: {
+        unique_key: 1,
+        "contract.unique_key": 1,
+        unique_key_number: 1,
+        totalAmount: 1
+      }
+    },
+  ]
+  const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+
+  const result = {
+    lastFiveOrder: lastFiveOrder,
+    lastFiveClaims: getLastNumberOfClaims,
+
+  }
+  res.send({
+    code: constant.successCode,
+    result: result
+  })
+}
+
+
