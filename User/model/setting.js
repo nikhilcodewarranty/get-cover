@@ -1,33 +1,13 @@
 const mongoose = require("mongoose");
 const connection = require('../../db')
 const settingSchema = new mongoose.Schema({
-    logos: {
-        type: [
-            {
-                logoImage: {
-                    type: {
-                        fileName: {
-                            type: String,
-                            default: ''
-                        },
-                        name: {
-                            type: String,
-                            default: ''
-                        },
-                        size: {
-                            type: String,
-                            default: ''
-                        },
-                    },
-                    default: {}
-                },
-                logoType: {
-                    type: String,
-                    default: ''
-                },
-            }, 
-
-        ]
+    logoLight: {
+        type: {},
+        default: {}
+    },
+    logoDark: {
+        type: {},
+        default: {}
     },
     favIcon: {
         type: {},
