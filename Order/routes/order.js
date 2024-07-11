@@ -2,9 +2,6 @@ const express = require("express");
 const router = express.Router();
 const orderController = require("../controller/order");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
-
- 
-
 router.post('/createOrder', [verifyToken], orderController.createOrder1)
 router.post('/editOrderDetail/:orderId', [verifyToken], orderController.editOrderDetail)
 router.post('/archiveOrder/:orderId', [verifyToken], orderController.archiveOrder)

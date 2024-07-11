@@ -3308,8 +3308,7 @@ exports.getDashboardInfo = async (req, res) => {
 exports.getDashboardGraph = async (req, res) => {
   try {
     let data = req.body
-    // sku data query ++++++++
-
+    //sku data query ++++++++
     let endOfMonth1s = new Date();
     let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
 
@@ -3383,10 +3382,6 @@ exports.getDashboardGraph = async (req, res) => {
       }
 
     ]
-
-
-
-
     // let data = req.body
     let endOfMonth1 = new Date();
     let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
@@ -3406,7 +3401,6 @@ exports.getDashboardGraph = async (req, res) => {
       datesArray.push(new Date(currentDate));
       currentDate.setDate(currentDate.getDate() + 1);
     }
-
     // let dailyQuery = [
     //   {
     //     $match: {
@@ -3468,10 +3462,6 @@ exports.getDashboardGraph = async (req, res) => {
         $sort: { _id: 1 } // Sort by date in ascending order
       }
     ];
-
-
-    console.log(startOfMonth, endOfMonth, dailyQuery)
-
     let getData = await claimService.getAllClaims(dailyQuery)
     let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
@@ -3493,7 +3483,6 @@ exports.getDashboardGraph = async (req, res) => {
     let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
     let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
-    console.log(priceBookNames)
     const result = datesArray.map(date => {
       const dateString = date.toISOString().slice(0, 10);
       const order = getData.find(item => item._id === dateString);
