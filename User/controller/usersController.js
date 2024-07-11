@@ -1778,7 +1778,7 @@ exports.login = async (req, res) => {
     if (!user) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid Credentials1"
+        message: "Invalid Credentials"
       })
       return;
     }
@@ -1828,7 +1828,7 @@ exports.login = async (req, res) => {
     if (!passwordMatch) {
       res.send({
         code: constant.errorCode,
-        message: "Invalid Credentials2"
+        message: "Invalid Credentials"
       })
       return;
     }
