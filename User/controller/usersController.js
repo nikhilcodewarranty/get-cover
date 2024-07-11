@@ -3766,10 +3766,7 @@ exports.getSkuData = async (req, res) => {
     })
   }
 }
-
-
 // Setting Function
-
 exports.accountSetting = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -3783,7 +3780,7 @@ exports.accountSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: "668e6f5d35158f2e66ec64f1"}, data, { new: true })
+      response = await userService.updateSetting({ _id: getData[0]?._id}, data, { new: true })
 
     }
     else {

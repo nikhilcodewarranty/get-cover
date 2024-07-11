@@ -44,7 +44,6 @@ var StorageP = multer.diskStorage({
         );
     },
 });
-
 var Storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, path.join(__dirname, "../../uploads/orderFile"));
@@ -70,10 +69,6 @@ var uploadP = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).single("file");
-
-
-
-
 // Create Order
 exports.createOrder1 = async (req, res) => {
     try {
