@@ -13,6 +13,10 @@ const settingSchema = new mongoose.Schema({
         type: {},
         default: {}
     },
+    title:{
+        type:String,
+        default:''
+    },
     colorScheme: {
         type: [
             {
