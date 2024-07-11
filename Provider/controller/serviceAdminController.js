@@ -1478,7 +1478,6 @@ exports.getServicerDealers = async (req, res) => {
     let ids = getDealersIds.map((item) => item.dealerId)
     let idsq = getDealersIds.map((item) => new mongoose.Types.ObjectId(item.dealerId))
     let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
-
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -1658,6 +1657,97 @@ exports.getServicerDealers = async (req, res) => {
 exports.getServicerDealers1 = async (req, res) => {
   try {
     let data = req.body
+    // let query = [
+    //   {
+    //     $match: {
+    //       servicerId: new mongoose.Types.ObjectId(req.params.servicerId)
+    //     }
+    //   },
+    //   {
+    //     $lookup: {
+    //       from: "dealers",
+    //       localField: "dealerId",
+    //       foreignField: "_id",
+    //       as: "dealerData",
+    //       pipeline: [
+    //         {
+    //           $lookup: {
+    //             from: "users",
+    //             localField: "_id",
+    //             foreignField: "metaId",
+    //             as: "userData",
+    //             pipeline: [
+    //               {
+    //                 $match: {
+    //                   isPrimary: true
+    //                 }
+    //               }
+    //             ]
+    //           }
+    //         },
+    //         { $unwind: "$userData" },
+    //         {
+    //           $lookup: {
+    //             from: "claims",
+    //             // let: { dealerId: "$_id" },
+    //             localField: "_id",
+    //             foreignField: "dealerId",
+    //             as: "claimsData",
+    //             pipeline: [
+    //               {
+    //                 $match: {
+    //                   servicerId: new mongoose.Types.ObjectId(req.params.serviceId),
+    //                 }
+    //               },
+    //               {
+    //                 $group: {
+    //                   _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
+    //                   totalAmount: { $sum: "$totalAmount" },
+    //                   numberOfClaims: { $sum: 1 }
+    //                 }
+    //               },
+    //               {
+    //                 $project: {
+    //                   _id: 0,
+    //                   totalAmount: 1,
+    //                   numberOfClaims: 1
+    //                 }
+    //               }
+    //             ]
+
+    //             //   {
+    //             //     $match: {
+    //             //       $expr: {
+    //             //         $and: [
+    //             //           { $eq: ["$dealerId", "$dealerId"] },
+    //             //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
+    //             //         ]
+    //             //       }
+    //             //     }
+    //             //   },
+
+    //             // {
+    //             //   $group: {
+    //             //     _id: null,
+    //             //     totalAmount: { $sum: "$amount" },
+    //             //     numberOfClaims: { $sum: 1 }
+    //             //   }
+    //             // }
+    //           }
+    //         }
+    //       ]
+    //     }
+    //   },
+    //   {
+    //     $unwind: "$dealerData"
+    //   },
+    //   // {
+    //   //   $project:{
+
+    //   //   }
+    //   // }
+    // ]
+
     let query = [
       {
         $match: {
@@ -1672,6 +1762,11 @@ exports.getServicerDealers1 = async (req, res) => {
           as: "dealerData",
           pipeline: [
             {
+              $match: {
+                "name": { '$regex': data.name ? data.name : '', '$options': 'i' },
+              }
+            },
+            {
               $lookup: {
                 from: "users",
                 localField: "_id",
@@ -1680,7 +1775,9 @@ exports.getServicerDealers1 = async (req, res) => {
                 pipeline: [
                   {
                     $match: {
-                      isPrimary: true
+                      isPrimary: true,
+                      "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
+                      "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
                     }
                   }
                 ]
@@ -1697,12 +1794,14 @@ exports.getServicerDealers1 = async (req, res) => {
                 pipeline: [
                   {
                     $match: {
-                      servicerId: new mongoose.Types.ObjectId(req.params.serviceId),
+                      servicerId: new mongoose.Types.ObjectId(req.params.servicerId),
+                      claimFile: "Completed"
+
                     }
                   },
                   {
                     $group: {
-                      _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
+                      _id: { servicerId: new mongoose.Types.ObjectId(req.params.servicerId) },
                       totalAmount: { $sum: "$totalAmount" },
                       numberOfClaims: { $sum: 1 }
                     }
@@ -1715,25 +1814,6 @@ exports.getServicerDealers1 = async (req, res) => {
                     }
                   }
                 ]
-
-                //   {
-                //     $match: {
-                //       $expr: {
-                //         $and: [
-                //           { $eq: ["$dealerId", "$dealerId"] },
-                //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
-                //         ]
-                //       }
-                //     }
-                //   },
-
-                // {
-                //   $group: {
-                //     _id: null,
-                //     totalAmount: { $sum: "$amount" },
-                //     numberOfClaims: { $sum: 1 }
-                //   }
-                // }
               }
             }
           ]
@@ -1742,11 +1822,7 @@ exports.getServicerDealers1 = async (req, res) => {
       {
         $unwind: "$dealerData"
       },
-      // {
-      //   $project:{
 
-      //   }
-      // }
     ]
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
 
