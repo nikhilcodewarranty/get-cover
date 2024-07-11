@@ -1464,183 +1464,87 @@ exports.createDeleteRelation = async (req, res) => {
   }
 }
 
-exports.getServicerDealers = async (req, res) => {
+exports.getServicerDealers1 = async (req, res) => {
   try {
     let data = req.body
-    let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
-    if (!getDealersIds) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the dealers"
-      })
-      return;
-    };
-    let ids = getDealersIds.map((item) => item.dealerId)
-    let idsq = getDealersIds.map((item) => new mongoose.Types.ObjectId(item.dealerId))
-    let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
 
-    if (!dealers) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-    // return false;
-
-    let dealarUser = await userService.getMembers({ accountId: { $in: ids }, isPrimary: true }, {})
-    let orderQuery = { dealerId: { $in: ids }, status: "Active" };
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    }
-    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
-
-    //Get Claim Result 
-    const claimQuery = { _id: { $in: idsq } }
-
-    const dealerAggregationQuery = [
+    let query = [
       {
-        $match: claimQuery
-      },
-      {
-        $unwind: "$items"
+        $match: {
+          servicerId: new mongoose.Types.ObjectId(req.params.servicerId)
+        }
       },
       {
         $lookup: {
-          from: "orders",
-          localField: "_id",
-          foreignField: "dealerId",
-          as: "orders",
-        }
-      },
-      {
-        $unwind: "$orders"
-      },
-      {
-        "$lookup": {
-          "from": "claims",
-          "localField": "orders.unique_key",
-          "foreignField": "orderId",
-          "pipeline": [{
-            $group: {
-              _id: "$itemNumber",
-              count: {
-                $sum: "$totalAmount"
+          from: "dealers",
+          localField: "dealerId",
+          foreignField: "_id",
+          as: "dealerData",
+          pipeline: [
+            {
+              $match: {
+                "name": { '$regex': data.name ? data.name : '', '$options': 'i' },
+              }
+            },
+            {
+              $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "userData",
+                pipeline: [
+                  {
+                    $match: {
+                      isPrimary: true,
+                      "email": { '$regex': data.email ? data.email : '', '$options': 'i' },
+                      "phoneNumber": { '$regex': data.phone ? data.phone : '', '$options': 'i' },
+                    }
+                  }
+                ]
+              }
+            },
+            { $unwind: "$userData" },
+            {
+              $lookup: {
+                from: "claims",
+                // let: { dealerId: "$_id" },
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "claimsData",
+                pipeline: [
+                  {
+                    $match: {
+                      servicerId: new mongoose.Types.ObjectId(req.params.servicerId),
+                      claimFile: "Completed"
+
+                    }
+                  },
+                  {
+                    $group: {
+                      _id: { servicerId: new mongoose.Types.ObjectId(req.params.servicerId) },
+                      totalAmount: { $sum: "$totalAmount" },
+                      numberOfClaims: { $sum: 1 }
+                    }
+                  },
+                  {
+                    $project: {
+                      _id: 0,
+                      totalAmount: 1,
+                      numberOfClaims: 1
+                    }
+                  }
+                ]
               }
             }
-          }],
-          "as": "result"
+          ]
         }
-      }
+      },
+      {
+        $unwind: "$dealerData"
+      },
+
     ]
-
-    const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
-
-    // res.json(dealerClaims);
-    // return;
-
-    //     let lookupQuery = [
-    //       {
-    //         $match: claimQuery
-    //       },
-    //       {
-    //         $lookup: {
-    //           from: "contracts",
-    //           localField: "contractId",
-    //           foreignField: "_id",
-    //           as: "contracts",
-    //         }
-    //       },
-    //       {
-    //         $unwind: "$contracts"
-    //       },
-    //       {
-    //         $lookup: {
-    //           from: "orders",
-    //           localField: "contracts.orderId",
-    //           foreignField: "_id",
-    //           as: "contracts.orders",
-    //         },
-
-    //       },
-    //       {
-    //         $unwind: "$contracts.orders"
-    //       },
-    //       {
-    //         $match:
-    //         {
-    //           $and: [
-    //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-    //             { "contracts.orders.dealerId": { $in:idsq } }
-    //           ]
-    //         },
-    //       },
-    //       {
-    //         "$group": {
-    //           "_id": "",
-    //           "totalAmount": {
-    //             "$sum": {
-    //               "$sum": "$totalAmount"
-    //             }
-    //           },
-    //         },
-
-    //       },
-    //     ]
-    //     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
-    // res.json(valueClaim);
-
-    // return;
-
-    const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
-
-      if (matchingItem || orders) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject(),
-          ordersData: orders ? orders : {}
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-
-    // const result_Array = dealarUser.map(item1 => {
-    //   const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-    //   if (matchingItem) {
-    //     return {
-    //       ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-    //       dealerData: matchingItem.toObject()
-    //     };
-    //   } else {
-    //     return dealerData.toObject();
-    //   }
-    // });
-
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
-
-    const filteredData = result_Array.filter(entry => {
-      return (
-        nameRegex.test(entry.dealerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
+    let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
 
     res.send({
       code: constant.successCode,
