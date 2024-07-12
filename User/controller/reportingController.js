@@ -533,41 +533,62 @@ exports.weeklySales = async (data, req, res) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
-            if(data.role == 'Super Admin'){
-
+            if (data.role == 'Super Admin') {
+                return {
+                    ...item,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                    total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                    total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                    wholesale_price: wholesale_price
+                };
+            }
+            if (data.role == 'Dealer') {
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    wholesale_price: wholesale_price
+                };
             }
 
+            if (data.role == 'Reseller') {
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                };
+            }
 
+            if (data.role == 'Customer') {
+                return {
+                    total_order_amount: item.total_order_amount
+                };
 
-
-            return {
-                ...item,
-                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-                total_broker_fee1: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
-                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
-                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
-                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
-                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
-                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
-            };
+            }
         });
+        let totalFees = []
+        if (data.role == 'Super Admin') {
+            totalFees = mergedResult.reduce((acc, curr) => {
+                acc.total_broker_fee += curr.total_broker_fee || 0;
+                acc.total_admin_fee += curr.total_admin_fee || 0;
+                acc.total_fronting_fee += curr.total_fronting_fee || 0;
+                acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
+                acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
+                return acc;
+            }, {
+                total_broker_fee: 0,
+                total_admin_fee: 0,
+                total_fronting_fee: 0,
+                total_reserve_future_fee: 0,
+                total_reinsurance_fee: 0
+            });
+        }
 
 
-        const totalFees = mergedResult.reduce((acc, curr) => {
-            acc.total_broker_fee += curr.total_broker_fee || 0;
-            acc.total_admin_fee += curr.total_admin_fee || 0;
-            acc.total_fronting_fee += curr.total_fronting_fee || 0;
-            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
-            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
-            return acc;
-        }, {
-            total_broker_fee: 0,
-            total_admin_fee: 0,
-            total_fronting_fee: 0,
-            total_reserve_future_fee: 0,
-            total_reinsurance_fee: 0
-        });
 
 
         // Send success response with result
@@ -949,33 +970,79 @@ exports.daySale = async (data) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
-            return {
-                ...item,
-                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
-                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
-                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
-                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
-                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
-                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
-            };
+            // return {
+            //     ...item,
+            //     total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
+            //     total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
+            //     total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
+            //     total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
+            //     total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
+            //     total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
+            //     wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
+            // };
+
+
+            if (data.role == 'Super Admin') {
+                console.log("super admin -------------------------------------------")
+                return {
+                    ...item,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                    total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                    total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                    wholesale_price: wholesale_price
+                };
+            }
+
+            if (data.role == 'Dealer') {
+                console.log("daaler-------------------------------------------")
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    wholesale_price: wholesale_price
+                };
+            }
+
+            if (data.role == 'Reseller') {
+                console.log("reseller -------------------------------------------")
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                };
+            }
+
+            if (data.role == 'Customer') {
+                console.log("customer -------------------------------------------")
+                return {
+                    total_order_amount: item.total_order_amount
+                };
+
+            }
+
         });
 
-        const totalFees = mergedResult.reduce((acc, curr) => {
-            acc.total_broker_fee += curr.total_broker_fee || 0;
-            acc.total_admin_fee += curr.total_admin_fee || 0;
-            acc.total_fronting_fee += curr.total_fronting_fee || 0;
-            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
-            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
-            return acc;
-        }, {
-            total_broker_fee: 0,
-            total_admin_fee: 0,
-            total_fronting_fee: 0,
-            total_reserve_future_fee: 0,
-            total_reinsurance_fee: 0
-        });
-        console.log('+++++++++++++++++++++++++++++++++++++++++++++++++++', mergedResult)
+        let totalFees = []
+        if (data.role == 'Super Admin') {
+            totalFees = mergedResult.reduce((acc, curr) => {
+                acc.total_broker_fee += curr.total_broker_fee || 0;
+                acc.total_admin_fee += curr.total_admin_fee || 0;
+                acc.total_fronting_fee += curr.total_fronting_fee || 0;
+                acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
+                acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
+                return acc;
+            }, {
+                total_broker_fee: 0,
+                total_admin_fee: 0,
+                total_fronting_fee: 0,
+                total_reserve_future_fee: 0,
+                total_reinsurance_fee: 0
+            });
+        }
 
         return {
             graphData: mergedResult,
@@ -1156,36 +1223,68 @@ exports.dailySales1 = async (data, req, res) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
+            if (data.role == 'Super Admin') {
+                console.log("super admin -------------------------------------------")
+                return {
+                    ...item,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
+                    total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
+                    total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
+                    wholesale_price: wholesale_price
+                };
+            }
 
-            return {
-                ...item,
-                total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-                total_broker_fee1: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-                total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
-                total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
-                total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
-                total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
-                total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
-                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
-            };
+            if (data.role == 'Dealer') {
+                console.log("daaler-------------------------------------------")
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                    total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
+                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    wholesale_price: wholesale_price
+                };
+            }
+
+            if (data.role == 'Reseller') {
+                console.log("reseller -------------------------------------------")
+                return {
+                    ...item,
+                    total_contracts: match ? match.total_contracts : item.total_contracts,
+                };
+            }
+
+            if (data.role == 'Customer') {
+                console.log("customer -------------------------------------------")
+                return {
+                    total_order_amount: item.total_order_amount
+                };
+
+            }
+
         });
 
 
-        const totalFees = mergedResult.reduce((acc, curr) => {
-            acc.total_broker_fee += curr.total_broker_fee || 0;
-            acc.total_admin_fee += curr.total_admin_fee || 0;
-            acc.total_fronting_fee += curr.total_fronting_fee || 0;
-            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
-            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
-            return acc;
-        }, {
-            total_broker_fee: 0,
-            total_admin_fee: 0,
-            total_fronting_fee: 0,
-            total_reserve_future_fee: 0,
-            total_reinsurance_fee: 0
-        });
+        let totalFees = []
+        if (data.role == 'Super Admin') {
+            totalFees = mergedResult.reduce((acc, curr) => {
+                acc.total_broker_fee += curr.total_broker_fee || 0;
+                acc.total_admin_fee += curr.total_admin_fee || 0;
+                acc.total_fronting_fee += curr.total_fronting_fee || 0;
+                acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
+                acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
+                return acc;
+            }, {
+                total_broker_fee: 0,
+                total_admin_fee: 0,
+                total_fronting_fee: 0,
+                total_reserve_future_fee: 0,
+                total_reinsurance_fee: 0
+            });
+        }
 
 
 
@@ -1520,7 +1619,7 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-        console.log("date check +++++++++++++++++=", startOfMonth, endOfMonth, dailyQuery)
+
 
         let dailyQuery1 = [
             {
@@ -1633,19 +1732,11 @@ exports.claimDailyReporting = async (data) => {
 
         }
 
-        // if (data.claimPaymentStatus != "") {
-        //     dailyQuery[0].$match.claimPaymentStatus = data.claimPaymentStatus
-        //     dailyQuery1[0].$match.claimPaymentStatus = data.claimPaymentStatus
-        //     dailyQuery2[0].$match.claimPaymentStatus = data.claimPaymentStatus
-        // }
-
-        console.log(dailyQuery[0].$match)
 
         let getData = await claimService.getAllClaims(dailyQuery)
         let getData1 = await claimService.getAllClaims(dailyQuery1)
         let getData2 = await claimService.getAllClaims(dailyQuery2)
         let getData3 = await claimService.getAllClaims(dailyQuery3)
-        console.log("getData3----------------------------", getData3)
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
@@ -1691,43 +1782,134 @@ exports.claimDailyReporting = async (data) => {
             };
         });
 
-        console.log(result3)
 
         const mergedArray = result.map(item => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
             const result3Item = result3.find(r2 => r2.weekStart === item.weekStart);
 
-            return {
-                weekStart: item.weekStart,
-                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
-                total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
-                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
-                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
-                total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
-                total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
-                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
-            };
+
+            if (data.role == 'Super Admin') {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+            }
+            if (data.role == 'Dealer') {
+                if (data.isServicer) {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                        total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                        total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                        total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                } else {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                }
+
+            }
+
+            if (data.role == 'Reseller') {
+                if (data.isServicer) {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                        total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                        total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                        total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                } else {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                }
+
+            }
+
+            if (data.role == 'Customer') {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+
+            }
+
+            if (req.role == "Servicer") {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+            }
+
+
+
+
+            // return {
+            //     weekStart: item.weekStart,
+            //     total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
+            //     total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
+            //     total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
+            //     total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
+            //     total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
+            //     total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
+            //     total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
+            // };
         });
 
-        const totalFees = mergedArray.reduce((acc, curr) => {
-            acc.total_amount += curr.total_amount || 0;
-            acc.total_claim += curr.total_claim || 0;
-            acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
-            acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
-            acc.total_paid_amount += curr.total_paid_amount || 0;
-            acc.total_paid_claim += curr.total_paid_claim || 0;
-            acc.total_rejected_claim += curr.total_rejected_claim || 0;
-            return acc;
-        }, {
-            total_amount: 0,
-            total_claim: 0,
-            total_unpaid_amount: 0,
-            total_unpaid_claim: 0,
-            total_paid_amount: 0,
-            total_paid_claim: 0,
-            total_rejected_claim: 0,
-        });
+        let totalFees = []
+        if (req.role = "Super Admin") {
+            totalFees = mergedArray.reduce((acc, curr) => {
+                acc.total_amount += curr.total_amount || 0;
+                acc.total_claim += curr.total_claim || 0;
+                acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
+                acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
+                acc.total_paid_amount += curr.total_paid_amount || 0;
+                acc.total_paid_claim += curr.total_paid_claim || 0;
+                acc.total_rejected_claim += curr.total_rejected_claim || 0;
+                return acc;
+            }, {
+                total_amount: 0,
+                total_claim: 0,
+                total_unpaid_amount: 0,
+                total_unpaid_claim: 0,
+                total_paid_amount: 0,
+                total_paid_claim: 0,
+                total_rejected_claim: 0,
+            });
+        }
 
         return { graphData: mergedArray, totalFees }
         // return { mergedArray, result, result1, result2, totalFees }
@@ -2021,44 +2203,128 @@ exports.claimWeeklyReporting = async (data) => {
             };
         });
 
-        console.log("-------------------------------------------------", result, result1, result2, getData1, getData2)
-
-
         const mergedArray = result.map(item => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
             const result3Item = result3.find(r3 => r3.weekStart === item.weekStart);
 
-            return {
-                weekStart: item.weekStart,
-                total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
-                total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
-                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
-                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
-                total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
-                total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
-                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
-            };;
-        });
+            if (data.role == 'Super Admin') {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+            }
+            if (data.role == 'Dealer') {
+                if (data.isServicer) {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                        total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                        total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                        total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                } else {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                }
 
-        const totalFees = mergedArray.reduce((acc, curr) => {
-            acc.total_amount += curr.total_amount || 0;
-            acc.total_claim += curr.total_claim || 0;
-            acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
-            acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
-            acc.total_paid_amount += curr.total_paid_amount || 0;
-            acc.total_paid_claim += curr.total_paid_claim || 0;
-            acc.total_rejected_claim += curr.total_rejected_claim || 0;
-            return acc;
-        }, {
-            total_amount: 0,
-            total_claim: 0,
-            total_unpaid_amount: 0,
-            total_unpaid_claim: 0,
-            total_paid_amount: 0,
-            total_paid_claim: 0,
-            total_rejected_claim: 0,
+            }
+
+            if (data.role == 'Reseller') {
+                if (data.isServicer) {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                        total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                        total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                        total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                } else {
+                    return {
+                        weekStart: item.weekStart,
+                        total_amount: item.total_amount,
+                        total_claim: item.total_claim,
+                        total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                    };
+                }
+            }
+
+            if (data.role == 'Customer') {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+
+            }
+
+            if (req.role == "Servicer") {
+                return {
+                    weekStart: item.weekStart,
+                    total_amount: item.total_amount,
+                    total_claim: item.total_claim,
+                    total_unpaid_amount: result1Item ? result1Item.total_unpaid_amount : 0,
+                    total_unpaid_claim: result1Item ? result1Item.total_unpaid_claim : 0,
+                    total_paid_amount: result2Item ? result2Item.total_paid_amount : 0,
+                    total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
+                    total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
+                };
+            }
+
+            // return {
+            //     weekStart: item.weekStart,
+            //     total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
+            //     total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
+            //     total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
+            //     total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
+            //     total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
+            //     total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
+            //     total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
+            // };
         });
+        let totalFees = []
+        if (req.role = "Super Admin") {
+            totalFees = mergedArray.reduce((acc, curr) => {
+                acc.total_amount += curr.total_amount || 0;
+                acc.total_claim += curr.total_claim || 0;
+                acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
+                acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
+                acc.total_paid_amount += curr.total_paid_amount || 0;
+                acc.total_paid_claim += curr.total_paid_claim || 0;
+                acc.total_rejected_claim += curr.total_rejected_claim || 0;
+                return acc;
+            }, {
+                total_amount: 0,
+                total_claim: 0,
+                total_unpaid_amount: 0,
+                total_unpaid_claim: 0,
+                total_paid_amount: 0,
+                total_paid_claim: 0,
+                total_rejected_claim: 0,
+            });
+        }
+
 
         return { graphData: mergedArray, totalFees }
 
@@ -2218,27 +2484,117 @@ exports.claimDayReporting = async (data) => {
             day: '2-digit'
         };
 
-        let result = [{
-            weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
-            total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
-            total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
-            total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
-            total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
-            total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
-            total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
-            total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
-        }];
+        let result
+        if (data.role == "Super Admin") {
+            result = [{
+                weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+                total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+                total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+            }];
+        }
+        if (data.role == "Dealer") {
+            if (data.isServicer) {
+                result = [{
+                    weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                    total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                    total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                    total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+                    total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+                    total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+                    total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+                    total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+                }];
+            } else {
+                result = [{
+                    weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                    total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                    total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                    total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+                }];
+            }
 
+        }
+        if (data.role == "Reseller") {
+            if (data.isServicer) {
+                result = [{
+                    weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                    total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                    total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                    total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+                    total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+                    total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+                    total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+                    total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+                }];
+            } else {
+                result = [{
+                    weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                    total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                    total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                    total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+                }];
+            }
+        }
+        if (data.role == "Customer") {
+            result = [{
+                weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+                total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+                total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+            }];
+        }
+        if (data.role == "Servicer") {
+            result = [{
+                weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
+                total_amount: data.returnValue.total_amount == 1 ? getData.length ? getData[0].total_amount : 0 : 0,
+                total_claim: data.returnValue.total_claim == 1 ? getData.length ? getData[0].total_claim : 0 : 0,
+                total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? getData1.length ? getData1[0].total_unpaid_amount : 0 : 0,
+                total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? getData1.length ? getData1[0].total_unpaid_claim : 0 : 0,
+                total_paid_amount: data.returnValue.total_paid_amount == 1 ? getData2.length ? getData2[0].total_paid_amount : 0 : 0,
+                total_paid_claim: data.returnValue.total_paid_claim == 1 ? getData2.length ? getData2[0].total_paid_claim : 0 : 0,
+                total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? getData3.length ? getData3[0].total_rejected_claim : 0 : 0,
+            }];
+        }
 
+        let totalFees = []
+        if (data.role = "Super Admin") {
+            totalFees = result.reduce((acc, curr) => {
+                acc.total_amount += curr.total_amount || 0;
+                acc.total_claim += curr.total_claim || 0;
+                acc.total_unpaid_amount += curr.total_unpaid_amount || 0;
+                acc.total_unpaid_claim += curr.total_unpaid_claim || 0;
+                acc.total_paid_amount += curr.total_paid_amount || 0;
+                acc.total_paid_claim += curr.total_paid_claim || 0;
+                acc.total_rejected_claim += curr.total_rejected_claim || 0;
+                return acc;
+            }, {
+                total_amount: 0,
+                total_claim: 0,
+                total_unpaid_amount: 0,
+                total_unpaid_claim: 0,
+                total_paid_amount: 0,
+                total_paid_claim: 0,
+                total_rejected_claim: 0,
+            });
+        }
 
-        const totalFees = result.reduce((acc, curr) => {
-            acc.total_amount += curr.total_amount || 0;
-            acc.total_claim += curr.total_claim || 0;
-            return acc;
-        }, {
-            total_amount: 0,
-            total_claim: 0,
-        });
+        // const totalFees = result.reduce((acc, curr) => {
+        //     acc.total_amount += curr.total_amount || 0;
+        //     acc.total_claim += curr.total_claim || 0;
+        //     return acc;
+        // }, {
+        //     total_amount: 0,
+        //     total_claim: 0,
+        // });
 
         return { result, totalFees }
 

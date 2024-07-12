@@ -5635,6 +5635,7 @@ exports.saleReporting = async (req, res) => {
         };
 
         bodyData.dealerId = new mongoose.Types.ObjectId(req.userId)
+        bodyData.role = req.role
 
 
         if (bodyData.flag == "daily") {
@@ -5691,6 +5692,8 @@ exports.claimReporting = async (req, res) => {
         };
 
         data.returnValue = returnValue
+        data.role = req.role
+        data.isServicer = checkDealer.isServicer
 
         if (data.flag == "daily") {
             data.dealerId = req.userId

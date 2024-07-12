@@ -835,6 +835,7 @@ exports.claimReporting = async (req, res) => {
 
 
         data.returnValue = returnValue
+        data.role = req.role
 
         if (data.flag == "daily") {
             data.servicerId = req.userId

@@ -3756,6 +3756,7 @@ exports.saleReporting = async (req, res) => {
             // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
             wholesale_price: 0
         };
+        bodyData.role = req.role
 
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
 
@@ -3817,6 +3818,8 @@ exports.claimReporting = async (req, res) => {
         };
 
         data.returnValue = returnValue
+        data.role = req.role
+        data.isServicer = checkReseller.isServicer
 
         if (data.flag == "daily") {
             data.dealerId = checkReseller.dealerId
@@ -3840,7 +3843,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkReseller.isServicer
             })
         }
     } catch (err) {

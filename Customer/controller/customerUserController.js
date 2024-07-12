@@ -1776,6 +1776,7 @@ exports.saleReporting = async (req, res) => {
     let orderIds = getOrders.map(ID => new mongoose.Types.ObjectId(ID._id))
     bodyData.orderId = orderIds
     bodyData.dealerId = ""
+    bodyData.role = req.role
 
 
     bodyData.returnValue = {
@@ -1845,6 +1846,8 @@ exports.claimReporting = async (req, res) => {
     data.servicerId = ""
     data.dealerId = ""
     data.customerId = req.userId
+    data.role = req.role
+
 
     if (data.flag == "daily") {
       data.dealerId = req.userId
