@@ -822,6 +822,8 @@ exports.registerDealer = async (req, res) => {
     // Create the user
     let createNotification = await userService.createNotification(notificationData);
 
+    let settingData = await userService.getSetting({});
+
     // if (createNotification) {
     let emailData = {
       dealerName: createdDealer.name,
@@ -837,6 +839,10 @@ exports.registerDealer = async (req, res) => {
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
@@ -956,9 +962,16 @@ exports.statusUpdate = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
+
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
+
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getPrimary.firstName,
       content: "The price book " + priceBookData[0]?.pName + " has been updated",
       subject: "Update Price Book"
@@ -1152,7 +1165,13 @@ exports.changeDealerStatus = async (req, res) => {
       //   content: singleDealer.name + " " + "status has been updated successfully!"
       // }
       const status_content = req.body.status ? 'Active' : 'Inactive';
+      let settingData = await userService.getSetting({});
+
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: singleDealer.name,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
@@ -1980,7 +1999,13 @@ exports.createDealerPriceBook = async (req, res) => {
       //   c5: "",
       //   role: "PriceBook"
       // }
+      let settingData = await userService.getSetting({});
+
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
         subject: "New Price Book"
@@ -2115,7 +2140,13 @@ exports.rejectDealer = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
+      let settingData = await userService.getSetting({});
+
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: singleDealer.name,
         content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
         subject: "Rejection Account"
@@ -2275,7 +2306,13 @@ exports.updateDealerMeta = async (req, res) => {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }     
 
+    let settingData = await userService.getSetting({});
+
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
