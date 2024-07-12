@@ -679,7 +679,7 @@ exports.searchClaim = async (req, res, next) => {
     console.log("check ak+++++++++++++++++++++++++++++++++++++")
     let query = [
       // { $sort: { unique_key_number: -1 } },
-     
+
       {
         $match:
         {
@@ -738,7 +738,7 @@ exports.searchClaim = async (req, res, next) => {
       },
 
     ]
-    console.log("check ak+++++++++++++++++++++++++++++++++++++",query)
+    console.log("check ak+++++++++++++++++++++++++++++++++++++", query)
 
     let getContracts = await contractService.getAllContracts2(query)
     // let getContracts2 = await contractService.getAllContracts2(query2)
@@ -1001,7 +1001,12 @@ exports.addClaim = async (req, res, next) => {
     //let cc = notificationEmails;
     notificationCC.push(dealerPrimary.email);
     notificationCC.push(resellerPrimary?.email);
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: customerPrimary?.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
@@ -1010,6 +1015,10 @@ exports.addClaim = async (req, res, next) => {
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: servicerPrimary?.firstName,
         content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
         subject: 'Add Claim'
@@ -1226,7 +1235,12 @@ exports.editClaim = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       //notificationEmails.push(servicerPrimary?.email);
       const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+      let settingData = await userService.getSetting({});
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: servicerPrimary ? servicerPrimary.firstName : '',
         content: "The  repair part update for " + checkClaim.unique_key + " claim",
         subject: "Repair Part Update"
@@ -1359,6 +1373,8 @@ exports.editClaimType = async (req, res) => {
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
+    let settingData = await userService.getSetting({});
+
     // if (req.role != 'Super Admin') {
     //   res.send({
     //     code: constant.errorCode,
@@ -1444,6 +1460,10 @@ exports.editClaimStatus = async (req, res) => {
       //  notificationEmails.push(servicerPrimary?.email);
       //Email to customer
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
@@ -1451,6 +1471,10 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
       //Email to dealer
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: dealerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
@@ -1458,6 +1482,10 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       //Email to Reseller
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: resellerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
@@ -1465,6 +1493,10 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
       const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: servicerPrimary?.firstName,
         content: "The customer status has been updated for " + checkClaim.unique_key + "",
         subject: "Customer Status Update"
@@ -1508,14 +1540,16 @@ exports.editClaimStatus = async (req, res) => {
         redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
-      console.log("notificationData1--------------------------", notificationData1)
       let createNotification = await userService.createNotification(notificationData1);
-      console.log("createNotification--------------------------", createNotification)
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let toEmail = []
       //Email to dealer
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: dealerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
@@ -1523,6 +1557,10 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       // Email to Customer
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: customerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
@@ -1530,12 +1568,20 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
       // Email to Reseller
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: resellerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : 'reseller@yopmail.com', notificationEmails, emailData))
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: servicerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
@@ -1595,6 +1641,10 @@ exports.editClaimStatus = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       //Email to dealer
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: dealerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
@@ -1602,6 +1652,10 @@ exports.editClaimStatus = async (req, res) => {
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['yash@yopmail.com'], emailData))
       //Email to Reseller
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: resellerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
@@ -1609,6 +1663,10 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: customerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
@@ -1616,6 +1674,10 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to customer
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: servicerPrimary?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
@@ -1623,6 +1685,10 @@ exports.editClaimStatus = async (req, res) => {
       mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to admin
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: admin?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
@@ -1720,6 +1786,7 @@ exports.editServicer = async (req, res) => {
     // }
     let criteria = { _id: req.params.claimId }
     let checkClaim = await claimService.getClaimById(criteria)
+    let settingData = await userService.getSetting({});
     if (!checkClaim) {
       res.send({
         code: constant.errorCode,
@@ -1806,6 +1873,10 @@ exports.editServicer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     // notificationEmails.push(getPrimary.email);
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getPrimary ? getPrimary.firstName : "",
       content: "The servicer has been updated for the claim " + checkClaim.unique_key + "",
       subject: "Servicer Update"
@@ -1842,7 +1913,7 @@ exports.saveBulkClaim = async (req, res) => {
   uploadP(req, res, async (err) => {
     try {
       let data = req.body
-       const emailField = req.body.email;
+      const emailField = req.body.email;
 
       // // // Parse the email field
       const emailArray = JSON.parse(emailField);
@@ -2509,8 +2580,13 @@ exports.sendMessages = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
     // notificationEmails.push(emailTo.email);
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: emailTo?.firstName,
       content: "The new message for " + checkClaim.unique_key + " claim",
       subject: "New Message"
