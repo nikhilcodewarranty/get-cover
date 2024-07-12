@@ -272,7 +272,7 @@ exports.createOrder1 = async (req, res) => {
             description: data.dealerPurchaseOrder + " " + "order has been created",
             userId: req.teammateId,
             contentId: null,
-            flag: 'order', 
+            flag: 'order',
             redirectionId: savedResponse.unique_key,
             notificationFor: IDs
         };
@@ -281,7 +281,12 @@ exports.createOrder1 = async (req, res) => {
 
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
@@ -632,7 +637,12 @@ exports.createOrder1 = async (req, res) => {
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
                     //Email to Dealer
+                    let settingData = await userService.getSetting({});
                     let emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: dealerPrimary.firstName,
                         content: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         subject: "Process Order"
@@ -641,6 +651,10 @@ exports.createOrder1 = async (req, res) => {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
                     emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + checkOrder.unique_key + " has been updated and processed",
                         subject: "Process Order"
@@ -3088,13 +3102,22 @@ exports.archiveOrder = async (req, res) => {
         await LOG(logData).save()
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-        emailData = {
+         emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: resellerPrimary?.firstName,
             content: "The order " + checkOrder.unique_key + " has been archeived!.",
             subject: "Archeive Order"
@@ -3517,7 +3540,12 @@ exports.editOrderDetail = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
         //Email to Dealer
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + savedResponse.unique_key + " has been updated",
             subject: "Order Update"
@@ -3789,7 +3817,12 @@ exports.editOrderDetail = async (req, res) => {
                     // Send Email code here
                     let notificationEmails = await supportingFunction.getUserEmails();
                     //Email to Dealer
+                    let settingData = await userService.getSetting({});
                     let emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: dealerPrimary.firstName,
                         content: "The  order " + savedResponse.unique_key + " updated and processed",
                         subject: "Process Order"
@@ -3797,7 +3830,11 @@ exports.editOrderDetail = async (req, res) => {
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
-                    emailData = {
+                     emailData = {
+                        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address,
+                        websiteSetting: settingData[0],
                         senderName: resellerPrimary?.firstName,
                         content: "The  order " + savedResponse.unique_key + " has been paid",
                         subject: "Process Order"
@@ -3920,7 +3957,7 @@ exports.markAsPaid = async (req, res) => {
 
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
-            { status: "Active" }, 
+            { status: "Active" },
             { new: true }
         );
         //let count1 = await contractService.getContractsCount(); 
@@ -3930,7 +3967,7 @@ exports.markAsPaid = async (req, res) => {
         let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             const readOpts = {
-                 // <--- need these settings in readFile options //cellText:false, 
+                // <--- need these settings in readFile options //cellText:false, 
                 cellDates: true
             };
             const jsonOpts = {
@@ -4153,7 +4190,12 @@ exports.markAsPaid = async (req, res) => {
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 //Email to Dealer
+                let settingData = await userService.getSetting({});
                 let emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
                     senderName: dealerPrimary.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark as paid"
@@ -4161,7 +4203,11 @@ exports.markAsPaid = async (req, res) => {
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                 //Email to Reseller
-                emailData = {
+                 emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
                     senderName: resellerPrimary?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
                     subject: "Mark As paid"
@@ -5244,7 +5290,7 @@ async function generateTC(orderData) {
             }
         })
         const contractArray = await Promise.all(contractArrayPromise);
-        
+
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
@@ -5363,7 +5409,7 @@ async function generateTC(orderData) {
                 const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
                 const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
 
-                 // Create a new PDF Document
+                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
                 // Add the pages of the first PDF
@@ -5400,7 +5446,12 @@ async function generateTC(orderData) {
                         let notificationEmails = await supportingFunction.getUserEmails();
                         notificationEmails.push(DealerUser.email)
                         notificationEmails.push(resellerUser?.email)
+                        let settingData = await userService.getSetting({});
                         let emailData = {
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            websiteSetting: settingData[0],
                             senderName: customerUser.firstName,
                             content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
                             subject: 'Term and Condition',

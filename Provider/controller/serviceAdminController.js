@@ -88,7 +88,12 @@ exports.createServiceProvider = async (req, res, next) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
 
+      let settingData = await userService.getSetting({});
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: saveMembers[0]?.firstName,
         content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been created",
         subject: "Welcome to Get-Cover servicer Registration Approved"
@@ -212,7 +217,12 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let notificationEmails = await supportingFunction.getUserEmails();
       let primaryEmail = teamMembers[0].email
+      let settingData = await userService.getSetting({});
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: teamMembers[0]?.firstName,
         content: "Dear " + teamMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + updateServicer.name + " has been approved",
         subject: "Welcome to Get-Cover servicer Registration Approved"
@@ -532,7 +542,12 @@ exports.rejectServicer = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Primary User Welcoime email
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: getServicer.name,
       content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
       subject: "Rejection Account"
@@ -664,7 +679,12 @@ exports.editServicerDetail = async (req, res) => {
     //   role: "Servicer"
     // }
 
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Information has been updated successfully! effective immediately.",
       subject: "Update Info"
@@ -856,7 +876,12 @@ exports.updateStatus = async (req, res) => {
     // }
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkServicer.name,
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
@@ -1134,7 +1159,12 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
     emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
       subject: 'Notification of New Servicer Registration'
