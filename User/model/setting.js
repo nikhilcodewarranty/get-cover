@@ -30,6 +30,15 @@ const settingSchema = new mongoose.Schema({
                 }
             }
         ]
+    },
+    address: {
+        type: {},
+        default: {}
+    },
+    paymentDetail: {
+        type: String,
+        default: ''
     }
+
 });
 module.exports = connection.userConnection.model("setting", settingSchema);
