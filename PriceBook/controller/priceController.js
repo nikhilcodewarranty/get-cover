@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 const logs = require("../../User/model/logs");
 const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey("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");
+sgMail.setApiKey(process.env.sendgrid_key);
 const emailConstant = require('../../config/emailConstant');
 //------------- price book api's------------------//
 
