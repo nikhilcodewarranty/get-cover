@@ -7,7 +7,7 @@ const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail')
-sgMail.setApiKey(process.env.sendgrid_key);
+sgMail.setApiKey("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");
 
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
