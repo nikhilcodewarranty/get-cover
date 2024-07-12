@@ -537,7 +537,7 @@ exports.weeklySales = async (data, req, res) => {
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    // total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
                     total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                     total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                     total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
@@ -987,7 +987,7 @@ exports.daySale = async (data) => {
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    // total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
                     total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                     total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                     total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
@@ -1228,7 +1228,7 @@ exports.dailySales1 = async (data, req, res) => {
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                    total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
+                    // total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
                     total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                     total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                     total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
