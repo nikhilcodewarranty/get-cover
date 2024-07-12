@@ -449,6 +449,8 @@ exports.createDealer = async (req, res) => {
         }
       }
 
+      let settingData = await userService.getSetting({});
+
       let termData = {
         fileName: termFile ? termFile.filename : '',
         name: termFile ? termFile.originalname : '',
@@ -695,9 +697,15 @@ exports.createDealer = async (req, res) => {
           };
           let createNotification = await userService.createNotification(notificationData);
 
+      
+
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
             content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
             subject: "Welcome to Get-Cover Dealer Registration Approved"
@@ -823,11 +831,7 @@ exports.createDealer = async (req, res) => {
             return item;
           });
           const totalDataComing = totalDataComing1.map(item => {
-            console.log("ccccc++++++++dddddddddddddddddd+++++++", item)
-
             const keys = Object.keys(item);
-            console.log("keys++++++++dddddddddddddddddd+++++++", keys)
-
             return {
               priceBook: item[keys[0]],
               retailPrice: item[keys[1]],
@@ -1101,6 +1105,10 @@ exports.createDealer = async (req, res) => {
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
             content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
             subject: "Welcome to Get-Cover Dealer Registration Approved"
@@ -1342,6 +1350,10 @@ exports.createDealer = async (req, res) => {
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
             subject: "Welcome to Get-Cover Dealer Registration Approved"
@@ -1713,6 +1725,10 @@ exports.createDealer = async (req, res) => {
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
             subject: "Welcome to Get-Cover Dealer Registration Approved"
@@ -2043,6 +2059,7 @@ exports.updateUserData = async (req, res) => {
     let criteria = { _id: req.params.userId ? req.params.userId : req.teammateId };
     let option = { new: true };
     const updateUser = await userService.updateSingleUser(criteria, data, option);
+    const settingData = await userService.getSetting({});
     if (!updateUser) {
       //Save Logs updateUserData
       let logData = {
@@ -2085,6 +2102,10 @@ exports.updateUserData = async (req, res) => {
     let emailData;
     if (data.firstName) {
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
         content: "The user information has been updated successfully!.",
         subject: "Update User Info"
@@ -2094,6 +2115,10 @@ exports.updateUserData = async (req, res) => {
     else {
       const status_content = req.body.status ? 'Active' : 'Inactive';
       emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: updateUser.firstName,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
         subject: "Update Status"
@@ -2294,6 +2319,7 @@ exports.deleteUser = async (req, res) => {
     let option = { new: true }
     const checkUser = await userService.getUserById1({ _id: req.params.userId }, {});
     const deleteUser = await userService.deleteUser(criteria, newValue, option);
+    let settingData = await userService.getSetting({});
     if (!deleteUser) {
       //Save Logs delete user
       let logData = {
@@ -2350,6 +2376,10 @@ exports.deleteUser = async (req, res) => {
     //   role: "Servicer"
     // }
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkUser.firstName,
       content: "The user " + checkUser.firstName + "" + " " + "has been deleted successfully.",
       subject: "Delete User"
@@ -2843,8 +2873,13 @@ exports.addMembers = async (req, res) => {
     };
 
     let notificationEmails = await supportingFunction.getUserEmails();
+    let settingData = await userService.getSetting({});
 
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: data.firstName,
       content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please reset the password for the system login",
       subject: "Admin Account Creation"
