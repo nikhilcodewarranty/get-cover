@@ -15,6 +15,7 @@ const orderService = require("../../Order/services/orderService");
 const resellerService = require("../../Dealer/services/resellerService");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const priceBookService = require("../../PriceBook/services/priceBookService");
+const reportingController = require('../../User/controller/reportingController')
 require("dotenv").config();
 
 const randtoken = require('rand-token').generator()
@@ -764,23 +765,21 @@ exports.getDashboardData = async (req, res) => {
 
 exports.saleReporting = async (req, res) => {
     try {
-        // if(!req.body.priceBookId ){
-        //   res.send({
-        //     code:constant.errorCode,
-        //     message:"Payload values are missing"
-        //   })
-        //   return
-        // }
-        // if(!req.body.dealerId){
-        //   res.send({
-        //     code:constant.errorCode,
-        //     message:"Payload values are missing"
-        //   })
-        //   return
-        // }
+        let bodyData = req.body
+        bodyData.servicerId = req.userId
+        bodyData.role = req.role
+        bodyData.returnValue = {
+            total_broker_fee: 1,
+            total_admin_fee: 1,
+            total_fronting_fee: 1,
+            total_reserve_future_fee: 1,
+            total_contracts: 1,
+            total_reinsurance_fee: 1,
+            // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
+            wholesale_price: 1
+          };
+
         if (req.body.flag == "daily") {
-            let bodyData = req.body
-            bodyData.servicerId = req.userId
             let sales = await reportingController.dailySales1(bodyData)
             res.send({
                 code: constant.successCode,
@@ -788,8 +787,7 @@ exports.saleReporting = async (req, res) => {
                 result: sales
             })
         } else if (req.body.flag == "weekly") {
-            let bodyData = req.body
-            bodyData.servicerId = req.userId
+            
             let sales = await reportingController.weeklySales(bodyData)
             res.send({
                 code: constant.successCode,
@@ -797,8 +795,7 @@ exports.saleReporting = async (req, res) => {
                 result: sales
             })
         } else if (req.body.flag == "day") {
-            let bodyData = req.body
-            bodyData.servicerId = req.userId
+            
             let sales = await reportingController.daySale(bodyData)
             res.send({
                 code: constant.successCode,

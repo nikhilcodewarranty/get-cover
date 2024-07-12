@@ -3016,6 +3016,7 @@ exports.saleReporting = async (req, res) => {
   try {
 
     let bodyData = req.body
+    bodyData.role = req.role
 
     bodyData.returnValue = {
       total_broker_fee: 1,

@@ -533,6 +533,13 @@ exports.weeklySales = async (data, req, res) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
+            if(data.role == 'Super Admin'){
+
+            }
+
+
+
+
             return {
                 ...item,
                 total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
