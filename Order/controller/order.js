@@ -3113,7 +3113,7 @@ exports.archiveOrder = async (req, res) => {
             subject: "Archeive Order"
         }
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-         emailData = {
+        emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
@@ -3248,9 +3248,16 @@ exports.getSingleOrder = async (req, res) => {
                 return {};
             }
         });
+        //Get setting of website
+        let settingData = await userService.getSetting({});
         let userData = {
             dealerData: dealer ? dealer : {},
             customerData: customer ? customer : {},
+            websiteSetting: {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+            },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser ? singleDealerUser : {},
             resellerUsername: singleResellerUser ? singleResellerUser : {},
@@ -3830,7 +3837,7 @@ exports.editOrderDetail = async (req, res) => {
 
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
-                     emailData = {
+                    emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
@@ -4203,7 +4210,7 @@ exports.markAsPaid = async (req, res) => {
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                 //Email to Reseller
-                 emailData = {
+                emailData = {
                     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                     address: settingData[0]?.address,
