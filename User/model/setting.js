@@ -32,8 +32,8 @@ const settingSchema = new mongoose.Schema({
         ]
     },
     address: {
-        type: {},
-        default: {}
+        type: String,
+        default: ''
     },
     paymentDetail: {
         type: String,
