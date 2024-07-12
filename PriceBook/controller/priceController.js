@@ -1077,6 +1077,7 @@ exports.updatePriceBookCat = async (req, res) => {
     //   c5: "",
     //   role: "Servicer"
     // }
+    console.log("settingData=====================",settingData)
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       site_url:process.env.site_url,
