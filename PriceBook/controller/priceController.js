@@ -777,10 +777,10 @@ exports.createPriceBookCat = async (req, res) => {
     //   role: "Servicer"
     // }
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
-    console.log("settingData[0]-----------------",settingData[0]);
+    console.log("settingData[0]-----------------", settingData[0]);
     let emailData = {
-      site_url:process.env.API_ENDPOINT,
-      websiteSetting:settingData[0],
+      site_url: process.env.API_ENDPOINT,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
@@ -1077,11 +1077,12 @@ exports.updatePriceBookCat = async (req, res) => {
     //   c5: "",
     //   role: "Servicer"
     // }
-    console.log("settingData=====================",settingData)
+    console.log("settingData=====================", settingData)
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
-      site_url:process.env.API_ENDPOINT,
-      websiteSetting:settingData[0],
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
