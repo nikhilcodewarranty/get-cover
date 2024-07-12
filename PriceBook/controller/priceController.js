@@ -11,7 +11,7 @@ const mongoose = require('mongoose');
 const logs = require("../../User/model/logs");
 const supportingFunction = require('../../config/supportingFunction')
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.sendgrid_key);
+sgMail.setApiKey("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");
 const emailConstant = require('../../config/emailConstant');
 //------------- price book api's------------------//
 
@@ -271,7 +271,11 @@ exports.createPriceBook = async (req, res, next) => {
       //   role: "PriceBook"
       // }
       const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+      //Get Website Setting
+      const settingData = await userService.getSetting({});
       let emailData = {
+        site_url: process.env.site_url,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + data.name + " created successfully! effective immediately.",
         subject: "Create Price Book"
@@ -571,16 +575,23 @@ exports.updatePriceBookById = async (req, res, next) => {
     // }
 
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
+    //Get Website Setting
+    const settingData = await userService.getSetting({});
+
     let emailData;
     if (req.body.priceType) {
-       emailData = {
+      emailData = {
+        site_url: process.env.site_url,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
-    } 
+    }
     else {
-       emailData = {
+      emailData = {
+        site_url: process.env.site_url,
+        websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status + "! effective immediately.",
         subject: "Update Status"
@@ -752,6 +763,7 @@ exports.createPriceBookCat = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    const settingData = await userService.getSetting({});
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
@@ -766,6 +778,8 @@ exports.createPriceBookCat = async (req, res) => {
     // }
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
+      site_url:process.env.site_url,
+      websiteSetting:settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
       subject: "New Category Added"
@@ -891,7 +905,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
 
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
- 
+
     let query;
 
 
@@ -1049,6 +1063,7 @@ exports.updatePriceBookCat = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+    const settingData = await userService.getSetting({});
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
@@ -1063,6 +1078,8 @@ exports.updatePriceBookCat = async (req, res) => {
     // }
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
+      site_url:process.env.site_url,
+      websiteSetting:settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
       subject: "Update Category"
@@ -1244,7 +1261,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       message: err.message
     })
   }
-} 
+}
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
