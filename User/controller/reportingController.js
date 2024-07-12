@@ -1861,7 +1861,7 @@ exports.claimDailyReporting = async (data) => {
 
             }
 
-            if (req.role == "Servicer") {
+            if (data.role == "Servicer") {
                 return {
                     weekStart: item.weekStart,
                     total_amount: item.total_amount,
@@ -1890,7 +1890,7 @@ exports.claimDailyReporting = async (data) => {
         });
 
         let totalFees = []
-        if (req.role = "Super Admin") {
+        if (data.role = "Super Admin") {
             totalFees = mergedArray.reduce((acc, curr) => {
                 acc.total_amount += curr.total_amount || 0;
                 acc.total_claim += curr.total_claim || 0;
@@ -2304,7 +2304,7 @@ exports.claimWeeklyReporting = async (data) => {
             // };
         });
         let totalFees = []
-        if (req.role = "Super Admin") {
+        if (data.role = "Super Admin") {
             totalFees = mergedArray.reduce((acc, curr) => {
                 acc.total_amount += curr.total_amount || 0;
                 acc.total_claim += curr.total_claim || 0;
