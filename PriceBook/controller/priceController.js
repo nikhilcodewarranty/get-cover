@@ -274,7 +274,9 @@ exports.createPriceBook = async (req, res, next) => {
       //Get Website Setting
       const settingData = await userService.getSetting({});
       let emailData = {
-        site_url: process.env.API_ENDPOINT,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + data.name + " created successfully! effective immediately.",
@@ -581,7 +583,9 @@ exports.updatePriceBookById = async (req, res, next) => {
     let emailData;
     if (req.body.priceType) {
       emailData = {
-        site_url: process.env.API_ENDPOINT,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
@@ -590,7 +594,9 @@ exports.updatePriceBookById = async (req, res, next) => {
     }
     else {
       emailData = {
-        site_url: process.env.API_ENDPOINT,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status + "! effective immediately.",
@@ -779,7 +785,9 @@ exports.createPriceBookCat = async (req, res) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     console.log("settingData[0]-----------------", settingData[0]);
     let emailData = {
-      site_url: process.env.API_ENDPOINT,
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " created successfully! effective immediately.",
@@ -1077,11 +1085,11 @@ exports.updatePriceBookCat = async (req, res) => {
     //   c5: "",
     //   role: "Servicer"
     // }
-    console.log("settingData=====================", settingData)
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "The category " + data.name + " updated successfully! effective immediately.",
