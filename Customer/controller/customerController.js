@@ -129,8 +129,13 @@ exports.createCustomer = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
-    
+
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: saveMembers[0].firstName,
       content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
       subject: "Welcome to Get-Cover customer Registration Approved"
@@ -588,7 +593,12 @@ exports.editCustomer = async (req, res) => {
     //   role: "Servicer"
     // }
 
+    let settingData = await userService.getSetting({});
     let emailData = {
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
+      websiteSetting: settingData[0],
       senderName: checkDealer.username,
       content: "The customer " + checkDealer.username + "" + " " + "has been updated successfully.",
       subject: "Customer Update"
@@ -704,7 +714,12 @@ exports.changePrimaryUser = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       notificationEmails.push(updateLastPrimary.email);
       notificationEmails.push(updatePrimary.email);
+      let settingData = await userService.getSetting({});
       let emailData = {
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        websiteSetting: settingData[0],
         senderName: checkUser.firstName,
         content: "The primary user for your account has been changed from " + updateLastPrimary.firstName + " to " + updatePrimary.firstName + ".",
         subject: "Primary User change"

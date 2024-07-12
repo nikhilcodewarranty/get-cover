@@ -125,10 +125,15 @@ exports.createReseller = async (req, res) => {
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
 
-        console.log("notificationEmails--------------------------",notificationEmails);
-        console.log("saveMembers--------------------------",saveMembers);
-        
+        console.log("notificationEmails--------------------------", notificationEmails);
+        console.log("saveMembers--------------------------", saveMembers);
+
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: saveMembers[0]?.firstName,
             content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
             subject: "Welcome to Get-Cover reseller Registration Approved"
@@ -834,7 +839,12 @@ exports.editResellers = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         //notificationEmails.push(resellerPrimary.email);
         notificationEmails.push(dealerPrimary.email);
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: checkReseller.name,
             content: "Information has been updated successfully! effective immediately.",
             subject: "Update Info"
@@ -2061,7 +2071,12 @@ exports.changeResellerStatus = async (req, res) => {
 
             const status_content = req.body.status ? 'Active' : 'Inactive';
 
+            let settingData = await userService.getSetting({});
             let emailData = {
+                darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                address: settingData[0]?.address,
+                websiteSetting: settingData[0],
                 senderName: singleReseller.name,
                 content: "Status has been changed to " + status_content + " " + ", effective immediately.",
                 subject: "Update Status"

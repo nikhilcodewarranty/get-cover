@@ -468,7 +468,12 @@ exports.createOrder = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: getPrimary.firstName,
             content: "The new order " + checkOrder.unique_key + "  has been created for " + getPrimary.firstName + "",
             subject: "New Order"
@@ -732,7 +737,12 @@ exports.createOrder = async (req, res) => {
                 notificationEmails.push(customerPrimary.email);
                 notificationEmails.push(dealerPrimary.email);
                 notificationEmails.push(resellerPrimary?.email);
+                let settingData = await userService.getSetting({});
                 let emailData = {
+                    darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                    lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                    address: settingData[0]?.address,
+                    websiteSetting: settingData[0],
                     senderName: '',
                     content: "The order " + savedResponse.unique_key + " has been updated and processed",
                     subject: "Order Processed"
@@ -1160,7 +1170,12 @@ exports.editOrderDetail = async (req, res) => {
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
         //Email to Dealer
+        let settingData = await userService.getSetting({});
         let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
             senderName: dealerPrimary.firstName,
             content: "The  order " + checkOrder.unique_key + " has been updated",
             subject: "Order Update"
