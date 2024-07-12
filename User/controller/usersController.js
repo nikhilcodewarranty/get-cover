@@ -1830,7 +1830,6 @@ exports.login = async (req, res) => {
         return
       }
     }
-
     if (user.status == false) {
       res.send({
         code: constant.errorCode,

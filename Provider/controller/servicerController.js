@@ -6,8 +6,9 @@ const role = require("../../User/model/role");
 const userService = require("../../User/services/userService");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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 ');
+const sgMail = require('@sendgrid/mail')
+sgMail.setApiKey(process.env.sendgrid_key);
+
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose');

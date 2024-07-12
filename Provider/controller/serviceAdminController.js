@@ -11,7 +11,7 @@ const moment = require("moment");
 const constant = require('../../config/constant')
 const emailConstant = require('../../config/emailConstant');
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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 ');
+sgMail.setApiKey(process.env.sendgrid_key);
 const bcrypt = require("bcrypt");
 const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
