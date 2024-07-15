@@ -950,7 +950,7 @@ exports.claimReportinDropdown = async (req, res) => {
                     //     categories: getCategories1
                     // }
                 }
-                if (data.priceBookId.length != 0) {
+                if (data.priceBookId.length != 0 && data.categoryId == "") {
                     getCategories1 = []
                 }
 
@@ -978,7 +978,7 @@ exports.claimReportinDropdown = async (req, res) => {
                 getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
             }
 
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories = []
             }
 
@@ -1248,7 +1248,7 @@ exports.getDashboardInfo = async (req, res) => {
     ]
     let getRelations = await dealerRelationService.getDealerRelationsAggregate(query)
     let dealerIds = getRelations.map(ID => new mongoose.Types.ObjectId(ID.dealerId))
-    console.log(getRelations,dealerIds)
+    console.log(getRelations, dealerIds)
 
     let orderQuery = [
         {
@@ -1300,7 +1300,7 @@ exports.getDashboardInfo = async (req, res) => {
     const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
     let lookupQuery = [
         {
-            $match: { _id: {$in:dealerIds} }
+            $match: { _id: { $in: dealerIds } }
         },
         {
             $lookup: {
@@ -1339,7 +1339,7 @@ exports.getDashboardInfo = async (req, res) => {
                 ]
             }
         },
-        
+
         {
             $project: {
                 name: 1,
@@ -1361,7 +1361,7 @@ exports.getDashboardInfo = async (req, res) => {
 
             }
         },
-        
+
         { "$sort": { totalAmount: -1 } },
         { "$limit": 5 }  // Apply limit again after sorting
     ]

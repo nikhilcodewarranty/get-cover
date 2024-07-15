@@ -5953,7 +5953,7 @@ exports.claimReportinDropdown = async (req, res) => {
             if (data.categoryId != "") {
                 getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
             }
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories1 = []
             }
 
@@ -5980,7 +5980,7 @@ exports.claimReportinDropdown = async (req, res) => {
                 getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
             }
 
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories = []
             }
 

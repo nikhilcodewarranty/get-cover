@@ -1542,7 +1542,7 @@ exports.getReportingDropdowns = async (req, res) => {
                 let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
                 result = {
                     getDealers: convertedData,
-                    getPriceBooks: priceBook,
+                    getPriceBooks: getPriceBooks2,
                     getCategories: categories
                 }
             }
@@ -2668,7 +2668,7 @@ exports.claimReportinDropdown = async (req, res) => {
                     //     categories: getCategories1
                     // }
                 }
-                if (data.priceBookId.length != 0) {
+                if (data.priceBookId.length != 0 && data.categoryId == "") {
                     getCategories1 = []
                 }
 
@@ -2759,7 +2759,7 @@ exports.claimReportinDropdown = async (req, res) => {
             if (data.categoryId != "") {
                 getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
             }
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories1 = []
             }
 
