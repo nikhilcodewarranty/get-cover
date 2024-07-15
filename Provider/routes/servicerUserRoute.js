@@ -12,6 +12,7 @@ router.put("/changePrimaryUser", [verifyToken], servicerController.changePrimary
 router.put("/editUserDetail/:userId", [verifyToken], servicerController.editUserDetail)
 router.get("/getServicerDetail", [verifyToken], servicerController.getServicerDetail)
 router.get("/getDashboardData", [verifyToken], servicerController.getDashboardData)
+router.get("/getDashboardGraph", [verifyToken], servicerController.getDashboardGraph)
 router.get("/getUserId/:userId", [verifyToken], servicerController.getUserId)
 router.post("/createRelationWithDealer", [verifyToken], servicerController.createDeleteRelation)
 router.post("/saleReporting", [verifyToken], servicerController.saleReporting)
