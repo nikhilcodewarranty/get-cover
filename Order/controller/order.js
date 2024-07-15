@@ -3257,6 +3257,8 @@ exports.getSingleOrder = async (req, res) => {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
+                paymentDetail:settingData[0]?.paymentDetail
+
             },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser ? singleDealerUser : {},
