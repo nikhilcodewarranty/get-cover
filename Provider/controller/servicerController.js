@@ -777,7 +777,7 @@ exports.saleReporting = async (req, res) => {
             total_reinsurance_fee: 1,
             // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
             wholesale_price: 1
-          };
+        };
 
         if (req.body.flag == "daily") {
             let sales = await reportingController.dailySales1(bodyData)
@@ -787,7 +787,7 @@ exports.saleReporting = async (req, res) => {
                 result: sales
             })
         } else if (req.body.flag == "weekly") {
-            
+
             let sales = await reportingController.weeklySales(bodyData)
             res.send({
                 code: constant.successCode,
@@ -795,7 +795,7 @@ exports.saleReporting = async (req, res) => {
                 result: sales
             })
         } else if (req.body.flag == "day") {
-            
+
             let sales = await reportingController.daySale(bodyData)
             res.send({
                 code: constant.successCode,
@@ -895,7 +895,12 @@ exports.claimReportinDropdown = async (req, res) => {
             {
                 $project: {
                     "dealerData": 1,
-                    _id: 0
+                    'name': "$dealerData.name",
+                    '_id': "$dealerData._id",
+                    // 'name': "dealerData.name",
+                    // 'name': { $arrayElemAt: ["$dealerData.name", 0] },
+                    // 'isServicer': { $arrayElemAt: ["$dealerData.isServicer", 0] },
+                    // _id: 0
                 }
             }
 
@@ -915,6 +920,8 @@ exports.claimReportinDropdown = async (req, res) => {
         let getPriceBooks = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } }, { _id: 0, name: 1, pName: 1, coverageType: 1 })
         let cateId = getPriceBooks.map(ID => ID._id)
         let getCategories = await priceBookService.getAllPriceCat({ _id: { $in: cateId } }, { name: 1, _id: 1 })
+
+        console.log(getDealers)
 
         result = {
             dealers: getDealers,
@@ -965,86 +972,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
         }
 
-        // if (data.primary == "servicer") {
-        //     let servicerId;
-        //     if (data.servicerId != "") {
-        //         servicerId = [new mongoose.Types.ObjectId(req.body.servicerId)]
-        //     } else {
-        //         servicerId = getServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
-        //     }
-
-        //     //getting servicers dealers ----------
-        //     let query = [
-        //         {
-        //             $match: {
-        //                 servicerId: { $in: servicerId }
-        //             }
-        //         },
-        //         {
-        //             $lookup: {
-        //                 from: "dealers",
-        //                 localField: "dealerId",
-        //                 foreignField: "_id",
-        //                 as: "dealerData",
-        //             }
-        //         },
-        //         {
-        //             $unwind: "$dealerData"
-        //         },
-        //         {
-        //             $project: {
-        //                 "dealerData": 1,
-        //                 _id: 0
-        //             }
-        //         }
-
-        //     ]
-        //     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
-
-
-        //     let dealerIds = filteredData.map(ID => ID.dealerData._id)
-        //     console.log("checking dealerIds--------------------", filteredData, dealerIds)
-
-        //     let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds } })
-        //     console.log("checking dealerIds--------------------", { dealerId: { $in: dealerIds } })
-        //     let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
-        //     let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
-        //     let categoriesIds = getPriceBooks1.map(ID => ID.category)
-        //     let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
-        //     if (data.dealerId != "") {
-        //         let getDealerBooks1 = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds } })
-        //         let priceBookIds1 = getDealerBooks1.map(ID => ID.priceBook)
-        //         getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds1 } })
-        //         let categoriesIds1 = getPriceBooks1.map(ID => ID.category)
-        //         getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds1 } })
-
-        //     }
-
-        //     if (data.categoryId != "") {
-        //         getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-        //     }
-        //     if (data.priceBookId.length != 0) {
-        //         getCategories1 = []
-        //     }
-
-        //     filteredData = {
-        //         dealers: filteredData.map(dealer => {
-        //             return {
-        //                 _id: dealer.dealerData._id,
-        //                 name: dealer.dealerData.name
-        //             };
-        //         })
-        //     };
-
-        //     result = {
-        //         dealers: filteredData.dealers,
-        //         priceBooks: getPriceBooks1,
-        //         servicers: getServicer,
-        //         categories: getCategories1
-        //     }
-
-        // }
 
         if (data.primary == "category") {
             if (data.categoryId != "") {

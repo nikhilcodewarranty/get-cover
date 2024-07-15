@@ -7,7 +7,7 @@ module.exports = class claimService {
       const allClaims = await claim.aggregate(query);
       return allClaims;
     } catch (error) {
-      console.log(`Could not fetch claims ${error}`);
+     return {code:402,message:"Service error"}
     }
   }
   static async getAllMessages(query) {
@@ -21,7 +21,6 @@ module.exports = class claimService {
   static async getClaims(query) {
     try {
       const allClaims = await claim.find(query);
-      console.log(allClaims.length,"--------------00000000000000000000000000000000000000000000000000000000000000000000000000000000")
       return allClaims;
     } catch (error) {
       console.log(`Could not fetch claims ${error}`);
@@ -128,6 +127,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
+
   static async getServicerClaimsValue(query, groupBy = {}) {
     try {
       const allOrders = await claim.aggregate([
@@ -153,6 +153,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
+
   static async getServicerClaimsNumber(query, groupBy = {}) {
     try {
       const allOrders = await claim.aggregate([
@@ -173,6 +174,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order ${error}`);
     }
   }
+
   static async markAsPaid(criteria,data,option) {
     try {
       const paidBulk = await claim.updateMany(criteria, data, option);
@@ -181,6 +183,7 @@ module.exports = class claimService {
       console.log(`Could not add order ${error}`);
     }
   }
+  
   static async valueCompletedClaims(query, project = {}) {
     try {
       const allOrders = await claim.aggregate(query)
