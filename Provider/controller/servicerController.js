@@ -1008,231 +1008,457 @@ exports.claimReportinDropdown = async (req, res) => {
 
 exports.getDashboardGraph = async (req, res) => {
     try {
-      let data = req.body
-      // sku data query ++++++++
-  
-      let endOfMonth1s = new Date();
-      let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
-  
-      let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
-  
-  
-      let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
-      let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
-  
-  
-      let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
-  
-      let orderQuery = [
-        {
-          $match: {
-            updatedAt: { $gte: startOfMonths, $lte: endOfMonths },
-            status: "Active"
-  
-          }
-        },
-        {
-          $unwind: "$productsArray"
-        },
-        {
-          $group: {
-            _id: "$productsArray.priceBookDetails.name",
-            totalPrice: { $sum: "$productsArray.price" },
-            // term: "$productsArray.term",
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            priceBookName: "$_id",
-            totalPrice: 1,
-            term: 1,
-  
-          }
-        },
-        {
-          $sort: { totalPrice: -1 }
-        }
-  
-      ]
-  
-      let orderQuery1 = [
-        {
-          $match: {
-            updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths },
-            status: "Active"
-          }
-        },
-        {
-          $unwind: "$productsArray"
-        },
-        {
-          $group: {
-            _id: "$productsArray.priceBookDetails.name",
-            totalPrice: { $sum: "$productsArray.price" }
-          }
-        },
-        {
-          $project: {
-            _id: 0,
-            priceBookName: "$_id",
-            totalPrice: 1
-          }
-        },
-        {
-          $sort: { totalPrice: -1 }
-        }
-  
-      ]
-  
-  
-  
-  
-      // let data = req.body
-      let endOfMonth1 = new Date();
-      let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
-  
-      let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-  
-  
-      let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
-  
-      if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
-        return { code: 401, message: "invalid date" };
-      }
-  
-      let datesArray = [];
-      let currentDate = new Date(startOfMonth);
-      while (currentDate <= endOfMonth) {
-        datesArray.push(new Date(currentDate));
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-  
-      // let dailyQuery = [
-      //   {
-      //     $match: {
-      //       createdAt: { $gte: "2024-06-05T18:30:00.000Z", $lt: "2024-07-06T18:30:00.000Z" },
-      //       claimStatus: {
-      //         $elemMatch: { status: "Completed" }
-      //       },
-      //     },
-      //   },
-      //   // {
-      //   //   $group: {
-      //   //     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-      //   //     total_amount: { $sum: "$totalAmount" },
-      //   //     total_claim: { $sum: 1 },
-      //   //     // total_broker_fee: { $sum: "$products.brokerFee" }
-      //   //   }
-      //   // },
-      //   {
-      //     $sort: { _id: 1 } // Sort by date in ascending order
-      //   }
-      // ];
-      let dailyQuery = [
-        {
-          $match: {
-            createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-            servicerId:new mongoose.Types.ObjectId(req.userId),
-            claimStatus: {
-              $elemMatch: { status: "Completed" }
+        let data = req.body
+        // sku data query ++++++++
+
+        let endOfMonth1s = new Date();
+        let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
+
+
+        let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
+        let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
+
+
+        let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
+
+        let orderQuery = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonths, $lte: endOfMonths },
+                    status: "Active"
+
+                }
             },
-          },
-        },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-            total_amount: { $sum: "$totalAmount" },
-            total_claim: { $sum: 1 },
-            // total_broker_fee: { $sum: "$products.brokerFee" }
-          }
-        },
-        {
-          $sort: { _id: 1 } // Sort by date in ascending order
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" },
+                    // term: "$productsArray.term",
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1,
+                    term: 1,
+
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+        let orderQuery1 = [
+            {
+                $match: {
+                    updatedAt: { $gte: startOfMonth1s, $lte: endOfMonths },
+                    status: "Active"
+                }
+            },
+            {
+                $unwind: "$productsArray"
+            },
+            {
+                $group: {
+                    _id: "$productsArray.priceBookDetails.name",
+                    totalPrice: { $sum: "$productsArray.price" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    priceBookName: "$_id",
+                    totalPrice: 1
+                }
+            },
+            {
+                $sort: { totalPrice: -1 }
+            }
+
+        ]
+
+
+
+
+        // let data = req.body
+        let endOfMonth1 = new Date();
+        let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
+
+        let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
+
+
+        let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
+
+        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
+            return { code: 401, message: "invalid date" };
         }
-      ];
-  
-      let dailyQuery1 = [
-        {
-          $match: {
-            createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-            status: "Active"
-          },
-        },
-        {
-          $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-            order_amount: { $sum: "$orderAmount" },
-            total_order: { $sum: 1 },
-          }
-        },
-        {
-          $sort: { _id: 1 } // Sort by date in ascending order
+
+        let datesArray = [];
+        let currentDate = new Date(startOfMonth);
+        while (currentDate <= endOfMonth) {
+            datesArray.push(new Date(currentDate));
+            currentDate.setDate(currentDate.getDate() + 1);
         }
-      ];
-  
-  
-      console.log(startOfMonth, endOfMonth, dailyQuery)
-  
-      let getData = await claimService.getAllClaims(dailyQuery)
-      let getData2 = await orderService.getAllOrders1(dailyQuery1)
-  
-      let getOrders = await orderService.getAllOrders1(orderQuery)
-      let getOrders1 = await orderService.getAllOrders1(orderQuery1)
-  
-      let priceBookNames = getOrders.map(ID => ID.priceBookName)
-      let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
-  
-      let priceQuery = {
-        name: { $in: priceBookNames }
-      }
-  
-      let priceQuery1 = {
-        name: { $in: priceBookName1 }
-      }
-  
-  
-      let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
-      let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
-  
-      console.log(priceBookNames)
-      const result = datesArray.map(date => {
-        const dateString = date.toISOString().slice(0, 10);
-        const order = getData.find(item => item._id === dateString);
-        return {
-          weekStart: dateString,
-          total_amount: order ? order.total_amount : 0,
-          total_claim: order ? order.total_claim : 0,
-  
-        };
-      });
-      const result1 = datesArray.map(date => {
-        const dateString = date.toISOString().slice(0, 10);
-        const order = getData2.find(item => item._id === dateString);
-        return {
-          weekStart: dateString,
-          order_amount: order ? order.order_amount : 0,
-          total_order: order ? order.total_order : 0,
-  
-  
-        };
-      });
-  
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        claim_result: result,
-        // order_result: result1,
-        // monthly_sku: getPriceBooks,
-        // yealy_sku: getPriceBooks1
-      })
-      // return { mergedArray, result, result1, result2, totalFees }
-  
-  
+
+        // let dailyQuery = [
+        //   {
+        //     $match: {
+        //       createdAt: { $gte: "2024-06-05T18:30:00.000Z", $lt: "2024-07-06T18:30:00.000Z" },
+        //       claimStatus: {
+        //         $elemMatch: { status: "Completed" }
+        //       },
+        //     },
+        //   },
+        //   // {
+        //   //   $group: {
+        //   //     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+        //   //     total_amount: { $sum: "$totalAmount" },
+        //   //     total_claim: { $sum: 1 },
+        //   //     // total_broker_fee: { $sum: "$products.brokerFee" }
+        //   //   }
+        //   // },
+        //   {
+        //     $sort: { _id: 1 } // Sort by date in ascending order
+        //   }
+        // ];
+        let dailyQuery = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    servicerId: new mongoose.Types.ObjectId(req.userId),
+                    claimStatus: {
+                        $elemMatch: { status: "Completed" }
+                    },
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    total_amount: { $sum: "$totalAmount" },
+                    total_claim: { $sum: 1 },
+                    // total_broker_fee: { $sum: "$products.brokerFee" }
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+        let dailyQuery1 = [
+            {
+                $match: {
+                    createdAt: { $gte: startOfMonth, $lt: endOfMonth },
+                    status: "Active"
+                },
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
+                    order_amount: { $sum: "$orderAmount" },
+                    total_order: { $sum: 1 },
+                }
+            },
+            {
+                $sort: { _id: 1 } // Sort by date in ascending order
+            }
+        ];
+
+
+        console.log(startOfMonth, endOfMonth, dailyQuery)
+
+        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData2 = await orderService.getAllOrders1(dailyQuery1)
+
+        let getOrders = await orderService.getAllOrders1(orderQuery)
+        let getOrders1 = await orderService.getAllOrders1(orderQuery1)
+
+        let priceBookNames = getOrders.map(ID => ID.priceBookName)
+        let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
+
+        let priceQuery = {
+            name: { $in: priceBookNames }
+        }
+
+        let priceQuery1 = {
+            name: { $in: priceBookName1 }
+        }
+
+
+        let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
+        let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
+
+        console.log(priceBookNames)
+        const result = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                total_amount: order ? order.total_amount : 0,
+                total_claim: order ? order.total_claim : 0,
+
+            };
+        });
+        const result1 = datesArray.map(date => {
+            const dateString = date.toISOString().slice(0, 10);
+            const order = getData2.find(item => item._id === dateString);
+            return {
+                weekStart: dateString,
+                order_amount: order ? order.order_amount : 0,
+                total_order: order ? order.total_order : 0,
+
+
+            };
+        });
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            claim_result: result,
+            // order_result: result1,
+            // monthly_sku: getPriceBooks,
+            // yealy_sku: getPriceBooks1
+        })
+        // return { mergedArray, result, result1, result2, totalFees }
+
+
     } catch (err) {
-      res.send({
-        code: constant.errorCode,
-        message: err.message
-      })
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
     }
-  };
+};
+
+exports.getDashboardInfo = async (req, res) => {
+
+    let query = [
+        {
+            $match: {
+                servicerId: new mongoose.Types.ObjectId(req.userId)
+            }
+        }
+    ]
+    let getRelations = await dealerRelationService.getDealerRelationsAggregate(query)
+    let dealerIds = getRelations.map(ID => new mongoose.Types.ObjectId(ID.dealerId))
+    console.log(getRelations,dealerIds)
+
+    let orderQuery = [
+        {
+            $match: { status: "Active" }
+        },
+        {
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+
+            }
+        },
+        { $sort: { unique_key: -1 } }]
+    const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+    const claimQuery = [
+        {
+            $match: { servicerId: new mongoose.Types.ObjectId(req.userId) }
+        },
+        {
+            $sort: {
+                unique_key_number: -1
+            }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "contractId",
+                foreignField: "_id",
+                as: "contract"
+            }
+        },
+        {
+            $unwind: "$contract"
+        },
+        {
+            $project: {
+                unique_key: 1,
+                "contract.unique_key": 1,
+                unique_key_number: 1,
+                totalAmount: 1
+            }
+        },
+    ]
+    const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+    let lookupQuery = [
+        {
+            $match: { _id: {$in:dealerIds} }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "users",
+                pipeline: [
+                    {
+                        $match: {
+                            isPrimary: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $lookup: {
+                from: "orders",
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "order",
+                pipeline: [
+                    {
+                        $match: { status: "Active" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$order.dealerId",
+                            "totalOrder": { "$sum": 1 },
+                            "totalAmount": {
+                                "$sum": "$orderAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        
+        {
+            $project: {
+                name: 1,
+                totalAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$order.totalAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalOrder: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
+                        then: { $arrayElemAt: ["$order.totalOrder", 0] },
+                        else: 0
+                    }
+                },
+                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+            }
+        },
+        
+        { "$sort": { totalAmount: -1 } },
+        { "$limit": 5 }  // Apply limit again after sorting
+    ]
+
+    const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
+
+    let lookupClaim = [
+        {
+            $match: {
+                dealerId: null,
+                resellerId: null
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "users",
+                pipeline: [
+                    {
+                        $match: {
+                            isPrimary: true
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            $lookup: {
+                from: "claims",
+                localField: "_id",
+                foreignField: "servicerId",
+                as: "claims",
+                pipeline: [
+                    {
+                        $match: { claimFile: "Completed" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$servicerId",
+                            "totalClaim": { "$sum": 1 },
+                            "totalClaimAmount": {
+                                "$sum": "$totalAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                totalClaimAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalClaim: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaim", 0] },
+                        else: 0
+                    }
+                },
+                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+            }
+        },
+        // {
+        //   $unwind: "$claims"
+        // },
+        // {
+        //   $unwind: "$users"
+        // },
+        // {
+        //   $addFields: {
+        //     totalClaimAmount: "$claims.totalClaimAmount"
+        //   }
+        // },
+        { "$sort": { totalClaimAmount: -1 } },
+        { "$limit": 5 }  // Apply limit again after sorting
+    ]
+    const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
+
+    const result = {
+        // lastFiveOrder: lastFiveOrder,
+        lastFiveClaims: getLastNumberOfClaims,
+        topFiveDealer: topFiveDealer,
+        // topFiveServicer: topFiveServicer
+
+    }
+    res.send({
+        code: constant.successCode,
+        result: result
+    })
+}
