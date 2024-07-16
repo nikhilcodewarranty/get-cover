@@ -1406,17 +1406,17 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         ]
       };
     }
-    if (data.term) {
-      matchConditions.push({ 'priceBooks.term': Number(data.term) });
+    if (data.term!="") {
+      query.$and.push({ 'priceBooks.term': Number(data.term) });
     }
 
     if (data.priceType != '') {
-      matchConditions.push({ 'priceBooks.priceType': data.priceType });
+      query.$and.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
 
         if (data.range != '') {
-          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+          query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         }
 
         // const flatQuery = {
