@@ -355,12 +355,13 @@ exports.getDealerCustomers = async (req, res) => {
     const queryReseller = { _id: { $in: resellerId } }
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
 
+console.log("reseller data +++++++++++++++++++++++++",resellerData)
 
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
-      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.accountId.toString())
+      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.resellerId1.toString())
 
       if (matchingItem || order || matchingReseller) {
         return {
@@ -382,6 +383,8 @@ exports.getDealerCustomers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
     console.log('name check ++++++++++++++++++++++=', newObj)
+
+    
     const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1987,6 +1990,8 @@ exports.customerClaims = async (req, res) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
