@@ -1406,6 +1406,9 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         ]
       };
     }
+    if (data.term) {
+      matchConditions.push({ 'priceBooks.term': Number(data.term) });
+    }
 
     if (data.priceType != '') {
       matchConditions.push({ 'priceBooks.priceType': data.priceType });
@@ -1501,13 +1504,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
           matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         }
 
-        // const flatQuery = {
-        //   $and: [
-        //     { 'rangeStart': { $lte: Number(data.range) } },
-        //     { 'rangeEnd': { $gte: Number(data.range) } },
-        //   ]
-        // }
-        // query.$and.push(flatQuery);
       }
     }
     if (data.coverageType) {
