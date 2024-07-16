@@ -3257,7 +3257,9 @@ exports.getSingleOrder = async (req, res) => {
                 darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 address: settingData[0]?.address,
-                paymentDetail:settingData[0]?.paymentDetail
+                paymentDetail:settingData[0]?.paymentDetail,
+                title:settingData[0]?.title,
+
 
             },
             resellerData: reseller ? reseller : {},
@@ -3429,8 +3431,6 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
-
-
         if (data.paymentStatus == "Paid") {
             data.paidAmount = data.orderAmount
             data.dueAmount = 0
@@ -3440,8 +3440,7 @@ exports.editOrderDetail = async (req, res) => {
         if (data.paidAmount == data.orderAmount) {
             data.paymentStatus = "Paid"
         }
-
-
+       
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
                 fileName: file.filename,
@@ -3479,7 +3478,6 @@ exports.editOrderDetail = async (req, res) => {
             const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
             data.productsArray = finalOutput;
         }
-
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
             data,
@@ -3497,7 +3495,6 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-
         // check to processed order 
 
         let returnField = [];
@@ -3513,7 +3510,6 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
-
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
