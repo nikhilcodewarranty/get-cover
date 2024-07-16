@@ -439,6 +439,7 @@ exports.createDealer = async (req, res) => {
         name: termFile ? termFile.originalname : '',
         size: termFile ? termFile.size : '',
       }
+
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
@@ -448,10 +449,9 @@ exports.createDealer = async (req, res) => {
         });
         return;
       }
-      let passedEnteries = []
+
       let priceBook = [];
       let priceBookIds = [];
-      let csvStatus = [];
       const primaryUserData = data.dealerPrimary ? data.dealerPrimary : [];
       const dealersUserData = data.dealers ? data.dealers : [];
       const allEmails = [...dealersUserData, ...primaryUserData].map((dealer) => dealer.email);
@@ -465,12 +465,15 @@ exports.createDealer = async (req, res) => {
         });
         return
       }
+
       let count = await dealerPriceService.getDealerPriceCount();
 
       let savePriceBookType = req.body.savePriceBookType
       const allUserData = [...dealersUserData, ...primaryUserData];
+
       if (data.dealerId != 'null' && data.dealerId != undefined) {
         let createUsers = [];
+
         if (data.email != data.oldEmail) {
           let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
@@ -492,6 +495,7 @@ exports.createDealer = async (req, res) => {
             return;
           }
         }
+
         const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId }, {});
         const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
         if (!singleDealer) {
@@ -501,10 +505,12 @@ exports.createDealer = async (req, res) => {
           });
           return;
         }
+
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+
           if (checkPriceBook.length == 0) {
             res.send({
               code: constant.errorCode,
@@ -512,6 +518,7 @@ exports.createDealer = async (req, res) => {
             })
             return;
           }
+
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
             res.send({
@@ -521,8 +528,10 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+
           if (cleanStr1 !== cleanStr2) {
             const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
             if (existingDealer) {
@@ -535,6 +544,7 @@ exports.createDealer = async (req, res) => {
           }
           //check product is already exist for dealer this
           priceBookIds = dealerPriceArray.map((dealer) => new mongoose.Types.ObjectId(dealer.priceBookId));
+
           if (priceBook.length > 0) {
             let query = {
               $and: [
@@ -544,6 +554,7 @@ exports.createDealer = async (req, res) => {
             }
 
             const existingData = await dealerPriceService.findByIds(query);
+
             if (existingData.length > 0) {
               res.send({
                 code: constant.errorCode,
@@ -551,8 +562,8 @@ exports.createDealer = async (req, res) => {
               });
               return;
             }
-
           }
+
           const resultPriceData = dealerPriceArray.map((obj, index) => ({
             'priceBook': obj.priceBookId,
             'dealerId': data.dealerId,
@@ -576,7 +587,7 @@ exports.createDealer = async (req, res) => {
             }
           }
 
-          let updateStatus = await userService.updateUser(userQuery, newValues1, { new: true })
+          await userService.updateUser(userQuery, newValues1, { new: true })
           const createPriceBook = await dealerPriceService.insertManyPrices(resultPriceData);
           // Save Logs when price book created
 
@@ -597,6 +608,7 @@ exports.createDealer = async (req, res) => {
             });
             return;
           }
+
           // Save Logs
           let logData = {
             userId: req.teammateId,
@@ -609,6 +621,7 @@ exports.createDealer = async (req, res) => {
             }
           }
           await logs(logData).save()
+
           let allUsersData = allUserData.map((obj, index) => ({
             ...obj,
             roleId: '656f08041eb1acda244af8c6',
@@ -616,8 +629,8 @@ exports.createDealer = async (req, res) => {
             metaId: data.dealerId,
             isPrimary: index === 0 ? true : false,
             status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
-
           }));
+
           if (allUsersData.length > 1) {
             allUsersData = [...allUsersData.slice(0, 0), ...allUsersData.slice(1)];
             createUsers = await userService.insertManyUser(allUsersData);
@@ -629,14 +642,7 @@ exports.createDealer = async (req, res) => {
               return;
             }
           }
-
-          console.log("createUsers---------------------------------------", createUsers)
           let dealerQuery = { _id: data.dealerId }
-          // let termData = {
-          //   fileName:termFile.filename ?termFile.filename:'',
-          //   name:termFile.originalname ?termFile.originalname:'',
-          //   size:termFile.size ?termFile.size:'',
-          // }
           let newValues = {
             $set: {
               status: "Approved",
@@ -650,7 +656,9 @@ exports.createDealer = async (req, res) => {
               isServicer: data.isServicer ? data.isServicer : false
             }
           }
+
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+
           if (!dealerStatus) {
             res.send({
               code: constant.errorCode,
@@ -666,7 +674,7 @@ exports.createDealer = async (req, res) => {
               approvedStatus: 'Approved'
             }
           }
-          let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+          await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           // Send notification when approved
           let IDs = await supportingFunction.getUserIds()
@@ -678,7 +686,8 @@ exports.createDealer = async (req, res) => {
             flag: 'dealer',
             notificationFor: IDs
           };
-          let createNotification = await userService.createNotification(notificationData);
+
+          await userService.createNotification(notificationData);
 
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
@@ -688,8 +697,8 @@ exports.createDealer = async (req, res) => {
             subject: "Welcome to Get-Cover Dealer Registration Approved"
           }
           // Send Email code here
-          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
-          //  let userStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
+          sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               // Send mail to all User except primary
@@ -698,15 +707,15 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
-                let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
+                sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
-            let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
+            sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+            await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
           if (req.body.isServicer) {
@@ -749,16 +758,9 @@ exports.createDealer = async (req, res) => {
           let file = req.file
           let data = req.body
 
-          // if (!req.files) {
-          //   res.send({
-          //     code: constant.errorCode,
-          //     message: "No file uploaded"
-          //   })
-          //   return;
-          // }
-
           const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
           const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
+
           if (cleanStr1 !== cleanStr2) {
             const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
             if (existingDealer) {
@@ -769,7 +771,6 @@ exports.createDealer = async (req, res) => {
               return
             }
           }
-
 
           let csvName = priceFile.filename
           const csvWriter = createCsvWriter({
@@ -801,17 +802,14 @@ exports.createDealer = async (req, res) => {
           }
           let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
           totalDataComing1 = totalDataComing1.map(item => {
-            console.log("item check )))))))))))))))))))", item)
             if (!item['Product SKU']) {
               return { priceBook: '', 'RetailPrice': item['retailPrice'] };
             }
             return item;
           });
           const totalDataComing = totalDataComing1.map(item => {
-            console.log("ccccc++++++++dddddddddddddddddd+++++++", item)
 
             const keys = Object.keys(item);
-            console.log("keys++++++++dddddddddddddddddd+++++++", keys)
 
             return {
               priceBook: item[keys[0]],
@@ -1323,7 +1321,6 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77", createUsers)
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
