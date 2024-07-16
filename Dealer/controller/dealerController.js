@@ -420,7 +420,7 @@ exports.getDealerById = async (req, res) => {
 
       },
     ]
-    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
     const rejectedQuery = { claimFile: "Completed" }
     //Get number of claims
@@ -3104,9 +3104,39 @@ exports.getDealerServicers = async (req, res) => {
     const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
     const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+   let claimAggregateQuery1 = [
+      {
+        $match: servicerCompleted
+      },
+      {
+        "$group": {
+          "_id": "$servicerId",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
 
-    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
+      },
+
+
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+
+    let claimAggregateQuery = [
+      {
+        $match: servicerClaimsIds
+      },
+      {
+        $group: {
+          _id: "$servicerId",
+          noOfOrders: { $sum: 1 },
+        }
+      },
+    ]
+    let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
     const result_Array = servicer.map(item1 => {
       console.log("item1----------------------------", item1._id)

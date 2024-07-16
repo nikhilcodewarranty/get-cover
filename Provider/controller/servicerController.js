@@ -690,7 +690,7 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
         //Get number of claims
         let numberOfCompleletedClaims = [
             {
@@ -718,7 +718,7 @@ exports.getDashboardData = async (req, res) => {
             },
         ]
 
-        let paidClaimValue = await claimService.valueCompletedClaims(paidLookUp);
+        let paidClaimValue = await claimService.getClaimWithAggregate(paidLookUp);
 
         const unPaidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Unpaid" }
         //Get total Unpaid claim value
@@ -739,7 +739,7 @@ exports.getDashboardData = async (req, res) => {
             },
         ]
 
-        let unPaidClaimValue = await claimService.valueCompletedClaims(unPaidLookUp);
+        let unPaidClaimValue = await claimService.getClaimWithAggregate(unPaidLookUp);
 
         const claimData = {
             numberOfClaims: numberOfClaims.length,

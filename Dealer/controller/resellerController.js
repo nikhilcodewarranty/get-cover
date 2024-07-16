@@ -125,9 +125,9 @@ exports.createReseller = async (req, res) => {
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
 
-        console.log("notificationEmails--------------------------",notificationEmails);
-        console.log("saveMembers--------------------------",saveMembers);
-        
+        console.log("notificationEmails--------------------------", notificationEmails);
+        console.log("saveMembers--------------------------", saveMembers);
+
         let emailData = {
             senderName: saveMembers[0]?.firstName,
             content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
@@ -434,7 +434,7 @@ exports.getResellerById = async (req, res) => {
 
         },
     ]
-    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims
     let numberOfCompleletedClaims = [
@@ -1023,9 +1023,38 @@ exports.getResellerServicers = async (req, res) => {
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        let claimAggregateQuery1 = [
+            {
+              $match: servicerCompleted
+            },
+            {
+              "$group": {
+                "_id": "$servicerId",
+                "totalAmount": {
+                  "$sum": {
+                    "$sum": "$totalAmount"
+                  }
+                },
+              },
+      
+            },
+      
+      
+          ]
 
-        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})

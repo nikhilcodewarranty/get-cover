@@ -1521,7 +1521,7 @@ exports.getResellerById = async (req, res) => {
 
         },
     ]
-    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims
@@ -2136,9 +2136,38 @@ exports.getResellerServicers = async (req, res) => {
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        let claimAggregateQuery1 = [
+            {
+              $match: servicerCompleted
+            },
+            {
+              "$group": {
+                "_id": "$servicerId",
+                "totalAmount": {
+                  "$sum": {
+                    "$sum": "$totalAmount"
+                  }
+                },
+              },
+      
+            },
+      
+      
+          ]
 
-        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
@@ -3659,7 +3688,7 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
         const rejectedQuery = { claimFile: { $ne: "Rejected" } }
         //Get number of claims

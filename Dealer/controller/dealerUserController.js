@@ -1156,9 +1156,39 @@ exports.getDealerServicers = async (req, res) => {
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        let claimAggregateQuery1 = [
+            {
+                $match: servicerCompleted
+            },
+            {
+                "$group": {
+                    "_id": "$servicerId",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
 
-        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
+            },
+
+
+        ]
+
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
         const result_Array = servicer.map(item1 => {
             const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
@@ -4702,7 +4732,7 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
         const rejectedQuery = { claimFile: { $ne: "Rejected" } }
         //Get number of claims
@@ -4842,7 +4872,12 @@ exports.addClaim = async (req, res, next) => {
             return
         }
         const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
-        let claimTotal = await claimService.checkTotalAmount(query);
+        let claimTotalQuery = [
+            { $match: query },
+            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+        ]
+        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
         if (checkContract.productValue < claimTotal[0]?.amount) {
             res.send({
                 code: consta.errorCode,

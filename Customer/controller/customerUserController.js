@@ -1372,7 +1372,12 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     // Get Claim Total of the contract
     const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
+    let claimTotalQuery = [
+      { $match: totalCreteria },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1630,7 +1635,7 @@ exports.getDashboardData = async (req, res) => {
 
       },
     ]
-    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims

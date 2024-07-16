@@ -113,32 +113,32 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
-  
-  static async getDashboardData(query, groupBy = {}) {
+
+
+
+
+
+ 
+  static async markAsPaid(criteria,data,option) {
     try {
-      const allOrders = await claim.aggregate([
-        {
-          $match: query
-        },
-        {
-          "$group": {
-            "_id": "",
-            "totalAmount": {
-              "$sum": {
-                "$sum": "$totalAmount"
-              }
-            },
-          },
+      const paidBulk = await claim.updateMany(criteria, data, option);
+      return paidBulk;
+    } catch (error) {
+      console.log(`Could not add order ${error}`);
+    }
+  }
+  
+ 
 
-        },
-
-
-      ])
+  static async getClaimWithAggregate(query, project = {}) {
+    try {
+      const allOrders = await claim.aggregate(query)
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
     }
   }
+
 
   static async getServicerClaimsValue(query, groupBy = {}) {
     try {
@@ -187,15 +187,32 @@ module.exports = class claimService {
     }
   }
 
-  static async markAsPaid(criteria,data,option) {
+  static async getDashboardData(query, groupBy = {}) {
     try {
-      const paidBulk = await claim.updateMany(criteria, data, option);
-      return paidBulk;
+      const allOrders = await claim.aggregate([
+        {
+          $match: query
+        },
+        {
+          "$group": {
+            "_id": "",
+            "totalAmount": {
+              "$sum": {
+                "$sum": "$totalAmount"
+              }
+            },
+          },
+
+        },
+
+
+      ])
+      return allOrders;
     } catch (error) {
-      console.log(`Could not add order ${error}`);
+      console.log(`Could not fetch order ${error}`);
     }
   }
-  
+
   static async valueCompletedClaims(query, project = {}) {
     try {
       const allOrders = await claim.aggregate(query)

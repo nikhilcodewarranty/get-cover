@@ -917,7 +917,7 @@ exports.getCustomerById = async (req, res) => {
 
         },
       ]
-      let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+      let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
       const rejectedQuery = { claimFile: { $ne: "Rejected" } }
       //Get number of claims
