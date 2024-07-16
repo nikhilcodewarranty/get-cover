@@ -5,32 +5,25 @@ const claimPartSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "claims",
-    // required: true,
   },
   serviceproId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "serviceproviders",
-    // required: true,
   },
   name: {
     type: String,
-    // required: true,
   },
   description: {
     type: String,
-    // required: true,
   },
   serial: {
     type: String,
-    // required: true,
   },
   manufacture: {
     type: String,
-    // required: true,
   },
   model: {
     type: String,
-    // required: true,
   },
   status:{
     type:Boolean,
@@ -42,7 +35,6 @@ const claimPartSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
-    // required: true,
   },
 },{timestamps:true});
 

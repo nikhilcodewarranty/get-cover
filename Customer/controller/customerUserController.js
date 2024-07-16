@@ -2001,7 +2001,6 @@ exports.getDashboardGraph = async (req, res) => {
   }
 };
 
-
 exports.getDashboardInfo = async (req, res) => {
 
   let orderQuery = [
