@@ -2095,7 +2095,16 @@ exports.customerClaims = async (req, res) => {
       },
       {
         $unwind: "$contracts.orders.customer"
-      }
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            // { "contracts.orders.customer.isDeleted": false },
+          ]
+        },
+      },
     ]
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
