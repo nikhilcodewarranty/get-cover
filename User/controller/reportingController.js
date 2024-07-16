@@ -44,26 +44,21 @@ const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");
 // daily query for reporting 
-
-
 exports.dailySale = async (req, res) => {
     try {
         let data = req.body
         let query;
-
-        // const today = new Date("2024-05-30");
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
         const datesArray = [];
         let currentDate = new Date(startOfMonth);
+
         while (currentDate <= endOfMonth) {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        console.log(startOfMonth, endOfMonth)
         let dailyQuery = [
             {
                 $match: {
@@ -82,6 +77,7 @@ exports.dailySale = async (req, res) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ]
+
         let getOrders = await REPORTING.find();
         if (!getOrders) {
             res.send({
@@ -90,15 +86,7 @@ exports.dailySale = async (req, res) => {
             })
             return;
         }
-        // const result = datesArray.map(date => {
-        //     const dateString = date.toISOString().slice(0,10);
-        //     const order = getOrders.find(item => item._id === dateString);
-        //     return {
-        //       date: dateString,
-        //       total_order_amount: order ? order.total_order_amount : 0,
-        //       total_orders: order ? order.total_orders : 0
-        //     };
-        //   });
+
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -114,6 +102,7 @@ exports.dailySale = async (req, res) => {
     }
 };
 
+//Get daily sales report
 exports.dailySales = async (req, res) => {
     try {
         let data = req.body
@@ -133,44 +122,6 @@ exports.dailySales = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-
-        // dates extract from the month
-
-        // return;
-
-        //         // const today = new Date("2024-05-30");
-        //         const today = new Date();
-        //         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        //         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-        //         const datesArray = [];
-        //         let currentDate = new Date(startOfMonth);
-        //         while (currentDate <= endOfMonth) {
-        //             datesArray.push(new Date(currentDate));
-        //             currentDate.setDate(currentDate.getDate() + 1);
-        //         }
-
-        //         console.log(startOfMonth, datesArray, endOfMonth)
-        // if (data.filterFlag == "All") {
-        //     dailyQuery = [
-        //         {
-        //             $match: {
-        //                 // status: "Active",
-        //                 createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-        //             }
-        //         },
-        //         {
-        //             $group: {
-        //                 _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-        //                 total_order_amount: { $sum: "$orderAmount" },
-        //                 total_orders: { $sum: 1 }
-        //             }
-        //         },
-        //         {
-        //             $sort: { _id: -1 } // Sort by date in ascending order
-        //         }
-        //     ]
-        // }
         let dailyQuery = [
             {
                 $match: {
@@ -182,7 +133,6 @@ exports.dailySales = async (req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_order_amount: { $sum: "$orderAmount" },
                     total_orders: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -202,8 +152,6 @@ exports.dailySales = async (req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    // total_order_amount: { $sum: "$orderAmount" },
-                    // total_orders: { $sum: 1 },
                     total_broker_fee: { $sum: "$products.brokerFee" },
                     total_admin_fee: { $sum: "$products.adminFee" },
                     total_fronting_fee: { $sum: "$products.frontingFee" },
@@ -217,33 +165,20 @@ exports.dailySales = async (req, res) => {
             }
         ];
 
-
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             dailyQuery[0].$match.dealerId = dealerId
             dailyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -259,7 +194,6 @@ exports.dailySales = async (req, res) => {
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
-            console.log("order-----------------------------------------", order)
             return {
                 date: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
@@ -272,7 +206,6 @@ exports.dailySales = async (req, res) => {
         const result1 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders1.find(item => item._id === dateString);
-            console.log("order-----------------------------------------", order)
             return {
 
                 total_broker_fee: { $sum: "$products.brokerFee" },
@@ -281,10 +214,7 @@ exports.dailySales = async (req, res) => {
                 total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
-
                 date: dateString,
-                // total_order_amount: order ? order.total_order_amount : 0,
-                // total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0,
                 total_admin_fee: order ? order.total_admin_fee : 0,
                 total_fronting_fee: order ? order.total_fronting_fee : 0,
@@ -308,7 +238,6 @@ exports.dailySales = async (req, res) => {
             };
         });
 
-
         const totalFees = mergedResult.reduce((acc, curr) => {
             acc.total_broker_fee += curr.total_broker_fee || 0;
             acc.total_admin_fee += curr.total_admin_fee || 0;
@@ -323,14 +252,6 @@ exports.dailySales = async (req, res) => {
             total_reserve_future_fee: 0,
             total_reinsurance_fee: 0
         });
-
-
-        // const result = getOrders.map(order => ({
-        //     date: order._id,
-        //     total_order_amount: order.total_order_amount,
-        //     total_orders: order.total_orders,
-        //     total_broker_fee: order.total_broker_fee
-        // }));
 
 
         res.send({
@@ -351,22 +272,12 @@ exports.dailySales = async (req, res) => {
 //weekly grouping of the data
 exports.weeklySales = async (data, req, res) => {
     try {
-        // const data = req.body;
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
-
-        // Example: Adjusting dates with moment.js if needed
-        // startDate.subtract(1, 'day');
-        // endDate.add(1, 'day');
-        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
-
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
-
-        // Example: Logging calculated week start and end dates
-
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -377,10 +288,7 @@ exports.weeklySales = async (data, req, res) => {
             currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
-
         // Example: Logging array of dates for debugging
-        console.log("datesArray:", datesArray.map(date => date.format()));
-
         // MongoDB aggregation pipeline based on filterFlag
         let weeklyQuery = [
             {
@@ -455,45 +363,31 @@ exports.weeklySales = async (data, req, res) => {
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             weeklyQuery[0].$match.dealerId = dealerId
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
         }
 
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
-
         // Perform aggregation query
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
-        console.log("check ++++++++++++++++++++++++++++++++++++++++++++++++++++++", getOrders1)
         if (getOrders[0]) {
             getOrders[0]._id = datesArray[0]
             getOrders1[0]._id = datesArray[0]
-
         }
-
         // Example: Logging MongoDB aggregation results for debugging
 
         // Prepare response data based on datesArray and MongoDB results
@@ -506,7 +400,6 @@ exports.weeklySales = async (data, req, res) => {
                 total_orders: order ? order.total_orders : 0
             };
         });
-
 
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -571,6 +464,7 @@ exports.weeklySales = async (data, req, res) => {
             }
         });
         let totalFees = []
+
         if (data.role == 'Super Admin') {
             totalFees = mergedResult.reduce((acc, curr) => {
                 acc.total_broker_fee += curr.total_broker_fee || 0;
@@ -587,10 +481,6 @@ exports.weeklySales = async (data, req, res) => {
                 total_reinsurance_fee: 0
             });
         }
-
-
-
-
         // Send success response with result
         return {
             graphData: mergedResult,
@@ -601,29 +491,19 @@ exports.weeklySales = async (data, req, res) => {
         return { code: constant.errorCode, message: err.message }
     }
 };
-
+//Weekly sales order
 exports.weeklySalesOrder = async (req, res) => {
     try {
         const data = req.body;
-        console.log("================================", data)
 
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
-
-        // Example: Adjusting dates with moment.js if needed
-        // startDate.subtract(1, 'day');
-        // endDate.add(1, 'day');
-
-        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
-
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
 
         // Example: Logging calculated week start and end dates
-        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
-
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -636,8 +516,6 @@ exports.weeklySalesOrder = async (req, res) => {
         }
 
         // Example: Logging array of dates for debugging
-        console.log("datesArray:", datesArray.map(date => date.format()));
-
         // MongoDB aggregation pipeline based on filterFlag
         let weeklyQuery = [
             {
@@ -711,34 +589,23 @@ exports.weeklySalesOrder = async (req, res) => {
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             weeklyQuery[0].$match.dealerId = dealerId
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
 
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
-            // console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -746,8 +613,6 @@ exports.weeklySalesOrder = async (req, res) => {
         const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
 
         // Example: Logging MongoDB aggregation results for debugging
-        console.log("getOrders:", getOrders1, getOrders);
-
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -771,10 +636,8 @@ exports.weeklySalesOrder = async (req, res) => {
                 total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
                 total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
                 total_retail_price: order ? order.total_retail_price : 0,
-                // total_orders: order ? order.total_orders : 0
             };
         });
-        console.log(result, result1, "+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
@@ -798,8 +661,6 @@ exports.weeklySalesOrder = async (req, res) => {
             };
         });
 
-
-
         const totalFees = mergedResult.reduce((acc, curr) => {
             acc.total_broker_fee += curr.total_broker_fee || 0;
             acc.total_admin_fee += curr.total_admin_fee || 0;
@@ -815,7 +676,6 @@ exports.weeklySalesOrder = async (req, res) => {
             total_reinsurance_fee: 0
         });
 
-
         // Send success response with result
         return {
             graphData: result,
@@ -826,11 +686,9 @@ exports.weeklySalesOrder = async (req, res) => {
         return { code: constant.errorCode, message: err.message }
     }
 };
-
+//Get daily sale
 exports.daySale = async (data) => {
     try {
-        // let data = req.body;
-
         // Get the current date
         data.dayDate = data.startDate
         const today = new Date(data.dayDate);
@@ -840,8 +698,6 @@ exports.daySale = async (data) => {
 
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
-        console.log(startOfDay, endOfDay)
 
         let dailyQuery = [
             {
@@ -861,8 +717,6 @@ exports.daySale = async (data) => {
             }
         ];
 
-        console.log("check+++++++++++++++++++++++++++", dailyQuery[0].$match, dailyQuery[1].$group)
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -875,8 +729,6 @@ exports.daySale = async (data) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    // total_order_amount: { $sum: "$orderAmount" },
-                    // total_orders: { $sum: 1 },
                     total_broker_fee: { $sum: "$products.brokerFee" },
                     total_admin_fee: { $sum: "$products.adminFee" },
                     total_fronting_fee: { $sum: "$products.frontingFee" },
@@ -886,13 +738,6 @@ exports.daySale = async (data) => {
                     total_retail_price: { $sum: "$products.retailPrice" },
                 }
             },
-            // {
-            //     $group: {
-            //         _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-            //         total_order_amount: { $sum: "$orderAmount" },
-            //         total_orders: { $sum: 1 }
-            //     }
-            // },
             {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
@@ -905,26 +750,17 @@ exports.daySale = async (data) => {
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
 
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
 
@@ -970,24 +806,10 @@ exports.daySale = async (data) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
-            // return {
-            //     ...item,
-            //     total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-            //     total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
-            //     total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
-            //     total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
-            //     total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
-            //     total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
-            //     wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
-            // };
-
-
             if (data.role == 'Super Admin') {
-                console.log("super admin -------------------------------------------")
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                    // total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
                     total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                     total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                     total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
@@ -998,7 +820,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Dealer') {
-                console.log("daaler-------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1009,7 +830,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Reseller') {
-                console.log("reseller -------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1017,7 +837,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Customer') {
-                console.log("customer -------------------------------------------")
                 return {
                     total_order_amount: item.total_order_amount
                 };
@@ -1048,12 +867,6 @@ exports.daySale = async (data) => {
             graphData: mergedResult,
             totalFees: totalFees
         }
-
-        // res.send({
-        //     code: constant.successCode,
-        //     message: "Success",
-        //     result: result,result1
-        // });
 
     } catch (err) {
         res.send({
