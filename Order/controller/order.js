@@ -4582,7 +4582,7 @@ exports.getOrderContract = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {

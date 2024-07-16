@@ -1562,7 +1562,7 @@ exports.getResellerById = async (req, res) => {
             },
         },
     ]
-    let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
     const claimData = {
         numberOfClaims: numberOfClaims.length,
         valueClaim: valueClaim[0]?.totalAmount
@@ -2993,7 +2993,7 @@ exports.getResellerContract = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
@@ -3539,7 +3539,7 @@ exports.getResellerClaims = async (req, res) => {
             lookupQuery = lookupQuery.concat(newQuery);
         }
 
-        let allClaims = await claimService.getAllClaims(lookupQuery);
+        let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -3729,7 +3729,7 @@ exports.getDashboardData = async (req, res) => {
                 },
             },
         ]
-        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
         const claimData = {
             numberOfClaims: numberOfClaims.length,
             valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
@@ -4200,7 +4200,7 @@ exports.getDashboardGraph = async (req, res) => {
 
         console.log(startOfMonth, endOfMonth, dailyQuery)
 
-        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
         let getOrders = await orderService.getAllOrders1(orderQuery)
@@ -4317,7 +4317,7 @@ exports.getDashboardInfo = async (req, res) => {
                 }
             },
         ]
-        const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+        const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
         const result = {
             lastFiveOrder: lastFiveOrder,

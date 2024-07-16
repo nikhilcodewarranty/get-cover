@@ -2060,7 +2060,7 @@ exports.getServicerClaims = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -2454,7 +2454,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 

@@ -3000,7 +3000,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
   ]
 
-  const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+  const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
   let lookupQuery = [
     {
@@ -3293,7 +3293,7 @@ exports.getDashboardGraph = async (req, res) => {
       }
     ];
 
-    let getData = await claimService.getAllClaims(dailyQuery)
+    let getData = await claimService.getClaimWithAggregate(dailyQuery)
     let getData2 = await orderService.getAllOrders1(dailyQuery1)
     let getOrders = await orderService.getAllOrders1(orderQuery)
     let getOrders1 = await orderService.getAllOrders1(orderQuery1)

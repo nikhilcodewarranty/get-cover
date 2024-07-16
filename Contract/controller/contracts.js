@@ -540,7 +540,7 @@ exports.getContracts = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       // console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
@@ -804,7 +804,7 @@ exports.getContractById = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           getData[e].reason = "Contract has open claim"

@@ -312,7 +312,7 @@ exports.getAllClaims = async (req, res, next) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -537,7 +537,7 @@ exports.getClaims = async (req, res) => {
       })
     }
 
-    let getClaims = await claimService.getAllClaims(mainQuery)
+    let getClaims = await claimService.getClaimWithAggregate(mainQuery)
 
     res.send({
       code: constant.successCode,

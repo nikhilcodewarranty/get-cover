@@ -934,7 +934,7 @@ exports.getCustomerContract = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
@@ -1465,7 +1465,7 @@ exports.getContractById = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           getData[e].reason = "Contract has open claim"
@@ -1676,7 +1676,7 @@ exports.getDashboardData = async (req, res) => {
         },
       },
     ]
-    let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
     const claimData = {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
@@ -1963,7 +1963,7 @@ exports.getDashboardGraph = async (req, res) => {
 
     console.log(startOfMonth, endOfMonth, dailyQuery)
 
-    let getData = await claimService.getAllClaims(dailyQuery)
+    let getData = await claimService.getClaimWithAggregate(dailyQuery)
     let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
 
@@ -2058,7 +2058,7 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
   ]
-  const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+  const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
   const result = {
     lastFiveOrder: lastFiveOrder,

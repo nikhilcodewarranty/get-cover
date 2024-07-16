@@ -2,14 +2,6 @@ const claim = require("../model/claim");
 const comments = require("../model/comments");
 
 module.exports = class claimService {
-  static async getAllClaims(query) {
-    try {
-      const allClaims = await claim.aggregate(query);
-      return allClaims;
-    } catch (error) {
-     return {code:402,message:"Service error"}
-    }
-  }
 
   static async getAllMessages(query) {
     try {
@@ -31,7 +23,7 @@ module.exports = class claimService {
 
   static async getLastNumberOfClaims(query) {
     try {
-      const getLastNumberOfClaims = await claim.find(query).sort({unique_key_number:-1}).limit(5)
+      const getLastNumberOfClaims = await claim.find(query).sort({ unique_key_number: -1 }).limit(5)
       return getLastNumberOfClaims;
     } catch (error) {
       console.log(`Could not fetch claims ${error}`);
@@ -59,19 +51,6 @@ module.exports = class claimService {
   static async addMessage(data) {
     try {
       const response = await new comments(data).save();
-      return response;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  static async checkTotalAmount(query) {
-    try {
-      const response = await claim.aggregate([
-        { $match: query },
-        { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-      ])
       return response;
     } catch (error) {
       console.log(error);
@@ -114,12 +93,7 @@ module.exports = class claimService {
     }
   }
 
-
-
-
-
- 
-  static async markAsPaid(criteria,data,option) {
+  static async markAsPaid(criteria, data, option) {
     try {
       const paidBulk = await claim.updateMany(criteria, data, option);
       return paidBulk;
@@ -127,8 +101,6 @@ module.exports = class claimService {
       console.log(`Could not add order ${error}`);
     }
   }
-  
- 
 
   static async getClaimWithAggregate(query, project = {}) {
     try {
@@ -139,6 +111,30 @@ module.exports = class claimService {
     }
   }
 
+
+
+  // not using
+  static async getAllClaims(query) {
+    try {
+      const allClaims = await claim.aggregate(query);
+      return allClaims;
+    } catch (error) {
+      return { code: 402, message: "Service error" }
+    }
+  }
+
+  static async checkTotalAmount(query) {
+    try {
+      const response = await claim.aggregate([
+        { $match: query },
+        { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+      ])
+      return response;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   static async getServicerClaimsValue(query, groupBy = {}) {
     try {
