@@ -24,7 +24,7 @@ router.get("/readAllNotification", [verifyToken], userController.readAllNotifica
 // router.get("/getAllNotifications1", [verifyToken], userController.getAllNotifications); //get all dealers
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
-router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
+// router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
 router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); //get dashboard info
 router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); //get dashboard info
 router.get("/getSkuData", [verifyToken], userController.getSkuData); //get dashboard info
