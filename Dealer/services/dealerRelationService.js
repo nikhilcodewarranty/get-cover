@@ -55,19 +55,17 @@ module.exports = class dealerService {
         try {
             const editData = await relationTable.findOneAndUpdate(criteria, data, option)
             return editData;
-        } catch (error){
+        } catch (error) {
             console.log("Unable to update the dealer realtion")
         }
     }
 
     static async deleteRelation(criteria) {
-        console.log('-----------------------------------',criteria)
         const deleteRelation = await relationTable.deleteOne(criteria)
         return deleteRelation;
     }
 
     static async deleteRelations(criteria) {
-        console.log(criteria)
         const deleteRelation = await relationTable.deleteMany(criteria)
         return deleteRelation;
     }

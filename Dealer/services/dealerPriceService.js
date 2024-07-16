@@ -85,7 +85,6 @@ module.exports = class dealerPriceService {
   static async findAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.find(query)
-      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
@@ -95,8 +94,6 @@ module.exports = class dealerPriceService {
   static async aggregateAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.aggregate(query)
-
-      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
@@ -148,18 +145,15 @@ module.exports = class dealerPriceService {
 
 
       ]).sort({ "createdAt": -1 });
-      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return SingleDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
 
-
   static async getDealerPriceBookById1(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate(query).sort({ "createdAt": -1 });
-      // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return SingleDealerPrice;
     } catch (error) {
       console.log(`Could not fetch dealer price ${error}`);
@@ -260,9 +254,6 @@ module.exports = class dealerPriceService {
             "retailPrice": 1,
             "description": 1,
             "isDeleted": 1,
-            // "brokerFee": {
-            //   $subtract: ["$retailPrice","$wholesalePrice" ],
-            // },
             "unique_key": 1,
             "__v": 1,
             "createdAt": 1,
@@ -297,7 +288,6 @@ module.exports = class dealerPriceService {
     }
   }
 
-
   // create new dealer price 
   static async createDealerPrice(data) {
     try {
@@ -326,20 +316,6 @@ module.exports = class dealerPriceService {
       console.log(`Dealer price not found. ${error}`);
     }
   }
-
-  // update dealer price by ID
-  // static async updateDealerPrice(data) {
-  //   try {
-  //     const updatedResponse = await dealerPrice.updateOne(
-  //       { data },
-  //       { $set: { date: new Date.now() } }
-  //     );
-
-  //     return updatedResponse;
-  //   } catch (error) {
-  //     console.log(`Could not update dealer price ${error}`);
-  //   }
-  // }
 
   static async updateDealerPrice(criteria, newValue, option) {
     try {
@@ -393,6 +369,4 @@ module.exports = class dealerPriceService {
       console.log(`Could not delete dealer price ${error}`);
     }
   }
-
-
 };

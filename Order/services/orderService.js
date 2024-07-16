@@ -20,7 +20,7 @@ module.exports = class orderService {
           }
         },
         { $sort: { unique_key_number: -1 } }
-      ]).sort({createdAt:-1})
+      ]).sort({ createdAt: -1 })
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -29,7 +29,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract(query, skipLimit, limitData) {
     try {
-      const allOrders = await order.aggregate(query).sort({createdAt:-1}).skip(skipLimit).limit(limitData)
+      const allOrders = await order.aggregate(query).sort({ createdAt: -1 }).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -38,7 +38,7 @@ module.exports = class orderService {
 
   static async getAllOrders1(query) {
     try {
-      const allOrders = await order.aggregate(query).sort({createdAt:-1})
+      const allOrders = await order.aggregate(query).sort({ createdAt: -1 })
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -47,8 +47,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
-
-      const allOrders = await order.aggregate(query).sort({createdAt:-1});
+      const allOrders = await order.aggregate(query).sort({ createdAt: -1 });
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -61,9 +60,6 @@ module.exports = class orderService {
         {
           $match: query
         },
-        // {
-        //   $project: project,
-        // },
         {
           "$group": {
             "_id": "",
@@ -74,10 +70,7 @@ module.exports = class orderService {
             },
             "totalOrder": { "$sum": 1 }
           },
-
         },
-
-
       ])
       return allOrders;
     } catch (error) {
@@ -171,7 +164,6 @@ module.exports = class orderService {
     }
   }
 
-
   static async getOrdersCount1(query) {
     try {
       const count = await order.find(query).countDocuments();
@@ -183,7 +175,7 @@ module.exports = class orderService {
 
   static async getLastFive(query) {
     try {
-      const lastFive = await order.find(query).sort({unique_key_number: -1}).limit(5)
+      const lastFive = await order.find(query).sort({ unique_key_number: -1 }).limit(5)
       return lastFive;
     } catch (error) {
       console.log(`Could not fetch order count ${error}`);
@@ -208,6 +200,7 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
+
   static async updateManyOrder(criteria, data, option) {
     try {
       const createOrder = await order.updateMany(criteria, data, option);
@@ -226,6 +219,4 @@ module.exports = class orderService {
     }
   }
   
-
-
 };

@@ -18,6 +18,7 @@ verifyToken = async (req, res, next) => {
           'status': 400,
           Message: "auth token verification failed"
         })
+        return
       }
 
       let checkUser = await users.findOne({ _id: decoded.teammateId })
@@ -35,7 +36,6 @@ verifyToken = async (req, res, next) => {
         })
         return
       }
-      console.log("auth decoded values ++++++++++++++++++++++++++",decoded)
 
       req.userId = decoded.userId;
       req.email = decoded.email;

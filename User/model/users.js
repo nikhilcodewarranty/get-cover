@@ -23,8 +23,6 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     default: process.env.DUMMY_PASSWORD
-
-    // default: ''
   },
   accountId: {
     type: String,
