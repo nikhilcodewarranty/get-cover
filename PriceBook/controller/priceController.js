@@ -573,14 +573,14 @@ exports.updatePriceBookById = async (req, res, next) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData;
     if (req.body.priceType) {
-       emailData = {
+      emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
-    } 
+    }
     else {
-       emailData = {
+      emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status + "! effective immediately.",
         subject: "Update Status"
@@ -874,16 +874,24 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
     let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
     let queryPrice;
-    // if (coverageType == "Breakdown & Accidental") {
-    //   queryPrice = { status: true }
-    // } else {
-
     queryPrice = {
       $and: [
         { status: true },
         { coverageType: coverageType }
       ]
     }
+    if (coverageType == "Breakdown & Accidental") {
+      queryPrice = { status: true }
+    } else {
+      queryPrice = {
+        $and: [
+          { status: true },
+          { coverageType: coverageType }
+        ]
+      }
+    }
+
+
 
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
@@ -891,7 +899,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
 
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
- 
+
     let query;
 
 
@@ -1244,7 +1252,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       message: err.message
     })
   }
-} 
+}
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
