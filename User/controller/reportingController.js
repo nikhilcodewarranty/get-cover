@@ -44,26 +44,21 @@ const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");
 // daily query for reporting 
-
-
 exports.dailySale = async (req, res) => {
     try {
         let data = req.body
         let query;
-
-        // const today = new Date("2024-05-30");
         const today = new Date();
         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-
         const datesArray = [];
         let currentDate = new Date(startOfMonth);
+
         while (currentDate <= endOfMonth) {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-        console.log(startOfMonth, endOfMonth)
         let dailyQuery = [
             {
                 $match: {
@@ -82,6 +77,7 @@ exports.dailySale = async (req, res) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ]
+
         let getOrders = await REPORTING.find();
         if (!getOrders) {
             res.send({
@@ -90,15 +86,7 @@ exports.dailySale = async (req, res) => {
             })
             return;
         }
-        // const result = datesArray.map(date => {
-        //     const dateString = date.toISOString().slice(0,10);
-        //     const order = getOrders.find(item => item._id === dateString);
-        //     return {
-        //       date: dateString,
-        //       total_order_amount: order ? order.total_order_amount : 0,
-        //       total_orders: order ? order.total_orders : 0
-        //     };
-        //   });
+
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -114,6 +102,7 @@ exports.dailySale = async (req, res) => {
     }
 };
 
+//Get daily sales report
 exports.dailySales = async (req, res) => {
     try {
         let data = req.body
@@ -133,44 +122,6 @@ exports.dailySales = async (req, res) => {
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
-
-        // dates extract from the month
-
-        // return;
-
-        //         // const today = new Date("2024-05-30");
-        //         const today = new Date();
-        //         const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        //         const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-
-        //         const datesArray = [];
-        //         let currentDate = new Date(startOfMonth);
-        //         while (currentDate <= endOfMonth) {
-        //             datesArray.push(new Date(currentDate));
-        //             currentDate.setDate(currentDate.getDate() + 1);
-        //         }
-
-        //         console.log(startOfMonth, datesArray, endOfMonth)
-        // if (data.filterFlag == "All") {
-        //     dailyQuery = [
-        //         {
-        //             $match: {
-        //                 // status: "Active",
-        //                 createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-        //             }
-        //         },
-        //         {
-        //             $group: {
-        //                 _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-        //                 total_order_amount: { $sum: "$orderAmount" },
-        //                 total_orders: { $sum: 1 }
-        //             }
-        //         },
-        //         {
-        //             $sort: { _id: -1 } // Sort by date in ascending order
-        //         }
-        //     ]
-        // }
         let dailyQuery = [
             {
                 $match: {
@@ -182,7 +133,6 @@ exports.dailySales = async (req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_order_amount: { $sum: "$orderAmount" },
                     total_orders: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -202,8 +152,6 @@ exports.dailySales = async (req, res) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    // total_order_amount: { $sum: "$orderAmount" },
-                    // total_orders: { $sum: 1 },
                     total_broker_fee: { $sum: "$products.brokerFee" },
                     total_admin_fee: { $sum: "$products.adminFee" },
                     total_fronting_fee: { $sum: "$products.frontingFee" },
@@ -217,33 +165,20 @@ exports.dailySales = async (req, res) => {
             }
         ];
 
-
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             dailyQuery[0].$match.dealerId = dealerId
             dailyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -259,7 +194,6 @@ exports.dailySales = async (req, res) => {
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders.find(item => item._id === dateString);
-            console.log("order-----------------------------------------", order)
             return {
                 date: dateString,
                 total_order_amount: order ? order.total_order_amount : 0,
@@ -272,7 +206,6 @@ exports.dailySales = async (req, res) => {
         const result1 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders1.find(item => item._id === dateString);
-            console.log("order-----------------------------------------", order)
             return {
 
                 total_broker_fee: { $sum: "$products.brokerFee" },
@@ -281,10 +214,7 @@ exports.dailySales = async (req, res) => {
                 total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
-
                 date: dateString,
-                // total_order_amount: order ? order.total_order_amount : 0,
-                // total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0,
                 total_admin_fee: order ? order.total_admin_fee : 0,
                 total_fronting_fee: order ? order.total_fronting_fee : 0,
@@ -308,7 +238,6 @@ exports.dailySales = async (req, res) => {
             };
         });
 
-
         const totalFees = mergedResult.reduce((acc, curr) => {
             acc.total_broker_fee += curr.total_broker_fee || 0;
             acc.total_admin_fee += curr.total_admin_fee || 0;
@@ -323,14 +252,6 @@ exports.dailySales = async (req, res) => {
             total_reserve_future_fee: 0,
             total_reinsurance_fee: 0
         });
-
-
-        // const result = getOrders.map(order => ({
-        //     date: order._id,
-        //     total_order_amount: order.total_order_amount,
-        //     total_orders: order.total_orders,
-        //     total_broker_fee: order.total_broker_fee
-        // }));
 
 
         res.send({
@@ -351,22 +272,12 @@ exports.dailySales = async (req, res) => {
 //weekly grouping of the data
 exports.weeklySales = async (data, req, res) => {
     try {
-        // const data = req.body;
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
-
-        // Example: Adjusting dates with moment.js if needed
-        // startDate.subtract(1, 'day');
-        // endDate.add(1, 'day');
-        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
-
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
-
-        // Example: Logging calculated week start and end dates
-
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -377,10 +288,7 @@ exports.weeklySales = async (data, req, res) => {
             currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
-
         // Example: Logging array of dates for debugging
-        console.log("datesArray:", datesArray.map(date => date.format()));
-
         // MongoDB aggregation pipeline based on filterFlag
         let weeklyQuery = [
             {
@@ -455,45 +363,31 @@ exports.weeklySales = async (data, req, res) => {
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             weeklyQuery[0].$match.dealerId = dealerId
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
         }
 
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
-
         // Perform aggregation query
         let getOrders = await REPORTING.aggregate(weeklyQuery);
         let getOrders1 = await REPORTING.aggregate(weeklyQuery1);
-        console.log("check ++++++++++++++++++++++++++++++++++++++++++++++++++++++", getOrders1)
         if (getOrders[0]) {
             getOrders[0]._id = datesArray[0]
             getOrders1[0]._id = datesArray[0]
-
         }
-
         // Example: Logging MongoDB aggregation results for debugging
 
         // Prepare response data based on datesArray and MongoDB results
@@ -506,7 +400,6 @@ exports.weeklySales = async (data, req, res) => {
                 total_orders: order ? order.total_orders : 0
             };
         });
-
 
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -571,6 +464,7 @@ exports.weeklySales = async (data, req, res) => {
             }
         });
         let totalFees = []
+
         if (data.role == 'Super Admin') {
             totalFees = mergedResult.reduce((acc, curr) => {
                 acc.total_broker_fee += curr.total_broker_fee || 0;
@@ -587,10 +481,6 @@ exports.weeklySales = async (data, req, res) => {
                 total_reinsurance_fee: 0
             });
         }
-
-
-
-
         // Send success response with result
         return {
             graphData: mergedResult,
@@ -602,28 +492,19 @@ exports.weeklySales = async (data, req, res) => {
     }
 };
 
+//Weekly sales order
 exports.weeklySalesOrder = async (req, res) => {
     try {
         const data = req.body;
-        console.log("================================", data)
 
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
-
-        // Example: Adjusting dates with moment.js if needed
-        // startDate.subtract(1, 'day');
-        // endDate.add(1, 'day');
-
-        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
-
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
 
         // Example: Logging calculated week start and end dates
-        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
-
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -636,8 +517,6 @@ exports.weeklySalesOrder = async (req, res) => {
         }
 
         // Example: Logging array of dates for debugging
-        console.log("datesArray:", datesArray.map(date => date.format()));
-
         // MongoDB aggregation pipeline based on filterFlag
         let weeklyQuery = [
             {
@@ -711,34 +590,23 @@ exports.weeklySalesOrder = async (req, res) => {
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            console.log("data----------------", dealerId)
             weeklyQuery[0].$match.dealerId = dealerId
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
 
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
-            // console.log("data----------------", dailyQuery[0].$match)
         }
 
         // Perform aggregation query
@@ -746,8 +614,6 @@ exports.weeklySalesOrder = async (req, res) => {
         const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
 
         // Example: Logging MongoDB aggregation results for debugging
-        console.log("getOrders:", getOrders1, getOrders);
-
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -771,10 +637,8 @@ exports.weeklySalesOrder = async (req, res) => {
                 total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
                 total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
                 total_retail_price: order ? order.total_retail_price : 0,
-                // total_orders: order ? order.total_orders : 0
             };
         });
-        console.log(result, result1, "+++++++++++++++++++++++++++++")
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
@@ -798,8 +662,6 @@ exports.weeklySalesOrder = async (req, res) => {
             };
         });
 
-
-
         const totalFees = mergedResult.reduce((acc, curr) => {
             acc.total_broker_fee += curr.total_broker_fee || 0;
             acc.total_admin_fee += curr.total_admin_fee || 0;
@@ -815,7 +677,6 @@ exports.weeklySalesOrder = async (req, res) => {
             total_reinsurance_fee: 0
         });
 
-
         // Send success response with result
         return {
             graphData: result,
@@ -826,11 +687,9 @@ exports.weeklySalesOrder = async (req, res) => {
         return { code: constant.errorCode, message: err.message }
     }
 };
-
+//Get daily sale
 exports.daySale = async (data) => {
     try {
-        // let data = req.body;
-
         // Get the current date
         data.dayDate = data.startDate
         const today = new Date(data.dayDate);
@@ -840,8 +699,6 @@ exports.daySale = async (data) => {
 
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
-        console.log(startOfDay, endOfDay)
 
         let dailyQuery = [
             {
@@ -861,8 +718,6 @@ exports.daySale = async (data) => {
             }
         ];
 
-        console.log("check+++++++++++++++++++++++++++", dailyQuery[0].$match, dailyQuery[1].$group)
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -875,8 +730,6 @@ exports.daySale = async (data) => {
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-                    // total_order_amount: { $sum: "$orderAmount" },
-                    // total_orders: { $sum: 1 },
                     total_broker_fee: { $sum: "$products.brokerFee" },
                     total_admin_fee: { $sum: "$products.adminFee" },
                     total_fronting_fee: { $sum: "$products.frontingFee" },
@@ -886,13 +739,6 @@ exports.daySale = async (data) => {
                     total_retail_price: { $sum: "$products.retailPrice" },
                 }
             },
-            // {
-            //     $group: {
-            //         _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-            //         total_order_amount: { $sum: "$orderAmount" },
-            //         total_orders: { $sum: 1 }
-            //     }
-            // },
             {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
@@ -905,26 +751,17 @@ exports.daySale = async (data) => {
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
 
-            // products:
-
-            console.log("data----------------", dailyQuery[0].$match)
         }
 
 
@@ -970,24 +807,10 @@ exports.daySale = async (data) => {
 
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
-            // return {
-            //     ...item,
-            //     total_broker_fee: data.returnValue.total_broker_fee == 1 ? match ? match.total_broker_fee : item.total_broker_fee : 0,
-            //     total_admin_fee: data.returnValue.total_admin_fee == 1 ? match ? match.total_admin_fee : item.total_admin_fee : 0,
-            //     total_fronting_fee: data.returnValue.total_fronting_fee == 1 ? match ? match.total_fronting_fee : item.total_fronting_fee : 0,
-            //     total_reserve_future_fee: data.returnValue.total_reserve_future_fee == 1 ? match ? match.total_reserve_future_fee : item.total_reserve_future_fee : 0,
-            //     total_contracts: data.returnValue.total_contracts == 1 ? match ? match.total_contracts : item.total_contracts : 0,
-            //     total_reinsurance_fee: data.returnValue.total_reinsurance_fee == 1 ? match ? match.total_reinsurance_fee : item.total_reinsurance_fee : 0,
-            //     wholesale_price: data.returnValue.total_reinsurance_fee == 1 ? wholesale_price : 0
-            // };
-
-
             if (data.role == 'Super Admin') {
-                console.log("super admin -------------------------------------------")
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                    // total_broker_fee1: match ? match.total_broker_fee : item.total_broker_fee,
                     total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
                     total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
                     total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
@@ -998,7 +821,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Dealer') {
-                console.log("daaler-------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1009,7 +831,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Reseller') {
-                console.log("reseller -------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1017,7 +838,6 @@ exports.daySale = async (data) => {
             }
 
             if (data.role == 'Customer') {
-                console.log("customer -------------------------------------------")
                 return {
                     total_order_amount: item.total_order_amount
                 };
@@ -1049,12 +869,6 @@ exports.daySale = async (data) => {
             totalFees: totalFees
         }
 
-        // res.send({
-        //     code: constant.successCode,
-        //     message: "Success",
-        //     result: result,result1
-        // });
-
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -1062,20 +876,13 @@ exports.daySale = async (data) => {
         });
     }
 };
-
+//Get daily sales1
 exports.dailySales1 = async (data, req, res) => {
     try {
-        // let data = req.body
         let query;
-
         let startOfMonth2 = new Date(data.startDate);
         let endOfMonth1 = new Date(data.endDate);
-
         let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-
-
-
-        // let startOfMonth1 = new Date(startOfMonth1.setDate(startOfMonth1.getDate()))
         let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
@@ -1084,6 +891,7 @@ exports.dailySales1 = async (data, req, res) => {
 
         let datesArray = [];
         let currentDate = new Date(startOfMonth);
+
         while (currentDate <= endOfMonth) {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
@@ -1101,7 +909,7 @@ exports.dailySales1 = async (data, req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_order_amount: { $sum: "$orderAmount" },
                     total_orders: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
+
                 }
             },
             {
@@ -1134,6 +942,7 @@ exports.dailySales1 = async (data, req, res) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
+
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = dealerId
@@ -1141,27 +950,18 @@ exports.dailySales1 = async (data, req, res) => {
         }
 
         if (data.orderId) {
-            // let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
 
         if (data.priceBookId.length != 0) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-
-            // products:
-
         }
 
         if (data.categoryId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-
-            // products:
-
         }
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
@@ -1198,10 +998,7 @@ exports.dailySales1 = async (data, req, res) => {
                 total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
                 total_retail_price: { $sum: "$products.retailPrice" },
                 total_contracts: { $sum: "$products.noOfProducts" },
-
                 weekStart: dateString,
-                // total_order_amount: order ? order.total_order_amount : 0,
-                // total_orders: order ? order.total_orders : 0,
                 total_broker_fee: order ? order.total_broker_fee : 0,
                 total_admin_fee: order ? order.total_admin_fee : 0,
                 total_fronting_fee: order ? order.total_fronting_fee : 0,
@@ -1224,7 +1021,6 @@ exports.dailySales1 = async (data, req, res) => {
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
             if (data.role == 'Super Admin') {
-                console.log("super admin -------------------------------------------")
                 return {
                     ...item,
                     total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
@@ -1239,7 +1035,6 @@ exports.dailySales1 = async (data, req, res) => {
             }
 
             if (data.role == 'Dealer') {
-                console.log("daaler-------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1250,7 +1045,6 @@ exports.dailySales1 = async (data, req, res) => {
             }
 
             if (data.role == 'Reseller') {
-                console.log("reseller -------------------------------------------")
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
@@ -1258,7 +1052,6 @@ exports.dailySales1 = async (data, req, res) => {
             }
 
             if (data.role == 'Customer') {
-                console.log("customer -------------------------------------------")
                 return {
                     total_order_amount: item.total_order_amount
                 };
@@ -1287,23 +1080,10 @@ exports.dailySales1 = async (data, req, res) => {
         }
 
 
-
-        // const result = getOrders.map(order => ({
-        //     date: order._id,
-        //     total_order_amount: order.total_order_amount,
-        //     total_orders: order.total_orders,
-        //     total_broker_fee: order.total_broker_fee
-        // }));
-
         return {
             graphData: mergedResult,
             totalFees: totalFees
         }
-        // res.send({
-        //     code: constant.successCode,
-        //     message: "Success",
-        //     result: result,result1,mergedResult,totalFees
-        // })
 
 
     } catch (err) {
@@ -1311,6 +1091,7 @@ exports.dailySales1 = async (data, req, res) => {
     }
 };
 
+//Get reporting dealer
 exports.getReportingDealers = async (req, res) => {
     try {
         let data = req.body
@@ -1336,6 +1117,7 @@ exports.getReportingDealers = async (req, res) => {
     }
 };
 
+//Get price books for reporting
 exports.getReportingPriceBooks = async (req, res) => {
     try {
         let data = req.body
@@ -1360,17 +1142,20 @@ exports.getReportingPriceBooks = async (req, res) => {
     }
 };
 
+//Get categories for reporting
 exports.getReportingCategories = async (req, res) => {
     try {
         let data = req.body
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let categoriesId = getCategories.map(ID => ID._id)
         let getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId } }, { name: 1, pName: 1, _id: 1, category: 1 })
+
         if (data.priceBookId.length != 0) {
             getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId }, _id: { $in: data.priceBookId } }, { name: 1, pName: 1, _id: 1, category: 1 })
             let priceBookIds = getPriceBooks.map(ID => ID._id)
             let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice({ priceBookId: { $in: priceBookIds } })
         }
+
         let dealerQuery = [
             {
                 $match: {
@@ -1386,19 +1171,9 @@ exports.getReportingCategories = async (req, res) => {
                 }
             }
         ]
+
         let getDealers = await dealerService.getDealerAndClaims(dealerQuery)
 
-        // let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice()
-
-        // getPriceBooks = getPriceBooks.map(pricebook => {
-        //     const matchedPriceBooks = getDealerPriceBooks.filter(priceBook => priceBook.priceBook.toString() === pricebook._id.toString());
-        //     return {
-        //         ...pricebook._doc,
-        //         dealerIds: matchedPriceBooks
-        //     };
-        // });
-
-        // console.log(getPriceBooks)
         if (!getCategories) {
             res.send({
                 code: constant.errorCode,
@@ -1406,7 +1181,6 @@ exports.getReportingCategories = async (req, res) => {
             })
             retrun
         }
-
 
         let result;
         // chooose conditions on filters
@@ -1439,8 +1213,8 @@ exports.getReportingCategories = async (req, res) => {
             console.log("1st condition_--------------------------------------------------")
 
         }
+
         if (data.dealerId == "" && data.categoryId == "" && data.priceBookId.length != 0) {
-            console.log("2nd condition_--------------------------------------------------")
 
         }
         if (data.dealerId == "" && data.categoryId != "" && data.priceBookId.length == 0) {
@@ -1491,6 +1265,7 @@ exports.getReportingCategories = async (req, res) => {
     }
 };
 
+//Get dropdown for reporting
 exports.getReportingDropdowns = async (req, res) => {
     try {
         let data = req.body
@@ -1519,20 +1294,22 @@ exports.getReportingDropdowns = async (req, res) => {
         }
 
         if (data.dealerId != "") {
-            // let dealerPriceQuery
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
             let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
             priceBook = getPriceBooks1.map(item => ({
                 value: item._id,
                 label: item.name
             }));
+
             categories = getCategories1.map(item => ({
                 value: item._id,
                 label: item.name
             }));
+
             result = {
                 getDealers: convertedData,
                 getPriceBooks: priceBook,
@@ -1575,15 +1352,12 @@ exports.getReportingDropdowns = async (req, res) => {
     }
 };
 
+//Get claim reporting
 exports.claimDailyReporting = async (data) => {
     try {
-        // let data = req.body
         let startOfMonth2 = new Date(data.startDate);
         let endOfMonth1 = new Date(data.endDate);
-
         let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-
-
         let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
@@ -1592,11 +1366,11 @@ exports.claimDailyReporting = async (data) => {
 
         let datesArray = [];
         let currentDate = new Date(startOfMonth);
+
         while (currentDate <= endOfMonth) {
             datesArray.push(new Date(currentDate));
             currentDate.setDate(currentDate.getDate() + 1);
         }
-
 
         let dailyQuery = [
             {
@@ -1612,14 +1386,12 @@ exports.claimDailyReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_amount: { $sum: "$totalAmount" },
                     total_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
 
         let dailyQuery1 = [
             {
@@ -1636,7 +1408,6 @@ exports.claimDailyReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_unpaid_amount: { $sum: "$totalAmount" },
                     total_unpaid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -1660,7 +1431,6 @@ exports.claimDailyReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_paid_amount: { $sum: "$totalAmount" },
                     total_paid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -1672,27 +1442,21 @@ exports.claimDailyReporting = async (data) => {
             {
                 $match: {
                     createdAt: { $gte: startOfMonth, $lt: endOfMonth },
-                    // claimPaymentStatus: "Paid",
                     claimStatus: {
                         $elemMatch: { status: "Rejected" }
                     },
                 },
             },
-
             {
                 $group: {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    // total_paid_amount: { $sum: "$totalAmount" },
                     total_rejected_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
-
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -1703,9 +1467,7 @@ exports.claimDailyReporting = async (data) => {
         }
 
         if (data.servicerId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
-
             dailyQuery[0].$match.servicerId = data.servicerId
             dailyQuery1[0].$match.servicerId = data.servicerId
             dailyQuery2[0].$match.servicerId = data.servicerId
@@ -1713,9 +1475,7 @@ exports.claimDailyReporting = async (data) => {
         }
 
         if (data.customerId) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
-
             dailyQuery[0].$match.customerId = data.customerId
             dailyQuery1[0].$match.customerId = data.customerId
             dailyQuery2[0].$match.customerId = data.customerId
@@ -1729,9 +1489,7 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery1[0].$match.orderId = { $in: orderIds }
             dailyQuery2[0].$match.orderId = { $in: orderIds }
             dailyQuery3[0].$match.orderId = { $in: orderIds }
-
         }
-
 
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
@@ -1776,7 +1534,6 @@ exports.claimDailyReporting = async (data) => {
             const order = getData3.find(item => item._id === dateString);
             return {
                 weekStart: dateString,
-                // total_paid_amount: order ? order.total_paid_amount : 0,
                 total_rejected_claim: order ? order.total_rejected_claim : 0,
 
             };
@@ -1787,8 +1544,6 @@ exports.claimDailyReporting = async (data) => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
             const result3Item = result3.find(r2 => r2.weekStart === item.weekStart);
-
-
             if (data.role == 'Super Admin') {
                 return {
                     weekStart: item.weekStart,
@@ -1874,19 +1629,6 @@ exports.claimDailyReporting = async (data) => {
                 };
             }
 
-
-
-
-            // return {
-            //     weekStart: item.weekStart,
-            //     total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
-            //     total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
-            //     total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
-            //     total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
-            //     total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
-            //     total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
-            //     total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
-            // };
         });
 
         let totalFees = []
@@ -1910,11 +1652,7 @@ exports.claimDailyReporting = async (data) => {
                 total_rejected_claim: 0,
             });
         }
-
         return { graphData: mergedArray, totalFees }
-        // return { mergedArray, result, result1, result2, totalFees }
-
-
     } catch (err) {
         return {
             code: constant.errorCode,
@@ -1923,28 +1661,18 @@ exports.claimDailyReporting = async (data) => {
     }
 };
 
+//get weekly claim reporting
 exports.claimWeeklyReporting = async (data) => {
     try {
-        // let data = req.body
-        // const data = req.body;
-
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
 
         // Example: Adjusting dates with moment.js if needed
-        // startDate.subtract(1, 'day');
-        // endDate.add(1, 'day');
-
-        console.log("startDate:", startDate.format(), "endDate:", endDate.format());
-
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
         const endOfWeekDate = moment(endDate).endOf('isoWeek');
-
         // Example: Logging calculated week start and end dates
-        console.log("startOfWeekDate:", startOfWeekDate.format(), "endOfWeekDate:", endOfWeekDate.format());
-
         // Create an array of dates for each week within the specified range
         const datesArray = [];
         let currentDate = moment(startOfWeekDate);
@@ -1984,7 +1712,6 @@ exports.claimWeeklyReporting = async (data) => {
                     _id: "$weekStart",
                     total_amount: { $sum: "$totalAmount" },
                     total_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -2020,7 +1747,6 @@ exports.claimWeeklyReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_unpaid_amount: { $sum: "$totalAmount" },
                     total_unpaid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -2056,7 +1782,6 @@ exports.claimWeeklyReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_paid_amount: { $sum: "$totalAmount" },
                     total_paid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -2107,9 +1832,7 @@ exports.claimWeeklyReporting = async (data) => {
         }
 
         if (data.servicerId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
-
             dailyQuery[0].$match.servicerId = data.servicerId
             dailyQuery1[0].$match.servicerId = data.servicerId
             dailyQuery2[0].$match.servicerId = data.servicerId
@@ -2117,9 +1840,7 @@ exports.claimWeeklyReporting = async (data) => {
         }
 
         if (data.customerId) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
-
             dailyQuery[0].$match.customerId = data.customerId
             dailyQuery1[0].$match.customerId = data.customerId
             dailyQuery2[0].$match.customerId = data.customerId
@@ -2143,19 +1864,15 @@ exports.claimWeeklyReporting = async (data) => {
 
         if (getData[0]) {
             getData[0]._id = datesArray[0]
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", getData[0]._id)
         }
         if (getData1[0]) {
             getData1[0]._id = datesArray[0]
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData1[0]._id)
         }
         if (getData2[0]) {
             getData2[0]._id = datesArray[0]
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData[0]._id)
         }
         if (getData3[0]) {
             getData3[0]._id = datesArray[0]
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++", datesArray[0], getData[0]._id)
         }
 
         const result = datesArray.map(date => {
@@ -2170,10 +1887,7 @@ exports.claimWeeklyReporting = async (data) => {
 
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
-            // console.log("date check +++++++++++++++++++==",getData1,dateString)
             const order = getData1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
-            console.log("date check +++++++++++++++++++==", getData1, datesArray)
-
             return {
                 weekStart: dateString,
                 total_unpaid_amount: order ? order.total_unpaid_amount : 0,
@@ -2292,16 +2006,6 @@ exports.claimWeeklyReporting = async (data) => {
                 };
             }
 
-            // return {
-            //     weekStart: item.weekStart,
-            //     total_amount: data.returnValue.total_amount == 1 ? item.total_amount : 0,
-            //     total_claim: data.returnValue.total_claim == 1 ? item.total_claim : 0,
-            //     total_unpaid_amount: data.returnValue.total_unpaid_amount == 1 ? result1Item ? result1Item.total_unpaid_amount : 0 : 0,
-            //     total_unpaid_claim: data.returnValue.total_unpaid_claim == 1 ? result1Item ? result1Item.total_unpaid_claim : 0 : 0,
-            //     total_paid_amount: data.returnValue.total_paid_amount == 1 ? result2Item ? result2Item.total_paid_amount : 0 : 0,
-            //     total_paid_claim: data.returnValue.total_paid_claim == 1 ? result2Item ? result2Item.total_paid_claim : 0 : 0,
-            //     total_rejected_claim: data.returnValue.total_rejected_claim == 1 ? result3Item ? result3Item.total_rejected_claim : 0 : 0
-            // };
         });
         let totalFees = []
         if (data.role = "Super Admin") {
@@ -2328,35 +2032,21 @@ exports.claimWeeklyReporting = async (data) => {
 
         return { graphData: mergedArray, totalFees }
 
-
-        // const totalFees = result.reduce((acc, curr) => {
-        //     acc.total_amount += curr.total_amount || 0;
-        //     acc.total_claim += curr.total_claim || 0;
-        //     return acc;
-        // }, {
-        //     total_amount: 0,
-        //     total_claim: 0,
-        // });
-
-        // return { result, totalFees }
-
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
 };
 
+//Get claim day reporting
 exports.claimDayReporting = async (data) => {
     try {
         data.dayDate = data.startDate
         const today = new Date(data.dayDate);
-
         // Set the start of the day
         const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
-        console.log(startOfDay, endOfDay)
 
         let dailyQuery = [
             {
@@ -2391,7 +2081,6 @@ exports.claimDayReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_unpaid_amount: { $sum: "$totalAmount" },
                     total_unpaid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -2415,14 +2104,12 @@ exports.claimDayReporting = async (data) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_paid_amount: { $sum: "$totalAmount" },
                     total_paid_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
 
         let dailyQuery3 = [
             {
@@ -2453,9 +2140,7 @@ exports.claimDayReporting = async (data) => {
         }
 
         if (data.servicerId != "") {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
-
             dailyQuery[0].$match.servicerId = data.servicerId
             dailyQuery1[0].$match.servicerId = data.servicerId
             dailyQuery2[0].$match.servicerId = data.servicerId
@@ -2463,9 +2148,7 @@ exports.claimDayReporting = async (data) => {
         }
 
         if (data.customerId) {
-            // let priceBookId = new mongoose.Types.ObjectId(data.priceBookId)
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
-
             dailyQuery[0].$match.customerId = data.customerId
             dailyQuery1[0].$match.customerId = data.customerId
             dailyQuery2[0].$match.customerId = data.customerId
@@ -2587,14 +2270,6 @@ exports.claimDayReporting = async (data) => {
             });
         }
 
-        // const totalFees = result.reduce((acc, curr) => {
-        //     acc.total_amount += curr.total_amount || 0;
-        //     acc.total_claim += curr.total_claim || 0;
-        //     return acc;
-        // }, {
-        //     total_amount: 0,
-        //     total_claim: 0,
-        // });
 
         return { result, totalFees }
 
@@ -2628,13 +2303,9 @@ exports.claimReportinDropdown = async (req, res) => {
             if (data.dealerId != "") {
 
                 let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
-
-                console.log("-------------------------------------------------------", getServicersIds, 1)
                 let ids = getServicersIds?.map((item) => item.servicerId)
                 let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-
                 // Get Dealer Reseller Servicer
-
                 let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
 
                 if (dealerResellerServicer.length > 0) {
@@ -2642,6 +2313,7 @@ exports.claimReportinDropdown = async (req, res) => {
                 }
 
                 let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
+
                 if (!checkDealer) {
                     res.send({
                         code: constant.errorCode,
@@ -2661,18 +2333,12 @@ exports.claimReportinDropdown = async (req, res) => {
 
                 if (data.categoryId != "") {
                     getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-                    // result = {
-                    //     dealers: getDealers,
-                    //     servicers: servicer,
-                    //     priceBooks: getPriceBooks2,
-                    //     categories: getCategories1
-                    // }
+                   
                 }
+
                 if (data.priceBookId.length != 0 && data.categoryId == "") {
                     getCategories1 = []
                 }
-
-
 
                 result = {
                     dealers: getDealers,
@@ -2688,15 +2354,6 @@ exports.claimReportinDropdown = async (req, res) => {
                     categories: []
                 }
             }
-
-
-
-
-
-
-
-
-
 
         }
 
@@ -2735,13 +2392,8 @@ exports.claimReportinDropdown = async (req, res) => {
 
             ]
             let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
-
-
             let dealerIds = filteredData.map(ID => ID.dealerData._id)
-            console.log("checking dealerIds--------------------", filteredData, dealerIds)
-
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds } })
-            console.log("checking dealerIds--------------------", { dealerId: { $in: dealerIds } })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
@@ -2753,12 +2405,12 @@ exports.claimReportinDropdown = async (req, res) => {
                 getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds1 } })
                 let categoriesIds1 = getPriceBooks1.map(ID => ID.category)
                 getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds1 } })
-
             }
 
             if (data.categoryId != "") {
                 getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
             }
+
             if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories1 = []
             }
@@ -2798,8 +2450,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
 
         }
-
-
 
         res.send({
             code: constant.successCode,

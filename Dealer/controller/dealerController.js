@@ -3139,7 +3139,6 @@ exports.getDealerServicers = async (req, res) => {
     let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
     const result_Array = servicer.map(item1 => {
-      console.log("item1----------------------------", item1._id)
       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
       const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
       const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
