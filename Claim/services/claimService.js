@@ -10,6 +10,7 @@ module.exports = class claimService {
      return {code:402,message:"Service error"}
     }
   }
+
   static async getAllMessages(query) {
     try {
       const allMessages = await comments.aggregate(query);
@@ -18,6 +19,7 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
+
   static async getClaims(query) {
     try {
       const allClaims = await claim.find(query);
@@ -26,6 +28,7 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
+
   static async getLastNumberOfClaims(query) {
     try {
       const getLastNumberOfClaims = await claim.find(query).sort({unique_key_number:-1}).limit(5)
@@ -34,6 +37,7 @@ module.exports = class claimService {
       console.log(`Could not fetch claims ${error}`);
     }
   }
+
   static async getClaimCount() {
     try {
       const count = await claim.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
@@ -42,6 +46,7 @@ module.exports = class claimService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
+
   static async createClaim(data) {
     try {
       const response = await new claim(data).save();
@@ -50,6 +55,7 @@ module.exports = class claimService {
       console.log(error);
     }
   }
+
   static async addMessage(data) {
     try {
       const response = await new comments(data).save();
@@ -58,6 +64,7 @@ module.exports = class claimService {
       console.log(error);
     }
   }
+
   static async checkTotalAmount(query) {
     try {
       const response = await claim.aggregate([
@@ -70,6 +77,7 @@ module.exports = class claimService {
       console.log(error);
     }
   }
+
   static async getClaimById(claimId, projection = {}) {
     try {
       const singleClaimResponse = await claim.findOne(claimId, projection);
@@ -78,6 +86,7 @@ module.exports = class claimService {
       console.log(`claim not found. ${error}`);
     }
   }
+
   static async updateClaim(criteria, data, option) {
     try {
       let updatedResponse = await claim.findOneAndUpdate(criteria, data, option)
@@ -86,6 +95,7 @@ module.exports = class claimService {
       console.log(`Could not update claim ${error}`);
     }
   }
+
   static async deleteClaim(claimId) {
     try {
       const deletedResponse = await claim.findOneAndDelete(claimId);
@@ -94,6 +104,7 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
+
   static async saveBulkClaim(data) {
     try {
       const bulkResponse = await claim.insertMany(data);
@@ -102,6 +113,7 @@ module.exports = class claimService {
       console.log(`Could  not delete claim ${error}`);
     }
   }
+  
   static async getDashboardData(query, groupBy = {}) {
     try {
       const allOrders = await claim.aggregate([

@@ -7,7 +7,6 @@ const claimSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "contracts",
     index: true
-    // required: true,
   },
   orderId: {
     type: String,
@@ -37,14 +36,13 @@ const claimSchema = new mongoose.Schema({
   manufacture: {
     type: String,
     default: ''
-  }, 
-  
+  },
+
   claimFile: {
     type: 'String',
     enum: ['Open', 'Completed', 'Rejected'],
     default: 'Open',
     index: true
-    // required: true,
   },
   reason: {
     type: 'String',
@@ -87,16 +85,13 @@ const claimSchema = new mongoose.Schema({
   action: {
     type: String,
     default: ''
-    // required: true,
   },
   bdAdh: {
     type: String,
     default: ''
-    // required: true,
   },
   diagnosis: {
     type: String,
-    // required: true,
   },
   receiptImage: {
     type: [],
@@ -105,22 +100,18 @@ const claimSchema = new mongoose.Schema({
   shippingCarrier: {
     type: String,
     default: ''
-    // required: true,
   },
   shippingLabel: {
     type: String,
     default: ''
-    // required: true,
   },
   claimDate: {
     type: Date,
     default: Date.now()
-    // required: true,
   },
   lossDate: {
     type: Date,
     default: Date.now()
-    // required: true,
   },
   claimType: {
     type: String,
@@ -160,53 +151,9 @@ const claimSchema = new mongoose.Schema({
     type: [],
     default: []
   },
-  // comments: {
-  //   type: [
-  //     {
-  //       commentedBy: {
-  //         type: String,
-  //       },
-  //       type:{
-  //         type:String
-  //       },
-  //       commentedTo: {
-  //         type: String,
-  //       },
-  //       content: {
-  //         type: String,
-  //       },
-  //       messageFile: {
-  //         type: {
-  //           fileName: {
-  //             type: String,
-  //             default: ''
-  //           },
-  //           originalname: {
-  //             type: String,
-  //             default: ''
-  //           },
-  //           size: {
-  //             type: String,
-  //             default: ''
-  //           },
-  //         },
-  //         default: {
-  //           fileName: '',
-  //           originalName: '',
-  //         }
-  //       },
-  //       date: {
-  //         type: Date,
-  //         default: Date.now()
-  //       }
-  //     }
-  //   ],
-  //   default: [ ]
-  // },
   totalAmount: {
     type: Number,
     default: 0
-    // required: true,
   },
   note: {
     type: String,
