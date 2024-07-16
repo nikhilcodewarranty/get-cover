@@ -129,7 +129,7 @@ exports.createCustomer = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
-    
+
     let emailData = {
       senderName: saveMembers[0].firstName,
       content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
@@ -382,21 +382,25 @@ exports.getDealerCustomers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
     console.log('name check ++++++++++++++++++++++=', newObj)
-    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     const resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
+
+    console.log("data++++++++++++++++++", result_Array[0], data)
 
     const filteredData = result_Array.filter(entry => {
       return (
         firstNameRegex.test(entry.customerData.username) &&
         lastNameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber),
+        phoneRegex.test(entry.phoneNumber) &&
         resellerRegex.test(entry.reseller.name)
       );
     });
+    console.log("data++++++++++++++++++", data)
+
 
     res.send({
       code: constant.successCode,
