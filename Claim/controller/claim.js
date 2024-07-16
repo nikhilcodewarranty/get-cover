@@ -312,7 +312,7 @@ exports.getAllClaims = async (req, res, next) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -537,7 +537,7 @@ exports.getClaims = async (req, res) => {
       })
     }
 
-    let getClaims = await claimService.getAllClaims(mainQuery)
+    let getClaims = await claimService.getClaimWithAggregate(mainQuery)
 
     res.send({
       code: constant.successCode,
@@ -744,7 +744,12 @@ exports.getUnpaidAmount = async (req, res, next) => {
   try {
     const ids = req.body.claimIds;
     const claimId = ids.map(id => new mongoose.Types.ObjectId(id))
-    const response = await claimService.checkTotalAmount({ _id: { $in: claimId } });
+    let claimTotalQuery = [
+      { $match: { _id: { $in: claimId } } },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    const response = await claimService.getClaimWithAggregate(claimTotalQuery);
     res.send({
       code: constant.successCode,
       message: "Success!",
@@ -846,7 +851,14 @@ exports.addClaim = async (req, res, next) => {
     }
 
     const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(query);
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+
+
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
     if (checkContract.productValue <= claimTotal[0]?.amount) {
       res.send({
@@ -999,8 +1011,13 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     // Get Claim Total of the contract
     const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
+    let claimTotalQuery = [
+      { $match: totalCreteria },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
-    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
+    ]
+
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -1120,7 +1137,12 @@ exports.editClaim = async (req, res) => {
     if (checkClaim.claimFile == 'Open') {
       let contract = await contractService.getContractById({ _id: checkClaim.contractId });
       const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId), claimFile: 'Completed' }
-      let claimTotal = await claimService.checkTotalAmount(query);
+      let claimTotalQuery = [
+        { $match: query },
+        { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+      ]
+      let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
       if (claimTotal.length > 0) {
         const remainingValue = contract.productValue - claimTotal[0]?.amount
         if (remainingValue.toFixed(2) < data.totalAmount) {
@@ -1335,7 +1357,12 @@ exports.editClaimStatus = async (req, res) => {
     const query = { contractId: new mongoose.Types.ObjectId(checkClaim.contractId) }
     let checkContract = await contractService.getContractById({ _id: checkClaim.contractId })
     const checkOrder = await orderService.getOrder({ _id: checkContract.orderId }, { isDeleted: false })
-    let claimTotal = await claimService.checkTotalAmount(query);
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
     let status = {};
     let updateData = {};
@@ -2646,7 +2673,12 @@ exports.statusClaim = async (req, res) => {
 
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
         let checkContract = await contractService.getContractById({ _id: contractId })
-        let claimTotal = await claimService.checkTotalAmount(query);
+        let claimTotalQuery = [
+          { $match: query },
+          { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+        ]
+        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
         // Update Eligibilty true and false
         if (checkContract.productValue > claimTotal[0]?.amount) {
@@ -2675,7 +2707,12 @@ exports.statusClaim = async (req, res) => {
 exports.getMaxClaimAmount = async (req, res) => {
   try {
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(query);
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     const contract = await contractService.getContractById({ _id: req.params.contractId }, { productValue: 1 })
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     const product = contract ? contract.productValue : 0

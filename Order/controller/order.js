@@ -278,7 +278,7 @@ exports.createOrder1 = async (req, res) => {
             description: data.dealerPurchaseOrder + " " + "order has been created",
             userId: req.teammateId,
             contentId: null,
-            flag: 'order', 
+            flag: 'order',
             redirectionId: savedResponse.unique_key,
             notificationFor: IDs
         };
@@ -3931,7 +3931,7 @@ exports.markAsPaid = async (req, res) => {
 
         let savedResponse = await orderService.updateOrder(
             { _id: req.params.orderId },
-            { status: "Active" }, 
+            { status: "Active" },
             { new: true }
         );
         //let count1 = await contractService.getContractsCount(); 
@@ -3941,7 +3941,7 @@ exports.markAsPaid = async (req, res) => {
         let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
             const readOpts = {
-                 // <--- need these settings in readFile options //cellText:false, 
+                // <--- need these settings in readFile options //cellText:false, 
                 cellDates: true
             };
             const jsonOpts = {
@@ -4274,7 +4274,27 @@ exports.getDashboardData = async (req, res) => {
         //     })
         //     return;
         // }
-        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
+
+        let claimQuery = [
+            {
+                $match: { claimFile: 'Completed' }
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+
+
+        ]
+
+        let valueClaim = await claimService.getClaimWithAggregate(claimQuery);
         let numberOfClaims = await claimService.getClaims({ claimFile: 'Completed' });
         if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
@@ -4562,7 +4582,7 @@ exports.getOrderContract = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
@@ -5255,7 +5275,7 @@ async function generateTC(orderData) {
             }
         })
         const contractArray = await Promise.all(contractArrayPromise);
-        
+
         for (let i = 0; i < checkOrder?.productsArray.length; i++) {
             if (checkOrder?.productsArray[i].priceType == 'Quantity Pricing') {
                 for (let j = 0; j < checkOrder?.productsArray[i].QuantityPricing.length; j++) {
@@ -5374,7 +5394,7 @@ async function generateTC(orderData) {
                 const pdfDoc1 = await PDFDocument.load(pdfDoc1Bytes);
                 const pdfDoc2 = await PDFDocument.load(pdfDoc2Bytes);
 
-                 // Create a new PDF Document
+                // Create a new PDF Document
                 const mergedPdf = await PDFDocument.create();
 
                 // Add the pages of the first PDF

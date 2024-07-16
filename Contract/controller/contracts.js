@@ -540,7 +540,7 @@ exports.getContracts = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       // console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
@@ -573,7 +573,14 @@ exports.editContract = async (req, res) => {
     let data = req.body
     let criteria = { _id: req.params.contractId }
     const query = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(query);
+
+    let claimTotalQuery = [
+      { $match: query },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     const claimAmount = claimTotal[0]?.amount ? claimTotal[0]?.amount : 0
     let option = { new: true }
     //check claim
@@ -705,7 +712,12 @@ exports.getContractById = async (req, res) => {
     let limitData = Number(pageLimit)
     // Get Claim Total of the contract
     const totalCreteria = { contractId: new mongoose.Types.ObjectId(req.params.contractId) }
-    let claimTotal = await claimService.checkTotalAmount(totalCreteria);
+    let claimTotalQuery = [
+      { $match: totalCreteria },
+      { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+    ]
+    let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let query = [
       {
         $match: { _id: new mongoose.Types.ObjectId(req.params.contractId) },
@@ -792,7 +804,7 @@ exports.getContractById = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           getData[e].reason = "Contract has open claim"
@@ -941,7 +953,12 @@ exports.cronJobEligible = async (req, res) => {
 
       if (notOpenContractIds.length > 0) {
         for (let j = 0; j < notOpenContractIds.length; j++) {
-          let claimTotal = await claimService.checkTotalAmount({ contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) });
+          let claimTotalQuery = [
+            { $match: { contractId: new mongoose.Types.ObjectId(notOpenContractIds[j]) } },
+            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+      
+          ]
+          let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
           let obj = result.find(el => el._id.toString() === notOpenContractIds[j].toString());
 
           if (obj?.productValue > claimTotal[0]?.amount) {

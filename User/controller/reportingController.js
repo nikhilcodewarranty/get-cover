@@ -1546,10 +1546,10 @@ exports.claimDailyReporting = async (data) => {
         }
 
 
-        let getData = await claimService.getAllClaims(dailyQuery)
-        let getData1 = await claimService.getAllClaims(dailyQuery1)
-        let getData2 = await claimService.getAllClaims(dailyQuery2)
-        let getData3 = await claimService.getAllClaims(dailyQuery3)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
+        let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
+        let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
+        let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
@@ -1949,10 +1949,10 @@ exports.claimWeeklyReporting = async (data) => {
 
         }
 
-        let getData = await claimService.getAllClaims(dailyQuery)
-        let getData1 = await claimService.getAllClaims(dailyQuery1)
-        let getData2 = await claimService.getAllClaims(dailyQuery2)
-        let getData3 = await claimService.getAllClaims(dailyQuery3)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
+        let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
+        let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
+        let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
 
         if (getData[0]) {
             getData[0]._id = datesArray[0]
@@ -2285,10 +2285,10 @@ exports.claimDayReporting = async (data) => {
             dailyQuery3[0].$match.customerId = data.customerId
         }
 
-        let getData = await claimService.getAllClaims(dailyQuery)
-        let getData1 = await claimService.getAllClaims(dailyQuery1)
-        let getData2 = await claimService.getAllClaims(dailyQuery2)
-        let getData3 = await claimService.getAllClaims(dailyQuery3)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
+        let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
+        let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
+        let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
 
         let checkdate = new Date(data.dayDate).setDate(new Date(data.dayDate).getDate() + 0);
         const options = {

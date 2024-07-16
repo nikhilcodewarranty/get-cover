@@ -917,7 +917,7 @@ exports.getCustomerById = async (req, res) => {
 
         },
       ]
-      let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+      let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
       const rejectedQuery = { claimFile: { $ne: "Rejected" } }
       //Get number of claims
@@ -958,7 +958,7 @@ exports.getCustomerById = async (req, res) => {
           },
         },
       ]
-      let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+      let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
       const claimData = {
         numberOfClaims: numberOfClaims.length,
         valueClaim: valueClaim[0]?.totalAmount
@@ -1783,7 +1783,7 @@ exports.getCustomerContract = async (req, res) => {
         }
       ]
 
-      let checkClaims = await claimService.getAllClaims(claimQuery)
+      let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
       console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
@@ -2092,7 +2092,7 @@ exports.customerClaims = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 

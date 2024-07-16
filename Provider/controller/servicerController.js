@@ -690,14 +690,14 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
         //Get number of claims
         let numberOfCompleletedClaims = [
             {
                 $match: claimQuery
             },
         ]
-        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
 
         const paidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Paid" }
         //Get total paid claim value
@@ -718,7 +718,7 @@ exports.getDashboardData = async (req, res) => {
             },
         ]
 
-        let paidClaimValue = await claimService.valueCompletedClaims(paidLookUp);
+        let paidClaimValue = await claimService.getClaimWithAggregate(paidLookUp);
 
         const unPaidClaimQuery = { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.userId), claimPaymentStatus: "Unpaid" }
         //Get total Unpaid claim value
@@ -739,7 +739,7 @@ exports.getDashboardData = async (req, res) => {
             },
         ]
 
-        let unPaidClaimValue = await claimService.valueCompletedClaims(unPaidLookUp);
+        let unPaidClaimValue = await claimService.getClaimWithAggregate(unPaidLookUp);
 
         const claimData = {
             numberOfClaims: numberOfClaims.length,
@@ -1174,7 +1174,7 @@ exports.getDashboardGraph = async (req, res) => {
 
         console.log(startOfMonth, endOfMonth, dailyQuery)
 
-        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
         let getOrders = await orderService.getAllOrders1(orderQuery)
@@ -1297,7 +1297,7 @@ exports.getDashboardInfo = async (req, res) => {
             }
         },
     ]
-    const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+    const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
     let lookupQuery = [
         {
             $match: { _id: { $in: dealerIds } }

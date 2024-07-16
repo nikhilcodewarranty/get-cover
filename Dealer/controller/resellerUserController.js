@@ -1521,7 +1521,7 @@ exports.getResellerById = async (req, res) => {
 
         },
     ]
-    let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
     const rejectedQuery = { claimFile: { $ne: "Rejected" } }
     //Get number of claims
@@ -1562,7 +1562,7 @@ exports.getResellerById = async (req, res) => {
             },
         },
     ]
-    let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
     const claimData = {
         numberOfClaims: numberOfClaims.length,
         valueClaim: valueClaim[0]?.totalAmount
@@ -2136,9 +2136,38 @@ exports.getResellerServicers = async (req, res) => {
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        let claimAggregateQuery1 = [
+            {
+              $match: servicerCompleted
+            },
+            {
+              "$group": {
+                "_id": "$servicerId",
+                "totalAmount": {
+                  "$sum": {
+                    "$sum": "$totalAmount"
+                  }
+                },
+              },
+      
+            },
+      
+      
+          ]
 
-        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
@@ -2964,7 +2993,7 @@ exports.getResellerContract = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
@@ -3510,7 +3539,7 @@ exports.getResellerClaims = async (req, res) => {
             lookupQuery = lookupQuery.concat(newQuery);
         }
 
-        let allClaims = await claimService.getAllClaims(lookupQuery);
+        let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -3659,7 +3688,7 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
         const rejectedQuery = { claimFile: { $ne: "Rejected" } }
         //Get number of claims
@@ -3700,7 +3729,7 @@ exports.getDashboardData = async (req, res) => {
                 },
             },
         ]
-        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
         const claimData = {
             numberOfClaims: numberOfClaims.length,
             valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
@@ -4171,7 +4200,7 @@ exports.getDashboardGraph = async (req, res) => {
 
         console.log(startOfMonth, endOfMonth, dailyQuery)
 
-        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData2 = await orderService.getAllOrders1(dailyQuery1)
 
         let getOrders = await orderService.getAllOrders1(orderQuery)
@@ -4288,7 +4317,7 @@ exports.getDashboardInfo = async (req, res) => {
                 }
             },
         ]
-        const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
+        const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
         const result = {
             lastFiveOrder: lastFiveOrder,

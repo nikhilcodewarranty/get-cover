@@ -425,9 +425,38 @@ exports.getServicer = async (req, res) => {
     const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
     const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+    let claimAggregateQuery1 = [
+      {
+        $match: servicerCompleted
+      },
+      {
+        "$group": {
+          "_id": "$servicerId",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
 
-    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+      },
+
+
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+    let claimAggregateQuery = [
+      {
+        $match: servicerClaimsIds
+      },
+      {
+        $group: {
+          _id: "$servicerId",
+          noOfOrders: { $sum: 1 },
+        }
+      },
+    ]
+    let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
     const result_Array = servicerUser.map(item1 => {
       const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -484,7 +513,25 @@ exports.getServiceProviderById = async (req, res, next) => {
     let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
 
-    let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
+    let claimQueryAggregate = [
+      {
+        $match: { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) }
+      },
+      {
+        "$group": {
+          "_id": "",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
+      },
+
+
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimQueryAggregate);
     let numberOfClaims = await claimService.getClaims({ claimFile: "Completed", servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
     const claimData = {
       numberOfClaims: numberOfClaims.length,
@@ -2013,7 +2060,7 @@ exports.getServicerClaims = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -2407,7 +2454,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-    let allClaims = await claimService.getAllClaims(lookupQuery);
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
 
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
