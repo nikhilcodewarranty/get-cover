@@ -2179,6 +2179,7 @@ exports.paidUnpaidClaim = async (req, res) => {
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': 'Completed' },
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
             dateQuery,
             { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
