@@ -3585,6 +3585,7 @@ exports.editOrderDetail = async (req, res) => {
                 );
                 // reporting codes
                 let pricebookDetailObject = {}
+                let dealerBookDetail = []
                 let dealerPriceBookObject = {}
                 console.log("check product array products ak ------------------------", product)
                 pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
@@ -3622,7 +3623,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-                let dealerBookDetail = []
+             
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
@@ -3953,6 +3954,7 @@ exports.markAsPaid = async (req, res) => {
             );
             var pricebookDetail = []
             // reporting codes
+            let dealerBookDetail = []
             let pricebookDetailObject = {}
             let dealerPriceBookObject = {}
 
@@ -3999,7 +4001,6 @@ exports.markAsPaid = async (req, res) => {
             });
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
-            let dealerBookDetail = []
 
             let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
 
