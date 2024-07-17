@@ -1889,7 +1889,7 @@ exports.customerClaims = async (req, res) => {
     }
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus = data.claimPaidStatus
+      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
     }
     else {
       claimPaidStatus = {
