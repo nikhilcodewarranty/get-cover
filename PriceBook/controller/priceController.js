@@ -824,8 +824,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
         { coverageType: coverageType }
       ]
     }
-<<<<<<< HEAD
-=======
     if (coverageType == "Breakdown & Accidental") {
       queryPrice = { status: true }
     } else {
@@ -840,13 +838,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
 
 
->>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
-<<<<<<< HEAD
-=======
-
->>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
     let query;
 
     if (!data.coverageType) {
@@ -1181,14 +1174,8 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       message: err.message
     })
   }
-<<<<<<< HEAD
-} 
-
-//get category by price book 
-=======
 }
 //
->>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body

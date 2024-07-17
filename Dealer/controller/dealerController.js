@@ -4142,7 +4142,7 @@ exports.getDealerClaims = async (req, res) => {
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
-        message: 'Dealer not found!'
+        message: 'Dealer not found!' 
       });
       return
     }
