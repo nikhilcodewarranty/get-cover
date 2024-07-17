@@ -2003,6 +2003,8 @@ exports.customerClaims = async (req, res) => {
         ]
       }
     })
+
+    console.log("data.claimPaidStatus----------------------------",data.claimPaidStatus);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -2011,7 +2013,7 @@ exports.customerClaims = async (req, res) => {
           $and: [
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            { 'claimPaymentStatus': data.claimPaidStatus ? data.claimPaidStatus : {} },
             servicerMatch,
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
