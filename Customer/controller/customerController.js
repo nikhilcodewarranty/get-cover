@@ -357,10 +357,10 @@ exports.getDealerCustomers = async (req, res) => {
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
-   //   const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.resellerId1.toString())
+      //   const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.resellerId1.toString())
       const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id.toString() === matchingItem.resellerId.toString()) : {};
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
-    
+
 
       if (matchingItem || order || matchingReseller) {
         return {
@@ -383,7 +383,7 @@ exports.getDealerCustomers = async (req, res) => {
     };
     console.log('name check ++++++++++++++++++++++=', newObj)
 
-    
+
     const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1847,6 +1847,7 @@ exports.deleteCustomer = async (req, res, next) => {
 
 exports.customerClaims = async (req, res) => {
   try {
+    let allServicer;
     // if (req.role != 'Super Admin') {
     //   res.send({
     //     code: constant.errorCode,
@@ -1866,6 +1867,26 @@ exports.customerClaims = async (req, res) => {
         message: 'Customer not found!'
       });
       return
+    }
+    let servicerMatch = {}
+    if (data.servicerName != '' && data.servicerName != undefined) {
+      const checkServicer = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+      if (checkServicer.length > 0) {
+        let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+        let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+        let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+        servicerMatch = {
+          $or: [
+            { "servicerId": { $in: servicerIds } },
+            { "servicerId": { $in: dealerIds } },
+            { "servicerId": { $in: resellerIds } }
+          ]
+        };
+      }
+      else {
+        servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+      }
     }
 
     let newQuery = [];
@@ -1992,6 +2013,7 @@ exports.customerClaims = async (req, res) => {
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            servicerMatch,
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2042,7 +2064,6 @@ exports.customerClaims = async (req, res) => {
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.isDeleted": false },
             { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.params.customerId) },
           ]
         },
@@ -2102,7 +2123,6 @@ exports.customerClaims = async (req, res) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
