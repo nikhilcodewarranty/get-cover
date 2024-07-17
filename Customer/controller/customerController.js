@@ -1889,7 +1889,7 @@ exports.customerClaims = async (req, res) => {
       }
     }
 
-    if (data.claimPaidStatus != '') {
+    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
       paidStatusMatch = data.claimPaidStatus
     }
 
