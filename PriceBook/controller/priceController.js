@@ -33,6 +33,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let filterStatus = (data.status === true || data.status === false) ? (data.status === true ? true : false) : ""
     data.status = typeof (filterStatus) == "string" ? "all" : filterStatus
     let query;
+
     if (data.status != "all") {
       if (data.coverageType != "") {
         query = {
@@ -88,22 +89,11 @@ exports.getAllPriceBooks = async (req, res, next) => {
           query.$and.push({ 'rangeStart': { $lte: Number(data.range) } });
           query.$and.push({ 'rangeEnd': { $gte: Number(data.range) } });
         }
-        // const flatQuery = {
-        //   $and: [
-        //     { 'rangeStart': { $lte: Number(data.range) } },
-        //     { 'rangeEnd': { $gte: Number(data.range) } },
-        //   ]
-        // }
-        // query.$and.push(flatQuery);
       }
     }
 
-    // console.log("filter-------------------------", query);
-
-
-    // return
-    console.log("-----------------------------------------", query)
     let projection = { isDeleted: 0, __v: 0 }
+
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -111,9 +101,11 @@ exports.getAllPriceBooks = async (req, res, next) => {
       })
       return;
     }
+
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
     const priceBooks = await priceBookService.getAllPriceBook(query, projection, limit, page);
+ 
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -133,7 +125,6 @@ exports.getAllPriceBooks = async (req, res, next) => {
     })
   }
 };
-
 
 //Get all actvie price book
 exports.getAllActivePriceBook = async (req, res) => {
@@ -171,6 +162,7 @@ exports.getAllActivePriceBook = async (req, res) => {
 exports.createPriceBook = async (req, res, next) => {
   try {
     let data = req.body
+
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -178,7 +170,9 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
+
     let checkCat = await priceBookService.getPriceCatById({ _id: data.priceCatId })
+   
     if (!checkCat) {
       res.send({
         code: constant.errorCode,
@@ -187,9 +181,11 @@ exports.createPriceBook = async (req, res, next) => {
       return;
     }
     let quantityPriceDetail;
+
     if (data.priceType == 'Quantity Pricing') {
       quantityPriceDetail = data.quantityPriceDetail;
     }
+
     const count = await priceBookService.getPriceBookCount();
     data.name = data.name.trim().replace(/\s+/g, ' ');
 
@@ -212,10 +208,6 @@ exports.createPriceBook = async (req, res, next) => {
       status: data.status,
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
-
-    // console.log(priceBookData);
-    // return;
-
     let checkPriceBook = await priceBookService.getPriceBookById({ name: { '$regex': new RegExp(`^${data.name}$`, 'i') } }, {})
 
     if (checkPriceBook.length > 0) {
@@ -225,8 +217,9 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
-    //console.log("checkPriceBook=====================",checkPriceBook);return;
+    
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
+  
     if (!savePriceBook) {
       let logData = {
         userId: req.teammateId,
@@ -258,18 +251,6 @@ exports.createPriceBook = async (req, res, next) => {
 
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      // const notificationContent = {
-      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-      // }    
-      // let emailData = {
-      //   dealerName: data.name,
-      //   c1: "PriceBook",
-      //   c2: data.name,
-      //   c3: "has been created successfully!.",
-      //   c4: "",
-      //   c5: "",
-      //   role: "PriceBook"
-      // }
       const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
       let emailData = {
         senderName: admin.firstName,
@@ -311,6 +292,7 @@ exports.createPriceBook = async (req, res, next) => {
     })
   }
 };
+
 //get price book by id 
 exports.getPriceBookById = async (req, res, next) => {
   try {
@@ -352,6 +334,7 @@ exports.updatePriceBook = async (req, res, next) => {
     }
 
     let criteria = { _id: req.params.priceId }
+
     if (data.priceCatId) {
       let checkCat = await priceBookService.getPrice({ _id: data.priceCatId })
       if (!checkCat) {
@@ -429,6 +412,7 @@ exports.updatePriceBook = async (req, res, next) => {
     })
   }
 };
+
 //Update by Price Id by me
 exports.updatePriceBookById = async (req, res, next) => {
   try {
@@ -492,16 +476,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-    // let quantityPriceDetail = [
-    //   {
-
-    //     name: '',
-    //     quantity: ''
-
-    //   }];
-    // if (body.priceType == 'Quantity Pricing') {
-    //   quantityPriceDetail = body.quantityPriceDetail;
-    // }
+   
     const newValue = {
       $set: {
         status: body.status,
@@ -520,12 +495,10 @@ exports.updatePriceBookById = async (req, res, next) => {
       }
     };
     // Update Price Book Status
-    //const updateResult = await updatePriceBookStatus(params.priceId, body);
 
     const updateResult = await priceBookService.updatePriceBook({ _id: params.priceBookId }, newValue, { new: true })
     if (!updateResult) {
       // Update Dealer Price Book Status
-      // const updateDealerResult = await updateDealerPriceStatus(params.priceId, body.status);
       res.send({
         code: constant.errorCode,
         message: "Unable to update the price book",
@@ -557,19 +530,6 @@ exports.updatePriceBookById = async (req, res, next) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: existingPriceBook.name,
-    //   c1: "PriceBook",
-    //   c2: existingPriceBook.name,
-    //   c3: "has been updated successfully!.", 
-    //   c4: "",
-    //   c5: "",
-    //   role: "PriceBook"
-    // }
-
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData;
     if (req.body.priceType) {
@@ -586,9 +546,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         subject: "Update Status"
       }
     }
-
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "admin@yopmail.com", emailData))
-
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -622,6 +580,7 @@ exports.updatePriceBookById = async (req, res, next) => {
     })
   }
 };
+
 //delete price 
 exports.deletePriceBook = async (req, res, next) => {
   try {
@@ -666,6 +625,7 @@ exports.searchPriceBook = async (req, res, next) => {
     };
     let projection = { isDeleted: 0, __v: 0 };
     const priceBooks = await priceBookService.getAllPriceBook(query, projection);
+
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -685,7 +645,6 @@ exports.searchPriceBook = async (req, res, next) => {
     });
   };
 };
-//----------------- price categories api's --------------------------//
 
 // create price category api's
 exports.createPriceBookCat = async (req, res) => {
@@ -698,7 +657,6 @@ exports.createPriceBookCat = async (req, res) => {
       })
       return;
     }
-
 
     const data = req.body;
     data.name = data.name.trim().replace(/\s+/g, ' ');
@@ -713,7 +671,6 @@ exports.createPriceBookCat = async (req, res) => {
     }
     // Check Total Counts
     const count = await priceBookService.getTotalCount();
-    // console.log(count);return false;
     const catData = {
       name: data.name,
       description: data.description,
@@ -752,18 +709,6 @@ exports.createPriceBookCat = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: data.name,
-    //   c1: "Category",
-    //   c2: data.name,
-    //   c3: "has been created successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
@@ -808,14 +753,14 @@ exports.createPriceBookCat = async (req, res) => {
     });
   }
 };
+
 // get all price category
 exports.getPriceBookCat = async (req, res) => {
   try {
     let data = req.body
-
     let projection = { isDeleted: 0, __v: 0 }
     let query;
-    console.log(data.status)
+
     if (data.status) {
       query = {
         $and: [
@@ -832,7 +777,9 @@ exports.getPriceBookCat = async (req, res) => {
         ]
       }
     }
+
     let getCat = await priceBookService.getAllPriceCat(query, projection)
+
     if (!getCat) {
       res.send({
         code: constant.errorCode,
@@ -857,7 +804,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
     let ID = req.query.priceBookId == "undefined" ? "61c8c7d38e67bb7c7f7eeeee" : req.query.priceBookId
-
     if (data.dealerId) {
       var getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
       if (!getDealer) {
@@ -869,9 +815,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
       }
     }
     let query1 = { _id: new mongoose.Types.ObjectId(ID) }
-
     let getPriceBook = await priceBookService.getPriceBookById(query1, {})
-
     let coverageType = data.coverageType ? data.coverageType : getDealer?.coverageType
     let queryPrice;
     queryPrice = {
@@ -895,20 +839,13 @@ exports.getActivePriceBookCategories = async (req, res) => {
 
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
-
-
-
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
-
     let query;
-
 
     if (!data.coverageType) {
       query = {
         $and: [
           { status: true },
-          // { _id: getPriceBook ? getPriceBook[0].category._id : "" },
-          // { _id: { $in: catIds } }
         ]
       }
     } else {
@@ -1033,7 +970,6 @@ exports.updatePriceBookCat = async (req, res) => {
         let updatePriceBook = await priceBookService.updatePriceBook({ category: updateCatResult._id }, { status: data.status }, { new: true })
         let projection = { isDeleted: 0, __v: 0 }
         let updateOrder = await orderService.updateManyOrder({ 'productsArray.categoryId': req.params.catId, status: 'Pending' }, { status: 'Archieved' }, { new: true })
-
         const allPriceBookIds = await priceBookService.getAllPriceIds({ category: req.params.catId }, projection);
         const priceIdsToUpdate = allPriceBookIds.map((price) => price._id);
         if (priceIdsToUpdate) {
@@ -1054,21 +990,8 @@ exports.updatePriceBookCat = async (req, res) => {
       notificationFor: IDs
     };
     let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: data.name,
-    //   c1: "Category",
-    //   c2: data.name,
-    //   c3: "has been updated successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData = {
       senderName: admin.firstName,
@@ -1109,15 +1032,13 @@ exports.updatePriceBookCat = async (req, res) => {
     });
   }
 };
+
 // get price category by ID
 exports.getPriceBookCatById = async (req, res) => {
   try {
     let ID = { _id: req.params.catId }
     let projection = { isDeleted: 0, __v: 0 }
-    console.log(ID);
-    console.log(projection);
     let getPriceCat = await priceBookService.getPriceCatById(ID, projection);
-    console.log('getPriceCat.........', getPriceCat);
     if (!getPriceCat) {
       res.send({
         code: constant.errorCode,
@@ -1137,6 +1058,7 @@ exports.getPriceBookCatById = async (req, res) => {
     })
   }
 }
+
 // search price category with name
 exports.searchPriceBookCategories = async (req, res) => {
   try {
@@ -1163,15 +1085,15 @@ exports.searchPriceBookCategories = async (req, res) => {
     })
   }
 }
-// Get price book by category name
+// get price book by category name
 exports.getPriceBookByCategory = async (req, res) => {
   try {
     let data = req.body
-
     let catQuery = { name: req.params.categoryName }
     let catProjection = { __v: 0 }
     // check the request is having category id or not
     let checkCategory = await priceBookService.getPriceCatByName(catQuery, catProjection)
+
     if (!checkCategory) {
       res.send({
         code: constant.errorCode,
@@ -1179,7 +1101,9 @@ exports.getPriceBookByCategory = async (req, res) => {
       })
       return;
     }
+
     let fetchPriceBooks = await priceBookService.getAllPriceBook({ category: checkCategory._id }, { __v: 0 })
+
     if (!fetchPriceBooks) {
       res.send({
         code: constant.errorCode,
@@ -1201,10 +1125,11 @@ exports.getPriceBookByCategory = async (req, res) => {
     })
   }
 }
+
+//get price book by category id
 exports.getPriceBookByCategoryId = async (req, res) => {
   try {
     let data = req.body
-
     let catQuery = { _id: req.params.categoryId }
     let catProjection = { __v: 0 }
     // check the request is having category id or not
@@ -1235,10 +1160,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
         ]
       };
     }
-    //console.log("queryFilter=======================",queryFilter)
     let fetchPriceBooks = await priceBookService.getAllPriceBook(queryFilter, { __v: 0 }, limit, page)
-    // console.log("fetchPriceBooks=======================",fetchPriceBooks)
-    // return;
     res.send({
       code: constant.successCode,
       message: 'Data fetched successfully',
@@ -1266,7 +1188,6 @@ exports.getCategoryByPriceBook = async (req, res) => {
       return;
     }
     let getCategoryDetail = await priceBookService.getPriceCatByName({ _id: checkPriceBook.category }, {})
-    console.log('getCategoryDetail=======================', getCategoryDetail)
     if (!getCategoryDetail) {
       res.send({
         code: constant.errorCode,

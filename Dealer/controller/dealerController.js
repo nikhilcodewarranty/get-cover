@@ -1345,7 +1345,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
     data.status = typeof (data.status) == "string" ? "all" : data.status
-    console.log(data)
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -3930,6 +3929,7 @@ exports.getDealerContract = async (req, res) => {
       contractFilterWithEligibilty = [
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+
         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4142,7 +4142,7 @@ exports.getDealerClaims = async (req, res) => {
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
-        message: 'Dealer not found!'
+        message: 'Dealer not found!' 
       });
       return
     }
