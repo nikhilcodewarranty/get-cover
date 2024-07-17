@@ -889,7 +889,9 @@ exports.getAllOrders = async (req, res) => {
                 state: 1,
                 country: 1,
                 zip: 1,
-                street: 1
+                street: 1,
+                dealerId: 1,
+                resellerId: 1
             }
         );
         let customerIdsArray = ordersResult.map((result) => result.customerId);
@@ -1026,7 +1028,7 @@ exports.getAllOrders = async (req, res) => {
             }
             return {
                 ...item,
-                servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
+                servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item?.resellerName?.isServicer && item?.servicerId?.toString() == item?.resellerName?._id?.toString()) ? item.resellerName : item?.servicerName,
                 username: username, // Set username based on the conditional checks
                 resellerUsername: resellerUsername ? resellerUsername : {},
                 customerUserData: customerUserData ? customerUserData : {}
