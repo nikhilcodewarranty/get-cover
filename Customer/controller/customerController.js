@@ -1869,7 +1869,6 @@ exports.customerClaims = async (req, res) => {
       return
     }
     let servicerMatch = {}
-    let paidStatusMatch = {}
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
@@ -1889,9 +1888,6 @@ exports.customerClaims = async (req, res) => {
       }
     }
 
-    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      paidStatusMatch = data.claimPaidStatus
-    }
 
 
     let newQuery = [];
@@ -2015,7 +2011,7 @@ exports.customerClaims = async (req, res) => {
           $and: [
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            paidStatusMatch,
+            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
             servicerMatch,
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
