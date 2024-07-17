@@ -1887,9 +1887,6 @@ exports.customerClaims = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
-
-
-
     let newQuery = [];
     newQuery.push({
       $facet: {
@@ -2004,7 +2001,7 @@ exports.customerClaims = async (req, res) => {
       }
     })
 
-    console.log("data.claimPaidStatus----------------------------",data.claimPaidStatus);
+    console.log("data.claimPaidStatus----------------------------",data.claimPaidStatus); 
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
