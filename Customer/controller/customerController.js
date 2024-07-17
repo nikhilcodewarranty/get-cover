@@ -1869,13 +1869,13 @@ exports.customerClaims = async (req, res) => {
       return
     }
     let servicerMatch = {}
+    let paidStatusMatch = {}
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
-        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
         servicerMatch = {
           $or: [
             { "servicerId": { $in: servicerIds } },
@@ -1888,6 +1888,11 @@ exports.customerClaims = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+
+    if (data.claimPaidStatus != '') {
+      paidStatusMatch = data.claimPaidStatus
+    }
+
 
     let newQuery = [];
     newQuery.push({
@@ -1965,7 +1970,6 @@ exports.customerClaims = async (req, res) => {
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
-              // "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
@@ -2009,13 +2013,11 @@ exports.customerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            paidStatusMatch,
             servicerMatch,
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
@@ -2037,7 +2039,6 @@ exports.customerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2059,7 +2060,6 @@ exports.customerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2074,25 +2074,6 @@ exports.customerClaims = async (req, res) => {
           localField: "contracts.orders.dealerId",
           foreignField: "_id",
           as: "contracts.orders.dealers",
-          pipeline: [
-            // {
-            //   $match:
-            //   {
-            //     $and: [
-            //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-            //       { isDeleted: false },
-            //     ]
-            //   },
-            // },
-            // {
-            //   $lookup: {
-            //     from: "servicer_dealer_relations",
-            //     localField: "_id",
-            //     foreignField: "dealerId",
-            //     as: "dealerServicer",
-            //   }
-            // },
-          ]
         }
       },
       {
@@ -2103,7 +2084,6 @@ exports.customerClaims = async (req, res) => {
         {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
-          // "contracts.orders.dealers.isDeleted": false,
         }
       },
       {
