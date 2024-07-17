@@ -4162,7 +4162,7 @@ exports.markAsPaid = async (req, res) => {
                 }
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                //Email to Reseller
+                //Email to Reseller 
                 emailData = {
                     senderName: resellerPrimary?.firstName,
                     content: "The  order " + savedResponse.unique_key + " has been paid",
