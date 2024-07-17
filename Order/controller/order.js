@@ -3421,8 +3421,6 @@ exports.editOrderDetail = async (req, res) => {
         if (data.paidAmount == data.orderAmount) {
             data.paymentStatus = "Paid"
         }
-
-
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
                 fileName: file.filename,
@@ -3557,6 +3555,7 @@ exports.editOrderDetail = async (req, res) => {
                 { paidDate: paidDate },
                 { new: true }
             );
+            var pricebookDetail = []
             //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
@@ -3610,7 +3609,7 @@ exports.editOrderDetail = async (req, res) => {
                 });
                 // let savedDataOrder = savedResponse.toObject()
                 var contractArray = [];
-                var pricebookDetail = []
+               
                 let dealerBookDetail = []
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
@@ -3963,6 +3962,7 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
+            var pricebookDetail = []
             const wb = XLSX.readFile(pathFile, readOpts);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
@@ -3989,7 +3989,6 @@ exports.markAsPaid = async (req, res) => {
             });
             // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
-            var pricebookDetail = []
             let dealerBookDetail = []
 
             let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
