@@ -3583,16 +3583,30 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
+                // reporting codes
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
+                console.log("check product array products ak ------------------------", product)
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                pricebookDetail.push(pricebookDetailObject)
+                dealerBookDetail.push(dealerPriceBookObject)
                 const wb = XLSX.readFile(pathFile, readOpts);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
-                // let contractCount =
-                //     Number(
-                //         count1.length > 0 && count1[0].unique_key
-                //             ? count1[0].unique_key
-                //             : 0
-                //     ) + 1;
-
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -3607,13 +3621,9 @@ exports.editOrderDetail = async (req, res) => {
                         purchaseDate: item[keys[7]],
                     };
                 });
-                // let savedDataOrder = savedResponse.toObject()
                 var contractArray = [];
-               
                 let dealerBookDetail = []
-
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
-
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -3702,27 +3712,6 @@ exports.editOrderDetail = async (req, res) => {
                         serviceCoverage = "Parts & Labor"
                     }
 
-                    // reporting codes
-                    let pricebookDetailObject = {}
-                    let dealerPriceBookObject = {}
-                    console.log("check product array products ak ------------------------", product)
-                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                    pricebookDetailObject._id = product?.priceBookDetails._id
-                    pricebookDetailObject.name = product?.priceBookDetails.name
-                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                    pricebookDetailObject.term = product?.priceBookDetails.term
-                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                    pricebookDetailObject.price = product.price
-                    pricebookDetailObject.noOfProducts = product.noOfProducts
-
-                    pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetail.push(pricebookDetailObject)
-                    dealerBookDetail.push(dealerPriceBookObject)
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3963,6 +3952,27 @@ exports.markAsPaid = async (req, res) => {
                 projection
             );
             var pricebookDetail = []
+            // reporting codes
+            let pricebookDetailObject = {}
+            let dealerPriceBookObject = {}
+
+            pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+            pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+            pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+            pricebookDetailObject._id = product?.priceBookDetails._id
+            pricebookDetailObject.name = product?.priceBookDetails.name
+            pricebookDetailObject.categoryId = product?.priceBookDetails.category
+            pricebookDetailObject.term = product?.priceBookDetails.term
+            pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+            pricebookDetailObject.price = product.price
+            pricebookDetailObject.noOfProducts = product.noOfProducts
+
+            pricebookDetailObject.retailPrice = product.unitPrice
+            pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+            pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+            // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+            pricebookDetail.push(pricebookDetailObject)
+            dealerBookDetail.push(dealerPriceBookObject)
             const wb = XLSX.readFile(pathFile, readOpts);
             const sheets = wb.SheetNames;
             const ws = wb.Sheets[sheets[0]];
@@ -4066,27 +4076,7 @@ exports.markAsPaid = async (req, res) => {
                     serviceCoverage = "Parts & Labor"
                 }
 
-                // reporting codes
-                let pricebookDetailObject = {}
-                let dealerPriceBookObject = {}
 
-                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                pricebookDetailObject._id = product?.priceBookDetails._id
-                pricebookDetailObject.name = product?.priceBookDetails.name
-                pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                pricebookDetailObject.term = product?.priceBookDetails.term
-                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
-
-                pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
