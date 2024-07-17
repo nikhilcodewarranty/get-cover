@@ -1887,6 +1887,19 @@ exports.customerClaims = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
+    let claimPaidStatus = {}
+    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+      claimPaidStatus = data.claimPaidStatus
+    }
+    else {
+      claimPaidStatus = {
+        $or: [
+          { "claimPaymentStatus": "Paid" },
+          { "claimPaymentStatus": "Unpaid" },
+        ]
+      }
+    }
+
     let newQuery = [];
     newQuery.push({
       $facet: {
@@ -2010,7 +2023,7 @@ exports.customerClaims = async (req, res) => {
           $and: [
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            { 'claimPaymentStatus': data.claimPaidStatus != undefined ? data.claimPaidStatus : {} },
+            claimPaidStatus,
             servicerMatch,
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
