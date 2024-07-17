@@ -2306,6 +2306,18 @@ exports.getResellerClaims = async (req, res) => {
                 servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
             }
         }
+        let claimPaidStatus = {}
+        if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+          claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+        }
+        else {
+          claimPaidStatus = {
+            $or: [
+              { "claimPaymentStatus": "Paid" },
+              { "claimPaymentStatus": "Unpaid" },
+            ]
+          }
+        }
         let lookupQuery = [
             { $sort: { unique_key_number: -1 } },
             {
@@ -2315,7 +2327,7 @@ exports.getResellerClaims = async (req, res) => {
                         // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
                         { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         // { isDeleted: false },
-                        { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+                        claimPaidStatus,
                         { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
