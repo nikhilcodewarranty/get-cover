@@ -1805,6 +1805,19 @@ exports.getServicerClaims = async (req, res) => {
       }
     })
 
+    let claimPaidStatus = {}
+    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+    }
+    else {
+      claimPaidStatus = {
+        $or: [
+          { "claimPaymentStatus": "Paid" },
+          { "claimPaymentStatus": "Unpaid" },
+        ]
+      }
+    }
+
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
@@ -1813,7 +1826,7 @@ exports.getServicerClaims = async (req, res) => {
           $and: [
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
-            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            claimPaidStatus,
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
