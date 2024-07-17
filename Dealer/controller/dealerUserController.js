@@ -2773,7 +2773,7 @@ exports.getDealerOrders = async (req, res) => {
                     status.test(entry.status)
                 );
             });
-         
+
             const updatedArray = filteredData.map(item => {
                 let isEmptyStartDate = item.productsArray.map(
                     (item1) => item1.coverageStartDate === null
@@ -3164,8 +3164,8 @@ exports.getAllContracts = async (req, res) => {
         }
         if (customerIds.length > 0) {
             orderAndCondition.push({ customerId: { $in: customerIds } })
-      
-          }
+
+        }
         if (resellerIds.length > 0) {
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
         }
@@ -3189,7 +3189,7 @@ exports.getAllContracts = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4091,6 +4091,26 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
+
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                pricebookDetail.push(pricebookDetailObject)
+                dealerBookDetail.push(dealerPriceBookObject)
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 const ws = wb.Sheets[sheets[0]];
@@ -4263,29 +4283,7 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-                    // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
-                    let pricebookDetailObject = {}
-                    let dealerPriceBookObject = {}
-
-                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                    pricebookDetailObject._id = product?.priceBookDetails._id
-                    pricebookDetailObject.name = product?.priceBookDetails.name
-                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                    pricebookDetailObject.term = product?.priceBookDetails.term
-                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                    pricebookDetailObject.price = product.price
-                    pricebookDetailObject.noOfProducts = product.noOfProducts
-
-                    pricebookDetailObject.retailPrice = product.unitPrice
-                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
-                    pricebookDetail.push(pricebookDetailObject)
-                    dealerBookDetail.push(dealerPriceBookObject)
-
+                    // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false       
 
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
