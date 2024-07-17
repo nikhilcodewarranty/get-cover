@@ -2653,6 +2653,7 @@ exports.getDealerOrders = async (req, res) => {
                     { dealerId: { $in: servicerIdArray } },
                 ],
             };
+
             //Get Respective Servicer
             let respectiveServicer = await servicerService.getAllServiceProvider(
                 servicerCreteria,
@@ -2662,9 +2663,12 @@ exports.getDealerOrders = async (req, res) => {
                     state: 1,
                     country: 1,
                     zip: 1,
-                    street: 1
+                    street: 1,
+                    dealerId: 1,
+                    resellerId: 1
                 }
             );
+
             let customerIdsArray = ordersResult.map((result) => result?.customerId);
 
             let userCustomerIds = ordersResult
@@ -2717,7 +2721,7 @@ exports.getDealerOrders = async (req, res) => {
                         ? respectiveServicer.find(
                             (item2) =>
                                 item2._id.toString() === item1.servicerId?.toString() ||
-                                item2.resellerId === item1.servicerId
+                                item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
                         )
                         : null;
                 const customerName =
@@ -2760,6 +2764,8 @@ exports.getDealerOrders = async (req, res) => {
             );
             const status = new RegExp(data.status ? data.status.trim() : "", "i");
 
+
+
             let filteredData = result_Array.filter((entry) => {
                 return (
                     unique_keyRegex.test(entry.unique_key) &&
@@ -2767,7 +2773,7 @@ exports.getDealerOrders = async (req, res) => {
                     status.test(entry.status)
                 );
             });
-
+         
             const updatedArray = filteredData.map(item => {
                 let isEmptyStartDate = item.productsArray.map(
                     (item1) => item1.coverageStartDate === null
@@ -2780,9 +2786,7 @@ exports.getDealerOrders = async (req, res) => {
                 item.flag = false
                 const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
                 const fileName = isEmptyOrderFile.includes(true) ? false : true
-                // console.log("isEmptyStartDate===================",isEmptyStartDate)
-                // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
-                //console.log(hasNullCoverageStartDate)
+
                 if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
                     item.flag = true
                 }
@@ -2800,13 +2804,14 @@ exports.getDealerOrders = async (req, res) => {
                 }
                 return {
                     ...item,
-                    servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
+                    servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item.resellerName.isServicer && item.servicerId?.toString() == item.resellerName._id?.toString()) ? item.resellerName : item.servicerName,
                     username: username, // Set username based on the conditional checks
                     resellerUsername: resellerUsername ? resellerUsername : {},
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
-
+            // res.json(updatedArray);
+            // return
 
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
@@ -2817,6 +2822,9 @@ exports.getDealerOrders = async (req, res) => {
             const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
+
+            res.json(updatedArray);
+            return;
 
             const filteredData1 = updatedArray.filter(entry => {
                 return (
