@@ -533,14 +533,14 @@ exports.updatePriceBookById = async (req, res, next) => {
     const admin = await userService.getSingleUserByEmail({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {})
     let emailData;
     if (req.body.priceType) {
-       emailData = {
+      emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " updated successfully! effective immediately.",
         subject: "Update Price Book"
       }
-    } 
+    }
     else {
-       emailData = {
+      emailData = {
         senderName: admin.firstName,
         content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status + "! effective immediately.",
         subject: "Update Status"
@@ -824,8 +824,29 @@ exports.getActivePriceBookCategories = async (req, res) => {
         { coverageType: coverageType }
       ]
     }
+<<<<<<< HEAD
+=======
+    if (coverageType == "Breakdown & Accidental") {
+      queryPrice = { status: true }
+    } else {
+      queryPrice = {
+        $and: [
+          { status: true },
+          { coverageType: coverageType }
+        ]
+      }
+    }
+
+
+
+
+>>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
+<<<<<<< HEAD
+=======
+
+>>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
     let query;
 
     if (!data.coverageType) {
@@ -1160,9 +1181,14 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       message: err.message
     })
   }
+<<<<<<< HEAD
 } 
 
 //get category by price book 
+=======
+}
+//
+>>>>>>> cfe1b689e18dedc325135a114b0e98934beea22c
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body

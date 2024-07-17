@@ -1405,14 +1405,17 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         ]
       };
     }
+    if (data.term!="") {
+      query.$and.push({ 'priceBooks.term': Number(data.term) });
+    }
 
     if (data.priceType != '') {
-      matchConditions.push({ 'priceBooks.priceType': data.priceType });
+      query.$and.push({ 'priceBooks.priceType': data.priceType });
       if (data.priceType == 'Flat Pricing') {
 
         if (data.range != '') {
-          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+          query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         }
 
         // const flatQuery = {
@@ -1500,13 +1503,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
           matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         }
 
-        // const flatQuery = {
-        //   $and: [
-        //     { 'rangeStart': { $lte: Number(data.range) } },
-        //     { 'rangeEnd': { $gte: Number(data.range) } },
-        //   ]
-        // }
-        // query.$and.push(flatQuery);
       }
     }
     if (data.coverageType) {
@@ -3103,7 +3099,7 @@ exports.getDealerServicers = async (req, res) => {
     const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
 
     const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-   let claimAggregateQuery1 = [
+    let claimAggregateQuery1 = [
       {
         $match: servicerCompleted
       },
@@ -3896,6 +3892,10 @@ exports.getDealerContract = async (req, res) => {
     if (resellerIds.length > 0) {
       orderAndCondition.push({ resellerId: { $in: resellerIds } })
     }
+
+    if (customerIds.length > 0) {
+      orderAndCondition.push({ customerId: { $in: customerIds } })
+    }
     if (req.params.dealerId) {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
@@ -3914,10 +3914,9 @@ exports.getDealerContract = async (req, res) => {
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
-        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3928,10 +3927,10 @@ exports.getDealerContract = async (req, res) => {
       ]
     } else {
       contractFilterWithEligibilty = [
-        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+
+        { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4272,10 +4271,11 @@ exports.getDealerClaims = async (req, res) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
-            { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             servicerMatch
           ]
         },

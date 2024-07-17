@@ -15,13 +15,11 @@ const contractSchema = new mongoose.Schema({
   productName: {
     type: String,
     index: true,
-    // required: true,
   },
   pName: {
     type: String,
     index: true,
     default: ''
-    // required: true,
   },
   serviceCoverageType: {
     type: String,
@@ -49,30 +47,21 @@ const contractSchema = new mongoose.Schema({
   },
   orderProductId: {
     type: mongoose.Schema.Types.ObjectId,
-    // required: true,
   },
-  // description: {
-  //   type: String,
-  //   // required: true,
-  // },
   model: {
     type: String,
     index: true,
-    // required: true,
   },
   manufacture: {
     type: String,
     index: true,
-    // required: true,
   },
   productValue: {
     type: String,
-    // required: true,
   },
   serial: {
     type: String,
     index: true,
-    // required: true,
   },
   regDate: {
     type: Date,
@@ -126,7 +115,6 @@ const contractSchema = new mongoose.Schema({
   deductible: {
     type: Number,
     default: 0
-    // required: true,
   },
 }, { timestamps: true });
 

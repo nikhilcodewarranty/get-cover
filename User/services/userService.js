@@ -51,7 +51,7 @@ module.exports = class userService {
   }
 
   //find user
-  static async findUser(query,sorting) {
+  static async findUser(query, sorting) {
     try {
       const allUsers = await user.find(query).sort(sorting);
       return allUsers;
@@ -59,7 +59,6 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
-
 
   //create user 
   static async createUser(data) {
@@ -70,6 +69,7 @@ module.exports = class userService {
       console.log(error);
     }
   };
+
   static async insertManyUser(data) {
     try {
       const response = await user.insertMany(data);
@@ -195,29 +195,6 @@ module.exports = class userService {
       ]);
 
       return response;
-      // const response = await user.aggregate([
-      //   {
-      //     $facet: {
-      //       matchingResults: [
-      //         { $match: { 'email': { $in: query } } },
-      //         { $addFields: { exist: 1 } },
-      //         { $project: { _id: 0, email: 1, exist: 1 } },
-
-      //       ],
-      //       nonMatchingResults: [
-      //         { $match: { 'email': { $nin: query } } },
-      //         { $addFields: { exist: 0 } },
-      //         { $project: { _id: 0, email: 1, exist: 1 } }
-      //       ]
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       allResults: { $concatArrays: ['$matchingResults', '$nonMatchingResults'] }
-      //     }
-      //   }
-      // ]).exec();
-      return response;
     } catch (err) {
       console.log(err);
 
@@ -266,7 +243,7 @@ module.exports = class userService {
   };
 
   //get all roles
-  static async getAllNotifications(query, skipLimit,limitData) {
+  static async getAllNotifications(query, skipLimit, limitData) {
     try {
       const roles = await notification.find(query).populate("userId").sort({ "createdAt": -1 }).skip(skipLimit).limit(limitData);
       return roles;
@@ -287,7 +264,6 @@ module.exports = class userService {
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
-      console.log("ddddddddddddddddddddddddddddddddddddddddddddddd",updatedResponse)
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
@@ -334,14 +310,12 @@ module.exports = class userService {
     }
   }
 
-
-
   //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
-  static async findOneUser(query,projection) {
+  static async findOneUser(query, projection) {
     try {
-      projection = projection ? projection :{}
-      const loggedInUser = await user.findOne(query,projection);
+      projection = projection ? projection : {}
+      const loggedInUser = await user.findOne(query, projection);
       return loggedInUser;
     } catch (error) {
       console.log(`Could not fetch users ${error}`);
@@ -350,13 +324,12 @@ module.exports = class userService {
 
   static async getMembers(query, projection) {
     try {
-      const response = await user.find(query, projection).sort({isPrimary:-1,"createdAt": -1 });
+      const response = await user.find(query, projection).sort({ isPrimary: -1, "createdAt": -1 });
       return response
     } catch (err) {
       console.log(err);
 
     }
   }
-
 
 };

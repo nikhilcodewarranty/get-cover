@@ -129,7 +129,7 @@ exports.createCustomer = async (req, res, next) => {
     let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
-    
+
     let emailData = {
       senderName: saveMembers[0].firstName,
       content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
@@ -354,13 +354,13 @@ exports.getDealerCustomers = async (req, res) => {
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
     const queryReseller = { _id: { $in: resellerId } }
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
-
-
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+   //   const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.resellerId1.toString())
+      const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id.toString() === matchingItem.resellerId.toString()) : {};
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
-      const matchingReseller = resellerData.find(reseller => reseller._id.toString() === item1.accountId.toString())
+    
 
       if (matchingItem || order || matchingReseller) {
         return {
@@ -382,21 +382,27 @@ exports.getDealerCustomers = async (req, res) => {
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
     console.log('name check ++++++++++++++++++++++=', newObj)
-    const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
+
+    
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     const resellerRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
+
+    console.log("data++++++++++++++++++", result_Array[0], data)
 
     const filteredData = result_Array.filter(entry => {
       return (
         firstNameRegex.test(entry.customerData.username) &&
         lastNameRegex.test(entry.customerData.username) &&
         emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber),
+        phoneRegex.test(entry.phoneNumber) &&
         resellerRegex.test(entry.reseller.name)
       );
     });
+    console.log("data++++++++++++++++++", data)
+
 
     res.send({
       code: constant.successCode,
@@ -1627,6 +1633,7 @@ exports.getCustomerContract = async (req, res) => {
         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1640,6 +1647,7 @@ exports.getCustomerContract = async (req, res) => {
         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+        { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1983,8 +1991,10 @@ exports.customerClaims = async (req, res) => {
             // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'claimPaymentStatus': { '$regex': data.claimPaidStatus ? data.claimPaidStatus : '', '$options': 'i' } },
+            { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             // { isDeleted: false },
-            { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue : '', '$options': 'i' } },
+            { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
           ]
@@ -2086,7 +2096,16 @@ exports.customerClaims = async (req, res) => {
       },
       {
         $unwind: "$contracts.orders.customer"
-      }
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            // { "contracts.orders.customer.isDeleted": false },
+          ]
+        },
+      },
     ]
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
