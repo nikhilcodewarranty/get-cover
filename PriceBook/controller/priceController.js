@@ -758,7 +758,7 @@ exports.createPriceBookCat = async (req, res) => {
 exports.getPriceBookCat = async (req, res) => {
   try {
     let data = req.body
-    let projection = { isDeleted: 0, __v: 0 }
+    let projection = { isDeleted: 0, __v: 0 } 
     let query;
 
     if (data.status) {
