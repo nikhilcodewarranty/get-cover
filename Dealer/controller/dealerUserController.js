@@ -2823,8 +2823,6 @@ exports.getDealerOrders = async (req, res) => {
             const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
 
-            res.json(updatedArray);
-            return;
 
             const filteredData1 = updatedArray.filter(entry => {
                 return (
