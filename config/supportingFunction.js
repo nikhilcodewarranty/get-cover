@@ -30,11 +30,37 @@ exports.reportingData = async (data) => {
         dealerId: data.dealerId
     }
     const saveData = await REPORTING(reportingData).save()
-    console.log("check ak ------------------",saveData)
+    console.log("check ak ------------------", saveData)
 
     return saveData
 }
 
+exports.insertManyReporting = async (data) => {
+    try {
+        let saveReporting = await REPORTING.insertMany(data)
+        return saveReporting
+    } catch (err) {
+        return { code: 401, message: "Unable to create the data" }
+    }
+}
 
- 
+exports.checkReportinWithId = async (data) => {
+    try {
+        let checkId = await REPORTING.findOne(data)
+        return checkId
+    } catch (err) {
+        return { code: 401, message: err.message }
+    }
+}
+
+exports.checkReporting = async (data) => {
+    try {
+        let checkId = await REPORTING.find(data)
+        return checkId
+    } catch (err) {
+        return { code: 401, message: err.message }
+    }
+}
+
+
 // module.exports = getUserIds;

@@ -696,13 +696,11 @@ exports.createOrder1 = async (req, res) => {
             let checkOrder2 = await orderService.getOrder(
                 { _id: savedResponse._id },
             );
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------", checkOrder2.status)
 
             if (checkOrder2.status == "Active") {
 
 
             }
-            console.log("check ak +++++++++++++++++++++++++++++++++++++=3rd--------------------------")
 
             res.send({
                 code: constant.successCode,
@@ -2679,6 +2677,7 @@ exports.getServiceCoverage = async (req, res) => {
         })
     }
 };
+
 //Get Dealer price book and categories
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
@@ -3029,6 +3028,7 @@ exports.checkPurchaseOrder = async (req, res) => {
         });
     }
 };
+
 //Archeive Order
 exports.archiveOrder = async (req, res) => {
     try {
@@ -3274,6 +3274,7 @@ exports.getSingleOrder = async (req, res) => {
         });
     }
 };
+
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3623,7 +3624,7 @@ exports.editOrderDetail = async (req, res) => {
                     };
                 });
                 var contractArray = [];
-             
+
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
@@ -3878,6 +3879,7 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
 // Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
@@ -6057,4 +6059,181 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
     }
 }
 
+exports.reportingDataCreation = async (req, res) => {
+    try {
+        let getAllOrders = await orderService.getAllOrders1([
+            {
+                $match: { "status": "Active" }
+            }
+        ])
+        if (!getAllOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the orders"
+            })
+        }
 
+        let reportingToSave = []
+
+        for (let i = 0; i < getAllOrders.length; i++) {
+            let orderData = getAllOrders[i]
+
+            console.log("order index ++++++++++++++++++++++++++++++++++++++++++++++++++=", i)
+
+            let checkOrderId = await supportingFunction.checkReportinWithId({ orderId: orderData._id })
+            if (!checkOrderId) {
+                console.log("order index to be saved-------------------------------------------------------=", checkOrderId, i)
+
+                let reportingData = {}
+                let products = []
+                reportingData.orderId = orderData._id
+                reportingData.orderAmount = orderData.orderAmount
+                reportingData.dealerId = orderData.dealerId
+                reportingData.createdAt = orderData.updatedAt
+                reportingData.updatedAt = orderData.updatedAt
+
+                for (let p = 0; p < orderData.productsArray.length; p++) {
+                    productData = orderData.productsArray[p]
+                    let productObject = {}
+                    productObject.price = productData.price
+                    productObject.noOfProducts = productData.noOfProducts
+                    productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
+                    productObject.frontingFee = productData.priceBookDetails.frontingFee
+                    productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
+                    productObject.reinsuranceFee = productData.priceBookDetails.reinsuranceFee
+                    productObject._id = productData.priceBookDetails._id
+                    productObject.name = productData.priceBookDetails.name
+                    productObject.categoryId = productData.priceBookDetails.category
+                    productObject.term = productData.priceBookDetails.term
+                    productObject.adminFee = productData.priceBookDetails.adminFee
+                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    products.push(productObject)
+
+                }
+                reportingData.products = products
+                reportingToSave.push(reportingData)
+            }
+        }
+
+        let saveData = await supportingFunction.insertManyReporting(reportingToSave)
+        if (saveData) {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: saveData
+            })
+        }
+
+
+
+
+
+    } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+exports.reportingDataReCreation = async (req, res) => {
+    try {
+
+        let getReportings = await supportingFunction.checkReporting()
+        let orderId = getReportings.map(ID => new mongoose.Types.ObjectId(ID.orderId))
+
+        let getAllOrders = await orderService.getAllOrders1([
+            {
+                $match: {
+                    $and: [
+                        { _id: { $nin: orderId } },
+                        { "status": "Active" }
+                    ]
+                }
+            }
+        ])
+
+        if (!getAllOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the orders"
+            })
+        }
+
+        let reportingToSave = []
+        for (let i = 0; i < getAllOrders.length; i++) {
+            let orderData = getAllOrders[i]
+            console.log("order index ++++++++++++++++++++++++++++++++++++++++++++++++++=", i)
+            let checkOrderId = await supportingFunction.checkReportinWithId({ orderId: orderData._id })
+            if (!checkOrderId) {
+                console.log("order index to be saved-------------------------------------------------------=", i)
+                let reportingData = {}
+                let products = []
+                reportingData.orderId = orderData._id
+                reportingData.orderAmount = orderData.orderAmount
+                reportingData.dealerId = orderData.dealerId
+                reportingData.createdAt = orderData.updatedAt
+                reportingData.updatedAt = orderData.updatedAt
+
+                for (let p = 0; p < orderData.productsArray.length; p++) {
+                    productData = orderData.productsArray[p]
+                    let productObject = {}
+                    productObject.price = productData.price
+                    productObject.noOfProducts = productData.noOfProducts
+                    productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
+                    productObject.frontingFee = productData.priceBookDetails.frontingFee
+                    productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
+                    productObject.reinsuranceFee = productData.priceBookDetails.reinsuranceFee
+                    productObject._id = productData.priceBookDetails._id
+                    productObject.name = productData.priceBookDetails.name
+                    productObject.categoryId = productData.priceBookDetails.category
+                    productObject.term = productData.priceBookDetails.term
+                    productObject.adminFee = productData.priceBookDetails.adminFee
+                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    products.push(productObject)
+
+                }
+                reportingData.products = products
+                reportingToSave.push(reportingData)
+            }
+        }
+
+        let saveData = await supportingFunction.insertManyReporting(reportingToSave)
+        if (saveData) {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: saveData
+            })
+        }
+    } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
