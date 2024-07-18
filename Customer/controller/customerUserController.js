@@ -159,7 +159,16 @@ exports.customerOrders = async (req, res) => {
     //Get Respective Servicer
     let respectiveServicer = await servicerService.getAllServiceProvider(
       servicerCreteria,
-      { name: 1 }
+      {
+        name: 1,
+        city: 1,
+        state: 1,
+        country: 1,
+        zip: 1,
+        street: 1,
+        dealerId: 1,
+        resellerId: 1
+    }
     );
     const result_Array = ordersResult.map((item1) => {
       const dealerName =
@@ -168,14 +177,14 @@ exports.customerOrders = async (req, res) => {
             (item2) => item2._id.toString() === item1.dealerId.toString()
           )
           : null;
-      const servicerName =
-        item1.servicerId != null
-          ? respectiveServicer.find(
-            (item2) =>
-              item2._id.toString() === item1.servicerId.toString() ||
-              item2.resellerId === item1.servicerId
-          )
-          : null;
+          const servicerName =
+          item1.servicerId != null
+              ? respectiveServicer.find(
+                  (item2) =>
+                      item2._id.toString() === item1.servicerId?.toString() ||
+                      item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
+              )
+              : null;
       const customerName =
         item1.customerId != null
           ? respectiveCustomer.find(
@@ -261,7 +270,7 @@ exports.customerOrders = async (req, res) => {
       }
       return {
         ...item,
-        servicerName: item.dealerName.isServicer && item.servicerId != null ? item.dealerName : item.resellerName.isServicer && item.servicerId != null ? item.resellerName : item.servicerName,
+        servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item.resellerName.isServicer && item.servicerId?.toString() == item.resellerName._id?.toString()) ? item.resellerName : item.servicerName,
         username: username, // Set username based on the conditional checks
         resellerUsername: resellerUsername ? resellerUsername : {},
         customerUserData: customerUserData ? customerUserData : {}
