@@ -3259,8 +3259,6 @@ exports.getSingleOrder = async (req, res) => {
                 address: settingData[0]?.address,
                 paymentDetail:settingData[0]?.paymentDetail,
                 title:settingData[0]?.title,
-
-
             },
             resellerData: reseller ? reseller : {},
             username: singleDealerUser ? singleDealerUser : {},
@@ -4858,411 +4856,7 @@ const renderContractsChunked = async (
     }
 };
 
-exports.generatePDF = async (req, res) => {
-    try {
-        let query = [
-            {
-                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
-            },
-            {
-                $lookup: {
-                    from: "contracts",
-                    localField: "_id",
-                    foreignField: "orderId",
-                    as: "contracts"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "pricecategories",
-                    "localField": "productsArray.categoryId",
-                    "foreignField": "_id",
-                    "as": "category"
-                }
-            },
-            {
-                $addFields: {
-                    "productsArray.category": { $arrayElemAt: ["$category", 0] },
-                }
-            },
-            {
-                $lookup: {
-                    from: "dealers",
-                    localField: "dealerId",
-                    foreignField: "_id",
-                    as: "dealers",
 
-                }
-            },
-            {
-                $lookup: {
-                    from: "serviceproviders",
-                    localField: "servicerId",
-                    foreignField: "_id",
-                    as: "servicer"
-                }
-            },
-            {
-                $lookup: {
-                    from: "resellers",
-                    localField: "resellerId",
-                    foreignField: "_id",
-                    as: "resellers"
-                }
-            },
-            {
-                $lookup: {
-                    from: "customers",
-                    localField: "customerId",
-                    foreignField: "_id",
-                    as: "customers"
-                }
-            },
-            {
-                $unwind: "$dealers" // Unwind dealers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $and: [
-                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
-                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
-                                ]
-                            }
-                        }
-                    ],
-                    as: "dealerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$dealerUsers" // Unwind dealers array
-            },
-            {
-                $unwind: "$customers" // Unwind customers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$customers._id" } },
-                    // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $and: [
-                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
-                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
-                                ]
-                            }
-                        }
-                    ],
-                    as: "customerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$customerUsers"
-            },
-
-        ];
-
-        //console.log("query",query)
-        let orderWithContracts = await orderService.getOrderWithContract1(query);
-        // res.send({
-        //     code: constant.errorCode,
-        //     message: 'Contract not found of this order!',
-        //     data:orderWithContracts
-        // })
-
-        // return;
-
-        // console.log("orderWithContracts",orderWithContracts)
-        // return
-        let productsData = []
-
-        if (!orderWithContracts[0]) {
-            res.send({
-                code: constant.errorCode,
-                message: 'Contract not found of this order!'
-            })
-            return;
-        }
-
-
-        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
-            const productId = orderWithContracts[0].productsArray[i]._id;
-            const contract = await contractService.findContracts({ orderProductId: productId });
-            const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
-            productsData.push(mergedObject)
-        }
-        orderWithContracts[0].productsArray = productsData
-        if (orderWithContracts[0].resellerId != null) {
-            let resellerUserId = orderWithContracts[0].resellerId
-            orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
-        }
-        let htmlContent;
-
-        if (orderWithContracts.length > 0) {
-            htmlContent = await `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                     <td style="text-align: left; width: 50%;">
-                         <img src='http://15.207.221.207/static/media/logo.642c96aed42bd8a1d454.png' style="margin-bottom: 20px;"/>
-                         <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
-                         <p style="margin: 0; padding: 0;">13th Street <br/>
-                         47 W 13th St, New York,<br/>
-                         NY 10011, USA</p>
-                     </td>
-                     <td style=" width: 50%;">
-                         <table style="width: 100%; border-collapse: collapse;">
-                             <thead>
-                                 <tr>
-                                     <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Order ID : </b></td> 
-                                     <td>${orderWithContracts[0].unique_key}</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Dealer P.O. # : </b></td> 
-                                     <td>${orderWithContracts[0].venderOrder}</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b>Service Coverage : </b></td>
-                                     <td>${orderWithContracts[0].serviceCoverageType
-                }</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Coverage Type : </b></td>
-                                     <td>${orderWithContracts[0].coverageType}</td>
-                                 </tr>
-                             </thead>
-                         </table>
-                     </td>
-                 </tr>
-             </tbody>
-           </table>
-           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                     <td style="text-align: left; width: 50%;">
-                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.name
-                    : ""
-                }</b></h4>
-                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.firstName +
-                    " " +
-                    orderWithContracts[0].dealerUsers.lastName
-                    : ""
-                } <br/>
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.street
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.city
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.state
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.zip
-                    : ""
-                }<br/>
-                         ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.phoneNumber.replace(
-                        /(\d{3})(\d{3})(\d{4})/,
-                        "($1)$2-$3"
-                    )
-                    : ""
-                } | ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.email
-                    : ""
-                }</small>
-                     </td>
-                     <td style="text-align: left; width: 50%;">
-                         ${orderWithContracts[0].resellers
-                    ? `<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].name
-                        : ""
-                    }</b></h4>
-                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.firstName +
-                        " " +
-                        orderWithContracts[0].resellerUser.lastName
-                        : ""
-                    } <br/>
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].street
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].city
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].state
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].zip
-                        : ""
-                    }<br/>
-                         ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.phoneNumber.replace(
-                            /(\d{3})(\d{3})(\d{4})/,
-                            "($1)$2-$3"
-                        )
-                        : ""
-                    } | ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.email
-                        : ""
-                    }</small>`
-                    : ""
-                }
-                     </td>
-                 </tr>
-             </tbody>
-           </table>
-           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                 <td style="text-align: left; margin-top:40px; width: 50%;">
-                 ${orderWithContracts[0].customers
-                    ? `<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.username
-                        : ""
-                    }</b></h4>
-                 <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.street
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.city
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.state
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.zip
-                        : ""
-                    }<br/>
-                 ${orderWithContracts[0].customerUsers
-                        ? orderWithContracts[0].customerUsers.phoneNumber.replace(
-                            /(\d{3})(\d{3})(\d{4})/,
-                            "($1)$2-$3"
-                        )
-                        : ""
-                    } | ${orderWithContracts[0].customerUsers
-                        ? orderWithContracts[0].customerUsers.email
-                        : ""
-                    }</small>`
-                    : ""
-                }
-           
-             </td>
-                     <td style="text-align: left; width: 50%;">
-                         ${orderWithContracts[0].servicer?.length > 0
-                    ? `
-                         <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].name
-                        : ""
-                    }</b></h4>
-                         <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].street
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].city
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].state
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].zip
-                        : ""
-                    }<br/>
-                         </small>`
-                    : ""
-                }
-                     </td>
-                 </tr>
-             </tbody>
-           </table>`;
-
-            for (let i = 0; i < orderWithContracts.length; i++) {
-                const order = orderWithContracts[i];
-                for (let j = 0; j < order.productsArray.length; j++) {
-                    const product = order.productsArray[j];
-                    const contracts = product.contract;
-                    const initialPageSize = 6;
-                    const subsequentPageSize = 20;
-
-                    // Display 6 contracts on the first page
-                    let startIndex = 0;
-                    let endIndex = Math.min(initialPageSize, contracts?.length);
-                    let serialNo = 0;
-
-                    // Start of the first page
-                    //  console.log("here is rendering first------------------");
-                    htmlContent += await renderContractsChunked(
-                        contracts,
-                        initialPageSize,
-                        startIndex,
-                        endIndex,
-                        product
-                    );
-
-                    // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
-                    startIndex = endIndex;
-                    while (startIndex < contracts?.length) {
-                        endIndex = startIndex + subsequentPageSize;
-                        endIndex = Math.min(endIndex, contracts?.length);
-
-                        // Await the result before concatenating
-                        const chunkedHtml = await renderContractsChunked(
-                            contracts,
-                            subsequentPageSize,
-                            startIndex,
-                            endIndex,
-                            product
-                        );
-                        htmlContent += chunkedHtml;
-
-                        startIndex = endIndex;
-                    }
-                }
-            }
-            //  return htmlContent;
-            res.send({
-                code: constant.successCode,
-                result: orderWithContracts,
-                html: htmlContent,
-                orderWithContracts: orderWithContracts,
-            })
-        }
-    }
-    catch (err) {
-        res.send({
-            code: constant.errorCode,
-            line: err.stack,
-            message: err.message
-        })
-    }
-};
 
 async function generateTC(orderData) {
     try {
@@ -5271,6 +4865,7 @@ async function generateTC(orderData) {
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
+        let websiteData = await userService.getSetting({});
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
         //Get customer
@@ -5355,7 +4950,7 @@ async function generateTC(orderData) {
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
                             <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+                                <td style="width:50%; font-size:13px;padding:15px;">  ${websiteData[0].title} service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
@@ -5367,7 +4962,7 @@ async function generateTC(orderData) {
                                 </td>
                             </tr>
                         <tr>
-                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract holder name:</td>
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
@@ -5375,7 +4970,7 @@ async function generateTC(orderData) {
                             </td>
                         </tr>
                     <tr>
-                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;padding:15px;">Address of ${websiteData[0].title} service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>
                    </tr>
                 <tr>
@@ -5383,7 +4978,7 @@ async function generateTC(orderData) {
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
+                <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
@@ -5509,6 +5104,7 @@ exports.generateHtmltopdf = async (req, res) => {
         let link;
         const checkOrder = await orderService.getOrder({ _id: req.params.orderId }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
+        let websiteData = await userService.getSetting({});
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
         //Get Dealer
         const checkDealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: false })
@@ -5593,7 +5189,7 @@ exports.generateHtmltopdf = async (req, res) => {
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
                             <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+                                <td style="width:50%; font-size:13px;padding:15px;">   ${websiteData[0].title}  service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
@@ -5605,7 +5201,7 @@ exports.generateHtmltopdf = async (req, res) => {
                                 </td>
                             </tr>
                         <tr>
-                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;padding:15px;"> ${websiteData[0].title} service contract holder name:</td>
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
@@ -5613,7 +5209,7 @@ exports.generateHtmltopdf = async (req, res) => {
                             </td>
                         </tr>
                     <tr>
-                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;padding:15px;">Address of ${websiteData[0].title}  service contract holder:</td>
                         <td style="font-size:13px;">${checkCustomer ? checkCustomer?.street : ''},${checkCustomer ? checkCustomer?.city : ''},${checkCustomer ? checkCustomer?.state : ''}</td>
                    </tr>
                 <tr>
@@ -5621,7 +5217,7 @@ exports.generateHtmltopdf = async (req, res) => {
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
+                <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}

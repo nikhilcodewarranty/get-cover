@@ -30,11 +30,15 @@ exports.reportingData = async (data) => {
         dealerId: data.dealerId
     }
     const saveData = await REPORTING(reportingData).save()
-    console.log("check ak ------------------",saveData)
+    console.log("check ak ------------------", saveData)
 
     return saveData
 }
 
+exports.websiteSetting = async () => {
+    let settingData = await userService.getSetting({});
+    return settingData;
+}
 
- 
+
 // module.exports = getUserIds;

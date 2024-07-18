@@ -4364,7 +4364,7 @@ exports.editOrderDetail = async (req, res) => {
                     let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
                     //Email to Reseller
 
-                     emailData = {
+                    emailData = {
                         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address,
@@ -4437,6 +4437,7 @@ async function generateTC(orderData) {
     try {
         let response;
         let link;
+        let websiteData = await supportingFunction.websiteSetting();
         const checkOrder = await orderService.getOrder({ _id: orderData._id }, { isDeleted: false })
         let coverageStartDate = checkOrder.productsArray[0]?.coverageStartDate;
         let coverageEndDate = checkOrder.productsArray[0]?.coverageEndDate;
@@ -4523,7 +4524,7 @@ async function generateTC(orderData) {
         </head>
         <table border='1' border-collapse='collapse' style=" border-collapse: collapse; font-size:13px;font-family:  'Gilroy', sans-serif;">
                             <tr>
-                                <td style="width:50%; font-size:13px;padding:15px;">  GET COVER service contract number:</td>
+                                <td style="width:50%; font-size:13px;padding:15px;">  ${websiteData[0].title} service contract number:</td>
                                 <td style="font-size:13px;">${checkOrder.unique_key}</td>
                             </tr>
                             <tr>
@@ -4535,7 +4536,7 @@ async function generateTC(orderData) {
                                 </td>
                             </tr>
                         <tr>
-                            <td style="font-size:13px;padding:15px;">GET COVER service contract holder name:</td>
+                            <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract holder name:</td>
                             <td style="font-size:13px;">
                             <p> <b>Attention –</b>${checkCustomer ? checkCustomer?.username : ''}</p>
                             <p> <b>Email Address –</b>${checkCustomer ? customerUser?.email : ''}</p>
@@ -4543,7 +4544,7 @@ async function generateTC(orderData) {
                             </td>
                         </tr>
                     <tr>
-                        <td style="font-size:13px;padding:15px;">Address of GET COVER service contract holder:</td>
+                        <td style="font-size:13px;padding:15px;">Address of  ${websiteData[0].title}  service contract holder:</td>
                         <td style="font-size:13px;">
                         ${checkCustomer ? checkCustomer?.street : ''}, ${checkCustomer ? checkCustomer?.city : ''}, ${checkCustomer ? checkCustomer?.state : ''}, ${checkCustomer ? checkCustomer?.country : ''}</td>                
                           </tr>
@@ -4552,7 +4553,7 @@ async function generateTC(orderData) {
                     <td style="font-size:13px;"> ${moment(coverageStartDate).format("MM/DD/YYYY")}</td>
                 </tr>
             <tr>
-                <td style="font-size:13px;padding:15px;">GET COVER service contract period:</td>
+                <td style="font-size:13px;padding:15px;"> ${websiteData[0].title}  service contract period:</td>
                 <td style="font-size:13px;">
                 ${checkOrder.productsArray[0]?.term / 12} 
                 ${checkOrder.productsArray[0]?.term / 12 === 1 ? 'Year' : 'Years'}
@@ -4611,7 +4612,6 @@ async function generateTC(orderData) {
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
             const pathToAttachment = process.env.MAIN_FILE_PATH + "/uploads/mergedFile/" + mergeFileName
-            console.log("pathToAttachment----------------------------", pathToAttachment)
             fs.readFile(pathToAttachment)
                 .then(async (fileData) => {
                     const attachment = fileData.toString('base64');
