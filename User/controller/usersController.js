@@ -721,14 +721,24 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, {
+                  link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                  address: settingData[0]?.address,
+                  role: req.role,
+                  dealerName: createUsers[i].firstName
+                }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, role: req.role, dealerName: singleDealerUser.firstName }))
+            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, {
+              link: resetPrimaryLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address, role: req.role, dealerName: singleDealerUser.firstName
+            }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
@@ -1123,14 +1133,22 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, dealerName: createUsers[i].firstName }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, {
+                  link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                  address: settingData[0]?.address, dealerName: createUsers[i].firstName
+                }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
             }
             // Send mail to  primary
             let resetPrimaryCode = randtoken.generate(4, '123456789')
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
-            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, { link: resetPrimaryLink, dealerName: singleDealerUser.firstName }))
+            let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, {
+              link: resetPrimaryLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              address: settingData[0]?.address, dealerName: singleDealerUser.firstName
+            }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
 
           }
@@ -1368,7 +1386,11 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, {
+                  link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                  address: settingData[0]?.address, role: req.role, dealerName: createUsers[i].firstName
+                }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
 
@@ -1744,7 +1766,11 @@ exports.createDealer = async (req, res) => {
                 let email = createUsers[i].email;
                 let userId = createUsers[i]._id;
                 let resetLink = `${process.env.SITE_URL}newPassword/${userId}/${resetPasswordCode}`
-                let mailing = sgMail.send(emailConstant.dealerApproval(email, { link: resetLink, role: req.role, dealerName: createUsers[i].firstName }))
+                let mailing = sgMail.send(emailConstant.dealerApproval(email, {
+                  link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                  lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                  address: settingData[0]?.address, role: req.role, dealerName: createUsers[i].firstName
+                }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
               }
 
@@ -2890,7 +2916,11 @@ exports.addMembers = async (req, res) => {
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
     // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink, role: "Admin", servicerName: data.firstName }))
+    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
+      link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address, role: "Admin", servicerName: data.firstName
+    }))
     // let adminId = new mongoose.Types.ObjectId()
 
     // const notificationData = {

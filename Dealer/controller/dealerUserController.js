@@ -1538,7 +1538,7 @@ exports.createCustomer = async (req, res, next) => {
             websiteSetting: settingData[0],
             senderName: saveMembers[0].firstName,
             content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
-            subject: "Welcome to " + settingData[0].title + " customer Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " customer Registration Approved"
         }
 
         // Send Email code here
@@ -1554,7 +1554,14 @@ exports.createCustomer = async (req, res, next) => {
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
                         // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Customer", servicerName: saveMembers[i].firstName }))
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
+                            link: resetLink,
+                            role: "Customer",
+                            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                            address: settingData[0]?.address,
+                            servicerName: saveMembers[i].firstName
+                        }))
 
                     }
 
@@ -2009,7 +2016,11 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Reseller", servicerName: saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
+                        link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
+                    }))
                 }
 
             }
