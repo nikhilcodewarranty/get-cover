@@ -697,7 +697,7 @@ exports.createDealer = async (req, res) => {
           };
           let createNotification = await userService.createNotification(notificationData);
 
-      
+
 
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
@@ -708,7 +708,7 @@ exports.createDealer = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
             content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
           }
           // Send Email code here
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
@@ -1111,7 +1111,7 @@ exports.createDealer = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
             content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
           }
           // Send Email code here
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
@@ -1356,7 +1356,7 @@ exports.createDealer = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
           }
 
           // Send Email code here
@@ -1731,7 +1731,7 @@ exports.createDealer = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
           }
 
           // Send Email code here
@@ -3803,7 +3803,7 @@ exports.accountSetting = async (req, res) => {
     let response;
     const getData = await userService.getSetting({});
     if (getData.length > 0) {
-      response = await userService.updateSetting({ _id: getData[0]?._id}, data, { new: true })
+      response = await userService.updateSetting({ _id: getData[0]?._id }, data, { new: true })
 
     }
     else {

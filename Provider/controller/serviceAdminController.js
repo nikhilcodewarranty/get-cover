@@ -96,7 +96,7 @@ exports.createServiceProvider = async (req, res, next) => {
         websiteSetting: settingData[0],
         senderName: saveMembers[0]?.firstName,
         content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been created",
-        subject: "Welcome to Get-Cover servicer Registration Approved"
+        subject: "Welcome to " + settingData[0]?.title + " servicer Registration Approved"
       }
 
       // Send Email code here
@@ -225,7 +225,7 @@ exports.createServiceProvider = async (req, res, next) => {
         websiteSetting: settingData[0],
         senderName: teamMembers[0]?.firstName,
         content: "Dear " + teamMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + updateServicer.name + " has been approved",
-        subject: "Welcome to Get-Cover servicer Registration Approved"
+        subject: "Welcome to " + settingData[0]?.title + " servicer Registration Approved"
       }
 
       // Send Email code here

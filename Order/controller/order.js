@@ -295,11 +295,7 @@ exports.createOrder1 = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            // let savedResponse = await orderService.updateOrder(
-            //     { _id: checkOrder._id },
-            //     { status: "Active" },
-            //     { new: true }
-            // );
+           
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -5026,9 +5022,6 @@ async function generateTC(orderData) {
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
             }
-
-            //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
@@ -5057,22 +5050,6 @@ async function generateTC(orderData) {
                             subject: 'Term and Condition',
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-                        // const send = await sgMail.send({
-                        //     to: customerUser.email,
-                        //     from: process.env.from_email,
-                        //     subject: 'Term and Condtion',
-                        //     text: "sssssssssssssssss",
-                        //     attachments: [
-                        //         {
-                        //             content: attachment,
-                        //             filename: "Get-Cover term and condition",
-                        //             type: 'application/pdf',
-                        //             disposition: 'attachment',
-                        //             contentId: 'mytext'
-                        //         },
-                        //     ],
-                        // });
-
                     } catch (error) {
                         console.error('Error sending email:', error);
                         if (error.response) {
