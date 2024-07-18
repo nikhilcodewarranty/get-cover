@@ -2138,22 +2138,22 @@ exports.getResellerServicers = async (req, res) => {
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
         let claimAggregateQuery1 = [
             {
-              $match: servicerCompleted
+                $match: servicerCompleted
             },
             {
-              "$group": {
-                "_id": "$servicerId",
-                "totalAmount": {
-                  "$sum": {
-                    "$sum": "$totalAmount"
-                  }
+                "$group": {
+                    "_id": "$servicerId",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
                 },
-              },
-      
+
             },
-      
-      
-          ]
+
+
+        ]
 
         let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
         let claimAggregateQuery = [
@@ -4269,7 +4269,7 @@ exports.getDashboardInfo = async (req, res) => {
 
         let orderQuery = [
             {
-                $match: { status: "Active", dealerId: new mongoose.Types.ObjectId(checkReseller.dealerId) },
+                $match: { status: "Active", resellerId: new mongoose.Types.ObjectId(checkReseller._id) },
 
             },
             {
@@ -4281,13 +4281,18 @@ exports.getDashboardInfo = async (req, res) => {
 
                 }
             },
-            { $sort: { unique_key: -1 } }]
+            { $sort: { unique_key_number: -1 } }]
         const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
         const claimQuery = [
             {
                 $match: {
-                    dealerId: new mongoose.Types.ObjectId(checkReseller.dealerId)
-                },
+                    $and: [
+                        {
+                            resellerId: new mongoose.Types.ObjectId(checkReseller._id)
+                        },
+                        { claimFile: "Completed" }
+                    ]
+                }
             },
             {
                 $sort: {

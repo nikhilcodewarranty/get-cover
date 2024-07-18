@@ -2022,13 +2022,20 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key: -1 } }]
+    { $sort: { unique_key_number: -1 } }]
   const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
   const claimQuery = [
     {
       $match: {
-        customerId: new mongoose.Types.ObjectId(req.userId)
-      },
+        $and: [
+          {
+            customerId: new mongoose.Types.ObjectId(req.userId)
+          },
+          {
+            claimFile: "Completed"
+          }
+        ]
+      }
     },
     {
       $sort: {

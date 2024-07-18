@@ -1004,7 +1004,12 @@ exports.getDashboardInfo = async (req, res) => {
     const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
     const claimQuery = [
         {
-            $match: { servicerId: new mongoose.Types.ObjectId(req.userId) }
+            $match: {
+                $and: [
+                    { servicerId: new mongoose.Types.ObjectId(req.userId) },
+                    { claimFile: "Completed" }
+                ]
+            }
         },
         {
             $sort: {
