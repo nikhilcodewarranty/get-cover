@@ -1161,8 +1161,12 @@ exports.registerServiceProvider = async (req, res) => {
     //   })
     //   // Send Email code here
     // }
+    let settingData = await userService.getSetting({});
     let emailData = {
       dealerName: ServicerMeta.name,
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       c1: "Thank you for",
       c2: "Registering as a",
       c3: "Your account is currently pending approval from our admin.",
@@ -1175,7 +1179,7 @@ exports.registerServiceProvider = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
-    let settingData = await userService.getSetting({});
+
     emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,

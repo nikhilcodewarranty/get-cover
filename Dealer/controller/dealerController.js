@@ -827,6 +827,9 @@ exports.registerDealer = async (req, res) => {
     // if (createNotification) {
     let emailData = {
       dealerName: createdDealer.name,
+      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+      address: settingData[0]?.address,
       subject: "New Dealer Registration Request Received",
       c1: "Thank you for",
       c2: "Registering! as a",
@@ -835,7 +838,7 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
-    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
+    let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email,[], emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
     emailData = {
@@ -846,6 +849,7 @@ exports.registerDealer = async (req, res) => {
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
+
     }
     mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, [], emailData))
     // }
