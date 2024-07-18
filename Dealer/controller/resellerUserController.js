@@ -2507,21 +2507,6 @@ exports.getResellerOrders = async (req, res) => {
             orderAmount: 1,
             contract: "$contract"
         };
-        // let project = {
-        //     productsArray: 1,
-        //     dealerId: 1,
-        //     unique_key: 1,
-        //     servicerId: 1,
-        //     customerId: 1,
-        //     resellerId: 1,
-        //     paymentStatus: 1,
-        //     status: 1,
-        //     venderOrder: 1,
-        //     orderAmount: 1,
-        // }
-
-        // let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.userId), status: { $ne: "Archieved" } }
-        // let ordersResult = await orderService.getAllOrders(orderQuery, project)
 
         let query1 = { status: { $ne: "Archieved" }, resellerId: new mongoose.Types.ObjectId(req.userId) };
 
@@ -2564,6 +2549,7 @@ exports.getResellerOrders = async (req, res) => {
 
 
         let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
+       
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -2605,7 +2591,16 @@ exports.getResellerOrders = async (req, res) => {
         //Get Respective Servicer
         let respectiveServicer = await providerService.getAllServiceProvider(
             servicerCreteria,
-            { name: 1 }
+            {
+                name: 1,
+                city: 1,
+                state: 1,
+                country: 1,
+                zip: 1,
+                street: 1,
+                dealerId: 1,
+                resellerId: 1
+            }
         );
 
         let userCustomerIds = ordersResult
@@ -2625,14 +2620,14 @@ exports.getResellerOrders = async (req, res) => {
                         (item2) => item2._id.toString() === item1.dealerId.toString()
                     )
                     : null;
-            const servicerName =
-                item1.servicerId != null
-                    ? respectiveServicer.find(
-                        (item2) =>
-                            item2._id.toString() === item1.servicerId?.toString() ||
-                            item2.resellerId === item1.servicerId
-                    )
-                    : null;
+                    const servicerName =
+                    item1.servicerId != null
+                        ? respectiveServicer.find(
+                            (item2) =>
+                                item2._id.toString() === item1.servicerId?.toString() ||
+                                item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
+                        )
+                        : null;
             const customerName =
                 item1.customerId != null
                     ? respectiveCustomer.find(
@@ -2718,7 +2713,7 @@ exports.getResellerOrders = async (req, res) => {
             }
             return {
                 ...item,
-                servicerName: item.dealerName.isServicer && item.servicerId != null ? item.dealerName : item.resellerName.isServicer && item.servicerId != null ? item.resellerName : item.servicerName,
+                servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item.resellerName.isServicer && item.servicerId?.toString() == item.resellerName._id?.toString()) ? item.resellerName : item.servicerName,
                 username: username, // Set username based on the conditional checks
                 resellerUsername: resellerUsername ? resellerUsername : {},
                 customerUserData: customerUserData ? customerUserData : {}
@@ -2739,7 +2734,7 @@ exports.getResellerOrders = async (req, res) => {
                 orderIdRegex.test(entry.unique_key) &&
                 dealerNameRegex.test(entry.dealerName.name) &&
                 servicerNameRegex.test(entry.servicerName.name) &&
-                customerNameRegex.test(entry.customerName.name) &&
+                customerNameRegex.test(entry.customerName.username) &&
                 resellerNameRegex.test(entry.resellerName.name) &&
                 statusRegex.test(entry.status)
             );
@@ -2833,7 +2828,7 @@ exports.getResellerContract = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2847,7 +2842,7 @@ exports.getResellerContract = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3441,20 +3436,55 @@ exports.getResellerClaims = async (req, res) => {
                 ]
             }
         })
+        let servicerMatch = {}
+        if (data.servicerName != '' && data.servicerName != undefined) {
+          const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
+          if (checkServicer.length > 0) {
+            let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
+            let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
+            let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
+            //  servicerMatch = { 'servicerId': { $in: servicerIds } }
+            servicerMatch = {
+              $or: [
+                { "servicerId": { $in: servicerIds } },
+                { "servicerId": { $in: dealerIds } },
+                { "servicerId": { $in: resellerIds } }
+              ]
+            };
+          }
+          else {
+            servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
+          }
+        }
+    
+        let claimPaidStatus = {}
+        if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+          claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+        }
+        else {
+          claimPaidStatus = {
+            $or: [
+              { "claimPaymentStatus": "Paid" },
+              { "claimPaymentStatus": "Unpaid" },
+            ]
+          }
+        }
         let lookupQuery = [
             { $sort: { unique_key_number: -1 } },
             {
                 $match:
                 {
                     $and: [
-                        // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
-                        { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { isDeleted: false },
-                        { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      claimPaidStatus,
+                      { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                      { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+                      { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
+                      { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
+                      servicerMatch
                     ]
-                },
+                  },
             },
             {
                 $lookup: {

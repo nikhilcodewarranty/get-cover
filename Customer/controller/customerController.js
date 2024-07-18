@@ -2014,7 +2014,6 @@ exports.customerClaims = async (req, res) => {
       }
     })
 
-    console.log("data.claimPaidStatus----------------------------", data.claimPaidStatus);
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
