@@ -2022,8 +2022,12 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key_number: -1 } }]
-  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+    { $sort: { unique_key_number: -1 } },
+    {
+        $limit: 5
+    },
+  ]
+  const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 1, 5)
   const claimQuery = [
     {
       $match: {
