@@ -61,7 +61,7 @@ exports.getAllClaims = async (req, res, next) => {
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
     let match = {};
-
+    let servicerMatch = {}
     // checking the user type from token
     if (req.role == 'Dealer') {
       match = { 'contracts.orders.dealerId': new mongoose.Types.ObjectId(req.userId) }
@@ -184,7 +184,7 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
 
-    let servicerMatch = {}
+
 
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
