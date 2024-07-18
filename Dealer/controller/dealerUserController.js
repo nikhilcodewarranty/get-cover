@@ -4103,7 +4103,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.term = product?.priceBookDetails.term
                 pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee

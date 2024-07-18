@@ -336,7 +336,7 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.term = product?.priceBookDetails.term
                 pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
@@ -3598,7 +3598,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.term = product?.priceBookDetails.term
                 pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
@@ -3969,7 +3969,7 @@ exports.markAsPaid = async (req, res) => {
             pricebookDetailObject.term = product?.priceBookDetails.term
             pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
             pricebookDetailObject.price = product.price
-            pricebookDetailObject.noOfProducts = product.noOfProducts
+            pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
             pricebookDetailObject.retailPrice = product.unitPrice
             pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
@@ -6096,7 +6096,7 @@ exports.reportingDataCreation = async (req, res) => {
                     productData = orderData.productsArray[p]
                     let productObject = {}
                     productObject.price = productData.price
-                    productObject.noOfProducts = productData.noOfProducts
+                    productObject.noOfProducts = productData.checkNumberProducts
                     productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
                     productObject.frontingFee = productData.priceBookDetails.frontingFee
                     productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
@@ -6191,7 +6191,7 @@ exports.reportingDataReCreation = async (req, res) => {
                     productData = orderData.productsArray[p]
                     let productObject = {}
                     productObject.price = productData.price
-                    productObject.noOfProducts = productData.noOfProducts
+                    productObject.noOfProducts = productData.checkNumberProducts
                     productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
                     productObject.frontingFee = productData.priceBookDetails.frontingFee
                     productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
