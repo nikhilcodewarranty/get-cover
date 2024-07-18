@@ -218,13 +218,13 @@ exports.createDealerPriceBook = async (req, res) => {
 };
 exports.getDealerPriceBookById = async (req, res) => {
     try {
-        if (req.role != "Dealer") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only Dealer allow to do this action"
-            })
-            return;
-        }
+        // if (req.role != "Dealer") {
+        //     res.send({
+        //         code: constant.errorCode,
+        //         message: "Only Dealer allow to do this action"
+        //     })
+        //     return;
+        // }
         let projection = {
             _id: 1,
             name: 1,
