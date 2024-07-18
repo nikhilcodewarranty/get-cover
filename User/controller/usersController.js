@@ -2966,10 +2966,10 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    // { $sort:  }
+    { $sort: { unique_key_number: -1 }  }
   ]
 
-  const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 5, 5, { unique_key_number: -1 })
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 1)
 
   const claimQuery = [
     {
