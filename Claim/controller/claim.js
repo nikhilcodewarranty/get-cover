@@ -38,19 +38,20 @@ var StorageP = multer.diskStorage({
     );
   },
 });
+
 var imageUpload = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single("file");
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).array("file", 100);
-
 
 // get all claims api
 exports.getAllClaims = async (req, res, next) => {
@@ -76,6 +77,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     // building the query for claims
     let newQuery = [];
+
     newQuery.push({
       $facet: {
         totalRecords: [
@@ -184,15 +186,12 @@ exports.getAllClaims = async (req, res, next) => {
       }
     })
 
-
-
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
-        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
         servicerMatch = {
           $or: [
             { "servicerId": { $in: servicerIds } },
@@ -367,9 +366,11 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.servicers[0]?.length > 0) {
         servicer.unshift(item1.contracts.orders.servicers[0])
       }
+
       if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
         servicer.unshift(item1.contracts.orders.resellers[0])
       }
+      
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
@@ -425,7 +426,6 @@ exports.getClaims = async (req, res) => {
     let contractCheck = 0
     let orderIds = []
     let mainQuery = []
-
 
     if (data.customerName != "") {
       userSearchCheck = 1
@@ -496,7 +496,6 @@ exports.getClaims = async (req, res) => {
     if (contractCheck == 1) {
       claimFilter.push({ contractId: { $in: contractIds } })
     }
-
 
     // checking if the user is searching or just getting the data
     if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.customerStatusValue && data.repairStatus === "" && data.claimStatus === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0 && contractCheck == 0) {
@@ -582,7 +581,6 @@ exports.searchClaim = async (req, res, next) => {
     let customerIds = []
     let checkCustomer = 0
     let contractFilter;
-
 
     // query on the bases of payload
     if (data.customerName != "") {
@@ -1952,9 +1950,7 @@ exports.saveBulkClaim = async (req, res) => {
           'MM/DD/YYYY',
           'MM-DD-YYYY'
         ]
-        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())
-        console.log(data.lossDate)
-        console.log(moment(data.lossDate))
+        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())  
 
         if (!moment(data.lossDate).isValid()) {
           data.status = "Date is not valid format"
