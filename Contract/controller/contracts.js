@@ -62,7 +62,7 @@ exports.getAllContracts = async (req, res) => {
       );
       matchedData.push({ "order.dealer.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
     }
-    
+
     if (data.customerName != "") {
       newQuery.push(
         {
@@ -232,7 +232,7 @@ exports.getAllContracts = async (req, res) => {
     })
 
   } catch (err) {
-    console.log(err)
+    //console.log(err)
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -361,7 +361,6 @@ exports.getContracts = async (req, res) => {
     }
 
     let mainQuery = []
-
     if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },

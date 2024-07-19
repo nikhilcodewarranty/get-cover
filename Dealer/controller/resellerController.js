@@ -1025,22 +1025,22 @@ exports.getResellerServicers = async (req, res) => {
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
         let claimAggregateQuery1 = [
             {
-              $match: servicerCompleted
+                $match: servicerCompleted
             },
             {
-              "$group": {
-                "_id": "$servicerId",
-                "totalAmount": {
-                  "$sum": {
-                    "$sum": "$totalAmount"
-                  }
+                "$group": {
+                    "_id": "$servicerId",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
                 },
-              },
-      
+
             },
-      
-      
-          ]
+
+
+        ]
 
         let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
         let claimAggregateQuery = [
@@ -1834,7 +1834,7 @@ exports.getResellerContract = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1848,7 +1848,7 @@ exports.getResellerContract = async (req, res) => {
                 // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1862,7 +1862,7 @@ exports.getResellerContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             console.log('check_--------dssssssssssssssssssssss--------')
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
@@ -2308,15 +2308,15 @@ exports.getResellerClaims = async (req, res) => {
         }
         let claimPaidStatus = {}
         if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-          claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+            claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
         }
         else {
-          claimPaidStatus = {
-            $or: [
-              { "claimPaymentStatus": "Paid" },
-              { "claimPaymentStatus": "Unpaid" },
-            ]
-          }
+            claimPaidStatus = {
+                $or: [
+                    { "claimPaymentStatus": "Paid" },
+                    { "claimPaymentStatus": "Unpaid" },
+                ]
+            }
         }
         let lookupQuery = [
             { $sort: { unique_key_number: -1 } },

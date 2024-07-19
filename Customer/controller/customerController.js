@@ -1654,7 +1654,7 @@ exports.getCustomerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
@@ -1882,7 +1882,7 @@ exports.customerClaims = async (req, res) => {
     }
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
     }
     else {
       claimPaidStatus = {

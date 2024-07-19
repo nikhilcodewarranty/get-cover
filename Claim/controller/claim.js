@@ -208,7 +208,7 @@ exports.getAllClaims = async (req, res, next) => {
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
     }
     else {
       claimPaidStatus = {
@@ -499,7 +499,7 @@ exports.getClaims = async (req, res) => {
 
 
     // checking if the user is searching or just getting the data
-    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.customerStatusValue && data.repairStatus === "" && data.claimStatus === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0 && contractCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.customerStatusValue && data.repairStatus === "" && data.claimStatus === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0 && contractCheck == 0) {
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
