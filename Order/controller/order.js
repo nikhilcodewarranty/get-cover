@@ -260,7 +260,6 @@ exports.createOrder1 = async (req, res) => {
             { new: true }
         );
 
-        // .some(Boolean);
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -476,7 +475,6 @@ exports.createOrder1 = async (req, res) => {
                     increamentNumber++
 
                     contractArray.push(contractObject);
-                    //let saveData = contractService.createContract(contractObject)
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
@@ -572,7 +570,6 @@ exports.createOrder1 = async (req, res) => {
                             products: pricebookDetail,
                             orderAmount: data.orderAmount,
                             dealerId: data.dealerId,
-                            // dealerPriceBook: dealerBookDetail
                         }
 
                         await supportingFunction.reportingData(reportingData)
@@ -631,6 +628,7 @@ exports.processOrder = async (req, res) => {
             { _id: req.params.orderId },
             { isDeleted: 0 }
         );
+
         if (!checkOrder) {
             res.send({
                 code: constant.errorCode,
@@ -638,6 +636,7 @@ exports.processOrder = async (req, res) => {
             });
             return;
         }
+
         let resultArray = checkOrder.productsArray.map(
             (item) => item.coverageStartDate === null
         );
@@ -646,10 +645,11 @@ exports.processOrder = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
-        // .some(Boolean);
+
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name')
         }
+
         if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('Order payment')
         }
@@ -660,12 +660,14 @@ exports.processOrder = async (req, res) => {
         if (isEmptyOrderFile.includes(true)) {
             returnField.push('Product data file')
         }
+
         const combinedString = returnField.length > 0 ? returnField.join(', ') + ' is missing' : '';
         res.send({
             code: constant.successCode,
             message: "Success!",
             result: combinedString,
         });
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -1997,12 +1999,9 @@ exports.getServicerInOrders = async (req, res) => {
         }
     }
 
-
-
     const servicerIds = servicer.map((obj) => obj?._id);
     const resellerIdss = servicer.map((obj) => obj?.resellerId);
     const dealerIdss = servicer.map((obj) => obj?.dealerId);
-    // const dealerIdss = servicer.map((obj) => obj?._id);
     const query1 = {
         $and: [
             {
@@ -2237,6 +2236,7 @@ exports.getServicerByOrderId = async (req, res) => {
     }
 };
 
+//Get Service Coverage for order
 exports.getServiceCoverage = async (req, res) => {
     try {
         let dealerId;
@@ -2447,6 +2447,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
+//Get Price Book in Order
 exports.getPriceBooksInOrder = async (req, res) => {
     try {
         let data = req.body
@@ -2694,6 +2695,7 @@ exports.archiveOrder = async (req, res) => {
     }
 };
 
+//Get single order
 exports.getSingleOrder = async (req, res) => {
     try {
         let projection = { isDeleted: 0 };
@@ -2824,6 +2826,7 @@ exports.getSingleOrder = async (req, res) => {
     }
 };
 
+//get edit order Detail
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3097,7 +3100,6 @@ exports.editOrderDetail = async (req, res) => {
                 { new: true }
             );
             var pricebookDetail = []
-            //let count1 = await contractService.getContractsCount();
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
@@ -3495,7 +3497,6 @@ exports.markAsPaid = async (req, res) => {
                     purchaseDate: item[keys[7]],
                 };
             });
-            // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
 
             let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
@@ -3714,6 +3715,7 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
+
 //Get dashbaord value for order and claims
 exports.getDashboardData = async (req, res) => {
     try {
@@ -3789,6 +3791,7 @@ exports.getDashboardData = async (req, res) => {
     }
 };
 
+//Get Order Contract
 exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
@@ -4151,456 +4154,7 @@ exports.getOrderPdf = async (req, res) => {
     }
 };
 
-const renderContractsChunked = async (
-    contracts,
-    pageSize,
-    startIndex,
-    endIndex,
-    product
-) => {
-    try {
-        let htmlContent = `
-            <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
-                <thead style="background-color: #f4f4f4; text-align: left;">
-                    <tr>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
-
-        const unitPriceString = product.unitPrice.toLocaleString("en-US", {
-            style: "currency",
-            currency: "USD",
-        });
-
-        for (let i = startIndex; i < endIndex && i < contracts.length; i++) {
-            const contract = contracts[i];
-            const serialNo = i + 1; // Adjust serial number
-            htmlContent += `
-                <tr>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${unitPriceString}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
-                </tr>
-            `;
-        }
-
-        htmlContent += `
-                </tbody>
-            </table>
-        `;
-
-        return htmlContent;
-    } catch (error) {
-        throw error; // Rethrow the error to be caught by the caller
-    }
-};
-
-exports.generatePDF = async (req, res) => {
-    try {
-        let query = [
-            {
-                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
-            },
-            {
-                $lookup: {
-                    from: "contracts",
-                    localField: "_id",
-                    foreignField: "orderId",
-                    as: "contracts"
-                }
-            },
-            {
-                "$lookup": {
-                    "from": "pricecategories",
-                    "localField": "productsArray.categoryId",
-                    "foreignField": "_id",
-                    "as": "category"
-                }
-            },
-            {
-                $addFields: {
-                    "productsArray.category": { $arrayElemAt: ["$category", 0] },
-                }
-            },
-            {
-                $lookup: {
-                    from: "dealers",
-                    localField: "dealerId",
-                    foreignField: "_id",
-                    as: "dealers",
-
-                }
-            },
-            {
-                $lookup: {
-                    from: "serviceproviders",
-                    localField: "servicerId",
-                    foreignField: "_id",
-                    as: "servicer"
-                }
-            },
-            {
-                $lookup: {
-                    from: "resellers",
-                    localField: "resellerId",
-                    foreignField: "_id",
-                    as: "resellers"
-                }
-            },
-            {
-                $lookup: {
-                    from: "customers",
-                    localField: "customerId",
-                    foreignField: "_id",
-                    as: "customers"
-                }
-            },
-            {
-                $unwind: "$dealers" // Unwind dealers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $and: [
-                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
-                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
-                                ]
-                            }
-                        }
-                    ],
-                    as: "dealerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$dealerUsers" // Unwind dealers array
-            },
-            {
-                $unwind: "$customers" // Unwind customers array
-            },
-            {
-                $lookup: {
-                    from: "users", // users collection
-                    let: { accountIdStr: { $toString: "$customers._id" } },
-                    // Convert accountId to string
-                    pipeline: [
-                        {
-                            $match: {
-                                $and: [
-                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
-                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
-                                ]
-                            }
-                        }
-                    ],
-                    as: "customerUsers" // Alias for the result
-                }
-            },
-            {
-                $unwind: "$customerUsers"
-            },
-
-        ];
-
-        let orderWithContracts = await orderService.getOrderWithContract1(query);
-        let productsData = []
-
-        if (!orderWithContracts[0]) {
-            res.send({
-                code: constant.errorCode,
-                message: 'Contract not found of this order!'
-            })
-            return;
-        }
-
-
-        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
-            const productId = orderWithContracts[0].productsArray[i]._id;
-            const contract = await contractService.findContracts({ orderProductId: productId });
-            const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
-            productsData.push(mergedObject)
-        }
-        orderWithContracts[0].productsArray = productsData
-        if (orderWithContracts[0].resellerId != null) {
-            let resellerUserId = orderWithContracts[0].resellerId
-            orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
-        }
-        let htmlContent;
-
-        if (orderWithContracts.length > 0) {
-            htmlContent = await `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                     <td style="text-align: left; width: 50%;">
-                         <img src='http://15.207.221.207/static/media/logo.642c96aed42bd8a1d454.png' style="margin-bottom: 20px;"/>
-                         <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
-                         <p style="margin: 0; padding: 0;">13th Street <br/>
-                         47 W 13th St, New York,<br/>
-                         NY 10011, USA</p>
-                     </td>
-                     <td style=" width: 50%;">
-                         <table style="width: 100%; border-collapse: collapse;">
-                             <thead>
-                                 <tr>
-                                     <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Order ID : </b></td> 
-                                     <td>${orderWithContracts[0].unique_key}</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Dealer P.O. # : </b></td> 
-                                     <td>${orderWithContracts[0].venderOrder}</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b>Service Coverage : </b></td>
-                                     <td>${orderWithContracts[0].serviceCoverageType
-                }</td>
-                                 </tr>
-                                 <tr>
-                                     <td><b> Coverage Type : </b></td>
-                                     <td>${orderWithContracts[0].coverageType}</td>
-                                 </tr>
-                             </thead>
-                         </table>
-                     </td>
-                 </tr>
-             </tbody>
-           </table>
-           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                     <td style="text-align: left; width: 50%;">
-                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.name
-                    : ""
-                }</b></h4>
-                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.firstName +
-                    " " +
-                    orderWithContracts[0].dealerUsers.lastName
-                    : ""
-                } <br/>
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.street
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.city
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.state
-                    : ""
-                },
-                         ${orderWithContracts[0].dealers
-                    ? orderWithContracts[0].dealers.zip
-                    : ""
-                }<br/>
-                         ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.phoneNumber.replace(
-                        /(\d{3})(\d{3})(\d{4})/,
-                        "($1)$2-$3"
-                    )
-                    : ""
-                } | ${orderWithContracts[0].dealerUsers
-                    ? orderWithContracts[0].dealerUsers.email
-                    : ""
-                }</small>
-                     </td>
-                     <td style="text-align: left; width: 50%;">
-                         ${orderWithContracts[0].resellers
-                    ? `<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].name
-                        : ""
-                    }</b></h4>
-                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.firstName +
-                        " " +
-                        orderWithContracts[0].resellerUser.lastName
-                        : ""
-                    } <br/>
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].street
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].city
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].state
-                        : ""
-                    }
-                         ${orderWithContracts[0].resellers.length > 0
-                        ? orderWithContracts[0].resellers[0].zip
-                        : ""
-                    }<br/>
-                         ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.phoneNumber.replace(
-                            /(\d{3})(\d{3})(\d{4})/,
-                            "($1)$2-$3"
-                        )
-                        : ""
-                    } | ${orderWithContracts[0].resellerUser
-                        ? orderWithContracts[0].resellerUser.email
-                        : ""
-                    }</small>`
-                    : ""
-                }
-                     </td>
-                 </tr>
-             </tbody>
-           </table>
-           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-             <tbody>
-                 <tr>
-                 <td style="text-align: left; margin-top:40px; width: 50%;">
-                 ${orderWithContracts[0].customers
-                    ? `<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
-                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.username
-                        : ""
-                    }</b></h4>
-                 <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.street
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.city
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.state
-                        : ""
-                    }
-                 ${orderWithContracts[0].customers
-                        ? orderWithContracts[0].customers.zip
-                        : ""
-                    }<br/>
-                 ${orderWithContracts[0].customerUsers
-                        ? orderWithContracts[0].customerUsers.phoneNumber.replace(
-                            /(\d{3})(\d{3})(\d{4})/,
-                            "($1)$2-$3"
-                        )
-                        : ""
-                    } | ${orderWithContracts[0].customerUsers
-                        ? orderWithContracts[0].customerUsers.email
-                        : ""
-                    }</small>`
-                    : ""
-                }
-           
-             </td>
-                     <td style="text-align: left; width: 50%;">
-                         ${orderWithContracts[0].servicer?.length > 0
-                    ? `
-                         <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
-                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].name
-                        : ""
-                    }</b></h4>
-                         <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].street
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].city
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].state
-                        : ""
-                    }
-                         ${orderWithContracts[0].servicer.length > 0
-                        ? orderWithContracts[0].servicer[0].zip
-                        : ""
-                    }<br/>
-                         </small>`
-                    : ""
-                }
-                     </td>
-                 </tr>
-             </tbody>
-           </table>`;
-
-            for (let i = 0; i < orderWithContracts.length; i++) {
-                const order = orderWithContracts[i];
-                for (let j = 0; j < order.productsArray.length; j++) {
-                    const product = order.productsArray[j];
-                    const contracts = product.contract;
-                    const initialPageSize = 6;
-                    const subsequentPageSize = 20;
-
-                    // Display 6 contracts on the first page
-                    let startIndex = 0;
-                    let endIndex = Math.min(initialPageSize, contracts?.length);
-                    let serialNo = 0;
-
-                    // Start of the first page
-                    htmlContent += await renderContractsChunked(
-                        contracts,
-                        initialPageSize,
-                        startIndex,
-                        endIndex,
-                        product
-                    );
-
-                    // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
-                    startIndex = endIndex;
-                    while (startIndex < contracts?.length) {
-                        endIndex = startIndex + subsequentPageSize;
-                        endIndex = Math.min(endIndex, contracts?.length);
-
-                        // Await the result before concatenating
-                        const chunkedHtml = await renderContractsChunked(
-                            contracts,
-                            subsequentPageSize,
-                            startIndex,
-                            endIndex,
-                            product
-                        );
-                        htmlContent += chunkedHtml;
-
-                        startIndex = endIndex;
-                    }
-                }
-            }
-            //  return htmlContent;
-            res.send({
-                code: constant.successCode,
-                result: orderWithContracts,
-                html: htmlContent,
-                orderWithContracts: orderWithContracts,
-            })
-        }
-    }
-    catch (err) {
-        res.send({
-            code: constant.errorCode,
-            line: err.stack,
-            message: err.message
-        })
-    }
-};
-
+//Generate T and C
 async function generateTC(orderData) {
     try {
         let response;
@@ -4815,6 +4369,7 @@ async function generateTC(orderData) {
     }
 }
 
+//Generate HTML to PDF
 exports.generateHtmltopdf = async (req, res) => {
     try {
         let response;
@@ -5016,6 +4571,7 @@ exports.generateHtmltopdf = async (req, res) => {
     }
 }
 
+//Get Pending Amount
 exports.getPendingAmount = async (req, res) => {
     try {
         if (req.role != 'Super Admin') {
@@ -5088,6 +4644,7 @@ exports.getPendingAmount = async (req, res) => {
     }
 }
 
+//Update servicer by order id
 exports.updateServicerByOrder = async (req, res) => {
     try {
         if (req.role != 'Super Admin') {
@@ -5128,6 +4685,7 @@ exports.updateServicerByOrder = async (req, res) => {
     }
 };
 
+//Cron job for status
 exports.cronJobStatus = async (req, res) => {
     try {
         let query = { status: { $ne: "Archieved" } };
