@@ -418,6 +418,7 @@ exports.getContracts = async (req, res) => {
               {
                 $project: {
                   productName: 1,
+                  pName: 1,
                   model: 1,
                   serial: 1,
                   unique_key: 1,
@@ -482,6 +483,7 @@ exports.getContracts = async (req, res) => {
             {
               $project: {
                 productName: 1,
+                pName: 1,
                 model: 1,
                 serial: 1,
                 minDate: 1,
