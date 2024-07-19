@@ -85,60 +85,25 @@ exports.getAllDealers = async (req, res) => {
       })
       return;
     }
+
     let dealerFilter = {
       $and: [
         { isDeleted: false },
         { status: "Approved" },
         { 'name': { '$regex': req.body.name ? req.body.name.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
       ]
-
     };
 
-    //let query = { isDeleted: false, status: "Approved" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     const dealerIds = dealers.map(obj => obj._id);
     let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
 
-    // if (req.body.email && req.body.phoneNumber) {
-    //   query1 = {
-    //     ...query1,
-    //     $and: [
-    //       { email: { '$regex': req.body.email ? req.body.email.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } },
-    //       { phoneNumber: { '$regex': req.body.phoneNumber ? req.body.phoneNumber.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
-    //     ]
-    //   };
-    // } else {
-    //   // If only one of them is provided, use $or
-    //   const orConditions = [];
-
-    //   if (req.body.email !== undefined && req.body.email != '') {
-    //     orConditions.push({ email: req.body.email });
-    //   }
-
-    //   if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
-    //     orConditions.push({ phoneNumber: req.body.phoneNumber });
-    //   }
-
-    //   if (orConditions.length > 0) {
-    //     query1 = {
-    //       ...query1,
-    //       $or: orConditions
-    //     };
-    //   }
-
-    // }
-
     //-------------Get All Dealers Id's------------------------
-
-    // Get Dealer Primary Users from colection
-    //const query1 = { accountId: { $in: dealerIds }, isPrimary: true };
-    //User Query Filter
 
     let dealarUser = await userService.getMembers(query1, projection)
 
     //Get Dealer Order Data     
-
     let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
     let project = {
       productsArray: 1,
@@ -155,7 +120,6 @@ exports.getAllDealers = async (req, res) => {
 
     let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
 
-
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -163,12 +127,10 @@ exports.getAllDealers = async (req, res) => {
       });
       return;
     };
-    // return false;
 
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
-
       if (matchingItem || orders) {
         return {
           ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -183,7 +145,6 @@ exports.getAllDealers = async (req, res) => {
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
-
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.dealerData.name) &&
@@ -191,8 +152,6 @@ exports.getAllDealers = async (req, res) => {
         phoneRegex.test(entry.phoneNumber)
       );
     });
-
-
 
     res.send({
       code: constant.successCode,
@@ -211,7 +170,6 @@ exports.getPendingDealers = async (req, res) => {
   try {
 
     let data = req.body
-
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -228,7 +186,6 @@ exports.getPendingDealers = async (req, res) => {
       ]
 
     };
-    // let query = { isDeleted: false, status: "Pending" }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     //-------------Get All Dealers Id's------------------------
@@ -236,37 +193,8 @@ exports.getPendingDealers = async (req, res) => {
     const dealerIds = dealers.map(obj => obj._id);
 
     let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
-
-    // if (req.body.email && req.body.phoneNumber) {
-    //   query1 = {
-    //     ...query1,
-    //     $and: [
-    //       { email: { '$regex': req.body.email ? req.body.email : '', '$options': 'i' } },
-    //       { phoneNumber: req.body.phoneNumber }
-    //     ]
-    //   };
-    // } else {
-    //   // If only one of them is provided, use $or
-    //   const orConditions = [];
-
-    //   if (req.body.email !== undefined && req.body.email != '') {
-    //     orConditions.push({ email: req.body.email });
-    //   }
-
-    //   if (req.body.phoneNumber !== undefined && req.body.phoneNumber != '') {
-    //     orConditions.push({ phoneNumber: req.body.phoneNumber });
-    //   }
-
-    //   if (orConditions.length > 0) {
-    //     query1 = {
-    //       ...query1,
-    //       $or: orConditions
-    //     };
-    //   }
-
-    // }
-
     let dealarUser = await userService.getMembers(query1, projection)
+
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -300,7 +228,6 @@ exports.getPendingDealers = async (req, res) => {
       );
     });
 
-
     res.send({
       code: constant.successCode,
       data: filteredData
@@ -327,7 +254,6 @@ exports.getDealerById = async (req, res) => {
     }
     const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
 
-    //result.metaData = singleDealer
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -335,10 +261,9 @@ exports.getDealerById = async (req, res) => {
       });
       return
     }
+
     const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
-
     let dealarUser = await userService.getMembers(query1, { isDeleted: false })
-
 
     if (!dealarUser) {
       res.send({
@@ -366,12 +291,9 @@ exports.getDealerById = async (req, res) => {
         { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: "Active" }
       ]
     }
-
     let ordersResult = await orderService.getAllOrderInCustomers(query, project, "$dealerId");
-
     //Get Claim Result 
     const claimQuery = { claimFile: 'Completed' }
-
     let lookupQuery = [
       {
         $match: claimQuery
@@ -403,7 +325,6 @@ exports.getDealerById = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
           ]
         },
@@ -420,8 +341,8 @@ exports.getDealerById = async (req, res) => {
 
       },
     ]
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
     const rejectedQuery = { claimFile: "Completed" }
     //Get number of claims
     let numberOfCompleletedClaims = [
@@ -455,7 +376,6 @@ exports.getDealerById = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
           ]
         },
@@ -466,8 +386,6 @@ exports.getDealerById = async (req, res) => {
       numberOfClaims: numberOfClaims.length,
       valueClaim: valueClaim[0]?.totalAmount
     }
-
-
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
       if (matchingItem) {
@@ -509,10 +427,7 @@ exports.getUserByDealerId = async (req, res) => {
       return;
     }
 
-    // const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
     const dealers = await dealerService.getDealerById(req.params.dealerId);
-
-    //result.metaData = singleDealer
     if (!dealers) {
       res.send({
         code: constant.errorCode,
@@ -520,25 +435,20 @@ exports.getUserByDealerId = async (req, res) => {
       });
       return;
     };
+
     const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
 
     let name = data.firstName ? data.firstName : ""
     let nameArray = name.trim().split(" ");
-
     // Create new keys for first name and last name
     let newObj = {
       f_name: nameArray[0],  // First name
       l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
     };
-
-    // const firstNameRegex = new RegExp(newObj.f_name ? newObj.f_name.replace(/\s+/g, ' ').trim() : '', 'i')
-    // const lastNameRegex = new RegExp(newObj.l_name ? newObj.l_name.replace(/\s+/g, ' ').trim() : '', 'i')
     const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
     const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-
     let filteredData = users.filter(entry => {
       return (
         firstNameRegex.test(entry.firstName) &&
@@ -548,8 +458,6 @@ exports.getUserByDealerId = async (req, res) => {
       );
     });
 
-
-    //result.metaData = singleDealer
     if (!users) {
       res.send({
         code: constant.errorCode,
@@ -557,6 +465,7 @@ exports.getUserByDealerId = async (req, res) => {
       });
       return
     }
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -607,7 +516,6 @@ exports.updateDealer = async (req, res) => {
       notificationFor: IDs
     };
 
-
     res.send({
       code: constant.successCode,
       message: "Updated Successfully"
@@ -632,6 +540,7 @@ exports.deleteDealer = async (req, res) => {
     };
     let option = { new: true };
     const deletedDealer = await dealerService.deleteDealer(criteria, newValue, option);
+
     if (!deletedDealer) {
       res.send({
         code: constant.errorCode,
@@ -639,6 +548,7 @@ exports.deleteDealer = async (req, res) => {
       })
       return;
     };
+
     res.send({
       code: constant.errorCode,
       message: err.message
@@ -651,7 +561,7 @@ exports.deleteDealer = async (req, res) => {
   }
 };
 
-//
+//Upload term and condition
 exports.uploadTermAndCondition = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
@@ -663,11 +573,6 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         return;
       }
       let file = req.file;
-      // let filename = file.filename;
-      // let originalName = file.originalname;
-      // let size = file.size;
-      // let files = []
-
       res.send({
         code: constant.successCode,
         message: 'Success!',
@@ -685,12 +590,11 @@ exports.uploadTermAndCondition = async (req, res, next) => {
 
 }
 
-/**---------------------------------------------------Register Dealer-------------------------------------------- */
+//Register Dealer
 exports.registerDealer = async (req, res) => {
   try {
     const data = req.body;
     // Check if the specified role exists
-    // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
       res.send({
@@ -720,7 +624,6 @@ exports.registerDealer = async (req, res) => {
       return;
     }
 
-
     // Check if the email already exists
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
@@ -734,8 +637,6 @@ exports.registerDealer = async (req, res) => {
           return;
         }
       }
-
-
     }
 
     // Check if the email already exists
@@ -749,10 +650,6 @@ exports.registerDealer = async (req, res) => {
     }
 
     const count = await dealerService.getDealerCount();
-
-    //console.log("count=======================",count);return false;
-
-    // console.log(count);return false;
     // Extract necessary data for dealer creation
     const dealerMeta = {
       name: data.name,
@@ -788,7 +685,6 @@ exports.registerDealer = async (req, res) => {
       email: data.email,
       firstName: data.firstName,
       lastName: data.lastName,
-      //password: process.env.DUMMY_PASSWORD ? process.env.DUMMY_PASSWORD : data.password,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
       accountId: createdDealer._id,
@@ -817,12 +713,8 @@ exports.registerDealer = async (req, res) => {
       flag: 'Dealer Request',
       notificationFor: IDs
     };
-
-
     // Create the user
     let createNotification = await userService.createNotification(notificationData);
-
-    // if (createNotification) {
     let emailData = {
       dealerName: createdDealer.name,
       subject: "New Dealer Registration Request Received",
@@ -836,13 +728,13 @@ exports.registerDealer = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
+
     emailData = {
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
     mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, [], emailData))
-    // }
     let logData = {
       endpoint: "register dealer",
       body: data,
@@ -868,6 +760,7 @@ exports.registerDealer = async (req, res) => {
   }
 };
 
+//Update Status
 exports.statusUpdate = async (req, res) => {
   try {
     // Check if the user has the required role
@@ -888,12 +781,10 @@ exports.statusUpdate = async (req, res) => {
       });
       return;
     }
-
     // Fetch existing dealer price book data
     const criteria = { _id: req.params.dealerPriceBookId };
     const projection = { isDeleted: 0, __v: 0 };
     const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
-
     if (!existingDealerPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -901,7 +792,6 @@ exports.statusUpdate = async (req, res) => {
       });
       return;
     }
-
     // Check if the priceBook is a valid ObjectId
     const isPriceBookValid = await checkObjectId(req.body.priceBook);
     if (!isPriceBookValid) {
@@ -936,15 +826,12 @@ exports.statusUpdate = async (req, res) => {
       });
 
       return;
-
     }
 
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
     IDs.push(getPrimary._id)
-
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
-
     let notificationData = {
       title: "Dealer price book updated",
       description: getDealerDetail.name + " , " + "your price book has been updated",
@@ -1038,6 +925,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
   }
 }
 
+//Change Dealer Status
 exports.changeDealerStatus = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -1066,40 +954,11 @@ exports.changeDealerStatus = async (req, res) => {
       };
       let option = { new: true };
       const changeDealerUser = await userService.updateUser(dealerUserCreateria, newValue, option);
-      //Inactive dealer price Books
-      // const changeDealerPriceBookStatus = await dealerPriceService.updateDealerPrice({ dealerId: req.params.dealerId }, {
-      //   $set: {
-      //     status: req.body.status
-      //   }
-      // }, option);
-
       //Archeive All orders when dealer inactive
       let orderCreteria = { dealerId: req.params.dealerId, status: 'Pending' };
       let updateStatus = await orderService.updateManyOrder(orderCreteria, { status: 'Archieved' }, { new: true })
 
-      //Update servicer also 
-
       const updateDealerServicer = await providerService.updateServiceProvider({ dealerId: req.params.dealerId }, { status: false })
-
-      // // Inactive Dealer Customer
-      // const changeDealerCustomerStatus = await customerService.updateCustomerData({ dealerId: req.params.dealerId }, {
-      //   $set: {
-      //     status: req.body.status
-      //   }
-      // }, option);
-
-      // // Get Dealer Customers
-      // let projection = { __v: 0, isDeleted: 0 }
-
-      // let allCustomers = await customerService.getAllCustomers({ dealerId: req.params.dealerId }, projection)
-
-      // let customerIdsArray = allCustomers.map(customer => customer._id.toString())
-      // let queryIds = { accountId: { $in: customerIdsArray } };
-
-      // //Inactive Customer Status
-      // const changeCustomerUserStatus = await customerService.updateCustomerData(queryIds,{status: req.body.status}, option);
-
-      // console.log("changeCustomerUserStatus++++++++",changeCustomerUserStatus)
 
     }
 
@@ -1145,13 +1004,7 @@ exports.changeDealerStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      //notificationEmails.push(getPrimary.email);
-
-      console.log("notificationEmails---------------------", notificationEmails);
-      // const notificationContent = {
-      //   content: singleDealer.name + " " + "status has been updated successfully!"
-      // }
-      const status_content = req.body.status ? 'Active' : 'Inactive';
+            const status_content = req.body.status ? 'Active' : 'Inactive';
       let emailData = {
         senderName: singleDealer.name,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
@@ -1202,6 +1055,7 @@ exports.changeDealerStatus = async (req, res) => {
   }
 }
 
+//Get dealer price book by id 
 exports.getDealerPriceBookById = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -1211,16 +1065,12 @@ exports.getDealerPriceBookById = async (req, res) => {
       })
       return;
     }
-    let projection = {
 
+    let projection = {
       _id: 1,
       name: 1,
       wholesalePrice: {
         $sum: [
-          // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
           "$priceBooks.reserveFutureFee",
           "$priceBooks.reinsuranceFee",
           "$priceBooks.adminFee",
@@ -1233,19 +1083,17 @@ exports.getDealerPriceBookById = async (req, res) => {
       "retailPrice": 1,
       "description": 1,
       "isDeleted": 1,
-      // "brokerFee": {
-      //   $subtract: ["$retailPrice","$wholesalePrice" ],
-      // },
       "unique_key": 1,
       "__v": 1,
       "createdAt": 1,
       "updatedAt": 1,
       priceBooks: 1,
       dealer: 1
-
     }
+
     let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
     let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+
     if (!getDealerPrice) {
       res.send({
         code: constant.errorCode,
@@ -1292,10 +1140,6 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
       name: 1,
       wholesalePrice: {
         $sum: [
-          // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
-          // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
           "$priceBooks.reserveFutureFee",
           "$priceBooks.reinsuranceFee",
           "$priceBooks.adminFee",
@@ -1308,9 +1152,6 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
       "retailPrice": 1,
       "description": 1,
       "isDeleted": 1,
-      // "brokerFee": {
-      //   $subtract: ["$retailPrice","$wholesalePrice" ],
-      // },
       "unique_key": 1,
       "__v": 1,
       "createdAt": 1,
@@ -1341,6 +1182,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
   }
 }
 
+//Get price book by filteration
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
@@ -1356,7 +1198,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let catIdsArray = getCatIds.map(category => category._id)
     let searchName = req.body.name ? req.body.name : ''
     let query
-    // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
+
     if (data.status != 'all' && data.status != undefined) {
       if (data.coverageType != "") {
         query = {
@@ -1417,19 +1259,11 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
           query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
           query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
         }
-
-        // const flatQuery = {
-        //   $and: [
-        //     { 'rangeStart': { $lte: Number(data.range) } },
-        //     { 'rangeEnd': { $gte: Number(data.range) } },
-        //   ]
-        // }
-        // query.$and.push(flatQuery);
       }
     }
 
-    //
     let projection = { isDeleted: 0, __v: 0 }
+
     if (req.role != "Super Admin") {
       res.send({
         code: constant.errorCode,
@@ -1437,9 +1271,11 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       })
       return;
     }
+
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
     const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
+
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -1460,6 +1296,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
   }
 };
 
+//Get dealer price book by filteration
 exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
@@ -1471,9 +1308,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       return;
     }
     data.status = typeof (data.status) == "string" ? "all" : data.status
-    console.log(data.status)
-    console.log(typeof (data.status))
-
     let categorySearch = req.body.category ? req.body.category : ''
     let queryCategories = {
       $and: [
@@ -1487,6 +1321,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     let query
     let matchConditions = [];
     matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
+
     if (data.status != 'all' && data.status != undefined) {
       matchConditions.push({ 'status': data.status });
     }
@@ -1505,30 +1340,29 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
 
       }
     }
+
     if (data.coverageType) {
       matchConditions.push({ 'priceBooks.coverageType': data.coverageType });
     }
+
     if (data.name) {
       matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
     }
+
     if (data.pName) {
       matchConditions.push({ 'priceBooks.pName': { '$regex': req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
     }
+
     if (data.dealerName) {
       matchConditions.push({ 'dealer.name': { '$regex': req.body.dealerName ? req.body.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
     }
+
     const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
-    console.log(matchStage);
-    // console.log(matchStage);return;
-
     let projection = { isDeleted: 0, __v: 0 }
-
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
-
-    console.log('matching ----------------------------------', matchStage)
-
     const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
+
     if (!priceBooks) {
       res.send({
         code: constant.errorCode,
@@ -1540,7 +1374,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       code: constant.successCode,
       message: "Success",
       result: priceBooks,
-      //matchStage
     })
   } catch (err) {
     res.send({
@@ -1564,6 +1397,7 @@ function uniqByKeepLast(data, key) {
 
 }
 
+//UPload price book
 exports.uploadPriceBook = async (req, res) => {
   try {
     // Check if a file is uploaded
@@ -1597,8 +1431,6 @@ exports.uploadPriceBook = async (req, res) => {
     //check Dealer Exist
     let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
     // Your array of objects
-
-
     if (checkDealer.length == 0) {
       res.send({
         code: constant.errorCode,
@@ -1647,9 +1479,7 @@ exports.uploadPriceBook = async (req, res) => {
       }
 
       const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-
       //Get data from csv when priceBooks and retailPrice is not undefined
-
       let results = data
         .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
         .map(obj => ({
@@ -1662,17 +1492,13 @@ exports.uploadPriceBook = async (req, res) => {
           priceBook: obj.priceBook,
           retailPrice: obj.retailPrice,
         }));
-
       // Get only unique data from csv
       let unique = uniqByKeepLast(results, it => it.priceBook)
-
       // Get only name from unique
-
       priceBookName = unique.map(obj => obj.priceBook);
       const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
       //Get founded products
       const foundProducts = await priceBookService.findByName(priceBookName1);
-
       if (foundProducts.length > 0) {
         const count = await dealerPriceService.getDealerPriceCount();
         // Extract the names and ids of found products
@@ -1687,13 +1513,9 @@ exports.uploadPriceBook = async (req, res) => {
             }
           }
         });
-
         //Get inactive products
-
         const inactiveData = foundProducts.filter(inactive => inactive.status === false);
-
         const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
-
 
         if (inactiveData.length > 0) {
           inactiveData.map(inactive => {
@@ -1710,13 +1532,12 @@ exports.uploadPriceBook = async (req, res) => {
         const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
         // Remove product from csv based on inactive name
         priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-        console.log("results=========================", allResults);
+
         const missingProductNames = allResults.filter(name => {
           const lowercaseName = name.priceBook != '' ? name.priceBook.toLowerCase() : name.priceBook;
           return !foundProductData.some(product => product.name.toLowerCase() === lowercaseName);
         });
 
-        // console.log("missingProductNames=========================", missingProductNames); return
         if (missingProductNames.length > 0) {
           missingProductNames.map(product => {
             let csvData = {
@@ -1838,18 +1659,13 @@ exports.uploadPriceBook = async (req, res) => {
       }
       // Write the data to the CSV file
       const res12 = await csvWriter.writeRecords(csvStatus);
-
-
       // Construct the base URL link
       const base_url_link = `${process.env.SITE_URL}:3002/uploads/resultFile`;
-
       // Get the CSV name from the csvWriter path
       const csvName1 = csvName;
 
       // Construct the complete URL
       const complete_url = `${base_url_link}/${csvName1}`;
-
-      //console.log(csvStatus);return;
 
       let entriesData = {
         userName: checkDealer[0].name,
@@ -1862,7 +1678,6 @@ exports.uploadPriceBook = async (req, res) => {
       // Send email with the CSV file link
       const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], entriesData));
       if (mailing) {
-        //  console.log('Email sent successfully');
         res.send({
           code: constant.successCode,
           data: upload
@@ -1886,6 +1701,7 @@ exports.uploadPriceBook = async (req, res) => {
   }
 };
 
+//Create Dealer Price Book
 exports.createDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
@@ -1907,7 +1723,7 @@ exports.createDealerPriceBook = async (req, res) => {
       return;
     }
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(data.priceBook) }, {})
-    console.log("checkPriceBookMain----------------------", checkPriceBookMain)
+
     if (!checkPriceBookMain) {
       res.send({
         code: constant.errorCode,
@@ -1915,7 +1731,9 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
+
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
+
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -1923,9 +1741,10 @@ exports.createDealerPriceBook = async (req, res) => {
       })
       return;
     }
-    let createDealerPrice = await dealerPriceService.createDealerPrice(data)
-    if (!createDealerPrice) {
 
+    let createDealerPrice = await dealerPriceService.createDealerPrice(data)
+
+    if (!createDealerPrice) {
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/createPriceBook",
@@ -1941,12 +1760,9 @@ exports.createDealerPriceBook = async (req, res) => {
         message: "Unable to create the dealer price book"
       })
     } else {
-
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
-
       IDs.push(getPrimary._id)
-
       let notificationData = {
         title: "New dealer price book created",
         description: data.priceBook + " , " + "new price book has been created",
@@ -1958,23 +1774,9 @@ exports.createDealerPriceBook = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData);
-
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
       let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-
-      // const notificationContent = {
-      //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-      // }    
-      // let emailData = {
-      //   dealerName: checkPriceBookMain.name,
-      //   c1: "Dealer Price Book",
-      //   c2: checkPriceBookMain.priceBook,
-      //   c3: "has been created successfully for the dealer!.",
-      //   c4: "",
-      //   c5: "",
-      //   role: "PriceBook"
-      // }
       let emailData = {
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
@@ -2016,6 +1818,7 @@ exports.createDealerPriceBook = async (req, res) => {
   }
 }
 
+//Check dealer price book 
 exports.checkDealerPriceBook = async (req, res) => {
   try {
     let data = req.body
@@ -2028,6 +1831,7 @@ exports.checkDealerPriceBook = async (req, res) => {
       return;
     }
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
+
     if (!checkPriceBookMain) {
       res.send({
         code: constant.errorCode,
@@ -2036,6 +1840,7 @@ exports.checkDealerPriceBook = async (req, res) => {
       return;
     }
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
+
     if (checkPriceBook) {
       res.send({
         code: constant.errorCode,
@@ -2056,6 +1861,7 @@ exports.checkDealerPriceBook = async (req, res) => {
   }
 }
 
+//Reject dealer from admin
 exports.rejectDealer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
@@ -2088,7 +1894,6 @@ exports.rejectDealer = async (req, res) => {
         })
         return;
       }
-
 
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
@@ -2133,10 +1938,12 @@ exports.rejectDealer = async (req, res) => {
   }
 }
 
+//update dealer details
 exports.updateDealerMeta = async (req, res) => {
   try {
     let data = req.body
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
+
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -2144,6 +1951,7 @@ exports.updateDealerMeta = async (req, res) => {
       })
       return;
     }
+
     if (data.oldName != data.accountName) {
       let checkAccountName = await dealerService.getDealerByName({ name: data.accountName }, {})
       if (checkAccountName) {
@@ -2154,10 +1962,10 @@ exports.updateDealerMeta = async (req, res) => {
         return;
       };
     };
+
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     data.name = data.accountName
-    // data.accountStatus = true
     let updatedData = await dealerService.updateDealer(criteria1, data, option)
     if (!updatedData) {
       //Save Logs update dealer
@@ -2182,18 +1990,8 @@ exports.updateDealerMeta = async (req, res) => {
       let updatedCustomer = await customerService.updateDealerName(criteria, { dealerName: data.accountName }, option)
       //Update dealer name in reseller
       let updateResellerDealer = await resellerService.updateMeta(criteria, { dealerName: data.accountName }, option)
-      //Update Meta in servicer also 
 
-      // if (checkDealer.isServicer) {
-      //   const servicerMeta = {
-      //     name: data.accountName,
-      //     city: data.city,
-      //     country: data.country, 
-      //     street: data.street,
-      //     zip: data.zip
-      //   }
-      //   const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
-      // }
+      //Update Meta in servicer also     
       if (data.isServicer) {
         const checkServicer = await servicerService.getServiceProviderById({ dealerId: checkDealer._id })
         if (!checkServicer) {
@@ -2223,8 +2021,6 @@ exports.updateDealerMeta = async (req, res) => {
           }
           const updateServicerMeta = await servicerService.updateServiceProvider(criteria, servicerMeta)
         }
-
-
       }
     }
     //update primary user to true by default
@@ -2234,22 +2030,9 @@ exports.updateDealerMeta = async (req, res) => {
     if (!data.isAccountCreate) {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
-    //Get customer of the dealers
-    // if (!data.userAccount) {
-    //   //Update isAccount for customer when user account false
-    //   const updateMeta = await customerService.updateCustomerData({ dealerId: checkDealer._id }, { isAccountCreate: false }, { new: true })
-    //   let customers = await customerService.getAllCustomers({ dealerId: checkDealer._id }, { isDeleted: false });
-    //   //Update user for customer when user account false
-    //   const userIds = customers.map(item => item._id.toString())
-    //   const updateUserMeta = await userService.updateUser({ accountId: { $in: userIds } }, { status: false }, { new: true })
-
-    // }
-
     let IDs = await supportingFunction.getUserIds()
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-
     IDs.push(getPrimary._id)
-
     let notificationData = {
       title: "Dealer updated",
       description: checkDealer.name + " , " + "details has been updated",
@@ -2260,31 +2043,13 @@ exports.updateDealerMeta = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here 
     let notificationEmails = await supportingFunction.getUserEmails();
-
-    console.log("notificationEmails-------------------", notificationEmails);
-    // notificationEmails.push(getPrimary.email);
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }     
-
     let emailData = {
       senderName: checkDealer.name,
       content: "The information has been updated successfully! effective immediately.",
       subject: "Update Info"
     }
-    // let emailData = {
-    //   dealerName: checkDealer.name,
-    //   c1: "The Dealer",
-    //   c2: checkDealer.name,
-    //   c3: "has been updated successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
-
 
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     //Save Logs update dealer
@@ -2323,10 +2088,12 @@ exports.updateDealerMeta = async (req, res) => {
   }
 }
 
+//add dealer user
 exports.addDealerUser = async (req, res) => {
   try {
     let data = req.body
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId }, {})
+
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -2334,7 +2101,9 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     };
+
     let checkEmail = await userService.findOneUser({ email: data.email }, {})
+
     if (checkEmail) {
       res.send({
         code: constant.errorCode,
@@ -2342,17 +2111,21 @@ exports.addDealerUser = async (req, res) => {
       })
       return;
     }
+
     data.accountId = checkDealer._id
     data.metaId = checkDealer._id
     data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
+
     if (!checkDealer.accountStatus) {
       statusCheck = false
     } else {
       statusCheck = data.status
     }
+
     data.status = statusCheck
     let saveData = await userService.createUser(data)
+
     if (!saveData) {
       //Save Logs create Customer
       let logData = {
@@ -2365,8 +2138,6 @@ exports.addDealerUser = async (req, res) => {
         }
       }
 
-
-
       await LOG(logData).save()
       res.send({
         code: constant.errorCode,
@@ -2375,8 +2146,8 @@ exports.addDealerUser = async (req, res) => {
     } else {
       let IDs = await supportingFunction.getUserIds()
       let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
-
       IDs.push(getPrimary._id)
+
       let notificationData = {
         title: "New user added",
         description: checkDealer.name + " , " + "new user has been added",
@@ -2387,8 +2158,6 @@ exports.addDealerUser = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData);
-
-
       //Save Logs create Customer
       let logData = {
         userId: req.userId,
@@ -2426,14 +2195,13 @@ exports.addDealerUser = async (req, res) => {
   }
 }
 
+//upload dealer price book
 exports.uploadDealerPriceBook = async (req, res) => {
   try {
     uploadP(req, res, async (err) => {
       let file = req.file
       let data = req.body
-
       let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
-
       // Your array of objects
       if (checkDealer.length == 0) {
         res.send({
@@ -2452,8 +2220,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
       }
 
       let csvName = req.file.filename
-
-
       const wb = XLSX.readFile(req.file.path);
       const sheets = wb.SheetNames;
       const ws = wb.Sheets[sheets[0]];
@@ -2464,9 +2230,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         }
         return item;
       });
-
-      console.log("first++++++++++++++++++++++++++++++++++++++++++", totalDataComing1)
-
       const headers = [];
       for (let cell in ws) {
         // Check if the cell is in the first row and has a non-empty value
@@ -2492,10 +2255,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
           exit: false
         };
       });
-
-      // console.log("second++++++++++++++++++++++++++++++++++++++++++",totalDataComing)
-
-      //  return;
       // copy to here
       totalDataComing.forEach((data, index) => {
 
@@ -2504,21 +2263,10 @@ exports.uploadDealerPriceBook = async (req, res) => {
           totalDataComing[index].retailPrice = data.retailPrice
           data.exit = true;
         }
-        // else if(isNaN(parseFloat(data.retailPrice))){
-        //   data.status = "Dealer catalog retail price is not valid";
-        //   data.exit = true;
-        // }
-        // else if(parseFloat(data.retailPrice) <= 0){
-        //   data.status = "Dealer catalog retail price should be greater than 0";
-        //   data.exit = true;
-        // }
         else {
           data.status = null
         }
       })
-
-      console.log("second++++++++++++++++++++++++++++++++++++++++++", totalDataComing)
-
 
       if (totalDataComing.length > 0) {
         const repeatedMap = {};
@@ -2527,6 +2275,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           if (totalDataComing[i].exit) {
             continue;
           }
+
           if (repeatedMap[totalDataComing[i].priceBook.toString().toUpperCase().replace(/\s+/g, ' ').trim()] >= 0) {
             totalDataComing[i].status = "not unique";
             totalDataComing[i].exit = true;
@@ -2540,21 +2289,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
         const pricebookArrayPromise = totalDataComing.map(item => {
           let queryPrice;
-          console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", checkDealer[0]?.coverageType)
           if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-            console.log("^^^1111111111111111111^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true }
 
           } else {
-            console.log("^^^^^^^222222222222222222222222222^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
             queryPrice = queryPrice = { name: item.priceBook ? new RegExp(`^${item.priceBook.toString().replace(/\s+/g, ' ').trim()}$`, 'i') : '', status: true, coverageType: checkDealer[0]?.coverageType }
-
           }
 
           if (!item.status) return priceBookService.findByName1(queryPrice);
           return null;
         })
-        // console.log("third++++++++++++++++++++++++++++++++++++++++++",pricebookArrayPromise)
 
         const pricebooksArray = await Promise.all(pricebookArrayPromise);
 
@@ -2571,18 +2315,14 @@ exports.uploadDealerPriceBook = async (req, res) => {
             totalDataComing[i].priceBookDetail = pricebooksArray[i];
           }
         }
-        const dealerArrayPromise = totalDataComing.map(item => {
-          console.log("forth++++++++++++++++++++++++++++++++++++++++++", item)
 
+        const dealerArrayPromise = totalDataComing.map(item => {
           if (item.priceBookDetail) return dealerPriceService.getDealerPriceById({ dealerId: new mongoose.Types.ObjectId(data.dealerId), priceBook: item.priceBookDetail._id }, {});
-          console.log("forth++++++++++++++++++++++++++++++++++++++++++", item.priceBookDetail)
           return false;
         })
+
         const dealerArray = await Promise.all(dealerArrayPromise);
-
         for (let i = 0; i < totalDataComing.length; i++) {
-          console.log("fifth++++++++++++++++++++++++++++++++++++++++++", totalDataComing[i])
-
           if (totalDataComing[i].priceBookDetail) {
             if (dealerArray[i]) {
               dealerArray[i].retailPrice = totalDataComing[i].retailPrice != undefined ? totalDataComing[i].retailPrice : dealerArray[i].retailPrice;
@@ -2598,9 +2338,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
               const count = await dealerPriceService.getDealerPriceCount();
               let unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
               let wholesalePrice = totalDataComing[i].priceBookDetail.reserveFutureFee + totalDataComing[i].priceBookDetail.reinsuranceFee + totalDataComing[i].priceBookDetail.adminFee + totalDataComing[i].priceBookDetail.frontingFee;
-              console.log("**********************************************************************")
-
-
               let checkSavedPricebook = await dealerPriceService.createDealerPrice({
                 dealerId: data.dealerId,
                 priceBook: totalDataComing[i].priceBookDetail._id,
@@ -2610,17 +2347,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
                 brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
                 wholesalePrice
               })
-              // console.log("saved data++++++++++++++++++++", checkSavedPricebook, {
-              //   dealerId: data.dealerId,
-              //   priceBook: totalDataComing[i].priceBookDetail._id,
-              //   unique_key: unique_key,
-              //   status: true,
-              //   retailPrice: totalDataComing[i].retailPrice != "" ? totalDataComing[i].retailPrice : 0,
-              //   brokerFee: totalDataComing[i].retailPrice - wholesalePrice,
-              //   wholesalePrice
-              // })
               totalDataComing[i].status = "Dealer catalog updated successully!"
-              console.log("**********************************************************************")
               totalDataComing[i].duplicates.forEach((index, i) => {
                 let msg = index === 0 ? "Dealer catalog created successully)" : "Dealer catalog created successully%"
                 totalDataComing[index].status = msg;
@@ -2636,6 +2363,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
             status: item.status
           }
         })
+
         function countStatus(array, status) {
           return array.filter(item => item.status === status).length;
         }
@@ -2685,8 +2413,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //Send notification to admin,dealer,reseller
 
         let IDs = await supportingFunction.getUserIds()
-
-
         let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
         IDs.push(dealerPrimary?._id)
         let notificationData = {
@@ -2700,12 +2426,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
         let createNotification = await userService.createNotification(notificationData);
         // Send Email code here
         let notificationEmails = await supportingFunction.getUserEmails();
-        //notificationEmails.push(dealerPrimary?.email);
-
-        // let emailData = {
-        //   senderName: checkReseller.name,
-        //   content: "Information has been updated successfully! effective immediately."
-        // }
         const mailing = sgMail.send(emailConstant.sendCsvFile(dealerPrimary.email, notificationEmails, htmlTableString));
       }
       res.send({
@@ -2723,6 +2443,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
+//Create relation with dealer
 exports.createDeleteRelation = async (req, res) => {
   try {
     let data = req.body
@@ -2757,13 +2478,11 @@ exports.createDeleteRelation = async (req, res) => {
 
     const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
 
-    console.log(existingRecords, existingServicerIds, checkId, newServicerIds)
     // Step 3: Delete existing records
     let deleteData = await dealerRelationService.deleteRelations({
       dealerId: new mongoose.Types.ObjectId(req.params.dealerId),
       servicerId: { $in: uncheckId }
     });
-    // return res.json(deleteData)
     // Step 4: Insert new records
     const newRecords = newServicerIds.map(servicerId => ({
       dealerId: req.params.dealerId,
@@ -2804,23 +2523,6 @@ exports.createDeleteRelation = async (req, res) => {
         message: "success"
       })
     }
-
-
-
-
-
-
-    // for (let i = 0; i < data.servicers.length; i++) {
-    //   let servicer = data.servicers[i]
-    //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.params.dealerId })
-    //   if (!checkRelation) {
-    //     console.log('new------------')
-
-    //   } else {
-    //     console.log('delete------------')
-
-    //   }
-    // }
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -2829,221 +2531,7 @@ exports.createDeleteRelation = async (req, res) => {
   }
 }
 
-// exports.getDealerServicers = async (req, res) => {
-//   try {
-//     let data = req.body
-//     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
-//     if (!checkDealer) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Invalid dealer ID"
-//       })
-//       return;
-//     }
-//     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
-//     if (!getServicersIds) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the servicer"
-//       })
-//       return;
-//     }
-//     console.log("-------------------------------------------------------", 1)
-//     let ids = getServicersIds.map((item) => item.servicerId)
-
-//     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-//     if (!servicer) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the servicers"
-//       })
-//       return;
-//     }
-//     //res.json(servicer);return;
-//     if (checkDealer.isServicer) {
-//       servicer.unshift(checkDealer);
-//     };
-
-//     //res.json(servicer);return;
-//     let servicerIds = []
-
-//     servicer.forEach(obj => {
-//       if (obj.dealerId != null) {
-//         servicerIds.push(obj.dealerId);
-//       }
-//       else if (obj.resellerId != null) {
-//         servicerIds.push(obj.resellerId);
-//       }
-//       else {
-//         servicerIds.push(obj._id);
-//       }
-//       // dealerIds.push(obj.dealerId);
-//       // resellerIds.push(obj.resellerId);
-//     });
-//     // const servicerIds = servicer.map(obj => obj._id);
-//     // const dealerIds = servicer.map(obj => obj.dealerId);
-//     // const resellerIds = servicer.map(obj => obj.resellerId);
-
-//     //res.json(resellerIds);return;
-
-
-
-
-//     // const matchServicer = {
-//     //   $or: [
-//     //     { accountId: { $in: servicerIds }, isPrimary: true },
-//     //     { accountId: { $in: dealerIds }, isPrimary: true },
-//     //     { accountId: { $in: resellerIds }, isPrimary: true }
-//     //   ]
-//     // }
-//     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-
-//     let servicerUser = await userService.getMembers(query1, {});
-//     if (!servicerUser) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the data"
-//       });
-//       return;
-//     };
-
-//     const result_Array = servicer.map(item1 => {
-//       const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
-//       if (matchingItem) {
-//         return {
-//           ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-//           servicerData: item1.toObject()
-//         };
-//       }
-//       else {
-//         return {
-//           servicerData: {}
-//         };
-//       }
-//     });
-//     // console.log("-------------------------------------------------------result_Array",result_Array)
-//     // console.log("-------------------------------------------------------",5)
-
-
-//     for (let i = 0; i < result_Array.length; i++) {
-//       const servicerId = result_Array[i].servicerData?._id;
-//       let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
-//       console.log("claim check+++++++4444444444444++++++++++++++")
-
-//       // Aggregate pipeline to join orders, contracts, and claims
-//       var aggregateResult = await orderService.getAllOrders1([
-//         {
-//           $match: {
-//             $and: [
-//               {
-//                 $or: [
-//                   { servicerId: new mongoose.Types.ObjectId(servicerId) },
-//                   { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?._id) },
-//                 ]
-//               },
-//               { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
-//             ]
-//           }
-//         },
-//         {
-//           $lookup: {
-//             from: "contracts",
-//             localField: "_id",
-//             foreignField: "orderId",
-//             as: "contracts"
-//           }
-//         },
-//         { $unwind: "$contracts" },
-//         {
-//           $lookup: {
-//             from: "claims",
-//             localField: "contracts._id",
-//             foreignField: "contractId",
-//             as: "claims",
-//             // pipeline: [
-//             //   {
-//             //     $match: { claimFile: { $in: ["Open", "Completed"] } }
-//             //   }
-//             // ]
-//           }
-//         },
-//         {
-//           $project: {
-//             'claims': { $arrayElemAt: ["$claims", 0] },
-//             _id: 0,
-//             servicerId: 1
-//           }
-//         }
-//       ]);
-//       console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
-
-//       // If there are results for the current servicerId, update the result array
-//       aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-
-
-//       console.log("claim check+++++++++++++++++++++", aggregateResult)
-//       let totalClaimAmount = 0
-
-//       function calculateTotalAmountAndCount(arr) {
-//         let total = 0;
-//         let count = aggregateResult.length;
-//         for (let obj of arr) {
-//           total += obj.claims.totalAmount;
-//         }
-//         return { totalAmount: total, totalCount: count };
-//       }
-//       const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
-//       console.log("Total amount:", totalAmount);
-//       console.log("Total count:", totalCount);
-
-//       result_Array[i].claimCount = totalCount;
-//       result_Array[i].totalClaimAmount = totalAmount;
-
-//     }
-
-//     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-//     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-//     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-
-
-//     let filteredData = result_Array.filter(entry => {
-//       return (
-//         nameRegex.test(entry.servicerData?.name) &&
-//         emailRegex.test(entry?.email) &&
-//         phoneRegex.test(entry?.phoneNumber)
-//       );
-//     });
-
-//     // Add isServicer key for reseller when true
-
-//     filteredData.forEach(item => {
-//       // Check if resellerId is not null
-//       if (item.servicerData.resellerId !== null) {
-//         // Add the desired key-value pair inside servicerData object
-//         item.servicerData.isServicer = true;
-//         // You can add any key-value pair you want here
-//       }
-//     });
-
-//     console.log("filteredData----------------------------------------", filteredData)
-
-
-//     res.send({
-//       code: constant.successCode,
-//       message: "Success",
-//       data: filteredData
-//     });
-
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
-
+//Get dealer servicer
 exports.getDealerServicers = async (req, res) => {
   try {
     let data = req.body
@@ -3064,7 +2552,6 @@ exports.getDealerServicers = async (req, res) => {
       })
       return;
     }
-    console.log("-------------------------------------------------------", 1)
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
@@ -3114,12 +2601,9 @@ exports.getDealerServicers = async (req, res) => {
         },
 
       },
-
-
     ]
 
     let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
-
     let claimAggregateQuery = [
       {
         $match: servicerClaimsIds
@@ -3152,88 +2636,10 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-    // for (let i = 0; i < result_Array.length; i++) {
-    //   const servicerId = result_Array[i].servicerData?._id;
-    //   let getServicerFromDealer = await servicerService.getAllServiceProvider({
-    //     $or:[
-    //       { dealerId: { $in: servicerId } },
-    //       { resellerId: { $in: servicerId } },
-    //     ]
-    //   })
-
-    //   // Aggregate pipeline to join orders, contracts, and claims
-    //   var aggregateResult = await orderService.getAllOrders1([
-    //     {
-    //       $match: {
-    //         $and: [
-    //           {
-    //             $or: [
-    //               { servicerId: new mongoose.Types.ObjectId(servicerId) },
-    //               { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?.dealerId) },
-    //             ]
-    //           },
-    //           { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
-    //         ]
-    //       }
-    //     },
-    //     {
-    //       $lookup: {
-    //         from: "contracts",
-    //         localField: "_id",
-    //         foreignField: "orderId",
-    //         as: "contracts"
-    //       }
-    //     },
-    //     { $unwind: "$contracts" },
-    //     {
-    //       $lookup: {
-    //         from: "claims",
-    //         localField: "contracts._id",
-    //         foreignField: "contractId",
-    //         as: "claims",
-    //         // pipeline: [
-    //         //   {
-    //         //     $match: { claimFile: "Completed" }
-    //         //   }
-    //         // ]
-    //       }
-    //     },
-    //     {
-    //       $project: {
-    //         'claims': { $arrayElemAt: ["$claims", 0] },
-    //         _id: 0,
-    //         servicerId: 1
-    //       }
-    //     }
-    //   ]);
-
-    //   // If there are results for the current servicerId, update the result array
-    //   aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-    //         let totalClaimAmount = 0
-
-    //   function calculateTotalAmountAndCount(arr) {
-    //     let total = 0;
-    //     let count = aggregateResult.length;
-    //     for (let obj of arr) {
-    //       total += obj.claims.totalAmount;
-    //     }
-    //     return { totalAmount: total, totalCount: count };
-    //   }
-    //   const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
-    //   console.log("Total amount:", totalAmount);
-    //   console.log("Total count:", totalCount);
-
-    //   result_Array[i].claimCount = totalCount;
-    //   result_Array[i].totalClaimAmount = totalAmount;
-
-    // }
-
+   
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-
-
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.servicerData?.name) &&
@@ -3241,10 +2647,6 @@ exports.getDealerServicers = async (req, res) => {
         phoneRegex.test(entry?.phoneNumber)
       );
     });
-
-    console.log("filteredData----------------------------------------", filteredData)
-
-
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -3259,6 +2661,7 @@ exports.getDealerServicers = async (req, res) => {
   }
 }
 
+//Unassign the servicer
 exports.unAssignServicer = async (req, res) => {
   try {
     let data = req.body
@@ -3305,6 +2708,7 @@ exports.unAssignServicer = async (req, res) => {
   }
 }
 
+//Get servicer list
 exports.getServicersList = async (req, res) => {
   try {
     let data = req.body
@@ -3316,33 +2720,18 @@ exports.getServicersList = async (req, res) => {
       return;
     }
     let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
-
-    // let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null }
     let projection = { __v: 0, isDeleted: 0 }
-
     let servicer = await servicerService.getAllServiceProvider(query, projection);
-    // res.json(servicer);
-
-    // return;
     const dealerReseller = await resellerService.getResellers({ dealerId: req.params.dealerId, status: true });
-    //  res.json(dealerReseller);
-    //  return;
-
     let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     const resultArray = servicer.map(item => {
       let documentData = {}
       const matchingServicer = getRelations.find(servicer => servicer.servicerId?.toString() == item._id?.toString() || servicer.servicerId?.toString() == item.resellerId?.toString());
-      // const matchedReseller = dealerReseller.find(reseller => reseller._id?.toString() === item.resellerId?.toString() || item.resellerId == null)
-      // if (matchedReseller) {
       documentData = item._doc
       return { ...documentData, check: !!matchingServicer };
-      //}
-      //console.log("matchingServicer==============================================", matchingServicer)
-
     });
 
     let filteredData = resultArray.filter(item => item !== undefined);
-    console.log(filteredData);
 
     res.send({
       code: constant.successCode,
@@ -3357,14 +2746,11 @@ exports.getServicersList = async (req, res) => {
   }
 }
 
+//Filter dealer
 exports.filterDealer = async (req, res) => {
   try {
     let data = req.body
-
-    console.log(data)
-
     let response = await dealerService.getAllDealers1(data)
-
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -3378,6 +2764,7 @@ exports.filterDealer = async (req, res) => {
   }
 }
 
+//Get reseller servicer
 exports.getDealerResellers = async (req, res) => {
   try {
     let data = req.body
@@ -3389,6 +2776,7 @@ exports.getDealerResellers = async (req, res) => {
       return;
     }
     let checkDealer = await dealerService.getDealerById(req.params.dealerId, {})
+
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
@@ -3407,17 +2795,11 @@ exports.getDealerResellers = async (req, res) => {
       });
       return;
     };
-
-
     const resellerId = resellers.map(obj => obj._id.toString());
-
     const orderResellerId = resellers.map(obj => obj._id);
     const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
-
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-
     //Get Dealer Customer Orders
-
     let project = {
       productsArray: 1,
       dealerId: 1,
@@ -3430,14 +2812,12 @@ exports.getDealerResellers = async (req, res) => {
       venderOrder: 1,
       orderAmount: 1,
     }
-
     let orderQuery = {
       $and: [
         { resellerId: { $in: orderResellerId }, status: "Active" },
       ]
     }
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$resellerId');
-
     const result_Array = getPrimaryUser.map(item1 => {
       const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const order = ordersResult.find(order => order._id.toString() === item1.accountId)
@@ -3452,12 +2832,10 @@ exports.getDealerResellers = async (req, res) => {
         return dealerData.toObject();
       }
     });
-
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
     const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
-
     const filteredData = result_Array.filter(entry => {
       return (
         nameRegex.test(entry.resellerData.name) &&
@@ -3480,6 +2858,7 @@ exports.getDealerResellers = async (req, res) => {
   }
 }
 
+//Get deaer orders
 exports.getDealerOrders = async (req, res) => {
   try {
     {
@@ -3491,7 +2870,6 @@ exports.getDealerOrders = async (req, res) => {
         });
         return;
       }
-
       let project = {
         productsArray: 1,
         dealerId: 1,
@@ -3512,7 +2890,6 @@ exports.getDealerOrders = async (req, res) => {
       };
 
       let query = { status: { $ne: "Archieved" }, dealerId: new mongoose.Types.ObjectId(req.params.dealerId) };
-
       let lookupQuery = [
         {
           $match: query
@@ -3549,7 +2926,6 @@ exports.getDealerOrders = async (req, res) => {
       let pageLimit = data.pageLimit ? Number(data.pageLimit) : 1000000
       let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
       let limitData = Number(pageLimit)
-
       let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
       let dealerIdsArray = ordersResult.map((result) => result.dealerId);
       let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
@@ -3558,7 +2934,6 @@ exports.getDealerOrders = async (req, res) => {
         .map(result => result.resellerId?.toString());
 
       let mergedArray = userDealerIds.concat(userResellerIds);
-
       const dealerCreateria = { _id: { $in: dealerIdsArray } };
       //Get Respective Dealers
       let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -3569,7 +2944,6 @@ exports.getDealerOrders = async (req, res) => {
         country: 1,
         zip: 1,
         street: 1
-
       });
       let servicerIdArray = ordersResult.map((result) => result.servicerId);
       const servicerCreteria = {
@@ -3593,16 +2967,11 @@ exports.getDealerOrders = async (req, res) => {
       );
       let customerIdsArray = ordersResult.map((result) => result.customerId);
       const customerCreteria = { _id: { $in: customerIdsArray } };
-
       let userCustomerIds = ordersResult
         .filter(result => result.customerId !== null)
         .map(result => result.customerId?.toString());
-
       const allUserIds = mergedArray.concat(userCustomerIds);
-
-
       const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
-
       let getPrimaryUser = await userService.findUserforCustomer(queryUser)
       //Get Respective Customer
       let respectiveCustomer = await customerService.getAllCustomers(
@@ -3694,21 +3063,6 @@ exports.getDealerOrders = async (req, res) => {
         );
       });
 
-      // console.log(filteredData);
-
-      // return;
-
-
-      // const updatedArray = filteredData.map((item) => ({
-      //     ...item,
-      //     servicerName: item.dealerName.isServicer 
-      //         ? item.dealerName
-      //         : item.resellerName.isServicer
-      //             ? item.resellerName
-      //             : item.servicerName
-      //         username:getPrimaryUser.find(user=>user.accountId.toString()===item.dealerName._id.toString())
-      // }));
-
       const updatedArray = filteredData.map(item => {
         let username = null; // Initialize username as null
         let resellerUsername = null
@@ -3724,21 +3078,23 @@ exports.getDealerOrders = async (req, res) => {
         item.flag = false
         const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
         const fileName = isEmptyOrderFile.includes(true) ? false : true
-        // console.log("isEmptyStartDate===================",isEmptyStartDate)
-        // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
-        //console.log(hasNullCoverageStartDate)
+
         if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
           item.flag = true
         }
+
         if (item.dealerName) {
           username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
+        
         if (item.resellerName) {
           resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
         }
+
         if (item.customerName) {
           customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
         }
+
         return {
           ...item,
           servicerName: item.dealerName.isServicer && item.servicerId != null ? item.dealerName : item.resellerName.isServicer && item.servicerId != null ? item.resellerName : item.servicerName,
@@ -3756,8 +3112,6 @@ exports.getDealerOrders = async (req, res) => {
       const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
       const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
       const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-
-
       const filteredData1 = updatedArray.filter(entry => {
         return (
           venderRegex.test(entry.venderOrder) &&
@@ -3785,6 +3139,7 @@ exports.getDealerOrders = async (req, res) => {
   }
 }
 
+//Get dealer request unused
 exports.getDealerRequest = async (req, res) => {
   try {
     let data = req.body
@@ -3799,10 +3154,8 @@ exports.getDealerRequest = async (req, res) => {
         // Specify the collections
         const collection1 = db1.collection('dealers');
         const collection2 = db2.collection('users');
-        console.log(collection2)
 
         // Perform a $lookup aggregation across databases
-        console.log('Perform a $lookup aggregation across databases')
         let data1 = await dealer.aggregate([
           {
             $match: { _id: new mongoose.Types.ObjectId("6579815d97bf5c1bb11be1d9") } // Match documents with the common ID
@@ -3817,7 +3170,6 @@ exports.getDealerRequest = async (req, res) => {
           }
         ])
 
-        console.log('Result:__________-------------------------------------', data1);
         res.send({
           code: constant.errorCode,
           message: data1
@@ -3837,10 +3189,10 @@ exports.getDealerRequest = async (req, res) => {
   }
 }
 
+//Get dealer contract
 exports.getDealerContract = async (req, res) => {
   try {
     let data = req.body
-    console.log("data------------------", data)
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -3849,6 +3201,7 @@ exports.getDealerContract = async (req, res) => {
     let resellerIds = [];
     let servicerIds = [];
     let userSearchCheck = 0
+
     if (data.customerName != "") {
       userSearchCheck = 1
       let getData = await customerService.getAllCustomers({ username: { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -3858,6 +3211,7 @@ exports.getDealerContract = async (req, res) => {
         customerIds.push("1111121ccf9d400000000000")
       }
     };
+
     if (data.servicerName != "") {
       userSearchCheck = 1
       let getData = await servicerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -3876,6 +3230,7 @@ exports.getDealerContract = async (req, res) => {
         servicerIds.push("1111121ccf9d400000000000")
       }
     };
+    
     if (data.resellerName != "") {
       userSearchCheck = 1
       let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })
@@ -3896,11 +3251,12 @@ exports.getDealerContract = async (req, res) => {
     if (customerIds.length > 0) {
       orderAndCondition.push({ customerId: { $in: customerIds } })
     }
+
     if (req.params.dealerId) {
       userSearchCheck = 1
       orderAndCondition.push({ dealerId: { $in: [req.params.dealerId] } })
     };
-    console.log("orderAndCondition-------------------", orderAndCondition)
+
     let orderIds = []
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
@@ -3910,7 +3266,6 @@ exports.getDealerContract = async (req, res) => {
         orderIds = await getOrders.map(order => order._id)
       }
     }
-    console.log("getOrders-------------------", orderIds)
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
@@ -3944,10 +3299,8 @@ exports.getDealerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111", userSearchCheck, data)
 
     if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-      console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111")
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
 
@@ -4033,10 +3386,6 @@ exports.getDealerContract = async (req, res) => {
 
       })
     }
-
-
-    // console.log("sssssss", contractFilterWithPaging)
-
     let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
@@ -4047,7 +3396,6 @@ exports.getDealerContract = async (req, res) => {
       }
       // if (result1[e].minDate < new Date()) {
       if (new Date(result1[e].minDate) > new Date()) {
-
         const options = {
           year: 'numeric',
           month: '2-digit',
@@ -4056,6 +3404,7 @@ exports.getDealerContract = async (req, res) => {
         const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
         result1[e].reason = "Contract will be eligible on " + " " + formattedDate
       }
+
       let claimQuery = [
         {
           $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
@@ -4078,7 +3427,7 @@ exports.getDealerContract = async (req, res) => {
       ]
 
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-      console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           result1[e].reason = "Contract has open claim"
@@ -4089,6 +3438,7 @@ exports.getDealerContract = async (req, res) => {
         }
       }
     }
+
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -4104,6 +3454,7 @@ exports.getDealerContract = async (req, res) => {
   }
 }
 
+//Get dealer claim
 exports.getDealerClaims = async (req, res) => {
   try {
     if (req.role != 'Super Admin') {
@@ -4126,7 +3477,6 @@ exports.getDealerClaims = async (req, res) => {
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
-        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
         servicerMatch = {
           $or: [
             { "servicerId": { $in: servicerIds } },
@@ -4217,7 +3567,6 @@ exports.getDealerClaims = async (req, res) => {
               diagnosis: 1,
               claimStatus: 1,
               repairStatus: 1,
-              // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.pName": 1,
@@ -4236,7 +3585,6 @@ exports.getDealerClaims = async (req, res) => {
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
-              // "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
@@ -4280,9 +3628,7 @@ exports.getDealerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { isDeleted: false },
             claimPaidStatus,
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4307,7 +3653,6 @@ exports.getDealerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4329,10 +3674,8 @@ exports.getDealerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.isDeleted": false },
             { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
           ]
         },
@@ -4365,20 +3708,18 @@ exports.getDealerClaims = async (req, res) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
 
     ]
+
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
-
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-
     let allServicerIds = [];
     // Iterate over the data array
     resultFiter.forEach(item => {
@@ -4390,12 +3731,8 @@ exports.getDealerClaims = async (req, res) => {
     });
 
     //Get Dealer and Reseller Servicers
-    // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
-    // console.log("servicerIds=================", allServicerIds);
-    // res.json(resultFiter)
-    // return
     allServicer = await servicerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
@@ -4441,76 +3778,6 @@ exports.getDealerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-
-//-------------------------------------under developement section ----------------------------//
-
-const MongoClient = require('mongodb').MongoClient;
-
-// Connection URLs for the two databases
-const url2 = `${process.env.DB_URL}` + process.env.dbName;
-const url1 = `${process.env.DB_URL}` + process.env.dbName;
-
-// Common ID
-
-// Create MongoClient instances for each database
-const client2 = new MongoClient(url2, { useNewUrlParser: true, useUnifiedTopology: true });
-const client1 = new MongoClient(url1, { useNewUrlParser: true, useUnifiedTopology: true });
-
-// Connect to the servers
-// Promise.all([ client2.connect()])
-// .then(() => {
-// console.log('Connected to both databases');
-
-// // Specify the databases
-// const db2 = client2.db();
-
-// // Specify the collections
-// const collection2 = db2.collection('dealers');
-
-
-
-
-// // Close the connections
-// client2.close();
-// });
-// })
-// .catch(err => {
-// console.error('Error connecting to databases:', err);
-// });
-
-
-
-
-exports.sendgridMail = async (req, res) => {
-  try {
-    let data = req.body
-    let k = {
-      to: "sendgridtest@gmail.com",
-      from: process.env.from_email,
-      subject: `<<542EBBC8C7A7>>`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
-      text: ".."
-    }
-
-
-    let mailing = sgMail.send(k)
-    if (mailing) {
-      res.send({
-        code: 200,
-        message: "Sent",
-        mailing
-      })
-    }
-
-
-  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message
