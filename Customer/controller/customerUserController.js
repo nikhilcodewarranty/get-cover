@@ -168,7 +168,7 @@ exports.customerOrders = async (req, res) => {
         street: 1,
         dealerId: 1,
         resellerId: 1
-    }
+      }
     );
     const result_Array = ordersResult.map((item1) => {
       const dealerName =
@@ -177,14 +177,14 @@ exports.customerOrders = async (req, res) => {
             (item2) => item2._id.toString() === item1.dealerId.toString()
           )
           : null;
-          const servicerName =
-          item1.servicerId != null
-              ? respectiveServicer.find(
-                  (item2) =>
-                      item2._id.toString() === item1.servicerId?.toString() ||
-                      item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
-              )
-              : null;
+      const servicerName =
+        item1.servicerId != null
+          ? respectiveServicer.find(
+            (item2) =>
+              item2._id.toString() === item1.servicerId?.toString() ||
+              item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
+          )
+          : null;
       const customerName =
         item1.customerId != null
           ? respectiveCustomer.find(
@@ -814,7 +814,7 @@ exports.getCustomerContract = async (req, res) => {
       contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
     }
     let mainQuery = []
-    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
@@ -2035,7 +2035,7 @@ exports.getDashboardInfo = async (req, res) => {
     },
     { $sort: { unique_key_number: -1 } },
     {
-        $limit: 5
+      $limit: 5
     },
   ]
   const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 1, 5)

@@ -1405,7 +1405,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         ]
       };
     }
-    if (data.term!="") {
+    if (data.term != "") {
       query.$and.push({ 'priceBooks.term': Number(data.term) });
     }
 
@@ -3946,7 +3946,7 @@ exports.getDealerContract = async (req, res) => {
     let mainQuery = []
     console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111", userSearchCheck, data)
 
-    if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+    if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
       console.log("sklfjsdlkjflskjflskjdflksj1111111111111111111111111111111111111111111")
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
@@ -4141,7 +4141,7 @@ exports.getDealerClaims = async (req, res) => {
     }
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
     }
     else {
       claimPaidStatus = {
@@ -4154,7 +4154,7 @@ exports.getDealerClaims = async (req, res) => {
     if (!checkDealer) {
       res.send({
         code: constant.errorCode,
-        message: 'Dealer not found!' 
+        message: 'Dealer not found!'
       });
       return
     }
