@@ -2031,7 +2031,6 @@ exports.getResellerClaims = async (req, res) => {
         });
 
         //Get Dealer and Reseller Servicers
-        // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
         let servicer;
         let servicerName = '';
         allServicer = await providerService.getAllServiceProvider(

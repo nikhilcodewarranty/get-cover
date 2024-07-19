@@ -30,7 +30,7 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const reportingController = require("../../User/controller/reportingController");
 
-
+//Create Reseller
 exports.createReseller = async (req, res) => {
     try {
         let data = req.body
@@ -78,18 +78,9 @@ exports.createReseller = async (req, res) => {
             accountStatus: "Approved",
             dealerName: checkDealer.name,
         }
-        // data.members[0].status = true
         let teamMembers = data.members
-        // let emailsToCheck = teamMembers.map(member => member.email);
-        // let queryEmails = { email: { $in: emailsToCheck } };
-        // let checkEmails = await customerService.getAllCustomers(queryEmails, {});
-        // if (checkEmails.length > 0) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Some email ids already exist"
-        //     })
-        // }
         const createdReseler = await resellerService.createReseller(resellerObject);
+
         if (!createdReseler) {
             res.send({
                 code: constant.errorCode,
@@ -97,8 +88,8 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
+
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
-        // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
         if (data.isServicer) {
@@ -135,6 +126,7 @@ exports.createReseller = async (req, res) => {
     }
 }
 
+//Create custmer from reseller
 exports.createCustomer = async (req, res, next) => {
     try {
         let data = req.body;
@@ -159,29 +151,10 @@ exports.createCustomer = async (req, res, next) => {
             return;
         };
 
-        // check reseller valid or not
-        // if (data.resellerName && data.resellerName != "") {
-        //     var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
-        //     if (!checkReseller) {
-        //         res.send({
-        //             code: constant.errorCode,
-        //             message: "Invalid Reseller."
-        //         })
-        //         return;
-        //     }
-        // }
-
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
             username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName
         });
-        // if (checkAccountName) {
-        //   res.send({
-        //     code: constant.errorCode,
-        //     message: "Customer already exist with this account name"
-        //   })
-        //   return;
-        // };
 
         let checkCustomerEmail = await userService.findOneUser({ email: data.email });
         if (checkCustomerEmail) {
@@ -212,9 +185,6 @@ exports.createCustomer = async (req, res, next) => {
 
         const emailSet = new Set();
         let isDuplicate = false;
-
-
-
         let emailsToCheck = teamMembers.map(member => member.email);
         let queryEmails = { email: { $in: emailsToCheck } };
         let checkEmails = await customerService.getAllCustomers(queryEmails, {});
@@ -224,7 +194,6 @@ exports.createCustomer = async (req, res, next) => {
                 message: "Some email ids already exist"
             })
         }
-
         const createdCustomer = await customerService.createCustomer(customerObject);
         if (!createdCustomer) {
             res.send({
@@ -233,6 +202,7 @@ exports.createCustomer = async (req, res, next) => {
             })
             return;
         };
+
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
@@ -248,11 +218,11 @@ exports.createCustomer = async (req, res, next) => {
         })
     }
 };
+
 //Create Order
 exports.createOrder = async (req, res) => {
     try {
         let data = req.body;
-
         const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
         let projection = { isDeleted: 0 };
         if (!checkReseller) {
@@ -262,6 +232,7 @@ exports.createOrder = async (req, res) => {
             })
             return;
         }
+
         let checkDealer = await dealerService.getDealerById(
             checkReseller.dealerId,
             projection
@@ -316,6 +287,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
+
         if (data.priceBookId) {
             let query = { _id: data.priceBookId };
             let checkPriceBook = await priceBookService.findByName1(query);
@@ -352,8 +324,6 @@ exports.createOrder = async (req, res) => {
         }
 
         data.status = "Pending";
-        console.log("data--------------------", data);
-
         if (data.billTo == "Dealer") {
             let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
             data.billDetail = {
@@ -367,6 +337,7 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
+
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
@@ -381,6 +352,7 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
+
         if (data.billTo == "Custom") {
             data.billDetail = {
                 billTo: "Custom",
@@ -398,11 +370,14 @@ exports.createOrder = async (req, res) => {
         if (req.body.serviceCoverageType == "Labour") {
             serviceCoverage = "Labor"
         }
+
         if (req.body.serviceCoverageType == "Parts & Labour") {
             serviceCoverage = "Parts & Labor"
         }
+
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
         let savedResponse = await orderService.addOrder(data);
+
         if (!savedResponse) {
             let logData = {
                 endpoint: "resellerPortal/createOrder",
@@ -440,7 +415,6 @@ exports.createOrder = async (req, res) => {
                     item.orderFile.fileName === ""
             )
 
-        // .some(Boolean);
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -477,18 +451,14 @@ exports.createOrder = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-            console.log("All condition verify+++++++++++")
             let savedResponse = await orderService.updateOrder(
                 { _id: checkOrder._id },
                 { status: "Active" },
                 { new: true }
             );
-            console.log("order status update+++++++++++")
             let count1 = await contractService.getContractsCountNew();
-            console.log("count1 New+++++++++++", count1)
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
-                console.log('map on product+++++++++++++++++++++++++++++++++++++++++++=', new Date())
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
@@ -516,13 +486,11 @@ exports.createOrder = async (req, res) => {
                 });
                 var contractArray = [];
                 totalDataComing.forEach((data, index1) => {
-                    console.log('index1++++++++++++++++++++++++++++++++++++++++++++=', new Date())
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
                     let unique_key1 = "OC-" + "2024-" + unique_key_number1
                     let claimStatus = new Date(product.coverageStartDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0) ? "Waiting" : "Active"
                     claimStatus = new Date(product.coverageEndDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) ? "Expired" : claimStatus
-
                     // -------------------------------------------------  copy from -----------------------------------------//
 
                     let dateCheck = new Date(product.coverageStartDate)
@@ -538,7 +506,6 @@ exports.createOrder = async (req, res) => {
                     let purchaseMonth = p_date.getMonth();
                     let monthsPart = partWarrantyMonth;
                     let newPartMonth = purchaseMonth + monthsPart;
-
                     let monthsLabour = labourWarrantyMonth;
                     let newLabourMonth = purchaseMonth + monthsLabour;
 
@@ -547,128 +514,34 @@ exports.createOrder = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    //let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
 
                     // Find the minimum date
                     let minDate;
-                    // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-
-
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-
                         } else if (req.body.serviceCoverageType == "Parts") {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
-
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     } else if (req.body.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        // if (req.body.serviceCoverageType == "Labour") {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        //     }
-
-                        // } else if (req.body.serviceCoverageType == "Parts") {
-                        //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     }
-
-                        // } else {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        //     }
-                        // }
                     } else {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
 
                         } else if (req.body.serviceCoverageType == "Parts") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     }
-                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -678,7 +551,6 @@ exports.createOrder = async (req, res) => {
                         minDate: minDate,
                         manufacture: data.brand,
                         model: data.model,
-                        // partsWarranty: data.partsWarranty1,
                         partsWarranty: partsWarrantyDate1,
                         labourWarranty: labourWarrantyDate1,
                         serviceCoverageType: req.body.serviceCoverageType,
@@ -698,16 +570,10 @@ exports.createOrder = async (req, res) => {
                         unique_key_number: unique_key_number1,
                     };
                     increamentNumber++
-                    //unique_key_number1++
-                    // console.log("unique_key_number1", contractObject)
-
                     contractArray.push(contractObject);
-                    //let saveData = contractService.createContract(contractObject)
                 });
-                console.log('after loop ++++++++++++++++++++++++++++++++++++++++++++=', new Date())
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
-
                 //send notification to dealer,reseller,admin,customer
                 let IDs = await supportingFunction.getUserIds()
                 let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: savedResponse.dealerId, isPrimary: true })
@@ -726,8 +592,6 @@ exports.createOrder = async (req, res) => {
                     notificationFor: IDs
                 };
                 let createNotification = await userService.createNotification(notificationData1);
-
-
                 // Send Email code here
                 let notificationEmails = await supportingFunction.getUserEmails();
                 notificationEmails.push(customerPrimary.email);
@@ -741,10 +605,8 @@ exports.createOrder = async (req, res) => {
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, [], emailData))
 
-
-                //  console.log("saveContracts==================", saveContracts)
-
             })
+
             let logData = {
                 endpoint: "resellerPortal/createOrder",
                 body: data,
@@ -795,6 +657,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+//Get all reselers
 exports.getAllResellers = async (req, res) => {
     try {
         let data = req.body
@@ -835,8 +698,6 @@ exports.getAllResellers = async (req, res) => {
 
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
 
-        //console.log("ordersData=================",ordersData);
-
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
             const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
@@ -857,7 +718,6 @@ exports.getAllResellers = async (req, res) => {
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
 
         const filteredData = result_Array.filter(entry => {
-            console.log('search check ++++++++++++', entry)
             return (
                 nameRegex.test(entry.resellerData.name) &&
                 emailRegex.test(entry.email) &&
@@ -880,6 +740,7 @@ exports.getAllResellers = async (req, res) => {
     }
 }
 
+//edit order details
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -890,6 +751,7 @@ exports.editOrderDetail = async (req, res) => {
             response: {}
         };
         const checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: false })
+
         if (!checkReseller) {
             res.send({
                 code: constant.errorCode,
@@ -1022,7 +884,6 @@ exports.editOrderDetail = async (req, res) => {
         }
         data.paidAmount = Number(data.paidAmount)
         data.dueAmount = Number(checkId.orderAmount) - Number(data.paidAmount)
-        console.log('order paid check +++++++++++++++++++++++=', Number(data.paidAmount), Number(checkId.orderAmount))
         if (Number(data.paidAmount) > Number(checkId.orderAmount)) {
             res.send({
                 code: constant.error,
@@ -1032,7 +893,6 @@ exports.editOrderDetail = async (req, res) => {
         };
 
         if (Number(data.paidAmount) == Number(checkId.orderAmount)) {
-            console.log("condition matched +++++++++++++++++++===")
             data.paymentStatus = "Paid"
         }
 
@@ -1116,7 +976,6 @@ exports.editOrderDetail = async (req, res) => {
 
         let checkOrder = await orderService.getOrder(
             { _id: req.params.orderId },
-            // { isDeleted: 0 }
         );
         if (!checkOrder) {
             res.send({
@@ -1168,8 +1027,6 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-
-
         logData.response = {
             code: constant.successCode,
             message: "Success",
@@ -1199,6 +1056,7 @@ exports.editOrderDetail = async (req, res) => {
     }
 };
 
+//Get category and price books
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -1231,8 +1089,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-
-
         let query;
         if (data.term != "" && data.pName == "") {
             query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
@@ -1246,19 +1102,9 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
 
-        console.log('query+++++++++++++++++++++++++', query)
-        // price book ids array from dealer price book
-        // let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-        // let query = { _id: { $in: dealerPriceIds } };
-        // if(data.priceCatId){
-        //     let categories =
-        //     query = { _id: { $in: dealerPriceIds } ,}
-        // }
-
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
         if (data.priceBookId || data.priceBookId != "") {
             getPriceBooks = await priceBookService.getAllPriceIds({ _id: data.priceBookId }, {});
-            console.log("price book ak-------", getPriceBooks)
             data.term = getPriceBooks[0]?.term ? getPriceBooks[0].term : ""
             data.pName = getPriceBooks[0]?.pName ? getPriceBooks[0].pName : ""
         }
@@ -1278,7 +1124,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             };
         });
 
-
         //unique categories IDs from price books
         let uniqueCategory = {};
         let uniqueCategories = getPriceBooks.filter((item) => {
@@ -1290,7 +1135,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
 
         uniqueCategories = uniqueCategories.map((item) => item.category);
-
         // get categories related to dealers
         let getCategories = await priceBookService.getAllPriceCat(
             { _id: { $in: uniqueCategories } },
@@ -1337,10 +1181,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 _id: filteredPiceBook,
             });
 
-            // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
-
-
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
             label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
@@ -1381,17 +1222,9 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
+//Get reseller by dealer id
 exports.getResellerByDealerId = async (req, res) => {
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action"
-    //     })
-    //     return;
-    // }
     const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { accountStatus: 1 });
-
-    //result.metaData = singleDealer
     if (!dealers) {
         res.send({
             code: constant.errorCode,
@@ -1405,7 +1238,6 @@ exports.getResellerByDealerId = async (req, res) => {
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
         const matchingItem = resellerData.find(item2 => item2._id.toString() === item1.accountId.toString());
-
         if (matchingItem) {
             return {
                 ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1422,16 +1254,9 @@ exports.getResellerByDealerId = async (req, res) => {
     });
 }
 
+//Get reseller by id
 exports.getResellerById = async (req, res) => {
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action"
-    //     })
-    //     return;
-    // }
     let checkReseller = await resellerService.getResellers({ _id: req.userId }, { isDeleted: 0 });
-
     if (!checkReseller[0]) {
         res.send({
             code: constant.errorCode,
@@ -1439,6 +1264,7 @@ exports.getResellerById = async (req, res) => {
         })
         return;
     }
+
     let checkDealerStatus = await dealerService.getDealerByName({ _id: checkReseller[0].dealerId })
     const query1 = { accountId: { $in: [checkReseller[0]._id] }, isPrimary: true };
     let resellerUser = await userService.getMembers(query1, { isDeleted: false })
@@ -1556,7 +1382,6 @@ exports.getResellerById = async (req, res) => {
             $match:
             {
                 $and: [
-                    // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                     { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.userId) },
                 ]
             },
@@ -1596,17 +1421,9 @@ exports.getResellerById = async (req, res) => {
 
 }
 
+//Get reseller users
 exports.getResellerUsers = async (req, res) => {
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action"
-    //     })
-    //     return;
-    // }
-
     let data = req.body
-
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 })
     if (!checkReseller) {
         res.send({
@@ -1615,6 +1432,7 @@ exports.getResellerUsers = async (req, res) => {
         });
         return;
     }
+
     const queryUser = {
         $and: [
             { accountId: { $in: checkReseller._id } },
@@ -1624,7 +1442,6 @@ exports.getResellerUsers = async (req, res) => {
             { phoneNumber: { '$regex': data.phone ? data.phone : '', '$options': 'i' } },
         ]
     }
-    console.log('skdsdjsdk---------------', queryUser, data)
     let users = await userService.getMembers(queryUser, { isDeleted: 0 });
     res.send({
         code: constant.successCode,
@@ -1636,6 +1453,7 @@ exports.getResellerUsers = async (req, res) => {
     return;
 }
 
+//Get reseller details
 exports.getResellerDetails = async (req, res) => {
     try {
         if (req.role != "Reseller") {
@@ -1685,6 +1503,7 @@ exports.getResellerDetails = async (req, res) => {
             }
         ]
         let getCustomer = await resellerService.getResellerByAggregate(query)
+
         if (!getCustomer[0]) {
             res.send({
                 code: Constant.errorCode,
@@ -1706,6 +1525,7 @@ exports.getResellerDetails = async (req, res) => {
     }
 }
 
+//Get reseller customers
 exports.getResellerCustomers = async (req, res) => {
     try {
         if (req.role !== "Reseller") {
@@ -1715,6 +1535,7 @@ exports.getResellerCustomers = async (req, res) => {
             });
             return
         }
+
         let data = req.body;
         let query = { isDeleted: false, resellerId: req.userId }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
@@ -1726,11 +1547,10 @@ exports.getResellerCustomers = async (req, res) => {
             });
             return;
         };
+        
         const customersId = customers.map(obj => obj._id.toString());
         const orderCustomerIds = customers.map(obj => obj._id);
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-
-
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
         let project = {
@@ -1799,14 +1619,8 @@ exports.getResellerCustomers = async (req, res) => {
     }
 };
 
+
 exports.getResellerPriceBook = async (req, res) => {
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action"
-    //     })
-    //     return;
-    // }
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 })
     if (!checkReseller) {
         res.send({
@@ -1836,9 +1650,6 @@ exports.getResellerPriceBook = async (req, res) => {
     let searchName = req.body.name ? req.body.name : ''
     let projection = { isDeleted: 0, __v: 0 }
     let query
-
-
-
     let data = req.body
     if (checkDealer.coverageType == "Breakdown & Accidental") {
         if (data.coverageType == "") {
@@ -1919,16 +1730,8 @@ exports.getResellerPriceBook = async (req, res) => {
                 query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
             }
 
-            // const flatQuery = {
-            //   $and: [
-            //     { 'rangeStart': { $lte: Number(data.range) } },
-            //     { 'rangeEnd': { $gte: Number(data.range) } }, 
-            //   ]
-            // } 
-            // query.$and.push(flatQuery);
         }
     }
-    //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
     if (!getResellerPriceBook) {
         res.send({
@@ -1944,15 +1747,14 @@ exports.getResellerPriceBook = async (req, res) => {
         result: getResellerPriceBook
     })
 
-
 }
 
+//Edit reseller
 exports.editResellers = async (req, res) => {
     try {
         let data = req.body
         let criteria = { _id: req.userId }
         let option = { new: true }
-
         let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
         if (!checkReseller) {
             res.send({
@@ -1998,6 +1800,7 @@ exports.editResellers = async (req, res) => {
     }
 }
 
+//Add reseller user
 exports.addResellerUser = async (req, res) => {
     try {
         let data = req.body
@@ -2009,6 +1812,7 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         };
+
         let checkEmail = await userService.findOneUser({ email: data.email }, {})
         if (checkEmail) {
             res.send({
@@ -2017,6 +1821,7 @@ exports.addResellerUser = async (req, res) => {
             })
             return;
         }
+
         data.accountId = checkReseller._id
         data.metaId = checkReseller._id
         data.roleId = '65bb94b4b68e5a4a62a0b563'
@@ -2083,10 +1888,10 @@ exports.addResellerUser = async (req, res) => {
     }
 }
 
+//Get reseller
 exports.getResellerServicers = async (req, res) => {
     try {
         let data = req.body
-
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
         if (!checkReseller) {
             res.send({
@@ -2096,6 +1901,7 @@ exports.getResellerServicers = async (req, res) => {
             return;
         }
         let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
+
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -2126,15 +1932,12 @@ exports.getResellerServicers = async (req, res) => {
         }
 
         if (checkReseller.isServicer) {
-            //servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
             servicer.unshift(checkReseller);
         }
 
         const servicerIds = servicer.map(obj => obj._id);
-
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
         let claimAggregateQuery1 = [
             {
@@ -2151,7 +1954,6 @@ exports.getResellerServicers = async (req, res) => {
                 },
 
             },
-
 
         ]
 
@@ -2222,36 +2024,11 @@ exports.getResellerServicers = async (req, res) => {
         })
     }
 
-
-
-    // result_Array = servicerUser.map(item1 => {
-    //     const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-    //     if (matchingItem) {
-    //         return {
-    //             ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-    //             servicerData: matchingItem.toObject()
-    //         };
-    //     } else {
-    //         return servicerUser.toObject();
-    //     }
-    // });
-
-
-
-
-
 }
 
+//Get reseller by customer
 exports.getResselerByCustomer = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action"
-        //     })
-        //     return;
-        // }
         let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, { isDeleted: 0 })
         if (!checkCustomer) {
             res.send({
@@ -2285,16 +2062,9 @@ exports.getResselerByCustomer = async (req, res) => {
 
 }
 
+//Get delaer by reseller id
 exports.getDealerByReseller = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action"
-        //     })
-        //     return;
-        // }
-
         let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
         if (!checkReseller) {
             res.send({
@@ -2320,6 +2090,7 @@ exports.getDealerByReseller = async (req, res) => {
 
 }
 
+//Get order for customer
 exports.getCustomerInOrder = async (req, res) => {
     try {
         let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
@@ -2341,9 +2112,8 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        console.log(" getCustomers --------------", getCustomers)
+
         const customerIds = getCustomers.map(customer => customer._id.toString());
-        console.log("customerUser00000000000000000", customerIds);
         let query1 = { accountId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
@@ -2374,6 +2144,7 @@ exports.getCustomerInOrder = async (req, res) => {
     }
 };
 
+//Get servicer for order
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 });
@@ -2427,17 +2198,9 @@ exports.getServicerInOrders = async (req, res) => {
             servicer.unshift(checkDealer);
         }
     }
-    // if (checkReseller && checkReseller.isServicer) {
-    //     servicer.unshift(checkReseller);
-    // }
-
-    // if (checkDealer && checkDealer.isServicer) {
-    //     servicer.unshift(checkDealer);
-    // }
 
     const servicerIds = servicer.map((obj) => obj._id);
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
         res.send({
@@ -2466,17 +2229,9 @@ exports.getServicerInOrders = async (req, res) => {
     });
 };
 
-
+//Get orders for resellers
 exports.getResellerOrders = async (req, res) => {
     try {
-        // if (req.role != 'Super Admin') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only super admin allow to do this action!'
-
-        //     })
-        //     return;
-        // }
         let query = { _id: req.userId };
         let data = req.body
         let projection = { isDeleted: 0 }
@@ -2527,7 +2282,6 @@ exports.getResellerOrders = async (req, res) => {
                         $cond: {
                             if: {
                                 $and: [
-                                    // { $eq: ["$payment.status", "paid"] },
                                     { $ne: ["$productsArray.orderFile.fileName", ''] },
                                     { $ne: ["$customerId", null] },
                                     { $ne: ["$paymentStatus", 'Paid'] },
@@ -2756,11 +2510,10 @@ exports.getResellerOrders = async (req, res) => {
     }
 }
 
-
+//Get reseller contract
 exports.getResellerContract = async (req, res) => {
     try {
         let data = req.body
-        console.log("data------------------", data)
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
@@ -2811,7 +2564,6 @@ exports.getResellerContract = async (req, res) => {
             orderAndCondition.push({ resellerId: { $in: [req.userId] } })
         };
 
-        console.log("orderAndCondition-------------------", orderAndCondition)
         let orderIds = []
         if (orderAndCondition.length > 0) {
             let getOrders = await orderService.getOrders({
@@ -2821,11 +2573,9 @@ exports.getResellerContract = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
-        console.log("getOrders-------------------", orderIds)
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2839,7 +2589,6 @@ exports.getResellerContract = async (req, res) => {
             ]
         } else {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2857,7 +2606,6 @@ exports.getResellerContract = async (req, res) => {
         }
         let mainQuery = []
         if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-            console.log('check_--------dssssssssssssssssssssss--------')
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
                 {
@@ -2943,20 +2691,14 @@ exports.getResellerContract = async (req, res) => {
 
             })
         }
-
-
-        // console.log("sssssss", contractFilterWithPaging)
-
         let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
         let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-        console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
-            // if (result1[e].minDate < new Date()) {
             if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
@@ -2989,7 +2731,6 @@ exports.getResellerContract = async (req, res) => {
             ]
 
             let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                     result1[e].reason = "Contract has open claim"
@@ -3016,49 +2757,21 @@ exports.getResellerContract = async (req, res) => {
     }
 }
 
+//Get all archeived orders
 exports.getAllArchieveOrders = async (req, res) => {
     let data = req.body;
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action",
-    //     });
-    //     return;
-    // }
-
-    //let query = { status: { $eq: "Archieved" } };
     let query = { status: "Archieved", resellerId: new mongoose.Types.ObjectId(req.userId) };
 
     let lookupQuery = [
         {
             $match: query
         },
-
-        // {
-        //     $project: project,
-        // },
         {
             "$addFields": {
                 "noOfProducts": {
                     "$sum": "$productsArray.checkNumberProducts"
                 },
                 totalOrderAmount: { $sum: "$orderAmount" },
-                // flag: {
-                //     $cond: {
-                //         if: {
-                //             $and: [
-                //                 // { $eq: ["$payment.status", "paid"] },
-                //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                //                 { $ne: ["$customerId", null] },
-                //                 { $ne: ["$paymentStatus", 'Paid'] },
-                //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                //             ]
-                //         },
-                //         then: true,
-                //         else: false
-                //     }
-                // }
-
             }
         },
 
@@ -3068,8 +2781,6 @@ exports.getAllArchieveOrders = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-
-
     let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
     const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -3202,11 +2913,11 @@ exports.getAllArchieveOrders = async (req, res) => {
     });
 };
 
+//change reseler status
 exports.changeResellerStatus = async (req, res) => {
     try {
 
         const singleReseller = await resellerService.getReseller({ _id: req.userId });
-
         let data = req.body;
 
         if (!singleReseller) {
@@ -3303,6 +3014,7 @@ exports.changeResellerStatus = async (req, res) => {
     }
 }
 
+//Get claims of reseller
 exports.getResellerClaims = async (req, res) => {
     try {
 
@@ -3501,7 +3213,6 @@ exports.getResellerClaims = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
                         { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3523,11 +3234,9 @@ exports.getResellerClaims = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.userId) },
-                        // { "contracts.orders.isDeleted": false },
                     ]
                 },
             },
@@ -3559,7 +3268,6 @@ exports.getResellerClaims = async (req, res) => {
                 {
                     $and: [
                         { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { "contracts.orders.customer.isDeleted": false },
                     ]
                 },
             },
@@ -3570,9 +3278,7 @@ exports.getResellerClaims = async (req, res) => {
         }
 
         let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
-
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-
         let allServicerIds = [];
         // Iterate over the data array
         resultFiter.forEach(item => {
@@ -3584,12 +3290,8 @@ exports.getResellerClaims = async (req, res) => {
         });
 
         //Get Dealer and Reseller Servicers
-        // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
         let servicer;
         let servicerName = '';
-        // console.log("servicerIds=================", allServicerIds);
-        // res.json(resultFiter)
-        // return
         allServicer = await providerService.getAllServiceProvider(
             { _id: { $in: allServicerIds }, status: true },
             {}
@@ -3617,7 +3319,6 @@ exports.getResellerClaims = async (req, res) => {
             if (item1.servicerId != null) {
                 servicerName = servicer.find(servicer => servicer?._id.toString() === item1.servicerId.toString());
                 const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-                // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
                 selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.resellerId?.toString()
             }
             return {
@@ -3648,6 +3349,7 @@ exports.getResellerClaims = async (req, res) => {
     }
 }
 
+//Get dashboard data
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
@@ -3701,7 +3403,6 @@ exports.getDashboardData = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
@@ -3753,7 +3454,6 @@ exports.getDashboardData = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.resellerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
@@ -3776,11 +3476,6 @@ exports.getDashboardData = async (req, res) => {
                         "totalOrder": 0
                     }
                 }
-                // result: {
-                //     "_id": "",
-                //     "totalAmount": 0,
-                //     "totalOrder": 0
-                // }
             })
             return;
         }
@@ -3800,7 +3495,7 @@ exports.getDashboardData = async (req, res) => {
     }
 };
 
-
+//Get sales reporting
 exports.saleReporting = async (req, res) => {
     try {
 
@@ -3812,17 +3507,11 @@ exports.saleReporting = async (req, res) => {
             total_reserve_future_fee: 0,
             total_contracts: 0,
             total_reinsurance_fee: 0,
-            // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
             wholesale_price: 0
         };
         bodyData.role = req.role
-
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
-
-
         bodyData.dealerId = new mongoose.Types.ObjectId(checkReseller.dealerId)
-
-
         if (bodyData.flag == "daily") {
             let sales = await reportingController.dailySales1(bodyData)
             res.send({
@@ -3860,6 +3549,7 @@ exports.saleReporting = async (req, res) => {
     }
 }
 
+//Get claim reporting
 exports.claimReporting = async (req, res) => {
     try {
         let data = req.body
@@ -3914,6 +3604,7 @@ exports.claimReporting = async (req, res) => {
     }
 }
 
+//Get  drop label for reporting
 exports.saleReportinDropDown = async (req, res) => {
     try {
         let data = req.body
@@ -3981,18 +3672,15 @@ exports.saleReportinDropDown = async (req, res) => {
     }
 }
 
+//Get claim reporting dropdown
 exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body
         let result;
 
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
-
-
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller._id })
         let ids = getServicersIds?.map((item) => item.servicerId)
-
-
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }) // not using
         let getServicer = await providerService.getAllServiceProvider({
             $or: [
@@ -4022,7 +3710,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
 
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: checkReseller._id })
-            console.log("checking dealerIds--------------------", { dealerId: checkReseller._id })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
@@ -4036,7 +3723,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
 
             result = {
-                // dealers: filteredData.dealers,
                 priceBooks: getPriceBooks1,
                 servicers: getServicer,
                 categories: getCategories1
@@ -4054,7 +3740,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
 
             result = {
-                // dealers: [],
                 servicers: [],
                 priceBooks: getPriceBooks,
                 categories: getCategories
@@ -4078,22 +3763,17 @@ exports.claimReportinDropdown = async (req, res) => {
     }
 };
 
+//Get dashboard graph data
 exports.getDashboardGraph = async (req, res) => {
     try {
         let data = req.body
         // sku data query ++++++++
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
-
         let endOfMonth1s = new Date();
         let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
-
         let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
-
-
         let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
         let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
-
-
         let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
 
         let orderQuery = [
@@ -4113,7 +3793,6 @@ exports.getDashboardGraph = async (req, res) => {
                 $group: {
                     _id: "$productsArray.priceBookDetails.name",
                     totalPrice: { $sum: "$productsArray.price" },
-                    // term: "$productsArray.term",
                 }
             },
             {
@@ -4160,23 +3839,13 @@ exports.getDashboardGraph = async (req, res) => {
             }
 
         ]
-
-
-
-
-        // let data = req.body
         let endOfMonth1 = new Date();
         let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
-
         let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-
-
         let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
-
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
             return { code: 401, message: "invalid date" };
         }
-
         let datesArray = [];
         let currentDate = new Date(startOfMonth);
         while (currentDate <= endOfMonth) {
@@ -4199,7 +3868,6 @@ exports.getDashboardGraph = async (req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_amount: { $sum: "$totalAmount" },
                     total_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -4226,19 +3894,13 @@ exports.getDashboardGraph = async (req, res) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
-
-        console.log(startOfMonth, endOfMonth, dailyQuery)
-
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData2 = await orderService.getAllOrders1(dailyQuery1)
-
         let getOrders = await orderService.getAllOrders1(orderQuery)
         let getOrders1 = await orderService.getAllOrders1(orderQuery1)
 
         let priceBookNames = getOrders.map(ID => ID.priceBookName)
         let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
-
         let priceQuery = {
             name: { $in: priceBookNames }
         }
@@ -4246,12 +3908,8 @@ exports.getDashboardGraph = async (req, res) => {
         let priceQuery1 = {
             name: { $in: priceBookName1 }
         }
-
-
         let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
         let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
-
-        console.log(priceBookNames)
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData.find(item => item._id === dateString);
@@ -4282,7 +3940,6 @@ exports.getDashboardGraph = async (req, res) => {
             monthly_sku: getPriceBooks,
             yealy_sku: getPriceBooks1
         })
-        // return { mergedArray, result, result1, result2, totalFees }
 
 
     } catch (err) {
@@ -4293,6 +3950,7 @@ exports.getDashboardGraph = async (req, res) => {
     }
 };
 
+//Get dashboard data
 exports.getDashboardInfo = async (req, res) => {
     try {
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
@@ -4373,48 +4031,4 @@ exports.getDashboardInfo = async (req, res) => {
             message: err.message
         })
     }
-
-
 }
-
-
-
-
-
-// const sgMail1 = require('@sendgrid/mail');
-
-// // Replace 'YOUR_SENDGRID_API_KEY' with your actual API key
-// sgMail1.setApiKey('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');
-
-
-
-
-
-
-// exports.testFunction = async (req, res) => {
-//     try {
-//         const msg = {
-//             to: 'anil@codenomad.net', // Replace with your recipient email
-//             from: 'info@codenomad.net', // Replace with your verified sender email
-//             subject: 'Sending with SendGrid is Fun',
-//             text: 'and easy to do anywhere, even with Node.js',
-//             html: '<strong>and easy to do anywhere, even with Node.js</strong>',
-//         };
-
-//         sgMail
-//             .send(msg)
-//             .then(() => {
-//                 console.log('Email sent');
-//             })
-//             .catch((error) => {
-//                 console.error('Error sending email:', error);
-//                 if (error.response) {
-//                     console.error('Error response body:', error.response.body);
-//                 }
-//             });
-//     } catch (err) {
-//         res.send({
-//             code: constant.errorCode
-//         })
-//     }
-// }
