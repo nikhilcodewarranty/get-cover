@@ -334,7 +334,6 @@ exports.getServicerContract = async (req, res) => {
             totalCount: totalCount.length
         })
 
-        console.log(orderIDs)
     } catch (err) {
         res.send({
             code: constant.errorCode,
