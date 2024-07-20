@@ -2340,7 +2340,7 @@ exports.saveBulkClaim = async (req, res) => {
             }
         } else {
             toMail = new_admin_array;
-            ccMail = [];
+            ccMail = ['ram@yopmail.com'];
             return {
                 contractId: item.contractId || "",
                 servicerName: item.servicerName || "",
