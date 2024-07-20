@@ -2261,7 +2261,7 @@ exports.saveBulkClaim = async (req, res) => {
       }
       let new_admin_array = adminEmail.concat(emailArray)
       let toMail = [];
-      let ccMail = [];
+      let ccMail;
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only 
         if (req.role === 'Dealer') {
