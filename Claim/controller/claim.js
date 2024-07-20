@@ -2395,6 +2395,7 @@ exports.saveBulkClaim = async (req, res) => {
       console.log("============================",new_admin_array)
       console.log("==========================toMail==",toMail)
       console.log("===========================ccMail=",ccMail)
+      console.log("===================htmlTableString========ccMail=",htmlTableString)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
