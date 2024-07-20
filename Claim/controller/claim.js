@@ -2269,7 +2269,6 @@ exports.saveBulkClaim = async (req, res) => {
             ccMail = new_admin_array;
             IDs = IDs.concat(req.userId);
             let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
-            console.log("userData======================", userData);
             toMail = userData.email;
             if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
                 return {
@@ -2391,11 +2390,6 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
       //send Email to admin 
-
-      console.log("============================",new_admin_array)
-      console.log("==========================toMail==",toMail)
-      console.log("===========================ccMail=",ccMail)
-      console.log("===================htmlTableString========ccMail=",htmlTableString)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
