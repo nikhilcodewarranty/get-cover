@@ -3610,8 +3610,11 @@ exports.saleReportinDropDown = async (req, res) => {
         let data = req.body
         let result;
         let checkReseller = await resellerService.getReseller({ _id: req.userId })
+
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+
         const convertedData = getDealers.map(item => ({
             value: item._id,
             label: item.name
@@ -3621,6 +3624,7 @@ exports.saleReportinDropDown = async (req, res) => {
             value: item._id,
             label: item.name
         }));
+
         let categories = getCategories.map(item => ({
             value: item._id,
             label: item.name
@@ -3630,7 +3634,9 @@ exports.saleReportinDropDown = async (req, res) => {
             getPriceBooks: priceBook,
             getCategories: categories
         }
+
         data.dealerId = checkReseller.dealerId
+
         if (data.dealerId != "") {
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)

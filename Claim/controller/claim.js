@@ -24,6 +24,8 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
+const resellerService = require("../../Dealer/services/resellerService");
+const dealerService = require("../../Dealer/services/dealerService");
 
 
 // multer function to upload the files
@@ -74,10 +76,8 @@ exports.getAllClaims = async (req, res, next) => {
     if (req.role == 'Servicer') {
       servicerMatch = { servicerId: new mongoose.Types.ObjectId(req.userId) }
     }
-
     // building the query for claims
     let newQuery = [];
-
     newQuery.push({
       $facet: {
         totalRecords: [
@@ -127,7 +127,6 @@ exports.getAllClaims = async (req, res, next) => {
               diagnosis: 1,
               claimStatus: 1,
               repairStatus: 1,
-              // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.model": 1,
@@ -147,7 +146,6 @@ exports.getAllClaims = async (req, res, next) => {
               "contracts.orders.dealers.accountStatus": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
-              // "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
@@ -322,10 +320,10 @@ exports.getAllClaims = async (req, res, next) => {
         },
       },
     ]
+
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-
     let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
@@ -343,19 +341,16 @@ exports.getAllClaims = async (req, res, next) => {
     //Get Dealer and Reseller Servicers
     let servicer;
     let servicerName = '';
-
     //service call from claim services
     let allServicer = await servicerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
-
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
       let selfServicer = false;
       let selfResellerServicer = false;
-
       let matchedServicerDetails = item1.contracts.orders.dealers.dealerServicer.map(matched => {
         const dealerOfServicer = allServicer.find(servicer => servicer._id.toString() === matched.servicerId?.toString());
         if (dealerOfServicer) {
@@ -370,7 +365,7 @@ exports.getAllClaims = async (req, res, next) => {
       if (item1.contracts.orders.resellers[0]?.isServicer && item1.contracts.orders.resellers[0]?.status) {
         servicer.unshift(item1.contracts.orders.resellers[0])
       }
-      
+
       if (item1.contracts.orders.dealers.isServicer && item1.contracts.orders.dealers.accountStatus) {
         servicer.unshift(item1.contracts.orders.dealers)
       }
@@ -1857,8 +1852,10 @@ exports.saveBulkClaim = async (req, res) => {
       let existDealerId = {
         data: {}
       };
+      let existResellerId = {
+        data: {}
+      }
       let match = {}
-
       if (req.role == 'Dealer') {
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
       }
@@ -1901,7 +1898,6 @@ exports.saveBulkClaim = async (req, res) => {
         })
         return
       }
-
 
       const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       let totalDataComing = totalDataComing1.map((item, i) => {
@@ -1950,7 +1946,7 @@ exports.saveBulkClaim = async (req, res) => {
           'MM/DD/YYYY',
           'MM-DD-YYYY'
         ]
-        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())  
+        let formatDate = formats.some(format => moment(data.lossDate, format, true).isValid())
 
         if (!moment(data.lossDate).isValid()) {
           data.status = "Date is not valid format"
@@ -2174,6 +2170,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
+
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
       let emailDealerId = [];
@@ -2186,7 +2183,7 @@ exports.saveBulkClaim = async (req, res) => {
           servicerId = data.servicerData?.resellerId
         }
         emailServicerId.push(servicerId);
-        emailDealerId.push(data.orderData?.order?.dealerId);
+       // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
@@ -2213,48 +2210,12 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
       })
-
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
       //get email of all servicer
       const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
-      //get email of dealers and send email 
-      if (req.role == 'Dealer') {
-        const emailDealer = await userService.getMembers({ accountId: { $in: emailDealerId }, isPrimary: true }, {})
-        IDs = IDs.concat(emailDealerId)
-        totalDataComing.map((data, i) => {
-          let dealerId = data.orderData?.order?.dealerId;
-          if (!existDealerId.data[dealerId]) {
-            existDealerId.data[dealerId] = [];
-          }
-          existDealerId.data[dealerId].push({
-            contractId: data.contractId ? data.contractId : "",
-            lossDate: data.lossDate ? data.lossDate : '',
-            diagnosis: data.diagnosis ? data.diagnosis : '',
-            status: data.status ? data.status : '',
-          });
-
-        });
-        let flatDealerArray = [];
-        for (let dealerId in existDealerId.data) {
-          let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === dealerId.toString());
-          let email = matchData ? matchData.email : dealerId; // Replace servicerId with email if matchData is found
-          flatDealerArray.push({
-            email: email,
-            response: existDealerId.data[dealerId]
-          });
-        }
-        //send email to servicer      
-        for (const item of flatDealerArray) {
-          const htmtToString = convertArrayToHTMLTable(item.response);
-          let mailing_dealer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmtToString));
-        }
-
-      }
-
-      //Build data for particular servicer and send mail
       let existArray = {
         data: {}
       };
@@ -2298,15 +2259,97 @@ exports.saveBulkClaim = async (req, res) => {
           let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
         }
       }
-
+      let new_admin_array = adminEmail.concat(emailArray)
+      let toMail = [];
+      let ccMail = [];
       const csvArray = totalDataComing.map((item, i) => {
-        return {
-          contractId: item.contractId ? item.contractId : "",
-          servicerName: item.servicerName ? item.servicerName : "",
-          lossDate: item.lossDate ? item.lossDate : '',
-          diagnosis: item.diagnosis ? item.diagnosis : '',
-          status: item.status ? item.status : '',
+        //Build bulk csv for dealer only 
+        if (req.role == 'Dealer') {
+          const userId = req.userId;
+          ccMail = new_admin_array;
+          IDs = IDs.concat(req.userId)
+          let userData = userService.getUserById1({ accountId: userId, isPrimary: true }, {})
+          toMail = userData.email
+          if (req.userId.toString() == item.orderData?.order?.dealerId?.toString()) {
+            return {
+              contractId: item.contractId ? item.contractId : "",
+              servicerName: item.servicerName ? item.servicerName : "",
+              lossDate: item.lossDate ? item.lossDate : '',
+              diagnosis: item.diagnosis ? item.diagnosis : '',
+              status: item.status ? item.status : '',
+            }
+          }
         }
+        //Build bulk csv for Reseller only 
+        else if (req.role == 'Reseller') {
+          const userId = req.userId;
+          //Get Reseller by id
+          const reseller = resellerService.getReseller({ _id: req.userId }, {})
+          //Get dealer by id
+          const dealer = dealerService.getDealerById(reseller.dealerId, {})
+          let resellerData = userService.getUserById1({ accountId: userId, isPrimary: true }, {})
+          //Get dealer info
+          let dealerData = userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {})
+          IDs.push(req.teammateId)
+          IDs.push(dealerData._id)
+          new_admin_array.push(dealerData.email)
+          toMail = resellerData.email
+          ccMail = new_admin_array;
+          if (req.userId.toString() == item.orderData?.order?.resellerId?.toString()) {
+            return {
+              contractId: item.contractId ? item.contractId : "",
+              servicerName: item.servicerName ? item.servicerName : "",
+              lossDate: item.lossDate ? item.lossDate : '',
+              diagnosis: item.diagnosis ? item.diagnosis : '',
+              status: item.status ? item.status : '',
+            }
+          }
+        }
+        //Build bulk csv for Customer only 
+        else if (req.role == 'Customer') {
+          const userId = req.userId;
+          //Get customer
+          const customer = customerService.getCustomerById({ _id: req.userId });
+          if (customer.resellerId) {
+            //Get Reseller by id
+            const reseller = resellerService.getReseller({ _id: customer?.resellerId }, {})
+            let resellerData = userService.getUserById1({ accountId: reseller._id, isPrimary: true }, {})
+            new_admin_array.push(resellerData.email)
+            IDs.push(resellerData._id)
+          }
+          //Get dealer by customer
+          const dealer = dealerService.getDealerById(customer.dealerId, {})
+          //Get dealer info
+          let dealerData = userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {})
+          //Get customer user info
+          let userData = userService.getUserById1({ accountId: userId, isPrimary: true }, {})
+          new_admin_array.push(dealerData.email)
+          toMail = userData.email
+          ccMail = new_admin_array;
+          IDs = IDs.push(req.teammateId)
+          IDs = IDs.push(dealerData._id)
+          if (req.userId.toString() == item.orderData?.order?.customerId?.toString()) {
+            return {
+              contractId: item.contractId ? item.contractId : "",
+              servicerName: item.servicerName ? item.servicerName : "",
+              lossDate: item.lossDate ? item.lossDate : '',
+              diagnosis: item.diagnosis ? item.diagnosis : '',
+              status: item.status ? item.status : '',
+            }
+          }
+        }
+        else {
+          toMail = new_admin_array
+          ccMail = [];
+          return {
+            contractId: item.contractId ? item.contractId : "",
+            servicerName: item.servicerName ? item.servicerName : "",
+            lossDate: item.lossDate ? item.lossDate : '',
+            diagnosis: item.diagnosis ? item.diagnosis : '',
+            status: item.status ? item.status : '',
+          }
+        }
+
       })
 
       function convertArrayToHTMLTable(array) {
@@ -2347,10 +2390,9 @@ exports.saveBulkClaim = async (req, res) => {
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
-      let new_admin_array = adminEmail.concat(emailArray)
-
       //send Email to admin 
-      let mailing = sgMail.send(emailConstant.sendCsvFile(new_admin_array, ['ram@yopmail.com'], htmlTableString));
+
+      let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
