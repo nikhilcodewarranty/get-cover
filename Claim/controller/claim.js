@@ -2264,12 +2264,12 @@ exports.saveBulkClaim = async (req, res) => {
       let ccMail = [];
       const csvArray = totalDataComing.map((item, i) => {
         //Build bulk csv for dealer only 
-        if (req.role == 'Dealer') {
-       
+        if (req.role == 'Dealer') {       
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs = IDs.concat(req.userId)
           let userData = userService.getUserById1({ accountId: userId, isPrimary: true }, {})
+          console.log("userData======================",userData)
           toMail = userData.email
           if (req.userId.toString() == item.orderData?.order?.dealerId?.toString()) {
             return {
