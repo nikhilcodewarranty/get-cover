@@ -2265,6 +2265,7 @@ exports.saveBulkClaim = async (req, res) => {
       const csvArray = totalDataComing.map((item, i) => {
         //Build bulk csv for dealer only 
         if (req.role == 'Dealer') {
+       
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs = IDs.concat(req.userId)
@@ -2391,6 +2392,10 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
       //send Email to admin 
+
+      console.log("============================",new_admin_array)
+      console.log("==========================toMail==",toMail)
+      console.log("===========================ccMail=",ccMail)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
