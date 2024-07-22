@@ -168,7 +168,7 @@ exports.createServiceProvider = async (req, res, next) => {
           return;
         };
       }
-      
+
       if (data.email != data.oldEmail) {
         let emailCheck = await userService.findOneUser({ email: data.email });
         if (emailCheck) {
@@ -220,7 +220,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
-     
+
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
@@ -238,7 +238,7 @@ exports.createServiceProvider = async (req, res, next) => {
           }
         }
       }
-      
+
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
       IDs.push(data.providerId)
@@ -342,10 +342,8 @@ exports.approveServicer = async (req, res, next) => {
     let teamMembers = data.members
     // to string to object 
     let getUserId = await userService.findOneUser({ accountId: checkDetail._id, isPrimary: true }, {})
-    // console.log("getUserId================",getUserId);
-    // return;
-
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+
     if (!updateServicer) {
       res.send({
         code: constant.errorCode,
@@ -358,9 +356,9 @@ exports.approveServicer = async (req, res, next) => {
 
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
-
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
+
     res.send({
       code: constant.successCode,
       message: "Approve successfully",
@@ -437,6 +435,7 @@ exports.getServicer = async (req, res) => {
         }
       },
     ]
+
     let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
     const result_Array = servicerUser.map(item1 => {
@@ -491,6 +490,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       })
       return;
     };
+    
     let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
     let claimQueryAggregate = [
@@ -850,7 +850,7 @@ exports.updateStatus = async (req, res) => {
     }
 
     // Send Email code here
-    let notificationEmails = await supportingFunction.getUserEmails();  
+    let notificationEmails = await supportingFunction.getUserEmails();
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
     let emailData = {
@@ -858,7 +858,7 @@ exports.updateStatus = async (req, res) => {
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
     }
-  
+
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     //Save Logs
     let logData = {
@@ -1093,7 +1093,7 @@ exports.registerServiceProvider = async (req, res) => {
     };
 
     // Create the user
-    const createNotification = await userService.createNotification(notificationData);   
+    const createNotification = await userService.createNotification(notificationData);
     let emailData = {
       dealerName: ServicerMeta.name,
       c1: "Thank you for",
@@ -1512,7 +1512,7 @@ exports.getServicerDealers = async (req, res) => {
     ]
 
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
-   
+
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
@@ -1526,7 +1526,7 @@ exports.getServicerDealers = async (req, res) => {
       } else {
         return dealerData.toObject();
       }
-    });  
+    });
 
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1807,7 +1807,7 @@ exports.getServicerClaims = async (req, res) => {
 
     let claimPaidStatus = {}
     if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
-      claimPaidStatus =   { "claimPaymentStatus": data.claimPaidStatus }
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
     }
     else {
       claimPaidStatus = {
