@@ -2140,7 +2140,7 @@ exports.updateUserData = async (req, res) => {
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
         senderName: updateUser.firstName,
-        content: "The user information has been updated successfully!.",
+        content: "The user information has been updated successfully.",
         subject: "Update User Info"
       }
     }
@@ -3173,7 +3173,9 @@ exports.getDashboardInfo = async (req, res) => {
       }
     },
     { $sort: { unique_key: -1 } }]
-  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+  const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 0, 5)
+  // res.json(lastFiveOrder);
+  // return;
   const claimQuery = [
     {
       $sort: {
