@@ -3672,7 +3672,6 @@ exports.markAsPaid = async (req, res) => {
                         products: pricebookDetail,
                         orderAmount: data.orderAmount,
                         dealerId: checkOrder.dealerId,
-                        // dealerPriceBook: dealerBookDetail
                     }
                     await supportingFunction.reportingData(reportingData)
                 }
