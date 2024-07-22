@@ -3957,7 +3957,7 @@ exports.editOrderDetail = async (req, res) => {
                             orderId: savedResponse._id,
                             products: pricebookDetail,
                             orderAmount: data.orderAmount,
-                            dealerId: data.dealerId,
+                            dealerId: req.userId,
                             // dealerPriceBook: dealerBookDetail
                         }
 
