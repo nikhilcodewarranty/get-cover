@@ -367,14 +367,14 @@ exports.weeklySales = async (data, req, res) => {
             weeklyQuery1[0].$match.dealerId = dealerId
         }
 
-        if (data.priceBookId.length != 0) {
-            weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-        }
-
         if (data.categoryId != "") {
             weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
+        }
+
+        if (data.priceBookId.length != 0) {
+            weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
         }
 
         if (data.orderId) {
@@ -750,20 +750,22 @@ exports.daySale = async (data) => {
             dailyQuery1[0].$match.dealerId = dealerId
         }
 
-        if (data.priceBookId.length != 0) {
-            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-        }
+
         if (data.orderId) {
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
+
         if (data.categoryId != "") {
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
 
         }
 
+        if (data.priceBookId.length != 0) {
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+        }
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
@@ -954,15 +956,17 @@ exports.dailySales1 = async (data, req, res) => {
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
 
-        if (data.priceBookId.length != 0) {
-            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-        }
 
         if (data.categoryId != "") {
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
         }
+
+        if (data.priceBookId.length != 0) {
+            dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+            dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
+        }
+
 
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
@@ -2333,7 +2337,7 @@ exports.claimReportinDropdown = async (req, res) => {
 
                 if (data.categoryId != "") {
                     getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-                   
+
                 }
 
                 if (data.priceBookId.length != 0 && data.categoryId == "") {
