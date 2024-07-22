@@ -79,12 +79,14 @@ exports.createCustomer = async (req, res, next) => {
       accountStatus: "Approved",
       dealerName: checkDealer.name,
     }
+
     let teamMembers = data.members
     const emailSet = new Set();
     let isDuplicate = false;
     let emailsToCheck = teamMembers.map(member => member.email);
     let queryEmails = { email: { $in: emailsToCheck } };
     let checkEmails = await customerService.getAllCustomers(queryEmails, {});
+    
     if (checkEmails.length > 0) {
       res.send({
         code: constant.errorCode,

@@ -1966,6 +1966,7 @@ exports.saveBulkClaim = async (req, res) => {
       })
 
       let cache = {};
+
       totalDataComing.forEach((data, i) => {
         if (!data.exit) {
           if (cache[data.contractId?.toLowerCase()]) {
@@ -1986,6 +1987,8 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
+
+      // get contract with dealer,reseller, servicer 
       const contractArray = await Promise.all(contractArrayPromise);
 
       //Check servicer is exist or not using contract id
@@ -2182,7 +2185,7 @@ exports.saveBulkClaim = async (req, res) => {
           servicerId = data.servicerData?.resellerId
         }
         emailServicerId.push(servicerId);
-       // emailDealerId.push(data.orderData?.order?.dealerId);
+        // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
             contractId: data.contractData._id,
@@ -2227,7 +2230,6 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId;
         }
-
         if (!existArray.data[servicerId]) {
           existArray.data[servicerId] = [];
         }
@@ -2239,7 +2241,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
 
       });
- 
+
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
         IDs = IDs.concat(emailServicerId)
@@ -2264,92 +2266,92 @@ exports.saveBulkClaim = async (req, res) => {
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only 
         if (req.role === 'Dealer') {
-            const userId = req.userId;
-            ccMail = new_admin_array;
-            IDs = IDs.concat(req.userId);
-            let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
-            toMail = userData.email;
-           // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
-                return {
-                    contractId: item.contractId || "",
-                    servicerName: item.servicerName || "",
-                    lossDate: item.lossDate || '',
-                    diagnosis: item.diagnosis || '',
-                    status: item.status || '',
-                };
-            //}
+          const userId = req.userId;
+          ccMail = new_admin_array;
+          IDs = IDs.concat(req.userId);
+          let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          toMail = userData.email;
+          // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+          return {
+            contractId: item.contractId || "",
+            servicerName: item.servicerName || "",
+            lossDate: item.lossDate || '',
+            diagnosis: item.diagnosis || '',
+            status: item.status || '',
+          };
+          //}
         }
         // Build bulk csv for Reseller only 
         else if (req.role === 'Reseller') {
-            const userId = req.userId;
-            // Get Reseller by id
-            const reseller = await resellerService.getReseller({ _id: req.userId }, {});
-            // Get dealer by id
-            const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-            let resellerData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
-            // Get dealer info
-            let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
-            IDs.push(req.teammateId);
-            IDs.push(dealerData._id);
-            new_admin_array.push(dealerData.email);
-            toMail = resellerData.email;
-            ccMail = new_admin_array;
-            //if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
-                return {
-                    contractId: item.contractId || "",
-                    servicerName: item.servicerName || "",
-                    lossDate: item.lossDate || '',
-                    diagnosis: item.diagnosis || '',
-                    status: item.status || '',
-                };
-            //}
+          const userId = req.userId;
+          // Get Reseller by id
+          const reseller = await resellerService.getReseller({ _id: req.userId }, {});
+          // Get dealer by id
+          const dealer = await dealerService.getDealerById(reseller.dealerId, {});
+          let resellerData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          // Get dealer info
+          let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
+          IDs.push(req.teammateId);
+          IDs.push(dealerData._id);
+          new_admin_array.push(dealerData.email);
+          toMail = resellerData.email;
+          ccMail = new_admin_array;
+          //if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+          return {
+            contractId: item.contractId || "",
+            servicerName: item.servicerName || "",
+            lossDate: item.lossDate || '',
+            diagnosis: item.diagnosis || '',
+            status: item.status || '',
+          };
+          //}
         }
         // Build bulk csv for Customer only 
         else if (req.role === 'Customer') {
-            const userId = req.userId;
-            // Get customer
-            const customer = await customerService.getCustomerById({ _id: req.userId });
-            if (customer?.resellerId) {
-                // Get Reseller by id
-                const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-                let resellerData = await userService.getUserById1({ accountId: reseller._id, isPrimary: true }, {});
-                new_admin_array.push(resellerData.email);
-                IDs.push(resellerData._id);
-            }
-            // Get dealer by customer
-            const dealer = await dealerService.getDealerById(customer.dealerId, {});
-            // Get dealer info
-            let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
-            // Get customer user info
-            let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
-            new_admin_array.push(dealerData.email);
-            toMail = userData.email;
-            ccMail = new_admin_array;
-            IDs.push(req.teammateId);
-            IDs.push(dealerData._id);
-            //if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
-                return {
-                    contractId: item.contractId || "",
-                    servicerName: item.servicerName || "",
-                    lossDate: item.lossDate || '',
-                    diagnosis: item.diagnosis || '',
-                    status: item.status || '',
-                };
-            //}
+          const userId = req.userId;
+          // Get customer
+          const customer = await customerService.getCustomerById({ _id: req.userId });
+          if (customer?.resellerId) {
+            // Get Reseller by id
+            const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
+            let resellerData = await userService.getUserById1({ accountId: reseller._id, isPrimary: true }, {});
+            new_admin_array.push(resellerData.email);
+            IDs.push(resellerData._id);
+          }
+          // Get dealer by customer
+          const dealer = await dealerService.getDealerById(customer.dealerId, {});
+          // Get dealer info
+          let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
+          // Get customer user info
+          let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          new_admin_array.push(dealerData.email);
+          toMail = userData.email;
+          ccMail = new_admin_array;
+          IDs.push(req.teammateId);
+          IDs.push(dealerData._id);
+          //if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+          return {
+            contractId: item.contractId || "",
+            servicerName: item.servicerName || "",
+            lossDate: item.lossDate || '',
+            diagnosis: item.diagnosis || '',
+            status: item.status || '',
+          };
+          //}
         } else {
-            toMail = new_admin_array;
-            ccMail = ['ram@yopmail.com'];
-            return {
-                contractId: item.contractId || "",
-                servicerName: item.servicerName || "",
-                lossDate: item.lossDate || '',
-                diagnosis: item.diagnosis || '',
-                status: item.status || '',
-            };
+          toMail = new_admin_array;
+          ccMail = ['ram@yopmail.com'];
+          return {
+            contractId: item.contractId || "",
+            servicerName: item.servicerName || "",
+            lossDate: item.lossDate || '',
+            diagnosis: item.diagnosis || '',
+            status: item.status || '',
+          };
         }
-    }));
-    
-    //Convert Array to HTML table
+      }));
+
+      //Convert Array to HTML table
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
