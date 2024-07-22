@@ -871,3 +871,217 @@ exports.claimReporting = async (req, res) => {
     }
 }
 
+//get dashboard info
+exports.getDashboardInfo = async (req, res) => {
+
+    let query = [
+        {
+            $match: {
+                servicerId: new mongoose.Types.ObjectId(req.userId)
+            }
+        }
+    ]
+    let getRelations = await dealerRelationService.getDealerRelationsAggregate(query)
+    let dealerIds = getRelations.map(ID => new mongoose.Types.ObjectId(ID.dealerId))
+
+    let orderQuery = [
+        {
+            $match: { status: "Active" }
+        },
+        {
+            "$addFields": {
+                "noOfProducts": {
+                    "$sum": "$productsArray.checkNumberProducts"
+                },
+                totalOrderAmount: { $sum: "$orderAmount" },
+
+            }
+        },
+        { $sort: { unique_key: -1 } }]
+    const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+    const claimQuery = [
+        {
+            $match: {
+                $and: [
+                    { servicerId: new mongoose.Types.ObjectId(req.userId) },
+                    { claimFile: "Completed" }
+                ]
+            }
+        },
+        {
+            $sort: {
+                unique_key_number: -1
+            }
+        },
+        {
+            $limit: 5
+        },
+        {
+            $lookup: {
+                from: "contracts",
+                localField: "contractId",
+                foreignField: "_id",
+                as: "contract"
+            }
+        },
+        {
+            $unwind: "$contract"
+        },
+        {
+            $project: {
+                unique_key: 1,
+                "contract.unique_key": 1,
+                unique_key_number: 1,
+                totalAmount: 1
+            }
+        },
+    ]
+    const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
+    let lookupQuery = [
+        {
+            $match: { _id: { $in: dealerIds } }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "users",
+                pipeline: [
+                    {
+                        $match: {
+                            isPrimary: true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $lookup: {
+                from: "orders",
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "order",
+                pipeline: [
+                    {
+                        $match: { status: "Active" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$order.dealerId",
+                            "totalOrder": { "$sum": 1 },
+                            "totalAmount": {
+                                "$sum": "$orderAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                totalAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$order.totalAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalOrder: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
+                        then: { $arrayElemAt: ["$order.totalOrder", 0] },
+                        else: 0
+                    }
+                },
+                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+            }
+        },
+
+        { "$sort": { totalAmount: -1 } },
+        { "$limit": 5 }  // Apply limit again after sorting
+    ]
+
+    const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
+    let lookupClaim = [
+        {
+            $match: {
+                dealerId: null,
+                resellerId: null
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "_id",
+                foreignField: "metaId",
+                as: "users",
+                pipeline: [
+                    {
+                        $match: {
+                            isPrimary: true
+                        }
+                    }
+                ]
+            }
+        },
+
+        {
+            $lookup: {
+                from: "claims",
+                localField: "_id",
+                foreignField: "servicerId",
+                as: "claims",
+                pipeline: [
+                    {
+                        $match: { claimFile: "Completed" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$servicerId",
+                            "totalClaim": { "$sum": 1 },
+                            "totalClaimAmount": {
+                                "$sum": "$totalAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                totalClaimAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalClaim: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaim", 0] },
+                        else: 0
+                    }
+                },
+                'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
+
+            }
+        },
+
+        { "$sort": { totalClaimAmount: -1 } },
+        { "$limit": 5 }  // Apply limit again after sorting
+    ]
+    const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
+    const result = {
+        lastFiveClaims: getLastNumberOfClaims,
+        topFiveDealer: topFiveDealer,
+    }
+    res.send({
+        code: constant.successCode,
+        result: result
+    })
+}

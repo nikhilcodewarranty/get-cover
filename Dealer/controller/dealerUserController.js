@@ -4384,7 +4384,6 @@ exports.editOrderDetail = async (req, res) => {
                     //generate T anc C
 
                     if (index == checkLength) {
-
                         let reportingData = {
                             orderId: savedResponse._id,
                             products: pricebookDetail,
@@ -6283,8 +6282,11 @@ exports.getDashboardInfo = async (req, res) => {
 
             }
         },
-        { $sort: { unique_key: -1 } }]
-    const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 5, 5)
+        { $sort: { unique_key_number: -1 } },
+        {
+          $limit: 5
+        }]
+    const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 0, 5)
     const claimQuery = [
         {
             $match: {

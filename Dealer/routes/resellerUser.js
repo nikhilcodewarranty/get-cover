@@ -28,6 +28,7 @@ router.post("/resellerOrders", [verifyToken], resellerController.getResellerOrde
 router.post("/getResellerContract", [verifyToken], resellerController.getResellerContract);
 router.post('/getCategoryAndPriceBooks', [verifyToken], resellerController.getCategoryAndPriceBooks)
 router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail)
+router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
 
 router.put("/editResellers", [verifyToken], resellerController.editResellers);
 module.exports = router; 

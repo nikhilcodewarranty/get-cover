@@ -16,6 +16,7 @@ router.get("/getUserId/:userId", [verifyToken], servicerController.getUserId)
 router.post("/createRelationWithDealer", [verifyToken], servicerController.createDeleteRelation)
 router.post("/saleReporting", [verifyToken], servicerController.saleReporting)
 router.post("/claimReporting", [verifyToken], servicerController.claimReporting)
+router.get("/getDashboardInfo", [verifyToken], servicerController.getDashboardInfo)
 
 
 module.exports = router;

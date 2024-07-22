@@ -725,7 +725,7 @@ exports.createDealer = async (req, res) => {
                   link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                   lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                   address: settingData[0]?.address,
-                  title:settingData[0]?.title,
+                  title: settingData[0]?.title,
                   role: req.role,
                   dealerName: createUsers[i].firstName
                 }))
@@ -737,8 +737,8 @@ exports.createDealer = async (req, res) => {
             let resetPrimaryLink = `${process.env.SITE_URL}newPassword/${singleDealerUser._id}/${resetPrimaryCode}`
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, {
               link: resetPrimaryLink,
-               darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-               title:settingData[0]?.title,
+              darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+              title: settingData[0]?.title,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
               address: settingData[0]?.address, role: req.role, dealerName: singleDealerUser.firstName
             }))
@@ -1139,7 +1139,7 @@ exports.createDealer = async (req, res) => {
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, {
                   link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                   lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                  title:settingData[0]?.title,
+                  title: settingData[0]?.title,
                   address: settingData[0]?.address, dealerName: createUsers[i].firstName
                 }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -1151,7 +1151,7 @@ exports.createDealer = async (req, res) => {
             let mailingPrimary = sgMail.send(emailConstant.dealerApproval(singleDealerUser.email, {
               link: resetPrimaryLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-              title:settingData[0]?.title,
+              title: settingData[0]?.title,
               address: settingData[0]?.address, dealerName: singleDealerUser.firstName
             }))
             let updatePrimaryStatus = await userService.updateUser({ _id: singleDealerUser._id }, { resetPasswordCode: resetPrimaryCode, isResetPassword: true }, { new: true })
@@ -1394,7 +1394,7 @@ exports.createDealer = async (req, res) => {
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, {
                   link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                   lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                  title:settingData[0]?.title,
+                  title: settingData[0]?.title,
                   address: settingData[0]?.address, role: req.role, dealerName: createUsers[i].firstName
                 }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -1775,7 +1775,7 @@ exports.createDealer = async (req, res) => {
                 let mailing = sgMail.send(emailConstant.dealerApproval(email, {
                   link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                   lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                  title:settingData[0]?.title,
+                  title: settingData[0]?.title,
                   address: settingData[0]?.address, role: req.role, dealerName: createUsers[i].firstName
                 }))
                 let updateStatus = await userService.updateUser({ _id: userId }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
@@ -3172,7 +3172,11 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-    { $sort: { unique_key: -1 } }]
+    { $sort: { unique_key_number: -1 } },
+    {
+      $limit: 5
+    }
+  ]
   const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 0, 5)
   // res.json(lastFiveOrder);
   // return;

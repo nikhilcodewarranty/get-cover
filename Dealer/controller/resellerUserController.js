@@ -3898,6 +3898,89 @@ exports.getResellerClaims = async (req, res) => {
     }
 }
 
+//Get dashboard data
+exports.getDashboardInfo = async (req, res) => {
+    try {
+        let checkReseller = await resellerService.getReseller({ _id: req.userId })
+
+        let orderQuery = [
+            {
+                $match: { status: "Active", resellerId: new mongoose.Types.ObjectId(checkReseller._id) },
+
+            },
+            {
+                "$addFields": {
+                    "noOfProducts": {
+                        "$sum": "$productsArray.checkNumberProducts"
+                    },
+                    totalOrderAmount: { $sum: "$orderAmount" },
+
+                }
+            },
+            { $sort: { unique_key_number: -1 } },
+            {
+                $limit: 5
+            },
+        ]
+        const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 1, 5)
+        const claimQuery = [
+            {
+                $match: {
+                    $and: [
+                        {
+                            resellerId: new mongoose.Types.ObjectId(checkReseller._id)
+                        },
+                        { claimFile: "Completed" }
+                    ]
+                }
+            },
+            {
+                $sort: {
+                    unique_key_number: -1
+                }
+            },
+            {
+                $limit: 5
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "contractId",
+                    foreignField: "_id",
+                    as: "contract"
+                }
+            },
+            {
+                $unwind: "$contract"
+            },
+            {
+                $project: {
+                    unique_key: 1,
+                    "contract.unique_key": 1,
+                    unique_key_number: 1,
+                    totalAmount: 1
+                }
+            },
+        ]
+        const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
+
+        const result = {
+            lastFiveOrder: lastFiveOrder,
+            lastFiveClaims: getLastNumberOfClaims,
+
+        }
+        res.send({
+            code: constant.successCode,
+            result: result
+        })
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+}
+
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
@@ -4049,3 +4132,6 @@ exports.getDashboardData = async (req, res) => {
         })
     }
 };
+
+
+

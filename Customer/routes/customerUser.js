@@ -16,6 +16,7 @@ router.get('/getContractById/:contractId',[verifyToken],customerController.getCo
 router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingleOrder)
 router.get('/getDashboardData',[verifyToken],customerController.getDashboardData)
 router.get('/getCustomerDetails',[verifyToken],customerController.getCustomerDetails)
+router.get('/getDashboardInfo', [verifyToken], customerController.getDashboardInfo)
 
 
 
