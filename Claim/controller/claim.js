@@ -2173,7 +2173,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
-      let emailDealerId = [];
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
         if (data.servicerData?.dealerId) {
@@ -2240,7 +2239,7 @@ exports.saveBulkClaim = async (req, res) => {
         });
 
       });
-
+ 
       // If you need to convert existArray.data to a flat array format
       if (emailServicer.length > 0) {
         IDs = IDs.concat(emailServicerId)
@@ -2270,7 +2269,7 @@ exports.saveBulkClaim = async (req, res) => {
             IDs = IDs.concat(req.userId);
             let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
             toMail = userData.email;
-            if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+           // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
                 return {
                     contractId: item.contractId || "",
                     servicerName: item.servicerName || "",
@@ -2278,7 +2277,7 @@ exports.saveBulkClaim = async (req, res) => {
                     diagnosis: item.diagnosis || '',
                     status: item.status || '',
                 };
-            }
+            //}
         }
         // Build bulk csv for Reseller only 
         else if (req.role === 'Reseller') {
@@ -2295,7 +2294,7 @@ exports.saveBulkClaim = async (req, res) => {
             new_admin_array.push(dealerData.email);
             toMail = resellerData.email;
             ccMail = new_admin_array;
-            if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+            //if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
                 return {
                     contractId: item.contractId || "",
                     servicerName: item.servicerName || "",
@@ -2303,14 +2302,14 @@ exports.saveBulkClaim = async (req, res) => {
                     diagnosis: item.diagnosis || '',
                     status: item.status || '',
                 };
-            }
+            //}
         }
         // Build bulk csv for Customer only 
         else if (req.role === 'Customer') {
             const userId = req.userId;
             // Get customer
             const customer = await customerService.getCustomerById({ _id: req.userId });
-            if (customer.resellerId) {
+            if (customer?.resellerId) {
                 // Get Reseller by id
                 const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
                 let resellerData = await userService.getUserById1({ accountId: reseller._id, isPrimary: true }, {});
@@ -2328,7 +2327,7 @@ exports.saveBulkClaim = async (req, res) => {
             ccMail = new_admin_array;
             IDs.push(req.teammateId);
             IDs.push(dealerData._id);
-            if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+            //if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
                 return {
                     contractId: item.contractId || "",
                     servicerName: item.servicerName || "",
@@ -2336,7 +2335,7 @@ exports.saveBulkClaim = async (req, res) => {
                     diagnosis: item.diagnosis || '',
                     status: item.status || '',
                 };
-            }
+            //}
         } else {
             toMail = new_admin_array;
             ccMail = ['ram@yopmail.com'];
@@ -2350,7 +2349,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
     }));
     
-
+    //Convert Array to HTML table
       function convertArrayToHTMLTable(array) {
         const header = Object.keys(array[0]).map(key => `<th>${key}</th>`).join('');
         const rows = array.map(obj => {
