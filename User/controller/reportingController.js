@@ -43,231 +43,7 @@ const orderService = require("../../Order/services/orderService");
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");
-// daily query for reporting 
-exports.dailySale = async (req, res) => {
-    try {
-        let data = req.body
-        let query;
-        const today = new Date();
-        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-        const datesArray = [];
-        let currentDate = new Date(startOfMonth);
 
-        while (currentDate <= endOfMonth) {
-            datesArray.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        let dailyQuery = [
-            {
-                $match: {
-                    status: "Active",
-                    updatedAt: { $gte: startOfMonth, $lte: endOfMonth }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    total_order_amount: { $sum: "$orderAmount" },
-                    total_orders: { $sum: 1 }
-                }
-            },
-            {
-                $sort: { _id: -1 } // Sort by date in ascending order
-            }
-        ]
-
-        let getOrders = await REPORTING.find();
-        if (!getOrders) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the details"
-            })
-            return;
-        }
-
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: getOrders
-        })
-
-
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-};
-
-//Get daily sales report
-exports.dailySales = async (req, res) => {
-    try {
-        let data = req.body
-        let query;
-
-        let startOfMonth = new Date(data.startDate);
-        let endOfMonth = new Date(data.endDate);
-
-        if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
-            return res.status(400).send('Invalid date format');
-        }
-
-        let datesArray = [];
-        let currentDate = new Date(startOfMonth);
-        while (currentDate <= endOfMonth) {
-            datesArray.push(new Date(currentDate));
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-
-        let dailyQuery = [
-            {
-                $match: {
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
-                }
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    total_order_amount: { $sum: "$orderAmount" },
-                    total_orders: { $sum: 1 },
-                }
-            },
-            {
-                $sort: { _id: 1 } // Sort by date in ascending order
-            }
-        ];
-
-        let dailyQuery1 = [
-            {
-                $match: {
-                    createdAt: { $gte: startOfMonth, $lte: endOfMonth }
-                }
-            },
-            {
-                $unwind: "$products"
-            },
-            {
-                $group: {
-                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
-                    total_broker_fee: { $sum: "$products.brokerFee" },
-                    total_admin_fee: { $sum: "$products.adminFee" },
-                    total_fronting_fee: { $sum: "$products.frontingFee" },
-                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
-                    total_retail_price: { $sum: "$products.retailPrice" },
-                }
-            },
-            {
-                $sort: { _id: 1 } // Sort by date in ascending order
-            }
-        ];
-
-        if (data.dealerId != "") {
-            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            dailyQuery[0].$match.dealerId = dealerId
-            dailyQuery1[0].$match.dealerId = dealerId
-        }
-
-        if (data.priceBookId != "") {
-            dailyQuery[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-            dailyQuery1[0].$match.products = { $elemMatch: { name: data.priceBookId } }
-        }
-
-        if (data.categoryId != "") {
-            dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-            dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-        }
-
-        let getOrders = await REPORTING.aggregate(dailyQuery);
-        let getOrders1 = await REPORTING.aggregate(dailyQuery1);
-        if (!getOrders) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the details"
-            })
-            return;
-        }
-
-        const result = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0, 10);
-            const order = getOrders.find(item => item._id === dateString);
-            return {
-                date: dateString,
-                total_order_amount: order ? order.total_order_amount : 0,
-                total_orders: order ? order.total_orders : 0,
-                total_broker_fee: order ? order.total_broker_fee : 0
-
-            };
-        });
-
-        const result1 = datesArray.map(date => {
-            const dateString = date.toISOString().slice(0, 10);
-            const order = getOrders1.find(item => item._id === dateString);
-            return {
-
-                total_broker_fee: { $sum: "$products.brokerFee" },
-                total_admin_fee: { $sum: "$products.adminFee" },
-                total_fronting_fee: { $sum: "$products.frontingFee" },
-                total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
-                total_retail_price: { $sum: "$products.retailPrice" },
-                date: dateString,
-                total_broker_fee: order ? order.total_broker_fee : 0,
-                total_admin_fee: order ? order.total_admin_fee : 0,
-                total_fronting_fee: order ? order.total_fronting_fee : 0,
-                total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
-                total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
-                total_retail_price: order ? order.total_retail_price : 0,
-
-            };
-        });
-
-        const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.date === item.date);
-            return {
-                ...item,
-                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
-                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
-                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
-                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-            };
-        });
-
-        const totalFees = mergedResult.reduce((acc, curr) => {
-            acc.total_broker_fee += curr.total_broker_fee || 0;
-            acc.total_admin_fee += curr.total_admin_fee || 0;
-            acc.total_fronting_fee += curr.total_fronting_fee || 0;
-            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
-            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
-            return acc;
-        }, {
-            total_broker_fee: 0,
-            total_admin_fee: 0,
-            total_fronting_fee: 0,
-            total_reserve_future_fee: 0,
-            total_reinsurance_fee: 0
-        });
-
-
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: result, result1, mergedResult, totalFees
-        })
-
-
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-};
 
 //weekly grouping of the data
 exports.weeklySales = async (data, req, res) => {
@@ -492,201 +268,6 @@ exports.weeklySales = async (data, req, res) => {
     }
 };
 
-//Weekly sales order
-exports.weeklySalesOrder = async (req, res) => {
-    try {
-        const data = req.body;
-
-        // Parse startDate and endDate from request body
-        const startDate = moment(data.startDate).startOf('day');
-        const endDate = moment(data.endDate).endOf('day');
-        // Calculate start and end of the week for the given dates
-        const startOfWeekDate = moment(startDate).startOf('isoWeek');
-        const endOfWeekDate = moment(endDate).endOf('isoWeek');
-
-        // Example: Logging calculated week start and end dates
-        // Create an array of dates for each week within the specified range
-        const datesArray = [];
-        let currentDate = moment(startOfWeekDate);
-        let currentDate1 = moment(startDate);
-
-        while (currentDate <= endOfWeekDate) {
-            datesArray.push(currentDate.clone()); // Use clone to avoid mutating currentDate
-            currentDate = currentDate
-            currentDate.add(1, 'week');
-        }
-
-        // Example: Logging array of dates for debugging
-        // MongoDB aggregation pipeline based on filterFlag
-        let weeklyQuery = [
-            {
-                $match: {
-                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
-                }
-            },
-            {
-                $addFields: {
-                    weekStart: {
-                        $dateTrunc: {
-                            date: "$createdAt",
-                            unit: "week",
-                            binSize: 1,
-                            timezone: "UTC",
-                            startOfWeek: "monday"
-                        }
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: "$weekStart",
-                    total_order_amount: { $sum: "$orderAmount" },
-                    total_orders: { $sum: 1 }
-                }
-            },
-            {
-                $sort: { _id: 1 } // Sort by week start date in ascending order
-            }
-        ];
-
-        let weeklyQuery1 = [
-            {
-                $match: {
-                    createdAt: { $gte: startDate.toDate(), $lte: endDate.toDate() }
-                }
-            },
-            {
-                $addFields: {
-                    weekStart: {
-                        $dateTrunc: {
-                            date: "$createdAt",
-                            unit: "week",
-                            binSize: 1,
-                            timezone: "UTC",
-                            startOfWeek: "monday"
-                        }
-                    }
-                }
-            },
-            {
-                $unwind: "$products"
-            },
-            {
-                $group: {
-                    _id: "$weekStart",
-                    total_broker_fee: { $sum: "$products.brokerFee" },
-                    total_admin_fee: { $sum: "$products.adminFee" },
-                    total_fronting_fee: { $sum: "$products.frontingFee" },
-                    total_reserve_future_fee: { $sum: "$products.reserveFutureFee" },
-                    total_reinsurance_fee: { $sum: "$products.reinsuranceFee" },
-                    total_retail_price: { $sum: "$products.retailPrice" },
-                    total_contracts: { $sum: "$products.noOfProducts" },
-                }
-            },
-            {
-                $sort: { _id: 1 } // Sort by date in ascending order
-            }
-        ];
-
-        if (data.dealerId != "") {
-            let dealerId = new mongoose.Types.ObjectId(data.dealerId)
-            weeklyQuery[0].$match.dealerId = dealerId
-            weeklyQuery1[0].$match.dealerId = dealerId
-        }
-
-        if (data.priceBookId.length != 0) {
-            weeklyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-            weeklyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
-        }
-
-        if (data.orderId) {
-            dailyQuery[0].$match.orderId = { $in: data.orderId }
-            dailyQuery1[0].$match.orderId = { $in: data.orderId }
-        }
-
-        if (data.categoryId != "") {
-            weeklyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-            weeklyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
-        }
-
-        // Perform aggregation query
-        const getOrders = await REPORTING.aggregate(weeklyQuery);
-        const getOrders1 = await REPORTING.aggregate(weeklyQuery1);
-
-        // Example: Logging MongoDB aggregation results for debugging
-        // Prepare response data based on datesArray and MongoDB results
-        const result = datesArray.map(date => {
-            const dateString = date.format('YYYY-MM-DD');
-            const order = getOrders.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
-            return {
-                weekStart: dateString,
-                // total_order_amount: order ? order.total_order_amount : 0,
-                total_orders: order ? order.total_orders : 0
-            };
-        });
-
-
-        const result1 = datesArray.map(date => {
-            const dateString = date.format('YYYY-MM-DD');
-            const order = getOrders1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
-            return {
-                weekStart: dateString,
-                total_fronting_fee: order ? order.total_fronting_fee : 0,
-                total_broker_fee: order ? order.total_broker_fee : 0,
-                total_admin_fee: order ? order.total_admin_fee : 0,
-                total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
-                total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
-                total_retail_price: order ? order.total_retail_price : 0,
-            };
-        });
-
-        const mergedResult = result.map(item => {
-            const match = result1.find(r1 => r1.weekStart === item.weekStart);
-
-            const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
-            const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
-            const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
-            const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
-
-            const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
-
-            return {
-                ...item,
-                total_broker_fee: match ? match.total_broker_fee : item.total_broker_fee,
-                total_admin_fee: match ? match.total_admin_fee : item.total_admin_fee,
-                total_fronting_fee: match ? match.total_fronting_fee : item.total_fronting_fee,
-                total_reserve_future_fee: match ? match.total_reserve_future_fee : item.total_reserve_future_fee,
-                total_reinsurance_fee: match ? match.total_reinsurance_fee : item.total_reinsurance_fee,
-                // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
-                wholesale_price: wholesale_price
-            };
-        });
-
-        const totalFees = mergedResult.reduce((acc, curr) => {
-            acc.total_broker_fee += curr.total_broker_fee || 0;
-            acc.total_admin_fee += curr.total_admin_fee || 0;
-            acc.total_fronting_fee += curr.total_fronting_fee || 0;
-            acc.total_reserve_future_fee += curr.total_reserve_future_fee || 0;
-            acc.total_reinsurance_fee += curr.total_reinsurance_fee || 0;
-            return acc;
-        }, {
-            total_broker_fee: 0,
-            total_admin_fee: 0,
-            total_fronting_fee: 0,
-            total_reserve_future_fee: 0,
-            total_reinsurance_fee: 0
-        });
-
-        // Send success response with result
-        return {
-            graphData: result,
-            // totalFees: totalFees
-        }
-
-    } catch (err) {
-        return { code: constant.errorCode, message: err.message }
-    }
-};
 //Get daily sale
 exports.daySale = async (data) => {
     try {
@@ -878,6 +459,7 @@ exports.daySale = async (data) => {
         });
     }
 };
+
 //Get daily sales1
 exports.dailySales1 = async (data, req, res) => {
     try {
@@ -1092,267 +674,6 @@ exports.dailySales1 = async (data, req, res) => {
 
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
-    }
-};
-
-//Get reporting dealer
-exports.getReportingDealers = async (req, res) => {
-    try {
-        let data = req.body
-        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
-        if (!getDealers) {
-            res.send({
-                code: constant.successCode,
-                message: "Unable to fetch the dealers"
-            })
-            return
-        }
-
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: getDealers
-        })
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-};
-
-//Get price books for reporting
-exports.getReportingPriceBooks = async (req, res) => {
-    try {
-        let data = req.body
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
-        if (!getPriceBooks) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the price books"
-            })
-            return
-        }
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: getPriceBooks
-        })
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-};
-
-//Get categories for reporting
-exports.getReportingCategories = async (req, res) => {
-    try {
-        let data = req.body
-        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let categoriesId = getCategories.map(ID => ID._id)
-        let getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId } }, { name: 1, pName: 1, _id: 1, category: 1 })
-
-        if (data.priceBookId.length != 0) {
-            getPriceBooks = await priceBookService.getAllPriceIds({ category: { $in: categoriesId }, _id: { $in: data.priceBookId } }, { name: 1, pName: 1, _id: 1, category: 1 })
-            let priceBookIds = getPriceBooks.map(ID => ID._id)
-            let getDealerPriceBooks = await dealerPriceService.findAllDealerPrice({ priceBookId: { $in: priceBookIds } })
-        }
-
-        let dealerQuery = [
-            {
-                $match: {
-                    status: "Approved"
-                }
-            },
-            {
-                $lookup: {
-                    from: "dealerpricebooks",
-                    localField: "_id",
-                    foreignField: "dealerId",
-                    as: "dealerPriceBooks"
-                }
-            }
-        ]
-
-        let getDealers = await dealerService.getDealerAndClaims(dealerQuery)
-
-        if (!getCategories) {
-            res.send({
-                code: constant.errorCode,
-                message: "Unable to fetch the catogories"
-            })
-            retrun
-        }
-
-        let result;
-        // chooose conditions on filters
-        if (data.dealerId != "" && data.categoryId == "" && data.priceBookId.length == 0) {
-            let filteredPriceBooks = []
-            let filteredCategories = []
-            for (let i = 0; i < getPriceBooks.length; i++) {
-                let dealers = getPriceBooks[i].dealerIds
-                for (d = 0; d < dealers.length; d++) {
-                    if (data.dealerId.toString() == dealers[d].dealerId.toString()) {
-                        let ccc = getCategories.filter(category => category._id.toString() === getPriceBooks[i].category.toString());
-                        filteredCategories.push(ccc[0])
-                        console.log(ccc)
-                        filteredPriceBooks.push(getPriceBooks[i])
-                    }
-                }
-            }
-            getPriceBooks = filteredPriceBooks
-            const uniqueCategories = Object.values(
-                filteredCategories.reduce((acc, category) => {
-                    acc[category._id] = category;
-                    return acc;
-                }, {})
-            );
-            getCategories = uniqueCategories
-
-            result = {
-                getCategories, getPriceBooks, getDealers
-            }
-            console.log("1st condition_--------------------------------------------------")
-
-        }
-
-        if (data.dealerId == "" && data.categoryId == "" && data.priceBookId.length != 0) {
-
-        }
-        if (data.dealerId == "" && data.categoryId != "" && data.priceBookId.length == 0) {
-            console.log("3rd condition_--------------------------------------------------")
-
-        }
-        if (data.dealerId != "" && data.categoryId == "" && data.priceBookId.length != 0) {
-            console.log("4th condition_--------------------------------------------------")
-
-        }
-        if (data.dealerId != "" && data.categoryId != "" && data.priceBookId.length == 0) {
-            console.log("5th condition_--------------------------------------------------")
-
-        }
-        if (data.dealerId == "" && data.categoryId != "" && data.priceBookId.length != 0) {
-            console.log("6th condition_--------------------------------------------------")
-
-        }
-        if (data.dealerId != "" && data.categoryId != "" && data.priceBookId.length != 0) {
-            console.log("7th condition_--------------------------------------------------")
-
-        }
-        if (data.dealerId == "" && data.categoryId == "" && data.priceBookId.length == 0) {
-            console.log("8th condition_--------------------------------------------------")
-            result = {
-                getCategories, getPriceBooks, getDealers
-            }
-        }
-
-
-        const merged = getCategories.map(category => {
-            const matchedPriceBooks = getPriceBooks.filter(priceBook => priceBook.category.toString() === category._id.toString());
-            return {
-                ...category._doc,
-                priceBooks: matchedPriceBooks
-            };
-        });
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: result, merged
-        })
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
-    }
-};
-
-//Get dropdown for reporting
-exports.getReportingDropdowns = async (req, res) => {
-    try {
-        let data = req.body
-        let result;
-        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
-        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
-        const convertedData = getDealers.map(item => ({
-            value: item._id,
-            label: item.name
-        }));
-
-        let priceBook = getPriceBooks.map(item => ({
-            value: item._id,
-            label: item.name
-        }));
-        let categories = getCategories.map(item => ({
-            value: item._id,
-            label: item.name
-        }));
-
-        result = {
-            getDealers: convertedData,
-            getPriceBooks: priceBook,
-            getCategories: categories
-        }
-
-        if (data.dealerId != "") {
-            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
-            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
-            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
-            let categoriesIds = getPriceBooks1.map(ID => ID.category)
-            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
-            priceBook = getPriceBooks1.map(item => ({
-                value: item._id,
-                label: item.name
-            }));
-
-            categories = getCategories1.map(item => ({
-                value: item._id,
-                label: item.name
-            }));
-
-            result = {
-                getDealers: convertedData,
-                getPriceBooks: priceBook,
-                getCategories: categories
-            }
-            if (data.categoryId != "") {
-                let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-                result = {
-                    getDealers: convertedData,
-                    getPriceBooks: getPriceBooks2,
-                    getCategories: categories
-                }
-            }
-        }
-
-        if (data.categoryId != "" && data.dealerId == "") {
-            let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
-            priceBook = getPriceBooks2.map(item => ({
-                value: item._id,
-                label: item.name
-            }));
-            result = {
-                getDealers: [],
-                getPriceBooks: priceBook,
-                getCategories: categories
-            }
-        }
-
-        res.send({
-            code: constant.successCode,
-            message: "Success",
-            result: result
-        })
-
-    } catch (err) {
-        res.send({
-            code: constant.errorCode,
-            message: err.message
-        })
     }
 };
 
@@ -2285,6 +1606,94 @@ exports.claimDayReporting = async (data) => {
     }
 };
 
+//Get dropdown for reporting
+exports.getReportingDropdowns = async (req, res) => {
+    try {
+        let data = req.body
+        let result;
+        let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
+        let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        const convertedData = getDealers.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+
+        let priceBook = getPriceBooks.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+        let categories = getCategories.map(item => ({
+            value: item._id,
+            label: item.name
+        }));
+
+        result = {
+            getDealers: convertedData,
+            getPriceBooks: priceBook,
+            getCategories: categories
+        }
+
+        if (data.dealerId != "") {
+            let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
+            let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
+            let categoriesIds = getPriceBooks1.map(ID => ID.category)
+            let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
+
+            priceBook = getPriceBooks1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+
+            categories = getCategories1.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+
+            result = {
+                getDealers: convertedData,
+                getPriceBooks: priceBook,
+                getCategories: categories
+            }
+            if (data.categoryId != "") {
+                let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                result = {
+                    getDealers: convertedData,
+                    getPriceBooks: getPriceBooks2,
+                    getCategories: categories
+                }
+            }
+        }
+
+        if (data.categoryId != "" && data.dealerId == "") {
+            let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
+            priceBook = getPriceBooks2.map(item => ({
+                value: item._id,
+                label: item.name
+            }));
+            result = {
+                getDealers: [],
+                getPriceBooks: priceBook,
+                getCategories: categories
+            }
+        }
+
+        res.send({
+            code: constant.successCode,
+            message: "Success",
+            result: result
+        })
+
+    } catch (err) {
+        res.send({
+            code: constant.errorCode,
+            message: err.message
+        })
+    }
+};
+
+// drop down values for claim reporting
 exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body

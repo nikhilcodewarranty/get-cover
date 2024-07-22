@@ -58,14 +58,6 @@ exports.customerOrders = async (req, res) => {
       {
         $match: query
       },
-      // {
-      //   $lookup: {
-      //     from: "contracts",
-      //     localField: "_id",
-      //     foreignField: "orderId",
-      //     as: "contract"
-      //   }
-      // },
       {
         $project: project,
       },
@@ -79,7 +71,6 @@ exports.customerOrders = async (req, res) => {
             $cond: {
               if: {
                 $and: [
-                  // { $eq: ["$payment.status", "paid"] },
                   { $ne: ["$productsArray.orderFile.fileName", ''] },
                   { $ne: ["$customerId", null] },
                   { $ne: ["$paymentStatus", 'Paid'] },
@@ -95,16 +86,12 @@ exports.customerOrders = async (req, res) => {
       { $sort: { unique_key: -1 } }
     ]
 
-
-
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
 
 
     let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
-
-    //let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.userId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
 
     //Get Respective dealer
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
@@ -116,11 +103,13 @@ exports.customerOrders = async (req, res) => {
       .map(result => result.resellerId.toString());
 
     let mergedArray = userDealerIds.concat(userResellerIds);
+
     //Get Respective Dealers
     let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
       name: 1,
       isServicer: 1,
     });
+
     //Get Order Customer
     let customerIdsArray = ordersResult.map((result) => result.customerId);
     const customerCreteria = { _id: { $in: customerIdsArray } };
@@ -128,8 +117,8 @@ exports.customerOrders = async (req, res) => {
       customerCreteria,
       { username: 1 }
     );
-    //Get Respective Reseller
 
+    //Get Respective Reseller
     let resellerIdsArray = ordersResult.map((result) => result.resellerId);
     const resellerCreteria = { _id: { $in: resellerIdsArray } };
     let respectiveReseller = await resellerService.getResellers(
@@ -232,14 +221,6 @@ exports.customerOrders = async (req, res) => {
         status.test(entry.status)
       );
     });
-    // const updatedArray = filteredData.map((item) => ({
-    //   ...item,
-    //   servicerName: item.dealerName.isServicer
-    //     ? item.dealerName
-    //     : item.resellerName.isServicer
-    //       ? item.resellerName
-    //       : item.servicerName,
-    // }));
 
     const updatedArray = filteredData.map(item => {
       let username = null; // Initialize username as null
@@ -312,15 +293,9 @@ exports.customerOrders = async (req, res) => {
   }
 }
 
+// get single order api
 exports.getSingleOrder = async (req, res) => {
   try {
-    // if (req.role != "Super Admin") {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only super admin allow to do this action",
-    //     });
-    //     return;
-    // }
     let projection = { isDeleted: 0 };
     let query = { _id: req.params.orderId };
     let checkOrder = await orderService.getOrder(query, projection);
@@ -349,10 +324,7 @@ exports.getSingleOrder = async (req, res) => {
       return product;
     }));
 
-
-    // return
     //Get Dealer Data
-
     let dealer = await dealerService.getDealerById(checkOrder.dealerId, { isDeleted: 0 });
 
     //Get customer Data
@@ -435,6 +407,7 @@ exports.getSingleOrder = async (req, res) => {
   }
 };
 
+//edit customer api
 exports.editCustomer = async (req, res) => {
   try {
     let data = req.body
@@ -447,16 +420,6 @@ exports.editCustomer = async (req, res) => {
       return;
     };
 
-    // if(data.oldName != data.username){
-    //   let checkName =  await customerService.getCustomerByName({username:data.username})
-    //   if(checkName){
-    //     res.send({
-    //       code:constant.errorCode,
-    //       message:"Customer already exist with this account name"
-    //     })
-    //     return;
-    //   };
-    // }
     let criteria1 = { _id: checkDealer._id }
     let option = { new: true }
     let updateCustomer = await customerService.updateCustomer(criteria1, data, option)
@@ -475,14 +438,6 @@ exports.editCustomer = async (req, res) => {
 
     }
 
-    // let updateDetail = await userService.updateUser({ _id: req.data.userId }, data, { new: true })
-    // if (!updateDetail) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: `Fail to edit`
-    //   })
-    //   return;
-    // };
     res.send({
       code: constant.successCode,
       message: "Updated successfully"
@@ -495,239 +450,7 @@ exports.editCustomer = async (req, res) => {
   }
 }
 
-// contracts api
-// exports.getCustomerContract = async (req, res) => {
-//   try {
-//     let data = req.body
-//     let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
-//     if (!getCustomerOrder) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the data"
-//       })
-//       return
-//     }
-//     let orderIDs = getCustomerOrder.map((ID) => ID._id)
-//     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
-//     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
-//     let limitData = Number(pageLimit)
-//     let newQuery = [];
-//     data.servicerName = data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : ''
-
-//     if (data.servicerName) {
-//       newQuery.push(
-//         {
-//           $lookup: {
-//             from: "serviceproviders",
-//             localField: "order.servicerId",
-//             foreignField: "_id",
-//             as: "order.servicer"
-//           }
-//         },
-//         {
-//           $match: {
-//             $and: [
-//               { "order.servicer.name": { '$regex': data.servicerName ? data.servicerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             ]
-//           },
-//         }
-//       );
-//     }
-//     data.resellerName = data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : ''
-
-//     if (data.resellerName) {
-//       newQuery.push(
-//         {
-//           $lookup: {
-//             from: "resellers",
-//             localField: "order.resellerId",
-//             foreignField: "_id",
-//             as: "order.reseller"
-//           }
-//         },
-//         {
-//           $match: {
-//             $and: [
-//               { "order.reseller.name": { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             ]
-//           },
-//         }
-//       );
-//     }
-//     newQuery.push(
-//       {
-//         $facet: {
-//           totalRecords: [
-//             {
-//               $count: "total"
-//             }
-//           ],
-//           data: [
-//             {
-//               $skip: skipLimit
-//             },
-//             {
-//               $limit: pageLimit
-//             },
-//             {
-//               $project: {
-//                 productName: 1,
-//                 model: 1,
-//                 serial: 1,
-//                 unique_key: 1,
-//                 status: 1,
-//                 manufacture: 1,
-//                 eligibilty: 1,
-//                 "order.unique_key": 1,
-//                 "order.venderOrder": 1,
-//                 "order.customerId": 1,
-//                 //totalRecords: 1
-//               }
-//             }
-//           ],
-//         },
-
-//       })
-
-//     let contractFilter = []
-//     if (data.eligibilty != '' && data.hasOwnProperty('eligibilty')) {
-//       contractFilter = [
-//         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { eligibilty: data.eligibilty === "true" ? true : false },
-//       ]
-//     } else {
-//       contractFilter = [
-//         // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
-//         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//         { status: { '$regex': data.status ? data.status.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//       ]
-//     }
-
-
-//     let query = [
-//       {
-//         $match:
-//         {
-//           $and: contractFilter
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "orders",
-//           localField: "orderId",
-//           foreignField: "_id",
-//           as: "order",
-//         }
-//       },
-//       {
-//         $unwind: {
-//           path: "$order",
-//           preserveNullAndEmptyArrays: true,
-//         }
-//       },
-//       {
-//         $match:
-//         {
-//           $and: [
-//             { "order.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//             { "order.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-//           ]
-//         },
-
-//       },
-//       {
-//         $lookup: {
-//           from: "customers",
-//           localField: "order.customerId",
-//           foreignField: "_id",
-//           as: "order.customer"
-//         }
-//       },
-//       {
-//         $match: {
-//           $and: [
-//             { "order.customer._id": new mongoose.Types.ObjectId(req.userId) },
-//           ]
-//         },
-//       },
-//       // {
-//       //   $facet: {
-//       //     totalRecords: [
-//       //       {
-//       //         $count: "total"
-//       //       }
-//       //     ],
-//       //     data: [
-//       //       {
-//       //         $skip: skipLimit
-//       //       },
-//       //       {
-//       //         $limit: pageLimit
-//       //       },
-//       //       {
-//       //         $project: {
-//       //           productName: 1,
-//       //           model: 1,
-//       //           serial: 1,
-//       //           unique_key: 1,
-//       //           status: 1,
-//       //           manufacture: 1,
-//       //           eligibilty: 1,
-//       //           "order.unique_key": 1,
-//       //           "order.venderOrder": 1
-//       //         }
-//       //       }
-
-//       //     ],
-
-//       //   },
-
-//       // }
-//     ]
-
-//     if (newQuery.length > 0) {
-//       query = query.concat(newQuery);
-//     }
-//     console.log(pageLimit, skipLimit, limitData)
-//     let getContracts = await contractService.getAllContracts2(query)
-//     //let getContract = await contractService.getAllContracts(query, skipLimit, pageLimit)
-//     console.log(orderIDs, skipLimit, limitData)
-//     //let totalCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
-//     let totalCount = getContracts[0].totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
-
-//     console.log(pageLimit, skipLimit, limitData)
-//     // if (!getContract) {
-//     //   res.send({
-//     //     code: constants.errorCode,
-//     //     message: err.message
-//     //   })
-//     //   return;
-//     // }
-//     res.send({
-//       code: constant.successCode,
-//       message: "Success",
-//       result: getContracts[0]?.data ? getContracts[0]?.data : [],
-//       totalCount: totalCount
-//     })
-
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
-
-
+// get customer contracts api
 exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
@@ -764,10 +487,6 @@ exports.getCustomerContract = async (req, res) => {
       orderAndCondition.push({ servicerId: { $in: servicerIds } })
     }
 
-    // if (req.role == 'Customer') {
-    //   userSearchCheck = 1
-    //   orderAndCondition.push({ customerId: { $in: [req.userId] } })
-    // };
     orderAndCondition.push({ customerId: { $in: [req.userId] } })
 
     let orderIds = []
@@ -783,7 +502,6 @@ exports.getCustomerContract = async (req, res) => {
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
-        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -797,7 +515,6 @@ exports.getCustomerContract = async (req, res) => {
       ]
     } else {
       contractFilterWithEligibilty = [
-        // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
         { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -815,7 +532,6 @@ exports.getCustomerContract = async (req, res) => {
     }
     let mainQuery = []
     if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
-      console.log('check_--------dssssssssssssssssssssss--------')
       mainQuery = [
         { $sort: { unique_key_number: -1 } },
         {
@@ -901,21 +617,15 @@ exports.getCustomerContract = async (req, res) => {
     }
 
 
-    // console.log("sssssss", contractFilterWithPaging)
-
     let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-    console.log('sjdsjlfljksfklsjdf')
     for (let e = 0; e < result1.length; e++) {
       result1[e].reason = " "
       if (result1[e].status != "Active") {
         result1[e].reason = "Contract is not active"
       }
-      // if (result1[e].minDate < new Date()) {
-      console.log("min date++++++++++++===11111111===+++++", result1[e])
       if (new Date(result1[e].minDate) > new Date()) {
-        console.log("min date++++++++++++======+++++")
         const options = {
           year: 'numeric',
           month: '2-digit',
@@ -946,7 +656,6 @@ exports.getCustomerContract = async (req, res) => {
       ]
 
       let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
-      console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
       if (checkClaims[0]) {
         if (checkClaims[0].openFileClaimsCount > 0) {
           result1[e].reason = "Contract has open claim"
@@ -977,7 +686,6 @@ exports.getCustomerContract = async (req, res) => {
 exports.addCustomerUser = async (req, res) => {
   try {
     let data = req.body
-
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId })
     if (!checkCustomer) {
       res.send({
@@ -1059,6 +767,7 @@ exports.addCustomerUser = async (req, res) => {
   }
 }
 
+//get custiner users
 exports.getCustomerUsers = async (req, res) => {
   try {
     let data = req.body
@@ -1094,7 +803,6 @@ exports.getCustomerUsers = async (req, res) => {
       );
     });
 
-    console.log("filteredData=================", filteredData)
     let checkCustomer = await customerService.getCustomerByName({ _id: req.userId }, { status: 1 })
     if (!checkCustomer) {
       res.send({
@@ -1120,6 +828,7 @@ exports.getCustomerUsers = async (req, res) => {
   }
 }
 
+// change primary user 
 exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
@@ -1211,10 +920,10 @@ exports.changePrimaryUser = async (req, res) => {
   }
 }
 
+// get customer by ID/token
 exports.getCustomerById = async (req, res) => {
   try {
     let data = req.body
-    console.log("id---------------------", req.userId, req.teammateId)
     let checkCustomer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkCustomer) {
       res.send({
@@ -1263,6 +972,7 @@ exports.getCustomerById = async (req, res) => {
   }
 }
 
+// get order contract by ID
 exports.getOrderContract = async (req, res) => {
   try {
     let data = req.body
@@ -1281,17 +991,8 @@ exports.getOrderContract = async (req, res) => {
           as: "order"
         }
       },
-      // {
-      //     $addFields: {
-      //         contracts: {
-      //             $slice: ["$contracts", skipLimit, limitData] // Replace skipValue and limitValue with your desired values
-      //         }
-      //     }
-      // }
-      // { $unwind: "$contracts" }
     ]
     let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
-    //  console.log.log('after+++++++++++++++++++++', Date.now())
     let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
     if (!checkOrder[0]) {
       res.send({
@@ -1342,8 +1043,6 @@ exports.getOrderContract = async (req, res) => {
     let query1 = {
       $or: [
         { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-        // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-        // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
       ],
     };
 
@@ -1357,7 +1056,6 @@ exports.getOrderContract = async (req, res) => {
       username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
       resellerUsername: resellerUser ? resellerUser[0] : {}
     };
-
 
     res.send({
       code: constant.successCode,
@@ -1375,6 +1073,7 @@ exports.getOrderContract = async (req, res) => {
   }
 }
 
+// get contract by ID
 exports.getContractById = async (req, res) => {
   try {
     let data = req.body
@@ -1444,7 +1143,6 @@ exports.getContractById = async (req, res) => {
       if (getData[e].status != "Active") {
         getData[e].reason = "Contract is not active"
       }
-      // if (getData[e].minDate < new Date()) {
       if (new Date(getData[e].minDate) > new Date()) {
 
         const options = {
@@ -1496,7 +1194,6 @@ exports.getContractById = async (req, res) => {
 
     let orderProductId = getData[0].orderProductId
     let order = getData[0].order
-    //res.json(order);return;
     for (let i = 0; i < order.length; i++) {
       let productsArray = order[i].productsArray.filter(product => product._id.toString() == orderProductId.toString())
       if (productsArray.length > 0) {
@@ -1540,42 +1237,7 @@ exports.getContractById = async (req, res) => {
   }
 }
 
-// exports.getDashboardData = async (req, res) => {
-//   try {
-//     let data = req.body
-//     let query = { status: { $ne: "Archieved" }, customerId: new mongoose.Types.ObjectId(req.userId) };
-
-//     let ordersCount = await orderService.getOrdersCount1(query)
-//     let getCustomerOrder = await orderService.getOrders({ customerId: req.userId, status: { $in: ["Active", "Pending"] } }, { _id: 1 })
-//     if (!getCustomerOrder) {
-//       res.send({
-//         code: constant.errorCode,
-//         message: "Unable to fetch the data"
-//       })
-//       return
-//     }
-//     let orderIDs = getCustomerOrder.map((ID) => ID._id)
-//     // let contractCount = await contractService.findContractCount({ customerId: req.userId, status: { $in: ["Active", "Pending"] } })
-//     let contractCount = await contractService.findContractCount({ isDeleted: false, orderId: { $in: orderIDs } })
-
-//     console.log("check------------", ordersCount)
-//     res.send({
-//       code: constant.errorCode,
-//       message: "Success",
-//       result: {
-//         ordersCount: ordersCount,
-//         contractCount: contractCount
-//       }
-//     })
-//   } catch (err) {
-//     res.send({
-//       code: constant.errorCode,
-//       message: err.message
-//     })
-//   }
-// }
-
-
+// get dashboard data 
 exports.getDashboardData = async (req, res) => {
   try {
     let data = req.body;
@@ -1629,7 +1291,6 @@ exports.getDashboardData = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
           ]
         },
@@ -1681,7 +1342,6 @@ exports.getDashboardData = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.customerId": new mongoose.Types.ObjectId(req.userId) },
           ]
         },
@@ -1704,11 +1364,6 @@ exports.getDashboardData = async (req, res) => {
             "totalOrder": 0
           }
         }
-        // result: {
-        //     "_id": "",
-        //     "totalAmount": 0,
-        //     "totalOrder": 0
-        // }
       })
       return;
     }
@@ -1728,6 +1383,7 @@ exports.getDashboardData = async (req, res) => {
   }
 };
 
+// get custiner details
 exports.getCustomerDetails = async (req, res) => {
   try {
     let data = req.body
@@ -1783,6 +1439,7 @@ exports.getCustomerDetails = async (req, res) => {
   }
 }
 
+// saker reporting for customer daily/weekly/day
 exports.saleReporting = async (req, res) => {
   try {
 
@@ -1802,7 +1459,6 @@ exports.saleReporting = async (req, res) => {
       total_reserve_future_fee: 0,
       total_contracts: 0,
       total_reinsurance_fee: 0,
-      // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
       wholesale_price: 0
     };
 
@@ -1843,10 +1499,10 @@ exports.saleReporting = async (req, res) => {
   }
 }
 
+// claim reporting for customer dail/weekly/day
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
-
     let returnValue = {
       weekStart: 1,
       total_amount: 1,
@@ -1898,11 +1554,10 @@ exports.claimReporting = async (req, res) => {
   }
 }
 
+// get dash graphs claim and order
 exports.getDashboardGraph = async (req, res) => {
   try {
     let data = req.body
-    // sku data query ++++++++
-
     let endOfMonth1s = new Date();
     let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
 
@@ -1943,7 +1598,6 @@ exports.getDashboardGraph = async (req, res) => {
           _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
           total_amount: { $sum: "$totalAmount" },
           total_claim: { $sum: 1 },
-          // total_broker_fee: { $sum: "$products.brokerFee" }
         }
       },
       {
@@ -2006,9 +1660,6 @@ exports.getDashboardGraph = async (req, res) => {
       claim_result: result,
       order_result: result1,
     })
-    // return { mergedArray, result, result1, result2, totalFees }
-
-
   } catch (err) {
     res.send({
       code: constant.errorCode,
@@ -2017,8 +1668,8 @@ exports.getDashboardGraph = async (req, res) => {
   }
 };
 
+// get last five claim and order 
 exports.getDashboardInfo = async (req, res) => {
-
   let orderQuery = [
     {
       $match: { status: "Active", customerId: new mongoose.Types.ObjectId(req.userId) },
