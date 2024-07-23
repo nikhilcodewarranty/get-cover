@@ -1376,6 +1376,7 @@ exports.createDealer = async (req, res) => {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
+            title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
@@ -1756,6 +1757,7 @@ exports.createDealer = async (req, res) => {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
+            title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
             content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
@@ -2915,18 +2917,20 @@ exports.addMembers = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: data.firstName,
       content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please reset the password for the system login",
-      subject: "Admin Account Creation"
+      subject: "Account Creation"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
 
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-    // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
     const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address, role: "Admin", servicerName: data.firstName
+      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role, 
+      subject: "Set Password",
+      flag: "created",
+      servicerName: data.firstName
     }))
     // let adminId = new mongoose.Types.ObjectId()
 

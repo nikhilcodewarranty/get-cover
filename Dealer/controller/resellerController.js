@@ -150,7 +150,7 @@ exports.createReseller = async (req, res) => {
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
                     const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
-                        link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+                        link: resetLink, flag: "created", darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
                     }))

@@ -94,6 +94,7 @@ exports.createServiceProvider = async (req, res, next) => {
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
         websiteSetting: settingData[0],
+        title: settingData[0]?.title,
         senderName: saveMembers[0]?.firstName,
         content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been created",
         subject: "Welcome to " + settingData[0]?.title + " servicer Registration Approved"
@@ -113,7 +114,7 @@ exports.createServiceProvider = async (req, res, next) => {
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
               link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-              address: settingData[0]?.address, role: "Servicer", servicerName: saveMembers[i].firstName
+              address: settingData[0]?.address,flag: "created", role: "Servicer", servicerName: saveMembers[i].firstName
             }))
           }
 
@@ -241,6 +242,7 @@ exports.createServiceProvider = async (req, res, next) => {
       mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, {
         link: updatePrimaryLInk, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        flag: "Approved",
         address: settingData[0]?.address, role: req.role, servicerName: updatePrimaryCode?.firstName
       }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
@@ -260,6 +262,7 @@ exports.createServiceProvider = async (req, res, next) => {
               const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                 link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                flag: "Approved",
                 address: settingData[0]?.address, role: 'Servicer', servicerName: saveMembers[i].firstName
               }))
 

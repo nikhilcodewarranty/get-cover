@@ -1557,6 +1557,7 @@ exports.createCustomer = async (req, res, next) => {
                         const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                             link: resetLink,
                             role: "Customer",
+                            flag: "created",
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                             address: settingData[0]?.address,
@@ -2000,6 +2001,7 @@ exports.createReseller = async (req, res) => {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
+            title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: saveMembers[0]?.firstName,
             content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
@@ -2019,6 +2021,8 @@ exports.createReseller = async (req, res) => {
                     const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                         link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        flag: "created",
+                        title:settingData[0]?.title,
                         address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
                     }))
                 }
