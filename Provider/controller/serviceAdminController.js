@@ -1101,7 +1101,8 @@ exports.registerServiceProvider = async (req, res) => {
       c3: "Your account is currently pending approval from our admin.",
       c4: "Once approved, you will receive a confirmation emai",
       c5: "We appreciate your patience.",
-      role: "Servicer!"
+      role: "Servicer!",
+      subject: "New Servicer Registration Request Received",
     }
 
     // Send Email code here
@@ -1111,7 +1112,7 @@ exports.registerServiceProvider = async (req, res) => {
     emailData = {
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
-      subject: 'Notification of New Servicer Registration'
+      subject: 'New Servicer Registration'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
