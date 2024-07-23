@@ -546,7 +546,7 @@ exports.updatePriceBookById = async (req, res, next) => {
         subject: "Update Status"
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "admin@yopmail.com", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
