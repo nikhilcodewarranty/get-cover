@@ -2287,7 +2287,7 @@ exports.deleteUser = async (req, res) => {
 
     let emailData = {
       senderName: checkUser.firstName,
-      content: "The user " + checkUser.firstName + "" + " " + "has been deleted successfully.",
+      content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
