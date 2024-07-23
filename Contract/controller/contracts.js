@@ -874,7 +874,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
 exports.cronJobEligible = async (req, res) => {
   try {
     const query = { status: 'Active' };
-    const limit = 10000; // Adjust the limit based on your needs
+    const limit = 100; // Adjust the limit based on your needs
     let page = 0;
     let hasMore = true;
 
@@ -894,8 +894,13 @@ exports.cronJobEligible = async (req, res) => {
       for (let i = 0; i < result.length; i++) {
         let product = result[i];
         let contractId = product._id;
+        let check = new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate) ? true : false
+        // console.log("++++++++++++++++++++++++++++",product)
+        // console.log("++++++++++++++++++++check++++++++",check)
         if (new Date() >= new Date(product.minDate) && new Date() <= new Date(product.coverageEndDate)) {
           contractIds.push(product._id);
+        // console.log("unique_number---------------------",product.unique_key)
+         //console.log("check---------------------",check)
           updateDoc = {
             'updateMany': {
               'filter': { '_id': contractId },
@@ -914,6 +919,7 @@ exports.cronJobEligible = async (req, res) => {
         }
         bulk.push(updateDoc);
       }
+
 
       // Update when not any claim right now for active contract
       await contractService.allUpdate(bulk);

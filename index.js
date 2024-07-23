@@ -129,19 +129,18 @@ var cronOptions = {
 // }, null, true, 'America/Los_Angeles');
 
 
-  console.log("direcotory------------------------",__dirname)
 cron.schedule(' 2 0 * * *', () => {
-  axios.get(`${process.env.SITE_URL}:3002/api-v1/order/cronJobStatus`)   //live
+  axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 
 cron.schedule(' 4 0 * * *', () => {
-  axios.get(`${process.env.SITE_URL}:3002/api-v1/contract/cronJobEligible`)   //live
+  axios.get(`${process.env.API_ENDPOINT}api-v1/contract/cronJobEligible`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 
 cron.schedule(' 6 0 * * *', () => {
-  axios.get(`${process.env.SITE_URL}:3002/api-v1/claim/statusClaim`)   //live
+  axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 //common routing for server
