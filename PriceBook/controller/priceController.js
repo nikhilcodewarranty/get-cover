@@ -879,6 +879,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
     })
   }
 }
+
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
   if (mongoose.Types.ObjectId.isValid(Id)) {
@@ -1085,6 +1086,7 @@ exports.searchPriceBookCategories = async (req, res) => {
     })
   }
 }
+
 // get price book by category name
 exports.getPriceBookByCategory = async (req, res) => {
   try {
@@ -1175,6 +1177,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
+
 //
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
