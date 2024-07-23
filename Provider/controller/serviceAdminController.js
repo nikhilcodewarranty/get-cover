@@ -202,7 +202,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
