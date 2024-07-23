@@ -1370,15 +1370,7 @@ exports.createCustomer = async (req, res, next) => {
         let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
-        notificationEmails
-        let emailData = {
-            senderName: saveMembers[0].firstName,
-            content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
-            subject: "Welcome to Get-Cover customer Registration Approved"
-        }
-
-        // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+          
 
         if (saveMembers.length > 0) {
             if (data.status) {
@@ -1804,14 +1796,7 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
-        let emailData = {
-            senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
-            subject: "Welcome to Get-Cover reseller Registration Approved"
-        }
-
-        // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+ 
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
