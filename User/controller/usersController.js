@@ -2930,6 +2930,7 @@ exports.addMembers = async (req, res) => {
       address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role, 
       subject: "Set Password",
       flag: "created",
+      title:settingData[0]?.title,
       servicerName: data.firstName
     }))
     // let adminId = new mongoose.Types.ObjectId()

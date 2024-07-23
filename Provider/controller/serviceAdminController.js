@@ -114,6 +114,7 @@ exports.createServiceProvider = async (req, res, next) => {
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
               link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+              title:settingData[0]?.title,
               address: settingData[0]?.address,flag: "created", role: "Servicer", servicerName: saveMembers[i].firstName
             }))
           }
@@ -243,6 +244,7 @@ exports.createServiceProvider = async (req, res, next) => {
         link: updatePrimaryLInk, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         flag: "Approved",
+        title:settingData[0]?.title,
         address: settingData[0]?.address, role: req.role, servicerName: updatePrimaryCode?.firstName
       }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
@@ -263,6 +265,7 @@ exports.createServiceProvider = async (req, res, next) => {
                 link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 flag: "Approved",
+                title:settingData[0]?.title,
                 address: settingData[0]?.address, role: 'Servicer', servicerName: saveMembers[i].firstName
               }))
 
@@ -403,6 +406,7 @@ exports.approveServicer = async (req, res, next) => {
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+      title:settingData[0]?.title,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address, link: resetLink
     }))

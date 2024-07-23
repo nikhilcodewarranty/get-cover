@@ -136,7 +136,7 @@ exports.createReseller = async (req, res) => {
             websiteSetting: settingData[0],
             senderName: saveMembers[0]?.firstName,
             content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
-            subject: "Welcome to " + settingData[0]?.title + " reseller Registration Approved"
+            subject: "Welcome to " + settingData[0]?.title + " reseller RegistrationApproved "
         }
 
         // Send Email code here
@@ -152,6 +152,7 @@ exports.createReseller = async (req, res) => {
                     const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                         link: resetLink, flag: "created", darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+                        title:settingData[0]?.title,
                         address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
                     }))
                 }

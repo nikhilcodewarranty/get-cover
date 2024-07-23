@@ -101,7 +101,7 @@ module.exports = {
       from: process.env.from_email,
       // subject: `Sending an email using SendGrid`,
       // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
-      templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
+      templateId: 'd-5d1f3fb03b7c4f638e7f20199f42f675',
       dynamic_template_data: data
     };
   },

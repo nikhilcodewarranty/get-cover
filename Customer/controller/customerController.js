@@ -158,6 +158,8 @@ exports.createCustomer = async (req, res, next) => {
               link: resetLink,
               role: "Customer",
               flag: "created",
+              
+              title:settingData[0]?.title,
               darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
               address: settingData[0]?.address,
