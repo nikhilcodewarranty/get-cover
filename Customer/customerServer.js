@@ -38,7 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  res.redirect("http://15.207.221.207/")
+  res.redirect(process.env.SITE_URL)
 });
 
 app.set('views', path.join(__dirname, 'views'));
