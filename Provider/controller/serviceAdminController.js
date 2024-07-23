@@ -106,7 +106,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: "Servicer", servicerName: saveMembers[i].firstName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink,subject: "Reset Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
           }
 
         }
@@ -218,7 +218,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { subject: "Reset Password",link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
@@ -231,7 +231,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {subject: "Reset Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
 
             }
 
@@ -357,7 +357,7 @@ exports.approveServicer = async (req, res, next) => {
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
-    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { link: resetLink }))
+    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {subject: "Reset Password",link: resetLink }))
 
     res.send({
       code: constant.successCode,
