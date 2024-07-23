@@ -2602,12 +2602,21 @@ exports.archiveOrder = async (req, res) => {
         );
         if (!checkOrder) {
             res.send({
-                code: constant.successCode,
+                code: constant.errorCode,
                 message: "Order not found!",
             });
 
             return;
         }
+        if(checkOrder.status == "Active"){
+            res.send({
+                code: constant.errorCode,
+                message: "Order is already active",
+            });
+
+            return;
+        }
+
         let updateStatus;
         if (checkOrder.status != 'Active') {
             updateStatus = await orderService.updateOrder(

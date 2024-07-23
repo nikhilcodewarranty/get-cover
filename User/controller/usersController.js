@@ -2887,7 +2887,6 @@ exports.checkToken = async (req, res) => {
 }
 
 //Get Sales Reporting
-
 exports.saleReporting = async (req, res) => {
   try {
 
@@ -2965,10 +2964,10 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-   
-    { $sort: { unique_key_number: -1 }  },
+
+    { $sort: { unique_key_number: -1 } },
     {
-      $limit:5
+      $limit: 5
     },
   ]
 
@@ -3550,6 +3549,30 @@ exports.getSkuData = async (req, res) => {
       result2: getOrders1,
     })
 
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+exports.checkIdAndToken = async (req, res) => {
+  try {
+    let data = req.body
+    let checkId = await userService.getSingleUserByEmail({ _id: req.params.userId })
+    if (!checkId) {
+      res.redirect(process.env.SITE_URL)
+      return;
+    }
+    if (checkId.resetPasswordCode != req.params.code) {
+      res.redirect(process.env.SITE_URL)
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Verified"
+    })
   } catch (err) {
     res.send({
       code: constant.errorCode,

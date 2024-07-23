@@ -48,7 +48,7 @@ router.post("/approveDealer", [verifyToken], validator("create_dealer_validation
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail);
 router.post("/validateData", [verifyToken], userController.validateData);
 
- 
+
 //create dealer api from super admin
 router.post("/createDealer", [verifyToken], userController.createDealer);
 router.get("/checkToken", [verifyToken], userController.checkToken);
@@ -58,9 +58,11 @@ router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo);
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
 
-router.post('/saleReporting',[verifyToken], userController.saleReporting);
-router.post('/saleReporting1',[verifyToken], userController.saleReporting1);
-router.post('/claimReporting',[verifyToken], userController.claimReporting);
+router.post('/saleReporting', [verifyToken], userController.saleReporting);
+router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
+router.post('/claimReporting', [verifyToken], userController.claimReporting);
+
+router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken)
 
 
 
