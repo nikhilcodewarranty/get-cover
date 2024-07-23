@@ -725,19 +725,14 @@ exports.registerDealer = async (req, res) => {
       c5: "We appreciate your patience.",
       role: "Dealer"
     }
-
-    console.log("--------------------------------------1")
-    console.log(data.email)
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
-    console.log("--------------------------------------2")
     emailData = {
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
-    console.log("--------------------------------------3",notificationEmail)
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
       endpoint: "register dealer",

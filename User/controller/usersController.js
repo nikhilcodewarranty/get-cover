@@ -314,7 +314,6 @@ exports.validateData = async (req, res) => {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
-    // console.log("priceBookCreateria=======================", priceBookCreateria)
     checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
       res.send({
@@ -687,14 +686,6 @@ exports.createDealer = async (req, res) => {
           };
 
           await userService.createNotification(notificationData);
-
-          // Primary User Welcoime email
-          let notificationEmails = await supportingFunction.getUserEmails();
-          let emailData = {
-            senderName: allUserData[0].firstName,
-            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
-          }
           // Send Email code here
           sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
@@ -1072,14 +1063,6 @@ exports.createDealer = async (req, res) => {
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
-          // Primary User Welcoime email
-          let notificationEmails = await supportingFunction.getUserEmails();
-          let emailData = {
-            senderName: allUserData[0].firstName,
-            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
-          }
-
           // Send Email code here
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
@@ -1270,7 +1253,6 @@ exports.createDealer = async (req, res) => {
             status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status,
             approvedStatus: 'Approved'
           }));
-          // console.log("allUsersData--------------------------",allUsersData);
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.send({
@@ -1311,13 +1293,6 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-          // Primary User Welcoime email
-          let notificationEmails = await supportingFunction.getUserEmails();
-          let emailData = {
-            senderName: createUsers[0].firstName,
-            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
-          }
 
           // Send Email code here
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
@@ -1333,18 +1308,6 @@ exports.createDealer = async (req, res) => {
               }
 
             }
-            //  resetPasswordCode = randtoken.generate(4, '123456789')
-            //  resetLink = `http://15.207.221.207/newPassword/${createUsers[0]._id}/${resetPasswordCode}`
-            //  mailing = sgMail.send(emailConstant.dealerApproval(createUsers[0].email, { link: resetLink }))
-            //  updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            // if (mailing) {
-            //   let updateStatus = await userService.updateUser({ _id: createUsers[0]._id }, { resetPasswordCode: resetPasswordCode, isResetPassword: true }, { new: true })
-            //   res.send({
-            //     code: constant.successCode,
-            //     message: 'Successfully Created',
-            //   });
-            //   return;
-            // }
           }
           res.send({
             code: constant.successCode,
@@ -1483,7 +1446,6 @@ exports.createDealer = async (req, res) => {
             const repeatedMap = {};
 
             for (let i = totalDataComing.length - 1; i >= 0; i--) {
-              //console.log("uniquw", i, totalDataComing[i]);
               if (totalDataComing[i].exit) {
                 continue;
               }
@@ -1663,14 +1625,6 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
-
-          // Primary User Welcoime email
-          let notificationEmails = await supportingFunction.getUserEmails();
-          let emailData = {
-            senderName: createUsers[0].firstName,
-            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
-            subject: "Welcome to Get-Cover Dealer Registration Approved"
-          }
 
           // Send Email code here
           let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
