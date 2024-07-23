@@ -562,7 +562,8 @@ exports.rejectServicer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
       senderName: getServicer.name,
-      content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+      content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
+
       subject: "Rejection Account"
     }
     // Send Email code here
