@@ -1619,7 +1619,7 @@ exports.getResellerCustomers = async (req, res) => {
     }
 };
 
-
+//Get Reseller Price Books
 exports.getResellerPriceBook = async (req, res) => {
     let checkReseller = await resellerService.getReseller({ _id: req.userId }, { isDeleted: 0 })
     if (!checkReseller) {
