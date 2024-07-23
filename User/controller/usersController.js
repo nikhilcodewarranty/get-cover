@@ -2727,7 +2727,7 @@ exports.addMembers = async (req, res) => {
 
     let emailData = {
       senderName: data.firstName,
-      content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please reset the password for the system login",
+      content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please set the password for the system login",
       subject: "Account Creation"
     }
 
@@ -2736,7 +2736,7 @@ exports.addMembers = async (req, res) => {
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink, subject: 'Set Password', role: req.role == 'Super Admin' ? 'Admin' : req.role, servicerName: data.firstName }))
+    const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, { flag: "Created", subject: "Set Password", link: resetLink, subject: 'Set Password', role: req.role == 'Super Admin' ? 'Admin' : req.role, servicerName: data.firstName }))
     // // Create the user
     res.send({
       code: constant.successCode,
