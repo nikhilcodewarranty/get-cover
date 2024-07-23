@@ -1662,7 +1662,7 @@ exports.getDealerList = async (req, res) => {
         code:constant.errorCode,
         message:"Invalid Id"
       })
-      return;
+      return; 
     }
 
     const resultArray = dealers.map(item => {
