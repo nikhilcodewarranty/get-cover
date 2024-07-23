@@ -1657,6 +1657,13 @@ exports.getDealerList = async (req, res) => {
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
     let getRelations = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
+    if(!getRelations){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid Id"
+      })
+      return;
+    }
 
     const resultArray = dealers.map(item => {
       const matchingDealer = getRelations.find(dealer => dealer.dealerId.toString() == item._id.toString());
