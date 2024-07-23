@@ -874,7 +874,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
 exports.cronJobEligible = async (req, res) => {
   try {
     const query = { status: 'Active' };
-    const limit = 100; // Adjust the limit based on your needs
+    const limit = 10000; // Adjust the limit based on your needs
     let page = 0;
     let hasMore = true;
 
