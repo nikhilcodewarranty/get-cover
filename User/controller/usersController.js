@@ -2724,14 +2724,13 @@ exports.addMembers = async (req, res) => {
     };
 
     let notificationEmails = await supportingFunction.getUserEmails();
+    // let emailData = {
+    //   senderName: data.firstName,
+    //   content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please set the password for the system login",
+    //   subject: "Account Creation"
+    // }
 
-    let emailData = {
-      senderName: data.firstName,
-      content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please set the password for the system login",
-      subject: "Account Creation"
-    }
-
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
+    // let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
 
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
