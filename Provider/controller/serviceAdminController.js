@@ -198,9 +198,7 @@ exports.createServiceProvider = async (req, res, next) => {
       };
 
       let notificationEmails = await supportingFunction.getUserEmails();
-    
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryEmail, notificationEmails, emailData))
+      let primaryEmail = teamMembers[0].email
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
