@@ -3562,17 +3562,11 @@ exports.checkIdAndToken = async (req, res) => {
     let data = req.body
     let checkId = await userService.getSingleUserByEmail({ _id: req.params.userId })
     if (!checkId) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid params"
-      })
+      res.redirect(process.env.SITE_URL)
       return;
     }
     if (checkId.resetPasswordCode != req.params.code) {
-      res.send({
-        code: constant.errorCode,
-        message: "Invalid params"
-      })
+      res.redirect(process.env.SITE_URL)
       return;
     }
     res.send({
