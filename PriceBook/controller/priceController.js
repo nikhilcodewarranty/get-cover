@@ -984,7 +984,7 @@ exports.updatePriceBookCat = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let notificationData = {
       title: "Category Updated",
-      description: "The category has been successfully updated",
+      description:  "The category " + data.name + " updated successfully!",
       userId: req.userId,
       contentId: req.params.catId,
       flag: 'category',
