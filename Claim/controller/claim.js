@@ -399,7 +399,7 @@ exports.getAllClaims = async (req, res, next) => {
 
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -556,7 +556,7 @@ exports.getClaims = async (req, res) => {
     })
 
   } catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message, err: err.stack
     })
@@ -709,7 +709,7 @@ exports.searchClaim = async (req, res, next) => {
     })
 
   } catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -723,7 +723,7 @@ exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
       if (req.role != 'Super Admin') {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: 'Only suoer admin allow to do this action!'
         });
@@ -738,7 +738,7 @@ exports.uploadReceipt = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -768,7 +768,7 @@ exports.getUnpaidAmount = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -792,7 +792,7 @@ exports.uploadCommentImage = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -808,7 +808,7 @@ exports.addClaim = async (req, res, next) => {
 
     let checkContract = await contractService.getContractById({ _id: data.contractId })
     if (!checkContract) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Contract not found!"
       })
@@ -825,7 +825,7 @@ exports.addClaim = async (req, res, next) => {
         ]
       })
       if (!checkServicer) {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Servicer not found!"
         })
@@ -834,7 +834,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Loss date should be in between coverage start date and present date!'
       });
@@ -842,7 +842,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     if (checkContract.status != 'Active') {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'The contract is not active!'
       });
@@ -851,7 +851,7 @@ exports.addClaim = async (req, res, next) => {
 
     let checkClaim = await claimService.getClaimById({ contractId: data.contractId, claimFile: 'Open' })
     if (checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'The previous claim is still open!'
       });
@@ -869,7 +869,7 @@ exports.addClaim = async (req, res, next) => {
     let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
     let remainingPrice = checkContract.productValue - claimTotal[0]?.amount
     if (checkContract.productValue <= claimTotal[0]?.amount) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Claim Amount Exceeds Contract Retail Price'
       });
@@ -910,7 +910,7 @@ exports.addClaim = async (req, res, next) => {
         }
       }
       await LOG(logData).save()
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to add claim of this contract!'
       });
@@ -1003,7 +1003,7 @@ exports.addClaim = async (req, res, next) => {
       }
     }
     await LOG(logData).save()
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message,
     })
@@ -1107,7 +1107,7 @@ exports.getContractById = async (req, res) => {
     })
 
     if (!getData) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })
@@ -1120,7 +1120,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1135,7 +1135,7 @@ exports.editClaim = async (req, res) => {
 
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid claim ID"
       })
@@ -1162,7 +1162,7 @@ exports.editClaim = async (req, res) => {
         }
       }
       if (contract.productValue < data.totalAmount) {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: 'Claim Amount Exceeds Contract Retail Price'
         });
@@ -1183,7 +1183,7 @@ exports.editClaim = async (req, res) => {
           }
         }
         await LOG(logData).save()
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Failed to process your request."
         })
@@ -1254,7 +1254,7 @@ exports.editClaim = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1269,7 +1269,7 @@ exports.editClaimType = async (req, res) => {
 
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid claim ID"
       })
@@ -1294,7 +1294,7 @@ exports.editClaimType = async (req, res) => {
         }
         await LOG(logData).save()
 
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Failed to process your request."
         })
@@ -1340,7 +1340,7 @@ exports.editClaimType = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1355,7 +1355,7 @@ exports.editClaimStatus = async (req, res) => {
 
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid claim ID"
       })
@@ -1654,7 +1654,7 @@ exports.editClaimStatus = async (req, res) => {
       }
 
       await LOG(logData).save()
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to update status!'
       })
@@ -1707,7 +1707,7 @@ exports.editClaimStatus = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1722,7 +1722,7 @@ exports.editServicer = async (req, res) => {
 
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid claim ID"
       })
@@ -1741,7 +1741,7 @@ exports.editServicer = async (req, res) => {
         ]
       })
       if (!checkServicer) {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Servicer not found!"
         })
@@ -1762,7 +1762,7 @@ exports.editServicer = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to update servicer!'
       })
@@ -1829,7 +1829,7 @@ exports.editServicer = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1892,7 +1892,7 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
       if (headers.length !== 4) {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly four columns."
         })
@@ -1914,7 +1914,7 @@ exports.saveBulkClaim = async (req, res) => {
       });
 
       if (totalDataComing.length === 0) {
-         res.status(constant.errorCode).send({
+          res.send({
         code: constant.errorCode,
           message: "Invalid file!"
         });
@@ -2413,7 +2413,7 @@ exports.saveBulkClaim = async (req, res) => {
 
     }
     catch (err) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: err.message
       })
@@ -2431,7 +2431,7 @@ exports.sendMessages = async (req, res) => {
 
     let checkClaim = await claimService.getClaimById(criteria)
     if (!checkClaim) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid claim ID"
       })
@@ -2441,7 +2441,7 @@ exports.sendMessages = async (req, res) => {
     data.claimId = req.params.claimId
     let orderData = await orderService.getOrder({ _id: data.orderId }, { isDeleted: false })
     if (!orderData) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Order is not found for this claim!'
       })
@@ -2486,7 +2486,7 @@ exports.sendMessages = async (req, res) => {
       }
       await LOG(logData).save()
 
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to send message!'
       });
@@ -2562,7 +2562,7 @@ exports.sendMessages = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       messages: err.message
     })
@@ -2574,7 +2574,7 @@ exports.getMessages = async (req, res) => {
 
   const checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { isDeleted: false })
   if (!checkClaim) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: 'Invalid Claim id!'
     })
@@ -2749,7 +2749,7 @@ exports.statusClaim = async (req, res) => {
     })
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2776,7 +2776,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     })
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2788,7 +2788,7 @@ exports.getCoverageType = async (req, res) => {
   try {
     const checkContract = await contractService.getContractById({ _id: req.params.contractId });
     if (!checkContract) {
-      res.status(constant.errorCode).send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to find Contract!"
       });
@@ -2806,7 +2806,7 @@ exports.getCoverageType = async (req, res) => {
 
   }
   catch (err) {
-    res.status(constant.errorCode).send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
