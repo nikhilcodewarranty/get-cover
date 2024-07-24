@@ -391,6 +391,7 @@ exports.createDealer = async (req, res) => {
       data.name = data.name.trim().replace(/\s+/g, ' ');
       let priceFile
       let termFile;
+      const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true },{});
       let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
@@ -666,7 +667,7 @@ exports.createDealer = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: allUserData[0].firstName,
+            senderName: loginUser.firstName,
             content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
           }
@@ -1068,7 +1069,7 @@ exports.createDealer = async (req, res) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: allUserData[0].firstName,
+            senderName: loginUser.firstName,
             content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
           }
@@ -1324,7 +1325,7 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
-            senderName: createUsers[0].firstName,
+            senderName: loginUser.firstName,
             content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
           }
@@ -1639,7 +1640,7 @@ exports.createDealer = async (req, res) => {
           }));
 
           const createUsers = await userService.insertManyUser(allUsersData);
-          
+
           if (!createUsers) {
             res.send({
               code: constant.errorCode,
@@ -1677,7 +1678,7 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
-            senderName: createUsers[0].firstName,
+            senderName: loginUser.firstName,
             content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
           }
