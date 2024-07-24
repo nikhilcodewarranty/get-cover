@@ -233,7 +233,7 @@ exports.getAllContracts = async (req, res) => {
 
   } catch (err) {
     //console.log(err)
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -510,7 +510,7 @@ exports.getContracts = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -549,7 +549,7 @@ exports.editContract = async (req, res) => {
     //check if claim value is less then product value update eligibilty true
 
     if (!updateContracts) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the contract"
       })
@@ -561,7 +561,7 @@ exports.editContract = async (req, res) => {
       result: updateContracts
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -720,7 +720,7 @@ exports.getContractById = async (req, res) => {
 
     })
     if (!getData) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })
@@ -732,7 +732,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message + ":" + err.stack
     })
@@ -749,7 +749,7 @@ exports.deleteOrdercontractbulk = async (req, res) => {
       result: deleteContract
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -865,7 +865,7 @@ exports.cronJobEligible = async (req, res) => {
     });
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });

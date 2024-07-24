@@ -44,8 +44,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
@@ -54,8 +54,8 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkPrimaryEmail = await userService.findOneUser({ email: data.email });
 
       if (checkPrimaryEmail) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "User already exist with this email "
         })
         return;
@@ -79,8 +79,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to create the servicer"
         })
         return;
@@ -143,8 +143,8 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkDetail = await providerService.getServicerByName({ _id: data.providerId })
 
       if (!checkDetail) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid ID"
         })
         return;
@@ -190,8 +190,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the servicer"
         })
         return;
@@ -270,7 +270,7 @@ exports.createServiceProvider = async (req, res, next) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -296,7 +296,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let checkDetail = await providerService.getServicerByName({ _id: req.params.servicerId })
     if (!checkDetail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid ID"
       })
@@ -305,8 +305,8 @@ exports.approveServicer = async (req, res, next) => {
     if (servicerObject.name != data.oldName) {
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
@@ -315,8 +315,8 @@ exports.approveServicer = async (req, res, next) => {
     if (data.email != data.oldEmail) {
       let emailCheck = await userService.findOneUser({ email: data.email });
       if (emailCheck) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Primary user email already exist"
         })
         return;
@@ -329,7 +329,7 @@ exports.approveServicer = async (req, res, next) => {
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
 
     if (!updateServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the servicer"
       })
@@ -350,7 +350,7 @@ exports.approveServicer = async (req, res, next) => {
     })
 
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -362,7 +362,7 @@ exports.getServicer = async (req, res) => {
   try {
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -380,7 +380,7 @@ exports.getServicer = async (req, res) => {
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -456,7 +456,7 @@ exports.getServicer = async (req, res) => {
       data: filteredData
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -468,7 +468,7 @@ exports.getServiceProviderById = async (req, res, next) => {
   try {
     const singleServiceProvider = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     if (!singleServiceProvider) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the details"
       })
@@ -507,7 +507,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       message: resultUser
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -525,7 +525,7 @@ exports.rejectServicer = async (req, res) => {
     IDs.push(getPrimary._id)
 
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to delete the servicer"
       })
@@ -570,7 +570,7 @@ exports.rejectServicer = async (req, res) => {
     }
 
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -586,7 +586,7 @@ exports.editServicerDetail = async (req, res) => {
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
 
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -597,8 +597,8 @@ exports.editServicerDetail = async (req, res) => {
       let regex = new RegExp('^' + data.name + '$', 'i');
       let checkName = await providerService.getServicerByName({ name: regex }, {})
       if (checkName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this name"
         })
         return;
@@ -639,7 +639,7 @@ exports.editServicerDetail = async (req, res) => {
       }
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
@@ -700,7 +700,7 @@ exports.editServicerDetail = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -714,7 +714,7 @@ exports.updateStatus = async (req, res) => {
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
 
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -739,7 +739,7 @@ exports.updateStatus = async (req, res) => {
 
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
@@ -764,8 +764,8 @@ exports.updateStatus = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the primary details 'false'"
         })
       } else {
@@ -879,7 +879,7 @@ exports.updateStatus = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -890,7 +890,7 @@ exports.updateStatus = async (req, res) => {
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -900,7 +900,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     let projection = { __v: 0, isDeleted: 0 }
     const serviceProviders = await providerService.getAllServiceProvider(query, projection);
     if (!serviceProviders) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -913,7 +913,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -938,7 +938,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
       data: result_Array
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -985,7 +985,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Check if the dealer already exists
     const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
     if (existingServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "You have registered already with this name! Waiting for the approval"
       })
@@ -994,7 +994,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingServicer2) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Account name already exist"
       })
@@ -1015,7 +1015,7 @@ exports.registerServiceProvider = async (req, res) => {
         }
 
       }
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "You have already registered  with this email!"
       })
@@ -1036,7 +1036,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Register the Servicer
     const createMetaData = await providerService.registerServiceProvider(ServicerMeta);
     if (!createMetaData) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to create Servicer account',
       });
@@ -1058,7 +1058,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Create the user
     const createdUser = await userService.createUser(userMetaData);
     if (!createdUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to create servicer user',
       });
@@ -1128,7 +1128,7 @@ exports.registerServiceProvider = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1139,7 +1139,7 @@ exports.registerServiceProvider = async (req, res) => {
 // status update for servicer 
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Only super admin allow to do this action"
     })
@@ -1156,7 +1156,7 @@ exports.statusUpdate = async (req, res) => {
   try {
     const updatedResult = await providerService.statusUpdate(criteria, newValue, option)
     if (!updatedResult) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the dealer status"
       });
@@ -1168,8 +1168,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the users"
         })
         return
@@ -1183,8 +1183,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the primary user"
         })
         return
@@ -1197,7 +1197,7 @@ exports.statusUpdate = async (req, res) => {
 
   }
   catch (err) {
-    return res.send({
+    return res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1210,7 +1210,7 @@ exports.getSerivicerUsers = async (req, res) => {
     let data = req.body
     let getUsers = await userService.findUser({ accountId: req.params.servicerId }, { isPrimary: -1 })
     if (!getUsers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No Users Found!"
       })
@@ -1229,8 +1229,8 @@ exports.getSerivicerUsers = async (req, res) => {
       });
       let getServicerStatus = await providerService.getServiceProviderById({ _id: req.params.servicerId }, { status: 1 })
       if (!getServicerStatus) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid servicer ID"
         })
         return;
@@ -1245,7 +1245,7 @@ exports.getSerivicerUsers = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1258,7 +1258,7 @@ exports.addServicerUser = async (req, res) => {
     let data = req.body
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -1268,7 +1268,7 @@ exports.addServicerUser = async (req, res) => {
     let checkUser = await userService.getUserById1({ accountId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
     data.status = checkUser.status ? true : false;
     if (checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "user already exist with this email"
       })
@@ -1302,8 +1302,8 @@ exports.addServicerUser = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to add the user"
         })
         return;
@@ -1341,7 +1341,7 @@ exports.addServicerUser = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1354,7 +1354,7 @@ exports.createDeleteRelation = async (req, res) => {
     let data = req.body
     let checkServicer = await providerService.getServicerByName({ _id: req.params.servicerId }, {})
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -1410,7 +1410,7 @@ exports.createDeleteRelation = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1423,7 +1423,7 @@ exports.getServicerDealers = async (req, res) => {
     let data = req.body
     let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
     if (!getDealersIds) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the dealers"
       })
@@ -1434,7 +1434,7 @@ exports.getServicerDealers = async (req, res) => {
     let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
 
     if (!dealers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -1533,7 +1533,7 @@ exports.getServicerDealers = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1629,7 +1629,7 @@ exports.getServicerDealers1 = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1665,7 +1665,7 @@ exports.getDealerList = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1682,7 +1682,7 @@ exports.getServicerClaims = async (req, res) => {
     let limitData = Number(pageLimit)
     let checkServicer = await providerService.getServicerByName({ _id: req.params.servicerId }, {})
     if (!checkServicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -1966,7 +1966,7 @@ exports.getServicerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1981,7 +1981,7 @@ exports.paidUnpaid = async (req, res) => {
     let queryIds = { _id: { $in: claimId } };
     const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
     if (!updateBulk) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to update!'
       })
@@ -1993,7 +1993,7 @@ exports.paidUnpaid = async (req, res) => {
       result: updateBulk
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2335,7 +2335,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
