@@ -1299,7 +1299,6 @@ exports.createCustomer = async (req, res, next) => {
                 })
                 return;
             }
-            IDs.push(checkReseller._id)
         }
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
@@ -1378,14 +1377,13 @@ exports.createCustomer = async (req, res, next) => {
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: saveMembers[0].firstName,
-            content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
-            subject: "Welcome to " + settingData[0]?.title + " customer Registration Approved"
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
+            subject: "Customer Account Created - " + createdCustomer.username
         }
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
-
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         if (saveMembers.length > 0) {
             if (data.status) {
                 for (let i = 0; i < saveMembers.length; i++) {
@@ -1414,8 +1412,9 @@ exports.createCustomer = async (req, res, next) => {
             }
         }
         //Send Notification to customer,admin,reseller,dealer 
-        IDs.push(checkDealer._id)
-        IDs.push(createdCustomer._id)
+        IDs.push(getPrimary._id)
+        IDs.push(resellerPrimary?._id)
+
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -1829,13 +1828,13 @@ exports.createReseller = async (req, res) => {
             address: settingData[0]?.address,
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
-            senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been approved",
-            subject: "Welcome to " + settingData[0]?.title + " reseller Registration Approved"
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
+            subject: "Reseller Account Created - " + createdReseler.name
         }
 
         // Send Email code here
-        let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+        let mailing1 = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {

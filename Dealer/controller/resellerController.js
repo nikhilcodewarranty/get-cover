@@ -89,21 +89,8 @@ exports.createReseller = async (req, res) => {
             })
             return;
         };
-        //Send Notification to reseller and admin
 
         let IDs = await supportingFunction.getUserIds()
-        IDs.push(checkDealer._id)
-        IDs.push(createdReseler._id)
-
-        let notificationData = {
-            title: "Reseller Account Creation",
-            description: data.accountName + " " + "reseller account has been created successfully!",
-            userId: req.teammateId,
-            flag: 'reseller',
-            notificationFor: IDs
-        };
-
-        let createNotification = await userService.createNotification(notificationData);
 
         // Create the user
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
@@ -114,17 +101,28 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
+        IDs.push(getPrimary._id)
+        let notificationData = {
+            title: "Reseller Account Creation",
+            description: data.accountName + " " + "reseller account has been created successfully!",
+            userId: req.teammateId,
+            flag: 'reseller',
+            notificationFor: IDs
+        };
+        //Send Notification to reseller and admin
 
+        let createNotification = await userService.createNotification(notificationData);
         let settingData = await userService.getSetting({});
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
-            senderName: saveMembers[0]?.firstName,
-            content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
-            subject: "Welcome to " + settingData[0]?.title + " reseller Registration Approved "
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
+            subject: "Reseller Account Created - " + createdReseler.name
         }
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
         // // Send Email code here
         if (data.status) {
@@ -138,7 +136,7 @@ exports.createReseller = async (req, res) => {
                     const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                         link: resetLink, flag: "created", darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-                        title:settingData[0]?.title,
+                        title: settingData[0]?.title,
                         subject: "Set Password",
                         address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
                     }))
