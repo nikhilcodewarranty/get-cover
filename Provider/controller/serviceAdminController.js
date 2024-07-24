@@ -89,7 +89,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-
+ 
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
           if (saveMembers[i].status) {

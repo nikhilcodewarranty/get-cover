@@ -1003,7 +1003,7 @@ exports.changeDealerStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-            const status_content = req.body.status ? 'Active' : 'Inactive';
+      const status_content = req.body.status ? 'Active' : 'Inactive';
       let emailData = {
         senderName: singleDealer.name,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
@@ -2211,7 +2211,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
       }
 
       if (!req.file) {
-          res.send({
+         res.send({
         code: constant.errorCode,
           message: "No file uploaded"
         })
@@ -2635,7 +2635,7 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-   
+
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -3085,7 +3085,7 @@ exports.getDealerOrders = async (req, res) => {
         if (item.dealerName) {
           username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
-        
+
         if (item.resellerName) {
           resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
         }
@@ -3229,7 +3229,7 @@ exports.getDealerContract = async (req, res) => {
         servicerIds.push("1111121ccf9d400000000000")
       }
     };
-    
+
     if (data.resellerName != "") {
       userSearchCheck = 1
       let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })

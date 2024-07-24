@@ -2268,7 +2268,7 @@ exports.saveBulkClaim = async (req, res) => {
         if (req.role === 'Dealer') {
           const userId = req.userId;
           ccMail = new_admin_array;
-          IDs = IDs.concat(req.userId);
+          IDs.push(req.teammateId);
           let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
           toMail = userData.email;
           // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
@@ -2340,7 +2340,7 @@ exports.saveBulkClaim = async (req, res) => {
           //}
         } else {
           toMail = new_admin_array;
-          ccMail = ['ram@yopmail.com'];
+          ccMail = ['noreply@getcover.com'];
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
