@@ -18,11 +18,7 @@ router.get("/getUserId/:userId", [verifyToken], servicerController.getUserId)
 router.post("/createRelationWithDealer", [verifyToken], servicerController.createDeleteRelation)
 router.post("/saleReporting", [verifyToken], servicerController.saleReporting)
 router.post("/claimReporting", [verifyToken], servicerController.claimReporting)
-<<<<<<< HEAD
-router.get("/getDashboardInfo", [verifyToken], servicerController.getDashboardInfo)
-=======
 router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown)
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
 
 module.exports = router;

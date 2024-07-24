@@ -122,17 +122,7 @@ var cronOptions = {
   'method': 'POST',
   'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
 };
-<<<<<<< HEAD
-
-// var job =  cron.schedule('* * * * * *', function() {    //* * * * * *
-//   axios
-//   .post("http://15.207.221.207:3002/api-v1/order/cronJobStatus", {}) 
-// }, null, true, 'America/Los_Angeles');
-
-
-=======
  
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 cron.schedule(' 2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 

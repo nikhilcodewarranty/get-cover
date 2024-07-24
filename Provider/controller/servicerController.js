@@ -692,8 +692,6 @@ exports.claimReporting = async (req, res) => {
     }
 }
 
-<<<<<<< HEAD
-=======
 //get dropdown for claim
 exports.claimReportinDropdown = async (req, res) => {
     try {
@@ -977,7 +975,6 @@ exports.getDashboardGraph = async (req, res) => {
     }
 };
 
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 //get dashboard info
 exports.getDashboardInfo = async (req, res) => {
 

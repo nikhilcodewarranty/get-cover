@@ -265,10 +265,6 @@ module.exports = class userService {
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
-<<<<<<< HEAD
-      console.log("ddddddddddddddddddddddddddddddddddddddddddddddd", updatedResponse)
-=======
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
@@ -315,7 +311,6 @@ module.exports = class userService {
     }
   }
 
-<<<<<<< HEAD
 
   static async getSetting(query) {
     try {
@@ -346,8 +341,6 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
-=======
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
   //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
   static async findOneUser(query, projection) {

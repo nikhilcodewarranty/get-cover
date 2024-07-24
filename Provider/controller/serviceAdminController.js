@@ -89,8 +89,6 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-<<<<<<< HEAD
-      // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
 
       let settingData = await userService.getSetting({});
       let emailData = {
@@ -106,9 +104,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
-=======
- 
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
           if (saveMembers[i].status) {
@@ -117,16 +112,14 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-<<<<<<< HEAD
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
               link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
               title:settingData[0]?.title,
+              flag: "Approved",
+              subject: "Set Password",
               address: settingData[0]?.address,flag: "created", role: "Servicer", servicerName: saveMembers[i].firstName
             }))
-=======
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "Approved", link: resetLink, subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
           }
 
         }
@@ -227,7 +220,6 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let notificationEmails = await supportingFunction.getUserEmails();
       let primaryEmail = teamMembers[0].email
-<<<<<<< HEAD
       let settingData = await userService.getSetting({});
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -249,17 +241,12 @@ exports.createServiceProvider = async (req, res, next) => {
         link: updatePrimaryLInk, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         flag: "Approved",
+        subject: "Set Password",
         title:settingData[0]?.title,
         address: settingData[0]?.address, role: req.role, servicerName: updatePrimaryCode?.firstName
       }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       //let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
-=======
-      let primaryCode = randtoken.generate(4, '123456789')
-      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
-      let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
@@ -272,18 +259,15 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-<<<<<<< HEAD
               // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
               const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                 link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                 lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                 flag: "Approved",
+                subject: "Set Password",
                 title:settingData[0]?.title,
                 address: settingData[0]?.address, role: 'Servicer', servicerName: saveMembers[i].firstName
               }))
-=======
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
             }
 
@@ -409,17 +393,13 @@ exports.approveServicer = async (req, res, next) => {
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
-<<<<<<< HEAD
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       title:settingData[0]?.title,
+      subject: "Set Password",
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address, link: resetLink
     }))
-=======
-    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
-
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     res.send({
       code: constant.successCode,
       message: "Approve successfully",
@@ -743,23 +723,9 @@ exports.editServicerDetail = async (req, res) => {
     let createNotification = await userService.createNotification(notificationData);
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-<<<<<<< HEAD
-    // const notificationContent = {
-    //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
-    // }    
-    // let emailData = {
-    //   dealerName: checkServicer.name,
-    //   c1: "The Servicer",
-    //   c2: checkServicer.name,
-    //   c3: "has been updated successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
+
 
     let settingData = await userService.getSetting({});
-=======
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1187,17 +1153,8 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
-<<<<<<< HEAD
-    // if (!createNotification) {
-    //   res.send({
-    //     code:constant.errorCode,
-    //     message:""
-    //   })
-    //   // Send Email code here
-    // }
+   
     let settingData = await userService.getSetting({});
-=======
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     let emailData = {
       dealerName: ServicerMeta.name,
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1670,99 +1627,7 @@ exports.getServicerDealers = async (req, res) => {
 exports.getServicerDealers1 = async (req, res) => {
   try {
     let data = req.body
-<<<<<<< HEAD
-    // let query = [
-    //   {
-    //     $match: {
-    //       servicerId: new mongoose.Types.ObjectId(req.params.servicerId)
-    //     }
-    //   },
-    //   {
-    //     $lookup: {
-    //       from: "dealers",
-    //       localField: "dealerId",
-    //       foreignField: "_id",
-    //       as: "dealerData",
-    //       pipeline: [
-    //         {
-    //           $lookup: {
-    //             from: "users",
-    //             localField: "_id",
-    //             foreignField: "metaId",
-    //             as: "userData",
-    //             pipeline: [
-    //               {
-    //                 $match: {
-    //                   isPrimary: true
-    //                 }
-    //               }
-    //             ]
-    //           }
-    //         },
-    //         { $unwind: "$userData" },
-    //         {
-    //           $lookup: {
-    //             from: "claims",
-    //             // let: { dealerId: "$_id" },
-    //             localField: "_id",
-    //             foreignField: "dealerId",
-    //             as: "claimsData",
-    //             pipeline: [
-    //               {
-    //                 $match: {
-    //                   servicerId: new mongoose.Types.ObjectId(req.params.serviceId),
-    //                 }
-    //               },
-    //               {
-    //                 $group: {
-    //                   _id: { servicerId: new mongoose.Types.ObjectId(req.params.serviceId) },
-    //                   totalAmount: { $sum: "$totalAmount" },
-    //                   numberOfClaims: { $sum: 1 }
-    //                 }
-    //               },
-    //               {
-    //                 $project: {
-    //                   _id: 0,
-    //                   totalAmount: 1,
-    //                   numberOfClaims: 1
-    //                 }
-    //               }
-    //             ]
-
-    //             //   {
-    //             //     $match: {
-    //             //       $expr: {
-    //             //         $and: [
-    //             //           { $eq: ["$dealerId", "$dealerId"] },
-    //             //           { $eq: ["$servicerId", new mongoose.Types.ObjectId(req.params.servicerID)] }
-    //             //         ]
-    //             //       }
-    //             //     }
-    //             //   },
-
-    //             // {
-    //             //   $group: {
-    //             //     _id: null,
-    //             //     totalAmount: { $sum: "$amount" },
-    //             //     numberOfClaims: { $sum: 1 }
-    //             //   }
-    //             // }
-    //           }
-    //         }
-    //       ]
-    //     }
-    //   },
-    //   {
-    //     $unwind: "$dealerData"
-    //   },
-    //   // {
-    //   //   $project:{
-
-    //   //   }
-    //   // }
-    // ]
-=======
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
+  
 
     let query = [
       {

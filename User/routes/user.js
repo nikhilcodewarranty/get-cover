@@ -62,11 +62,6 @@ router.post('/saleReporting', [verifyToken], userController.saleReporting);
 router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
 router.post('/claimReporting', [verifyToken], userController.claimReporting);
 
-<<<<<<< HEAD
-
-router.post('/saleReporting', [verifyToken], userController.saleReporting);
-router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
-router.post('/claimReporting', [verifyToken], userController.claimReporting);
 
 // Setting Routes
 
@@ -75,9 +70,6 @@ router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
 
 
-=======
-router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken)
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
 
 
