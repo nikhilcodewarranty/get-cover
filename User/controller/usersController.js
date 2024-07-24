@@ -1250,7 +1250,6 @@ exports.createDealer = async (req, res) => {
           //Approve status 
 
           // Send Email code here
-          let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
               if (createUsers[i].status) {
