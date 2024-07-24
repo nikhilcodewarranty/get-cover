@@ -1541,10 +1541,6 @@ exports.editClaimStatus = async (req, res) => {
         redirectionId: checkClaim.unique_key,
         notificationFor: IDs
       };
-<<<<<<< HEAD
-=======
-
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       let createNotification = await userService.createNotification(notificationData1);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
@@ -2609,11 +2605,7 @@ exports.sendMessages = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-<<<<<<< HEAD
     let settingData = await userService.getSetting({});
-=======
-
->>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     // notificationEmails.push(emailTo.email);
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,

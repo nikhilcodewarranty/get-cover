@@ -3554,28 +3554,6 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
-            var pricebookDetail = []
-            // reporting codes
-            let dealerBookDetail = []
-            let pricebookDetailObject = {}
-            let dealerPriceBookObject = {}
-
-            pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-            pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-            pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-            pricebookDetailObject._id = product?.priceBookDetails._id
-            pricebookDetailObject.name = product?.priceBookDetails.name
-            pricebookDetailObject.categoryId = product?.priceBookDetails.category
-            pricebookDetailObject.term = product?.priceBookDetails.term
-            pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-            pricebookDetailObject.price = product.price
-            pricebookDetailObject.noOfProducts = product.checkNumberProducts
-
-            pricebookDetailObject.retailPrice = product.unitPrice
-            pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-            pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-            pricebookDetail.push(pricebookDetailObject)
-            dealerBookDetail.push(dealerPriceBookObject)
             const wb = XLSX.readFile(pathFile, readOpts);
             const sheets = wb.SheetNames;
             // reporting codes

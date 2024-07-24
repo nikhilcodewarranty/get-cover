@@ -3827,24 +3827,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
                 const wb = XLSX.readFile(pathFile);
-                const sheets = wb.SheetNames;
-                let pricebookDetailObject = {}
-                let dealerPriceBookObject = {}
-                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
-                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
-                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
-                pricebookDetailObject._id = product?.priceBookDetails._id
-                pricebookDetailObject.name = product?.priceBookDetails.name
-                pricebookDetailObject.categoryId = product?.priceBookDetails.category
-                pricebookDetailObject.term = product?.priceBookDetails.term
-                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
-                pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
-                pricebookDetailObject.retailPrice = product.unitPrice
-                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
-                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)
+                const sheets = wb.SheetNames;                
                 const ws = wb.Sheets[sheets[0]];
                 const totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 const totalDataComing = totalDataComing1.map((item) => {
