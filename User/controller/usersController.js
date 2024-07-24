@@ -2175,7 +2175,8 @@ exports.sendLinkToEmail = async (req, res) => {
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
       let data = {
-        link: resetLink
+        link: resetLink,
+        name:checkEmail.name
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
