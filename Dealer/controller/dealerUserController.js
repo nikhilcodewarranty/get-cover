@@ -1299,7 +1299,6 @@ exports.createCustomer = async (req, res, next) => {
                 })
                 return;
             }
-            IDs.push(checkReseller._id)
         }
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
@@ -1370,7 +1369,14 @@ exports.createCustomer = async (req, res, next) => {
         let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
-          
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the customer account for " + createdCustomer.username + " has been created.",
+            subject: "Customer Account Created - " + createdCustomer.username
+        }
+
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
         if (saveMembers.length > 0) {
             if (data.status) {
@@ -1381,15 +1387,15 @@ exports.createCustomer = async (req, res, next) => {
                         let resetPasswordCode = randtoken.generate(4, '123456789')
                         let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                         let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag:"created",link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+                        const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
                     }
 
                 }
             }
         }
         //Send Notification to customer,admin,reseller,dealer 
-        IDs.push(checkDealer._id)
-        IDs.push(createdCustomer._id)
+        IDs.push(getPrimary._id)
+        IDs.push(resellerPrimary?._id)
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -1796,7 +1802,15 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
- 
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
+            subject: "Reseller Account Created - " + createdReseler.name
+        }
+
+        // Send Email code here
+        let mailing1 = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
@@ -1805,7 +1819,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag:"created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
                 }
             }
         }

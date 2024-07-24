@@ -92,18 +92,6 @@ exports.createReseller = async (req, res) => {
         //Send Notification to reseller and admin
 
         let IDs = await supportingFunction.getUserIds()
-        IDs.push(checkDealer._id)
-        IDs.push(createdReseler._id)
-
-        let notificationData = {
-            title: "Reseller Account Creation",
-            description: data.accountName + " " + "reseller account has been created successfully!",
-            userId: req.teammateId,
-            flag: 'reseller',
-            notificationFor: IDs
-        };
-
-        let createNotification = await userService.createNotification(notificationData);
 
         // Create the user
         teamMembers = teamMembers.map(member => ({ ...member, accountId: createdReseler._id, metaId: createdReseler._id, roleId: '65bb94b4b68e5a4a62a0b563' }));
@@ -114,15 +102,25 @@ exports.createReseller = async (req, res) => {
         let notificationEmails = await supportingFunction.getUserEmails();
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
+        IDs.push(getPrimary._id)
+        let notificationData = {
+            title: "Reseller Account Creation",
+            description: data.accountName + " " + "reseller account has been created successfully!",
+            userId: req.teammateId,
+            flag: 'reseller',
+            notificationFor: IDs
+        };
 
-        // let emailData = {
-        //     senderName: saveMembers[0]?.firstName,
-        //     content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized reseller " + createdReseler.name + " has been created",
-        //     subject: "Welcome to Get-Cover reseller Registration Approved"
-        // }
+        let createNotification = await userService.createNotification(notificationData);
+        let emailData = {
+            senderName: getPrimary.firstName,
+            content: "We are delighted to inform you that the reseller account for " + createdReseler.name + " has been created.",
+            subject: "Reseller Account Created - " + createdReseler.name
+        }
 
-        // // Send Email code here
-        // let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+        // Send Email code here
+        let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
+
         if (data.status) {
             for (let i = 0; i < saveMembers.length; i++) {
                 if (saveMembers[i].status) {
@@ -131,7 +129,7 @@ exports.createReseller = async (req, res) => {
                     let resetPasswordCode = randtoken.generate(4, '123456789')
                     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
                     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag:"created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
+                    const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "created", link: resetLink, subject: "Set Password", role: "Reseller", servicerName: saveMembers[i].firstName }))
                 }
 
             }
