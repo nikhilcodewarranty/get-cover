@@ -2169,7 +2169,7 @@ exports.sendLinkToEmail = async (req, res) => {
         res.send({
           code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
-        })
+        }) 
         return;
       }
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
@@ -2184,6 +2184,7 @@ exports.sendLinkToEmail = async (req, res) => {
         address: settingData[0]?.address,
         title:settingData[0]?.title,
         websiteSetting: settingData[0],
+        subject:"Set Password"
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
