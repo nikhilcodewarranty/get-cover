@@ -728,13 +728,12 @@ exports.registerDealer = async (req, res) => {
     let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
     const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true })
     const notificationEmail = await supportingFunction.getUserEmails();
-
     emailData = {
       senderName: admin.firstName,
       subject: "Notification of New Dealer Registration",
       content: "A new dealer " + createdDealer.name + " has been registered"
     }
-    mailing = sgMail.send(emailConstant.dealerWelcomeMessage(notificationEmail, [], emailData))
+    mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
       endpoint: "register dealer",
       body: data,
@@ -1906,7 +1905,7 @@ exports.rejectDealer = async (req, res) => {
       }
       let notificationData = {
         title: "Rejection Dealer Account",
-        description: "The " + singleDealer.name + " account has been rejected",
+        description: "The " + singleDealer.name + " account has been rejected!",
         userId: req.teammateId,
         flag: 'dealer',
         notificationFor: IDs
@@ -1917,7 +1916,7 @@ exports.rejectDealer = async (req, res) => {
       let notificationEmails = await supportingFunction.getUserEmails();
       let emailData = {
         senderName: singleDealer.name,
-        content: "Dear " + singleDealer.name + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+        content: "Dear " + singleDealer.name + ",\n\nWe regret to inform you that your registration as a dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
         subject: "Rejection Account"
       }
       // Send Email code here

@@ -128,14 +128,7 @@ exports.createCustomer = async (req, res, next) => {
     notificationEmails.push(getPrimary.email)
     notificationEmails.push(resellerPrimary?.email)
 
-    let emailData = {
-      senderName: saveMembers[0].firstName,
-      content: "Dear " + saveMembers[0].firstName + " we are delighted to inform you that your registration as an authorized customer " + createdCustomer.username + " has been approved",
-      subject: "Welcome to Get-Cover customer Registration Approved"
-    }
 
-    // Send Email code here
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
     if (saveMembers.length > 0) {
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
@@ -145,7 +138,7 @@ exports.createCustomer = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag:"created", link: resetLink, subject: "Set Password", role: "Customer", servicerName: saveMembers[i].firstName }))
 
           }
 

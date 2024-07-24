@@ -105,7 +105,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
     let limit = req.body.limit ? req.body.limit : 10000
     let page = req.body.page ? req.body.page : 1
     const priceBooks = await priceBookService.getAllPriceBook(query, projection, limit, page);
- 
+
     if (!priceBooks) {
       res.status(constant.errorCode).send({
         code: constant.errorCode,
@@ -172,7 +172,7 @@ exports.createPriceBook = async (req, res, next) => {
     }
 
     let checkCat = await priceBookService.getPriceCatById({ _id: data.priceCatId })
-   
+
     if (!checkCat) {
       res.status(constant.errorCode).send({
         code: constant.errorCode,
@@ -217,9 +217,9 @@ exports.createPriceBook = async (req, res, next) => {
       })
       return;
     }
-    
+
     let savePriceBook = await priceBookService.createPriceBook(priceBookData)
-  
+
     if (!savePriceBook) {
       let logData = {
         userId: req.teammateId,
@@ -476,7 +476,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       });
       return;
     }
-   
+
     const newValue = {
       $set: {
         status: body.status,
@@ -542,11 +542,11 @@ exports.updatePriceBookById = async (req, res, next) => {
     else {
       emailData = {
         senderName: admin.firstName,
-        content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status + "! effective immediately.",
+        content: "The priceBook " + existingPriceBook[0]?.name + " has been changed to " + body.status ? 'Active' : "Inactive" + "! effective immediately.",
         subject: "Update Status"
       }
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "admin@yopmail.com", emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, "", emailData))
     let logData = {
       userId: req.teammateId,
       endpoint: "price/updatePriceBook",
@@ -758,7 +758,7 @@ exports.createPriceBookCat = async (req, res) => {
 exports.getPriceBookCat = async (req, res) => {
   try {
     let data = req.body
-    let projection = { isDeleted: 0, __v: 0 } 
+    let projection = { isDeleted: 0, __v: 0 }
     let query;
 
     if (data.status) {
@@ -984,7 +984,7 @@ exports.updatePriceBookCat = async (req, res) => {
     let IDs = await supportingFunction.getUserIds()
     let notificationData = {
       title: "Category Updated",
-      description: "The category has been successfully updated",
+      description: "The category " + data.name + " updated successfully!",
       userId: req.userId,
       contentId: req.params.catId,
       flag: 'category',

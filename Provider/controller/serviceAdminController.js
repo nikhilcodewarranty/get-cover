@@ -89,14 +89,6 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
-      let emailData = {
-        senderName: saveMembers[0]?.firstName,
-        content: "Dear " + saveMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + createServiceProvider.name + " has been created",
-        subject: "Welcome to Get-Cover servicer Registration Approved"
-      }
-
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
 
       if (data.status) {
         for (let i = 0; i < saveMembers.length; i++) {
@@ -106,7 +98,7 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink,subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "Approved", link: resetLink, subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
           }
 
         }
@@ -207,18 +199,10 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let notificationEmails = await supportingFunction.getUserEmails();
       let primaryEmail = teamMembers[0].email
-      let emailData = {
-        senderName: teamMembers[0]?.firstName,
-        content: "Dear " + teamMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + updateServicer.name + " has been approved",
-        subject: "Welcome to Get-Cover servicer Registration Approved"
-      }
-
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryEmail, notificationEmails, emailData))
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
-      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { subject: "Set Password",link: updatePrimaryLInk, role: req.role, servicerName: updatePrimaryCode?.firstName }))
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
 
       if (teamMembers.length > 0) {
@@ -231,7 +215,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
-              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
 
             }
 
@@ -357,7 +341,7 @@ exports.approveServicer = async (req, res, next) => {
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
-    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {subject: "Set Password",link: resetLink }))
+    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
 
     res.send({
       code: constant.successCode,
@@ -490,7 +474,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       })
       return;
     };
-    
+
     let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
     let claimQueryAggregate = [
@@ -562,7 +546,8 @@ exports.rejectServicer = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let emailData = {
       senderName: getServicer.name,
-      content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+      content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
+
       subject: "Rejection Account"
     }
     // Send Email code here
@@ -1101,7 +1086,8 @@ exports.registerServiceProvider = async (req, res) => {
       c3: "Your account is currently pending approval from our admin.",
       c4: "Once approved, you will receive a confirmation emai",
       c5: "We appreciate your patience.",
-      role: "Servicer!"
+      role: "Servicer!",
+      subject: "New Servicer Registration Request Received",
     }
 
     // Send Email code here
@@ -1111,7 +1097,7 @@ exports.registerServiceProvider = async (req, res) => {
     emailData = {
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
-      subject: 'Notification of New Servicer Registration'
+      subject: 'New Servicer Registration'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
@@ -1657,6 +1643,13 @@ exports.getDealerList = async (req, res) => {
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
     let getRelations = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
+    if(!getRelations){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid Id"
+      })
+      return; 
+    }
 
     const resultArray = dealers.map(item => {
       const matchingDealer = getRelations.find(dealer => dealer.dealerId.toString() == item._id.toString());
