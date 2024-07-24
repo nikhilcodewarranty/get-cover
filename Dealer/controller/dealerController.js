@@ -2419,7 +2419,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           description: "The priceBook has been successfully uploaded",
           userId: req.teammateId,
           flag: 'priceBook',
-          notificationFor: IDs
+          notificationFor: IDs 
         };
 
         let createNotification = await userService.createNotification(notificationData);
