@@ -2174,9 +2174,16 @@ exports.sendLinkToEmail = async (req, res) => {
       }
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
+      let settingData = await userService.getSetting({});
+
       let data = {
         link: resetLink,
-        name:checkEmail.name
+        name: checkEmail.name,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        title:settingData[0]?.title,
+        websiteSetting: settingData[0],
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
@@ -2742,13 +2749,13 @@ exports.addMembers = async (req, res) => {
     const resetPassword = sgMail.send(emailConstant.servicerApproval(data.email, {
       link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role, 
+      address: settingData[0]?.address, role: req.role == 'Super Admin' ? 'Admin' : req.role,
       subject: "Set Password",
       flag: "created",
-      title:settingData[0]?.title,
+      title: settingData[0]?.title,
       servicerName: data.firstName
     }))
-   
+
     res.send({
       code: constant.successCode,
       message: "Created Successfully"
