@@ -430,8 +430,8 @@ exports.createDealer = async (req, res) => {
         if (data.email != data.oldEmail) {
           let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Primary user email already exist"
             })
             return;
@@ -441,8 +441,8 @@ exports.createDealer = async (req, res) => {
         if (data.name != data.oldName) {
           let nameCheck = await dealerService.getDealerByName({ name: data.name });
           if (nameCheck) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Dealer name already exist"
             })
             return;
@@ -465,8 +465,8 @@ exports.createDealer = async (req, res) => {
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
 
           if (checkPriceBook.length == 0) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Product does not exist.Please check the product"
             })
             return;
@@ -474,8 +474,8 @@ exports.createDealer = async (req, res) => {
 
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: 'Some products is not created. Please check the product',
               missingProductNames: missingProductNames
             });
@@ -555,8 +555,8 @@ exports.createDealer = async (req, res) => {
               }
             }
             await logs(logData).save()
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to save price book"
             });
             return;
@@ -613,8 +613,8 @@ exports.createDealer = async (req, res) => {
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
           if (!dealerStatus) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
@@ -739,8 +739,8 @@ exports.createDealer = async (req, res) => {
           }
 
           if (headers.length !== 2) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
             return
@@ -992,8 +992,8 @@ exports.createDealer = async (req, res) => {
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
 
           if (!dealerStatus) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
@@ -1094,8 +1094,8 @@ exports.createDealer = async (req, res) => {
           const priceBookCreateria = { _id: { $in: priceBook } }
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
           if (checkPriceBook.length == 0) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Product does not exist.Please check the product"
             })
             return;
@@ -1103,8 +1103,8 @@ exports.createDealer = async (req, res) => {
 
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: 'Some products is not created. Please check the product',
               missingProductNames: missingProductNames
             });
@@ -1147,8 +1147,8 @@ exports.createDealer = async (req, res) => {
               }
             }
             await logs(logData).save()
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to create dealer"
             });
             return;
@@ -1210,8 +1210,8 @@ exports.createDealer = async (req, res) => {
           }));
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to save users"
             });
             return;
@@ -1241,8 +1241,8 @@ exports.createDealer = async (req, res) => {
               }
             }
             await logs(logData).save()
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to save price book"
             });
             return;
@@ -1300,8 +1300,8 @@ exports.createDealer = async (req, res) => {
           }
 
           if (headers.length !== 2) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
             return
@@ -1359,8 +1359,8 @@ exports.createDealer = async (req, res) => {
           const createMetaData = await dealerService.createDealer(dealerMeta);
 
           if (!createMetaData) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to create dealer"
             });
             return;
@@ -1552,8 +1552,8 @@ exports.createDealer = async (req, res) => {
 
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to save users"
             });
             return;
@@ -1566,8 +1566,8 @@ exports.createDealer = async (req, res) => {
           }
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (!dealerStatus) {
-            res.send({
-              code: constant.errorCode,
+            res.status(constant.errorCode).send({
+      code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
