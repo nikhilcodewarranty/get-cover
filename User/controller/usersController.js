@@ -657,7 +657,7 @@ exports.createDealer = async (req, res) => {
             notificationFor: IDs
           };
 
-
+          let createNotification = await userService.createNotification(notificationData);
 
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
@@ -667,11 +667,11 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
-            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
+            content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
           }
           // Send Email code here
-          //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1069,11 +1069,12 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: allUserData[0].firstName,
-            content: "Dear " + allUserData[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + singleDealer.name + " has been approved",
-            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
+            content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
           }
+
           // Send Email code here
-          // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1314,9 +1315,9 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
-          console.log("createUsers&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&77", createUsers)
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
+
           let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -1324,9 +1325,11 @@ exports.createDealer = async (req, res) => {
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: createUsers[0].firstName,
-            content: "Dear " + createUsers[0].firstName + " we are delighted to inform you that your registration as an authorized dealer " + createMetaData.name + " has been approved",
-            subject: "Welcome to " + settingData[0]?.title + " Dealer Registration Approved"
+            content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
           }
+
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
           // Send Email code here
           if (req.body.isAccountCreate) {
@@ -1636,6 +1639,7 @@ exports.createDealer = async (req, res) => {
           }));
 
           const createUsers = await userService.insertManyUser(allUsersData);
+          
           if (!createUsers) {
             res.send({
               code: constant.errorCode,
@@ -1665,7 +1669,20 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+          let notificationEmails = await supportingFunction.getUserEmails();
 
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            title: settingData[0]?.title,
+            websiteSetting: settingData[0],
+            senderName: createUsers[0].firstName,
+            content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
+          }
+
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           // Send Email code here
 
           if (req.body.isAccountCreate) {
@@ -2169,7 +2186,7 @@ exports.sendLinkToEmail = async (req, res) => {
         res.send({
           code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
-        }) 
+        })
         return;
       }
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
@@ -2182,9 +2199,9 @@ exports.sendLinkToEmail = async (req, res) => {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
         address: settingData[0]?.address,
-        title:settingData[0]?.title,
+        title: settingData[0]?.title,
         websiteSetting: settingData[0],
-        subject:"Set Password"
+        subject: "Set Password"
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
