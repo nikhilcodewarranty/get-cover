@@ -145,7 +145,6 @@ module.exports = class dealerService {
 
   static async createPriceBook(data) {
     try {
-      console.log('data meta Price---------', data)
       const response = await new dealerPrice(data).save();
       return response;
     } catch (error) {

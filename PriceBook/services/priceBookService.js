@@ -6,8 +6,6 @@ module.exports = class priceBookService {
   //get all price book 
   static async getAllPriceBook(query, projection, limit, page) {
     try {
-
-
       const allPriceBook = await priceBook.aggregate([
         {
           $match: query
@@ -22,9 +20,9 @@ module.exports = class priceBookService {
           }
         },
         {
-          $unwind:'$category'
+          $unwind: '$category'
         }
-      
+
       ]).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
       return allPriceBook;
     } catch (error) {
@@ -32,17 +30,9 @@ module.exports = class priceBookService {
     }
   }
 
-
-
-  
-
   //get all active price book 
   static async getAllActivePriceBook(query, projection) {
     try {
-
-
-      console.log("query========================",query);
-
       const allPriceBook = await priceBook.aggregate([
         {
           $match: query
@@ -57,9 +47,9 @@ module.exports = class priceBookService {
           }
         },
         {
-          $unwind:'$category'
+          $unwind: '$category'
         }
-      
+
       ]).sort({ 'createdAt': -1 });
       return allPriceBook;
     } catch (error) {
@@ -69,7 +59,7 @@ module.exports = class priceBookService {
 
   static async getTotalCount() {
     try {
-      const count = await priceCategory.find().sort({"unique_key":-1})
+      const count = await priceCategory.find().sort({ "unique_key": -1 })
       return count.sort((a, b) => b.unique_key - a.unique_key);
     } catch (error) {
       console.log(`Could not fetch price book category${error}`);
@@ -79,13 +69,12 @@ module.exports = class priceBookService {
 
   static async getPriceBookCount() {
     try {
-      const count = await priceBook.find().sort({"unique_key":-1});
+      const count = await priceBook.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-
 
   //create new price book
   static async createPriceBook(data) {
@@ -114,9 +103,9 @@ module.exports = class priceBookService {
           }
         },
         {
-          $unwind:'$category'
+          $unwind: '$category'
         }
-      
+
       ]).sort({ 'createdAt': -1 });
       return singlePriceBookResponse;
     } catch (error) {
@@ -202,7 +191,7 @@ module.exports = class priceBookService {
   // /get active price categories service
   static async getAllActivePriceCat(query, projection) {
     try {
-      const allPriceCategories = await priceCategory.find(query, projection).sort({ status:1});
+      const allPriceCategories = await priceCategory.find(query, projection).sort({ status: 1 });
       return allPriceCategories;
     } catch (error) {
       console.log(`Could not fetch price categories ${error}`);
@@ -222,8 +211,6 @@ module.exports = class priceBookService {
       console.log(`Could not fetch price categories ${error}`);
     }
   }
-
-  //get Dealer price  Books
 
   // Find By Name
   static async findByName(priceBooksName) {
@@ -246,7 +233,6 @@ module.exports = class priceBookService {
 
   static async getMultiplePriceBok(query, projection, limit, page) {
     try {
-
       const allPriceBook = await priceBook.find(query, projection)
       return allPriceBook;
     } catch (error) {

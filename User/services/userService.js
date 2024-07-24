@@ -61,7 +61,6 @@ module.exports = class userService {
     }
   }
 
-
   //create user 
   static async createUser(data) {
     try {
@@ -71,6 +70,7 @@ module.exports = class userService {
       console.log(error);
     }
   };
+
   static async insertManyUser(data) {
     try {
       const response = await user.insertMany(data);
@@ -196,29 +196,6 @@ module.exports = class userService {
       ]);
 
       return response;
-      // const response = await user.aggregate([
-      //   {
-      //     $facet: {
-      //       matchingResults: [
-      //         { $match: { 'email': { $in: query } } },
-      //         { $addFields: { exist: 1 } },
-      //         { $project: { _id: 0, email: 1, exist: 1 } },
-
-      //       ],
-      //       nonMatchingResults: [
-      //         { $match: { 'email': { $nin: query } } },
-      //         { $addFields: { exist: 0 } },
-      //         { $project: { _id: 0, email: 1, exist: 1 } }
-      //       ]
-      //     }
-      //   },
-      //   {
-      //     $project: {
-      //       allResults: { $concatArrays: ['$matchingResults', '$nonMatchingResults'] }
-      //     }
-      //   }
-      // ]).exec();
-      return response;
     } catch (err) {
       console.log(err);
 
@@ -288,7 +265,10 @@ module.exports = class userService {
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
+<<<<<<< HEAD
       console.log("ddddddddddddddddddddddddddddddddddddddddddddddd", updatedResponse)
+=======
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update dealer book ${error}`);
@@ -335,6 +315,7 @@ module.exports = class userService {
     }
   }
 
+<<<<<<< HEAD
 
   static async getSetting(query) {
     try {
@@ -365,6 +346,8 @@ module.exports = class userService {
       console.log(`Could not fetch users ${error}`);
     }
   }
+=======
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
   //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
   static async findOneUser(query, projection) {
@@ -386,6 +369,5 @@ module.exports = class userService {
 
     }
   }
-
 
 };

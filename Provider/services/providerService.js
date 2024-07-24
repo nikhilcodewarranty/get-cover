@@ -62,7 +62,6 @@ module.exports = class providerService {
   static async updateServiceProvider(criteria, data) {
     try {
       const updatedResponse = await serviceProvider.findOneAndUpdate(criteria, data, { new: true });
-
       return updatedResponse;
     } catch (error) {
       console.log(`Could not update service provider ${error}`);

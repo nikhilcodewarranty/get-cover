@@ -120,8 +120,9 @@ app.get('/download/:filename', (req, res) => {
 var cron = require('node-cron');
 var cronOptions = {
   'method': 'POST',
-  'url': `${process.env.SITE_URL}:3002/api-v1/order/cronJobStatus`,
+  'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
 };
+<<<<<<< HEAD
 
 // var job =  cron.schedule('* * * * * *', function() {    //* * * * * *
 //   axios
@@ -129,6 +130,9 @@ var cronOptions = {
 // }, null, true, 'America/Los_Angeles');
 
 
+=======
+ 
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 cron.schedule(' 2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
@@ -163,7 +167,7 @@ app.use("/api-v1/customerPortal", customerUserRoutes);
 app.use("/api-v1/resellerPortal", resellerUserRoutes);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
-  res.redirect("http://15.207.221.207/")
+  res.redirect(process.env.SITE_URL)
   // res.status(404).json({ code: 404, message: "Not Foundsddsd" })
 
 });
@@ -180,7 +184,7 @@ app.use(function (err, req, res, next) {
 
 //* Catch HTTP 404 
 app.use((req, res, next) => {
-  res.redirect("http://15.207.221.207/")
+  res.redirect(process.env.SITE_URL)
 
 
 })

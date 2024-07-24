@@ -12,16 +12,12 @@ module.exports = class contractService {
 
   static async getAllContracts2(query, pageLimit, page) {
     try {
-     // console.log("query+++++++++++++++++",query,pageLimit)
       const allContracts = await contract.aggregate(query)
-    //  console.log("query------------------------",query)
       return allContracts;
     } catch (error) {
       console.log(`Could not fetch contracts ${error}`);
     }
   }
-
-
 
   static async createContract(data) {
     try {
@@ -40,7 +36,8 @@ module.exports = class contractService {
       console.log(`Could not fetch contract count ${error}`);
     }
   }
-    static async findContracts1(query) {
+
+  static async findContracts1(query) {
     try {
       const contracts = await contract.find(query, {})
       return contracts
@@ -49,12 +46,12 @@ module.exports = class contractService {
     }
   }
 
-  static async findContracts2(query,limit,page) {
+  static async findContracts2(query, limit, page) {
     try {
       const contracts = await contract.find(query).sort({ createdAt: -1 })
-      .skip(page * limit)
-      .limit(limit).lean()
-      .exec();
+        .skip(page * limit)
+        .limit(limit).lean()
+        .exec();
       return contracts
     } catch (error) {
       console.log(`Could not fetch contract count ${error}`);
@@ -63,7 +60,7 @@ module.exports = class contractService {
 
   static async getContractsCountNew() {
     try {
-      const count = await contract.find().sort({unique_key_number:-1}).limit(1); 
+      const count = await contract.find().sort({ unique_key_number: -1 }).limit(1);
       return count;
     } catch (error) {
       console.log(`Could not fetch contract count ${error}`);
@@ -81,7 +78,6 @@ module.exports = class contractService {
 
   static async findContractCount(query) {
     try {
-      console.log("find query+++++++++++", query)
       const count = await contract.find(query).countDocuments();
       return count
     } catch (error) {
@@ -91,9 +87,7 @@ module.exports = class contractService {
 
   static async createBulkContracts(data) {
     try {
-     // console.log('service inset mny', data)
       let bulkContract = await contract.insertMany(data);
-    //  console.log('service inset mny', data, bulkContract)
       return bulkContract;
     }
     catch (error) {
@@ -146,6 +140,7 @@ module.exports = class contractService {
       console.log(`Could  not delete contract ${error}`);
     }
   }
+
   static async allUpdate(query) {
     try {
       const getResponse = await contract.bulkWrite(query);

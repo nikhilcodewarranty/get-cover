@@ -31,4 +31,13 @@ router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editO
 router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
 
 router.put("/editResellers", [verifyToken], resellerController.editResellers);
+
+router.post('/saleReporting', [verifyToken], resellerController.saleReporting)
+router.post('/claimReporting', [verifyToken], resellerController.claimReporting)
+router.post('/saleReportinDropDown', [verifyToken], resellerController.saleReportinDropDown)
+router.post('/claimReportinDropdown', [verifyToken], resellerController.claimReportinDropdown)
+router.get('/getDashboardGraph', [verifyToken], resellerController.getDashboardGraph)
+router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
+
+
 module.exports = router; 

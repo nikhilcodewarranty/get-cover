@@ -254,7 +254,6 @@ exports.createOrder1 = async (req, res) => {
             { new: true }
         );
 
-        // .some(Boolean);
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -295,7 +294,11 @@ exports.createOrder1 = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-
+            // let savedResponse = await orderService.updateOrder(
+            //     { _id: checkOrder._id },
+            //     { status: "Active" },
+            //     { new: true }
+            // );
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -331,24 +334,19 @@ exports.createOrder1 = async (req, res) => {
                 pricebookDetailObject.term = product?.priceBookDetails.term
                 pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                 pricebookDetail.push(pricebookDetailObject)
-                // dealerBookDetail.push(dealerPriceBookObject)
 
                 const readOpts = { // <--- need these settings in readFile options
-                    //cellText:false, 
                     cellDates: true
                 };
 
                 const jsonOpts = {
-                    //header: 1,
                     defval: '',
-                    // blankrows: true,
                     raw: false,
                     dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
@@ -418,124 +416,32 @@ exports.createOrder1 = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
 
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
                     }
                     // Find the minimum date
                     let minDate;
-                    // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-
                         } else if (req.body.serviceCoverageType == "Parts") {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     } else if (req.body.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        // if (req.body.serviceCoverageType == "Labour") {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        //     }
-
-                        // } else if (req.body.serviceCoverageType == "Parts") {
-                        //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     }
-
-                        // } else {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        //     }
-                        // }
                     } else {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
 
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-
                         } else if (req.body.serviceCoverageType == "Parts") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     }
 
@@ -573,7 +479,6 @@ exports.createOrder1 = async (req, res) => {
                     increamentNumber++
 
                     contractArray.push(contractObject);
-                    //let saveData = contractService.createContract(contractObject)
                 });
 
                 let saveContracts = await contractService.createBulkContracts(contractArray);
@@ -678,23 +583,16 @@ exports.createOrder1 = async (req, res) => {
                             products: pricebookDetail,
                             orderAmount: data.orderAmount,
                             dealerId: data.dealerId,
-                            // dealerPriceBook: dealerBookDetail
                         }
 
                         await supportingFunction.reportingData(reportingData)
                     }
-                    // let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
-
-                    // res.send({
-                    //     code: constant.successCode,
-                    //     message: "Success",
-                    // });
-                    // return
                 }
             })
             let checkOrder2 = await orderService.getOrder(
                 { _id: savedResponse._id },
             );
+            console.log("check ak +++++++++++++++++++++++++++++++++++++=1st--------------------------", checkOrder2.status)
 
             if (checkOrder2.status == "Active") {
 
@@ -724,8 +622,6 @@ exports.createOrder1 = async (req, res) => {
                 message: "Success",
             });
         }
-
-        // })
     } catch (err) {
         let logData = {
             endpoint: "order/createOrder catch",
@@ -747,20 +643,12 @@ exports.createOrder1 = async (req, res) => {
 //process order for checking pending requirements
 exports.processOrder = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action!",
-        //     });
-        //     return;
-        // }
-
         let returnField = [];
-
         let checkOrder = await orderService.getOrder(
             { _id: req.params.orderId },
             { isDeleted: 0 }
         );
+
         if (!checkOrder) {
             res.send({
                 code: constant.errorCode,
@@ -777,10 +665,11 @@ exports.processOrder = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === "" && item.orderFile.name === ""
             )
-        // .some(Boolean);
+
         if (checkOrder.customerId == '' || checkOrder.customerId == null) {
             returnField.push('Customer Name')
         }
+
         if (checkOrder.paymentStatus != 'Paid') {
             returnField.push('Order payment')
         }
@@ -793,21 +682,12 @@ exports.processOrder = async (req, res) => {
         }
 
         const combinedString = returnField.length > 0 ? returnField.join(', ') + ' is missing' : '';
-
-        // const obj = {
-        //     customerId: checkOrder.customerId ? true : 'Customer Name is missing',
-        //     paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
-        //     coverageStartDate: resultArray.length == 0 ? true : false,
-        //     fileName: isEmptyOrderFile.length == 0 ? true : false,
-        // };
-
-        // returnField.push(obj);
-
         res.send({
             code: constant.successCode,
             message: "Success!",
             result: combinedString,
         });
+
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -830,7 +710,6 @@ exports.getAllOrders = async (req, res) => {
         }
 
         let query = { status: { $ne: "Archieved" } };
-
         let lookupQuery = [
             {
                 $match: query
@@ -844,7 +723,8 @@ exports.getAllOrders = async (req, res) => {
 
                 }
             },
-            { $sort: { unique_key: -1 } }]
+            { $sort: { unique_key: -1 } }
+        ]
 
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 10000000000
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
@@ -887,7 +767,9 @@ exports.getAllOrders = async (req, res) => {
                 state: 1,
                 country: 1,
                 zip: 1,
-                street: 1
+                street: 1,
+                dealerId: 1,
+                resellerId: 1
             }
         );
         let customerIdsArray = ordersResult.map((result) => result.customerId);
@@ -943,7 +825,7 @@ exports.getAllOrders = async (req, res) => {
                     ? respectiveServicer.find(
                         (item2) =>
                             item2._id.toString() === item1.servicerId?.toString() ||
-                            item2.resellerId === item1?.servicerId
+                            item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
                     )
                     : null;
             const customerName =
@@ -1024,7 +906,7 @@ exports.getAllOrders = async (req, res) => {
             }
             return {
                 ...item,
-                servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
+                servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item?.resellerName?.isServicer && item?.servicerId?.toString() == item?.resellerName?._id?.toString()) ? item.resellerName : item?.servicerName,
                 username: username, // Set username based on the conditional checks
                 resellerUsername: resellerUsername ? resellerUsername : {},
                 customerUserData: customerUserData ? customerUserData : {}
@@ -1055,7 +937,6 @@ exports.getAllOrders = async (req, res) => {
         });
 
 
-        console.log(filteredData1.length)
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -1087,32 +968,12 @@ exports.getAllArchieveOrders = async (req, res) => {
         {
             $match: query
         },
-
-        // {
-        //     $project: project,
-        // },
         {
             "$addFields": {
                 "noOfProducts": {
                     "$sum": "$productsArray.checkNumberProducts"
                 },
                 totalOrderAmount: { $sum: "$orderAmount" },
-                // flag: {
-                //     $cond: {
-                //         if: {
-                //             $and: [
-                //                 // { $eq: ["$payment.status", "paid"] },
-                //                 { $ne: ["$productsArray.orderFile.fileName", ''] },
-                //                 { $ne: ["$customerId", null] },
-                //                 { $ne: ["$paymentStatus", 'Paid'] },
-                //                 { $ne: ["$productsArray.coverageStartDate", null] },
-                //             ]
-                //         },
-                //         then: true,
-                //         else: false
-                //     }
-                // }
-
             }
         },
 
@@ -1122,7 +983,6 @@ exports.getAllArchieveOrders = async (req, res) => {
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
-
 
     let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
     let dealerIdsArray = ordersResult.map((result) => result.dealerId);
@@ -1256,19 +1116,12 @@ exports.getAllArchieveOrders = async (req, res) => {
     });
 };
 
+//check File Validate or not
 exports.checkFileValidation = async (req, res) => {
     try {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            // if(!data.rangeStart||!data.rangeEnd){
-            //     res.send({
-            //         code:constant.errorCode,
-            //         message:"Range start and range end is required"
-            //     })
-            //     return;
-            // }
-            console.log(req.file)
             let csvName = req.file.filename;
             let originalName = req.file.originalname;
             let size = req.file.size;
@@ -1322,7 +1175,6 @@ exports.checkFileValidation = async (req, res) => {
                 (obj) => Object.keys(obj).length === 5
             );
             if (!isValidLength) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
                 res.send({
                     code: constant.successCode,
                     message: "Invalid fields value",
@@ -1334,14 +1186,6 @@ exports.checkFileValidation = async (req, res) => {
                 });
                 return;
             }
-            // if (parseInt(data.checkNumberProducts) != totalDataComing1.length) {
-            //     res.send({
-            //         code: constant.errorCode,
-            //         message: "Data does not match to the number of orders"
-            //     })
-            //     return;
-            // }
-            //    await  fs.unlink(`../../uploads/orderFile/${req.file.filename}`)
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
@@ -1427,9 +1271,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
         upload(req, res, async (err) => {
             let data = req.body;
             if (data.productsArray.length > 0) {
-                // const uploadedFiles = req.files.map((file) => ({
-                //     filePath: file.destination + '/' + file.filename,
-                // }));
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
                     let file1 = undefined; // Initialize file to undefined
@@ -1558,19 +1399,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
                             }
                         });
-                        // console.log("After trim space--------------------",obj.data)
-                        // const isValidLength = obj.data.every(
-                        //     (obj1) => Object.keys(obj1).length === 5
-                        // );
-
-                        // console.log("After trim space--------------------",obj.data)
-                        // if (!isValidLength) {
-                        //     message.push({
-                        //         code: constant.errorCode,
-                        //         key: obj.key,
-                        //         message: "Invalid fields value",
-                        //     });
-                        // }
                     });
 
                     if (message.length > 0) {
@@ -1707,7 +1535,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                         return;
                                     }
                                 }
-                                // console.log("new date",new Date());
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
                                     message.push({
                                         code: constant.errorCode,
@@ -1740,35 +1567,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                 }
                             });
                         }
-                        // else if (obj.priceType == "Flat Pricing") {
-                        //     if (priceObj.length > 0) {
-                        //         priceObj.map((obj, index) => {
-                        //             if (isNaN(obj.retailValue)) {
-                        //                 {
-                        //                     message.push({
-                        //                         code: constant.errorCode,
-                        //                         key: obj.key,
-                        //                         message: "Retail Price should be integer!!",
-                        //                     });
-
-                        //                     return;
-                        //                 }
-                        //             }
-                        //             else if (
-                        //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
-                        //                 Number(obj.retailValue) > Number(obj.rangeEnd)
-                        //             ) {
-                        //                 message.push({
-                        //                     code: constant.errorCode,
-                        //                     key: obj.key,
-                        //                     message: "Invalid Retail Price!",
-                        //                 });
-
-                        //                 return;
-                        //             }
-                        //         });
-                        //     }
-                        // }
                     });
 
                     if (message.length > 0) {
@@ -1799,13 +1597,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
-        // let checkOrder = await orderService.getOrder({_id:req.body.orderId})
-        // if(!checkOrder){
-        //     res.send({
-        //         code:constant.errorCode,
-        //         message:"Invalid order ID"
-        //     })
-        // }
         let productsWithFiles = []
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
@@ -1845,10 +1636,7 @@ exports.editFileCase = async (req, res) => {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         const wb = XLSX.readFile(productsWithFiles[j].file, {
-                            // type: 'binary',
                             cellDates: true,
-                            //cellNF: false,
-                            //cellText: false
                         });
                         const sheets = wb.SheetNames;
                         const sheet = wb.Sheets[sheets[0]];
@@ -2013,108 +1801,6 @@ exports.editFileCase = async (req, res) => {
                         return;
                     }
 
-                    // let checkRetailValue = allDataComing.map((obj) => {
-                    //     if (obj.priceType == "Flat Pricing") {
-                    //         const priceObj = obj.data.map((item) => {
-                    //             const keys = Object.keys(item);
-                    //             return {
-                    //                 key: obj.key,
-                    //                 checkNumberProducts: obj.checkNumberProducts,
-                    //                 noOfProducts: obj.noOfProducts,
-                    //                 rangeStart: obj.rangeStart,
-                    //                 rangeEnd: obj.rangeEnd,
-                    //                 retailValue: item[keys[4]],
-                    //             };
-                    //         });
-
-                    //         if (priceObj.length > 0) {
-                    //             priceObj.map((obj, index) => {
-                    //                 if (
-                    //                     Number(obj.retailValue) < Number(obj.rangeStart) ||
-                    //                     Number(obj.retailValue) > Number(obj.rangeEnd)
-                    //                 ) {
-                    //                     message.push({
-                    //                         code: constant.errorCode,
-                    //                         retailPrice: obj.retailValue,
-                    //                         key: obj.key,
-                    //                         message: "Invalid Retail Price!",
-                    //                     });
-                    //                 }
-                    //             });
-                    //         }
-                    //     }
-                    // });
-
-                    // let checkRetailValue = allDataComing.map((obj1) => {
-                    //     const priceObj = obj1.data.map((item) => {
-                    //         const keys = Object.keys(item);
-                    //         return {
-                    //             key: obj1.key,
-                    //             checkNumberProducts: obj1.checkNumberProducts,
-                    //             noOfProducts: obj1.noOfProducts,
-                    //             rangeStart: obj1.rangeStart,
-                    //             rangeEnd: obj1.rangeEnd,
-                    //             retailValue: item[keys[4]],
-                    //         };
-                    //     });
-                    //     priceObj.map((obj, index) => {
-                    //         if (isNaN(obj.retailValue) || obj.retailValue < 0) {
-                    //             {
-                    //                 message.push({
-                    //                     code: constant.errorCode,
-                    //                     key: obj.key,
-                    //                     message: "Retail Price should be integer and positive!!",
-                    //                 });
-
-                    //                 return;
-                    //             }
-                    //         }
-                    //         else if (obj1.priceType === 'Flat Pricing') {
-                    //             if (Number(obj.retailValue) < Number(obj.rangeStart) || Number(obj.retailValue) > Number(obj.rangeEnd)) {
-                    //                 console.log(obj1.priceType);
-                    //                 message.push({
-                    //                     code: constant.errorCode,
-                    //                     key: obj.key,
-                    //                     message: "Retail price should be between start and end range!",
-                    //                 });
-
-                    //                 return;
-                    //             }
-                    //         }
-                    //     });
-                    //     // else if (obj.priceType == "Flat Pricing") {
-                    //     //     if (priceObj.length > 0) {
-                    //     //         priceObj.map((obj, index) => {
-                    //     //             if (isNaN(obj.retailValue)) {
-                    //     //                 {
-                    //     //                     message.push({
-                    //     //                         code: constant.errorCode,
-                    //     //                         key: obj.key,
-                    //     //                         message: "Retail Price should be integer!!",
-                    //     //                     });
-
-                    //     //                     return;
-                    //     //                 }
-                    //     //             }
-                    //     //             else if (
-                    //     //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
-                    //     //                 Number(obj.retailValue) > Number(obj.rangeEnd)
-                    //     //             ) {
-                    //     //                 message.push({
-                    //     //                     code: constant.errorCode,
-                    //     //                     key: obj.key,
-                    //     //                     message: "Invalid Retail Price!",
-                    //     //                 });
-
-                    //     //                 return;
-                    //     //             }
-                    //     //         });
-                    //     //     }
-                    //     // }
-
-                    // });
-
-                    console.log("allDataComing----------------------------", allDataComing)
                     let checkRetailValue = allDataComing.map((obj1) => {
                         const priceObj = obj1.data.map((item) => {
                             const keys = Object.keys(item);
@@ -2172,22 +1858,7 @@ exports.editFileCase = async (req, res) => {
                                         return;
                                     }
                                 }
-                                // if (typeof obj.partsWarranty == 'number' && !isNaN(obj.partsWarranty)) {
-
-                                //     // check if it is float
-                                //     // alter this condition to check the integer
-                                //     if (!Number.isInteger(obj.partsWarranty) || !Number.isInteger(obj.labourWarranty)) {
-                                //         message.push({
-                                //             code: constant.errorCode,
-                                //             key: obj.key,
-                                //             message: "Parts warranty and labour warranty should be an integer.",
-                                //         });
-
-                                //         return;
-                                //     }
-                                // }
                                 if (isNaN(new Date(obj.purchaseDate).getTime())) {
-                                    console.log(obj.purchaseDate);
                                     message.push({
                                         code: constant.errorCode,
                                         key: obj.key,
@@ -2220,35 +1891,6 @@ exports.editFileCase = async (req, res) => {
 
                             });
                         }
-                        // else if (obj.priceType == "Flat Pricing") {
-                        //     if (priceObj.length > 0) {
-                        //         priceObj.map((obj, index) => {
-                        //             if (isNaN(obj.retailValue)) {
-                        //                 {
-                        //                     message.push({
-                        //                         code: constant.errorCode,
-                        //                         key: obj.key,
-                        //                         message: "Retail Price should be integer!!",
-                        //                     });
-
-                        //                     return;
-                        //                 }
-                        //             }
-                        //             else if (
-                        //                 Number(obj.retailValue) < Number(obj.rangeStart) ||
-                        //                 Number(obj.retailValue) > Number(obj.rangeEnd)
-                        //             ) {
-                        //                 message.push({
-                        //                     code: constant.errorCode,
-                        //                     key: obj.key,
-                        //                     message: "Invalid Retail Price!",
-                        //                 });
-
-                        //                 return;
-                        //             }
-                        //         });
-                        //     }
-                        // }
                     });
 
                     if (message.length > 0) {
@@ -2293,9 +1935,7 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        console.log(" getCustomers --------------", getCustomers)
         const customerIds = getCustomers.map(customer => customer._id.toString());
-        console.log("customerUser00000000000000000", customerIds);
         let query1 = { accountId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
@@ -2380,12 +2020,9 @@ exports.getServicerInOrders = async (req, res) => {
         }
     }
 
-
-
     const servicerIds = servicer.map((obj) => obj?._id);
     const resellerIdss = servicer.map((obj) => obj?.resellerId);
     const dealerIdss = servicer.map((obj) => obj?.dealerId);
-    // const dealerIdss = servicer.map((obj) => obj?._id);
     const query1 = {
         $and: [
             {
@@ -2408,7 +2045,6 @@ exports.getServicerInOrders = async (req, res) => {
         return;
     }
 
-    console.log('hceck', servicer, servicerUser)
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
@@ -2439,13 +2075,6 @@ exports.getServicerInOrders = async (req, res) => {
 exports.getDealerResellers = async (req, res) => {
     try {
         let data = req.body
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action"
-        //     })
-        //     return;
-        // }
         let checkDealer = await dealerService.getDealerById(req.body.dealerId, {})
         if (!checkDealer) {
             res.send({
@@ -2538,6 +2167,7 @@ exports.getDealerResellers = async (req, res) => {
     }
 };
 
+//Get Servicer by order Id
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
@@ -2628,6 +2258,7 @@ exports.getServicerByOrderId = async (req, res) => {
     }
 };
 
+//Get Service Coverage for order
 exports.getServiceCoverage = async (req, res) => {
     try {
         let dealerId;
@@ -2675,6 +2306,7 @@ exports.getServiceCoverage = async (req, res) => {
         })
     }
 };
+
 //Get Dealer price book and categories
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
@@ -2702,19 +2334,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
 
         let query;
-        // if (data.coverageType == "Breakdown & Accidental") {
-        //     if (data.term != "" && data.pName == "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-        //     }
-        //     else if (data.pName != "" && data.term == "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
-
-        //     } else if (data.term != "" && data.pName != "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-        //     } else {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, };
-        //     }
-        // } else {
         if (data.term != "" && data.pName == "") {
             query = { _id: { $in: dealerPriceIds }, status: true, term: data.term, coverageType: data.coverageType };
         }
@@ -2803,11 +2422,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             });
         }
 
-        // const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
-        //     label: Number(term) / 12 === 1 ? Number(term) / 12 + " Year" : Number(term) / 12 + " Years",
-        //     value: term
-        // })).sort((a, b) => a.value - b.value)
-
         if (data.priceCatId || data.priceCatId != "") {
             mergedPriceBooks = mergedPriceBooks.filter(
                 (item) => item.category.toString() === data.priceCatId
@@ -2815,8 +2429,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             checkSelectedCategory = await priceBookService.getPriceCatByName({
                 _id: filteredPiceBook,
             });
-
-            // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
@@ -2857,6 +2469,7 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
     }
 };
 
+//Get Price Book in Order
 exports.getPriceBooksInOrder = async (req, res) => {
     try {
         let data = req.body
@@ -2869,7 +2482,6 @@ exports.getPriceBooksInOrder = async (req, res) => {
 
         let getDealerPriceBook = await dealerPriceService.findAllDealerPrice(query);
 
-        console.log("check111111111111111111", getDealerPriceBook)
         if (!getDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
@@ -2895,20 +2507,6 @@ exports.getPriceBooksInOrder = async (req, res) => {
 
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
         let query1;
-        console.log("check111111111111111111", dealerPriceIds)
-        // if (data.coverageType == "Breakdown & Accidental") {
-        //     if (data.term) {
-        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
-        //     }
-        //     else if (data.pName) {
-        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName };
-
-        //     } else if (data.term && data.pName) {
-        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, pName: data.pName, term: data.term };
-        //     } else {
-        //         query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId };
-        //     }
-        // } else {
 
         if (data.term) {
             query1 = { _id: { $in: dealerPriceIds }, status: true, category: data.priceCatId, term: data.term };
@@ -2923,7 +2521,6 @@ exports.getPriceBooksInOrder = async (req, res) => {
         }
 
         // }
-        console.log("check222222222222222222", query1)
 
         let getPriceBooks = await priceBookService.getAllPriceIds(query1, {});
 
@@ -2976,14 +2573,6 @@ exports.getPriceBooksInOrder = async (req, res) => {
 //Check Purchase order
 exports.checkPurchaseOrder = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action",
-        //     });
-        //     return;
-        // }
-
         let checkPurchaseOrder;
         let data = req.body;
         if (
@@ -3025,28 +2614,31 @@ exports.checkPurchaseOrder = async (req, res) => {
         });
     }
 };
+
 //Archeive Order
 exports.archiveOrder = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action",
-        //     });
-        //     return;
-        // }
         let checkOrder = await orderService.getOrder(
             { _id: req.params.orderId },
             { isDeleted: 0 }
         );
         if (!checkOrder) {
             res.send({
-                code: constant.successCode,
+                code: constant.errorCode,
                 message: "Order not found!",
             });
 
             return;
         }
+        if(checkOrder.status == "Active"){
+            res.send({
+                code: constant.errorCode,
+                message: "Order is already active",
+            });
+
+            return;
+        }
+
         let updateStatus;
         if (checkOrder.status != 'Active') {
             updateStatus = await orderService.updateOrder(
@@ -3143,15 +2735,9 @@ exports.archiveOrder = async (req, res) => {
     }
 };
 
+//Get single order
 exports.getSingleOrder = async (req, res) => {
     try {
-        // if (req.role != "Super Admin") {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Only super admin allow to do this action",
-        //     });
-        //     return;
-        // }
         let projection = { isDeleted: 0 };
         let query = { _id: req.params.orderId };
         let checkOrder = await orderService.getOrder(query, projection);
@@ -3288,6 +2874,8 @@ exports.getSingleOrder = async (req, res) => {
         });
     }
 };
+
+//get edit order Detail
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3380,7 +2968,6 @@ exports.editOrderDetail = async (req, res) => {
                     email: getUser.email,
                     phoneNumber: getUser.phoneNumber,
                     address: checkDealer1.street + ' , ' + checkDealer1.city + ' , ' + checkDealer1.country + ' , ' + checkDealer1.zip
-
                 }
             }
         }
@@ -3394,9 +2981,7 @@ exports.editOrderDetail = async (req, res) => {
                     email: getUser.email,
                     phoneNumber: getUser.phoneNumber,
                     address: getReseller.street + ' , ' + getReseller.city + ' , ' + getReseller.country + ' , ' + getReseller.zip
-
                 }
-
             }
         }
         if (data.billTo == "Custom") {
@@ -3407,7 +2992,6 @@ exports.editOrderDetail = async (req, res) => {
                     email: data.email,
                     phoneNumber: data.phoneNumber,
                     address: data.address
-
                 }
             }
         }
@@ -3424,15 +3008,17 @@ exports.editOrderDetail = async (req, res) => {
         }
 
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
+
+
         if (data.paymentStatus == "Paid") {
             data.paidAmount = data.orderAmount
             data.dueAmount = 0
-
         }
 
         if (data.paidAmount == data.orderAmount) {
             data.paymentStatus = "Paid"
         }
+
 
         if (req.files) {
             const uploadedFiles = req.files.map((file) => ({
@@ -3448,10 +3034,8 @@ exports.editOrderDetail = async (req, res) => {
                 (product) => product.file === ""
             );
 
-
             const productsWithOrderFiles = filteredProducts.map((product, index) => {
                 const file = uploadedFiles[index];
-
                 // Check if 'file' is not null
                 if (file && file.filePath) {
                     return {
@@ -3489,7 +3073,6 @@ exports.editOrderDetail = async (req, res) => {
             return;
         }
         // check to processed order 
-
         let returnField = [];
 
         let checkOrder = await orderService.getOrder(
@@ -3570,7 +3153,7 @@ exports.editOrderDetail = async (req, res) => {
                 { paidDate: paidDate },
                 { new: true }
             );
-            //let count1 = await contractService.getContractsCount();
+            var pricebookDetail = []
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             var pricebookDetail = []
@@ -3579,13 +3162,10 @@ exports.editOrderDetail = async (req, res) => {
             let save = savedResponse.productsArray.map(async (product, index) => {
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
-                    //cellText:false, 
                     cellDates: true
                 };
                 const jsonOpts = {
-                    //header: 1,
                     defval: '',
-                    // blankrows: true,
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
@@ -3599,13 +3179,11 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile, readOpts);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
                 // reporting codes
                 let pricebookDetailObject = {}
                 let dealerBookDetail = []
                 let dealerPriceBookObject = {}
+
                 pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
                 pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
                 pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
@@ -3615,14 +3193,16 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.term = product?.priceBookDetails.term
                 pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
                 pricebookDetailObject.price = product.price
-                pricebookDetailObject.noOfProducts = product.noOfProducts
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
 
                 pricebookDetailObject.retailPrice = product.unitPrice
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
-                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
+                const wb = XLSX.readFile(pathFile, readOpts);
+                const sheets = wb.SheetNames;
+                const ws = wb.Sheets[sheets[0]];
                 // let contractCount =
                 //     Number(
                 //         count1.length > 0 && count1[0].unique_key
@@ -3644,11 +3224,9 @@ exports.editOrderDetail = async (req, res) => {
                         purchaseDate: item[keys[7]],
                     };
                 });
-                // let savedDataOrder = savedResponse.toObject()
                 var contractArray = [];
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
-
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -3680,49 +3258,28 @@ exports.editOrderDetail = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-
-                        // return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                     }
 
                     // Find the minimum date
                     let minDate;
-                    // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
                     if (checkOrder.coverageType == "Breakdown") {
                         if (checkOrder.serviceCoverageType == "Labour") {
-
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-
-
                         } else if (checkOrder.serviceCoverageType == "Parts") {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-
-
-
                         } else {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-
                         }
                     } else if (checkOrder.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-
                     } else {
                         if (checkOrder.serviceCoverageType == "Labour") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-
                         } else if (checkOrder.serviceCoverageType == "Parts") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
                         } else {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
                         }
@@ -3737,7 +3294,27 @@ exports.editOrderDetail = async (req, res) => {
                         serviceCoverage = "Parts & Labor"
                     }
 
+                    // reporting codes
+                    let pricebookDetailObject = {}
+                    let dealerPriceBookObject = {}
+                    console.log("check product array products ak ------------------------", product)
+                    pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                    pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                    pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                    pricebookDetailObject._id = product?.priceBookDetails._id
+                    pricebookDetailObject.name = product?.priceBookDetails.name
+                    pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                    pricebookDetailObject.term = product?.priceBookDetails.term
+                    pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                    pricebookDetailObject.price = product.price
+                    pricebookDetailObject.noOfProducts = product.noOfProducts
 
+                    pricebookDetailObject.retailPrice = product.unitPrice
+                    pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                    pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                    // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                    pricebookDetail.push(pricebookDetailObject)
+                    dealerBookDetail.push(dealerPriceBookObject)
                     // let eligibilty = claimStatus == "Active" ? true : false
                     let contractObject = {
                         orderId: savedResponse._id,
@@ -3881,19 +3458,6 @@ exports.editOrderDetail = async (req, res) => {
             });
         }
 
-        // if (data.priceBookId!=checkId.) {
-        //     let query = { _id: data.priceBookId }
-        //     let checkPriceBook = await priceBookService.findByName1(query)
-        //     if (!checkPriceBook) {
-        //         res.send({
-        //             code: constant.errorCode,
-        //             message: "PriceBook not found"
-        //         })
-        //         return;
-        //     }
-        // }
-
-        // let data = req.body
     } catch (err) {
         //Save Logs for create price book
         let logData = {
@@ -3912,6 +3476,7 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
 // Mark as paid
 exports.markAsPaid = async (req, res) => {
     try {
@@ -3989,6 +3554,28 @@ exports.markAsPaid = async (req, res) => {
                 query,
                 projection
             );
+            var pricebookDetail = []
+            // reporting codes
+            let dealerBookDetail = []
+            let pricebookDetailObject = {}
+            let dealerPriceBookObject = {}
+
+            pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+            pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+            pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+            pricebookDetailObject._id = product?.priceBookDetails._id
+            pricebookDetailObject.name = product?.priceBookDetails.name
+            pricebookDetailObject.categoryId = product?.priceBookDetails.category
+            pricebookDetailObject.term = product?.priceBookDetails.term
+            pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+            pricebookDetailObject.price = product.price
+            pricebookDetailObject.noOfProducts = product.checkNumberProducts
+
+            pricebookDetailObject.retailPrice = product.unitPrice
+            pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+            pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+            pricebookDetail.push(pricebookDetailObject)
+            dealerBookDetail.push(dealerPriceBookObject)
             const wb = XLSX.readFile(pathFile, readOpts);
             const sheets = wb.SheetNames;
             // reporting codes
@@ -4014,12 +3601,6 @@ exports.markAsPaid = async (req, res) => {
             pricebookDetail.push(pricebookDetailObject)
             dealerBookDetail.push(dealerPriceBookObject)
             const ws = wb.Sheets[sheets[0]];
-            // let contractCount =
-            //     Number(
-            //         count1.length > 0 && count1[0].unique_key
-            //             ? count1[0].unique_key
-            //             : 0
-            //     ) + 1;
 
             const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
             const totalDataComing = totalDataComing1.map((item) => {
@@ -4035,7 +3616,6 @@ exports.markAsPaid = async (req, res) => {
                     purchaseDate: item[keys[7]],
                 };
             });
-            // let savedDataOrder = savedResponse.toObject()
             var contractArray = [];
 
             let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: priceBookId })
@@ -4071,10 +3651,8 @@ exports.markAsPaid = async (req, res) => {
                 let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                 let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                 //---------------------------------------- till here ----------------------------------------------
-                // let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                 function findMinDate(d1, d2, d3) {
                     return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
-
                 }
 
                 // Find the minimum date
@@ -4113,7 +3691,27 @@ exports.markAsPaid = async (req, res) => {
                     serviceCoverage = "Parts & Labor"
                 }
 
+                // reporting codes
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
 
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.noOfProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                // dealerPriceBookObject.brokerFee = getDealerPriceBookDetail.brokerFee
+                pricebookDetail.push(pricebookDetailObject)
+                dealerBookDetail.push(dealerPriceBookObject)
                 // let eligibilty = claimStatus == "Active" ? true : false
                 let contractObject = {
                     orderId: savedResponse._id,
@@ -4204,7 +3802,7 @@ exports.markAsPaid = async (req, res) => {
                 }
 
                 let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
-                //Email to Reseller
+                //Email to Reseller 
                 emailData = {
                     darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                     lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -4223,15 +3821,12 @@ exports.markAsPaid = async (req, res) => {
                         orderId: savedResponse._id,
                         products: pricebookDetail,
                         orderAmount: data.orderAmount,
-                        dealerId: checkOrder.dealerId,
+                        dealerId: data.dealerId,
                         // dealerPriceBook: dealerBookDetail
                     }
-
                     await supportingFunction.reportingData(reportingData)
                 }
-
             }
-
         })
 
         let paidDate = {
@@ -4270,6 +3865,7 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
+
 //Get dashbaord value for order and claims
 exports.getDashboardData = async (req, res) => {
     try {
@@ -4291,27 +3887,24 @@ exports.getDashboardData = async (req, res) => {
 
         let query = { status: 'Active' };
         var checkOrders_ = await orderService.getDashboardData(query, project)
-        // if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Unable to fetch order data",
-        //         result: {
-        //             claimData: claimData,
-        //             orderData: {
-        //                 "_id": "",
-        //                 "totalAmount": 0,
-        //                 "totalOrder": 0
-        //             }
-        //         }
-        //         // result: {
-        //         //     "_id": "",
-        //         //     "totalAmount": 0,
-        //         //     "totalOrder": 0
-        //         // }
-        //     })
-        //     return;
-        // }
-        let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed' });
+        let claimQuery = [
+            {
+                $match: { claimFile: 'Completed' }
+            },
+            {
+                "$group": {
+                    "_id": "",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
+
+            },
+        ]
+
+        let valueClaim = await claimService.getClaimWithAggregate(claimQuery);
         let numberOfClaims = await claimService.getClaims({ claimFile: 'Completed' });
         if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim[0]?.totalAmount == 0) {
             res.send({
@@ -4325,11 +3918,6 @@ exports.getDashboardData = async (req, res) => {
                         "totalOrder": 0
                     }
                 }
-                // result: {
-                //     "_id": "",
-                //     "totalAmount": 0,
-                //     "totalOrder": 0
-                // }
             })
             return;
         }
@@ -4337,11 +3925,6 @@ exports.getDashboardData = async (req, res) => {
             numberOfClaims: numberOfClaims.length,
             valueClaim: valueClaim[0]?.totalAmount
         }
-        // res.send({
-        //     code: constant.successCode,
-        //     message: 'Success!',
-        //     result:checkOrders_[0]
-        // })
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -4358,10 +3941,10 @@ exports.getDashboardData = async (req, res) => {
     }
 };
 
+//Get Order Contract
 exports.getOrderContract = async (req, res) => {
     try {
         let data = req.body
-        console.log("data------------------", data)
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
@@ -4418,7 +4001,6 @@ exports.getOrderContract = async (req, res) => {
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
         }
-        console.log("orderAndCondition-------------------", orderAndCondition)
         let orderIds = []
         if (orderAndCondition.length > 0) {
             let getOrders = await orderService.getOrders({
@@ -4428,13 +4010,12 @@ exports.getOrderContract = async (req, res) => {
                 orderIds = await getOrders.map(order => order._id)
             }
         }
-        console.log("getOrders-------------------", orderIds)
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4445,9 +4026,9 @@ exports.getOrderContract = async (req, res) => {
             ]
         } else {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -4461,7 +4042,7 @@ exports.getOrderContract = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 { $sort: { unique_key_number: -1 } },
 
@@ -4549,25 +4130,16 @@ exports.getOrderContract = async (req, res) => {
 
             })
         }
-        //  console.log.log('before--------------', Date.now())
-        //let checkOrder = await contractService.getContracts(query, skipLimit, limitData)
         let getContracts = await contractService.getAllContracts2(mainQuery)
-        // res.json(getContracts);
-        // return;
-        //  console.log.log('after+++++++++++++++++++++', Date.now())
-        // let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
-        //let totalCount = checkOrder[0]?.totalRecords[0]?.total ? checkOrder[0].totalRecords[0].total : 0
         checkOrder = getContracts[0]?.data ? getContracts[0]?.data : []
         let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0].totalRecords[0].total : 0
 
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
-        console.log('sjdsjlfljksfklsjdf')
         for (let e = 0; e < result1.length; e++) {
             result1[e].reason = " "
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
-            // if (result1[e].minDate < new Date()) {
             if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
@@ -4599,8 +4171,7 @@ exports.getOrderContract = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
-            console.log("claims+++++++++++++++++++++++++++++++", result1[e]._id, checkClaims)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                     result1[e].reason = "Contract has open claim"
@@ -4611,9 +4182,6 @@ exports.getOrderContract = async (req, res) => {
                 }
             }
         }
-        //       res.json(getContracts);
-        // return;
-        //res.json(checkOrder);return
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -4624,62 +4192,6 @@ exports.getOrderContract = async (req, res) => {
             })
             return
         }
-        // res.json(getContracts);
-        // return;
-        // checkOrder = checkOrder;
-        // let arrayToPromise = checkOrder[0] ? checkOrder[0].order[0].productsArray : []
-        // checkOrder.productsArray = await Promise.all(arrayToPromise.map(async (product) => {
-        //     const pricebook = await priceBookService.findByName1({ _id: product.priceBookId });
-        //     const pricebookCat = await priceBookService.getPriceCatByName({ _id: product.categoryId });
-        //     if (pricebook) {
-        //         product.name = pricebook.name;
-        //     }
-        //     if (pricebookCat) {
-        //         product.catName = pricebookCat.name;
-        //     }
-
-        //     return product;
-        // }));
-
-
-        // // return
-        // //Get Dealer Data
-        // let dealer = await dealerService.getDealerById(checkOrder[0].order[0] ? checkOrder[0].order[0].dealerId : '', { isDeleted: 0 });
-        // //Get customer Data
-        // let customer = await customerService.getCustomerById({ _id: checkOrder[0].order[0] ? checkOrder[0].order[0].customerId : '' }, { isDeleted: 0 });
-        // //Get Reseller Data
-
-        // let reseller = await resellerService.getReseller({ _id: checkOrder[0].order[0].resellerId }, { isDeleted: 0 })
-
-        // const queryDealerUser = { accountId: { $in: [checkOrder[0].order[0].dealerId != null ? checkOrder[0].order[0].dealerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
-
-        // const queryResselerUser = { accountId: { $in: [checkOrder[0].order[0].resellerId != null ? checkOrder[0].order[0].resellerId.toString() : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000")] }, isPrimary: true };
-
-        // let dealerUser = await userService.findUserforCustomer(queryDealerUser)
-
-        // let resellerUser = await userService.findUserforCustomer(queryResselerUser)
-
-        // //Get Servicer Data
-
-        // let query1 = {
-        //     $or: [
-        //         { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-        //         // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-        //         // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-        //     ],
-        // };
-
-        // let checkServicer = await servicerService.getServiceProviderById(query1);
-
-        // let userData = {
-        //     dealerData: dealer ? dealer : {},
-        //     customerData: customer ? customer : {},
-        //     resellerData: reseller ? reseller : {},
-        //     servicerData: checkServicer ? checkServicer : {},
-        //     username: dealerUser ? dealerUser[0] : {}, // Set username based on the conditional checks
-        //     resellerUsername: resellerUser ? resellerUser[0] : {}
-        // };
-
 
         res.send({
             code: constant.successCode,
@@ -4712,10 +4224,7 @@ exports.getOrderPdf = async (req, res) => {
                 }
             },
         ]
-        //  console.log.log('before--------------', Date.now())
         let checkOrder = await contractService.getContractForPDF(query)
-        //  console.log.log('after+++++++++++++++++++++', Date.now())
-        //let totalContract = await contractService.findContractCount({ orderId: new mongoose.Types.ObjectId(req.params.orderId) }, skipLimit, pageLimit)
         if (!checkOrder[0]) {
             res.send({
                 code: constant.successCode,
@@ -4765,8 +4274,6 @@ exports.getOrderPdf = async (req, res) => {
         let query1 = {
             $or: [
                 { _id: checkOrder[0].order[0].servicerId ? checkOrder[0].order[0].servicerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                // { resellerId: checkOrder[0].order[0].resellerId ? checkOrder[0].order[0].resellerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
-                // { dealerId: checkOrder[0].order[0].dealerId ? checkOrder[0].order[0].dealerId : new mongoose.Types.ObjectId("65ce1bd2279fab0000000000") },
             ],
         };
 
@@ -4797,65 +4304,411 @@ exports.getOrderPdf = async (req, res) => {
     }
 };
 
-const renderContractsChunked = async (
-    contracts,
-    pageSize,
-    startIndex,
-    endIndex,
-    product
-) => {
+exports.generatePDF = async (req, res) => {
     try {
-        console.log('Rendering contracts chunk...'); // Ensure function is being called
-        let htmlContent = `
-            <table style="page-break-before: auto; width: 100%; border-collapse: collapse;">
-                <thead style="background-color: #f4f4f4; text-align: left;">
-                    <tr>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">S.no.</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Brand</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Model</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Serial</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Retail Price</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Condition</th>
-                        <th style="border-bottom: 1px solid #ddd; padding: 8px;">Claimed Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        let query = [
+            {
+                $match: { _id: new mongoose.Types.ObjectId(req.params.orderId) }
+            },
+            {
+                $lookup: {
+                    from: "contracts",
+                    localField: "_id",
+                    foreignField: "orderId",
+                    as: "contracts"
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "pricecategories",
+                    "localField": "productsArray.categoryId",
+                    "foreignField": "_id",
+                    "as": "category"
+                }
+            },
+            {
+                $addFields: {
+                    "productsArray.category": { $arrayElemAt: ["$category", 0] },
+                }
+            },
+            {
+                $lookup: {
+                    from: "dealers",
+                    localField: "dealerId",
+                    foreignField: "_id",
+                    as: "dealers",
 
-        const unitPriceString = product.unitPrice.toLocaleString("en-US", {
-            style: "currency",
-            currency: "USD",
-        });
+                }
+            },
+            {
+                $lookup: {
+                    from: "serviceproviders",
+                    localField: "servicerId",
+                    foreignField: "_id",
+                    as: "servicer"
+                }
+            },
+            {
+                $lookup: {
+                    from: "resellers",
+                    localField: "resellerId",
+                    foreignField: "_id",
+                    as: "resellers"
+                }
+            },
+            {
+                $lookup: {
+                    from: "customers",
+                    localField: "customerId",
+                    foreignField: "_id",
+                    as: "customers"
+                }
+            },
+            {
+                $unwind: "$dealers" // Unwind dealers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$dealers._id" } }, // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
+                            }
+                        }
+                    ],
+                    as: "dealerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$dealerUsers" // Unwind dealers array
+            },
+            {
+                $unwind: "$customers" // Unwind customers array
+            },
+            {
+                $lookup: {
+                    from: "users", // users collection
+                    let: { accountIdStr: { $toString: "$customers._id" } },
+                    // Convert accountId to string
+                    pipeline: [
+                        {
+                            $match: {
+                                $and: [
+                                    { $expr: { $eq: ["$accountId", "$$accountIdStr"] } }, // Match _id in users with accountId converted to string
+                                    { $expr: { $eq: ["$isPrimary", true] } } // Match isPrimary as true
+                                ]
+                            }
+                        }
+                    ],
+                    as: "customerUsers" // Alias for the result
+                }
+            },
+            {
+                $unwind: "$customerUsers"
+            },
 
-        for (let i = startIndex; i < endIndex && i < contracts.length; i++) {
-            const contract = contracts[i];
-            const serialNo = i + 1; // Adjust serial number
-            htmlContent += `
-                <tr>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${serialNo}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.manufacture}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.serial}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${unitPriceString}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">${contract.condition}</td>
-                    <td style="border-bottom: 1px solid #ddd; padding: 8px;">$${parseInt(contract.claimAmount).toFixed(2)}</td>
-                </tr>
-            `;
+        ];
+
+        //console.log("query",query)
+        let orderWithContracts = await orderService.getOrderWithContract1(query);
+        // res.send({
+        //     code: constant.errorCode,
+        //     message: 'Contract not found of this order!',
+        //     data:orderWithContracts
+        // })
+
+        // return;
+
+        // console.log("orderWithContracts",orderWithContracts)
+        // return
+        let productsData = []
+
+        if (!orderWithContracts[0]) {
+            res.send({
+                code: constant.errorCode,
+                message: 'Contract not found of this order!'
+            })
+            return;
         }
 
-        htmlContent += `
-                </tbody>
-            </table>
-        `;
 
-        return htmlContent;
-    } catch (error) {
-        console.error('Error rendering contracts chunk:', error);
-        throw error; // Rethrow the error to be caught by the caller
+        for (let i = 0; i < orderWithContracts[0].productsArray.length; i++) {
+            const productId = orderWithContracts[0].productsArray[i]._id;
+            const contract = await contractService.findContracts({ orderProductId: productId });
+            const mergedObject = { ...orderWithContracts[0].productsArray[i], contract }
+            productsData.push(mergedObject)
+        }
+        orderWithContracts[0].productsArray = productsData
+        if (orderWithContracts[0].resellerId != null) {
+            let resellerUserId = orderWithContracts[0].resellerId
+            orderWithContracts[0].resellerUser = await userService.getUserById1({ accountId: resellerUserId.toString() })
+        }
+        let htmlContent;
+
+        if (orderWithContracts.length > 0) {
+            htmlContent = await `<table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                     <td style="text-align: left; width: 50%;">
+                         <img src='http://15.207.221.207/static/media/logo.642c96aed42bd8a1d454.png' style="margin-bottom: 20px;"/>
+                         <h1 style="margin: 0; padding: 0; font-size:20px"><b>Get Cover </b></h1>
+                         <p style="margin: 0; padding: 0;">13th Street <br/>
+                         47 W 13th St, New York,<br/>
+                         NY 10011, USA</p>
+                     </td>
+                     <td style=" width: 50%;">
+                         <table style="width: 100%; border-collapse: collapse;">
+                             <thead>
+                                 <tr>
+                                     <td colspan="2" style="text-align: right; padding-right: 20px; padding-bottom: 40px;"><b style="margin: 0; padding-bottom: 40px; font-size:30px;">Export Order</b></td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Order ID : </b></td> 
+                                     <td>${orderWithContracts[0].unique_key}</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Dealer P.O. # : </b></td> 
+                                     <td>${orderWithContracts[0].venderOrder}</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b>Service Coverage : </b></td>
+                                     <td>${orderWithContracts[0].serviceCoverageType
+                }</td>
+                                 </tr>
+                                 <tr>
+                                     <td><b> Coverage Type : </b></td>
+                                     <td>${orderWithContracts[0].coverageType}</td>
+                                 </tr>
+                             </thead>
+                         </table>
+                     </td>
+                 </tr>
+             </tbody>
+           </table>
+           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                     <td style="text-align: left; width: 50%;">
+                         <h4 style="margin: 0; padding: 0;"><b>Dealer Details: </b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.name
+                    : ""
+                }</b></h4>
+                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.firstName +
+                    " " +
+                    orderWithContracts[0].dealerUsers.lastName
+                    : ""
+                } <br/>
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.street
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.city
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.state
+                    : ""
+                },
+                         ${orderWithContracts[0].dealers
+                    ? orderWithContracts[0].dealers.zip
+                    : ""
+                }<br/>
+                         ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.phoneNumber.replace(
+                        /(\d{3})(\d{3})(\d{4})/,
+                        "($1)$2-$3"
+                    )
+                    : ""
+                } | ${orderWithContracts[0].dealerUsers
+                    ? orderWithContracts[0].dealerUsers.email
+                    : ""
+                }</small>
+                     </td>
+                     <td style="text-align: left; width: 50%;">
+                         ${orderWithContracts[0].resellers
+                    ? `<h4 style="margin: 0; padding: 0;"><b>Reseller Details:</b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].name
+                        : ""
+                    }</b></h4>
+                         <small style="margin: 0; padding: 0;">Bill To: ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.firstName +
+                        " " +
+                        orderWithContracts[0].resellerUser.lastName
+                        : ""
+                    } <br/>
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].street
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].city
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].state
+                        : ""
+                    }
+                         ${orderWithContracts[0].resellers.length > 0
+                        ? orderWithContracts[0].resellers[0].zip
+                        : ""
+                    }<br/>
+                         ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.phoneNumber.replace(
+                            /(\d{3})(\d{3})(\d{4})/,
+                            "($1)$2-$3"
+                        )
+                        : ""
+                    } | ${orderWithContracts[0].resellerUser
+                        ? orderWithContracts[0].resellerUser.email
+                        : ""
+                    }</small>`
+                    : ""
+                }
+                     </td>
+                 </tr>
+             </tbody>
+           </table>
+           <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+             <tbody>
+                 <tr>
+                 <td style="text-align: left; margin-top:40px; width: 50%;">
+                 ${orderWithContracts[0].customers
+                    ? `<h4 style="margin: 0; padding: 0;"><b>Customer Details: </b></h4>
+                 <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.username
+                        : ""
+                    }</b></h4>
+                 <small style="margin: 0; padding: 0;">${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.street
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.city
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.state
+                        : ""
+                    }
+                 ${orderWithContracts[0].customers
+                        ? orderWithContracts[0].customers.zip
+                        : ""
+                    }<br/>
+                 ${orderWithContracts[0].customerUsers
+                        ? orderWithContracts[0].customerUsers.phoneNumber.replace(
+                            /(\d{3})(\d{3})(\d{4})/,
+                            "($1)$2-$3"
+                        )
+                        : ""
+                    } | ${orderWithContracts[0].customerUsers
+                        ? orderWithContracts[0].customerUsers.email
+                        : ""
+                    }</small>`
+                    : ""
+                }
+           
+             </td>
+                     <td style="text-align: left; width: 50%;">
+                         ${orderWithContracts[0].servicer?.length > 0
+                    ? `
+                         <h4 style="margin: 0; padding: 0;"><b>Servicer Details:</b></h4>
+                         <h4 style="margin: 0; padding: 0;"><b>${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].name
+                        : ""
+                    }</b></h4>
+                         <small style="margin: 0; padding: 0;">${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].street
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].city
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].state
+                        : ""
+                    }
+                         ${orderWithContracts[0].servicer.length > 0
+                        ? orderWithContracts[0].servicer[0].zip
+                        : ""
+                    }<br/>
+                         </small>`
+                    : ""
+                }
+                     </td>
+                 </tr>
+             </tbody>
+           </table>`;
+
+            for (let i = 0; i < orderWithContracts.length; i++) {
+                const order = orderWithContracts[i];
+                for (let j = 0; j < order.productsArray.length; j++) {
+                    const product = order.productsArray[j];
+                    const contracts = product.contract;
+                    const initialPageSize = 6;
+                    const subsequentPageSize = 20;
+
+                    // Display 6 contracts on the first page
+                    let startIndex = 0;
+                    let endIndex = Math.min(initialPageSize, contracts?.length);
+                    let serialNo = 0;
+
+                    // Start of the first page
+                    //  console.log("here is rendering first------------------");
+                    htmlContent += await renderContractsChunked(
+                        contracts,
+                        initialPageSize,
+                        startIndex,
+                        endIndex,
+                        product
+                    );
+
+                    // Display remaining contracts on subsequent pages with a limit of 20 contracts per page
+                    startIndex = endIndex;
+                    while (startIndex < contracts?.length) {
+                        endIndex = startIndex + subsequentPageSize;
+                        endIndex = Math.min(endIndex, contracts?.length);
+
+                        // Await the result before concatenating
+                        const chunkedHtml = await renderContractsChunked(
+                            contracts,
+                            subsequentPageSize,
+                            startIndex,
+                            endIndex,
+                            product
+                        );
+                        htmlContent += chunkedHtml;
+
+                        startIndex = endIndex;
+                    }
+                }
+            }
+            //  return htmlContent;
+            res.send({
+                code: constant.successCode,
+                result: orderWithContracts,
+                html: htmlContent,
+                orderWithContracts: orderWithContracts,
+            })
+        }
+    }
+    catch (err) {
+        res.send({
+            code: constant.errorCode,
+            line: err.stack,
+            message: err.message
+        })
     }
 };
-
-
 
 async function generateTC(orderData) {
     try {
@@ -4913,7 +4766,6 @@ async function generateTC(orderData) {
             }
 
         }
-        // res.json(productCoveredArray);
         // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
@@ -4940,10 +4792,8 @@ async function generateTC(orderData) {
                 },
             }
         }
-        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
         let mergeFileName = checkOrder.unique_key + '.pdf'
         const orderFile = 'pdfs/' + mergeFileName;
-        //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -5025,6 +4875,9 @@ async function generateTC(orderData) {
                 // Write the merged PDF to a file
                 await fs.writeFile(outputPath, mergedPdfBytes);
             }
+
+            //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
+
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
@@ -5053,6 +4906,22 @@ async function generateTC(orderData) {
                             subject: 'Term and Condition',
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
+                        // const send = await sgMail.send({
+                        //     to: customerUser.email,
+                        //     from: process.env.from_email,
+                        //     subject: 'Term and Condtion',
+                        //     text: "sssssssssssssssss",
+                        //     attachments: [
+                        //         {
+                        //             content: attachment,
+                        //             filename: "Get-Cover term and condition",
+                        //             type: 'application/pdf',
+                        //             disposition: 'attachment',
+                        //             contentId: 'mytext'
+                        //         },
+                        //     ],
+                        // });
+
                     } catch (error) {
                         console.error('Error sending email:', error);
                         if (error.response) {
@@ -5078,6 +4947,7 @@ async function generateTC(orderData) {
     }
 }
 
+//Generate HTML to PDF
 exports.generateHtmltopdf = async (req, res) => {
     try {
         let response;
@@ -5149,7 +5019,6 @@ exports.generateHtmltopdf = async (req, res) => {
         }, { isDeleted: false })
 
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
-        //res.json(checkDealer);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -5160,10 +5029,8 @@ exports.generateHtmltopdf = async (req, res) => {
                 },
             }
         }
-        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
         let mergeFileName = checkOrder.unique_key + '.pdf'
         const orderFile = 'pdfs/' + mergeFileName;
-        //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -5283,6 +5150,7 @@ exports.generateHtmltopdf = async (req, res) => {
     }
 }
 
+//Get Pending Amount
 exports.getPendingAmount = async (req, res) => {
     try {
         if (req.role != 'Super Admin') {
@@ -5355,6 +5223,7 @@ exports.getPendingAmount = async (req, res) => {
     }
 }
 
+//Update servicer by order id
 exports.updateServicerByOrder = async (req, res) => {
     try {
         if (req.role != 'Super Admin') {
@@ -5395,6 +5264,7 @@ exports.updateServicerByOrder = async (req, res) => {
     }
 };
 
+//Cron job for status
 exports.cronJobStatus = async (req, res) => {
     try {
         let query = { status: { $ne: "Archieved" } };
@@ -5443,9 +5313,6 @@ exports.cronJobStatus = async (req, res) => {
             }
         ];
         let ordersResult = await orderService.getAllOrders1(lookupQuery);
-
-        // res.json(ordersResult);
-        // return;
 
         let bulk = []
         for (let i = 0; i < ordersResult.length; i++) {
@@ -5499,9 +5366,6 @@ exports.cronJobStatusWithDate = async (req, res) => {
         const startDate = new Date(req.body.startDate)
         const endDate = new Date(req.body.endDate)
         let currentDate = new Date();
-        // console.log("endDate-----------------------", req.body.endDate);
-        // console.log("currentDate-----------------------", currentDate);
-        // console.log("startDate----------------------", startDate);
         const orderID = req.body.orderId;
         const orderProductId = req.body.orderProductId;
         const newValue = {
@@ -5520,8 +5384,6 @@ exports.cronJobStatusWithDate = async (req, res) => {
         let data = req.body;
         let endOfDay = new Date();
         endOfDay.setDate(endOfDay.getDate() + 1); // Move to the next day
-        console.log(endOfDay)
-        //endOfDay.setHours(0, 0, 0, 0);
         let lookupQuery = [
             {
                 $match: query // Your match condition here 
@@ -5604,15 +5466,6 @@ exports.cronJobStatusWithDate = async (req, res) => {
             bulk
         })
         return;
-        //  console.log("bulk==================",bulk);return;
-        const result = await contractService.allUpdate(bulk);
-
-        res.send({
-            code: constant.successCode,
-            //result:bulk
-            result
-        })
-
     }
     catch (err) {
         res.send({
@@ -5625,7 +5478,6 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
     try {
         let data = req.body
         let getCustomer = await customerService.getCustomerByName({ _id: data.customerId })
-        console.log(getCustomer)
         let getReseller = await userService.findUserforCustomer1([
             {
                 $match: {
@@ -5650,8 +5502,6 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
                 message: "Unable to fetch the detail"
             })
         } else {
-
-
             res.send({
                 code: constant.successCode,
                 message: "Successfully fetched the detail",
@@ -5666,4 +5516,171 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
     }
 }
 
+exports.reportingDataCreation = async (req, res) => {
+    try {
+        let getAllOrders = await orderService.getAllOrders1([
+            {
+                $match: { "status": "Active" }
+            }
+        ])
+        if (!getAllOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the orders"
+            })
+        }
 
+        let reportingToSave = []
+
+        for (let i = 0; i < getAllOrders.length; i++) {
+            let orderData = getAllOrders[i]
+
+
+            let checkOrderId = await supportingFunction.checkReportinWithId({ orderId: orderData._id })
+            if (!checkOrderId) {
+                let reportingData = {}
+                let products = []
+                reportingData.orderId = orderData._id
+                reportingData.orderAmount = orderData.orderAmount
+                reportingData.dealerId = orderData.dealerId
+                reportingData.createdAt = orderData.updatedAt
+                reportingData.updatedAt = orderData.updatedAt
+
+                for (let p = 0; p < orderData.productsArray.length; p++) {
+                    productData = orderData.productsArray[p]
+                    let productObject = {}
+                    productObject.price = productData.price
+                    productObject.noOfProducts = productData.checkNumberProducts
+                    productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
+                    productObject.frontingFee = productData.priceBookDetails.frontingFee
+                    productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
+                    productObject.reinsuranceFee = productData.priceBookDetails.reinsuranceFee
+                    productObject._id = productData.priceBookDetails._id
+                    productObject.name = productData.priceBookDetails.name
+                    productObject.categoryId = productData.priceBookDetails.category
+                    productObject.term = productData.priceBookDetails.term
+                    productObject.adminFee = productData.priceBookDetails.adminFee
+                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    products.push(productObject)
+
+                }
+                reportingData.products = products
+                reportingToSave.push(reportingData)
+            }
+        }
+
+        let saveData = await supportingFunction.insertManyReporting(reportingToSave)
+        if (saveData) {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: saveData
+            })
+        }
+    } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};
+
+exports.reportingDataReCreation = async (req, res) => {
+    try {
+
+        let getReportings = await supportingFunction.checkReporting()
+        let orderId = getReportings.map(ID => new mongoose.Types.ObjectId(ID.orderId))
+
+        let getAllOrders = await orderService.getAllOrders1([
+            {
+                $match: {
+                    $and: [
+                        { _id: { $nin: orderId } },
+                        { "status": "Active" }
+                    ]
+                }
+            }
+        ])
+
+        if (!getAllOrders) {
+            res.send({
+                code: constant.errorCode,
+                message: "Unable to fetch the orders"
+            })
+        }
+
+        let reportingToSave = []
+        for (let i = 0; i < getAllOrders.length; i++) {
+            let orderData = getAllOrders[i]
+            let checkOrderId = await supportingFunction.checkReportinWithId({ orderId: orderData._id })
+            if (!checkOrderId) {
+                let reportingData = {}
+                let products = []
+                reportingData.orderId = orderData._id
+                reportingData.orderAmount = orderData.orderAmount
+                reportingData.dealerId = orderData.dealerId
+                reportingData.createdAt = orderData.updatedAt
+                reportingData.updatedAt = orderData.updatedAt
+
+                for (let p = 0; p < orderData.productsArray.length; p++) {
+                    productData = orderData.productsArray[p]
+                    let productObject = {}
+                    productObject.price = productData.price
+                    productObject.noOfProducts = productData.checkNumberProducts
+                    productObject.retailPrice = productData.dealerPriceBookDetails.retailPrice
+                    productObject.frontingFee = productData.priceBookDetails.frontingFee
+                    productObject.reserveFutureFee = productData.priceBookDetails.reserveFutureFee
+                    productObject.reinsuranceFee = productData.priceBookDetails.reinsuranceFee
+                    productObject._id = productData.priceBookDetails._id
+                    productObject.name = productData.priceBookDetails.name
+                    productObject.categoryId = productData.priceBookDetails.category
+                    productObject.term = productData.priceBookDetails.term
+                    productObject.adminFee = productData.priceBookDetails.adminFee
+                    productObject.brokerFee = productData.dealerPriceBookDetails.brokerFee
+                    productObject.dealerPriceId = productData.dealerPriceBookDetails._id
+                    products.push(productObject)
+
+                }
+                reportingData.products = products
+                reportingToSave.push(reportingData)
+            }
+        }
+
+        let saveData = await supportingFunction.insertManyReporting(reportingToSave)
+        if (saveData) {
+            res.send({
+                code: constant.successCode,
+                message: "Success",
+                result: saveData
+            })
+        }
+    } catch (err) {
+        //Save Logs for create price book
+        let logData = {
+            userId: req.userId,
+            endpoint: "order/editOrderDetail catch",
+            body: req.body ? req.body : { type: "Catch error" },
+            response: {
+                code: constant.errorCode,
+                message: err.message
+            }
+        }
+        await LOG(logData).save()
+        res.send({
+            code: constant.errorCode,
+            message: err.message,
+        });
+    }
+};

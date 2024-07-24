@@ -2,14 +2,20 @@ const express = require("express");
 const router = express.Router();
 const orderController = require("../controller/order");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
+
+
+
 router.post('/createOrder', [verifyToken], orderController.createOrder1)
 router.post('/editOrderDetail/:orderId', [verifyToken], orderController.editOrderDetail)
 router.post('/archiveOrder/:orderId', [verifyToken], orderController.archiveOrder)
 router.post('/processOrder/:orderId', [verifyToken], orderController.processOrder)
 router.post('/checkFileValidation', [verifyToken], orderController.checkFileValidation)
 router.post('/checkMultipleFileValidation', [verifyToken], orderController.checkMultipleFileValidation)
+//router.post('/multipleFileValidation', [verifyToken], orderController.multipleFileValidation)
 
-router.post('/getAllOrders', [verifyToken], orderController.getAllOrders) 
+// router.post("/getDealerCustomers/:dealerId", [verifyToken], orderController.getDealerCustomers);
+
+router.post('/getAllOrders', [verifyToken], orderController.getAllOrders)
 //router.post('/getOrder', [verifyToken], orderController.getOrder)
 router.post('/editFileCase', [verifyToken], orderController.editFileCase)
 router.post('/getArchieveOrder', [verifyToken], orderController.getAllArchieveOrders)
@@ -32,7 +38,7 @@ router.post('/getServicerByOrderId/:orderId', [verifyToken], orderController.get
 router.put('/updateServicerByOrder/:orderId', [verifyToken], orderController.updateServicerByOrder)
 router.get('/cronJobStatus', orderController.cronJobStatus)
 router.post('/cronJobStatusWithDate', orderController.cronJobStatusWithDate)
-router.get('/generateHtmltopdf/:orderId',[verifyToken], orderController.generateHtmltopdf)
+router.get('/generateHtmltopdf/:orderId', [verifyToken], orderController.generateHtmltopdf)
 
 router.post('/checkPurchaseOrder', [verifyToken], orderController.checkPurchaseOrder)
 router.post('/getDashboardData', [verifyToken], orderController.getDashboardData)
@@ -42,6 +48,8 @@ router.post('/getCustomerInOrder', [verifyToken], orderController.getCustomerInO
 router.post('/getCategoryAndPriceBooks/:dealerId', [verifyToken], orderController.getCategoryAndPriceBooks)
 router.post('/getPriceBooksInOrder/:dealerId', [verifyToken], orderController.getPriceBooksInOrder)
 
+router.get('/reportingDataCreation', [verifyToken], orderController.reportingDataCreation)
+router.get('/reportingDataReCreation', [verifyToken], orderController.reportingDataReCreation)
+
 
 module.exports = router;
- 

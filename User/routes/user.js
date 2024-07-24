@@ -21,17 +21,14 @@ router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProv
 router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
 router.post("/getAllNotifications", [verifyToken], userController.getAllNotifications1); //get all dealers
 router.get("/readAllNotification", [verifyToken], userController.readAllNotification); //get all dealers
-// router.get("/getAllNotifications1", [verifyToken], userController.getAllNotifications); //get all dealers
 router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
-router.get("/notificationStatusUpdate/:flag", [verifyToken], userController.notificationStatusUpdate); //get all dealers
 router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); //get dashboard info
 router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); //get dashboard info
 router.get("/getSkuData", [verifyToken], userController.getSkuData); //get dashboard info
 
 //-------------------- get api's endpoints--------------------------//
 router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
-
 router.post("/addMember", [verifyToken], userController.addMembers); //to create the super admin credentials //notification
 router.post("/getMembers", [verifyToken], userController.getMembers); //to create the super admin credentials
 router.post("/createTerms", userController.createTerms); //to create the super admin credentials
@@ -44,9 +41,6 @@ router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.stat
 router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload, userController.tryUpload); //Update Status
 router.post("/updateProfile", [verifyToken], userController.updateProfile); //Update Profile
 router.put("/updatePassword", [verifyToken], userController.updatePassword); //Update Password
-
-
-
 router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
 router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser);
@@ -59,11 +53,16 @@ router.post("/validateData", [verifyToken], userController.validateData);
 router.post("/createDealer", [verifyToken], userController.createDealer);
 router.get("/checkToken", [verifyToken], userController.checkToken);
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo);
+
 //create service provider api from super admin
 router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
 
+router.post('/saleReporting', [verifyToken], userController.saleReporting);
+router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
+router.post('/claimReporting', [verifyToken], userController.claimReporting);
 
+<<<<<<< HEAD
 
 router.post('/saleReporting', [verifyToken], userController.saleReporting);
 router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
@@ -76,6 +75,9 @@ router.post('/setting/uploadLogo', userController.uploadLogo);
 router.get('/setting/getSetting', userController.getSetting);
 
 
+=======
+router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken)
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
 
 

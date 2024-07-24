@@ -70,10 +70,6 @@ const customerSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
-  // dealerId: {
-  //   type: mongoose.Schema.Types.ObjectId,
-  //   ref: "dealers",
-  // },
   status: {
     type: Boolean,
     default: true,

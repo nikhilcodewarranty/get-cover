@@ -5,11 +5,9 @@ const claimStatusSchema = new mongoose.Schema({
   claimId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "claims",
-    // required: true,
   },
   status: {
     type: String,
-    // required: true,
   },
   isDeleted:{
     type:Boolean,
@@ -17,7 +15,6 @@ const claimStatusSchema = new mongoose.Schema({
   },
   updateDate: {
     type: Date,
-    // required: true,
   },
 },{timestamps:true});
 

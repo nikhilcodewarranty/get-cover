@@ -26,6 +26,7 @@ exports.createServiceProvider = async (req, res, next) => {
     let data = req.body
     data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
     const count = await providerService.getServicerCount();
+
     let servicerObject = {
       name: data.accountName,
       street: data.street,
@@ -38,29 +39,31 @@ exports.createServiceProvider = async (req, res, next) => {
       accountStatus: "Approved",
       unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     }
+
     if (data.flag == "create") {
 
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
       };
 
       let checkPrimaryEmail = await userService.findOneUser({ email: data.email });
+
       if (checkPrimaryEmail) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "User already exist with this email "
         })
         return;
       }
-      //  data.members[0].status = true
-      let teamMembers = data.members
 
+      let teamMembers = data.members
       const createServiceProvider = await providerService.createServiceProvider(servicerObject);
+
       if (!createServiceProvider) {
         //Save Logs
         let logData = {
@@ -76,8 +79,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to create the servicer"
         })
         return;
@@ -86,6 +89,7 @@ exports.createServiceProvider = async (req, res, next) => {
       let saveMembers = await userService.insertManyUser(teamMembers)
       // Primary User Welcoime email
       let notificationEmails = await supportingFunction.getUserEmails();
+<<<<<<< HEAD
       // let getPrimary = await supportingFunction.getPrimaryUser({ accountId: createServiceProvider._id, isPrimary: true })
 
       let settingData = await userService.getSetting({});
@@ -102,8 +106,10 @@ exports.createServiceProvider = async (req, res, next) => {
 
       // Send Email code here
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(saveMembers[0]?.email, notificationEmails, emailData))
+=======
+ 
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       if (data.status) {
-        console.log("saveMembers------------------------------", saveMembers);
         for (let i = 0; i < saveMembers.length; i++) {
           if (saveMembers[i].status) {
             let email = saveMembers[i].email
@@ -111,20 +117,19 @@ exports.createServiceProvider = async (req, res, next) => {
             let resetPasswordCode = randtoken.generate(4, '123456789')
             let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
             let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+<<<<<<< HEAD
             const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
               link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
               lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
               title:settingData[0]?.title,
               address: settingData[0]?.address,flag: "created", role: "Servicer", servicerName: saveMembers[i].firstName
             }))
+=======
+            const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { flag: "Approved", link: resetLink, subject: "Set Password", role: "Servicer", servicerName: saveMembers[i].firstName }))
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
           }
 
         }
-        // let resetPrimaryCode = randtoken.generate(4, '123456789')
-        // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
-
-        // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
-        // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
       }
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
@@ -163,15 +168,16 @@ exports.createServiceProvider = async (req, res, next) => {
     }
 
     if (data.flag == "approve") {
-
       let checkDetail = await providerService.getServicerByName({ _id: data.providerId })
+
       if (!checkDetail) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Invalid ID"
         })
         return;
       }
+
       if (servicerObject.name != data.oldName) {
         let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
         if (checkAccountName) {
@@ -182,6 +188,7 @@ exports.createServiceProvider = async (req, res, next) => {
           return;
         };
       }
+
       if (data.email != data.oldEmail) {
         let emailCheck = await userService.findOneUser({ email: data.email });
         if (emailCheck) {
@@ -194,12 +201,9 @@ exports.createServiceProvider = async (req, res, next) => {
       }
 
       data.isAccountCreate = data.status
-
       let teamMembers = data.members
-      // console.log("getUserId================",getUserId);
-      // return;
-
       const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+
       if (!updateServicer) {
         //Save Logs
         let logData = {
@@ -214,8 +218,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to update the servicer"
         })
         return;
@@ -223,6 +227,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let notificationEmails = await supportingFunction.getUserEmails();
       let primaryEmail = teamMembers[0].email
+<<<<<<< HEAD
       let settingData = await userService.getSetting({});
       let emailData = {
         darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -249,7 +254,14 @@ exports.createServiceProvider = async (req, res, next) => {
       }))
       // let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })  // to String to object
       //let getUserId = await userService.updateSingleUser({ accountId: checkDetail._id, isPrimary: true }, { resetPasswordCode: resetPasswordCode }, { new: true })
+=======
+      let primaryCode = randtoken.generate(4, '123456789')
+      let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
+      let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
+      mailing = sgMail.send(emailConstant.servicerApproval(updatePrimaryCode.email, { flag: "Approved", subject: "Set Password", link: updatePrimaryLInk, role: "Servicer", servicerName: updatePrimaryCode?.firstName }))
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
       teamMembers = teamMembers.slice(1).map(member => ({ ...member, accountId: updateServicer._id, metaId: updateServicer._id, approvedStatus: "Approved", status: true }));
+
       if (teamMembers.length > 0) {
         let saveMembers = await userService.insertManyUser(teamMembers)
         if (data.status) {
@@ -260,6 +272,7 @@ exports.createServiceProvider = async (req, res, next) => {
               let resetPasswordCode = randtoken.generate(4, '123456789')
               let checkPrimaryEmail2 = await userService.updateSingleUser({ email: email }, { resetPasswordCode: resetPasswordCode }, { new: true });
               let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
+<<<<<<< HEAD
               // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { link: resetLink }))
               const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, {
                 link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -268,18 +281,16 @@ exports.createServiceProvider = async (req, res, next) => {
                 title:settingData[0]?.title,
                 address: settingData[0]?.address, role: 'Servicer', servicerName: saveMembers[i].firstName
               }))
+=======
+              const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail2.email, { subject: "Set Password", link: resetLink, role: 'Servicer', servicerName: saveMembers[i].firstName }))
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
             }
 
           }
         }
       }
-      // if (data.status) {
-      //   let resetPrimaryCode = randtoken.generate(4, '123456789')
-      //   let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
-      //   let resetLink = `http://15.207.221.207/newPassword/${getUserId._id}/${resetPrimaryCode}`
-      //   const mailing = sgMail.send(emailConstant.servicerApproval(getUserId.email, { link: resetLink }))
-      // }
+
       let IDs = await supportingFunction.getUserIds()
       //Send Notification to ,admin,,servicer 
       IDs.push(data.providerId)
@@ -314,9 +325,6 @@ exports.createServiceProvider = async (req, res, next) => {
       })
       return;
     }
-
-
-
   } catch (error) {
     //Save Logs
     let logData = {
@@ -328,16 +336,16 @@ exports.createServiceProvider = async (req, res, next) => {
         message: error.message
       }
     }
-
     await LOG(logData).save()
 
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: error.message
     })
   }
 };
 
+//
 exports.approveServicer = async (req, res, next) => {
   try {
     let data = req.body
@@ -356,7 +364,7 @@ exports.approveServicer = async (req, res, next) => {
 
     let checkDetail = await providerService.getServicerByName({ _id: req.params.servicerId })
     if (!checkDetail) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid ID"
       })
@@ -365,8 +373,8 @@ exports.approveServicer = async (req, res, next) => {
     if (servicerObject.name != data.oldName) {
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
@@ -375,8 +383,8 @@ exports.approveServicer = async (req, res, next) => {
     if (data.email != data.oldEmail) {
       let emailCheck = await userService.findOneUser({ email: data.email });
       if (emailCheck) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Primary user email already exist"
         })
         return;
@@ -386,12 +394,10 @@ exports.approveServicer = async (req, res, next) => {
     let teamMembers = data.members
     // to string to object 
     let getUserId = await userService.findOneUser({ accountId: checkDetail._id, isPrimary: true }, {})
-    // console.log("getUserId================",getUserId);
-    // return;
-
     const updateServicer = await providerService.updateServiceProvider({ _id: checkDetail._id }, servicerObject);
+
     if (!updateServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to update the servicer"
       })
@@ -402,14 +408,18 @@ exports.approveServicer = async (req, res, next) => {
  
     let saveMembers = await userService.insertManyUser(teamMembers)
     let resetPasswordCode = randtoken.generate(4, '123456789')
-
     let resetLink = `${process.env.SITE_URL}newPassword/${getUserId._id}/${resetPasswordCode}`
+<<<<<<< HEAD
     const mailing = sgMail.send(emailConstant.servicerApproval(data.email, {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       title:settingData[0]?.title,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
       address: settingData[0]?.address, link: resetLink
     }))
+=======
+    const mailing = sgMail.send(emailConstant.servicerApproval(data.email, { subject: "Set Password", link: resetLink }))
+
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     res.send({
       code: constant.successCode,
       message: "Approve successfully",
@@ -417,7 +427,7 @@ exports.approveServicer = async (req, res, next) => {
     })
 
   } catch (error) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: error.message
     })
@@ -429,7 +439,7 @@ exports.getServicer = async (req, res) => {
   try {
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -447,7 +457,7 @@ exports.getServicer = async (req, res) => {
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -456,11 +466,38 @@ exports.getServicer = async (req, res) => {
 
     // Get servicer with claim
     const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-
     const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+    let claimAggregateQuery1 = [
+      {
+        $match: servicerCompleted
+      },
+      {
+        "$group": {
+          "_id": "$servicerId",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
+      },
 
-    let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-    let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId");
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+    let claimAggregateQuery = [
+      {
+        $match: servicerClaimsIds
+      },
+      {
+        $group: {
+          _id: "$servicerId",
+          noOfOrders: { $sum: 1 },
+        }
+      },
+    ]
+
+    let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery);
 
     const result_Array = servicerUser.map(item1 => {
       const matchingItem = servicer.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -496,7 +533,7 @@ exports.getServicer = async (req, res) => {
       data: filteredData
     });
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -508,16 +545,33 @@ exports.getServiceProviderById = async (req, res, next) => {
   try {
     const singleServiceProvider = await providerService.getServiceProviderById({ _id: req.params.servicerId });
     if (!singleServiceProvider) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the details"
       })
       return;
     };
+
     let getMetaData = await userService.findOneUser({ accountId: singleServiceProvider._id, isPrimary: true })
     let resultUser = getMetaData.toObject()
+    let claimQueryAggregate = [
+      {
+        $match: { claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) }
+      },
+      {
+        "$group": {
+          "_id": "",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
+      },
 
-    let valueClaim = await claimService.getDashboardData({ claimFile: 'Completed', servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimQueryAggregate);
     let numberOfClaims = await claimService.getClaims({ claimFile: "Completed", servicerId: new mongoose.Types.ObjectId(req.params.servicerId) });
     const claimData = {
       numberOfClaims: numberOfClaims.length,
@@ -530,7 +584,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       message: resultUser
     })
   } catch (error) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -546,13 +600,15 @@ exports.rejectServicer = async (req, res) => {
     let checkServicer = await providerService.deleteServicer({ _id: req.params.servicerId })
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
+
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to delete the servicer"
       })
       return;
     };
+
     let deleteUser = await userService.deleteUser({ accountId: getServicer._id })
     let notificationData = {
       title: "Rejection Servicer Account",
@@ -572,7 +628,8 @@ exports.rejectServicer = async (req, res) => {
       address: settingData[0]?.address,
       websiteSetting: settingData[0],
       senderName: getServicer.name,
-      content: "Dear " + getServicer.name + " we are delighted to inform you that your registration as an authorized servicer " + getServicer.name + " has been rejected from admin.Please feel free to contact from admin if you have any query!",
+      content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
+
       subject: "Rejection Account"
     }
     // Send Email code here
@@ -595,7 +652,7 @@ exports.rejectServicer = async (req, res) => {
     }
 
     await LOG(logData).save()
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -609,24 +666,27 @@ exports.editServicerDetail = async (req, res) => {
     data.name = data.name.trim().replace(/\s+/g, ' ');
     data.oldName = data.oldName.trim().replace(/\s+/g, ' ');
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
+
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
       return;
     }
+
     if (data.name != data.oldName) {
       let regex = new RegExp('^' + data.name + '$', 'i');
       let checkName = await providerService.getServicerByName({ name: regex }, {})
       if (checkName) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Servicer already exist with this name"
         })
         return;
       };
     }
+
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
     let servicerUserCreateria = { accountId: req.params.servicerId };
@@ -635,6 +695,7 @@ exports.editServicerDetail = async (req, res) => {
         status: false
       }
     };
+
     if (data.isAccountCreate) {
       servicerUserCreateria = { accountId: req.params.servicerId, isPrimary: true };
       newValue = {
@@ -643,7 +704,9 @@ exports.editServicerDetail = async (req, res) => {
         }
       };
     }
+
     const changeServicerUser = await userService.updateUser(servicerUserCreateria, newValue, { new: true });
+
     if (!updateData) {
       //Save Logs
       let logData = {
@@ -656,25 +719,17 @@ exports.editServicerDetail = async (req, res) => {
           result: changeServicerUser
         }
       }
-
       await LOG(logData).save()
 
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
       return;
     }
-    // let criteria1 = {
-    //   $and: [
-    //     { _id: data.userId },
-    //     { accountId: checkServicer._id }
-    //   ]
-    // }
 
     //send notification to admin and servicer
     let IDs = await supportingFunction.getUserIds()
-    //const dealer = await dealerService.getDealerById(checkUser.accountId, {})
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let notificationData = {
@@ -686,9 +741,9 @@ exports.editServicerDetail = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData);
-
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
+<<<<<<< HEAD
     // const notificationContent = {
     //   content: "The dealer" + checkDealer.name + " "+ " has been updated succeefully!"
     // }    
@@ -703,6 +758,8 @@ exports.editServicerDetail = async (req, res) => {
     // }
 
     let settingData = await userService.getSetting({});
+=======
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     let emailData = {
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
       lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -732,19 +789,6 @@ exports.editServicerDetail = async (req, res) => {
       message: "Updated Successfully",
       result: updateData
     })
-    // let updateMetaData = await userService.updateSingleUser(criteria1, data, { new: true })
-    // if (!updateMetaData) {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: "Unable to update the primary details"
-    //   })
-    // } else {
-    //   res.send({
-    //     code: constant.successCode,
-    //     message: "Updated Successfully",
-    //     result: { updateData, updateMetaData }
-    //   })
-    // }
   } catch (err) {
     //Save Logs
     let logData = {
@@ -759,20 +803,21 @@ exports.editServicerDetail = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
+//Update status
 exports.updateStatus = async (req, res) => {
   try {
     let data = req.body
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
 
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -781,6 +826,7 @@ exports.updateStatus = async (req, res) => {
     let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.servicerId, isPrimary: true })
     let criteria = { _id: checkServicer._id }
     let updateData = await providerService.updateServiceProvider(criteria, data)
+
     if (!updateData) {
       //Save Logs
       let logData = {
@@ -796,12 +842,13 @@ exports.updateStatus = async (req, res) => {
 
       await LOG(logData).save()
 
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
       return;
     }
+
     if (data.status == "false" || !data.status) {
       let criteria1 = { accountId: checkServicer._id }
       let updateMetaData = await userService.updateUser(criteria1, { status: data.status }, { new: true })
@@ -820,8 +867,8 @@ exports.updateStatus = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to update the primary details 'false'"
         })
       } else {
@@ -861,7 +908,6 @@ exports.updateStatus = async (req, res) => {
       }
     } else {
       let IDs = await supportingFunction.getUserIds()
-
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "Servicer status update",
@@ -893,10 +939,6 @@ exports.updateStatus = async (req, res) => {
 
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
-    //notificationEmails.push(getPrimary.email);
-    // const notificationContent = {
-    //   content: checkServicer.name + " " + "status has been updated successfully!"
-    // }
     const status_content = req.body.status || req.body.status == "true" ? 'Active' : 'Inactive';
 
     let settingData = await userService.getSetting({});
@@ -909,15 +951,7 @@ exports.updateStatus = async (req, res) => {
       content: "Status has been changed to " + status_content + " " + ", effective immediately.",
       subject: "Update Status"
     }
-    // let emailData = {
-    //   dealerName: checkServicer.name,
-    //   c1: "The Servicer",
-    //   c2: checkServicer.name,
-    //   c3: "has been updated successfully!.",
-    //   c4: "",
-    //   c5: "",
-    //   role: "Servicer"
-    // }
+
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary?.email, notificationEmails, emailData))
     //Save Logs
     let logData = {
@@ -953,17 +987,18 @@ exports.updateStatus = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
+//Get all servicer 
 exports.getAllServiceProviders = async (req, res, next) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -972,10 +1007,8 @@ exports.getAllServiceProviders = async (req, res, next) => {
     let query = { isDeleted: false, status: "Approved" }
     let projection = { __v: 0, isDeleted: 0 }
     const serviceProviders = await providerService.getAllServiceProvider(query, projection);
-
-    //console.log("serviceProviders==============================",serviceProviders)
     if (!serviceProviders) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -985,12 +1018,10 @@ exports.getAllServiceProviders = async (req, res, next) => {
     const servicerIds = serviceProviders.map(obj => obj._id);
     // Get Dealer Primary Users from colection
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-
-
     let servicerUser = await userService.getMembers(query1, projection)
 
     if (!servicerUser) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -1015,7 +1046,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
       data: result_Array
     });
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1054,18 +1085,15 @@ exports.deleteServiceProvider = async (req, res, next) => {
   }
 };
 
+//Register Servicer
 /**---------------------------------------------Register Service Provider---------------------------------------- */
 exports.registerServiceProvider = async (req, res) => {
   try {
     const data = req.body;
-
-    // Check if the specified role exists
-    // { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-
     // Check if the dealer already exists
     const existingServicer = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, accountStatus: "Pending" }, { isDeleted: 0, __v: 0 });
     if (existingServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "You have registered already with this name! Waiting for the approval"
       })
@@ -1074,7 +1102,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     const existingServicer2 = await providerService.getServicerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingServicer2) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Account name already exist"
       })
@@ -1085,7 +1113,6 @@ exports.registerServiceProvider = async (req, res) => {
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
       const existingServicer3 = await providerService.getServicerByName({ _id: existingUser.accountId }, { isDeleted: 0, __v: 0 });
-      console.log(existingUser, existingServicer3)
       if (existingServicer3) {
         if (existingServicer3.accountStatus == "Pending") {
           res.send({
@@ -1096,7 +1123,7 @@ exports.registerServiceProvider = async (req, res) => {
         }
 
       }
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "You have already registered  with this email!"
       })
@@ -1104,7 +1131,6 @@ exports.registerServiceProvider = async (req, res) => {
     }
 
     const count = await providerService.getServicerCount();
-    // console.log("CountServicer++++++++",count);return;
     // Extract necessary data for dealer creation
     const ServicerMeta = {
       name: data.name,
@@ -1118,7 +1144,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Register the Servicer
     const createMetaData = await providerService.registerServiceProvider(ServicerMeta);
     if (!createMetaData) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to create Servicer account',
       });
@@ -1140,7 +1166,7 @@ exports.registerServiceProvider = async (req, res) => {
     // Create the user
     const createdUser = await userService.createUser(userMetaData);
     if (!createdUser) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to create servicer user',
       });
@@ -1161,6 +1187,7 @@ exports.registerServiceProvider = async (req, res) => {
 
     // Create the user
     const createNotification = await userService.createNotification(notificationData);
+<<<<<<< HEAD
     // if (!createNotification) {
     //   res.send({
     //     code:constant.errorCode,
@@ -1169,6 +1196,8 @@ exports.registerServiceProvider = async (req, res) => {
     //   // Send Email code here
     // }
     let settingData = await userService.getSetting({});
+=======
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
     let emailData = {
       dealerName: ServicerMeta.name,
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
@@ -1179,7 +1208,8 @@ exports.registerServiceProvider = async (req, res) => {
       c3: "Your account is currently pending approval from our admin.",
       c4: "Once approved, you will receive a confirmation emai",
       c5: "We appreciate your patience.",
-      role: "Servicer!"
+      role: "Servicer!",
+      subject: "New Servicer Registration Request Received",
     }
 
     // Send Email code here
@@ -1194,7 +1224,7 @@ exports.registerServiceProvider = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: admin.firstName,
       content: "A new servicer " + ServicerMeta.name + " has been registered",
-      subject: 'Notification of New Servicer Registration'
+      subject: 'New Servicer Registration'
     }
     mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmail, [], emailData))
     let logData = {
@@ -1225,7 +1255,7 @@ exports.registerServiceProvider = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1236,7 +1266,7 @@ exports.registerServiceProvider = async (req, res) => {
 // status update for servicer 
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: "Only super admin allow to do this action"
     })
@@ -1253,7 +1283,7 @@ exports.statusUpdate = async (req, res) => {
   try {
     const updatedResult = await providerService.statusUpdate(criteria, newValue, option)
     if (!updatedResult) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to update the dealer status"
       });
@@ -1265,8 +1295,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to update the users"
         })
         return
@@ -1280,8 +1310,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to update the primary user"
         })
         return
@@ -1294,7 +1324,7 @@ exports.statusUpdate = async (req, res) => {
 
   }
   catch (err) {
-    return res.send({
+    return  res.send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1307,7 +1337,7 @@ exports.getSerivicerUsers = async (req, res) => {
     let data = req.body
     let getUsers = await userService.findUser({ accountId: req.params.servicerId }, { isPrimary: -1 })
     if (!getUsers) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "No Users Found!"
       })
@@ -1326,8 +1356,8 @@ exports.getSerivicerUsers = async (req, res) => {
       });
       let getServicerStatus = await providerService.getServiceProviderById({ _id: req.params.servicerId }, { status: 1 })
       if (!getServicerStatus) {
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Invalid servicer ID"
         })
         return;
@@ -1342,7 +1372,7 @@ exports.getSerivicerUsers = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1355,7 +1385,7 @@ exports.addServicerUser = async (req, res) => {
     let data = req.body
     let checkServicer = await providerService.getServiceProviderById({ _id: req.params.servicerId })
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -1365,7 +1395,7 @@ exports.addServicerUser = async (req, res) => {
     let checkUser = await userService.getUserById1({ accountId: req.params.servicerId, isPrimary: true }, { isDeleted: false })
     data.status = checkUser.status ? true : false;
     if (checkEmail) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "user already exist with this email"
       })
@@ -1374,6 +1404,7 @@ exports.addServicerUser = async (req, res) => {
       data.accountId = checkServicer._id
       data.metaId = checkServicer._id
       let statusCheck;
+
       if (!checkServicer.accountStatus) {
         statusCheck = false
       } else {
@@ -1383,6 +1414,7 @@ exports.addServicerUser = async (req, res) => {
       data.status = statusCheck
       data.roleId = '65719c8368a8a86ef8e1ae4d'
       let saveData = await userService.createUser(data)
+
       if (!saveData) {
         //Save Logs
         let logData = {
@@ -1397,8 +1429,8 @@ exports.addServicerUser = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+          res.send({
+        code: constant.errorCode,
           message: "Unable to add the user"
         })
         return;
@@ -1436,19 +1468,20 @@ exports.addServicerUser = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
+//Create Relation with Dealer
 exports.createDeleteRelation = async (req, res) => {
   try {
     let data = req.body
     let checkServicer = await providerService.getServicerByName({ _id: req.params.servicerId }, {})
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -1490,8 +1523,8 @@ exports.createDeleteRelation = async (req, res) => {
       servicerId: req.params.servicerId,
       dealerId: dealerId
     }));
-    if (newRecords.length > 0) {
 
+    if (newRecords.length > 0) {
       let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
       res.send({
         code: constant.successCode,
@@ -1503,30 +1536,21 @@ exports.createDeleteRelation = async (req, res) => {
         message: "success"
       })
     }
-
-    // for (let i = 0; i < data.servicers.length; i++) {
-    //   let servicer = data.servicers[i]
-    //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.params.dealerId })
-    //   if (!checkRelation) {
-
-    //   } else {
-
-    //   }
-    // }
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
+//Get Dealer servicer
 exports.getServicerDealers = async (req, res) => {
   try {
     let data = req.body
     let getDealersIds = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
     if (!getDealersIds) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the dealers"
       })
@@ -1536,7 +1560,7 @@ exports.getServicerDealers = async (req, res) => {
     let idsq = getDealersIds.map((item) => new mongoose.Types.ObjectId(item.dealerId))
     let dealers = await dealerService.getAllDealers({ _id: { $in: ids } }, {})
     if (!dealers) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -1601,62 +1625,6 @@ exports.getServicerDealers = async (req, res) => {
 
     const dealerClaims = await dealerService.getDealerAndClaims(dealerAggregationQuery);
 
-    // res.json(dealerClaims);
-    // return;
-
-    //     let lookupQuery = [
-    //       {
-    //         $match: claimQuery
-    //       },
-    //       {
-    //         $lookup: {
-    //           from: "contracts",
-    //           localField: "contractId",
-    //           foreignField: "_id",
-    //           as: "contracts",
-    //         }
-    //       },
-    //       {
-    //         $unwind: "$contracts"
-    //       },
-    //       {
-    //         $lookup: {
-    //           from: "orders",
-    //           localField: "contracts.orderId",
-    //           foreignField: "_id",
-    //           as: "contracts.orders",
-    //         },
-
-    //       },
-    //       {
-    //         $unwind: "$contracts.orders"
-    //       },
-    //       {
-    //         $match:
-    //         {
-    //           $and: [
-    //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-    //             { "contracts.orders.dealerId": { $in:idsq } }
-    //           ]
-    //         },
-    //       },
-    //       {
-    //         "$group": {
-    //           "_id": "",
-    //           "totalAmount": {
-    //             "$sum": {
-    //               "$sum": "$totalAmount"
-    //             }
-    //           },
-    //         },
-
-    //       },
-    //     ]
-    //     let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
-    // res.json(valueClaim);
-
-    // return;
-
     const result_Array = dealarUser.map(item1 => {
       const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
       const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
@@ -1671,20 +1639,6 @@ exports.getServicerDealers = async (req, res) => {
         return dealerData.toObject();
       }
     });
-
-
-    // const result_Array = dealarUser.map(item1 => {
-    //   const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-    //   if (matchingItem) {
-    //     return {
-    //       ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-    //       dealerData: matchingItem.toObject()
-    //     };
-    //   } else {
-    //     return dealerData.toObject();
-    //   }
-    // });
 
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -1705,15 +1659,18 @@ exports.getServicerDealers = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
+
+//Get servicer of Dealer new api
 exports.getServicerDealers1 = async (req, res) => {
   try {
     let data = req.body
+<<<<<<< HEAD
     // let query = [
     //   {
     //     $match: {
@@ -1804,6 +1761,8 @@ exports.getServicerDealers1 = async (req, res) => {
     //   //   }
     //   // }
     // ]
+=======
+>>>>>>> d388f6ccbb9fc4c80521b83a8cf819e84373b413
 
     let query = [
       {
@@ -1882,7 +1841,6 @@ exports.getServicerDealers1 = async (req, res) => {
 
     ]
     let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
-
     res.send({
       code: constant.successCode,
       data: filteredData
@@ -1890,7 +1848,7 @@ exports.getServicerDealers1 = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1903,8 +1861,14 @@ exports.getDealerList = async (req, res) => {
     let query = { isDeleted: false, status: "Approved", accountStatus: true }
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(query, projection);
-
     let getRelations = await dealerRelationService.getDealerRelations({ servicerId: req.params.servicerId })
+    if(!getRelations){
+      res.send({
+        code:constant.errorCode,
+        message:"Invalid Id"
+      })
+      return; 
+    }
 
     const resultArray = dealers.map(item => {
       const matchingDealer = getRelations.find(dealer => dealer.dealerId.toString() == item._id.toString());
@@ -1920,22 +1884,16 @@ exports.getDealerList = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
   }
 }
 
+//Get servicer claim
 exports.getServicerClaims = async (req, res) => {
   try {
-    // if (req.role != 'Super Admin') {
-    //   res.send({
-    //     code: constant.errorCode,
-    //     message: 'Only super admin allow to do this action'
-    //   });
-    //   return;
-    // }
     let data = req.body
     let query = { isDeleted: false };
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
@@ -1943,7 +1901,7 @@ exports.getServicerClaims = async (req, res) => {
     let limitData = Number(pageLimit)
     let checkServicer = await providerService.getServicerByName({ _id: req.params.servicerId }, {})
     if (!checkServicer) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: "Invalid servicer ID"
       })
@@ -2003,7 +1961,6 @@ exports.getServicerClaims = async (req, res) => {
               diagnosis: 1,
               claimStatus: 1,
               repairStatus: 1,
-              // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.model": 1,
@@ -2059,16 +2016,29 @@ exports.getServicerClaims = async (req, res) => {
         ]
       }
     })
+
+    let claimPaidStatus = {}
+    if (data.claimPaidStatus != '' && data.claimPaidStatus != undefined) {
+      claimPaidStatus = { "claimPaymentStatus": data.claimPaidStatus }
+    }
+    else {
+      claimPaidStatus = {
+        $or: [
+          { "claimPaymentStatus": "Paid" },
+          { "claimPaymentStatus": "Unpaid" },
+        ]
+      }
+    }
+
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
       {
         $match:
         {
           $and: [
-            // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
+            claimPaidStatus,
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus : '', '$options': 'i' } },
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2091,7 +2061,6 @@ exports.getServicerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2113,10 +2082,8 @@ exports.getServicerClaims = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.isDeleted": false },
           ]
         },
       },
@@ -2148,7 +2115,6 @@ exports.getServicerClaims = async (req, res) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
@@ -2158,10 +2124,8 @@ exports.getServicerClaims = async (req, res) => {
       lookupQuery = lookupQuery.concat(newQuery);
     }
 
-    let allClaims = await claimService.getAllClaims(lookupQuery);
-
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-
     let allServicerIds = [];
     // Iterate over the data array
     resultFiter.forEach(item => {
@@ -2173,16 +2137,13 @@ exports.getServicerClaims = async (req, res) => {
     });
 
     //Get Dealer and Reseller Servicers
-    // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
-    // console.log("servicerIds=================", allServicerIds);
-    // res.json(resultFiter)
-    // return
     allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
@@ -2224,7 +2185,7 @@ exports.getServicerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2239,7 +2200,7 @@ exports.paidUnpaid = async (req, res) => {
     let queryIds = { _id: { $in: claimId } };
     const updateBulk = await claimService.markAsPaid(queryIds, { claimPaymentStatus: 'Paid' }, { new: true })
     if (!updateBulk) {
-      res.send({
+       res.send({
         code: constant.errorCode,
         message: 'Unable to update!'
       })
@@ -2251,7 +2212,7 @@ exports.paidUnpaid = async (req, res) => {
       result: updateBulk
     })
   } catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2260,6 +2221,7 @@ exports.paidUnpaid = async (req, res) => {
 
 }
 
+//Get Paid UNpaid claims
 exports.paidUnpaidClaim = async (req, res) => {
   try {
     let data = req.body
@@ -2267,10 +2229,6 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (data.noOfDays) {
       const end = moment().startOf('day')
       const start = moment().subtract(data.noOfDays, 'days').startOf('day')
-
-      // console.log("start-----------------------",start)
-      // console.log("end-----------------------",end)
-      console.log(end, start)
       dateQuery = {
         claimDate: {
           $gte: new Date(start),
@@ -2297,11 +2255,6 @@ exports.paidUnpaidClaim = async (req, res) => {
     if (req.role == 'Customer') {
       match = { 'contracts.orders.customerId': new mongoose.Types.ObjectId(req.userId) }
     }
-
-    console.log("flag-------------------------------", flag)
-    console.log("dateQuery-------------------------------", dateQuery)
-
-
 
     let newQuery = [];
     newQuery.push({
@@ -2352,7 +2305,6 @@ exports.paidUnpaidClaim = async (req, res) => {
               claimStatus: 1,
               claimPaymentStatus: 1,
               repairStatus: 1,
-              // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
               "contracts.unique_key": 1,
               "contracts.productName": 1,
               "contracts.pName": 1,
@@ -2370,7 +2322,6 @@ exports.paidUnpaidClaim = async (req, res) => {
               "contracts.orders.dealers.isServicer": 1,
               "contracts.orders.dealers._id": 1,
               "contracts.orders.customer.username": 1,
-              // "contracts.orders.dealers.dealerServicer": 1,
               "contracts.orders.dealers.dealerServicer": {
                 $map: {
                   input: "$contracts.orders.dealers.dealerServicer",
@@ -2407,14 +2358,15 @@ exports.paidUnpaidClaim = async (req, res) => {
         ]
       }
     })
+
     let servicerMatch = {}
+
     if (data.servicerName != '' && data.servicerName != undefined) {
       const checkServicer = await providerService.getAllServiceProvider({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
       if (checkServicer.length > 0) {
         let servicerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer._id))
         let dealerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.dealerId))
         let resellerIds = await checkServicer.map(servicer => new mongoose.Types.ObjectId(servicer.resellerId))
-        //  servicerMatch = { 'servicerId': { $in: servicerIds } }
         servicerMatch = {
           $or: [
             { "servicerId": { $in: servicerIds } },
@@ -2427,15 +2379,6 @@ exports.paidUnpaidClaim = async (req, res) => {
         servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
       }
     }
-    // if (data.servicerName != '' && data.servicerName != undefined) {
-    //   const checkServicer = await providerService.getServiceProviderById({ name: { '$regex': data.servicerName ? data.servicerName : '', '$options': 'i' } });
-    //   if (checkServicer) {
-    //     servicerMatch = { 'servicerId': new mongoose.Types.ObjectId(checkServicer._id) }
-    //   }
-    //   else {
-    //     servicerMatch = { 'servicerId': new mongoose.Types.ObjectId('5fa1c587ae2ac23e9c46510f') }
-    //   }
-    // }
 
     let lookupQuery = [
       { $sort: { unique_key_number: -1 } },
@@ -2443,13 +2386,12 @@ exports.paidUnpaidClaim = async (req, res) => {
         $match:
         {
           $and: [
-            // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
             { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { isDeleted: false },
             { 'customerStatus.status': { '$regex': data.customerStatusValue ? data.customerStatusValue : '', '$options': 'i' } },
             { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus : '', '$options': 'i' } },
             { 'claimStatus.status': 'Completed' },
             { 'pName': { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+            { 'productName': { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { claimPaymentStatus: flag },
             dateQuery,
             { 'servicerId': new mongoose.Types.ObjectId(servicerId) }
@@ -2471,7 +2413,6 @@ exports.paidUnpaidClaim = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
             { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.serial": { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -2494,7 +2435,6 @@ exports.paidUnpaidClaim = async (req, res) => {
         $match:
         {
           $and: [
-            // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
             { "contracts.orders.isDeleted": false },
@@ -2517,7 +2457,6 @@ exports.paidUnpaidClaim = async (req, res) => {
         $match:
         {
           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' },
-          // "contracts.orders.dealers.isDeleted": false,
         }
       },
       {
@@ -2544,16 +2483,15 @@ exports.paidUnpaidClaim = async (req, res) => {
         {
           $and: [
             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-            // { "contracts.orders.customer.isDeleted": false },
           ]
         },
       },
     ]
+
     if (newQuery.length > 0) {
       lookupQuery = lookupQuery.concat(newQuery);
     }
-    let allClaims = await claimService.getAllClaims(lookupQuery);
-
+    let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
     let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
 
     let allServicerIds = [];
@@ -2567,13 +2505,14 @@ exports.paidUnpaidClaim = async (req, res) => {
     });
 
     //Get Dealer and Reseller Servicers
-    // const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
     let servicer;
     let servicerName = '';
+
     allServicer = await providerService.getAllServiceProvider(
       { _id: { $in: allServicerIds }, status: true },
       {}
     );
+
     const result_Array = resultFiter.map((item1) => {
       servicer = []
       let servicerName = '';
@@ -2594,12 +2533,7 @@ exports.paidUnpaidClaim = async (req, res) => {
       if (item1.servicerId != null) {
         servicerName = servicer.find(servicer => servicer._id?.toString() === item1.servicerId?.toString());
         const userId = req.userId ? req.userId : '65f01eed2f048cac854daaa5'
-        // selfServicer = item1.servicerId.toString() === userId.toString() ? true : false
-        //selfServicer = item1.servicerId.toString() === item1.servicerData?._id?.toString() && item1.servicerData?.isServicer ? true : false
         selfServicer = item1.servicerId?.toString() === item1.contracts?.orders?.dealerId.toString() ? true : false
-        console.log("selfServicer------------------------------------", item1.servicerId)
-        console.log("selfServicer------------------------------------", item1.servicerData?._id?.toString())
-        console.log("selfServicer------------------------------------", item1.servicerData?._id?.toString())
       }
       return {
         ...item1,
@@ -2620,7 +2554,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+     res.send({
       code: constant.errorCode,
       message: err.message
     })

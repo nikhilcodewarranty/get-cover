@@ -62,6 +62,7 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
+
 //users api
 exports.getDealerUsers = async (req, res) => {
     try {
@@ -109,7 +110,6 @@ exports.getDealerUsers = async (req, res) => {
             });
             return
         }
-        console.log(dealers)
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -125,6 +125,7 @@ exports.getDealerUsers = async (req, res) => {
         })
     }
 };
+
 //price api
 exports.createDealerPriceBook = async (req, res) => {
     try {
@@ -216,48 +217,25 @@ exports.createDealerPriceBook = async (req, res) => {
         })
     }
 };
+
 exports.getDealerPriceBookById = async (req, res) => {
     try {
-        if (req.role != "Dealer") {
-            res.send({
-                code: constant.errorCode,
-                message: "Only Dealer allow to do this action"
-            })
-            return;
-        }
         let projection = {
             _id: 1,
             name: 1,
-            // wholesalePrice: {
-            //   $sum: [
-            //     // { $arrayElemAt: ["$priceBooks.reserveFutureFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.reinsuranceFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.adminFee", 0] },
-            //     // { $arrayElemAt: ["$priceBooks.frontingFee", 0] }
-            //     "$priceBooks.reserveFutureFee",
-            //     "$priceBooks.reinsuranceFee",
-            //     "$priceBooks.adminFee",
-            //     "$priceBooks.frontingFee",
-            //   ],
-            // },
             "priceBook": 1,
             "dealerId": 1,
             "status": 1,
             "retailPrice": 1,
             "description": 1,
             "isDeleted": 1,
-            // "brokerFee": {
-            //   $subtract: ["$retailPrice","$wholesalePrice" ],
-            // },
             "unique_key": 1,
             "__v": 1,
             "createdAt": 1,
             "updatedAt": 1,
             priceBooks: 1,
             dealer: 1
-
         }
-
         let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
         let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
         if (!getDealerPrice) {
@@ -279,6 +257,8 @@ exports.getDealerPriceBookById = async (req, res) => {
         })
     }
 };
+
+//Get price books
 exports.getPriceBooks = async (req, res) => {
     try {
         let checkDealer = await dealerService.getSingleDealerById({ _id: req.userId }, { isDeleted: false })
@@ -290,6 +270,7 @@ exports.getPriceBooks = async (req, res) => {
             })
             return;
         }
+
         let projection = {
             _id: 1,
             name: 1,
@@ -308,16 +289,9 @@ exports.getPriceBooks = async (req, res) => {
 
         }
         let query
-        // if (checkDealer[0]?.coverageType == "Breakdown & Accidental") {
-        //     query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-        // } else {
-        //     query = { isDeleted: false, status: true, coverageType: checkDealer[0]?.coverageType, dealerId: new mongoose.Types.ObjectId(req.userId) }
-
-        // }
         query = { isDeleted: false, status: true, dealerId: new mongoose.Types.ObjectId(req.userId) }
-
-        console.log('skldjflksjdf', query, checkDealer)
         let lookupQuery
+
         if (checkDealer[0]?.coverageType != "Breakdown & Accidental") {
             lookupQuery = [
                 {
@@ -458,10 +432,7 @@ exports.getResellerCustomers = async (req, res) => {
         const customersId = customers.map(obj => obj._id.toString());
         const orderCustomerIds = customers.map(obj => obj._id);
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
-
-
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
-
         let project = {
             productsArray: 1,
             dealerId: 1,
@@ -524,6 +495,8 @@ exports.getResellerCustomers = async (req, res) => {
         })
     }
 };
+
+//Get customer orders
 exports.customerOrders = async (req, res) => {
     try {
         if (req.role != 'Dealer') {
@@ -542,9 +515,7 @@ exports.customerOrders = async (req, res) => {
             })
             return;
         }
-
         let ordersResult = await orderService.getAllOrders({ customerId: new mongoose.Types.ObjectId(req.params.customerId), status: { $ne: "Archieved" } }, { isDeleted: 0 })
-
         //Get Respective dealer
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
@@ -561,14 +532,12 @@ exports.customerOrders = async (req, res) => {
             { username: 1 }
         );
         //Get Respective Reseller
-
         let resellerIdsArray = ordersResult.map((result) => result.resellerId);
         const resellerCreteria = { _id: { $in: resellerIdsArray } };
         let respectiveReseller = await resellerService.getResellers(
             resellerCreteria,
             { name: 1, isServicer: 1 }
         );
-
         let servicerIdArray = ordersResult.map((result) => result.servicerId);
         const servicerCreteria = {
             $or: [
@@ -672,8 +641,6 @@ exports.customerOrders = async (req, res) => {
                 statusRegex.test(entry.status)
             );
         });
-
-
         res.send({
             code: constant.successCode,
             message: 'Success',
@@ -687,6 +654,8 @@ exports.customerOrders = async (req, res) => {
         })
     }
 };
+
+//Get price book with filter
 exports.getAllPriceBooksByFilter = async (req, res, next) => {
     try {
         let data = req.body
@@ -705,9 +674,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         let searchPName = req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : ''
         let priceType = req.body.priceType ? req.body.priceType.replace(/\s+/g, ' ').trim() : ''
         let query
-        // let query ={'dealerId': new mongoose.Types.ObjectId(data.dealerId) };
-
-
 
         if (data.coverageType == "") {
             if (checkDealer.coverageType == "Breakdown & Accidental") {
@@ -716,7 +682,6 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                         { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
                         { 'priceBooks.pName': { '$regex': searchPName, '$options': 'i' } },
                         { 'priceBooks.priceType': { '$regex': priceType, '$options': 'i' } },
-                        // { 'priceBooks.coverageType': checkDealer.coverageType },
                         { 'priceBooks.category._id': { $in: catIdsArray } },
                         { 'status': true },
                         { dealerId: new mongoose.Types.ObjectId(req.userId) }
@@ -749,15 +714,11 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
                 ]
             };
         }
-
-
-
         // Conditionally add the term query if data.term is not blank
         if (data.term) {
             query.$and.push({ 'priceBooks.term': Number(data.term) });
         }
-        console.log(query)
-        //
+
         let projection = { isDeleted: 0, __v: 0 }
         let limit = req.body.limit ? req.body.limit : 10000
         let page = req.body.page ? req.body.page : 1
@@ -781,6 +742,8 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
         })
     }
 };
+
+//Status update
 exports.statusUpdate = async (req, res) => {
     try {
         // Check if the user has the required role
@@ -793,12 +756,10 @@ exports.statusUpdate = async (req, res) => {
         }
 
         let data = req.body;
-
         // Fetch existing dealer price book data
         const criteria = { _id: req.params.dealerPriceBookId };
         const projection = { isDeleted: 0, __v: 0 };
         const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
-
         if (!existingDealerPriceBook) {
             res.send({
                 code: constant.errorCode,
@@ -815,12 +776,9 @@ exports.statusUpdate = async (req, res) => {
                 priceBook: req.body.priceBook || existingDealerPriceBook.priceBook,
             }
         };
-
         const option = { new: true };
-
         // Update the dealer price status
         const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
-
         if (!updatedResult) {
             //Save Logs for update price book
             let logData = {
@@ -878,6 +836,8 @@ exports.statusUpdate = async (req, res) => {
         return
     }
 };
+
+//Get reseller price book
 exports.getResellerPriceBook = async (req, res) => {
     if (req.role != "Dealer") {
         res.send({
@@ -927,8 +887,9 @@ exports.getResellerPriceBook = async (req, res) => {
             }
         ]
     }
-    //  let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(checkDealer._id), status: true }
+
     let getResellerPriceBook = await dealerPriceService.getAllPriceBooksByFilter(query, projection)
+
     if (!getResellerPriceBook) {
         res.send({
             code: constant.errorCode,
@@ -945,6 +906,8 @@ exports.getResellerPriceBook = async (req, res) => {
 
 
 };
+
+//Get reseller users
 exports.getResellerUsers = async (req, res) => {
     if (req.role != "Dealer") {
         res.send({
@@ -970,6 +933,7 @@ exports.getResellerUsers = async (req, res) => {
     });
     return;
 };
+
 //servicers api
 exports.getResellerServicers = async (req, res) => {
     try {
@@ -983,6 +947,7 @@ exports.getResellerServicers = async (req, res) => {
             })
             return;
         }
+
         let checkDealer = await dealerService.getDealerByName({ _id: checkReseller.dealerId })
         if (!checkDealer) {
             res.send({
@@ -991,6 +956,7 @@ exports.getResellerServicers = async (req, res) => {
             })
             return;
         }
+
         let result_Array = []
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: checkReseller.dealerId })
         if (!getServicersIds) {
@@ -1000,8 +966,10 @@ exports.getResellerServicers = async (req, res) => {
             })
             return;
         }
+
         let ids = getServicersIds.map((item) => item.servicerId)
         var servicer = await providerService.getAllServiceProvider({ _id: { $in: ids } }, {})
+
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -1009,19 +977,19 @@ exports.getResellerServicers = async (req, res) => {
             })
             return;
         }
+
         if (checkDealer.isServicer) {
             servicer.unshift(checkDealer);
         }
 
         if (checkReseller.isServicer) {
-            //servicer = await providerService.getAllServiceProvider({ resellerId: checkReseller._id }, { isDeleted: 0 })
             servicer.unshift(checkReseller);
         }
 
         const servicerIds = servicer.map(obj => obj._id);
-
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {})
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1045,7 +1013,6 @@ exports.getResellerServicers = async (req, res) => {
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.servicerData.name) &&
@@ -1067,6 +1034,8 @@ exports.getResellerServicers = async (req, res) => {
     }
 
 }
+
+//Get dealer servicer
 exports.getDealerServicers = async (req, res) => {
     try {
         let data = req.body
@@ -1080,6 +1049,7 @@ exports.getDealerServicers = async (req, res) => {
             return;
         }
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
+
         if (!getServicersIds) {
             res.send({
                 code: constant.errorCode,
@@ -1087,9 +1057,10 @@ exports.getDealerServicers = async (req, res) => {
             })
             return;
         }
-        console.log("-------------------------------------------------------", 1)
+
         let ids = getServicersIds.map((item) => item.servicerId)
         let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+
         if (!servicer) {
             res.send({
                 code: constant.errorCode,
@@ -1097,7 +1068,7 @@ exports.getDealerServicers = async (req, res) => {
             })
             return;
         }
-        //res.json(servicer);return;
+
         if (checkDealer.isServicer) {
             servicer.unshift(checkDealer);
         };
@@ -1109,41 +1080,11 @@ exports.getDealerServicers = async (req, res) => {
         if (dealerResellerServicer.length > 0) {
             servicer.unshift(...dealerResellerServicer);
         }
-        //res.json(servicer);return;
-        // let servicerIds = []
 
-        // servicer.forEach(obj => {
-        //     if (obj.dealerId != null) {
-        //         servicerIds.push(obj.dealerId);
-        //     }
-        //     else if (obj.resellerId != null) {
-        //         servicerIds.push(obj.resellerId);
-        //     }
-        //     else {
-        //         servicerIds.push(obj._id);
-        //     }
-        //     // dealerIds.push(obj.dealerId);
-        //     // resellerIds.push(obj.resellerId);
-        // });
-        // const servicerIds = servicer.map(obj => obj._id);
-        // const dealerIds = servicer.map(obj => obj.dealerId);
-        // const resellerIds = servicer.map(obj => obj.resellerId);
-
-        //res.json(resellerIds);return;
-
-
-
-
-        // const matchServicer = {
-        //   $or: [
-        //     { accountId: { $in: servicerIds }, isPrimary: true },
-        //     { accountId: { $in: dealerIds }, isPrimary: true },
-        //     { accountId: { $in: resellerIds }, isPrimary: true }
-        //   ]
-        // }
         const servicerIds = servicer.map(obj => obj._id);
         const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
         let servicerUser = await userService.getMembers(query1, {});
+
         if (!servicerUser) {
             res.send({
                 code: constant.errorCode,
@@ -1151,14 +1092,38 @@ exports.getDealerServicers = async (req, res) => {
             });
             return;
         };
-
         // Get servicer with claim
         const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-
         const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+        let claimAggregateQuery1 = [
+            {
+                $match: servicerCompleted
+            },
+            {
+                "$group": {
+                    "_id": "$servicerId",
+                    "totalAmount": {
+                        "$sum": {
+                            "$sum": "$totalAmount"
+                        }
+                    },
+                },
 
-        let valueClaim = await claimService.getServicerClaimsValue(servicerCompleted, "$servicerId");
-        let numberOfClaims = await claimService.getServicerClaimsNumber(servicerClaimsIds, "$servicerId")
+            },
+        ]
+        let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+        let claimAggregateQuery = [
+            {
+                $match: servicerClaimsIds
+            },
+            {
+                $group: {
+                    _id: "$servicerId",
+                    noOfOrders: { $sum: 1 },
+                }
+            },
+        ]
+        let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
 
         const result_Array = servicer.map(item1 => {
             const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString() || item2.accountId?.toString() === item1?.dealerId?.toString() || item2.accountId?.toString() === item1?.resellerId?.toString());
@@ -1184,92 +1149,9 @@ exports.getDealerServicers = async (req, res) => {
                 };
             }
         });
-        // console.log("-------------------------------------------------------result_Array",result_Array)
-        // console.log("-------------------------------------------------------",5)
-
-
-        // for (let i = 0; i < result_Array.length; i++) {
-        //     const servicerId = result_Array[i].servicerData?._id;
-        //     let getServicerFromDealer = await servicerService.getAllServiceProvider({ dealerId: { $in: servicerId } })
-        //     console.log("claim check+++++++4444444444444++++++++++++++")
-
-        //     // Aggregate pipeline to join orders, contracts, and claims
-        //     var aggregateResult = await orderService.getAllOrders1([
-        //         {
-        //             $match: {
-        //                 $and: [
-        //                     {
-        //                         $or: [
-        //                             { servicerId: new mongoose.Types.ObjectId(servicerId) },
-        //                             { servicerId: new mongoose.Types.ObjectId(getServicerFromDealer[0]?._id) },
-        //                         ]
-        //                     },
-        //                     { dealerId: new mongoose.Types.ObjectId(req.params.dealerId) },
-        //                 ]
-        //             }
-        //         },
-        //         {
-        //             $lookup: {
-        //                 from: "contracts",
-        //                 localField: "_id",
-        //                 foreignField: "orderId",
-        //                 as: "contracts"
-        //             }
-        //         },
-        //         { $unwind: "$contracts" },
-        //         {
-        //             $lookup: {
-        //                 from: "claims",
-        //                 localField: "contracts._id",
-        //                 foreignField: "contractId",
-        //                 as: "claims",
-        //                 // pipeline: [
-        //                 //   {
-        //                 //     $match: { claimFile: { $in: ["Open", "Completed"] } }
-        //                 //   }
-        //                 // ]
-        //             }
-        //         },
-        //         {
-        //             $project: {
-        //                 'claims': { $arrayElemAt: ["$claims", 0] },
-        //                 _id: 0,
-        //                 servicerId: 1
-        //             }
-        //         }
-        //     ]);
-        //     console.log("hhhhhhhhhhhhhhhhhhh++++++++++++++++")
-
-        //     // If there are results for the current servicerId, update the result array
-        //     aggregateResult = aggregateResult.filter(obj => Object.keys(obj).length !== 1);
-
-
-        //     console.log("claim check+++++++++++++++++++++", aggregateResult)
-        //     let totalClaimAmount = 0
-
-        //     function calculateTotalAmountAndCount(arr) {
-        //         let total = 0;
-        //         let count = aggregateResult.length;
-        //         for (let obj of arr) {
-        //             total += obj.claims.totalAmount;
-        //         }
-        //         return { totalAmount: total, totalCount: count };
-        //     }
-        //     const { totalAmount, totalCount } = calculateTotalAmountAndCount(aggregateResult);
-        //     console.log("Total amount:", totalAmount);
-        //     console.log("Total count:", totalCount);
-
-        //     result_Array[i].claimCount = totalCount;
-        //     result_Array[i].totalClaimAmount = totalAmount;
-
-        // }
-
         const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
         const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
         const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-
-
-
         let filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.servicerData?.name) &&
@@ -1277,9 +1159,7 @@ exports.getDealerServicers = async (req, res) => {
                 phoneRegex.test(entry?.phoneNumber)
             );
         });
-
         // Add isServicer key for reseller when true
-
         filteredData.forEach(item => {
             // Check if resellerId is not null
             if (item.servicerData.resellerId !== null) {
@@ -1288,9 +1168,6 @@ exports.getDealerServicers = async (req, res) => {
                 // You can add any key-value pair you want here
             }
         });
-
-        console.log("filteredData----------------------------------------", filteredData)
-
 
         res.send({
             code: constant.successCode,
@@ -1305,16 +1182,15 @@ exports.getDealerServicers = async (req, res) => {
         })
     }
 }
+
+//Get servicer list
 exports.getServicersList = async (req, res) => {
     try {
         let data = req.body
         let query = { isDeleted: false, accountStatus: "Approved", status: true, dealerId: null, resellerId: null }
         let projection = { __v: 0, isDeleted: 0 }
         let servicer = await providerService.getAllServiceProvider(query, projection);
-
-
         let getRelations = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
-
         const resultArray = servicer.map(item => {
             const matchingServicer = getRelations.find(servicer => servicer.servicerId.toString() == item._id.toString());
             const documentData = item._doc;
@@ -1334,6 +1210,7 @@ exports.getServicersList = async (req, res) => {
     }
 };
 
+//Create relation with dealer
 exports.createDeleteRelation = async (req, res) => {
     try {
         let data = req.body
@@ -1345,10 +1222,8 @@ exports.createDeleteRelation = async (req, res) => {
             })
             return;
         }
-
         const trueArray = [];
         const falseArray = [];
-
         data.servicers.forEach(item => {
             if (item.status || item.status == "true") {
                 trueArray.push(item);
@@ -1356,34 +1231,26 @@ exports.createDeleteRelation = async (req, res) => {
                 falseArray.push(item);
             }
         });
-
-        console.log('asdfadf++++++++++', trueArray, falseArray)
-
         let uncheckId = falseArray.map(record => new mongoose.Types.ObjectId(record._id))
         let checkId = trueArray.map(record => record._id)
         const existingRecords = await dealerRelationService.getDealerRelations({
             dealerId: new mongoose.Types.ObjectId(req.userId),
             servicerId: { $in: checkId }
         });
-
         // Step 2: Separate existing and non-existing servicer IDs
         const existingServicerIds = existingRecords.map(record => record.servicerId.toString());
-
         const newServicerIds = checkId.filter(id => !existingServicerIds.includes(id));
-
-        console.log(')))))))))))))))))', existingRecords, existingServicerIds, checkId, newServicerIds)
         // Step 3: Delete existing records
         let deleteData = await dealerRelationService.deleteRelations({
             dealerId: new mongoose.Types.ObjectId(req.userId),
             servicerId: { $in: uncheckId }
         });
-        console.log('***************************', deleteData)
-        // return res.json(deleteData)
         // Step 4: Insert new records
         const newRecords = newServicerIds.map(servicerId => ({
             dealerId: req.userId,
             servicerId: servicerId
         }));
+
         if (newRecords.length > 0) {
             let saveData = await dealerRelationService.createRelationsWithServicer(newRecords);
             res.send({
@@ -1396,23 +1263,6 @@ exports.createDeleteRelation = async (req, res) => {
                 message: "success"
             })
         }
-
-
-
-
-
-
-        // for (let i = 0; i < data.servicers.length; i++) {
-        //   let servicer = data.servicers[i]
-        //   let checkRelation = await dealerRelationService.getDealerRelation({ servicerId: servicer[i], dealerId: req.userId })
-        //   if (!checkRelation) {
-        //     console.log('new------------')
-
-        //   } else {
-        //     console.log('delete------------')
-
-        //   }
-        // }
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -1420,6 +1270,7 @@ exports.createDeleteRelation = async (req, res) => {
         })
     }
 };
+
 //customers api
 exports.createCustomer = async (req, res, next) => {
     try {
@@ -1448,23 +1299,14 @@ exports.createCustomer = async (req, res, next) => {
                 })
                 return;
             }
-
             IDs.push(checkReseller._id)
         }
-
         // check customer acccount name 
         let checkAccountName = await customerService.getCustomerByName({
             username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: req.userId
         });
-        // if (checkAccountName) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Customer already exist with this account name"
-        //     })
-        //     return;
-        // };
-
         let checkCustomerEmail = await userService.findOneUser({ email: data.email });
+
         if (checkCustomerEmail) {
             res.send({
                 code: constant.errorCode,
@@ -1478,7 +1320,6 @@ exports.createCustomer = async (req, res, next) => {
             street: data.street,
             city: data.city,
             dealerId: checkDealer._id,
-            //isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
             isAccountCreate: !checkDealer.userAccount ? false : data.status,
             resellerId: checkReseller ? checkReseller._id : null,
             zip: data.zip,
@@ -1500,6 +1341,7 @@ exports.createCustomer = async (req, res, next) => {
                 message: "Some email ids already exist"
             })
         }
+
         const createdCustomer = await customerService.createCustomer(customerObject);
         if (!createdCustomer) {
             //Save Logs create Customer
@@ -1528,7 +1370,7 @@ exports.createCustomer = async (req, res, next) => {
         let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkReseller?._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         notificationEmails.push(resellerPrimary?.email)
-        notificationEmails
+
         let settingData = await userService.getSetting({});
 
         let emailData = {
@@ -1558,7 +1400,8 @@ exports.createCustomer = async (req, res, next) => {
                             link: resetLink,
                             role: "Customer",
                             flag: "created",
-                            title:settingData[0]?.title,
+                            subject: "Set Password",
+                            title: settingData[0]?.title,
                             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                             address: settingData[0]?.address,
@@ -1580,9 +1423,7 @@ exports.createCustomer = async (req, res, next) => {
             flag: 'customer',
             notificationFor: IDs
         };
-
         let createNotification = await userService.createNotification(notificationData);
-
         //Save Logs create Customer
         let logData = {
             userId: req.userId,
@@ -1616,6 +1457,8 @@ exports.createCustomer = async (req, res, next) => {
         })
     }
 };
+
+//Get dealer customer
 exports.getDealerCustomers = async (req, res) => {
     try {
         if (req.role != 'Dealer') {
@@ -1626,11 +1469,8 @@ exports.getDealerCustomers = async (req, res) => {
             return
         }
         let data = req.body
-        console.log(data.resellerName)
         let query = { isDeleted: false, dealerId: req.userId }
-
         if (data.resellerName != "" && data.resellerName != undefined) {
-            console.log("dfsdsddfdfddfsd");
             let getResellers = await resellerService.getResellers({ name: { '$regex': req.body.resellerName, '$options': 'i' } })
             const resellerIds = getResellers.map(obj => obj._id.toString());
             if (resellerIds.length == 0) {
@@ -1638,7 +1478,6 @@ exports.getDealerCustomers = async (req, res) => {
 
             } else {
                 query = { isDeleted: false, dealerId: req.userId, resellerId1: { $in: resellerIds } }
-
             }
         }
         let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
@@ -1651,13 +1490,11 @@ exports.getDealerCustomers = async (req, res) => {
             return;
         };
         const customersId = customers.map(obj => obj._id.toString());
-
         const customersOrderId = customers.map(obj => obj._id);
         const customersResellerId = customers.map(obj => obj.resellerId);
         const queryUser = { accountId: { $in: customersId }, isPrimary: true };
         //Get Customer Resellers
         let resellerData = await resellerService.getResellers({ _id: { $in: customersResellerId } }, {})
-        // res.json(resellerData);
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         let project = {
             productsArray: 1,
@@ -1671,14 +1508,12 @@ exports.getDealerCustomers = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
         }
+
         let orderQuery = { customerId: { $in: customersOrderId }, status: "Active" };
-
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$customerId")
-
         let result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = customers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
             const order = ordersData.find(order => order._id?.toString() === item1.accountId?.toString())
-
             if (matchingItem || order) {
                 return {
                     ...item1, // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1692,16 +1527,12 @@ exports.getDealerCustomers = async (req, res) => {
 
         result_Array = result_Array.map(customer => {
             const resellerMatch = resellerData.find(reseller => reseller._id?.toString() === customer?.customerData?.resellerId?.toString());
-            // if (resellerMatch) {
             return {
                 ...customer, // Use toObject() to convert Mongoose document to plain JavaScript object
                 resellerInfo: resellerMatch ? resellerMatch.toObject() : {},
             };
-            //}
         })
 
-        // res.json(result_Array);
-        // return
         let name = data.firstName ? data.firstName : ""
         let nameArray = name.split(" ");
 
@@ -1738,16 +1569,21 @@ exports.getDealerCustomers = async (req, res) => {
         })
     }
 };
+
+//Get customer in order
 exports.getCustomerInOrder = async (req, res) => {
     try {
         let data = req.body;
         let query;
         if (data.resellerId != "") {
             query = { dealerId: req.userId, resellerId: data.resellerId };
-        } else {
+        }
+        else {
             query = { dealerId: req.userId };
         }
+
         let getCustomers = await customerService.getAllCustomers(query, {});
+
         if (!getCustomers) {
             res.send({
                 code: constant.errorCode,
@@ -1755,13 +1591,11 @@ exports.getCustomerInOrder = async (req, res) => {
             });
             return;
         }
-        console.log(" getCustomers --------------", getCustomers)
+
         const customerIds = getCustomers.map(customer => customer?._id.toString());
         let query1 = { accountId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
-
         let customerUser = await userService.getMembers(query1, projection)
-
         const result_Array = customerUser.map(item1 => {
             const matchingItem = getCustomers.find(item2 => item2._id?.toString() === item1.accountId?.toString());
             if (matchingItem) {
@@ -1786,6 +1620,7 @@ exports.getCustomerInOrder = async (req, res) => {
         });
     }
 };
+
 //Get servicer in orders
 exports.getServicerInOrders = async (req, res) => {
     let data = req.body;
@@ -1805,7 +1640,6 @@ exports.getServicerInOrders = async (req, res) => {
             dealerId: req.userId,
         });
         let ids = getServicersIds.map((item) => item.servicerId);
-
         servicer = await servicerService.getAllServiceProvider(
             { _id: { $in: ids }, status: true },
             {}
@@ -1864,6 +1698,7 @@ exports.getServicerInOrders = async (req, res) => {
         });
         return;
     }
+
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
             (item2) => item2.accountId.toString() === item1?._id.toString());
@@ -1889,7 +1724,8 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
-//dealers api
+
+//Create reseller
 exports.createReseller = async (req, res) => {
     try {
         let data = req.body
@@ -1941,16 +1777,8 @@ exports.createReseller = async (req, res) => {
         }
 
         let teamMembers = data.members
-        // let emailsToCheck = teamMembers.map(member => member.email);
-        // let queryEmails = { email: { $in: emailsToCheck } };
-        // let checkEmails = await customerService.getAllCustomers(queryEmails, {});
-        // if (checkEmails.length > 0) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "Some email ids already exist"
-        //     })
-        // }
         const createdReseler = await resellerService.createReseller(resellerObject);
+
         if (!createdReseler) {
             //Save Logs for create reseller 
             let logData = {
@@ -1973,10 +1801,8 @@ exports.createReseller = async (req, res) => {
         // create members account 
         let saveMembers = await userService.insertManyUser(teamMembers)
 
-
         if (data.isServicer) {
             const CountServicer = await providerService.getServicerCount();
-
             let servicerObject = {
                 name: data.accountName,
                 street: data.street,
@@ -1997,7 +1823,6 @@ exports.createReseller = async (req, res) => {
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
         notificationEmails.push(getPrimary.email)
         let settingData = await userService.getSetting({});
-
         let emailData = {
             darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
             lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
@@ -2023,17 +1848,12 @@ exports.createReseller = async (req, res) => {
                         link: resetLink, darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
                         lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
                         flag: "created",
-                        title:settingData[0]?.title,
+                        subject: "Set Password",
+                        title: settingData[0]?.title,
                         address: settingData[0]?.address, role: "Reseller", servicerName: saveMembers[i].firstName
                     }))
                 }
-
             }
-            // let resetPrimaryCode = randtoken.generate(4, '123456789')
-            // let checkPrimaryEmail1 = await userService.updateSingleUser({ email: data.email, isPrimary: true }, { resetPasswordCode: resetPrimaryCode }, { new: true });
-
-            // let resetLink = `http://15.207.221.207/newPassword/${checkPrimaryEmail1._id}/${resetPrimaryCode}`
-            // const mailing = sgMail.send(emailConstant.servicerApproval(checkPrimaryEmail1.email, { link: resetLink }))
         }
         //Save Logs for create reseller 
         let logData = {
@@ -2072,16 +1892,10 @@ exports.createReseller = async (req, res) => {
         })
     }
 };
+
+//Get reseller order
 exports.getResellerOrders = async (req, res) => {
     try {
-        // if (req.role != 'Dealer') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only dealer allow to do this action!'
-
-        //     })
-        //     return;
-        // }
         let query = { _id: req.params.resellerId };
         let data = req.body
         let projection = { isDeleted: 0 }
@@ -2112,10 +1926,7 @@ exports.getResellerOrders = async (req, res) => {
             orderAmount: 1,
             contract: "$contract"
         };
-
         let orderQuery = { resellerId: new mongoose.Types.ObjectId(req.params.resellerId), status: { $ne: "Archieved" } }
-
-
         let lookupQuery = [
             {
                 $match: orderQuery
@@ -2157,9 +1968,6 @@ exports.getResellerOrders = async (req, res) => {
             },
             { $sort: { unique_key: -1 } }
         ]
-
-
-
         let ordersResult = await orderService.getOrderWithContract(lookupQuery);
         let dealerIdsArray = ordersResult.map((result) => result.dealerId);
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
@@ -2168,8 +1976,6 @@ exports.getResellerOrders = async (req, res) => {
             .map(result => result.resellerId?.toString());
 
         let mergedArray = userDealerIds.concat(userResellerIds);
-
-
         const dealerCreateria = { _id: { $in: dealerIdsArray } };
         //Get Respective Dealers
         let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -2180,7 +1986,6 @@ exports.getResellerOrders = async (req, res) => {
             country: 1,
             zip: 1,
             street: 1
-
         });
         let servicerIdArray = ordersResult.map((result) => result.servicerId);
         const servicerCreteria = {
@@ -2202,19 +2007,15 @@ exports.getResellerOrders = async (req, res) => {
                 street: 1
             }
         );
+
         let customerIdsArray = ordersResult.map((result) => result.customerId);
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
             .map(result => result.customerId?.toString());
         const customerCreteria = { _id: { $in: customerIdsArray } };
-
         const allUserIds = mergedArray.concat(userCustomerIds);
-
-        // console.log("allUserIds==============",allUserIds);
-
         const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
-
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Respective Customer
         let respectiveCustomer = await customerService.getAllCustomers(
@@ -2231,6 +2032,7 @@ exports.getResellerOrders = async (req, res) => {
         //Get all Reseller
         let resellerIdsArray = ordersResult.map((result) => result.resellerId);
         const resellerCreteria = { _id: { $in: resellerIdsArray } };
+
         let respectiveReseller = await resellerService.getResellers(
             resellerCreteria,
             {
@@ -2243,6 +2045,7 @@ exports.getResellerOrders = async (req, res) => {
                 street: 1
             }
         );
+
         const result_Array = ordersResult.map((item1) => {
             const dealerName =
                 item1.dealerId != ""
@@ -2307,16 +2110,6 @@ exports.getResellerOrders = async (req, res) => {
             );
         });
 
-        // const updatedArray = filteredData.map((item) => ({
-        //     ...item,
-        //     servicerName: item.dealerName.isServicer 
-        //         ? item.dealerName
-        //         : item.resellerName.isServicer
-        //             ? item.resellerName
-        //             : item.servicerName
-        //         username:getPrimaryUser.find(user=>user.accountId.toString()===item.dealerName._id.toString())
-        // }));
-
         const updatedArray = filteredData.map(item => {
             let username = null; // Initialize username as null
             if (item.dealerName) {
@@ -2357,9 +2150,6 @@ exports.getResellerOrders = async (req, res) => {
                 statusRegex.test(entry.status)
             );
         });
-
-
-
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -2374,15 +2164,10 @@ exports.getResellerOrders = async (req, res) => {
 
     }
 };
+
+//Get dealer reseller
 exports.getDealerResellers = async (req, res) => {
     try {
-        // if (req.role != 'Dealer') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only dealer allow to do this action!'
-        //     });
-        //     return;
-        // }
         let data = req.body
         let checkDealer = await dealerService.getDealerById(req.userId, {})
         if (!checkDealer) {
@@ -2406,10 +2191,8 @@ exports.getDealerResellers = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id.toString());
         const resellerOrderIds = resellers.map(obj => obj._id);
         const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
-
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Reseller Orders
-
         let project = {
             productsArray: 1,
             dealerId: 1,
@@ -2422,11 +2205,8 @@ exports.getDealerResellers = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
         }
-
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
-
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
-
 
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
@@ -2470,15 +2250,10 @@ exports.getDealerResellers = async (req, res) => {
         })
     }
 };
+
+//Get reseller for order
 exports.getDealerResellersInOrder = async (req, res) => {
     try {
-        // if (req.role != 'Dealer') {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: 'Only dealer allow to do this action!'
-        //     });
-        //     return;
-        // }
         let data = req.body
         let checkDealer = await dealerService.getDealerById(req.userId, {})
         if (!checkDealer) {
@@ -2488,7 +2263,6 @@ exports.getDealerResellersInOrder = async (req, res) => {
             })
             return;
         };
-
         let query = { isDeleted: false, dealerId: req.userId, status: true }
         let projection = { __v: 0 }
         const resellers = await resellerService.getResellers(query, projection);
@@ -2502,10 +2276,8 @@ exports.getDealerResellersInOrder = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id.toString());
         const resellerOrderIds = resellers.map(obj => obj._id);
         const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
-
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
         //Get Reseller Orders
-
         let project = {
             productsArray: 1,
             dealerId: 1,
@@ -2518,12 +2290,8 @@ exports.getDealerResellersInOrder = async (req, res) => {
             venderOrder: 1,
             orderAmount: 1,
         }
-
         let orderQuery = { resellerId: { $in: resellerOrderIds }, status: "Active" };
-
         let ordersData = await orderService.getAllOrderInCustomers(orderQuery, project, "$resellerId")
-
-
         const result_Array = getPrimaryUser.map(item1 => {
             const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
             const orders = ordersData.find(order => order._id.toString() === item1.accountId.toString())
@@ -2543,7 +2311,6 @@ exports.getDealerResellersInOrder = async (req, res) => {
         const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
         const dealerRegex = new RegExp(data.dealerName ? data.dealerName.replace(/\s+/g, ' ').trim() : '', 'i')
         const statusRegex = new RegExp(data.status)
-
         const filteredData = result_Array.filter(entry => {
             return (
                 nameRegex.test(entry.resellerData.name) &&
@@ -2566,6 +2333,7 @@ exports.getDealerResellersInOrder = async (req, res) => {
         })
     }
 };
+
 //order api
 exports.getDealerOrders = async (req, res) => {
     try {
@@ -2578,7 +2346,6 @@ exports.getDealerOrders = async (req, res) => {
                 });
                 return;
             }
-
             let project = {
                 productsArray: 1,
                 dealerId: 1,
@@ -2597,9 +2364,7 @@ exports.getDealerOrders = async (req, res) => {
                 orderAmount: 1,
                 contract: "$contract"
             };
-
             let query = { status: { $ne: "Archieved" }, dealerId: new mongoose.Types.ObjectId(req.userId) };
-
             let lookupQuery = [
                 {
                     $match: query
@@ -2616,12 +2381,9 @@ exports.getDealerOrders = async (req, res) => {
 
                 { $sort: { unique_key: -1 } }
             ]
-
             let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
             let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
             let limitData = Number(pageLimit)
-
-
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, 100000);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId?.toString());
@@ -2650,6 +2412,7 @@ exports.getDealerOrders = async (req, res) => {
                     { dealerId: { $in: servicerIdArray } },
                 ],
             };
+
             //Get Respective Servicer
             let respectiveServicer = await servicerService.getAllServiceProvider(
                 servicerCreteria,
@@ -2659,9 +2422,12 @@ exports.getDealerOrders = async (req, res) => {
                     state: 1,
                     country: 1,
                     zip: 1,
-                    street: 1
+                    street: 1,
+                    dealerId: 1,
+                    resellerId: 1
                 }
             );
+
             let customerIdsArray = ordersResult.map((result) => result?.customerId);
 
             let userCustomerIds = ordersResult
@@ -2670,10 +2436,7 @@ exports.getDealerOrders = async (req, res) => {
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
-
-
             const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
-
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
@@ -2714,7 +2477,7 @@ exports.getDealerOrders = async (req, res) => {
                         ? respectiveServicer.find(
                             (item2) =>
                                 item2._id.toString() === item1.servicerId?.toString() ||
-                                item2.resellerId === item1.servicerId
+                                item2.resellerId?.toString() === item1?.servicerId?.toString() || item2.dealerId?.toString() === item1?.servicerId?.toString()
                         )
                         : null;
                 const customerName =
@@ -2757,6 +2520,8 @@ exports.getDealerOrders = async (req, res) => {
             );
             const status = new RegExp(data.status ? data.status.trim() : "", "i");
 
+
+
             let filteredData = result_Array.filter((entry) => {
                 return (
                     unique_keyRegex.test(entry.unique_key) &&
@@ -2777,9 +2542,7 @@ exports.getDealerOrders = async (req, res) => {
                 item.flag = false
                 const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
                 const fileName = isEmptyOrderFile.includes(true) ? false : true
-                // console.log("isEmptyStartDate===================",isEmptyStartDate)
-                // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
-                //console.log(hasNullCoverageStartDate)
+
                 if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
                     item.flag = true
                 }
@@ -2797,14 +2560,12 @@ exports.getDealerOrders = async (req, res) => {
                 }
                 return {
                     ...item,
-                    servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
+                    servicerName: (item.dealerName.isServicer && item.servicerId?.toString() == item.dealerName._id?.toString()) ? item.dealerName : (item.resellerName.isServicer && item.servicerId?.toString() == item.resellerName._id?.toString()) ? item.resellerName : item.servicerName,
                     username: username, // Set username based on the conditional checks
                     resellerUsername: resellerUsername ? resellerUsername : {},
                     customerUserData: customerUserData ? customerUserData : {}
                 };
             });
-
-
             let orderIdSearch = data.orderId ? data.orderId : ''
             const stringWithoutHyphen = orderIdSearch.replace(/-/g, "")
             const orderIdRegex = new RegExp(stringWithoutHyphen ? stringWithoutHyphen.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -2814,7 +2575,6 @@ exports.getDealerOrders = async (req, res) => {
             const customerNameRegex = new RegExp(data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const resellerNameRegex = new RegExp(data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', 'i')
             const statusRegex = new RegExp(data.status ? data.status : '', 'i')
-
             const filteredData1 = updatedArray.filter(entry => {
                 return (
                     venderRegex.test(entry.venderOrder) &&
@@ -2826,9 +2586,6 @@ exports.getDealerOrders = async (req, res) => {
                     statusRegex.test(entry.status)
                 );
             });
-
-
-
             res.send({
                 code: constant.successCode,
                 message: "Success",
@@ -2843,6 +2600,8 @@ exports.getDealerOrders = async (req, res) => {
         })
     }
 };
+
+//Get dealer archeived order
 exports.getDealerArchievedOrders = async (req, res) => {
     try {
         {
@@ -2875,8 +2634,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
             let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
             let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
             let limitData = Number(pageLimit)
-
-
             let ordersResult = await orderService.getOrderWithContract(lookupQuery, skipLimit, limitData);
             let dealerIdsArray = ordersResult.map((result) => result.dealerId);
             let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
@@ -2885,8 +2642,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 .map(result => result.resellerId.toString());
 
             let mergedArray = userDealerIds.concat(userResellerIds);
-
-
             const dealerCreateria = { _id: { $in: dealerIdsArray } };
             //Get Respective Dealers
             let respectiveDealers = await dealerService.getAllDealers(dealerCreateria, {
@@ -2897,7 +2652,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 country: 1,
                 zip: 1,
                 street: 1
-
             });
             let servicerIdArray = ordersResult.map((result) => result.servicerId);
             const servicerCreteria = {
@@ -2927,10 +2681,7 @@ exports.getDealerArchievedOrders = async (req, res) => {
             const customerCreteria = { _id: { $in: customerIdsArray } };
 
             const allUserIds = mergedArray.concat(userCustomerIds);
-
-
             const queryUser = { accountId: { $in: allUserIds }, isPrimary: true };
-
             let getPrimaryUser = await userService.findUserforCustomer(queryUser)
             //Get Respective Customer
             let respectiveCustomer = await customerService.getAllCustomers(
@@ -2959,8 +2710,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
                     street: 1
                 }
             );
-
-
             const result_Array = ordersResult.map((item1) => {
                 const dealerName =
                     item1.dealerId != ""
@@ -3007,8 +2756,6 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 }
             });
 
-
-
             const unique_keyRegex = new RegExp(
                 data.unique_key ? data.unique_key.trim() : "",
                 "i"
@@ -3039,24 +2786,26 @@ exports.getDealerArchievedOrders = async (req, res) => {
                 item.flag = false
                 const coverageStartDate = isEmptyStartDate.includes(true) ? false : true
                 const fileName = isEmptyOrderFile.includes(true) ? false : true
-                // console.log("isEmptyStartDate===================",isEmptyStartDate)
-                // console.log("isEmptyOrderFile=====================",isEmptyOrderFile)
-                //console.log(hasNullCoverageStartDate)
                 if (item.customerId != null && coverageStartDate && fileName && item.paymentStatus != 'Paid') {
                     item.flag = true
                 }
+
                 let username = null; // Initialize username as null
                 let resellerUsername = null; // Initialize username as null
                 let customerUserData = null; // Initialize username as null
+
                 if (item.dealerName._id) {
                     username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
                 }
+
                 if (item.resellerName._id) {
                     resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
                 }
+
                 if (item.customerName._id) {
                     customerUserData = item.customerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.customerName._id.toString()) : {};
                 }
+
                 return {
                     ...item,
                     servicerName: (item.dealerName.isServicer && item.servicerId != null) ? item.dealerName : (item.resellerName.isServicer && item.servicerId != null) ? item.resellerName : item.servicerName,
@@ -3102,6 +2851,8 @@ exports.getDealerArchievedOrders = async (req, res) => {
         })
     }
 };
+
+//Get dealer contracts
 exports.getAllContracts = async (req, res) => {
     try {
         let data = req.body
@@ -3153,6 +2904,10 @@ exports.getAllContracts = async (req, res) => {
         if (servicerIds.length > 0) {
             orderAndCondition.push({ servicerId: { $in: servicerIds } })
         }
+        if (customerIds.length > 0) {
+            orderAndCondition.push({ customerId: { $in: customerIds } })
+
+        }
         if (resellerIds.length > 0) {
             orderAndCondition.push({ resellerId: { $in: resellerIds } })
         }
@@ -3173,10 +2928,9 @@ exports.getAllContracts = async (req, res) => {
         let contractFilterWithEligibilty = []
         if (data.eligibilty != '') {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3187,10 +2941,9 @@ exports.getAllContracts = async (req, res) => {
             ]
         } else {
             contractFilterWithEligibilty = [
-                // { unique_key: { $regex: `^${data.contractId ? data.contractId : ''}` } },
                 { unique_key: { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { productName: { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                // { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
+                { pName: { '$regex': data.pName ? data.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { serial: { '$regex': data.serial ? data.serial.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { manufacture: { '$regex': data.manufacture ? data.manufacture.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                 { model: { '$regex': data.model ? data.model.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -3204,7 +2957,7 @@ exports.getAllContracts = async (req, res) => {
             contractFilterWithEligibilty.push({ orderId: { $in: orderIds } })
         }
         let mainQuery = []
-        if (data.contractId === "" && data.productName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
+        if (data.contractId === "" && data.productName === "" && data.pName === "" && data.serial === "" && data.manufacture === "" && data.model === "" && data.status === "" && data.eligibilty === "" && data.venderOrder === "" && data.orderId === "" && userSearchCheck == 0) {
             mainQuery = [
                 {
                     $facet: {
@@ -3290,18 +3043,16 @@ exports.getAllContracts = async (req, res) => {
             })
         }
 
-
-        // console.log("sssssss", contractFilterWithPaging)
-
         let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
         let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
         let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
         for (let e = 0; e < result1.length; e++) {
+
             result1[e].reason = " "
             if (result1[e].status != "Active") {
                 result1[e].reason = "Contract is not active"
             }
-            // if (result1[e].minDate < new Date()) {
+
             if (new Date(result1[e].minDate) > new Date()) {
 
                 const options = {
@@ -3312,6 +3063,7 @@ exports.getAllContracts = async (req, res) => {
                 const formattedDate = new Date(result1[e].minDate).toLocaleDateString('en-US', options)
                 result1[e].reason = "Contract will be eligible on " + " " + formattedDate
             }
+
             let claimQuery = [
                 {
                     $match: { contractId: new mongoose.Types.ObjectId(result1[e]._id) }
@@ -3333,7 +3085,7 @@ exports.getAllContracts = async (req, res) => {
                 }
             ]
 
-            let checkClaims = await claimService.getAllClaims(claimQuery)
+            let checkClaims = await claimService.getClaimWithAggregate(claimQuery)
             if (checkClaims[0]) {
                 if (checkClaims[0].openFileClaimsCount > 0) {
                     result1[e].reason = "Contract has open claim"
@@ -3358,6 +3110,8 @@ exports.getAllContracts = async (req, res) => {
         })
     }
 };
+
+//Get category and price books
 exports.getCategoryAndPriceBooks = async (req, res) => {
     try {
         let data = req.body;
@@ -3383,36 +3137,22 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         }
         // price book ids array from dealer price book
         let dealerPriceIds = getDealerPriceBook.map((item) => item.priceBook);
-
         let query;
-        // if (checkDealer.coverageType == "Breakdown & Accidental") {
-        //     if (data.term != "" && data.pName == "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, term: data.term };
-        //     }
-        //     else if (data.pName != "" && data.term == "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName };
 
-        //     } else if (data.term != "" && data.pName != "") {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, term: data.term };
-        //     } else {
-        //         query = { _id: { $in: dealerPriceIds }, status: true, };
-        //     }
-        // } else {
         if (data.term != "" && data.pName == "") {
             query = { _id: { $in: dealerPriceIds }, status: true, coverageType: data.coverageType, term: data.term };
         }
+
         else if (data.pName != "" && data.term == "") {
             query = { _id: { $in: dealerPriceIds }, status: true, coverageType: data.coverageType, pName: data.pName };
 
-        } else if (data.term != "" && data.pName != "") {
+        }
+
+        else if (data.term != "" && data.pName != "") {
             query = { _id: { $in: dealerPriceIds }, status: true, pName: data.pName, coverageType: data.coverageType, term: data.term };
         } else {
             query = { _id: { $in: dealerPriceIds }, coverageType: data.coverageType, status: true, };
         }
-
-        // }
-
-        console.log(query)
         let getPriceBooks = await priceBookService.getAllPriceIds(query, {});
 
         if (data.priceBookId || data.priceBookId != "") {
@@ -3436,8 +3176,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 retailPrice,
             };
         });
-
-
         //unique categories IDs from price books
         let uniqueCategory = {};
         let uniqueCategories = getPriceBooks.filter((item) => {
@@ -3447,15 +3185,12 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
             }
             return false;
         });
-
         uniqueCategories = uniqueCategories.map((item) => item.category);
-
         // get categories related to dealers
         let getCategories = await priceBookService.getAllPriceCat(
             { _id: { $in: uniqueCategories } },
             {}
         );
-
         // gettign selected category if user select the price book first
         let filteredPiceBook;
         let checkSelectedCategory;
@@ -3496,7 +3231,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
                 _id: filteredPiceBook,
             });
 
-            // dealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: req.params.dealerId, priceBook: data.priceBookId })
         }
 
         const uniqueTerms = [...new Set(mergedPriceBooks.map(item => item.term))].map(term => ({
@@ -3514,8 +3248,6 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         } else {
             priceBookDetail = {}
         }
-
-
         let result = {
             priceCategories: getCategories,
             priceBooks: data.priceCatId == "" ? [] : mergedPriceBooks,
@@ -3538,26 +3270,16 @@ exports.getCategoryAndPriceBooks = async (req, res) => {
         });
     }
 };
+
+//create order
 exports.createOrder = async (req, res) => {
     try {
         // upload(req, res, async (err) => {
         let data = req.body;
         data.dealerPurchaseOrder = data.dealerPurchaseOrder.trim().replace(/\s+/g, ' ');
-        //console.log("bodyData=================",data)
-        // for (let i = 0; i < data.productsArray.length; i++) {
-        // if (data.productsArray[i].QuantityPricing) {
-
-        //         let jsonArray = JSON.parse(data.productsArray[i].QuantityPricing[0]);
-        //        // let jsonFile = JSON.parse(data.productsArray[i].orderFile);
-        //         data.productsArray[i].QuantityPricing = jsonArray;
-        //        // data.productsArray[i].file = jsonFile;
-        //     }
-        // }
-
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
-
         var checkDealer = await dealerService.getDealerById(
             req.userId,
             projection
@@ -3570,6 +3292,7 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
+
         if (!checkDealer.accountStatus) {
             res.send({
                 code: constant.errorCode,
@@ -3577,6 +3300,7 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
+
         if (data.servicerId) {
             let query = {
                 $or: [
@@ -3595,6 +3319,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
+
         if (data.customerId) {
             let query = { _id: data.customerId };
             let checkCustomer = await customerService.getCustomerById(query);
@@ -3606,6 +3331,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
+
         if (data.priceBookId) {
             let query = { _id: data.priceBookId };
             let checkPriceBook = await priceBookService.findByName1(query);
@@ -3617,6 +3343,7 @@ exports.createOrder = async (req, res) => {
                 return;
             }
         }
+
         data.createdBy = req.userId;
         data.dealerId = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
@@ -3626,11 +3353,11 @@ exports.createOrder = async (req, res) => {
         data.unique_key_number = count[0] ? count[0].unique_key_number + 1 : 100000
         data.unique_key_search = "GC" + "2024" + data.unique_key_number
         data.unique_key = "GC-" + "2024-" + data.unique_key_number
-
         let checkVenderOrder = await orderService.getOrder(
             { venderOrder: data.dealerPurchaseOrder, dealerId: req.userId },
             {}
         );
+
         if (checkVenderOrder) {
             res.send({
                 code: constant.errorCode,
@@ -3638,6 +3365,7 @@ exports.createOrder = async (req, res) => {
             });
             return;
         }
+
         data.status = "Pending";
         if (data.billTo == "Dealer") {
             let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
@@ -3652,6 +3380,7 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
+
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
             let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
@@ -3666,6 +3395,7 @@ exports.createOrder = async (req, res) => {
                 }
             }
         }
+
         if (data.billTo == "Custom") {
             data.billDetail = {
                 billTo: "Custom",
@@ -3687,7 +3417,6 @@ exports.createOrder = async (req, res) => {
             serviceCoverage = "Parts & Labor"
         }
         data.serviceCoverageType = serviceCoverage != '' ? serviceCoverage : req.body.serviceCoverageType
-        //  data.serviceCoverageType = serviceCoverage
         let savedResponse = await orderService.addOrder(data);
         // Update Term and condtion while create order
         let uploadTermAndCondtion = await orderService.updateOrder(
@@ -3781,6 +3510,7 @@ exports.createOrder = async (req, res) => {
     }
 };
 
+//Edit order detail
 exports.editOrderDetail = async (req, res) => {
     try {
         let data = req.body;
@@ -3790,8 +3520,6 @@ exports.editOrderDetail = async (req, res) => {
             userId: req.userId,
             response: {}
         };
-
-
         let checkId = await orderService.getOrder({ _id: req.params.orderId });
         if (!checkId) {
             res.send({
@@ -3816,6 +3544,7 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+
         let checkDealer = await dealerService.getDealerById(
             req.userId
         );
@@ -3826,6 +3555,7 @@ exports.editOrderDetail = async (req, res) => {
             });
             return;
         }
+
         if (data.servicerId != "") {
             if (data.servicerId != checkId.servicerId) {
                 let query = {
@@ -3905,17 +3635,6 @@ exports.editOrderDetail = async (req, res) => {
             const finalOutput = [...filteredProducts2, ...productsWithOrderFiles];
             data.productsArray = finalOutput;
         }
-        // if(checkId.venderOrder != data.dealerPurchaseOrder){
-        //     let checkVenderOrder = await orderService.getOrder({ venderOrder: data.dealerPurchaseOrder, dealerId: data.dealerId }, {})
-        // if (checkVenderOrder) {
-        //     res.send({
-        //         code: constant.errorCode,
-        //         message: "dealer purchase order is already exist"
-        //     })
-        //     return;
-        // }
-        // }
-
         if (checkId.paymentStatus != "Unpaid") {
             if (Number(data.orderAmount) > Number(checkId.orderAmount)) {
                 data.dueAmount = Number(data.orderAmount) - Number(checkId.paidAmount)
@@ -4007,7 +3726,6 @@ exports.editOrderDetail = async (req, res) => {
 
         let checkOrder = await orderService.getOrder(
             { _id: req.params.orderId },
-            // { isDeleted: 0 }
         );
         if (!checkOrder) {
             res.send({
@@ -4025,7 +3743,6 @@ exports.editOrderDetail = async (req, res) => {
                 (item) =>
                     item.orderFile.fileName === ""
             )
-        // .some(Boolean);
         const obj = {
             customerId: checkOrder.customerId ? true : false,
             paymentStatus: checkOrder.paymentStatus == "Paid" ? true : false,
@@ -4090,6 +3807,25 @@ exports.editOrderDetail = async (req, res) => {
                     query,
                     projection
                 );
+                let pricebookDetailObject = {}
+                let dealerPriceBookObject = {}
+
+                pricebookDetailObject.frontingFee = product?.priceBookDetails.frontingFee
+                pricebookDetailObject.reserveFutureFee = product?.priceBookDetails.reserveFutureFee
+                pricebookDetailObject.reinsuranceFee = product?.priceBookDetails.reinsuranceFee
+                pricebookDetailObject._id = product?.priceBookDetails._id
+                pricebookDetailObject.name = product?.priceBookDetails.name
+                pricebookDetailObject.categoryId = product?.priceBookDetails.category
+                pricebookDetailObject.term = product?.priceBookDetails.term
+                pricebookDetailObject.adminFee = product?.priceBookDetails.adminFee
+                pricebookDetailObject.price = product.price
+                pricebookDetailObject.noOfProducts = product.checkNumberProducts
+
+                pricebookDetailObject.retailPrice = product.unitPrice
+                pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
+                pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
+                pricebookDetail.push(pricebookDetailObject)
+                dealerBookDetail.push(dealerPriceBookObject)
                 const wb = XLSX.readFile(pathFile);
                 const sheets = wb.SheetNames;
                 let pricebookDetailObject = {}
@@ -4124,7 +3860,6 @@ exports.editOrderDetail = async (req, res) => {
                         purchaseDate: item[keys[7]],
                     };
                 });
-                // let savedDataOrder = savedResponse.toObject()
                 totalDataComing.forEach((data, index) => {
                     let unique_key_number1 = increamentNumber
                     let unique_key_search1 = "OC" + "2024" + unique_key_number1
@@ -4153,135 +3888,37 @@ exports.editOrderDetail = async (req, res) => {
                     let labourWarrantyDate = new Date(l_date.setMonth(newLabourMonth))
                     let labourWarrantyDate1 = new Date(l_date1.setMonth(newLabourMonth))
                     //---------------------------------------- till here ----------------------------------------------
-                    //let labourWarrantyDate = new Date(new Date(data.purchaseDate).setDate(new Date(data.purchaseDate).getMonth() + labourWarrantyMonth))
                     function findMinDate(d1, d2, d3) {
-                        // return new Date(Math.min(d1.getTime(), d2.getTime(), d3.getTime()));
                         return new Date(Math.min(new Date(d1).getTime(), new Date(d2).getTime(), new Date(d3).getTime()));
 
                     }
-
                     // Find the minimum date
                     let minDate;
-                    // let minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
 
                     if (req.body.coverageType == "Breakdown") {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
-
                             minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-
                         } else if (req.body.serviceCoverageType == "Parts") {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
-
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
-
                             minDate = findMinDate(new Date(dateCheck.setMonth(100000)), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     } else if (req.body.coverageType == "Accidental") {
                         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        // if (req.body.serviceCoverageType == "Labour") {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                        //     }
-
-                        // } else if (req.body.serviceCoverageType == "Parts") {
-                        //     if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                        //     }
-
-                        // } else {
-                        //     if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                        //     } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                        //     } else {
-                        //         minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                        //     }
-                        // }
                     } else {
                         if (req.body.serviceCoverageType == "Labour" || req.body.serviceCoverageType == "Labor") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
 
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck).setHours(0, 0, 0, 0), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-                            // else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-                            // }
-
                         } else if (req.body.serviceCoverageType == "Parts") {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
 
-                            // if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-                            // }
-
                         } else {
                             minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-
-                            // if (new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(partsWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) > new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate));
-
-                            // } else if (new Date(partsWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0) && new Date(labourWarrantyDate).setHours(0, 0, 0, 0) < new Date().setHours(0, 0, 0, 0)) {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate.setMonth(100000)), new Date(labourWarrantyDate.setMonth(100000)));
-
-                            // } else {
-                            //     minDate = findMinDate(new Date(dateCheck), new Date(partsWarrantyDate), new Date(labourWarrantyDate));
-                            // }
                         }
                     }
-                    // let eligibilty = new Date(dateCheck) < new Date() ? true : false
                     let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-                    // let eligibilty = claimStatus == "Active" ? new Date(minDate) < new Date() ? true : false : false
-
-
-
-
-                    // let eligibilty = claimStatus == "Active" ? true : false
+            
                     let contractObject = {
                         orderId: savedResponse._id,
                         orderProductId: orderProductId,
@@ -4290,7 +3927,6 @@ exports.editOrderDetail = async (req, res) => {
                         minDate: minDate,
                         manufacture: data.brand,
                         model: data.model,
-                        // partsWarranty: data.partsWarranty1,
                         partsWarranty: partsWarrantyDate1,
                         labourWarranty: labourWarrantyDate1,
                         serviceCoverageType: serviceCoverage,
@@ -4312,7 +3948,6 @@ exports.editOrderDetail = async (req, res) => {
                     };
                     increamentNumber++;
                     contractArray.push(contractObject);
-                    //let saveData = contractService.createContract(contractObject)
                 });
                 let createContract = await contractService.createBulkContracts(contractArray);
                 if (!createContract[0]) {
@@ -4403,6 +4038,7 @@ exports.editOrderDetail = async (req, res) => {
                     if (checkDealer?.termCondition) {
                         const tcResponse = await generateTC(savedResponse);
                     }
+
                     res.send({
                         code: constant.successCode,
                         message: "Success",
@@ -4421,21 +4057,6 @@ exports.editOrderDetail = async (req, res) => {
                 message: "Success",
             });
         }
-
-
-        // if (data.priceBookId!=checkId.) {
-        //     let query = { _id: data.priceBookId }
-        //     let checkPriceBook = await priceBookService.findByName1(query)
-        //     if (!checkPriceBook) {
-        //         res.send({
-        //             code: constant.errorCode,
-        //             message: "PriceBook not found"
-        //         })
-        //         return;
-        //     }
-        // }
-
-        // let data = req.body
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -4443,6 +4064,8 @@ exports.editOrderDetail = async (req, res) => {
         });
     }
 };
+
+//Generate T and C
 async function generateTC(orderData) {
     try {
         let response;
@@ -4489,7 +4112,6 @@ async function generateTC(orderData) {
             }
             else {
                 let findContract = contractArray.find(contract => contract.orderProductId.toString() === checkOrder?.productsArray[i]._id.toString())
-
                 let obj = {
                     productName: findContract.productName,
                     noOfProducts: checkOrder?.productsArray[i].noOfProducts
@@ -4498,8 +4120,6 @@ async function generateTC(orderData) {
             }
 
         }
-        // res.json(productCoveredArray);
-        // return;
         const tableRows = productCoveredArray.map(product => `
         <p style="font-size:13px;">${product.productName} : ${product.noOfProducts}</p>
 
@@ -4514,7 +4134,6 @@ async function generateTC(orderData) {
         }, { isDeleted: false })
 
         const servicerUser = await userService.getUserById1({ metaId: checkOrder.servicerId, isPrimary: true }, { isDeleted: false })
-        //res.json(checkDealer);return
         const options = {
             format: 'A4',
             orientation: 'portrait',
@@ -4525,10 +4144,8 @@ async function generateTC(orderData) {
                 },
             }
         }
-        // let mergeFileName = Date.now() + "_" + checkOrder.unique_key + '.pdf'
         let mergeFileName = checkOrder.unique_key + '.pdf'
         const orderFile = 'pdfs/' + mergeFileName;
-        //   var html = fs.readFileSync('../template/template.html', 'utf8');
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -4612,8 +4229,6 @@ async function generateTC(orderData) {
                 await fs.writeFile(outputPath, mergedPdfBytes);
             }
 
-            //  const termConditionFile = checkDealer.termCondition.fileName ? checkDealer.termCondition.fileName : checkDealer.termCondition.filename
-
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
             // Usage
             const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
@@ -4642,21 +4257,6 @@ async function generateTC(orderData) {
                             subject: 'Term and Condition',
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
-                        // const send = await sgMail.send({
-                        //     to: customerUser.email,
-                        //     from: process.env.from_email,
-                        //     subject: 'Term and Condtion',
-                        //     text: "sssssssssssssssss",
-                        //     attachments: [
-                        //         {
-                        //             content: attachment,
-                        //             filename: "Get-Cover term and condition",
-                        //             type: 'application/pdf',
-                        //             disposition: 'attachment',
-                        //             contentId: 'mytext'
-                        //         },
-                        //     ],
-                        // });
 
                     } catch (error) {
                         console.error('Error sending email:', error);
@@ -4668,8 +4268,6 @@ async function generateTC(orderData) {
                 .catch(err => {
                     console.error("Error reading the file:", err);
                 });
-
-
         })
         return 1
 
@@ -4681,6 +4279,8 @@ async function generateTC(orderData) {
         }
     }
 }
+
+//Get dashboard data
 exports.getDashboardData = async (req, res) => {
     try {
         let data = req.body;
@@ -4734,7 +4334,6 @@ exports.getDashboardData = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
@@ -4751,7 +4350,7 @@ exports.getDashboardData = async (req, res) => {
 
             },
         ]
-        let valueClaim = await claimService.valueCompletedClaims(lookupQuery);
+        let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
 
         const rejectedQuery = { claimFile: { $ne: "Rejected" } }
         //Get number of claims
@@ -4786,17 +4385,18 @@ exports.getDashboardData = async (req, res) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
                     ]
                 },
             },
         ]
-        let numberOfClaims = await claimService.getAllClaims(numberOfCompleletedClaims);
+
+        let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
         const claimData = {
             numberOfClaims: numberOfClaims.length,
             valueClaim: valueClaim.length > 0 ? valueClaim[0]?.totalAmount : 0
         }
+
         if (!checkOrders_[0] && numberOfClaims.length == 0 && valueClaim.length == 0) {
             res.send({
                 code: constant.errorCode,
@@ -4809,14 +4409,10 @@ exports.getDashboardData = async (req, res) => {
                         "totalOrder": 0
                     }
                 }
-                // result: {
-                //     "_id": "",
-                //     "totalAmount": 0,
-                //     "totalOrder": 0
-                // }
             })
             return;
         }
+
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -4832,6 +4428,8 @@ exports.getDashboardData = async (req, res) => {
         })
     }
 };
+
+//Add claim 
 exports.addClaim = async (req, res, next) => {
     try {
         if (req.role != 'Dealer') {
@@ -4843,7 +4441,6 @@ exports.addClaim = async (req, res, next) => {
         }
         let data = req.body;
         let checkContract = await contractService.getContractById({ _id: data.contractId })
-
         if (!checkContract) {
             res.send({
                 code: constant.errorCode,
@@ -4851,6 +4448,7 @@ exports.addClaim = async (req, res, next) => {
             })
             return;
         }
+
         if (data.servicerId) {
             let checkServicer = await servicerService.getServiceProviderById({
                 $or: [
@@ -4868,6 +4466,7 @@ exports.addClaim = async (req, res, next) => {
                 return;
             }
         }
+
         if (new Date(checkContract.coverageStartDate) > new Date(data.lossDate)) {
             res.send({
                 code: constant.errorCode,
@@ -4875,6 +4474,7 @@ exports.addClaim = async (req, res, next) => {
             });
             return;
         }
+
         if (checkContract.status != 'Active') {
             res.send({
                 code: constant.errorCode,
@@ -4890,8 +4490,14 @@ exports.addClaim = async (req, res, next) => {
             });
             return
         }
+
         const query = { contractId: new mongoose.Types.ObjectId(data.contractId) }
-        let claimTotal = await claimService.checkTotalAmount(query);
+        let claimTotalQuery = [
+            { $match: query },
+            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+        ]
+        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
         if (checkContract.productValue < claimTotal[0]?.amount) {
             res.send({
                 code: consta.errorCode,
@@ -4931,6 +4537,8 @@ exports.addClaim = async (req, res, next) => {
         })
     }
 };
+
+//Get all claims
 exports.getAllClaims = async (req, res, next) => {
     try {
         if (req.role != 'Dealer') {
@@ -4942,406 +4550,10 @@ exports.getAllClaims = async (req, res, next) => {
         }
         let data = req.body
         let query = { isDeleted: false };
-        console.log(req.userId);
         let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
         let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
         let limitData = Number(pageLimit)
         let newQuery = [];
-        // if (data.orderId) {
-        //   newQuery.push({
-        //     $lookup: {
-        //       from: "orders",
-        //       localField: "contracts.orderId",
-        //       foreignField: "_id",
-        //       as: "contracts.orders",
-        //       pipeline: [
-        //         // {
-        //         //   $match:
-        //         //   {
-        //         //     $and: [
-        //         //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //         //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //         //       { isDeleted: false },
-        //         //     ]
-        //         //   },
-        //         // },
-
-        //         // {
-        //         //   $lookup: {
-        //         //     from: "dealers",
-        //         //     localField: "dealerId",
-        //         //     foreignField: "_id",
-        //         //     as: "dealers",
-        //         //     pipeline: [
-        //         //       // {
-        //         //       //   $match:
-        //         //       //   {
-        //         //       //     $and: [
-        //         //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //         //       //       { isDeleted: false },
-        //         //       //     ]
-        //         //       //   },
-        //         //       // },
-        //         //       {
-        //         //         $lookup: {
-        //         //           from: "servicer_dealer_relations",
-        //         //           localField: "_id",
-        //         //           foreignField: "dealerId",
-        //         //           as: "dealerServicer",
-        //         //         }
-        //         //       },
-        //         //     ]
-        //         //   }
-        //         // },
-        //         // {
-        //         //   $unwind: "$dealers"
-        //         // },
-        //         // {
-        //         //   $lookup: {
-        //         //     from: "resellers",
-        //         //     localField: "resellerId",
-        //         //     foreignField: "_id",
-        //         //     as: "resellers",
-        //         //   }
-        //         // },
-        //         // {
-        //         //   $lookup: {
-        //         //     from: "serviceproviders",
-        //         //     localField: "servicerId",
-        //         //     foreignField: "_id",
-        //         //     as: "servicers",
-        //         //   }
-        //         // },
-
-        //       ]
-        //     },
-
-        //   },
-        //     {
-        //       $unwind: "$contracts.orders"
-        //     },
-        //     {
-        //       $match:
-        //       {
-        //         $and: [
-        //           // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //           { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-        //           { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //           { "contracts.orders.isDeleted": false },
-        //         ]
-        //       },
-        //     })
-        // }
-        // if (data.dealerName) {
-        //   if (data.orderId) {
-        //     newQuery.push(
-        //       {
-        //         $lookup: {
-        //           from: "dealers",
-        //           localField: "contracts.orders.dealerId",
-        //           foreignField: "_id",
-        //           as: "contracts.orders.dealers",
-        //           pipeline: [
-        //             // {
-        //             //   $match:
-        //             //   {
-        //             //     $and: [
-        //             //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //             //       { isDeleted: false },
-        //             //     ]
-        //             //   },
-        //             // },
-        //             // {
-        //             //   $lookup: {
-        //             //     from: "servicer_dealer_relations",
-        //             //     localField: "_id",
-        //             //     foreignField: "dealerId",
-        //             //     as: "dealerServicer",
-        //             //   }
-        //             // },
-        //           ]
-        //         }
-        //       },
-        //       {
-        //         $unwind: "$contracts.orders.dealers"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
-        //           // "contracts.orders.dealers.isDeleted": false,
-        //         }
-
-        //       },
-        //     );
-        //   }
-        //   else {
-        //     newQuery.push(
-        //       {
-        //         $lookup: {
-        //           from: "orders",
-        //           localField: "contracts.orderId",
-        //           foreignField: "_id",
-        //           as: "contracts.orders",
-        //           pipeline: [
-        //             // {
-        //             //   $match:
-        //             //   {
-        //             //     $and: [
-        //             //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //             //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //             //       { isDeleted: false },
-        //             //     ]
-        //             //   },
-        //             // },
-
-        //             // {
-        //             //   $lookup: {
-        //             //     from: "dealers",
-        //             //     localField: "dealerId",
-        //             //     foreignField: "_id",
-        //             //     as: "dealers",
-        //             //     pipeline: [
-        //             //       // {
-        //             //       //   $match:
-        //             //       //   {
-        //             //       //     $and: [
-        //             //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //             //       //       { isDeleted: false },
-        //             //       //     ]
-        //             //       //   },
-        //             //       // },
-        //             //       {
-        //             //         $lookup: {
-        //             //           from: "servicer_dealer_relations",
-        //             //           localField: "_id",
-        //             //           foreignField: "dealerId",
-        //             //           as: "dealerServicer",
-        //             //         }
-        //             //       },
-        //             //     ]
-        //             //   }
-        //             // },
-        //             // {
-        //             //   $unwind: "$dealers"
-        //             // },
-        //             // {
-        //             //   $lookup: {
-        //             //     from: "resellers",
-        //             //     localField: "resellerId",
-        //             //     foreignField: "_id",
-        //             //     as: "resellers",
-        //             //   }
-        //             // },
-        //             // {
-        //             //   $lookup: {
-        //             //     from: "serviceproviders",
-        //             //     localField: "servicerId",
-        //             //     foreignField: "_id",
-        //             //     as: "servicers",
-        //             //   }
-        //             // },
-
-        //           ]
-        //         },
-
-        //       },
-        //       {
-        //         $unwind: "$contracts.orders"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           $and: [
-        //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-        //             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //             { "contracts.orders.isDeleted": false },
-        //           ]
-        //         },
-        //       },
-        //       {
-        //         $lookup: {
-        //           from: "dealers",
-        //           localField: "contracts.orders.dealerId",
-        //           foreignField: "_id",
-        //           as: "contracts.orders.dealers",
-        //           pipeline: [
-        //             // {
-        //             //   $match:
-        //             //   {
-        //             //     $and: [
-        //             //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //             //       { isDeleted: false },
-        //             //     ]
-        //             //   },
-        //             // },
-        //             // {
-        //             //   $lookup: {
-        //             //     from: "servicer_dealer_relations",
-        //             //     localField: "_id",
-        //             //     foreignField: "dealerId",
-        //             //     as: "dealerServicer",
-        //             //   }
-        //             // },
-        //           ]
-        //         }
-        //       },
-        //       {
-        //         $unwind: "$contracts.orders.dealers"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           "contracts.orders.dealers.name": { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' },
-        //           // "contracts.orders.dealers.isDeleted": false,
-        //         }
-
-        //       },
-        //     )
-        //   }
-        // }
-
-        // if (data.customerName) {
-        //   if (data.orderId) {
-        //     newQuery.push(
-        //       {
-        //         $lookup: {
-        //           from: "customers",
-        //           localField: "contracts.orders.customerId",
-        //           foreignField: "_id",
-        //           as: "contracts.orders.customer",
-        //           // pipeline: [
-
-        //           // ]
-        //         }
-        //       },
-        //       {
-        //         $unwind: "$contracts.orders.customer"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           $and: [
-        //             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-        //             { "contracts.orders.customer.isDeleted": false },
-        //           ]
-        //         },
-        //       },
-        //     );
-        //   }
-        //   else {
-        //     newQuery.push({
-        //       $lookup: {
-        //         from: "orders",
-        //         localField: "contracts.orderId",
-        //         foreignField: "_id",
-        //         as: "contracts.orders",
-        //         pipeline: [
-        //           // {
-        //           //   $match:
-        //           //   {
-        //           //     $and: [
-        //           //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //           //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //           //       { isDeleted: false },
-        //           //     ]
-        //           //   },
-        //           // },
-
-        //           // {
-        //           //   $lookup: {
-        //           //     from: "dealers",
-        //           //     localField: "dealerId",
-        //           //     foreignField: "_id",
-        //           //     as: "dealers",
-        //           //     pipeline: [
-        //           //       // {
-        //           //       //   $match:
-        //           //       //   {
-        //           //       //     $and: [
-        //           //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-        //           //       //       { isDeleted: false },
-        //           //       //     ]
-        //           //       //   },
-        //           //       // },
-        //           //       {
-        //           //         $lookup: {
-        //           //           from: "servicer_dealer_relations",
-        //           //           localField: "_id",
-        //           //           foreignField: "dealerId",
-        //           //           as: "dealerServicer",
-        //           //         }
-        //           //       },
-        //           //     ]
-        //           //   }
-        //           // },
-        //           // {
-        //           //   $unwind: "$dealers"
-        //           // },
-        //           // {
-        //           //   $lookup: {
-        //           //     from: "resellers",
-        //           //     localField: "resellerId",
-        //           //     foreignField: "_id",
-        //           //     as: "resellers",
-        //           //   }
-        //           // },
-        //           // {
-        //           //   $lookup: {
-        //           //     from: "serviceproviders",
-        //           //     localField: "servicerId",
-        //           //     foreignField: "_id",
-        //           //     as: "servicers",
-        //           //   }
-        //           // },
-
-        //         ]
-        //       },
-
-        //     },
-        //       {
-        //         $unwind: "$contracts.orders"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           $and: [
-        //             // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
-        //             { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId : '', '$options': 'i' } },
-        //             { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-        //             { "contracts.orders.isDeleted": false },
-        //           ]
-        //         },
-        //       },
-
-        //       {
-        //         $lookup: {
-        //           from: "customers",
-        //           localField: "contracts.orders.customerId",
-        //           foreignField: "_id",
-        //           as: "contracts.orders.customer",
-        //           // pipeline: [
-
-        //           // ]
-        //         }
-        //       },
-        //       {
-        //         $unwind: "$contracts.orders.customer"
-        //       },
-        //       {
-        //         $match:
-        //         {
-        //           $and: [
-        //             { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName : '', '$options': 'i' } },
-        //             { "contracts.orders.customer.isDeleted": false },
-        //           ]
-        //         },
-        //       },
-
-        //     )
-        //   }
-        // }
         newQuery.push({
             $facet: {
                 totalRecords: [
@@ -5399,7 +4611,6 @@ exports.getAllClaims = async (req, res, next) => {
                             diagnosis: 1,
                             claimStatus: 1,
                             repairStatus: 1,
-                            // repairStatus: { $arrayElemAt: ['$repairStatus', -1] },
                             "contracts.unique_key": 1,
                             "contracts.productName": 1,
                             "contracts.model": 1,
@@ -5414,7 +4625,6 @@ exports.getAllClaims = async (req, res, next) => {
                             "contracts.orders.dealers.name": 1,
                             "contracts.orders.dealers.isServicer": 1,
                             "contracts.orders.customer.username": 1,
-                            // "contracts.orders.dealers.dealerServicer": 1,
                             "contracts.orders.dealers.dealerServicer": {
                                 $map: {
                                     input: "$contracts.orders.dealers.dealerServicer",
@@ -5448,23 +4658,17 @@ exports.getAllClaims = async (req, res, next) => {
                             }
                         }
                     },
-                    // {
-                    //   $addFields: {
-                    //     lastRepairStatus: { $arrayElemAt: ["$repairStatus", -1] }
-                    //   }
-                    // },
                 ]
             }
         })
+
         let lookupQuery = [
             { $sort: { unique_key_number: -1 } },
             {
                 $match:
                 {
                     $and: [
-                        // { unique_key: { $regex: `^${data.claimId ? data.claimId : ''}` } },
                         { unique_key: { '$regex': data.claimId ? data.claimId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { isDeleted: false },
                         { 'customerStatus.status': { '$regex': data.customerStatuValue ? data.customerStatuValue.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'repairStatus.status': { '$regex': data.repairStatus ? data.repairStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { 'claimStatus.status': { '$regex': data.claimStatus ? data.claimStatus.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -5486,11 +4690,9 @@ exports.getAllClaims = async (req, res, next) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.unique_key": { $regex: `^${data.contractId ? data.contractId : ''}` } },
                         { 'contracts.unique_key': { '$regex': data.contractId ? data.contractId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.serial": { '$regex': data.serial ? data.serial : '', '$options': 'i' } },
                         { "contracts.productName": { '$regex': data.productName ? data.productName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { "contracts.isDeleted": false },
                     ]
                 },
             },
@@ -5500,66 +4702,6 @@ exports.getAllClaims = async (req, res, next) => {
                     localField: "contracts.orderId",
                     foreignField: "_id",
                     as: "contracts.orders",
-                    pipeline: [
-                        // {
-                        //   $match:
-                        //   {
-                        //     $and: [
-                        //       { unique_key: { $regex: `^${data.orderId ? data.orderId : ''}` } },
-                        //       { venderOrder: { '$regex': data.venderOrder ? data.venderOrder : '', '$options': 'i' } },
-                        //       { isDeleted: false },
-                        //     ]
-                        //   },
-                        // },
-
-                        // {
-                        //   $lookup: {
-                        //     from: "dealers",
-                        //     localField: "dealerId",
-                        //     foreignField: "_id",
-                        //     as: "dealers",
-                        //     pipeline: [
-                        //       // {
-                        //       //   $match:
-                        //       //   {
-                        //       //     $and: [
-                        //       //       { name: { '$regex': data.dealerName ? data.dealerName : '', '$options': 'i' } },
-                        //       //       { isDeleted: false },
-                        //       //     ]
-                        //       //   },
-                        //       // },
-                        //       {
-                        //         $lookup: {
-                        //           from: "servicer_dealer_relations",
-                        //           localField: "_id",
-                        //           foreignField: "dealerId",
-                        //           as: "dealerServicer",
-                        //         }
-                        //       },
-                        //     ]
-                        //   }
-                        // },
-                        // {
-                        //   $unwind: "$dealers"
-                        // },
-                        // {
-                        //   $lookup: {
-                        //     from: "resellers",
-                        //     localField: "resellerId",
-                        //     foreignField: "_id",
-                        //     as: "resellers",
-                        //   }
-                        // },
-                        // {
-                        //   $lookup: {
-                        //     from: "serviceproviders",
-                        //     localField: "servicerId",
-                        //     foreignField: "_id",
-                        //     as: "servicers",
-                        //   }
-                        // },
-
-                    ]
                 },
 
             },
@@ -5570,7 +4712,6 @@ exports.getAllClaims = async (req, res, next) => {
                 $match:
                 {
                     $and: [
-                        // { "contracts.orders.unique_key": { $regex: `^${data.orderId ? data.orderId : ''}` } },
                         { "contracts.orders.unique_key": { '$regex': data.orderId ? data.orderId.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.venderOrder": { '$regex': data.venderOrder ? data.venderOrder.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
                         { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.userId) },
@@ -5605,19 +4746,17 @@ exports.getAllClaims = async (req, res, next) => {
                 {
                     $and: [
                         { "contracts.orders.customer.username": { '$regex': data.customerName ? data.customerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-                        // { "contracts.orders.customer.isDeleted": false },
                     ]
                 },
             },
 
         ]
+
         if (newQuery.length > 0) {
             lookupQuery = lookupQuery.concat(newQuery);
         }
-        let allClaims = await claimService.getAllClaims(lookupQuery);
-
+        let allClaims = await claimService.getClaimWithAggregate(lookupQuery);
         let resultFiter = allClaims[0]?.data ? allClaims[0]?.data : []
-
         //Get Dealer and Reseller Servicers
         const servicerIds = resultFiter.map(data => data.contracts.orders.dealers.dealerServicer[0]?.servicerId)
         let servicer;
@@ -5649,9 +4788,6 @@ exports.getAllClaims = async (req, res, next) => {
                 }
             }
         })
-
-        // console.log("servicer====================",servicer);return;
-
         let totalCount = allClaims[0].totalRecords[0]?.total ? allClaims[0].totalRecords[0].total : 0
         res.send({
             code: constant.successCode,
@@ -5668,9 +4804,9 @@ exports.getAllClaims = async (req, res, next) => {
     }
 };
 
+//Sale reporting
 exports.saleReporting = async (req, res) => {
     try {
-
         let bodyData = req.body
         bodyData.returnValue = {
             total_broker_fee: 1,
@@ -5679,13 +4815,11 @@ exports.saleReporting = async (req, res) => {
             total_reserve_future_fee: 1,
             total_contracts: 1,
             total_reinsurance_fee: 1,
-            // total_retail_price: match ? match.total_retail_price : item.total_retail_price,
             wholesale_price: 1
         };
 
         bodyData.dealerId = new mongoose.Types.ObjectId(req.userId)
-
-
+        bodyData.role = req.role
         if (bodyData.flag == "daily") {
             let sales = await reportingController.dailySales1(bodyData)
             res.send({
@@ -5723,10 +4857,11 @@ exports.saleReporting = async (req, res) => {
     }
 }
 
+//Claim Reporting
 exports.claimReporting = async (req, res) => {
     try {
         let data = req.body
-
+        let checkDealer = await dealerService.getDealerById({ _id: req.userId })
         let returnValue = {
             weekStart: 1,
             total_amount: 1,
@@ -5739,6 +4874,8 @@ exports.claimReporting = async (req, res) => {
         };
 
         data.returnValue = returnValue
+        data.role = req.role
+        data.isServicer = checkDealer.isServicer
 
         if (data.flag == "daily") {
             data.dealerId = req.userId
@@ -5746,7 +4883,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         } else if (data.flag == "weekly") {
             data.dealerId = req.userId
@@ -5754,7 +4892,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         } else if (data.flag == "day") {
             data.dealerId = req.userId
@@ -5762,7 +4901,8 @@ exports.claimReporting = async (req, res) => {
             res.send({
                 code: constant.successCode,
                 message: "Success",
-                result: claim
+                result: claim,
+                isServicer: checkDealer.isServicer
             })
         }
     } catch (err) {
@@ -5773,6 +4913,7 @@ exports.claimReporting = async (req, res) => {
     }
 }
 
+//Sale reporting dropdown 
 exports.saleReportinDropDown = async (req, res) => {
     try {
         let data = req.body
@@ -5840,15 +4981,13 @@ exports.saleReportinDropDown = async (req, res) => {
     }
 }
 
+//claim reporting
 exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body
         let result;
-
         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.userId })
         let ids = getServicersIds?.map((item) => item.servicerId)
-
-
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }) // not using
         let getServicer = await providerService.getAllServiceProvider({
             $or: [
@@ -5862,79 +5001,11 @@ exports.claimReportinDropdown = async (req, res) => {
         })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
-
         result = {
             servicers: getServicer,
             priceBooks: getPriceBooks,
             categories: getCategories
         }
-
-        // if (data.primary == "dealer") {
-
-        //     if (data.dealerId != "") {
-
-        //         let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
-
-        //         console.log("-------------------------------------------------------", getServicersIds, 1)
-        //         let ids = getServicersIds?.map((item) => item.servicerId)
-        //         let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-
-        //         // Get Dealer Reseller Servicer
-
-        //         let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
-
-        //         if (dealerResellerServicer.length > 0) {
-        //             servicer.unshift(...dealerResellerServicer);
-        //         }
-
-        //         let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
-        //         if (!checkDealer) {
-        //             res.send({
-        //                 code: constant.errorCode,
-        //                 message: "Invalid dealer ID"
-        //             })
-        //             return;
-        //         }
-        //         if (checkDealer.isServicer) {
-        //             servicer.unshift(checkDealer);
-        //         };
-
-        //         let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
-        //         let priceBookIds = getDealerBooks?.map(ID => ID.priceBook)
-        //         let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
-        //         let categoriesIds = getPriceBooks1?.map(ID => ID.category)
-        //         let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
-        //         if (data.categoryId != "") {
-        //             getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-        //             // result = {
-        //             //     dealers: getDealers,
-        //             //     servicers: servicer,
-        //             //     priceBooks: getPriceBooks2,
-        //             //     categories: getCategories1
-        //             // }
-        //         }
-        //         if (data.priceBookId.length != 0) {
-        //             getCategories1 = []
-        //         }
-
-
-
-        //         result = {
-        //             dealers: getDealers,
-        //             priceBooks: getPriceBooks1,
-        //             servicers: servicer,
-        //             categories: getCategories1
-        //         }
-        //     } else {
-        //         result = {
-        //             dealers: getDealers,
-        //             priceBooks: [],
-        //             servicers: [],
-        //             categories: []
-        //         }
-        //     }
-        // }
 
         if (data.primary == "servicer") {
             let servicerId;
@@ -5944,72 +5015,20 @@ exports.claimReportinDropdown = async (req, res) => {
                 servicerId = getServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
             }
 
-            //getting servicers dealers ----------
-            // let query = [
-            //     {
-            //         $match: {
-            //             servicerId: { $in: servicerId }
-            //         }
-            //     },
-            //     {
-            //         $lookup: {
-            //             from: "dealers",
-            //             localField: "dealerId",
-            //             foreignField: "_id",
-            //             as: "dealerData",
-            //         }
-            //     },
-            //     {
-            //         $unwind: "$dealerData"
-            //     },
-            //     {
-            //         $project: {
-            //             "dealerData": 1,
-            //             _id: 0
-            //         }
-            //     }
-
-            // ]
-            // let filteredData = await dealerRelationService.getDealerRelationsAggregate(query)
-
-
-            // let dealerIds = filteredData.map(ID => ID.dealerData._id)
-            // console.log("checking dealerIds--------------------", filteredData, dealerIds)
-
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: req.userId })
-            console.log("checking dealerIds--------------------", { dealerId: req.userId })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
             let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
 
-            // if (data.dealerId != "") {
-            //     let getDealerBooks1 = await dealerPriceService.findAllDealerPrice({ dealerId: req.userId })
-            //     let priceBookIds1 = getDealerBooks1.map(ID => ID.priceBook)
-            //     getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds1 } })
-            //     let categoriesIds1 = getPriceBooks1.map(ID => ID.category)
-            //     getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds1 } })
-
-            // }
-
             if (data.categoryId != "") {
                 getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
             }
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories1 = []
             }
 
-            // filteredData = {
-            //     dealers: filteredData.map(dealer => {
-            //         return {
-            //             _id: dealer.dealerData._id,
-            //             name: dealer.dealerData.name
-            //         };
-            //     })
-            // };
-
             result = {
-                // dealers: filteredData.dealers,
                 priceBooks: getPriceBooks1,
                 servicers: getServicer,
                 categories: getCategories1
@@ -6022,21 +5041,17 @@ exports.claimReportinDropdown = async (req, res) => {
                 getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
             }
 
-            if (data.priceBookId.length != 0) {
+            if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories = []
             }
 
             result = {
-                // dealers: [],
                 servicers: [],
                 priceBooks: getPriceBooks,
                 categories: getCategories
             }
 
         }
-
-
-
         res.send({
             code: constant.successCode,
             message: "Success",
@@ -6051,23 +5066,16 @@ exports.claimReportinDropdown = async (req, res) => {
     }
 };
 
+//Get dashboard graph
 exports.getDashboardGraph = async (req, res) => {
     try {
         let data = req.body
-        // sku data query ++++++++
-
         let endOfMonth1s = new Date();
         let startOfMonth2s = new Date(new Date().setDate(new Date().getDate() - 30));
-
         let startOfYear2s = new Date(new Date().setFullYear(startOfMonth2s.getFullYear() - 1));
-
-
         let startOfMonths = new Date(startOfMonth2s.getFullYear(), startOfMonth2s.getMonth(), startOfMonth2s.getDate());
         let startOfMonth1s = new Date(startOfYear2s.getFullYear(), startOfYear2s.getMonth(), startOfYear2s.getDate());
-
-
         let endOfMonths = new Date(endOfMonth1s.getFullYear(), endOfMonth1s.getMonth(), endOfMonth1s.getDate() + 1);
-
         let orderQuery = [
             {
                 $match: {
@@ -6133,16 +5141,9 @@ exports.getDashboardGraph = async (req, res) => {
 
         ]
 
-
-
-
-        // let data = req.body
         let endOfMonth1 = new Date();
         let startOfMonth2 = new Date(new Date().setDate(new Date().getDate() - 30));
-
         let startOfMonth = new Date(startOfMonth2.getFullYear(), startOfMonth2.getMonth(), startOfMonth2.getDate());
-
-
         let endOfMonth = new Date(endOfMonth1.getFullYear(), endOfMonth1.getMonth(), endOfMonth1.getDate() + 1);
 
         if (isNaN(startOfMonth) || isNaN(endOfMonth)) {
@@ -6171,7 +5172,6 @@ exports.getDashboardGraph = async (req, res) => {
                     _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt" } },
                     total_amount: { $sum: "$totalAmount" },
                     total_claim: { $sum: 1 },
-                    // total_broker_fee: { $sum: "$products.brokerFee" }
                 }
             },
             {
@@ -6199,15 +5199,10 @@ exports.getDashboardGraph = async (req, res) => {
             }
         ];
 
-
-        console.log(startOfMonth, endOfMonth, dailyQuery)
-
-        let getData = await claimService.getAllClaims(dailyQuery)
+        let getData = await claimService.getClaimWithAggregate(dailyQuery)
         let getData2 = await orderService.getAllOrders1(dailyQuery1)
-
         let getOrders = await orderService.getAllOrders1(orderQuery)
         let getOrders1 = await orderService.getAllOrders1(orderQuery1)
-
         let priceBookNames = getOrders.map(ID => ID.priceBookName)
         let priceBookName1 = getOrders1.map(ID => ID.priceBookName)
 
@@ -6223,7 +5218,6 @@ exports.getDashboardGraph = async (req, res) => {
         let getPriceBooks = await priceBookService.getAllActivePriceBook(priceQuery)
         let getPriceBooks1 = await priceBookService.getAllActivePriceBook(priceQuery1)
 
-        console.log(priceBookNames)
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData.find(item => item._id === dateString);
@@ -6234,6 +5228,7 @@ exports.getDashboardGraph = async (req, res) => {
 
             };
         });
+
         const result1 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData2.find(item => item._id === dateString);
@@ -6254,7 +5249,6 @@ exports.getDashboardGraph = async (req, res) => {
             monthly_sku: getPriceBooks,
             yealy_sku: getPriceBooks1
         })
-        // return { mergedArray, result, result1, result2, totalFees }
 
 
     } catch (err) {
@@ -6265,14 +5259,8 @@ exports.getDashboardGraph = async (req, res) => {
     }
 };
 
+//Get dashboard info
 exports.getDashboardInfo = async (req, res) => {
-    // if (req.role != 'Super Admin') {
-    //     res.send({
-    //         code: constant.errorCode,
-    //         message: "Only Super admin allow to do this action"
-    //     })
-    //     return;
-    // }
     let orderQuery = [
         {
             $match: { status: "Active", dealerId: new mongoose.Types.ObjectId(req.userId) },
@@ -6289,14 +5277,21 @@ exports.getDashboardInfo = async (req, res) => {
         },
         { $sort: { unique_key_number: -1 } },
         {
-          $limit: 5
+            $limit: 5
         }]
     const lastFiveOrder = await orderService.getOrderWithContract(orderQuery, 0, 5)
     const claimQuery = [
         {
             $match: {
-                dealerId: new mongoose.Types.ObjectId(req.userId)
-            },
+                $and: [
+                    {
+                        dealerId: new mongoose.Types.ObjectId(req.userId)
+                    },
+                    {
+                        claimFile: "Completed"
+                    }
+                ]
+            }
         },
         {
             $sort: {
@@ -6326,165 +5321,7 @@ exports.getDashboardInfo = async (req, res) => {
             }
         },
     ]
-    const getLastNumberOfClaims = await claimService.getAllClaims(claimQuery, {})
-    // let lookupQuery = [
-    //     {
-    //         $lookup: {
-    //             from: "users",
-    //             localField: "_id",
-    //             foreignField: "metaId",
-    //             as: "users",
-    //             pipeline: [
-    //                 {
-    //                     $match: {
-    //                         isPrimary: true
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     },
-    //     {
-    //         $lookup: {
-    //             from: "orders",
-    //             localField: "_id",
-    //             foreignField: "dealerId",
-    //             as: "order",
-    //             pipeline: [
-    //                 {
-    //                     $match: { status: "Active" }
-    //                 },
-    //                 {
-    //                     "$group": {
-    //                         _id: "$order.dealerId",
-    //                         "totalOrder": { "$sum": 1 },
-    //                         "totalAmount": {
-    //                             "$sum": "$orderAmount"
-    //                         }
-    //                     }
-    //                 },
-    //             ]
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$order"
-    //     // },
-    //     {
-    //         $project: {
-    //             name: 1,
-    //             totalAmount: {
-    //                 $cond: {
-    //                     if: { $gte: [{ $arrayElemAt: ["$order.totalAmount", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$order.totalAmount", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             totalOrder: {
-    //                 $cond: {
-    //                     if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$order.totalOrder", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
-
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$users"
-    //     // },
-    //     // {
-    //     //   $addFields: {
-    //     //     totalAmount: "$order.totalAmount"
-    //     //   }
-    //     // },
-
-    //     { "$sort": { totalAmount: -1 } },
-    //     { "$limit": 5 }  // Apply limit again after sorting
-    // ]
-
-    // const topFiveDealer = await dealerService.getTopFiveDealers(lookupQuery);
-
-    // let lookupClaim = [
-    //     {
-    //         $match: {
-    //             dealerId: null,
-    //             resellerId: null
-    //         }
-    //     },
-    //     {
-    //         $lookup: {
-    //             from: "users",
-    //             localField: "_id",
-    //             foreignField: "metaId",
-    //             as: "users",
-    //             pipeline: [
-    //                 {
-    //                     $match: {
-    //                         isPrimary: true
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     },
-
-    //     {
-    //         $lookup: {
-    //             from: "claims",
-    //             localField: "_id",
-    //             foreignField: "servicerId",
-    //             as: "claims",
-    //             pipeline: [
-    //                 {
-    //                     $match: { claimFile: "Completed" }
-    //                 },
-    //                 {
-    //                     "$group": {
-    //                         _id: "$servicerId",
-    //                         "totalClaim": { "$sum": 1 },
-    //                         "totalClaimAmount": {
-    //                             "$sum": "$totalAmount"
-    //                         }
-    //                     }
-    //                 },
-    //             ]
-    //         }
-    //     },
-    //     {
-    //         $project: {
-    //             name: 1,
-    //             totalClaimAmount: {
-    //                 $cond: {
-    //                     if: { $gte: [{ $arrayElemAt: ["$claims.totalClaimAmount", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$claims.totalClaimAmount", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             totalClaim: {
-    //                 $cond: {
-    //                     if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
-    //                     then: { $arrayElemAt: ["$claims.totalClaim", 0] },
-    //                     else: 0
-    //                 }
-    //             },
-    //             'phone': { $arrayElemAt: ["$users.phoneNumber", 0] },
-
-    //         }
-    //     },
-    //     // {
-    //     //   $unwind: "$claims"
-    //     // },
-    //     // {
-    //     //   $unwind: "$users"
-    //     // },
-    //     // {
-    //     //   $addFields: {
-    //     //     totalClaimAmount: "$claims.totalClaimAmount"
-    //     //   }
-    //     // },
-    //     { "$sort": { totalClaimAmount: -1 } },
-    //     { "$limit": 5 }  // Apply limit again after sorting
-    // ]
-    // const topFiveServicer = await providerService.getTopFiveServicer(lookupClaim);
+    const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
     const result = {
         lastFiveOrder: lastFiveOrder,
