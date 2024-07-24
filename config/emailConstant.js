@@ -1,14 +1,11 @@
 module.exports = {
-  resetpassword: (ID, resetCode, toEmail) => {
+  resetpassword: (ID, resetCode, toEmail,data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
       subject: `Reset password email from get cover`,
       templateId: process.env.reset_password,
-      dynamic_template_data: {
-        ID: ID,
-        resetCode: resetCode
-      }
+      dynamic_template_data: data
     };
   },
 
