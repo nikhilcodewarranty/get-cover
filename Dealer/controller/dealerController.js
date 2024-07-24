@@ -158,7 +158,7 @@ exports.getAllDealers = async (req, res) => {
       data: filteredData
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -233,7 +233,7 @@ exports.getPendingDealers = async (req, res) => {
       data: filteredData
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -407,7 +407,7 @@ exports.getDealerById = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -477,7 +477,7 @@ exports.getUserByDealerId = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -521,7 +521,7 @@ exports.updateDealer = async (req, res) => {
       message: "Updated Successfully"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -549,12 +549,12 @@ exports.deleteDealer = async (req, res) => {
       return;
     };
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -566,8 +566,8 @@ exports.uploadTermAndCondition = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
       if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Only suoer admin allow to do this action!'
         });
         return;
@@ -581,7 +581,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -751,7 +751,7 @@ exports.registerDealer = async (req, res) => {
     return
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -883,7 +883,7 @@ exports.statusUpdate = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -917,7 +917,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1047,7 +1047,7 @@ exports.changeDealerStatus = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1106,7 +1106,7 @@ exports.getDealerPriceBookById = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1174,7 +1174,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1288,7 +1288,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
       result: priceBooks
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1375,7 +1375,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       result: priceBooks,
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1457,8 +1457,8 @@ exports.uploadPriceBook = async (req, res) => {
       let original_csv_array = ['priceBook', 'retailPrice'];
 
       if (original_csv_array.length != headers.length) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'The uploaded file coloumn is not match.Please check the uploaded file'
         });
         return;
@@ -1470,8 +1470,8 @@ exports.uploadPriceBook = async (req, res) => {
         original_csv_array.every((val, index) => val === headers[index]);
 
       if (!equality) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Invalid uploaded file! '
         });
         return;
@@ -1693,7 +1693,7 @@ exports.uploadPriceBook = async (req, res) => {
 
   } catch (err) {
     // Handle errors and respond with an error message
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -1810,7 +1810,7 @@ exports.createDealerPriceBook = async (req, res) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1853,7 +1853,7 @@ exports.checkDealerPriceBook = async (req, res) => {
       message: "Success!"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1887,8 +1887,8 @@ exports.rejectDealer = async (req, res) => {
       IDs.push(getPrimary._id)
       const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
       if (!deleteUser) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to delete the user"
         })
         return;
@@ -1897,8 +1897,8 @@ exports.rejectDealer = async (req, res) => {
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
       if (!deleteDealer) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to delete the dealer"
         })
         return;
@@ -1930,7 +1930,7 @@ exports.rejectDealer = async (req, res) => {
       return;
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1954,8 +1954,8 @@ exports.updateDealerMeta = async (req, res) => {
     if (data.oldName != data.accountName) {
       let checkAccountName = await dealerService.getDealerByName({ name: data.accountName }, {})
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Account name is not available"
         })
         return;
@@ -2080,7 +2080,7 @@ exports.updateDealerMeta = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2187,7 +2187,7 @@ exports.addDealerUser = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2203,16 +2203,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
       // Your array of objects
       if (checkDealer.length == 0) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Dealer Not found"
         })
         return;
       }
 
       if (!req.file) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "No file uploaded"
         })
         return;
@@ -2238,8 +2238,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
       }
 
       if (headers.length !== 2) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly two columns."
         })
         return
@@ -2435,7 +2435,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
     })
   } catch (err) {
     console.log(err)
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2523,7 +2523,7 @@ exports.createDeleteRelation = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2653,7 +2653,7 @@ exports.getDealerServicers = async (req, res) => {
     });
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2700,7 +2700,7 @@ exports.unAssignServicer = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2738,7 +2738,7 @@ exports.getServicersList = async (req, res) => {
       result: filteredData
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2756,7 +2756,7 @@ exports.filterDealer = async (req, res) => {
       result: response
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2850,7 +2850,7 @@ exports.getDealerResellers = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2863,8 +2863,8 @@ exports.getDealerOrders = async (req, res) => {
     {
       let data = req.body;
       if (req.role != "Super Admin") {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Only super admin allow to do this action",
         });
         return;
@@ -3131,7 +3131,7 @@ exports.getDealerOrders = async (req, res) => {
     };
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3169,8 +3169,8 @@ exports.getDealerRequest = async (req, res) => {
           }
         ])
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: data1
         })
         // Close the connections
@@ -3445,7 +3445,7 @@ exports.getDealerContract = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3776,7 +3776,7 @@ exports.getDealerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

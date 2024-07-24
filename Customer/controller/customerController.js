@@ -42,8 +42,8 @@ exports.createCustomer = async (req, res, next) => {
     if (data.resellerName && data.resellerName != "") {
       var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
       if (!checkReseller) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid Reseller."
         })
         return;
@@ -190,7 +190,7 @@ exports.createCustomer = async (req, res, next) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -377,7 +377,7 @@ exports.getDealerCustomers = async (req, res) => {
       result: filteredData
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -460,7 +460,7 @@ exports.getResellerCustomers = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -569,7 +569,7 @@ exports.editCustomer = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -688,7 +688,7 @@ exports.changePrimaryUser = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -777,7 +777,7 @@ exports.addCustomerUser = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -926,7 +926,7 @@ exports.getCustomerById = async (req, res) => {
 
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -990,7 +990,7 @@ exports.getCustomerUsers = async (req, res) => {
 
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1235,7 +1235,7 @@ exports.customerOrders = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1468,7 +1468,7 @@ exports.getCustomerContract = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1809,7 +1809,7 @@ exports.customerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

@@ -119,7 +119,7 @@ exports.getAllPriceBooks = async (req, res, next) => {
       result: priceBooks
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -151,7 +151,7 @@ exports.getAllActivePriceBook = async (req, res) => {
       result: getPriceBooks
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -286,7 +286,7 @@ exports.createPriceBook = async (req, res, next) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -314,7 +314,7 @@ exports.getPriceBookById = async (req, res, next) => {
       result: singlePriceBook[0]
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -338,8 +338,8 @@ exports.updatePriceBook = async (req, res, next) => {
     if (data.priceCatId) {
       let checkCat = await priceBookService.getPrice({ _id: data.priceCatId })
       if (!checkCat) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid category ID"
         })
         return;
@@ -363,8 +363,8 @@ exports.updatePriceBook = async (req, res, next) => {
 
       let updateCat = await priceBookService.updatePriceBook(criteria, newValue, option)
       if (!updateCat) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the price"
         })
       } else {
@@ -406,7 +406,7 @@ exports.updatePriceBook = async (req, res, next) => {
     }
 
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -574,7 +574,7 @@ exports.updatePriceBookById = async (req, res, next) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -604,7 +604,7 @@ exports.deletePriceBook = async (req, res, next) => {
       message: "Deleted Successfully"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -639,7 +639,7 @@ exports.searchPriceBook = async (req, res, next) => {
       result: priceBooks
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -747,7 +747,7 @@ exports.createPriceBookCat = async (req, res) => {
     }
     await logs(logData).save()
     // Handle unexpected errors
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -793,7 +793,7 @@ exports.getPriceBookCat = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -807,8 +807,8 @@ exports.getActivePriceBookCategories = async (req, res) => {
     if (data.dealerId) {
       var getDealer = await dealerService.getDealerByName({ _id: data.dealerId }, { __v: 0 })
       if (!getDealer) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid dealer ID"
         })
         return;
@@ -873,7 +873,7 @@ exports.getActivePriceBookCategories = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -932,8 +932,8 @@ exports.updatePriceBookCat = async (req, res) => {
     if (isValid.name.toLowerCase() != req.body.name.toLowerCase()) {
       const existingCategory = await priceBookService.getPriceCatByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
       if (existingCategory) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Category already exist"
         })
         return;
@@ -1027,7 +1027,7 @@ exports.updatePriceBookCat = async (req, res) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -1053,7 +1053,7 @@ exports.getPriceBookCatById = async (req, res) => {
       result: getPriceCat
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1080,7 +1080,7 @@ exports.searchPriceBookCategories = async (req, res) => {
       result: seachCategory
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1121,7 +1121,7 @@ exports.getPriceBookByCategory = async (req, res) => {
       }
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1171,7 +1171,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
       }
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1207,7 +1207,7 @@ exports.getCategoryByPriceBook = async (req, res) => {
       }
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

@@ -405,7 +405,7 @@ exports.getAllContracts = async (req, res) => {
 
   } catch (err) {
     console.log(err)
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

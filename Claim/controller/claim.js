@@ -399,7 +399,7 @@ exports.getAllClaims = async (req, res, next) => {
 
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -556,7 +556,7 @@ exports.getClaims = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message, err: err.stack
     })
@@ -709,7 +709,7 @@ exports.searchClaim = async (req, res, next) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -723,8 +723,8 @@ exports.uploadReceipt = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
       if (req.role != 'Super Admin') {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Only suoer admin allow to do this action!'
         });
         return;
@@ -738,7 +738,7 @@ exports.uploadReceipt = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -768,7 +768,7 @@ exports.getUnpaidAmount = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -792,7 +792,7 @@ exports.uploadCommentImage = async (req, res, next) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -825,8 +825,8 @@ exports.addClaim = async (req, res, next) => {
         ]
       })
       if (!checkServicer) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer not found!"
         })
         return;
@@ -1003,7 +1003,7 @@ exports.addClaim = async (req, res, next) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     })
@@ -1120,7 +1120,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1162,8 +1162,8 @@ exports.editClaim = async (req, res) => {
         }
       }
       if (contract.productValue < data.totalAmount) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Claim Amount Exceeds Contract Retail Price'
         });
         return;
@@ -1183,8 +1183,8 @@ exports.editClaim = async (req, res) => {
           }
         }
         await LOG(logData).save()
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Failed to process your request."
         })
         return;
@@ -1254,7 +1254,7 @@ exports.editClaim = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1294,8 +1294,8 @@ exports.editClaimType = async (req, res) => {
         }
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Failed to process your request."
         })
         return;
@@ -1340,7 +1340,7 @@ exports.editClaimType = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1707,7 +1707,7 @@ exports.editClaimStatus = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1741,8 +1741,8 @@ exports.editServicer = async (req, res) => {
         ]
       })
       if (!checkServicer) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer not found!"
         })
         return
@@ -1829,7 +1829,7 @@ exports.editServicer = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1892,8 +1892,8 @@ exports.saveBulkClaim = async (req, res) => {
         }
       }
       if (headers.length !== 4) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly four columns."
         })
         return
@@ -1914,8 +1914,8 @@ exports.saveBulkClaim = async (req, res) => {
       });
 
       if (totalDataComing.length === 0) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid file!"
         });
         return;
@@ -2562,7 +2562,7 @@ exports.sendMessages = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       messages: err.message
     })
@@ -2574,7 +2574,7 @@ exports.getMessages = async (req, res) => {
 
   const checkClaim = await claimService.getClaimById({ _id: req.params.claimId }, { isDeleted: false })
   if (!checkClaim) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: 'Invalid Claim id!'
     })
@@ -2749,7 +2749,7 @@ exports.statusClaim = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2776,7 +2776,7 @@ exports.getMaxClaimAmount = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2806,7 +2806,7 @@ exports.getCoverageType = async (req, res) => {
 
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

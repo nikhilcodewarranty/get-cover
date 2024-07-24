@@ -286,7 +286,7 @@ exports.customerOrders = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -400,7 +400,7 @@ exports.getSingleOrder = async (req, res) => {
       servicers: result_Array
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -443,7 +443,7 @@ exports.editCustomer = async (req, res) => {
       message: "Updated successfully"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -675,7 +675,7 @@ exports.getCustomerContract = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -760,7 +760,7 @@ exports.addCustomerUser = async (req, res) => {
     }
 
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -821,7 +821,7 @@ exports.getCustomerUsers = async (req, res) => {
       isAccountCreate: checkCustomer.isAccountCreate
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -913,7 +913,7 @@ exports.changePrimaryUser = async (req, res) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -965,7 +965,7 @@ exports.getCustomerById = async (req, res) => {
 
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1066,7 +1066,7 @@ exports.getOrderContract = async (req, res) => {
     });
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1230,7 +1230,7 @@ exports.getContractById = async (req, res) => {
       result: getData[0]
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1376,7 +1376,7 @@ exports.getDashboardData = async (req, res) => {
       }
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1432,7 +1432,7 @@ exports.getCustomerDetails = async (req, res) => {
       loginMember: getUser
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1492,7 +1492,7 @@ exports.saleReporting = async (req, res) => {
     }
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     })
@@ -1547,7 +1547,7 @@ exports.claimReporting = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1661,7 +1661,7 @@ exports.getDashboardGraph = async (req, res) => {
       order_result: result1,
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

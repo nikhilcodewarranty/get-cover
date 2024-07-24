@@ -44,8 +44,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
@@ -54,8 +54,8 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkPrimaryEmail = await userService.findOneUser({ email: data.email });
 
       if (checkPrimaryEmail) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "User already exist with this email "
         })
         return;
@@ -79,8 +79,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to create the servicer"
         })
         return;
@@ -143,8 +143,8 @@ exports.createServiceProvider = async (req, res, next) => {
       let checkDetail = await providerService.getServicerByName({ _id: data.providerId })
 
       if (!checkDetail) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid ID"
         })
         return;
@@ -190,8 +190,8 @@ exports.createServiceProvider = async (req, res, next) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the servicer"
         })
         return;
@@ -270,7 +270,7 @@ exports.createServiceProvider = async (req, res, next) => {
     }
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -305,8 +305,8 @@ exports.approveServicer = async (req, res, next) => {
     if (servicerObject.name != data.oldName) {
       let checkAccountName = await providerService.getServicerByName({ name: data.accountName }, {});
       if (checkAccountName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this account name"
         })
         return;
@@ -315,8 +315,8 @@ exports.approveServicer = async (req, res, next) => {
     if (data.email != data.oldEmail) {
       let emailCheck = await userService.findOneUser({ email: data.email });
       if (emailCheck) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Primary user email already exist"
         })
         return;
@@ -350,7 +350,7 @@ exports.approveServicer = async (req, res, next) => {
     })
 
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -456,7 +456,7 @@ exports.getServicer = async (req, res) => {
       data: filteredData
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -507,7 +507,7 @@ exports.getServiceProviderById = async (req, res, next) => {
       message: resultUser
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -570,7 +570,7 @@ exports.rejectServicer = async (req, res) => {
     }
 
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -597,8 +597,8 @@ exports.editServicerDetail = async (req, res) => {
       let regex = new RegExp('^' + data.name + '$', 'i');
       let checkName = await providerService.getServicerByName({ name: regex }, {})
       if (checkName) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Servicer already exist with this name"
         })
         return;
@@ -700,7 +700,7 @@ exports.editServicerDetail = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -764,8 +764,8 @@ exports.updateStatus = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the primary details 'false'"
         })
       } else {
@@ -879,7 +879,7 @@ exports.updateStatus = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -938,7 +938,7 @@ exports.getAllServiceProviders = async (req, res, next) => {
       data: result_Array
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1128,7 +1128,7 @@ exports.registerServiceProvider = async (req, res) => {
       }
     }
     await LOG(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1139,7 +1139,7 @@ exports.registerServiceProvider = async (req, res) => {
 // status update for servicer 
 exports.statusUpdate = async (req, res) => {
   if (req.role != "Super Admin") {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Only super admin allow to do this action"
     })
@@ -1168,8 +1168,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the users"
         })
         return
@@ -1183,8 +1183,8 @@ exports.statusUpdate = async (req, res) => {
       let option = { new: true }
       let updateUsers = await userService.updateUser(criteria1, { status: req.body.status }, option)
       if (!updateUsers) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to update the primary user"
         })
         return
@@ -1197,7 +1197,7 @@ exports.statusUpdate = async (req, res) => {
 
   }
   catch (err) {
-    return res.send({
+    return res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
     });
@@ -1229,8 +1229,8 @@ exports.getSerivicerUsers = async (req, res) => {
       });
       let getServicerStatus = await providerService.getServiceProviderById({ _id: req.params.servicerId }, { status: 1 })
       if (!getServicerStatus) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid servicer ID"
         })
         return;
@@ -1245,7 +1245,7 @@ exports.getSerivicerUsers = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1302,8 +1302,8 @@ exports.addServicerUser = async (req, res) => {
 
         await LOG(logData).save()
 
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Unable to add the user"
         })
         return;
@@ -1341,7 +1341,7 @@ exports.addServicerUser = async (req, res) => {
 
     await LOG(logData).save()
 
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1410,7 +1410,7 @@ exports.createDeleteRelation = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1533,7 +1533,7 @@ exports.getServicerDealers = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1629,7 +1629,7 @@ exports.getServicerDealers1 = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1665,7 +1665,7 @@ exports.getDealerList = async (req, res) => {
 
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1966,7 +1966,7 @@ exports.getServicerClaims = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1993,7 +1993,7 @@ exports.paidUnpaid = async (req, res) => {
       result: updateBulk
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2335,7 +2335,7 @@ exports.paidUnpaidClaim = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })

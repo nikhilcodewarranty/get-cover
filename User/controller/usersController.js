@@ -78,7 +78,7 @@ exports.createUser = async (req, res) => {
       message: "Success",
     });
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -163,7 +163,7 @@ exports.createServiceProvider = async (req, res) => {
     });
 
   } catch (err) {
-    return res.send({
+    return res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message,
       data: createMetaData
@@ -182,7 +182,7 @@ exports.createTerms = async (req, res) => {
       data: createdTerms
     });
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Unable to create the terms"
     });
@@ -208,7 +208,7 @@ exports.tryUpload = async (req, res) => {
     }
   } catch (err) {
     // Handle errors and respond with an error message
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -237,7 +237,7 @@ exports.validateData = async (req, res) => {
   const data = req.body;
   // Check if the user has Super Admin role
   if (req.role !== "Super Admin") {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Only Super Admin is allowed to perform this action"
     });
@@ -247,7 +247,7 @@ exports.validateData = async (req, res) => {
   // Check if the specified role exists
   const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
   if (!checkRole) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Invalid role"
     });
@@ -265,7 +265,7 @@ exports.validateData = async (req, res) => {
 
 
   if (allEmails.length !== uniqueEmails.size) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: 'Multiple user cannot have same emails',
     });
@@ -315,8 +315,8 @@ exports.validateData = async (req, res) => {
     if (cleanStr1 !== cleanStr2) {
       const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
       if (existingDealer) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Dealer name already exists',
         });
         return
@@ -334,8 +334,8 @@ exports.validateData = async (req, res) => {
 
       const existingData = await dealerPriceService.findByIds(query);
       if (existingData.length > 0) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
         });
         return;
@@ -396,8 +396,8 @@ exports.createDealer = async (req, res) => {
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Invalid role"
         });
         return;
@@ -412,8 +412,8 @@ exports.createDealer = async (req, res) => {
       let dealerPriceArray = data.priceBook ? data.priceBook : [];
       const uniqueEmails = new Set(allEmails);
       if (allEmails.length !== uniqueEmails.size) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: 'Multiple user cannot have same email',
         });
         return
@@ -1618,7 +1618,7 @@ exports.createDealer = async (req, res) => {
       }
     }
     await logs(logData).save()
-    return res.send({
+    return res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -1646,8 +1646,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Dealer") {
       let checkDealer = await dealerService.getDealerById(user.accountId)
       if (!checkDealer?.accountStatus) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -1657,8 +1657,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Reseller") {
       let checkReseller = await resellerService.getReseller({ _id: user.accountId })
       if (!checkReseller?.status) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -1668,8 +1668,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Servicer") {
       let checkServicer = await providerService.getServiceProviderById({ _id: user.accountId })
       if (!checkServicer?.status) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -1715,7 +1715,7 @@ exports.login = async (req, res) => {
       }
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1782,7 +1782,7 @@ exports.createSuperAdmin = async (req, res) => {
       data: updateData
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     });
@@ -1855,7 +1855,7 @@ exports.getUserById = async (req, res) => {
       mainStatus: mainStatus
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -1880,7 +1880,7 @@ exports.updateUser = async (req, res) => {
       message: "Updated Successfully",
     });
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -1986,7 +1986,7 @@ exports.updateUserData = async (req, res) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -2015,7 +2015,7 @@ exports.getAllTerms = async (req, res) => {
       }
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Unable to create the dealer"
     })
@@ -2049,7 +2049,7 @@ exports.addRole = async (req, res) => {
       data: createdUser
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -2069,8 +2069,8 @@ exports.sendLinkToEmail = async (req, res) => {
       })
     } else {
       if (checkEmail.status == false || checkEmail.isDeleted == true) {
-        res.send({
-          code: constant.errorCode,
+         res.status(constant.errorCode).send({
+        code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
         })
         return;
@@ -2087,7 +2087,7 @@ exports.sendLinkToEmail = async (req, res) => {
       }
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2133,7 +2133,7 @@ exports.resetPassword = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2226,7 +2226,7 @@ exports.deleteUser = async (req, res) => {
       }
     }
     await logs(logData).save()
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     });
@@ -2255,7 +2255,7 @@ exports.getAllRoles = async (req, res) => {
       }
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Unable to create the dealer"
     })
@@ -2314,7 +2314,7 @@ exports.getAllNotifications = async (req, res) => {
 
     return;
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -2359,7 +2359,7 @@ exports.getAllNotifications1 = async (req, res) => {
       result: updatedNotifications,
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -2382,7 +2382,7 @@ exports.readNotification = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2406,7 +2406,7 @@ exports.readAllNotification = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2434,7 +2434,7 @@ exports.checkEmail = async (req, res) => {
     })
 
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Unable to create the dealer"
     })
@@ -2455,7 +2455,7 @@ exports.getCountNotification = async (req, res) => {
 
     return;
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: error.message
     })
@@ -2477,7 +2477,7 @@ exports.checkEmailForSingle = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2514,7 +2514,7 @@ exports.updateProfile = async (req, res) => {
 
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2559,7 +2559,7 @@ exports.updatePassword = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2593,7 +2593,7 @@ exports.getUserByToken = async (req, res) => {
       mainStatus: mainStatus
     })
   } catch (error) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2647,7 +2647,7 @@ exports.addMembers = async (req, res) => {
 
   } catch (err) {
     const lineNumber = err.stack.split('\n')[1].split(':')[1];
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2698,7 +2698,7 @@ exports.getMembers = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2728,7 +2728,7 @@ exports.getAccountInfo = async (req, res) => {
     })
   }
   catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2764,7 +2764,7 @@ exports.changePrimaryUser = async (req, res) => {
     }
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2781,7 +2781,7 @@ exports.checkToken = async (req, res) => {
       message: "Success"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2836,7 +2836,7 @@ exports.saleReporting = async (req, res) => {
     }
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -2846,7 +2846,7 @@ exports.saleReporting = async (req, res) => {
 //Get dashboard info
 exports.getDashboardInfo = async (req, res) => {
   if (req.role != 'Super Admin') {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: "Only Super admin allow to do this action"
     })
@@ -3252,7 +3252,7 @@ exports.getDashboardGraph = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3322,7 +3322,7 @@ exports.saleReporting1 = async (req, res) => {
     }
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3371,7 +3371,7 @@ exports.claimReporting = async (req, res) => {
       })
     }
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3452,7 +3452,7 @@ exports.getSkuData = async (req, res) => {
     })
 
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
@@ -3476,7 +3476,7 @@ exports.checkIdAndToken = async (req, res) => {
       message: "Verified"
     })
   } catch (err) {
-    res.send({
+    res.status(constant.errorCode).send({
       code: constant.errorCode,
       message: err.message
     })
