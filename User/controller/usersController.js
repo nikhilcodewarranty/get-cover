@@ -2735,17 +2735,6 @@ exports.addMembers = async (req, res) => {
     let notificationEmails = await supportingFunction.getUserEmails();
     let settingData = await userService.getSetting({});
 
-    let emailData = {
-      darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-      lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-      address: settingData[0]?.address,
-      websiteSetting: settingData[0],
-      senderName: data.firstName,
-      content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please reset the password for the system login",
-      subject: "Account Creation"
-    }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
-
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
     let resetLink = `${process.env.SITE_URL}newPassword/${checkPrimaryEmail2._id}/${resetPasswordCode}`
