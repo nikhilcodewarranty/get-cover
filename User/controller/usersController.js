@@ -646,10 +646,6 @@ exports.createDealer = async (req, res) => {
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: loginUser.firstName,
             content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
@@ -1034,10 +1030,6 @@ exports.createDealer = async (req, res) => {
           // Primary User Welcoime email
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            websiteSetting: settingData[0],
             senderName: loginUser.firstName,
             content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
@@ -1277,11 +1269,6 @@ exports.createDealer = async (req, res) => {
           let notificationEmails = await supportingFunction.getUserEmails();
 
           let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            title: settingData[0]?.title,
-            websiteSetting: settingData[0],
             senderName: loginUser.firstName,
             content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
@@ -1622,11 +1609,6 @@ exports.createDealer = async (req, res) => {
 
           let notificationEmails = await supportingFunction.getUserEmails();
           let emailData = {
-            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-            address: settingData[0]?.address,
-            title: settingData[0]?.title,
-            websiteSetting: settingData[0],
             senderName: loginUser.firstName,
             content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
