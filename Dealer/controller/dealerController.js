@@ -566,8 +566,8 @@ exports.uploadTermAndCondition = async (req, res, next) => {
   try {
     uploadP(req, res, async (err) => {
       if (req.role != 'Super Admin') {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'Only suoer admin allow to do this action!'
         });
         return;
@@ -1003,7 +1003,7 @@ exports.changeDealerStatus = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-            const status_content = req.body.status ? 'Active' : 'Inactive';
+      const status_content = req.body.status ? 'Active' : 'Inactive';
       let emailData = {
         senderName: singleDealer.name,
         content: "Status has been changed to " + status_content + " " + ", effective immediately.",
@@ -1457,8 +1457,8 @@ exports.uploadPriceBook = async (req, res) => {
       let original_csv_array = ['priceBook', 'retailPrice'];
 
       if (original_csv_array.length != headers.length) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'The uploaded file coloumn is not match.Please check the uploaded file'
         });
         return;
@@ -1470,8 +1470,8 @@ exports.uploadPriceBook = async (req, res) => {
         original_csv_array.every((val, index) => val === headers[index]);
 
       if (!equality) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'Invalid uploaded file! '
         });
         return;
@@ -1887,8 +1887,8 @@ exports.rejectDealer = async (req, res) => {
       IDs.push(getPrimary._id)
       const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
       if (!deleteUser) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Unable to delete the user"
         })
         return;
@@ -1897,8 +1897,8 @@ exports.rejectDealer = async (req, res) => {
       //Delete the dealer
       const deleteDealer = await dealerService.deleteDealer({ _id: req.params.dealerId })
       if (!deleteDealer) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Unable to delete the dealer"
         })
         return;
@@ -1954,8 +1954,8 @@ exports.updateDealerMeta = async (req, res) => {
     if (data.oldName != data.accountName) {
       let checkAccountName = await dealerService.getDealerByName({ name: data.accountName }, {})
       if (checkAccountName) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Account name is not available"
         })
         return;
@@ -2203,16 +2203,16 @@ exports.uploadDealerPriceBook = async (req, res) => {
       let checkDealer = await dealerService.getSingleDealerById({ _id: new mongoose.Types.ObjectId(req.body.dealerId) }, { isDeleted: false })
       // Your array of objects
       if (checkDealer.length == 0) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Dealer Not found"
         })
         return;
       }
 
       if (!req.file) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "No file uploaded"
         })
         return;
@@ -2238,8 +2238,8 @@ exports.uploadDealerPriceBook = async (req, res) => {
       }
 
       if (headers.length !== 2) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly two columns."
         })
         return
@@ -2635,7 +2635,7 @@ exports.getDealerServicers = async (req, res) => {
         };
       }
     });
-   
+
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
     const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -2863,8 +2863,8 @@ exports.getDealerOrders = async (req, res) => {
     {
       let data = req.body;
       if (req.role != "Super Admin") {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Only super admin allow to do this action",
         });
         return;
@@ -3085,7 +3085,7 @@ exports.getDealerOrders = async (req, res) => {
         if (item.dealerName) {
           username = getPrimaryUser.find(user => user.accountId.toString() === item.dealerName._id.toString());
         }
-        
+
         if (item.resellerName) {
           resellerUsername = item.resellerName._id != null ? getPrimaryUser.find(user => user.accountId.toString() === item.resellerName._id.toString()) : {};
         }
@@ -3169,8 +3169,8 @@ exports.getDealerRequest = async (req, res) => {
           }
         ])
 
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: data1
         })
         // Close the connections
@@ -3229,7 +3229,7 @@ exports.getDealerContract = async (req, res) => {
         servicerIds.push("1111121ccf9d400000000000")
       }
     };
-    
+
     if (data.resellerName != "") {
       userSearchCheck = 1
       let getData = await resellerService.getResellers({ name: { '$regex': data.resellerName ? data.resellerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } })

@@ -642,7 +642,7 @@ exports.createDealer = async (req, res) => {
 
           await userService.createNotification(notificationData);
           // Send Email code here
-          sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+       //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1019,7 +1019,7 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           // Send Email code here
-          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+         // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1581,7 +1581,6 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           // Send Email code here
-          let mailing = sgMail.send(emailConstant.sendEmailTemplate(createUsers[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
