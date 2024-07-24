@@ -315,8 +315,8 @@ exports.validateData = async (req, res) => {
     if (cleanStr1 !== cleanStr2) {
       const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
       if (existingDealer) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'Dealer name already exists',
         });
         return
@@ -334,8 +334,8 @@ exports.validateData = async (req, res) => {
 
       const existingData = await dealerPriceService.findByIds(query);
       if (existingData.length > 0) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'The product is already exist for this dealer! Duplicasy found. Please check again',
         });
         return;
@@ -396,8 +396,8 @@ exports.createDealer = async (req, res) => {
       // Check if the specified role exists
       const checkRole = await role.findOne({ role: { '$regex': data.role, '$options': 'i' } });
       if (!checkRole) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Invalid role"
         });
         return;
@@ -412,8 +412,8 @@ exports.createDealer = async (req, res) => {
       let dealerPriceArray = data.priceBook ? data.priceBook : [];
       const uniqueEmails = new Set(allEmails);
       if (allEmails.length !== uniqueEmails.size) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: 'Multiple user cannot have same email',
         });
         return
@@ -431,7 +431,7 @@ exports.createDealer = async (req, res) => {
           let emailCheck = await userService.findOneUser({ email: data.email }, {});
           if (emailCheck) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Primary user email already exist"
             })
             return;
@@ -442,7 +442,7 @@ exports.createDealer = async (req, res) => {
           let nameCheck = await dealerService.getDealerByName({ name: data.name });
           if (nameCheck) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Dealer name already exist"
             })
             return;
@@ -466,7 +466,7 @@ exports.createDealer = async (req, res) => {
 
           if (checkPriceBook.length == 0) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Product does not exist.Please check the product"
             })
             return;
@@ -475,7 +475,7 @@ exports.createDealer = async (req, res) => {
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: 'Some products is not created. Please check the product',
               missingProductNames: missingProductNames
             });
@@ -556,7 +556,7 @@ exports.createDealer = async (req, res) => {
             }
             await logs(logData).save()
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to save price book"
             });
             return;
@@ -614,7 +614,7 @@ exports.createDealer = async (req, res) => {
 
           if (!dealerStatus) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
@@ -740,7 +740,7 @@ exports.createDealer = async (req, res) => {
 
           if (headers.length !== 2) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
             return
@@ -993,7 +993,7 @@ exports.createDealer = async (req, res) => {
 
           if (!dealerStatus) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
@@ -1082,7 +1082,7 @@ exports.createDealer = async (req, res) => {
 
         let emailCheck = await userService.findOneUser({ email: data.email }, {});
         if (emailCheck) {
-          res.send({
+          res.status(constant.errorCode).send({
             code: constant.errorCode,
             message: "Primary user email already exist"
           })
@@ -1095,7 +1095,7 @@ exports.createDealer = async (req, res) => {
           checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
           if (checkPriceBook.length == 0) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Product does not exist.Please check the product"
             })
             return;
@@ -1104,7 +1104,7 @@ exports.createDealer = async (req, res) => {
           const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
           if (missingProductNames.length > 0) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: 'Some products is not created. Please check the product',
               missingProductNames: missingProductNames
             });
@@ -1148,7 +1148,7 @@ exports.createDealer = async (req, res) => {
             }
             await logs(logData).save()
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to create dealer"
             });
             return;
@@ -1211,7 +1211,7 @@ exports.createDealer = async (req, res) => {
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to save users"
             });
             return;
@@ -1242,7 +1242,7 @@ exports.createDealer = async (req, res) => {
             }
             await logs(logData).save()
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to save price book"
             });
             return;
@@ -1301,7 +1301,7 @@ exports.createDealer = async (req, res) => {
 
           if (headers.length !== 2) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Invalid file format detected. The sheet should contain exactly two columns."
             })
             return
@@ -1360,7 +1360,7 @@ exports.createDealer = async (req, res) => {
 
           if (!createMetaData) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to create dealer"
             });
             return;
@@ -1553,7 +1553,7 @@ exports.createDealer = async (req, res) => {
           const createUsers = await userService.insertManyUser(allUsersData);
           if (!createUsers) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to save users"
             });
             return;
@@ -1567,7 +1567,7 @@ exports.createDealer = async (req, res) => {
           let dealerStatus = await dealerService.updateDealer(dealerQuery, newValues, { new: true })
           if (!dealerStatus) {
             res.status(constant.errorCode).send({
-      code: constant.errorCode,
+              code: constant.errorCode,
               message: "Unable to approve dealer status"
             });
             return;
@@ -1646,8 +1646,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Dealer") {
       let checkDealer = await dealerService.getDealerById(user.accountId)
       if (!checkDealer?.accountStatus) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -1657,8 +1657,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Reseller") {
       let checkReseller = await resellerService.getReseller({ _id: user.accountId })
       if (!checkReseller?.status) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -1668,8 +1668,8 @@ exports.login = async (req, res) => {
     if (getRole.role == "Servicer") {
       let checkServicer = await providerService.getServiceProviderById({ _id: user.accountId })
       if (!checkServicer?.status) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "Dear User, We are still waiting for your approval from the GetCover Team. Please hang on for a while."
         })
         return
@@ -2069,8 +2069,8 @@ exports.sendLinkToEmail = async (req, res) => {
       })
     } else {
       if (checkEmail.status == false || checkEmail.isDeleted == true) {
-         res.status(constant.errorCode).send({
-        code: constant.errorCode,
+        res.status(constant.errorCode).send({
+          code: constant.errorCode,
           message: "This account is currently awaiting approval from the administrator"
         })
         return;
