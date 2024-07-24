@@ -668,7 +668,7 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: loginUser.firstName,
-            content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
           }
           // Send Email code here
@@ -1070,7 +1070,7 @@ exports.createDealer = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: loginUser.firstName,
-            content: "Dear " + allUserData[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
             subject: "Dealer Account Approved - " + singleDealer.name
           }
 
@@ -1326,7 +1326,7 @@ exports.createDealer = async (req, res) => {
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: loginUser.firstName,
-            content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
           }
 
@@ -1679,7 +1679,7 @@ exports.createDealer = async (req, res) => {
             title: settingData[0]?.title,
             websiteSetting: settingData[0],
             senderName: loginUser.firstName,
-            content: "Dear " + createUsers[0].firstName + ",\n\nWe are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
           }
 
