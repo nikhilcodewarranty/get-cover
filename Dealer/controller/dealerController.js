@@ -79,7 +79,7 @@ exports.getAllDealers = async (req, res) => {
     let data = req.body
 
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -121,7 +121,7 @@ exports.getAllDealers = async (req, res) => {
     let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
 
     if (!dealers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -171,7 +171,7 @@ exports.getPendingDealers = async (req, res) => {
 
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -196,7 +196,7 @@ exports.getPendingDealers = async (req, res) => {
     let dealarUser = await userService.getMembers(query1, projection)
 
     if (!dealers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -246,7 +246,7 @@ exports.getDealerById = async (req, res) => {
   try {
     //fetching data from user table
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -254,8 +254,8 @@ exports.getDealerById = async (req, res) => {
     }
     const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
 
-    if (!dealers) {
-      res.send({
+    if (!dealers[0]) {
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No data found"
       });
@@ -266,7 +266,7 @@ exports.getDealerById = async (req, res) => {
     let dealarUser = await userService.getMembers(query1, { isDeleted: false })
 
     if (!dealarUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No any user of this dealer"
       });
@@ -420,7 +420,7 @@ exports.getUserByDealerId = async (req, res) => {
     let data = req.body
     //fetching data from user table
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -429,7 +429,7 @@ exports.getUserByDealerId = async (req, res) => {
 
     const dealers = await dealerService.getDealerById(req.params.dealerId);
     if (!dealers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer not found"
       });
@@ -459,7 +459,7 @@ exports.getUserByDealerId = async (req, res) => {
     });
 
     if (!users) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No data found"
       });
@@ -497,7 +497,7 @@ exports.updateDealer = async (req, res) => {
     let option = { new: true };
     const updatedDealer = await dealerService.updateDealer(criteria, newValue, option);
     if (!updatedDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the dealer data"
       });
@@ -542,7 +542,7 @@ exports.deleteDealer = async (req, res) => {
     const deletedDealer = await dealerService.deleteDealer(criteria, newValue, option);
 
     if (!deletedDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to delete the dealer"
       })
@@ -597,7 +597,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid role"
       })
@@ -607,7 +607,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the dealer already exists
     const pendingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') }, status: "Pending" }, { isDeleted: 0, __v: 0 });
     if (pendingDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "You have registered already with this name! Waiting for the approval"
       })
@@ -617,7 +617,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': new RegExp(`^${req.body.name}$`, 'i') } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Account name already exist"
       })
@@ -642,7 +642,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const existingUser = await userService.findOneUser({ email: req.body.email });
     if (existingUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User already exist with this email"
       })
@@ -673,7 +673,7 @@ exports.registerDealer = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unbale to create the dealer"
       })
@@ -695,7 +695,7 @@ exports.registerDealer = async (req, res) => {
     const createdUser = await userService.createUser(userMetaData);
 
     if (!createdUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to create dealer user',
       });
@@ -765,7 +765,7 @@ exports.statusUpdate = async (req, res) => {
   try {
     // Check if the user has the required role
     if (req.role !== "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin is allowed to perform this action"
       });
@@ -775,7 +775,7 @@ exports.statusUpdate = async (req, res) => {
     // Check if the dealerPriceBookId is a valid ObjectId
     const isValid = await checkObjectId(req.params.dealerPriceBookId);
     if (!isValid) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid Dealer Price Book ID"
       });
@@ -786,7 +786,7 @@ exports.statusUpdate = async (req, res) => {
     const projection = { isDeleted: 0, __v: 0 };
     const existingDealerPriceBook = await dealerPriceService.getDealerPriceById(criteria, projection);
     if (!existingDealerPriceBook) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer Price Book not found"
       });
@@ -795,7 +795,7 @@ exports.statusUpdate = async (req, res) => {
     // Check if the priceBook is a valid ObjectId
     const isPriceBookValid = await checkObjectId(req.body.priceBook);
     if (!isPriceBookValid) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid Price Book ID"
       });
@@ -820,7 +820,7 @@ exports.statusUpdate = async (req, res) => {
     const updatedResult = await dealerService.statusUpdate(criteria, newValue, option);
 
     if (!updatedResult) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the dealer price status"
       });
@@ -896,7 +896,7 @@ exports.statusUpdate = async (req, res) => {
 exports.getAllDealerPriceBooks = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -906,7 +906,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
     let query = { isDeleted: false }
     let getDealerPrice = await dealerPriceService.getAllDealerPrice(query, projection)
     if (!getDealerPrice) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to get the dealer price books"
       })
@@ -929,7 +929,7 @@ exports.getAllDealerPriceBooks = async (req, res) => {
 exports.changeDealerStatus = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -938,7 +938,7 @@ exports.changeDealerStatus = async (req, res) => {
     const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
 
     if (!singleDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer not found"
       })
@@ -1031,7 +1031,7 @@ exports.changeDealerStatus = async (req, res) => {
       })
     }
     else {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to update dealer status!',
       })
@@ -1059,7 +1059,7 @@ exports.changeDealerStatus = async (req, res) => {
 exports.getDealerPriceBookById = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1095,7 +1095,7 @@ exports.getDealerPriceBookById = async (req, res) => {
     let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
 
     if (!getDealerPrice) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to get the dealer price books"
       })
@@ -1118,7 +1118,7 @@ exports.getDealerPriceBookById = async (req, res) => {
 exports.getDealerPriceBookByDealerId = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1128,7 +1128,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
     let checkDealer = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { isDeleted: false })
 
     if (checkDealer.length == 0) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer Not found"
       })
@@ -1163,7 +1163,7 @@ exports.getDealerPriceBookByDealerId = async (req, res) => {
     let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.params.dealerId) }
     let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
     if (!getDealerPrice) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to get the dealer price books"
       })
@@ -1265,7 +1265,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     let projection = { isDeleted: 0, __v: 0 }
 
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1277,7 +1277,7 @@ exports.getAllPriceBooksByFilter = async (req, res, next) => {
     const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
 
     if (!priceBooks) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       })
@@ -1301,7 +1301,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
   try {
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1364,7 +1364,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
     const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
 
     if (!priceBooks) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       })
@@ -1403,14 +1403,14 @@ exports.uploadPriceBook = async (req, res) => {
     // Check if a file is uploaded
 
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
       return;
     }
     if (!req.file) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No file uploaded"
       })
@@ -1432,7 +1432,7 @@ exports.uploadPriceBook = async (req, res) => {
     let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
     // Your array of objects
     if (checkDealer.length == 0) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer Not found"
       })
@@ -1709,14 +1709,14 @@ exports.createDealerPriceBook = async (req, res) => {
     data.unique_key = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1
     let checkDealer = await dealerService.getDealerById(data.dealerId)
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer"
       })
       return;
     }
     if (checkDealer.status == "Pending") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Account not approved yet"
       })
@@ -1725,7 +1725,7 @@ exports.createDealerPriceBook = async (req, res) => {
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: new mongoose.Types.ObjectId(data.priceBook) }, {})
 
     if (!checkPriceBookMain) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid price book ID"
       })
@@ -1735,7 +1735,7 @@ exports.createDealerPriceBook = async (req, res) => {
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
 
     if (checkPriceBook) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer price book already created with this product sku"
       })
@@ -1755,7 +1755,7 @@ exports.createDealerPriceBook = async (req, res) => {
         }
       }
       await logs(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to create the dealer price book"
       })
@@ -1824,7 +1824,7 @@ exports.checkDealerPriceBook = async (req, res) => {
     let data = req.body
     let checkDealer = await dealerService.getDealerById(data.dealerId)
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer"
       })
@@ -1833,7 +1833,7 @@ exports.checkDealerPriceBook = async (req, res) => {
     let checkPriceBookMain = await priceBookService.getPriceBookById({ _id: data.priceBook }, {})
 
     if (!checkPriceBookMain) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid price book ID"
       })
@@ -1842,7 +1842,7 @@ exports.checkDealerPriceBook = async (req, res) => {
     let checkPriceBook = await dealerPriceService.getDealerPriceById({ priceBook: data.priceBook, dealerId: data.dealerId }, {})
 
     if (checkPriceBook) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer price book already created with this product name"
       })
@@ -1865,7 +1865,7 @@ exports.checkDealerPriceBook = async (req, res) => {
 exports.rejectDealer = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1874,7 +1874,7 @@ exports.rejectDealer = async (req, res) => {
     const singleDealer = await dealerService.getDealerById({ _id: req.params.dealerId });
 
     if (!singleDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer not found"
       })
@@ -1945,7 +1945,7 @@ exports.updateDealerMeta = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(data.dealerId, {})
 
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer ID"
       })
@@ -1979,7 +1979,7 @@ exports.updateDealerMeta = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the data"
       })
@@ -2095,7 +2095,7 @@ exports.addDealerUser = async (req, res) => {
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId }, {})
 
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer ID"
       })
@@ -2105,7 +2105,7 @@ exports.addDealerUser = async (req, res) => {
     let checkEmail = await userService.findOneUser({ email: data.email }, {})
 
     if (checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User already exist with this email"
       })
@@ -2139,7 +2139,7 @@ exports.addDealerUser = async (req, res) => {
       }
 
       await LOG(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to add the data"
       })
@@ -2449,7 +2449,7 @@ exports.createDeleteRelation = async (req, res) => {
     let data = req.body
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer ID"
       })
@@ -2538,7 +2538,7 @@ exports.getDealerServicers = async (req, res) => {
 
     let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer ID"
       })
@@ -2546,7 +2546,7 @@ exports.getDealerServicers = async (req, res) => {
     }
     let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
     if (!getServicersIds) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the servicer"
       })
@@ -2555,7 +2555,7 @@ exports.getDealerServicers = async (req, res) => {
     let ids = getServicersIds.map((item) => item.servicerId)
     let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
     if (!servicer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the servicers"
       })
@@ -2576,7 +2576,7 @@ exports.getDealerServicers = async (req, res) => {
     const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
     let servicerUser = await userService.getMembers(query1, {});
     if (!servicerUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       });
@@ -2679,7 +2679,7 @@ exports.unAssignServicer = async (req, res) => {
         }
       }
       await LOG(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to unassign"
       })
@@ -2713,7 +2713,7 @@ exports.getServicersList = async (req, res) => {
   try {
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action!"
       })
@@ -2769,7 +2769,7 @@ exports.getDealerResellers = async (req, res) => {
   try {
     let data = req.body
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -2778,7 +2778,7 @@ exports.getDealerResellers = async (req, res) => {
     let checkDealer = await dealerService.getDealerById(req.params.dealerId, {})
 
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer ID"
       })
@@ -2789,7 +2789,7 @@ exports.getDealerResellers = async (req, res) => {
     let projection = { __v: 0 }
     const resellers = await resellerService.getResellers(query, projection);
     if (!resellers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the resellers"
       });
@@ -3457,7 +3457,7 @@ exports.getDealerContract = async (req, res) => {
 exports.getDealerClaims = async (req, res) => {
   try {
     if (req.role != 'Super Admin') {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Only super admin allow to do this action'
       });
@@ -3501,7 +3501,7 @@ exports.getDealerClaims = async (req, res) => {
       }
     }
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Dealer not found!'
       });

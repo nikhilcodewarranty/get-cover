@@ -549,7 +549,7 @@ exports.editContract = async (req, res) => {
     //check if claim value is less then product value update eligibilty true
 
     if (!updateContracts) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the contract"
       })
@@ -720,7 +720,7 @@ exports.getContractById = async (req, res) => {
 
     })
     if (!getData) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to get contract"
       })

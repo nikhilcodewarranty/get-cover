@@ -31,7 +31,7 @@ exports.createCustomer = async (req, res, next) => {
     let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
     let IDs = await supportingFunction.getUserIds()
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid dealer"
       })
@@ -59,7 +59,7 @@ exports.createCustomer = async (req, res, next) => {
 
     let checkCustomerEmail = await userService.findOneUser({ email: data.email });
     if (checkCustomerEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Primary user email already exist"
       })
@@ -91,7 +91,7 @@ exports.createCustomer = async (req, res, next) => {
     let checkEmails = await customerService.getAllCustomers(queryEmails, {});
 
     if (checkEmails.length > 0) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Some email ids already exist"
       })
@@ -110,7 +110,7 @@ exports.createCustomer = async (req, res, next) => {
       }
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to create the customer"
       })
@@ -212,7 +212,7 @@ exports.getAllCustomers = async (req, res, next) => {
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the customer"
       });
@@ -296,7 +296,7 @@ exports.getDealerCustomers = async (req, res) => {
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the customer"
       });
@@ -399,7 +399,7 @@ exports.getResellerCustomers = async (req, res) => {
     let projection = { __v: 0, firstName: 0, lastName: 0, email: 0, password: 0 }
     const customers = await customerService.getAllCustomers(query, projection);
     if (!customers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the customer"
       });
@@ -481,7 +481,7 @@ exports.editCustomer = async (req, res) => {
     data.username = data.username.trim().replace(/\s+/g, ' ');
     let checkDealer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid ID"
       })
@@ -503,7 +503,7 @@ exports.editCustomer = async (req, res) => {
       }
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the customer detail"
       })
@@ -590,7 +590,7 @@ exports.changePrimaryUser = async (req, res) => {
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     console.log(checkUser);
     if (!checkUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to find the user"
       })
@@ -610,7 +610,7 @@ exports.changePrimaryUser = async (req, res) => {
       }
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to change tha primary"
       })
@@ -634,7 +634,7 @@ exports.changePrimaryUser = async (req, res) => {
       }
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Something went wrong"
       })
@@ -709,7 +709,7 @@ exports.addCustomerUser = async (req, res) => {
 
     let checkCustomer = await customerService.getCustomerByName({ _id: data.customerId })
     if (!checkCustomer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid customer"
       })
@@ -717,7 +717,7 @@ exports.addCustomerUser = async (req, res) => {
     }
     let checkEmail = await userService.findOneUser({ email: data.email })
     if (checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User already added with this email"
       })
@@ -743,7 +743,7 @@ exports.addCustomerUser = async (req, res) => {
 
       await LOG(logData).save()
 
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to add the user"
       })
@@ -797,7 +797,7 @@ exports.getCustomerById = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkCustomer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
@@ -946,7 +946,7 @@ exports.getCustomerUsers = async (req, res) => {
     let data = req.body
     let getCustomerUsers = await userService.findUser({ accountId: req.params.customerId, isDeleted: false }, { isPrimary: -1 })
     if (!getCustomerUsers) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the customers"
       })
@@ -978,7 +978,7 @@ exports.getCustomerUsers = async (req, res) => {
 
     let checkCustomer = await customerService.getCustomerByName({ _id: req.params.customerId }, { status: 1 })
     if (!checkCustomer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
@@ -1010,7 +1010,7 @@ exports.customerOrders = async (req, res) => {
     let data = req.body
     let checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId }, {})
     if (!checkCustomer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid customer ID"
       })
@@ -1494,7 +1494,7 @@ exports.customerClaims = async (req, res) => {
 
     const checkCustomer = await customerService.getCustomerById({ _id: req.params.customerId });
     if (!checkCustomer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Customer not found!'
       });

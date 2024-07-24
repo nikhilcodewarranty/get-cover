@@ -1,11 +1,7 @@
 require("dotenv").config();
-
 const bcrypt = require("bcrypt");
-
 const jwt = require("jsonwebtoken");
-
 const randtoken = require('rand-token').generator()
-
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
@@ -30,11 +26,9 @@ const multer = require('multer');
 const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 const logs = require('../../User/model/logs');
-
 const csvParser = require('csv-parser');
 const customerService = require("../../Customer/services/customerService");
 const supportingFunction = require('../../config/supportingFunction')
-
 const reportingController = require("./reportingController");
 const orderService = require("../../Order/services/orderService");
 const claimService = require("../../Claim/services/claimService");
@@ -63,7 +57,7 @@ var upload = multer({
 exports.createUser = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -73,7 +67,7 @@ exports.createUser = async (req, res) => {
 
     const createdUser = await userService.createUser(data);
     if (!createdUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to create the user"
       });
@@ -102,20 +96,17 @@ exports.createServiceProvider = async (req, res) => {
     const userData = await userService.findByEmail(emailValues);
 
     if (userData) {
-      return res.send({
+      return res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Email Already Exists',
         data: userData
       });
     }
 
-    // Hash the password
-    //const hashedPassword = await bcrypt.hash(data.password, 10);
-
     // Check if the specified role exists
     const checkRole = await role.findOne({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } });
     if (!checkRole) {
-      return res.send({
+      return res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Invalid role',
       });
@@ -138,7 +129,7 @@ exports.createServiceProvider = async (req, res) => {
     providerMeta.role = "Servicer"
     const createMetaData1 = await userMetaService.createMeta(providerMeta);
     if (!createMetaData) {
-      return res.send({
+      return res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to create servicer account',
       });
@@ -157,29 +148,14 @@ exports.createServiceProvider = async (req, res) => {
       }));
 
     // Map provider data
-
-
     // Create provider users
     const createProviderUsers = await userService.insertManyUser(resultProviderData);
     if (!createProviderUsers) {
-      return res.send({
+      return res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unable to create users',
       });
     }
-    // let emailData = {
-    //   dealerName: providerMeta.name,
-    //   c1:"Thank you for",
-    //   c2:"Registering! as a",
-    //   c3:"Your account is currently pending approval from our admin.",
-    //   c4:"Once approved, you will receive a confirmation emai",
-    //   c5:"We appreciate your patience.",
-    //   role: "Servicer"
-    // }
-
-    // // Send Email code here
-    // let mailing = sgMail.send(emailConstant.dealerWelcomeMessage(data.email, emailData))
-
 
     return res.send({
       code: constant.successCode,
@@ -199,10 +175,7 @@ exports.createServiceProvider = async (req, res) => {
 exports.createTerms = async (req, res) => {
   try {
     const monthTerms = generateMonthTerms(10); // You can specify the number of months as needed
-
-
     const createdTerms = await userService.createTerms(monthTerms);
-
     res.send({
       code: constant.successCode,
       message: "Created Successfully",
@@ -220,14 +193,14 @@ exports.tryUpload = async (req, res) => {
   try {
     // Check if a file is uploaded
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
       return;
     }
     if (!req.file) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "No file uploaded"
       })
@@ -298,15 +271,6 @@ exports.validateData = async (req, res) => {
     });
     return
   }
-  // const emailData = await userService.findByEmail(allEmails);
-  // if (emailData.length > 0) {
-  //   res.send({
-  //     code: constant.errorCode,
-  //     message: 'Email Already Exist',
-  //     data: emailData
-  //   });
-  //   return;
-  // }
 
   let savePriceBookType = req.body.savePriceBookType
 
@@ -314,10 +278,9 @@ exports.validateData = async (req, res) => {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
-    // console.log("priceBookCreateria=======================", priceBookCreateria)
     checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Product does not exist.Please check the product"
       })
@@ -326,7 +289,7 @@ exports.validateData = async (req, res) => {
 
     const missingProductNames = priceBook.filter(name => !checkPriceBook.some(product => product._id.equals(name)));
     if (missingProductNames.length > 0) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Some products is not created. Please check the product',
         missingProductNames: missingProductNames
@@ -338,7 +301,7 @@ exports.validateData = async (req, res) => {
   if (data.dealerId != 'null' && data.dealerId != undefined) {
     const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
     if (!singleDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Dealer Not found"
       });
@@ -346,10 +309,8 @@ exports.validateData = async (req, res) => {
     }
 
     //check new name is not exist in the database
-
     const cleanStr1 = singleDealer.name.replace(/\s/g, '').toLowerCase();
     const cleanStr2 = data.name.replace(/\s/g, '').toLowerCase();
-
 
     if (cleanStr1 !== cleanStr2) {
       const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
@@ -383,12 +344,11 @@ exports.validateData = async (req, res) => {
     }
 
   }
-
   else {
     // Check if the dealer already exists
     const existingDealer = await dealerService.getDealerByName({ name: { '$regex': data.name, '$options': 'i' } }, { isDeleted: 0, __v: 0 });
     if (existingDealer) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Dealer name already exists',
       });
@@ -402,17 +362,11 @@ exports.validateData = async (req, res) => {
 }
 
 function uniqByKeepLast(data, key) {
-
   return [
-
     ...new Map(
-
       data.map(x => [key(x), x])
-
     ).values()
-
   ]
-
 }
 
 exports.createDealer = async (req, res) => {
@@ -1716,7 +1670,6 @@ exports.createDealer = async (req, res) => {
   }
 };
 
-//save Dealer Meta Data
 //---------------------------------------------------- refined code ----------------------------------------//
 
 // Login route
@@ -1725,7 +1678,7 @@ exports.login = async (req, res) => {
     // Check if the user with the provided email exists
     const user = await userService.findOneUser({ email: req.body.email.toLowerCase() }, {});
     if (!user) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid Credentials"
       })
@@ -1769,7 +1722,7 @@ exports.login = async (req, res) => {
     }
 
     if (user.status == false) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Your account is not active, please contact to the administration"
       })
@@ -1779,7 +1732,7 @@ exports.login = async (req, res) => {
     // Compare the provided password with the hashed password in the database
     const passwordMatch = await bcrypt.compare(req.body.password, user.password);
     if (!passwordMatch) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid Credentials"
       })
@@ -1821,7 +1774,7 @@ exports.createSuperAdmin = async (req, res) => {
     // Check if the user with the provided email already exists
     const existingUser = await userService.findOneUser({ email: data.email }, {});
     if (existingUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Email already exist"
       })
@@ -1831,7 +1784,7 @@ exports.createSuperAdmin = async (req, res) => {
     // Check if the provided role is 'super'
     const superRole = await role.findOne({ role: "Super Admin" });
     if (!superRole) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Role not found"
       })
@@ -1885,7 +1838,7 @@ exports.createSuperAdmin = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
   try {
     if (req.role != "Super Admin") {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Only super admin allow to do this action"
       })
@@ -1898,7 +1851,7 @@ exports.getAllUsers = async (req, res) => {
     const users = await userService.getAllUsers(query, projection);
 
     if (!users) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the data"
       })
@@ -1926,7 +1879,7 @@ exports.getUserById = async (req, res) => {
     let userId = req.params.userId ? req.params.userId : '000000000000000000000000'
     const singleUser = await userService.findOneUser({ _id: userId, }, projection);
     if (!singleUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the user detail"
       })
@@ -1961,7 +1914,7 @@ exports.updateUser = async (req, res) => {
     let option = { new: true };
     const updateUser = await userService.updateUser(criteria, req.body, option);
     if (!updateUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the user data"
       });
@@ -1998,7 +1951,7 @@ exports.updateUserData = async (req, res) => {
         }
       }
       await logs(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the user data"
       });
@@ -2092,7 +2045,7 @@ exports.getAllTerms = async (req, res) => {
     let projection = { __v: 0 }
     const terms = await userService.getAllTerms(query, projection);
     if (!terms) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the terms "
       });
@@ -2119,7 +2072,7 @@ exports.addRole = async (req, res) => {
   try {
     let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } })
     if (checkRole) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Role already exist"
       })
@@ -2129,7 +2082,7 @@ exports.addRole = async (req, res) => {
     const createdUser = await userService.addRole(req.body);
 
     if (!createdUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to create the role"
       })
@@ -2155,7 +2108,7 @@ exports.sendLinkToEmail = async (req, res) => {
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkEmail = await userService.findOneUser({ email: data.email.toLowerCase() }, {})
     if (!checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User does not exist"
       })
@@ -2192,14 +2145,14 @@ exports.resetPassword = async (req, res) => {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     if (!checkUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid link"
       })
       return;
     };
     if (checkUser.resetPasswordCode != req.params.code) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Link has been expired"
       })
@@ -2257,7 +2210,7 @@ exports.deleteUser = async (req, res) => {
         }
       }
       await logs(logData).save()
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to delete the user"
       });
@@ -2269,7 +2222,6 @@ exports.deleteUser = async (req, res) => {
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
-
     let notificationData = {
       title: "User Deletion",
       description: checkUser.firstName + " user has been deleted!",
@@ -2290,8 +2242,8 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
 
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
     //Save Logs delete user
     let logData = {
       endpoint: "user/deleteUser",
@@ -2326,7 +2278,6 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-
 // get all roles
 exports.getAllRoles = async (req, res) => {
   try {
@@ -2334,7 +2285,7 @@ exports.getAllRoles = async (req, res) => {
     let projection = { __v: 0 }
     const roles = await userService.getAllRoles(query, projection);
     if (!users) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the roles "
       });
@@ -2366,7 +2317,6 @@ exports.getAllNotifications = async (req, res) => {
     const servicerNotification = await userService.getAllNotifications(Query1, projection);
     const dealerIds = dealerNotification.map(value => value.userId);
     const servicerIds = servicerNotification.map(value => value.userId);
-    // const query1 = { accountId: { $in: accountIds }, isPrimary: true };
     const query1 = { _id: { $in: dealerIds } };
     const query2 = { _id: { $in: servicerIds } };
 
@@ -2448,8 +2398,6 @@ exports.getAllNotifications1 = async (req, res) => {
       }
     }
 
-
-
     res.send({
       code: constant.successCode,
       message: "Success",
@@ -2468,7 +2416,7 @@ exports.readNotification = async (req, res) => {
     let data = req.body
     let checkId = await userService.updateNotification({ _id: req.params.notificationId }, { $addToSet: { readBy: req.teammateId } }, { new: true })
     if (!checkId) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid notification ID"
       })
@@ -2492,7 +2440,7 @@ exports.readAllNotification = async (req, res) => {
     let checkId = await userService.updateNotification({ notificationFor: new mongoose.Types.ObjectId(req.teammateId) }, { $addToSet: { readBy: req.teammateId } }, { new: true })
 
     if (!checkId) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid notification ID"
       })
@@ -2516,7 +2464,7 @@ exports.checkEmail = async (req, res) => {
     const existingUser = await userService.findOneUser({ 'email': req.body.email }, {});
 
     if (existingUser && existingUser.approvedStatus == 'Approved') {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Email is already exist!",
 
@@ -2563,7 +2511,7 @@ exports.checkEmailForSingle = async (req, res) => {
   try {
     let checkEmail = await userService.findOneUser({ email: req.body.email }, {})
     if (checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User already exist with this email ID"
       })
@@ -2585,7 +2533,7 @@ exports.checkEmailForSingle = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     if (req.role != 'Super Admin') {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Only super admin allow to do this action!'
       });
@@ -2596,7 +2544,7 @@ exports.updateProfile = async (req, res) => {
     let updateProfile = await userService.updateSingleUser({ email: email }, data, { new: true })
 
     if (!updateProfile) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: 'Unabe to update profile!'
       })
@@ -2625,7 +2573,7 @@ exports.updatePassword = async (req, res) => {
     let checkId = await userService.getSingleUserByEmail({ _id: id })
 
     if (!checkId) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid user ID"
       })
@@ -2634,7 +2582,7 @@ exports.updatePassword = async (req, res) => {
 
     let comparePassword = await bcrypt.compare(data.oldPassword, checkId.password)
     if (!comparePassword) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Invalid Old Password"
       })
@@ -2645,7 +2593,7 @@ exports.updatePassword = async (req, res) => {
     let updatePassword = await userService.updateSingleUser({ _id: checkId._id }, data, { new: true })
 
     if (!updatePassword) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to update the password"
       })
@@ -2669,7 +2617,7 @@ exports.getUserByToken = async (req, res) => {
     let userId = req.userId
     const singleUser = await userService.findOneUser({ _id: userId, }, projection);
     if (!singleUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to fetch the user detail"
       })
@@ -2702,7 +2650,7 @@ exports.addMembers = async (req, res) => {
     let data = req.body
     let checkEmail = await userService.getSingleUserByEmail({ email: data.email })
     if (checkEmail) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "User already exists with this email"
       })
@@ -2716,7 +2664,7 @@ exports.addMembers = async (req, res) => {
     let saveData = await userService.createUser(data)
 
     if (!saveData) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to create the member"
       })
@@ -2838,7 +2786,7 @@ exports.changePrimaryUser = async (req, res) => {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
     if (!checkUser) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Unable to find the user"
       })
@@ -2849,7 +2797,7 @@ exports.changePrimaryUser = async (req, res) => {
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
     if (!updatePrimary) {
-      res.send({
+      res.status(constant.errorCode).send({
         code: constant.errorCode,
         message: "Something went wrong"
       })
