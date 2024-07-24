@@ -374,6 +374,8 @@ exports.createDealer = async (req, res) => {
     upload(req, res, async () => {
       const data = req.body;
       data.name = data.name.trim().replace(/\s+/g, ' ');
+      const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {});
+
       let priceFile
       let termFile;
       let isAccountCreate = req.body.isAccountCreate
@@ -641,8 +643,19 @@ exports.createDealer = async (req, res) => {
           };
 
           await userService.createNotification(notificationData);
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
+          }
           // Send Email code here
-          //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1018,9 +1031,21 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            websiteSetting: settingData[0],
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
+          }
 
           // Send Email code here
-          // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          // Send Email code here
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1249,7 +1274,20 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
+          let notificationEmails = await supportingFunction.getUserEmails();
 
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            title: settingData[0]?.title,
+            websiteSetting: settingData[0],
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
+          }
+
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           // Send Email code here
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1582,6 +1620,18 @@ exports.createDealer = async (req, res) => {
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+            lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+            address: settingData[0]?.address,
+            title: settingData[0]?.title,
+            websiteSetting: settingData[0],
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
+          }
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           // Send Email code here
 
           if (req.body.isAccountCreate) {
@@ -2078,7 +2128,8 @@ exports.sendLinkToEmail = async (req, res) => {
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
       let data = {
-        link: resetLink
+        link: resetLink,
+        name: checkEmail.firstName
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
