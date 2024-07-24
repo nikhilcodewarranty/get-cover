@@ -642,7 +642,7 @@ exports.createDealer = async (req, res) => {
 
           await userService.createNotification(notificationData);
           // Send Email code here
-       //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -913,9 +913,10 @@ exports.createDealer = async (req, res) => {
 
               return htmlContent;
             }
+            const notificationEmail = await supportingFunction.getUserEmails();
 
             const htmlTableString = convertArrayToHTMLTable(csvArray);
-            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], htmlTableString));
+            const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmail, ['noreply@getcover.com'], htmlTableString));
           }
           let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
           let newValues1 = {
@@ -1019,7 +1020,7 @@ exports.createDealer = async (req, res) => {
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
           // Send Email code here
-         // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1535,7 +1536,8 @@ exports.createDealer = async (req, res) => {
             }
 
             const htmlTableString = convertArrayToHTMLTable(csvArray);
-            const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], htmlTableString));
+            const notificationEmail = await supportingFunction.getUserEmails();
+            const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmail, ['noreply@getcover.com'], htmlTableString));
           }
 
           let allUsersData = allUserData.map((obj, index) => ({
