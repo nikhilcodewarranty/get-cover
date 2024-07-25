@@ -985,7 +985,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     res.send({
-      code: constant.successCode,
+      code: constant.successCode, 
       message: 'Success!',
       result: claimResponse
     })
