@@ -2175,7 +2175,7 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-
+      console.log("=========================================================1")
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
       totalDataComing.map((data, index) => {
@@ -2216,6 +2216,9 @@ exports.saveBulkClaim = async (req, res) => {
       })
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
+      console.log("=========================================================2")
+      console.log("=========================================================servicer",emailServicerId)
+
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
       //get email of all servicer
@@ -2341,6 +2344,7 @@ exports.saveBulkClaim = async (req, res) => {
           };
           //}
         } else {
+          console.log("==================================4")
           toMail = new_admin_array;
           ccMail = ['noreply@getcover.com'];
           return {
@@ -2393,6 +2397,7 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
       //send Email to admin 
+      console.log("==================================5",toMail,ccMail)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
