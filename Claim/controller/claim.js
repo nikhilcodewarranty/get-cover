@@ -962,7 +962,7 @@ exports.addClaim = async (req, res, next) => {
     let createNotification = await userService.createNotification(notificationData1);
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
-    let adminCC = notificationCC
+    let adminCC =  await supportingFunction.getUserEmails();
     //let cc = notificationEmails;
     notificationCC.push(dealerPrimary.email);
     notificationCC.push(resellerPrimary?.email); 
