@@ -2234,16 +2234,19 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId;
         }
-        if (!existArray.data[servicerId]) {
+        if (!existArray.data[servicerId] && servicerId!=undefined) {
           existArray.data[servicerId] = [];
         }
         console.log("servicerId------------------------------",servicerId)
-        existArray.data[servicerId].push({
-          contractId: data.contractId ? data.contractId : "",
-          lossDate: data.lossDate ? data.lossDate : '',
-          diagnosis: data.diagnosis ? data.diagnosis : '',
-          status: data.status ? data.status : '',
-        });
+        if(servicerId!=undefined){
+          existArray.data[servicerId].push({
+            contractId: data.contractId ? data.contractId : "",
+            lossDate: data.lossDate ? data.lossDate : '',
+            diagnosis: data.diagnosis ? data.diagnosis : '',
+            status: data.status ? data.status : '',
+          });
+        }
+       
 
         console.log("existArray------------------------------",existArray)
 
