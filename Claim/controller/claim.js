@@ -2175,7 +2175,6 @@ exports.saveBulkClaim = async (req, res) => {
           return null;
         }
       })
-      console.log("=========================================================1")
       const updateArray = await Promise.all(updateArrayPromise);
       let emailServicerId = [];
       totalDataComing.map((data, index) => {
@@ -2216,7 +2215,6 @@ exports.saveBulkClaim = async (req, res) => {
       })
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
-      console.log("=========================================================2")
 
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
@@ -2237,7 +2235,6 @@ exports.saveBulkClaim = async (req, res) => {
         if (!existArray.data[servicerId] && servicerId!=undefined) {
           existArray.data[servicerId] = [];
         }
-        console.log("servicerId------------------------------",servicerId)
         if(servicerId!=undefined){
           existArray.data[servicerId].push({
             contractId: data.contractId ? data.contractId : "",
@@ -2248,7 +2245,6 @@ exports.saveBulkClaim = async (req, res) => {
         }
        
 
-        console.log("existArray------------------------------",existArray)
 
 
       });
@@ -2350,9 +2346,8 @@ exports.saveBulkClaim = async (req, res) => {
           };
           //}
         } else {
-          console.log("==================================4")
           toMail = new_admin_array;
-          ccMail = ['noreply@getcover.com'];
+          ccMail = '' ;
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2403,7 +2398,6 @@ exports.saveBulkClaim = async (req, res) => {
       const htmlTableString = convertArrayToHTMLTable(csvArray);
 
       //send Email to admin 
-      console.log("==================================5",toMail,ccMail)
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
 
