@@ -4176,7 +4176,7 @@ async function generateTC(orderData) {
                         let emailData = {
                             senderName: customerUser.firstName,
                             content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Term and Condition',
+                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
 

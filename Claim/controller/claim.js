@@ -962,10 +962,10 @@ exports.addClaim = async (req, res, next) => {
     let createNotification = await userService.createNotification(notificationData1);
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
-    let adminCC =  await supportingFunction.getUserEmails();
+    let adminCC = await supportingFunction.getUserEmails();
     //let cc = notificationEmails;
     notificationCC.push(dealerPrimary.email);
-    notificationCC.push(resellerPrimary?.email); 
+    notificationCC.push(resellerPrimary?.email);
     let emailData = {
       senderName: customerPrimary.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
@@ -985,7 +985,7 @@ exports.addClaim = async (req, res, next) => {
     }
 
     res.send({
-      code: constant.successCode, 
+      code: constant.successCode,
       message: 'Success!',
       result: claimResponse
     })
@@ -1437,10 +1437,8 @@ exports.editClaimStatus = async (req, res) => {
       };
 
       let createNotification = await userService.createNotification(notificationData1);
-
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-
       //Email to customer
       let emailData = {
         senderName: customerPrimary?.firstName,
@@ -1456,20 +1454,24 @@ exports.editClaimStatus = async (req, res) => {
       }
       mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       //Email to Reseller
-      emailData = {
-        senderName: resellerPrimary?.firstName,
-        content: "The customer status has been updated for " + checkClaim.unique_key + "",
-        subject: "Customer Status Update"
+      if (resellerPrimary) {
+        emailData = {
+          senderName: resellerPrimary?.firstName,
+          content: "The customer status has been updated for " + checkClaim.unique_key + "",
+          subject: "Customer Status Update"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : process.env.resellerEmail, notificationEmails, emailData))
+
       //email to servicer 
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-      emailData = {
-        senderName: servicerPrimary?.firstName,
-        content: "The customer status has been updated for " + checkClaim.unique_key + "",
-        subject: "Customer Status Update"
+      if (servicerPrimary) {
+        emailData = {
+          senderName: servicerPrimary?.firstName,
+          content: "The customer status has been updated for " + checkClaim.unique_key + "",
+          subject: "Customer Status Update"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
     }
 
     if (data.hasOwnProperty("repairStatus")) {
@@ -1521,34 +1523,37 @@ exports.editClaimStatus = async (req, res) => {
       //Email to dealer
       let emailData = {
         senderName: dealerPrimary.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
       // Email to Customer
       emailData = {
         senderName: customerPrimary?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
+        content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
         subject: "Repair Status Update"
       }
       mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationEmails, emailData))
       // Email to Reseller
-      emailData = {
-        senderName: resellerPrimary?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
+      if (resellerPrimary) {
+        emailData = {
+          senderName: resellerPrimary?.firstName,
+          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
+          subject: "Repair Status Update"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : 'reseller@yopmail.com', notificationEmails, emailData))
       }
       //email to servicer
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary ? resellerPrimary.email : 'reseller@yopmail.com', notificationEmails, emailData))
-      emailData = {
-        senderName: servicerPrimary?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Repair Status Update"
+      if (servicerPrimary) {
+        emailData = {
+          senderName: servicerPrimary?.firstName,
+          content: "The claim repair status has been updated for " + checkClaim.unique_key + "",
+          subject: "Repair Status Update"
+        }
+        const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
       }
-      const servicerEmail = servicerPrimary ? servicerPrimary?.email : process.env.servicerEmail
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerEmail, notificationEmails, emailData))
     }
-
     if (data.hasOwnProperty("claimStatus")) {
       let claimStatus = await claimService.updateClaim(criteria, { claimFile: data.claimStatus, reason: data.reason ? data.reason : '' }, { new: true })
       status.trackStatus = [
@@ -1603,35 +1608,40 @@ exports.editClaimStatus = async (req, res) => {
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['yash@yopmail.com'], emailData))
+      let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, ['noreply@getcover.com'], emailData))
       //Email to Reseller
-      emailData = {
-        senderName: resellerPrimary?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
+      if (resellerPrimary) {
+        emailData = {
+          senderName: resellerPrimary?.firstName,
+          content: "The claim status has been updated for " + checkClaim.unique_key + "",
+          subject: "Claim Status Update"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['noreply@getcover.com'], emailData))
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(resellerPrimary?.email, ['yash@yopmail.com'], emailData))
+
       //Email to customer
       emailData = {
         senderName: customerPrimary.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['yash@yopmail.com'], emailData))
-      //Email to customer
-      emailData = {
-        senderName: servicerPrimary?.firstName,
-        content: "The claim status has been updated for " + checkClaim.unique_key + "",
-        subject: "Claim Status Update"
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary?.email, ['noreply@getcover.com'], emailData))
+      //Email to Servicer
+      if (servicerPrimary) {
+        emailData = {
+          senderName: servicerPrimary?.firstName,
+          content: "The claim status has been updated for " + checkClaim.unique_key + "",
+          subject: "Claim Status Update"
+        }
+        mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['noreply@getcover.com'], emailData))
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, ['yash@yopmail.com'], emailData))
       //Email to admin
       emailData = {
         senderName: admin?.firstName,
         content: "The claim status has been updated for " + checkClaim.unique_key + "",
         subject: "Claim Status Update"
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['yash@yopmail.com'], emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
     }
 
     if (data.hasOwnProperty("claimType")) {
@@ -2232,10 +2242,10 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId;
         }
-        if (!existArray.data[servicerId] && servicerId!=undefined) {
+        if (!existArray.data[servicerId] && servicerId != undefined) {
           existArray.data[servicerId] = [];
         }
-        if(servicerId!=undefined){
+        if (servicerId != undefined) {
           existArray.data[servicerId].push({
             contractId: data.contractId ? data.contractId : "",
             lossDate: data.lossDate ? data.lossDate : '',
@@ -2243,7 +2253,7 @@ exports.saveBulkClaim = async (req, res) => {
             status: data.status ? data.status : '',
           });
         }
-       
+
 
 
 
@@ -2347,7 +2357,7 @@ exports.saveBulkClaim = async (req, res) => {
           //}
         } else {
           toMail = new_admin_array;
-          ccMail = '' ;
+          ccMail = '';
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
