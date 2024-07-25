@@ -2359,6 +2359,7 @@ exports.getAllNotifications = async (req, res) => {
   }
 };
 
+//Get Notification
 exports.getAllNotifications1 = async (req, res) => {
   try {
     let data = req.body
@@ -2404,6 +2405,7 @@ exports.getAllNotifications1 = async (req, res) => {
   }
 };
 
+//Read Notification
 exports.readNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2427,6 +2429,7 @@ exports.readNotification = async (req, res) => {
   }
 }
 
+//Read All Notification
 exports.readAllNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2742,6 +2745,7 @@ exports.getMembers = async (req, res) => {
     })
   }
 };
+
 //Get account information
 exports.getAccountInfo = async (req, res) => {
   try {
@@ -2772,6 +2776,7 @@ exports.getAccountInfo = async (req, res) => {
     })
   }
 };
+
 //Change Primary User 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -2809,6 +2814,7 @@ exports.changePrimaryUser = async (req, res) => {
   }
 };
 
+//Check token for user
 exports.checkToken = async (req, res) => {
   try {
     let data = req.body
@@ -3367,6 +3373,7 @@ exports.saleReporting1 = async (req, res) => {
   }
 }
 
+//Claim Reporting
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
@@ -3416,7 +3423,7 @@ exports.claimReporting = async (req, res) => {
   }
 }
 
-
+//Get SKU Data
 exports.getSkuData = async (req, res) => {
   try {
     let endOfMonth1s = new Date();
@@ -3497,6 +3504,7 @@ exports.getSkuData = async (req, res) => {
   }
 }
 
+//Check ID and Token
 exports.checkIdAndToken = async (req, res) => {
   try {
     let data = req.body
