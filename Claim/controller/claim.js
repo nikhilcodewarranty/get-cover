@@ -2217,7 +2217,6 @@ exports.saveBulkClaim = async (req, res) => {
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
       console.log("=========================================================2")
-      console.log("=========================================================servicer",emailServicerId)
 
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
@@ -2238,12 +2237,16 @@ exports.saveBulkClaim = async (req, res) => {
         if (!existArray.data[servicerId]) {
           existArray.data[servicerId] = [];
         }
+        console.log("servicerId------------------------------",servicerId)
         existArray.data[servicerId].push({
           contractId: data.contractId ? data.contractId : "",
           lossDate: data.lossDate ? data.lossDate : '',
           diagnosis: data.diagnosis ? data.diagnosis : '',
           status: data.status ? data.status : '',
         });
+
+        console.log("existArray------------------------------",existArray)
+
 
       });
 
