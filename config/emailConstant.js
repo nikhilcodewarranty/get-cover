@@ -1,5 +1,5 @@
 module.exports = {
-  resetpassword: (ID, resetCode, toEmail,data) => {
+  resetpassword: (ID, resetCode, toEmail, data) => {
     return {
       to: toEmail,
       from: process.env.from_email,
@@ -16,12 +16,6 @@ module.exports = {
       from: process.env.from_email,
       subject: `Bulk Data Report`,
       html: data
-      // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
-      // dynamic_template_data:data ,
-      // mailSettings: {
-      //   // Set the subject for the email
-      //   subject: 'CSV link',
-      // },
     };
   },
 
@@ -31,12 +25,7 @@ module.exports = {
       cc: ccEmail,
       from: process.env.from_email,
       templateId: process.env.update_status,
-      // templateId: "d-7b32ddb3017b406b8ad55673d84d2fce",
       dynamic_template_data: data,
-      // mailSettings: {
-      //   // Set the subject for the email
-      //   subject: 'CSV link',
-      // },
     };
   },
 
@@ -63,8 +52,6 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      // subject: `Sending an email using SendGrid`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.main_template,
       dynamic_template_data: data
 
@@ -75,8 +62,6 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      // subject: `Sending an email using SendGrid`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.register_servicer,
     };
   },
@@ -85,8 +70,6 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      // subject: `Sending an email using SendGrid`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: process.env.approval_mail,
       dynamic_template_data: data
     };
@@ -96,8 +79,6 @@ module.exports = {
     return {
       to: toEmail,
       from: process.env.from_email,
-      // subject: `Sending an email using SendGrid`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
       templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
       dynamic_template_data: data
     };
@@ -110,47 +91,10 @@ module.exports = {
       to: toEmail,
       from: process.env.from_email,
       text: "ssssssssssssssssssssssss"
-      // subject: `Sending an email using SendGrid`,
-      // text: `Set Password Link:- http://15.207.221.207/newPassword/{{ID}}/{{resetCode}}`,
-      // templateId: 'd-a5d4a679ef5e459aaffcf27b5876e782',
-      // dynamic_template_data:data
     };
   },
 
-  // sendMissingProduct: (toEmail, missingProductNames, sub) => {
-  //   const htmlContent = `
-  //         <p>Please check the following missing products:</p>
-  //         <ul>
-  //           ${missingProductNames.map(product => `<li>${product}</li>`).join('')}
-  //         </ul>
-  //       `;
-  //   return {
-  //     to: toEmail,
-  //     from: process.env.from_email,
-  //     subject: sub,
-  //     text: 'Please check missing Products',
-  //     html: htmlContent,
-  //   };
-  // },
 
-  // sendAlreadyProduct: (toEmail, alreadyProducts, sub) => {
-  //   const htmlContent = `
-  //       <p>Please check the following already products:</p>
-  //       <ul>
-  //         ${alreadyProducts.map(product => {
-  //     const priceBooksList = product.priceBooks.map(priceBook => `${priceBook.name}`).join('');
-  //     return `<li><ul>${priceBooksList}</ul></li>`;
-  //   }).join('')}
-  //       </ul>
-  //     `;
-  //   return {
-  //     to: toEmail,
-  //     from: process.env.from_email,
-  //     subject: sub,
-  //     text: 'Please check missing Products',
-  //     html: htmlContent,
-  //   };
-  // },
 
   sendNullMessage: (toEmail) => {
     const htmlContent = `
