@@ -965,7 +965,7 @@ exports.addClaim = async (req, res, next) => {
     let adminCC = notificationCC
     //let cc = notificationEmails;
     notificationCC.push(dealerPrimary.email);
-    notificationCC.push(resellerPrimary?.email);
+    notificationCC.push(resellerPrimary?.email); 
     let emailData = {
       senderName: customerPrimary.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
