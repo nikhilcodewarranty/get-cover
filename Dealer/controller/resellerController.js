@@ -762,7 +762,7 @@ exports.editResellers = async (req, res) => {
         notificationEmails.push(dealerPrimary.email);
         let emailData = {
             senderName: checkReseller.name,
-            content: "Information has been updated successfully! effective immediately.",
+            content: "The information has been updated successfully! effective immediately.",
             subject: "Update Info"
         }
 
