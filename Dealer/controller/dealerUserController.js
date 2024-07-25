@@ -1414,7 +1414,6 @@ exports.createCustomer = async (req, res, next) => {
         //Send Notification to customer,admin,reseller,dealer 
         IDs.push(getPrimary._id)
         IDs.push(resellerPrimary?._id)
-
         let notificationData = {
             title: "New Customer Created",
             description: data.accountName + " " + "customer account has been created successfully!",
@@ -4236,7 +4235,7 @@ async function generateTC(orderData) {
                             websiteSetting: settingData[0],
                             senderName: customerUser.firstName,
                             content: "Please read the following terms and conditions for your order. If you have any questions, feel free to reach out to our support team.",
-                            subject: 'Term and Condition',
+                            subject: 'Order Term and Condition-' + checkOrder.unique_key,
                         }
                         let mailing = await sgMail.send(emailConstant.sendTermAndCondition(customerUser.email, notificationEmails, emailData, attachment))
 

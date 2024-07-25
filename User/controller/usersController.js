@@ -389,9 +389,10 @@ exports.createDealer = async (req, res) => {
     upload(req, res, async () => {
       const data = req.body;
       data.name = data.name.trim().replace(/\s+/g, ' ');
+      const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {});
+
       let priceFile
       let termFile;
-      const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true },{});
       let isAccountCreate = req.body.isAccountCreate
       let file = req.files
       for (i = 0; i < file.length; i++) {
@@ -1329,9 +1330,7 @@ exports.createDealer = async (req, res) => {
             content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
             subject: "Dealer Account Created - " + createMetaData.name
           }
-
           sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
-
           // Send Email code here
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -2454,6 +2453,7 @@ exports.getAllNotifications = async (req, res) => {
   }
 };
 
+//Get Notification
 exports.getAllNotifications1 = async (req, res) => {
   try {
     let data = req.body
@@ -2499,6 +2499,7 @@ exports.getAllNotifications1 = async (req, res) => {
   }
 };
 
+//Read Notification
 exports.readNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2522,6 +2523,7 @@ exports.readNotification = async (req, res) => {
   }
 }
 
+//Read All Notification
 exports.readAllNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2839,6 +2841,7 @@ exports.getMembers = async (req, res) => {
     })
   }
 };
+
 //Get account information
 exports.getAccountInfo = async (req, res) => {
   try {
@@ -2869,6 +2872,7 @@ exports.getAccountInfo = async (req, res) => {
     })
   }
 };
+
 //Change Primary User 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -2906,6 +2910,7 @@ exports.changePrimaryUser = async (req, res) => {
   }
 };
 
+//Check token for user
 exports.checkToken = async (req, res) => {
   try {
     let data = req.body
@@ -3460,6 +3465,7 @@ exports.saleReporting1 = async (req, res) => {
   }
 }
 
+//Claim Reporting
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
@@ -3509,7 +3515,7 @@ exports.claimReporting = async (req, res) => {
   }
 }
 
-
+//Get SKU Data
 exports.getSkuData = async (req, res) => {
   try {
     let endOfMonth1s = new Date();
@@ -3590,6 +3596,7 @@ exports.getSkuData = async (req, res) => {
   }
 }
 
+//Check ID and Token
 exports.checkIdAndToken = async (req, res) => {
   try {
     let data = req.body

@@ -974,7 +974,7 @@ exports.getDashboardGraph = async (req, res) => {
         })
     }
 };
-
+ 
 //get dashboard info
 exports.getDashboardInfo = async (req, res) => {
 
