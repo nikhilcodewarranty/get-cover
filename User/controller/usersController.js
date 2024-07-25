@@ -374,6 +374,8 @@ exports.createDealer = async (req, res) => {
     upload(req, res, async () => {
       const data = req.body;
       data.name = data.name.trim().replace(/\s+/g, ' ');
+      const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {});
+
       let priceFile
       let termFile;
       let isAccountCreate = req.body.isAccountCreate
@@ -641,8 +643,15 @@ exports.createDealer = async (req, res) => {
           };
 
           await userService.createNotification(notificationData);
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
+          }
           // Send Email code here
-          //   sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1018,9 +1027,17 @@ exports.createDealer = async (req, res) => {
             }
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
+          // Primary User Welcoime email
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + singleDealer.name + " has been approved.",
+            subject: "Dealer Account Approved - " + singleDealer.name
+          }
 
           // Send Email code here
-          // let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          let mailing = sgMail.send(emailConstant.sendEmailTemplate(allUserData[0].email, notificationEmails, emailData))
+          // Send Email code here
 
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1249,7 +1266,15 @@ exports.createDealer = async (req, res) => {
             return;
           }
           //Approve status 
+          let notificationEmails = await supportingFunction.getUserEmails();
 
+          let emailData = {
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
+          }
+
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           // Send Email code here
           if (req.body.isAccountCreate) {
             for (let i = 0; i < createUsers.length; i++) {
@@ -1582,6 +1607,13 @@ exports.createDealer = async (req, res) => {
           }
           let updateUserStatus = await userService.updateUser(statusUpdateCreateria, updateData, { new: true })
 
+          let notificationEmails = await supportingFunction.getUserEmails();
+          let emailData = {
+            senderName: loginUser.firstName,
+            content: "We are delighted to inform you that the dealer account for " + createMetaData.name + " has been created.",
+            subject: "Dealer Account Created - " + createMetaData.name
+          }
+          sgMail.send(emailConstant.sendEmailTemplate(notificationEmails, ['noreply@getcover.com'], emailData))
           // Send Email code here
 
           if (req.body.isAccountCreate) {
@@ -2078,7 +2110,8 @@ exports.sendLinkToEmail = async (req, res) => {
       let resetLink = `${process.env.SITE_URL}newPassword/${checkEmail._id}/${resetPasswordCode}`
 
       let data = {
-        link: resetLink
+        link: resetLink,
+        name: checkEmail.firstName
       }
       const mailing = sgMail.send(emailConstant.resetpassword(checkEmail._id, resetPasswordCode, checkEmail.email, data))
 
@@ -2326,6 +2359,7 @@ exports.getAllNotifications = async (req, res) => {
   }
 };
 
+//Get Notification
 exports.getAllNotifications1 = async (req, res) => {
   try {
     let data = req.body
@@ -2371,6 +2405,7 @@ exports.getAllNotifications1 = async (req, res) => {
   }
 };
 
+//Read Notification
 exports.readNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2394,6 +2429,7 @@ exports.readNotification = async (req, res) => {
   }
 }
 
+//Read All Notification
 exports.readAllNotification = async (req, res) => {
   try {
     let data = req.body
@@ -2709,6 +2745,7 @@ exports.getMembers = async (req, res) => {
     })
   }
 };
+
 //Get account information
 exports.getAccountInfo = async (req, res) => {
   try {
@@ -2739,6 +2776,7 @@ exports.getAccountInfo = async (req, res) => {
     })
   }
 };
+
 //Change Primary User 
 exports.changePrimaryUser = async (req, res) => {
   try {
@@ -2776,6 +2814,7 @@ exports.changePrimaryUser = async (req, res) => {
   }
 };
 
+//Check token for user
 exports.checkToken = async (req, res) => {
   try {
     let data = req.body
@@ -3334,6 +3373,7 @@ exports.saleReporting1 = async (req, res) => {
   }
 }
 
+//Claim Reporting
 exports.claimReporting = async (req, res) => {
   try {
     let data = req.body
@@ -3383,7 +3423,7 @@ exports.claimReporting = async (req, res) => {
   }
 }
 
-
+//Get SKU Data
 exports.getSkuData = async (req, res) => {
   try {
     let endOfMonth1s = new Date();
@@ -3464,6 +3504,7 @@ exports.getSkuData = async (req, res) => {
   }
 }
 
+//Check ID and Token
 exports.checkIdAndToken = async (req, res) => {
   try {
     let data = req.body

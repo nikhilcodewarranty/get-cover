@@ -962,17 +962,17 @@ exports.addClaim = async (req, res, next) => {
     let createNotification = await userService.createNotification(notificationData1);
     // Send Email code here
     let notificationCC = await supportingFunction.getUserEmails();
-    let notificationTo = [customerPrimary?.email]
+    let adminCC = notificationCC
     //let cc = notificationEmails;
     notificationCC.push(dealerPrimary.email);
     notificationCC.push(resellerPrimary?.email);
     let emailData = {
-      senderName: customerPrimary?.firstName,
+      senderName: customerPrimary.firstName,
       content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
       subject: 'Add Claim'
     }
 
-    let mailing = sgMail.send(emailConstant.sendEmailTemplate(notificationTo, notificationCC, emailData))
+    let mailing = sgMail.send(emailConstant.sendEmailTemplate(customerPrimary.email, notificationCC, emailData))
 
     // Email to servicer and cc to admin 
     if (servicerPrimary) {
@@ -981,7 +981,7 @@ exports.addClaim = async (req, res, next) => {
         content: "The claim " + claimResponse.unique_key + " has been filed for the " + checkContract.unique_key + " contract!.",
         subject: 'Add Claim'
       }
-      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, notificationCC, emailData))
+      mailing = sgMail.send(emailConstant.sendEmailTemplate(servicerPrimary?.email, adminCC, emailData))
     }
 
     res.send({
@@ -1192,9 +1192,11 @@ exports.editClaim = async (req, res) => {
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
+
       if (servicerPrimary) {
         IDs.push(servicerPrimary._id)
       }
+
       let notificationData1 = {
         title: "Repair Parts/ labor update",
         description: "The  repair part update for " + checkClaim.unique_key + " claim",
