@@ -1613,12 +1613,13 @@ exports.getReportingDropdowns = async (req, res) => {
         let result;
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }, { name: 1 })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
         const convertedData = getDealers.map(item => ({
             value: item._id,
             label: item.name
         }));
 
+        console.log(getPriceBooks);
         let priceBook = getPriceBooks.map(item => ({
             value: item._id,
             label: item.name
@@ -1677,6 +1678,8 @@ exports.getReportingDropdowns = async (req, res) => {
                 value: item._id,
                 label: item.name
             }));
+            console.log("priceBook------------------",priceBook)
+            console.log("getPriceBooks2------------------",getPriceBooks2)
             result = {
                 getDealers: [],
                 getPriceBooks: priceBook,
@@ -1703,6 +1706,8 @@ exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body
         let result;
+
+        console.log("dfsfsfsdf")
 
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
@@ -1869,6 +1874,7 @@ exports.claimReportinDropdown = async (req, res) => {
 
         }
 
+        console.log("fsdsdfddsdsd");
         res.send({
             code: constant.successCode,
             message: "Success",
