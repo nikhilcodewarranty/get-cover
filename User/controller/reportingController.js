@@ -1615,7 +1615,7 @@ exports.getReportingDropdowns = async (req, res) => {
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
         const convertedData = getDealers.map(item => ({
-            value: item._id,
+            value: item.name,
             label: item.name
         }));
 
