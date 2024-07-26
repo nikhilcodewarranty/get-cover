@@ -2700,42 +2700,40 @@ exports.statusClaim = async (req, res) => {
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
 
-      if (
-        customerLastResponseDate > latestServicerShippedDate &&
-        customerLastResponseDate < sevenDaysAfterShippedDate
-      ) {
-        console.log("Customer response is within 7 days after the last servicer shipped date."); //tondon
-      } else {
-        // Update status for track status
-        messageData.trackStatus = [
-          {
-            status: 'Completed',
-            date: new Date()
+      if (new Date() === sevenDaysAfterShippedDate) {
+        if (customerLastResponseDate < latestServicerShippedDate) {
+          // Update status for track status
+          messageData.trackStatus = [
+            {
+              status: 'Completed',
+              date: new Date()
+            }
+          ]
+
+          updateStatus = await claimService.updateClaim({ _id: claimId }, {
+            $push: messageData,
+            $set: { claimFile: 'Completed', claimDate: new Date(), claimStatus: [{ status: 'Completed', date: new Date() }] }
+          }, { new: true })
+
+          const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+          let checkContract = await contractService.getContractById({ _id: contractId })
+          let claimTotalQuery = [
+            { $match: query },
+            { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
+
+          ]
+          let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
+
+          // Update Eligibilty true and false
+          if (checkContract.productValue > claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
           }
-        ]
-
-        updateStatus = await claimService.updateClaim({ _id: claimId }, {
-          $push: messageData,
-          $set: { claimFile: 'Completed', claimDate: new Date(), claimStatus: [{ status: 'Completed', date: new Date() }] }
-        }, { new: true })
-
-        const query = { contractId: new mongoose.Types.ObjectId(contractId) }
-        let checkContract = await contractService.getContractById({ _id: contractId })
-        let claimTotalQuery = [
-          { $match: query },
-          { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
-
-        ]
-        let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
-
-        // Update Eligibilty true and false
-        if (checkContract.productValue > claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: true }, { new: true })
+          else if (checkContract.productValue < claimTotal[0]?.amount) {
+            const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
+          }
         }
-        else if (checkContract.productValue < claimTotal[0]?.amount) {
-          const updateContract = await contractService.updateContract({ _id: contractId }, { eligibilty: false }, { new: true })
-        }
-      }
+        console.log("Customer response is within 7 days after the last servicer shipped date."); //tondon
+      } 
     }
 
     res.send({
