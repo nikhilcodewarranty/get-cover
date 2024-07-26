@@ -993,7 +993,7 @@ exports.changeDealerStatus = async (req, res) => {
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "Dealer status update",
-        description: singleDealer.name + " , " + "your status has been updated",
+        description: singleDealer.name + ", " + "your status has been updated",
         userId: req.teammateId,
         redirectionId: singleDealer.name,
         flag: 'dealer',
@@ -1010,9 +1010,6 @@ exports.changeDealerStatus = async (req, res) => {
         subject: "Update Status"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-
-
-
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
