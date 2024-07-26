@@ -1010,9 +1010,6 @@ exports.changeDealerStatus = async (req, res) => {
         subject: "Update Status"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-
-
-
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",

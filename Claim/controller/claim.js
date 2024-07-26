@@ -2198,18 +2198,6 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
-        if (!existArray.data[servicerId] && servicerId != undefined) {
-          emailServicerId.push(servicerId);
-          existArray.data[servicerId] = [];
-        }
-        if (servicerId != undefined) {
-          existArray.data[servicerId].push({
-            contractId: data.contractId ? data.contractId : "",
-            lossDate: data.lossDate ? data.lossDate : '',
-            diagnosis: data.diagnosis ? data.diagnosis : '',
-            status: data.status ? data.status : '',
-          });
-        }
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
@@ -2236,6 +2224,21 @@ exports.saveBulkClaim = async (req, res) => {
           finalArray.push(obj)
           data.status = 'Add claim successfully!'
         }
+        
+        if (!existArray.data[servicerId] && servicerId != undefined) {
+          emailServicerId.push(servicerId);
+          existArray.data[servicerId] = [];
+        }
+
+        if (servicerId != undefined) {
+          existArray.data[servicerId].push({
+            contractId: data.contractId ? data.contractId : "",
+            lossDate: data.lossDate ? data.lossDate : '',
+            diagnosis: data.diagnosis ? data.diagnosis : '',
+            status: data.status ? data.status : '',
+          });
+        }
+
       })
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
