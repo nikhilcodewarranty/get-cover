@@ -1155,13 +1155,13 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
-
+console.log("data++++++++++++++++++++++++++++++++++++++",data)
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
-            dailyQuery[0].$match.servicerId = data.servicerId
-            dailyQuery1[0].$match.servicerId = data.servicerId
-            dailyQuery2[0].$match.servicerId = data.servicerId
-            dailyQuery3[0].$match.servicerId = data.servicerId
+            dailyQuery[0].$match.servicerId = servicerId
+            dailyQuery1[0].$match.servicerId = servicerId
+            dailyQuery2[0].$match.servicerId = servicerId
+            dailyQuery3[0].$match.servicerId = servicerId
         }
 
         if (data.customerId) {
@@ -1318,7 +1318,7 @@ exports.claimWeeklyReporting = async (data) => {
 
             }
 
-            if (req.role == "Servicer") {
+            if (data.role == "Servicer") {
                 return {
                     weekStart: item.weekStart,
                     total_amount: item.total_amount,

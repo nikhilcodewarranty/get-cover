@@ -84,8 +84,6 @@ module.exports = {
     };
   },
 
-
-
   term_condition: (toEmail) => {
     return {
       to: toEmail,
@@ -93,8 +91,6 @@ module.exports = {
       text: "ssssssssssssssssssssssss"
     };
   },
-
-
 
   sendNullMessage: (toEmail) => {
     const htmlContent = `
