@@ -142,13 +142,13 @@ app.use("/api-v1/reporting", reportingRoutes);
 app.use("/api-v1/admin", userRoutes);
 app.use("/api-v1/dealer", dealerRoutes);
 app.use("/api-v1/reseller", resellerRoutes);
+
 app.use("/api-v1/contract", contractRoutes);
 app.use("/api-v1/servicer", serviceRoutes);
 app.use("/api-v1/price", priceRoutes);
 app.use("/api-v1/order", orderRoutes);
 app.use("/api-v1/customer", customerRoutes);
 app.use("/api-v1/claim", claimRoutes);
-
 
 app.use("/api-v1/servicerPortal", servicePortal);
 app.use("/api-v1/dealerPortal", dealerUserRoutes);

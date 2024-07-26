@@ -1658,9 +1658,14 @@ exports.getReportingDropdowns = async (req, res) => {
             }
             if (data.categoryId != "") {
                 let getPriceBooks2 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
+                priceBook = getPriceBooks2.map(item => ({
+                    value: item._id,
+                    label: item.name
+                }));
+                
                 result = {
                     getDealers: convertedData,
-                    getPriceBooks: getPriceBooks2,
+                    getPriceBooks: priceBook,
                     getCategories: categories
                 }
             }
