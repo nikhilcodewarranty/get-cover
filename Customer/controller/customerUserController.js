@@ -1190,7 +1190,6 @@ exports.getContractById = async (req, res) => {
       getData[0].claimAmount = claimTotal[0]?.amount
     }
 
-    console.log("getData-------------------", getData)
 
     let orderProductId = getData[0].orderProductId
     let order = getData[0].order

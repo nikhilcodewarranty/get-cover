@@ -2224,7 +2224,7 @@ exports.saveBulkClaim = async (req, res) => {
           finalArray.push(obj)
           data.status = 'Add claim successfully!'
         }
-        
+
         if (!existArray.data[servicerId] && servicerId != undefined) {
           emailServicerId.push(servicerId);
           existArray.data[servicerId] = [];
@@ -2692,27 +2692,13 @@ exports.statusClaim = async (req, res) => {
       let contractId = result[i].contractId;
       const claimId = result[i]._id;
       const customerStatus = result[i].customerStatus;
-
       //Get latest Servicer Shipped Status
-      const latestServicerShipped = repairStatus.reduce((latest, current) => {
-        if (current.status === "Servicer Shipped" && new Date(current.date) > new Date(latest.date)) {
-          return current;
-        }
-        return latest;
-      }, repairStatus[0]);
-
+      const latestServicerShipped = repairStatus[0]?.date
       //Get Customer last response
-      const customerLastResponseDate = customerStatus.reduce((latest, current) => {
-        if (new Date(current.date) > new Date(latest.date)) {
-          return current;
-        }
-        return latest;
-      }, customerStatus[0]);
-
-      const latestServicerShippedDate = new Date(latestServicerShipped.date);
+      const customerLastResponseDate = customerStatus[0]?.date
+      const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
 
       if (
         customerLastResponseDate > latestServicerShippedDate &&

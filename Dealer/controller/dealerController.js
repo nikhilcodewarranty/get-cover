@@ -168,7 +168,6 @@ exports.getAllDealers = async (req, res) => {
 //Get Pending Request dealers
 exports.getPendingDealers = async (req, res) => {
   try {
-
     let data = req.body
     if (req.role != "Super Admin") {
        res.send({
@@ -186,6 +185,7 @@ exports.getPendingDealers = async (req, res) => {
       ]
 
     };
+
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     //-------------Get All Dealers Id's------------------------
