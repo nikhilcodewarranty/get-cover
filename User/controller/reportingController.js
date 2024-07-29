@@ -810,11 +810,11 @@ exports.claimDailyReporting = async (data) => {
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             if (!getOrders) {
-                return {
+               return{
                     code: constant.errorCode,
                     message: "Invalid price book ID"
                 }
-
+              
             }
             let orderIds = getOrders.map(ID => ID.unique_key)
             dailyQuery[0].$match.orderId = { $in: orderIds }
@@ -1622,7 +1622,7 @@ exports.getReportingDropdowns = async (req, res) => {
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
         const convertedData = getDealers.map(item => ({
-            value: item.name,
+            value: item._id,
             label: item.name
         }));
 
@@ -1719,7 +1719,7 @@ exports.claimReportinDropdown = async (req, res) => {
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
 
         result = {
             dealers: getDealers,
@@ -1825,7 +1825,7 @@ exports.claimReportinDropdown = async (req, res) => {
             let dealerIds = filteredData.map(ID => ID.dealerData._id)
             let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds } })
             let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
-            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } },{ _id: 0, name: 1, pName: 1, coverageType: 1 })
+            let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
             let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
 
@@ -1865,13 +1865,12 @@ exports.claimReportinDropdown = async (req, res) => {
 
         if (data.primary == "category") {
             if (data.categoryId != "") {
-                getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId },{ _id: 0, name: 1, pName: 1, coverageType: 1 })
+                getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
             }
 
             if (data.priceBookId.length != 0) {
                 getCategories = []
             }
-            console.log("check ak ++++++++++++++++",getPriceBooks)
 
             result = {
                 dealers: [],
