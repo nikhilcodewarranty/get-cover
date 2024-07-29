@@ -810,11 +810,11 @@ exports.claimDailyReporting = async (data) => {
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             if (!getOrders) {
-                res.send({
+                return {
                     code: constant.errorCode,
                     message: "Invalid price book ID"
-                })
-                return;
+                }
+
             }
             let orderIds = getOrders.map(ID => ID.unique_key)
             dailyQuery[0].$match.orderId = { $in: orderIds }
