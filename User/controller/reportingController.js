@@ -1719,7 +1719,7 @@ exports.claimReportinDropdown = async (req, res) => {
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
 
         result = {
             dealers: getDealers,
