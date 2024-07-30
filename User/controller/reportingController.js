@@ -809,6 +809,13 @@ exports.claimDailyReporting = async (data) => {
 
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
+            if (!getOrders) {
+               return{
+                    code: constant.errorCode,
+                    message: "Invalid price book ID"
+                }
+              
+            }
             let orderIds = getOrders.map(ID => ID.unique_key)
             dailyQuery[0].$match.orderId = { $in: orderIds }
             dailyQuery1[0].$match.orderId = { $in: orderIds }
@@ -1155,6 +1162,7 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
+        console.log("data++++++++++++++++++++++++++++++++++++++", data)
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = servicerId
@@ -1614,7 +1622,7 @@ exports.getReportingDropdowns = async (req, res) => {
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
         let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
         const convertedData = getDealers.map(item => ({
-            value: item.name,
+            value: item._id,
             label: item.name
         }));
 
@@ -1662,7 +1670,7 @@ exports.getReportingDropdowns = async (req, res) => {
                     value: item._id,
                     label: item.name
                 }));
-                
+
                 result = {
                     getDealers: convertedData,
                     getPriceBooks: priceBook,
@@ -1677,8 +1685,8 @@ exports.getReportingDropdowns = async (req, res) => {
                 value: item._id,
                 label: item.name
             }));
-            console.log("priceBook------------------",priceBook)
-            console.log("getPriceBooks2------------------",getPriceBooks2)
+            console.log("priceBook------------------", priceBook)
+            console.log("getPriceBooks2------------------", getPriceBooks2)
             result = {
                 getDealers: [],
                 getPriceBooks: priceBook,
@@ -1711,7 +1719,7 @@ exports.claimReportinDropdown = async (req, res) => {
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
-        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 0, name: 1, pName: 1, coverageType: 1 })
+        let getPriceBooks = await priceBookService.getAllPriceIds({}, { _id: 1, name: 1, pName: 1, coverageType: 1 })
 
         result = {
             dealers: getDealers,
