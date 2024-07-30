@@ -1155,7 +1155,6 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
-console.log("data++++++++++++++++++++++++++++++++++++++",data)
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = servicerId
