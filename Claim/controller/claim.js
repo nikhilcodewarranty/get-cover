@@ -2225,61 +2225,70 @@ exports.saveBulkClaim = async (req, res) => {
           data.status = 'Add claim successfully!'
         }
 
-        if (!existArray.data[servicerId] && servicerId != undefined) {
-          emailServicerId.push(servicerId);
-          existArray.data[servicerId] = [];
-        }
-
-        if (servicerId != undefined) {
-          existArray.data[servicerId].push({
-            contractId: data.contractId ? data.contractId : "",
-            lossDate: data.lossDate ? data.lossDate : '',
-            diagnosis: data.diagnosis ? data.diagnosis : '',
-            status: data.status ? data.status : '',
-          });
-        }
-
       })
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
 
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
-      //get email of all servicer
-      const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
-      // If you need to convert existArray.data to a flat array format
-      if (emailServicer.length > 0) {
-        IDs = IDs.concat(emailServicerId)
-        let flatArray = [];
-        for (let servicerId in existArray.data) {
-          let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
-          let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
-          flatArray.push({
-            email: email,
-            response: existArray.data[servicerId]
-          });
-        }
-        //send email to servicer      
-        for (const item of flatArray) {
-          if (item.email != '') {
-            const htmlTableString = convertArrayToHTMLTable(item.response);
-            let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-          }
-
-        }
-      }
       let new_admin_array = adminEmail.concat(emailArray)
       let toMail = [];
       let ccMail;
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only 
+        let servicerId = item.servicerData?._id
+        if (item.servicerData?.dealerId) {
+          servicerId = item.servicerData?.dealerId
+        }
+        if (item.servicerData?.resellerId) {
+          servicerId = item.servicerData?.resellerId
+        }
         if (req.role === 'Dealer') {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
           let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
           toMail = userData.email;
-          // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2287,7 +2296,6 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         }
         // Build bulk csv for Reseller only 
         else if (req.role === 'Reseller') {
@@ -2304,7 +2312,46 @@ exports.saveBulkClaim = async (req, res) => {
           new_admin_array.push(dealerData.email);
           toMail = resellerData.email;
           ccMail = new_admin_array;
-          //if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2312,7 +2359,6 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         }
         // Build bulk csv for Customer only 
         else if (req.role === 'Customer') {
@@ -2337,7 +2383,46 @@ exports.saveBulkClaim = async (req, res) => {
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
           IDs.push(dealerData._id);
-          //if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2345,10 +2430,47 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         } else {
           toMail = new_admin_array;
           ccMail = '';
+          // For servicer
+          if (!existArray.data[servicerId] && servicerId != undefined) {
+            emailServicerId.push(servicerId);
+            existArray.data[servicerId] = [];
+          }
+
+          if (servicerId != undefined) {
+            existArray.data[servicerId].push({
+              contractId: data.contractId ? data.contractId : "",
+              lossDate: data.lossDate ? data.lossDate : '',
+              diagnosis: data.diagnosis ? data.diagnosis : '',
+              status: data.status ? data.status : '',
+            });
+          }
+
+          //get email of all servicer
+          const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+          // If you need to convert existArray.data to a flat array format
+          if (emailServicer.length > 0) {
+            IDs = IDs.concat(emailServicerId)
+            let flatArray = [];
+            for (let servicerId in existArray.data) {
+              let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+              let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+              flatArray.push({
+                email: email,
+                response: existArray.data[servicerId]
+              });
+            }
+            //send email to servicer      
+            for (const item of flatArray) {
+              if (item.email != '') {
+                const htmlTableString = convertArrayToHTMLTable(item.response);
+                let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+              }
+
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2397,11 +2519,9 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
           title: "Bulk Report",
