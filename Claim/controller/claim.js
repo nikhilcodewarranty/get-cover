@@ -2921,3 +2921,44 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
+
+
+
+// s3 bucket 
+
+const multerS3 = require('multer-s3');
+const AWS = require('aws-sdk');
+
+AWS.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+  region: 'us-east-1'
+});
+
+const s3 = new AWS.S3();
+
+const uploadS3 = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: 'getcover',
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      cb(null, Date.now().toString() + '-' + file.originalname);
+    }
+  })
+});
+
+exports.s3Bucket = async (req, res) => {
+  try {
+    uploadS3(req, res, async (err) => {
+      console.log("check++++++++++++", uploadS3)
+    })
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
