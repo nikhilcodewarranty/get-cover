@@ -45,50 +45,9 @@ const mongoose = require('mongoose')
 const fs = require('fs');
 const { verifyToken } = require('./middleware/auth') // authentication with jwt as middleware
 var app = express();
-// mongoose.Promise = global.Promise;
 
-// // Connecting to the database
-// mongoose.connect("mongodb://localhost:27017/getCover", {
-//   useNewUrlParser: true,
-//   // useUnifiedTopology: true,
-//   // useFindAndModify: false
-// }).then(() => {
-//   console.log("Successfully connected to the database");
-// }).catch(err => {
-//   console.log('Could not connect to the database. Exiting now...', err);
-//   process.exit();
-// });
 app.use("/api-v1/api-docs", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocument)(...args));
 app.use("/api-v1/priceApi", swaggerUi.serve, (...args) => swaggerUi.setup(swaggerDocumentDealer)(...args));
-//const template = fs.readFileSync('./template/template.html', 'utf-8')
-// const options = {
-//   format: 'A4',
-//   orientation: 'portrait',
-//   border: '10mm',
-//   childProcessOptions: {
-//     env: {
-//       OPENSSL_CONF: '/dev/null',
-//     },
-//   }
-// }
-// const document = {
-//   html: template,
-//   data: {
-//     message: 'My First PDF'
-//   },
-//   path: "./pdfs/teste33r.pdf"
-// }
-
-// pdf.create(document,options).then((res)=>{
-// console.log(res)
-// })
-
-//proxy servers
-// app.use('/user', createProxyMiddleware({ target: 'http://localhost:8080/', changeOrigin: true, pathRewrite: { '^/user': '/' }}));
-// app.use('/dealer', createProxyMiddleware({ target: 'http://localhost:8082/', changeOrigin: true, pathRewrite: { '^/dealer': '/' }}));
-// app.use('/price', createProxyMiddleware({ target: 'http://localhost:8083/', changeOrigin: true, pathRewrite: { '^/price': '/' }}));
-// app.use('/servicer', createProxyMiddleware({ target: 'http://localhost:8084/', changeOrigin: true, pathRewrite: { '^/servicer': '/' }}));
-//app.use('/customer', createProxyMiddleware({ target: 'http://localhost:8085/', changeOrigin: true, pathRewrite: { '^/customer': '/' } }));
 
 app.set('views', path.join(__dirname, 'views'));
 app.use(bodyParser.json());
@@ -106,8 +65,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/uploads',  express.static('./uploads/'))
-// app.use('/uploads/resultFile', express.static('./uploads/resultFile/'))
+app.use('/uploads', express.static('./uploads/'))
 
 app.get('/download/:filename', (req, res) => {
   const filePath = __dirname + '/uploads/' + process.env.DUMMY_CSV_FILE;
@@ -122,7 +80,7 @@ var cronOptions = {
   'method': 'POST',
   'url': `${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`,
 };
- 
+
 cron.schedule(' 2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
   // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 

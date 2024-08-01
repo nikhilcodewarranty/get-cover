@@ -2921,4 +2921,66 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
- 
+
+
+
+// s3 bucket 
+
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+
+// AWS.config.update({
+//   accessKeyId: process.env.aws_access_key_id,
+//   secretAccessKey: process.env.aws_secret_access_key,
+//   region: 'us-east-1'
+// });
+
+const s3 = new S3Client({
+  region: 'us-east-1',
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
+
+// const s3 = new AWS.S3();
+
+const folderName = 'claimFile'; // Replace with your specific folder name
+
+const uploadS3 = multerS3({
+  s3: s3,
+  bucket: 'getcover',
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+const imageUploadS3 = multer({
+  storage: uploadS3,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  }
+}).single('file');
+
+
+exports.s3Bucket = async (req, res) => {
+  try {
+    imageUploadS3(req, res, (err) => {
+      if (err) {
+        return res.send(err.message);
+      }
+      res.send({ddd:'File uploaded successfully',ttt:req.file});
+    });
+  } catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
