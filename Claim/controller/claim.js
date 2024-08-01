@@ -2930,12 +2930,6 @@ const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 
-// AWS.config.update({
-//   accessKeyId: process.env.aws_access_key_id,
-//   secretAccessKey: process.env.aws_secret_access_key,
-//   region: 'us-east-1'
-// });
-
 const s3 = new S3Client({
   region: 'us-east-1',
   credentials: {
