@@ -49,41 +49,7 @@ var upload = multer({
   { name: "termCondition" },
 ])
 
-
-
 //----------------------- api's function ---------------//
-
-// create user 
-exports.createUser = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    };
-    let data = req.body
-
-    const createdUser = await userService.createUser(data);
-    if (!createdUser) {
-      res.send({
-        code: constant.errorCode,
-        message: "Unable to create the user"
-      });
-      return;
-    };
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-    });
-  } catch (error) {
-    res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  };
-};
 
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
@@ -185,32 +151,6 @@ exports.createTerms = async (req, res) => {
     res.send({
       code: constant.errorCode,
       message: "Unable to create the terms"
-    });
-  }
-};
-
-exports.tryUpload = async (req, res) => {
-  try {
-    // Check if a file is uploaded
-    if (req.role != "Super Admin") {
-      res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    if (!req.file) {
-      res.send({
-        code: constant.errorCode,
-        message: "No file uploaded"
-      })
-      return;
-    }
-  } catch (err) {
-    // Handle errors and respond with an error message
-    res.send({
-      code: constant.errorCode,
-      message: err.message
     });
   }
 };
@@ -361,14 +301,7 @@ exports.validateData = async (req, res) => {
   });
 }
 
-function uniqByKeepLast(data, key) {
-  return [
-    ...new Map(
-      data.map(x => [key(x), x])
-    ).values()
-  ]
-}
-
+//Create Dealer by super admin
 exports.createDealer = async (req, res) => {
   try {
     upload(req, res, async () => {
@@ -1657,9 +1590,7 @@ exports.createDealer = async (req, res) => {
   }
 };
 
-//---------------------------------------------------- refined code ----------------------------------------//
-
-// Login route
+// Login User
 exports.login = async (req, res) => {
   try {
     // Check if the user with the provided email exists
@@ -1919,6 +1850,7 @@ exports.updateUser = async (req, res) => {
   };
 };
 
+//Update User new
 exports.updateUserData = async (req, res) => {
   try {
     let data = req.body
@@ -2025,7 +1957,7 @@ exports.updateUserData = async (req, res) => {
   };
 };
 
-// get all roles
+// get all terms 
 exports.getAllTerms = async (req, res) => {
   try {
     let query = { isDeleted: false }
@@ -2054,7 +1986,7 @@ exports.getAllTerms = async (req, res) => {
   }
 };
 
-// add new roles
+// add new roles // backend use
 exports.addRole = async (req, res) => {
   try {
     let checkRole = await userService.getRoleById({ role: { '$regex': new RegExp(`^${req.body.role}$`, 'i') } })
