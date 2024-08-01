@@ -6,13 +6,15 @@ const { verifyToken } = require("../../middleware/auth"); // authentication with
 
 router.post("/searchClaim", [verifyToken], claimController.searchClaim); // search claim
 
+router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
+
 router.post("/saveBulkClaim", [verifyToken], claimController.saveBulkClaim); // save bulk claim
+
+router.post("/getUnpaidAmount", [verifyToken], claimController.getUnpaidAmount); // get unpaid amount
 
 router.post("/uploadReceipt", [verifyToken], claimController.uploadReceipt); // upload receipt
 
 router.post("/sendMessages/:claimId", [verifyToken], claimController.sendMessages); // send messages for a claim
-
-router.get("/getMessages/:claimId", [verifyToken], claimController.getMessages); // get messages for a claim
 
 router.post("/uploadCommentImage", [verifyToken], claimController.uploadCommentImage); // upload comment image
 
@@ -34,13 +36,11 @@ router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer
 
 router.get("/getContractById/:contractId", [verifyToken], claimController.getContractById); // get contract by ID
 
-router.post("/getUnpaidAmount", [verifyToken], claimController.getUnpaidAmount); // get unpaid amount
-
-router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
-
 router.get("/statusClaim", claimController.statusClaim); // get claim status
 
 router.get("/getMaxClaimAmount/:contractId", [verifyToken], claimController.getMaxClaimAmount); // get max claim amount by contract ID
+
+router.get("/getMessages/:claimId", [verifyToken], claimController.getMessages); // get messages for a claim
 
 
 

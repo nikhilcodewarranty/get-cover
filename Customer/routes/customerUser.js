@@ -6,6 +6,10 @@ const validator = require('../config/validation');// Import the validator for re
 
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders); // getCustomerOrder route
 
+router.post('/saleReporting', [verifyToken], customerController.saleReporting); // saleReporting route
+
+router.post('/claimReporting', [verifyToken], customerController.claimReporting); // claimReporting route
+
 router.post('/getCustomerContract', [verifyToken], customerController.getCustomerContract); // getCustomerContract route
 
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser); // addCustomerUser route
@@ -25,10 +29,6 @@ router.get('/getOrderById/:orderId', [verifyToken], customerController.getSingle
 router.get('/getDashboardData', [verifyToken], customerController.getDashboardData); // getDashboardData route
 
 router.get('/getCustomerDetails', [verifyToken], customerController.getCustomerDetails); // getCustomerDetails route
-
-router.post('/saleReporting', [verifyToken], customerController.saleReporting); // saleReporting route
-
-router.post('/claimReporting', [verifyToken], customerController.claimReporting); // claimReporting route
 
 router.get('/getDashboardGraph', [verifyToken], customerController.getDashboardGraph); // getDashboardGraph route
 
