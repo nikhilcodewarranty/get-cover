@@ -111,8 +111,6 @@ module.exports = class claimService {
     }
   }
 
-
-
   // not using
   static async getAllClaims(query) {
     try {

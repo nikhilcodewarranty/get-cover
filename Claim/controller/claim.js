@@ -2921,3 +2921,4 @@ exports.getCoverageType = async (req, res) => {
     })
   }
 }
+ 
