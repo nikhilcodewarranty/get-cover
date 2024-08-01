@@ -2,8 +2,7 @@ const express = require("express");
 const router = express.Router();// Create a new router instance
 const customerController = require("../controller/customerUserController");// Import customer portal controller
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
-// Import the validator for request validation
-const validator = require('../config/validation');
+const validator = require('../config/validation');// Import the validator for request validation
 
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders); // getCustomerOrder route
 
