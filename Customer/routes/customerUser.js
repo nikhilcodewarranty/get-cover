@@ -4,6 +4,7 @@ const customerController = require("../controller/customerUserController");// Im
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');// Import the validator for request validation
 
+//POST Routes
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders); // getCustomerOrder route
 
 router.post('/saleReporting', [verifyToken], customerController.saleReporting); // saleReporting route
@@ -17,6 +18,8 @@ router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUse
 router.post('/getCustomerUsers', [verifyToken], customerController.getCustomerUsers); // getCustomerUsers route
 
 router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract); // getOrderContract route
+
+//GET Routes
 
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); // changePrimaryUser route
 

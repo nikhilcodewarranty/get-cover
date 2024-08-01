@@ -84,7 +84,6 @@ router.get("/getDashboardGraph", [verifyToken], dealerUserController.getDashboar
 
 router.get("/getDashboardInfo", [verifyToken], dealerUserController.getDashboardInfo); // get dashboard info
 
-
 // PUT routes
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], dealerUserController.statusUpdate); // update dealer price book
 

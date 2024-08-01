@@ -3,7 +3,7 @@ const router = express.Router(); // Express router
 const claimController = require("../controller/claim"); // claim controller
 const { verifyToken } = require("../../middleware/auth"); // authentication with JWT as middleware
 
-
+// POST routes
 router.post("/searchClaim", [verifyToken], claimController.searchClaim); // search claim
 
 router.post("/s3Bucket", claimController.s3Bucket); // s3 bucket operations
@@ -26,6 +26,8 @@ router.post("/getAllClaims", [verifyToken], claimController.getAllClaims); // ge
 
 router.post("/getClaims", [verifyToken], claimController.getClaims); // get claims
 
+//PUT Routes
+
 router.put("/editClaim/:claimId", [verifyToken], claimController.editClaim); // edit claim by ID
 
 router.put("/editClaimType/:claimId", [verifyToken], claimController.editClaimType); // edit claim type by ID
@@ -33,6 +35,8 @@ router.put("/editClaimType/:claimId", [verifyToken], claimController.editClaimTy
 router.put("/editClaimStatus/:claimId", [verifyToken], claimController.editClaimStatus); // edit claim status by ID
 
 router.put("/editServicer/:claimId", [verifyToken], claimController.editServicer); // edit servicer for a claim by ID
+
+//GET Routes
 
 router.get("/getContractById/:contractId", [verifyToken], claimController.getContractById); // get contract by ID
 
