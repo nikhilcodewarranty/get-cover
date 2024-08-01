@@ -100,10 +100,4 @@ router.post('/claimReporting', [verifyToken], userController.claimReporting); //
 
 router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken); // check ID and token
 
-
-
-
-
-
-
 module.exports = router;
