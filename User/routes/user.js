@@ -1,5 +1,4 @@
 const express = require("express");
-const router = express.Router();
 
 const userController = require("../controller/usersController");// user controller
 const dealerController = require("../../Dealer/controller/dealerController");// user controller
@@ -7,62 +6,66 @@ const servicerAdminController = require("../../Provider/controller/serviceAdminC
 const { verifyToken } = require('../../middleware/auth');  // authentication with jwt as middleware
 const validator = require('../config/validation');
 const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware');
+const express = require("express");
+const router = express.Router();
 
 //-------------------- get api's endpoints--------------------------//
-router.get("/users/:role", [verifyToken], userController.getAllUsers); // get all users 
-router.get("/getUserById/:userId", [verifyToken], userController.getUserById); // get all users 
-router.get("/getUserByToken", [verifyToken], userController.getUserByToken); // get all users 
-router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // get all users 
-router.get("/roles", [verifyToken], userController.getAllRoles); //get all roles
-router.post("/approveDealers", [verifyToken], validator("filter_dealer"), dealerController.getAllDealers); //get all dealers
-router.get("/approveServicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
-router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealerController.getPendingDealers); //get all dealers
-router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); //get all dealers
-router.get("/getAllTerms", [verifyToken], userController.getAllTerms); //get all dealers
-router.post("/getAllNotifications", [verifyToken], userController.getAllNotifications1); //get all dealers
-router.get("/readAllNotification", [verifyToken], userController.readAllNotification); //get all dealers
-router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); //get
-router.get("/getCountNotification", [verifyToken], userController.getCountNotification); //get all dealers
-router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); //get dashboard info
-router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); //get dashboard info
-router.get("/getSkuData", [verifyToken], userController.getSkuData); //get dashboard info
 
-//-------------------- get api's endpoints--------------------------//
-router.post("/createSuperAdmin", userController.createSuperAdmin); //to create the super admin credentials
-router.post("/addMember", [verifyToken], userController.addMembers); //to create the super admin credentials //notification
-router.post("/getMembers", [verifyToken], userController.getMembers); //to create the super admin credentials
-router.post("/createTerms", userController.createTerms); //to create the super admin credentials
-router.post("/login", validator('login_validation'), userController.login); //login api for all users
-router.post("/addRole", [verifyToken], validator("add_role_validation"), userController.addRole); //add role api
-router.post("/sendLinkToEmail", userController.sendLinkToEmail); //send password link to email 
-router.post("/resetPassword/:userId/:code", userController.resetPassword); //reset password 
-router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); //Update Status
-router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); //Update Status
-router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload, userController.tryUpload); //Update Status
-router.post("/updateProfile", [verifyToken], userController.updateProfile); //Update Profile
-router.put("/updatePassword", [verifyToken], userController.updatePassword); //Update Password
-router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer);
-router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData);
-router.put("/updateUser/:userId", [verifyToken], userController.updateUser);
-router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer);
-router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail);
-router.post("/validateData", [verifyToken], userController.validateData);
+router.get("/users/:role", [verifyToken], userController.getAllUsers); // Get all users by role
+router.get("/getUserById/:userId", [verifyToken], userController.getUserById); // Get user by ID
+router.get("/getUserByToken", [verifyToken], userController.getUserByToken); // Get user by token
+router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForSingle); // Check email for a single user
+router.get("/roles", [verifyToken], userController.getAllRoles); // Get all roles
+router.post("/approveDealers", [verifyToken], validator("filter_dealer"), dealerController.getAllDealers); // Get all dealers with filters
+router.get("/approveServicer", [verifyToken], servicerAdminController.getAllServiceProviders); // Get all service providers
+router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealerController.getPendingDealers); // Get all pending dealers with filters
+router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); // Get all service providers
+router.get("/getAllTerms", [verifyToken], userController.getAllTerms); // Get all terms
+router.post("/getAllNotifications", [verifyToken], userController.getAllNotifications1); // Get all notifications
+router.get("/readAllNotification", [verifyToken], userController.readAllNotification); // Read all notifications
+router.get("/readNotification/:notificationId", [verifyToken], userController.readNotification); // Read a specific notification by ID
+router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // Get count of notifications
+router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); // Get dashboard information
+router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); // Get dashboard graph data
+router.get("/getSkuData", [verifyToken], userController.getSkuData); // Get SKU data
 
+//-------------------- post api's endpoints--------------------------//
 
-//create dealer api from super admin
-router.post("/createDealer", [verifyToken], userController.createDealer);
-router.get("/checkToken", [verifyToken], userController.checkToken);
-router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo);
+router.post("/createSuperAdmin", userController.createSuperAdmin); // Create super admin credentials
+router.post("/addMember", [verifyToken], userController.addMembers); // Add a member
+router.post("/getMembers", [verifyToken], userController.getMembers); // Get members
+router.post("/createTerms", userController.createTerms); // Create terms
+router.post("/login", validator('login_validation'), userController.login); // Login for all users
+router.post("/addRole", [verifyToken], validator("add_role_validation"), userController.addRole); // Add a role
+router.post("/sendLinkToEmail", userController.sendLinkToEmail); // Send password reset link to email
+router.post("/resetPassword/:userId/:code", userController.resetPassword); // Reset password
+router.post("/dealerStatusUpdate", [verifyToken], dealerController.statusUpdate); // Update dealer status
+router.post("/servicerStatusUpdate", [verifyToken], servicerAdminController.statusUpdate); // Update servicer status
+router.post("/tryUpload", [verifyToken], uploadMiddleware.singleFileUpload, userController.tryUpload); // Try file upload
+router.post("/updateProfile", [verifyToken], userController.updateProfile); // Update profile
+router.put("/updatePassword", [verifyToken], userController.updatePassword); // Update password
+router.put("/rejectDealer/:dealerId", [verifyToken], validator("approve_reject_dealer_validation"), dealerController.rejectDealer); // Reject a dealer by ID
+router.put("/updateUserData/:userId", [verifyToken], userController.updateUserData); // Update user data by user ID
+router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // Update user by user ID
+router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer); // Approve a dealer
+router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // Check email
+router.post("/validateData", [verifyToken], userController.validateData); // Validate data
 
-//create service provider api from super admin
-router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider);
-router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser);
+// Create dealer API from super admin
+router.post("/createDealer", [verifyToken], userController.createDealer); // Create dealer
 
-router.post('/saleReporting', [verifyToken], userController.saleReporting);
-router.post('/saleReporting1', [verifyToken], userController.saleReporting1);
-router.post('/claimReporting', [verifyToken], userController.claimReporting);
+router.get("/checkToken", [verifyToken], userController.checkToken); // Check token
+router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // Get account information
 
-router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken)
+// Create service provider API from super admin
+router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider); // Create service provider
+router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser); // Delete user by ID
+
+router.post('/saleReporting', [verifyToken], userController.saleReporting); // Sale reporting
+router.post('/saleReporting1', [verifyToken], userController.saleReporting1); // Sale reporting
+router.post('/claimReporting', [verifyToken], userController.claimReporting); // Claim reporting
+
+router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken); // Check ID and token
 
 
 
