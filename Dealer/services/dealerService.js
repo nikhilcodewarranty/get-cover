@@ -23,6 +23,7 @@ module.exports = class dealerService {
     }
 
   }
+
   static async getAllDealers1(data) {
     try {
       const AllDealers = await dealer.aggregate(
@@ -60,7 +61,6 @@ module.exports = class dealerService {
     }
   }
 
-
   // Create new dealer
   static async createDealer(data) {
     try {
@@ -80,6 +80,7 @@ module.exports = class dealerService {
       console.log(`Dealer not found. ${error}`);
     }
   }
+
   static async getSingleDealerById(dealerId, projection) {
     try {
       const singleDealerResponse = await dealer.find(dealerId, projection);
@@ -97,9 +98,6 @@ module.exports = class dealerService {
       console.log(`Dealer not found. ${error}`);
     }
   }
-
-
-
 
   // Get dealer detail with Name
   static async getDealerByName(query, projection) {
@@ -129,9 +127,6 @@ module.exports = class dealerService {
       console.log(`Could not update dealer ${error}`);
     }
   }
-
-
-
 
   // Delete dealer by id
   static async deleteDealer(criteria) {
@@ -164,7 +159,6 @@ module.exports = class dealerService {
   }
 
   static async statusUpdate(criteria, newValue, option) {
-
     try {
       const updatedResult = await dealerPrice.findByIdAndUpdate(
         criteria,
@@ -178,7 +172,6 @@ module.exports = class dealerService {
   }
 
   static async isApprovedOrDisapproved(criteria, newValue, option) {
-
     try {
       const updatedResult = await dealer.findByIdAndUpdate(
         criteria,

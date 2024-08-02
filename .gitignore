@@ -19,6 +19,7 @@ User/.env
 # Optional npm cache directory
 .npm
 ./uploads
+./pdfs
 
 # dotenv environment variables file
 .env
