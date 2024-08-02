@@ -51,7 +51,7 @@ module.exports = class userService {
       const allUsers = await user.find(query).sort(sorting);
       return allUsers;
     } catch (error) {
-      console.log(`Could not fetch users ${error}`);
+      return `Could not fetch users: ${error}`;
     }
   }
 
@@ -61,7 +61,7 @@ module.exports = class userService {
       const response = await new user(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not create users: ${error}`;
     }
   }
 
@@ -71,7 +71,7 @@ module.exports = class userService {
       const response = await user.insertMany(data);
       return response;
     } catch (error) {
-      return error;
+      return `Could not create users: ${error}`;
     }
   }
 
@@ -81,7 +81,8 @@ module.exports = class userService {
       const singleUserResponse = await user.findById({ _id: userId }, { projection });
       return singleUserResponse;
     } catch (error) {
-      return `User not found: ${error}`;
+      return `Could not find user: ${error}`;
+
     }
   }
 
@@ -91,7 +92,7 @@ module.exports = class userService {
       const singleUserResponse = await user.findOne(userId, projection);
       return singleUserResponse;
     } catch (error) {
-      return `User not found: ${error}`;
+      return `Could not find users: ${error}`;
     }
   }
 
@@ -142,7 +143,8 @@ module.exports = class userService {
       const response = await new role(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not add role: ${error}`;
+
     }
   }
 
@@ -152,7 +154,8 @@ module.exports = class userService {
       const response = await terms.insertMany(data);
       return response;
     } catch (error) {
-      return error;
+      return `Could not create term: ${error}`;
+
     }
   }
 
@@ -161,8 +164,9 @@ module.exports = class userService {
     try {
       const response = await role.findOne(query, projection);
       return response;
-    } catch (err) {
-      return err;
+    } catch (error) {
+      return `Could not get role: ${error}`;
+
     }
   }
 
@@ -190,8 +194,8 @@ module.exports = class userService {
       ]);
 
       return response;
-    } catch (err) {
-      return err;
+    } catch (error) {
+      return `Could not find user: ${error}`;
     }
   }
 
@@ -200,8 +204,8 @@ module.exports = class userService {
     try {
       const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response;
-    } catch (err) {
-      return err;
+    } catch (error) {
+      return `Could not get dealer user: ${error}`;
     }
   }
 
@@ -210,8 +214,8 @@ module.exports = class userService {
     try {
       const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response;
-    } catch (err) {
-      return err;
+    } catch (error) {
+      return `Could not get servicer user: ${error}`;
     }
   }
 
@@ -221,7 +225,7 @@ module.exports = class userService {
       const response = await new notification(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not create notification: ${error}`;
     }
   }
 
@@ -279,7 +283,7 @@ module.exports = class userService {
     }
   }
 
-    // update only single data
+  // update only single data
   static async updateSingleUser(criteria, newValue, option) {
     try {
       const updatedResponse = await user.findOneAndUpdate(criteria, newValue, option);
@@ -289,13 +293,13 @@ module.exports = class userService {
     }
   }
 
-    // get user by email
+  // get user by email
   static async getSingleUserByEmail(query, project) {
     try {
       let getUser = await user.findOne(query)
       return getUser;
-    } catch (err) {
-      return `Error: ${err.message}`;
+    } catch (error) {
+      return `Could not get user: ${error}`;
     }
   }
 
@@ -315,8 +319,8 @@ module.exports = class userService {
     try {
       const response = await user.find(query, projection).sort({ isPrimary: -1, "createdAt": -1 });
       return response
-    } catch (err) {
-      return err;
+    } catch (error) {
+      return `Could not fetch members: ${error}`;
 
     }
   }

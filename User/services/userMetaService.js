@@ -1,9 +1,6 @@
 const user = require("../model/userMeta");
 const role = require("../model/role");
 const { userConnection } = require("../../db");
-
-//-------------------------- user's services ------------------------------//
-
 module.exports = class userService {
 
     // Get a single user meta based on a query and projection

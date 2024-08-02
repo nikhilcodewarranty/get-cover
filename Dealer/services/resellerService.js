@@ -9,7 +9,7 @@ module.exports = class resellerService {
       const createdReseller = await new reseller(data).save();
       return createdReseller;
     } catch (err) {
-      return `Unable to create the reseller: ${err}`;
+      return `Could not create reseller: ${err}`;
     }
   }
 
@@ -19,7 +19,7 @@ module.exports = class resellerService {
       const resellers = await reseller.find(query, projection);
       return resellers;
     } catch (err) {
-      return `Unable to get the resellers: ${err}`;
+      return `Could not fetch reseller data: ${err}`;
     }
   }
 
@@ -29,7 +29,7 @@ module.exports = class resellerService {
       const reseller = await reseller.findOne(query, projection);
       return reseller;
     } catch (err) {
-      return `Unable to get the reseller: ${err}`;
+      return `Could not fetch reseller: ${err}`;
     }
   }
 
@@ -49,7 +49,7 @@ module.exports = class resellerService {
       const resellerResponse = await reseller.aggregate(query);
       return resellerResponse;
     } catch (error) {
-      return `Reseller not found: ${error}`;
+      return `Could not fetch reseller: ${error}`;
     }
   }
 
@@ -59,7 +59,7 @@ module.exports = class resellerService {
       const updateResponse = await reseller.updateMany(query, projection);
       return updateResponse;
     } catch (err) {
-      return `Unable to update the resellers: ${err}`;
+      return `Could not update meta data: ${err}`;
     }
   }
 
@@ -69,7 +69,7 @@ module.exports = class resellerService {
       const updatedReseller = await reseller.findOneAndUpdate(criteria, data, { new: true });
       return updatedReseller;
     } catch (err) {
-      return `Unable to update the reseller: ${err}`;
+      return `Could not update reseller: ${err}`;
     }
   }
 

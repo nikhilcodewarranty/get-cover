@@ -17,7 +17,7 @@ module.exports = class customerService {
       const allCustomers = await customer.find(query).sort({ 'unique_key': -1 });
       return allCustomers.sort((a, b) => b.unique_key - a.unique_key);
     } catch (error) {
-      return `Could not fetch customer ${error}`;
+      return `Could not fetch customer count ${error}`;
     }
   }
 
@@ -27,7 +27,7 @@ module.exports = class customerService {
       const response = await new customer(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not create customer ${error}`;
     }
   }
 
@@ -37,7 +37,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.findOne(query);
       return singleCustomerResponse;
     } catch (error) {
-      return `Customer not found. ${error}`;
+      return `Could not find customer ${error}`;
     }
   }
 
@@ -47,7 +47,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.findOne(customerId);
       return singleCustomerResponse;
     } catch (error) {
-      return `Customer not found. ${error}`;
+      return `Could not find the customer. ${error}`;
     }
   }
 
@@ -57,7 +57,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.aggregate(query);
       return singleCustomerResponse;
     } catch (error) {
-      return `Customer not found. ${error}`;
+      return `Could not find the customer. ${error}`;
     }
   }
 

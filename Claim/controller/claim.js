@@ -1,7 +1,5 @@
 const { claim } = require("../model/claim");
-const { claimPart } = require("../model/claimPart");
 const path = require("path");
-const { claimStatus } = require("../model/claimStatus");
 const { comments } = require("../model/comments");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");

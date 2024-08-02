@@ -20,23 +20,7 @@ module.exports = class dealerService {
       const singleResellerResponse = await dealer.aggregate(query);
       return singleResellerResponse;
     } catch (error) {
-      return `Customer not found: ${error}`;
-    }
-  }
-
-  // Get all dealers with name matching
-  static async getAllDealers1(data) {
-    try {
-      const AllDealers = await dealer.aggregate([
-        {
-          $match: {
-            'name': { $regex: /data.name/i }
-          }
-        }
-      ]);
-      return AllDealers;
-    } catch (error) {
-      return `Could not fetch dealers: ${error}`;
+      return `Could not fetch dealers and claims: ${error}`;
     }
   }
 
@@ -46,7 +30,7 @@ module.exports = class dealerService {
       const topDealers = await dealer.aggregate(query);
       return topDealers;
     } catch (error) {
-      return `Dealer not found: ${error}`;
+      return `Could not fetch dealers: ${error}`;
     }
   }
 
@@ -56,7 +40,7 @@ module.exports = class dealerService {
       const count = await dealer.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);
     } catch (error) {
-      return `Could not fetch price book: ${error}`;
+      return `Could not dealer latest data: ${error}`;
     }
   }
 
@@ -66,7 +50,7 @@ module.exports = class dealerService {
       const response = await new dealer(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not create dealer: ${error}`;
     }
   }
 
@@ -76,7 +60,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.findOne({ _id: dealerId }, projection);
       return singleDealerResponse;
     } catch (error) {
-      return `Dealer not found: ${error}`;
+      return `Could not fetch dealer: ${error}`;
     }
   }
 
@@ -86,7 +70,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.find(dealerId, projection);
       return singleDealerResponse;
     } catch (error) {
-      return `Dealer not found: ${error}`;
+      return `Could not fetch dealer: ${error}`;
     }
   }
 
@@ -96,7 +80,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await users.find(query).sort({ isPrimary: -1, createdAt: -1 });
       return singleDealerResponse;
     } catch (error) {
-      return `Dealer not found: ${error}`;
+      return `Could not fetch user: ${error}`;
     }
   }
 
@@ -106,7 +90,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.findOne(query, projection);
       return singleDealerResponse;
     } catch (error) {
-      return `Dealer not found: ${error}`;
+      return `Could not fetch dealer: ${error}`;
     }
   }
 
@@ -126,7 +110,7 @@ module.exports = class dealerService {
       const updatedResponse = await dealer.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      return `Could not update dealer: ${error}`;
+      return `Could not update dealer status: ${error}`;
     }
   }
 
@@ -146,7 +130,7 @@ module.exports = class dealerService {
       const response = await new dealerPrice(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not create dealer price book: ${error}`;
     }
   }
 
@@ -157,7 +141,7 @@ module.exports = class dealerService {
       const response = await new dealer(data).save();
       return response;
     } catch (error) {
-      return error;
+      return `Could not register dealer: ${error}`;
     }
   }
 
@@ -167,17 +151,8 @@ module.exports = class dealerService {
       const updatedResult = await dealerPrice.findByIdAndUpdate(criteria, newValue, option);
       return updatedResult;
     } catch (error) {
-      return error;
+      return `Could not update status: ${error}`;
     }
   }
 
-  // Approve or disapprove dealer
-  static async isApprovedOrDisapproved(criteria, newValue, option) {
-    try {
-      const updatedResult = await dealer.findByIdAndUpdate(criteria, newValue, option);
-      return updatedResult;
-    } catch (error) {
-      return error;
-    }
-  }
 };

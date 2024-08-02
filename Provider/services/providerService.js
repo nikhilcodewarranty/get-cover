@@ -57,7 +57,7 @@ module.exports = class providerService {
       const singleServiceProviderResponse = await serviceProvider.findOne(query);
       return singleServiceProviderResponse;
     } catch (error) {
-      return `Service provider not found: ${error}`;
+      return `Could not fetch servicer: ${error}`;
     }
   }
 

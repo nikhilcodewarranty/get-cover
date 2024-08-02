@@ -197,7 +197,7 @@ module.exports = class orderService {
       const lastFive = await order.find(query).sort({ unique_key_number: -1 }).limit(5);
       return lastFive;
     } catch (error) {
-      return `Could not fetch order count: ${error}`;
+      return `Could not fetch orders: ${error}`;
     }
   }
 

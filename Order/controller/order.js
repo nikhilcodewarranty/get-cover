@@ -4,7 +4,6 @@ const orderResourceResponse = require("../utils/constant");
 const pdf = require('html-pdf');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-
 const orderService = require("../services/orderService");
 const supportingFunction = require('../../config/supportingFunction')
 const LOG = require('../../User/model/logs')
@@ -30,9 +29,7 @@ const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
 
 const PDFDocument = require('pdfkit');
-const { createPdf } = require("pdfmake");
 const claimService = require("../../Claim/services/claimService");
-{/* <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link> */ }
 var StorageP = multer.diskStorage({
     destination: function (req, files, cb) {
         cb(null, path.join(__dirname, "../../uploads/orderFile"));

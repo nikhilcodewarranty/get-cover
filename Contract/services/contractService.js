@@ -93,7 +93,7 @@ module.exports = class contractService {
       const singleContractResponse = await contract.findOne(contractId, projection);
       return singleContractResponse;
     } catch (error) {
-      return `Contract not found: ${error}`;
+      return `Could not contract not found: ${error}`;
     }
   }
 
