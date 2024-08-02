@@ -129,7 +129,7 @@ module.exports = class claimService {
       const allClaims = await claim.aggregate(query);
       return allClaims;
     } catch (error) {
-      return { code: 402, message: "Service error" };
+      return `Could not fetch claims: ${error}`;
     }
   }
 

@@ -48,7 +48,7 @@ module.exports = class userService {
         }
     }
 
-    //aggreaget meta api
+    //Get 
     static async aggregateMeta(query) {
         try {
             const user = await user.aggregate(query).sort({ "createdAt": -1 });
