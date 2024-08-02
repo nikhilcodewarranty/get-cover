@@ -218,7 +218,7 @@ exports.validateData = async (req, res) => {
     //check price book  exist or not
     priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
     const priceBookCreateria = { _id: { $in: priceBook } }
-    checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+    checkPriceBook = await priceBookService.getMultiplePriceBook(priceBookCreateria, { isDeleted: false })
     if (checkPriceBook.length == 0) {
       res.send({
         code: constant.errorCode,
@@ -397,7 +397,7 @@ exports.createDealer = async (req, res) => {
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
-          checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+          checkPriceBook = await priceBookService.getMultiplePriceBook(priceBookCreateria, { isDeleted: false })
 
           if (checkPriceBook.length == 0) {
             res.send({
@@ -1043,7 +1043,7 @@ exports.createDealer = async (req, res) => {
         if (savePriceBookType == 'yes') {
           priceBook = dealerPriceArray.map((dealer) => dealer.priceBookId);
           const priceBookCreateria = { _id: { $in: priceBook } }
-          checkPriceBook = await priceBookService.getMultiplePriceBok(priceBookCreateria, { isDeleted: false })
+          checkPriceBook = await priceBookService.getMultiplePriceBook(priceBookCreateria, { isDeleted: false })
           if (checkPriceBook.length == 0) {
             res.send({
               code: constant.errorCode,
