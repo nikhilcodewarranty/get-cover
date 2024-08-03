@@ -55,8 +55,6 @@ router.post('/getDealerContracts', [verifyToken], dealerUserController.getAllCon
 
 router.post('/createDeleteRelation', [verifyToken], dealerUserController.createDeleteRelation); // create or delete relation
 
-//router.post('/getArchieveOrder', [verifyToken], dealerUserController.getAllArchieveOrders); // get archive orders
-
 router.post('/getDealerOrders', [verifyToken], dealerUserController.getDealerOrders); // get dealer orders
 
 router.post('/getDealerArchievedOrders', [verifyToken], dealerUserController.getDealerArchievedOrders); // get dealer archived orders

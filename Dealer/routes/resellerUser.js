@@ -47,7 +47,6 @@ router.post('/getCategoryAndPriceBooks', [verifyToken], resellerController.getCa
 
 router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail); // edit order details
 
-// POST routes continued
 router.post('/saleReporting', [verifyToken], resellerController.saleReporting); // sale reporting
 
 router.post('/claimReporting', [verifyToken], resellerController.claimReporting); // claim reporting

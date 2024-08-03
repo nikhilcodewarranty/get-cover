@@ -4,7 +4,6 @@ const orderResourceResponse = require("../utils/constant");
 const pdf = require('html-pdf');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-
 const orderService = require("../services/orderService");
 const supportingFunction = require('../../config/supportingFunction')
 const LOG = require('../../User/model/logs')
@@ -30,7 +29,6 @@ const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
 
 const PDFDocument = require('pdfkit');
-const { createPdf } = require("pdfmake");
 const claimService = require("../../Claim/services/claimService");
 
 const { S3Client } = require('@aws-sdk/client-s3');
@@ -3457,7 +3455,6 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
-        //let count1 = await contractService.getContractsCount(); 
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let checkLength = savedResponse.productsArray.length - 1

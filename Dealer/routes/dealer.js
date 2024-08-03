@@ -38,8 +38,6 @@ router.post("/checkDealerPriceBook", [verifyToken], dealerController.checkDealer
 
 router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDealerPriceBook); // upload dealer price book
 
-router.post("/filterDealer", [verifyToken], dealerController.filterDealer); // filter dealer
-
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], dealerController.createDeleteRelation); // create relation with servicer
 
 router.post("/getDealerServicers/:dealerId", [verifyToken], dealerController.getDealerServicers); // get dealer servicers

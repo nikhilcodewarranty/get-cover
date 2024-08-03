@@ -2758,24 +2758,6 @@ exports.getServicersList = async (req, res) => {
   }
 }
 
-//Filter dealer
-exports.filterDealer = async (req, res) => {
-  try {
-    let data = req.body
-    let response = await dealerService.getAllDealers1(data)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: response
-    });
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
 //Get reseller servicer
 exports.getDealerResellers = async (req, res) => {
   try {

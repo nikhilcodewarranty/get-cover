@@ -517,7 +517,6 @@ exports.getContracts = async (req, res) => {
   }
 }
 
-
 //edit claim
 exports.editContract = async (req, res) => {
   try {
