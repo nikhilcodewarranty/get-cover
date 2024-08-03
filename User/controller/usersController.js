@@ -32,15 +32,31 @@ const supportingFunction = require('../../config/supportingFunction')
 const reportingController = require("./reportingController");
 const orderService = require("../../Order/services/orderService");
 const claimService = require("../../Claim/services/claimService");
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 
-var Storage = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, '../../uploads/'));
-  },
-  filename: function (req, files, cb) {
-    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
   }
-})
+});
+
+const Storage = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name, // Ensure this environment variable is set
+  metadata: (req, files, cb) => {
+    cb(null, { fieldName: files.fieldname });
+  },
+  key: (req, files, cb) => {
+    const fileName = files.fieldname + '-' + Date.now() + path.extname(files.originalname);
+    cb(null, fileName);
+  }
+});
 
 var upload = multer({
   storage: Storage,
@@ -2167,7 +2183,10 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
+    let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
+    let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
+    console.log("checking+++++++++++++--------------", notificationDataUpdate, updateUser, checkUser)
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
     //Save Logs delete user
     let logData = {
@@ -2179,6 +2198,8 @@ exports.deleteUser = async (req, res) => {
         message: "Deleted Successfully"
       }
     }
+
+
     await logs(logData).save()
     res.send({
       code: constant.successCode,

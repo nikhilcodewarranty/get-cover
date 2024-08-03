@@ -42,16 +42,32 @@ const logs = require('../../User/model/logs');
 const supportingFunction = require('../../config/supportingFunction');
 const providerService = require('../../Provider/services/providerService');
 
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 
-
-var StorageP = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, '../../uploads'));
-  },
-  filename: function (req, files, cb) {
-    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
   }
-})
+});
+
+
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name, // Ensure this environment variable is set
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  }
+});
+
 
 var uploadP = multer({
   storage: StorageP,

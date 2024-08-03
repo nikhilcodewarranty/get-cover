@@ -26,20 +26,47 @@ const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const dealerService = require("../../Dealer/services/dealerService");
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
+
+const folderName = 'claimFile'; // Replace with your specific folder name
+
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    console.log("rfile_-------------------------------------",req.file)
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
 
 // multer function to upload the files
-var StorageP = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, "../../uploads/claimFile"));
-  },
-  filename: function (req, files, cb) {
-    cb(
-      null,
-      files.fieldname + "-" + Date.now() + path.extname(files.originalname)
-    );
-  },
-});
+// var StorageP = multer.diskStorage({
+//   destination: function (req, files, cb) {
+//     cb(null, path.join(__dirname, "../../uploads/claimFile"));
+//   },
+//   filename: function (req, files, cb) {
+//     cb(
+//       null,
+//       files.fieldname + "-" + Date.now() + path.extname(files.originalname)
+//     );
+//   },
+// });
 
 var imageUpload = multer({
   storage: StorageP,
@@ -2923,44 +2950,32 @@ exports.getCoverageType = async (req, res) => {
 }
 
 
-
 // s3 bucket 
 
-const { S3Client } = require('@aws-sdk/client-s3');
-const { Upload } = require('@aws-sdk/lib-storage');
-const multerS3 = require('multer-s3');
-
-const s3 = new S3Client({
-  region: 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.aws_access_key_id,
-    secretAccessKey: process.env.aws_secret_access_key,
-  }
-});
-
-// const s3 = new AWS.S3();
-
-const folderName = 'claimFile'; // Replace with your specific folder name
-
-const uploadS3 = multerS3({
+const StorageP1 = multerS3({
   s3: s3,
-  bucket: 'getcover',
-  metadata: (req, file, cb) => {
-    cb(null, { fieldName: file.fieldname });
+  bucket: process.env.bucket_name,
+  metadata: (req, files, cb) => {
+    console.log("rfile_-------------------------------------",req.files)
+    cb(null, { fieldName: files.fieldname });
   },
-  key: (req, file, cb) => {
-    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+  key: (req, files, cb) => {
+    const fileName = files.fieldname + '-' + Date.now() + path.extname(files.originalname);
     const fullPath = `${folderName}/${fileName}`;
     cb(null, fullPath);
   }
 });
 
-const imageUploadS3 = multer({
-  storage: uploadS3,
+var imageUploadS3 = multer({
+  storage: StorageP1,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
-  }
-}).single('file');
+  },
+}).any([
+  { name: "file" },
+  { name: "termCondition" },
+])
+
 
 
 exports.s3Bucket = async (req, res) => {
@@ -2969,7 +2984,7 @@ exports.s3Bucket = async (req, res) => {
       if (err) {
         return res.send(err.message);
       }
-      res.send({ddd:'File uploaded successfully',ttt:req.file});
+      res.send({ ddd: 'File uploaded successfully', ttt: req.files });
     });
   } catch (err) {
     res.send({
