@@ -30,29 +30,48 @@ const userService = require("../../User/services/userService");
 
 const PDFDocument = require('pdfkit');
 const claimService = require("../../Claim/services/claimService");
-var StorageP = multer.diskStorage({
-    destination: function (req, files, cb) {
-        cb(null, path.join(__dirname, "../../uploads/orderFile"));
-    },
-    filename: function (req, files, cb) {
-        cb(
-            null,
-            files.fieldname + "-" + Date.now() + path.extname(files.originalname)
-        );
-    },
+
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+
+// s3 bucket connections
+const s3 = new S3Client({
+    region: process.env.region,
+    credentials: {
+        accessKeyId: process.env.aws_access_key_id,
+        secretAccessKey: process.env.aws_secret_access_key,
+    }
 });
 
-var Storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, "../../uploads/orderFile"));
+const folderName = 'orderFile'; // Replace with your specific folder name
+
+const StorageP = multerS3({
+    s3: s3,
+    bucket: process.env.bucket_name,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
     },
-    filename: function (req, file, cb) {
-        cb(
-            null,
-            file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-        );
-    },
+    key: (req, file, cb) => {
+        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        const fullPath = `${folderName}/${fileName}`;
+        cb(null, fullPath);
+    }
 });
+
+const Storage = multerS3({
+    s3: s3,
+    bucket: process.env.bucket_name,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        const fullPath = `${folderName}/${fileName}`;
+        cb(null, fullPath);
+    }
+});
+
 
 var upload = multer({
     storage: StorageP,
@@ -2605,7 +2624,7 @@ exports.archiveOrder = async (req, res) => {
 
             return;
         }
-        if(checkOrder.status == "Active"){
+        if (checkOrder.status == "Active") {
             res.send({
                 code: constant.errorCode,
                 message: "Order is already active",
