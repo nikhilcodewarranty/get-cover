@@ -2386,6 +2386,7 @@ exports.readAllNotification = async (req, res) => {
   }
 }
 
+//
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
@@ -3234,7 +3235,6 @@ exports.getDashboardGraph = async (req, res) => {
     })
   }
 };
-
 
 exports.saleReporting1 = async (req, res) => {
   try {

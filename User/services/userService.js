@@ -303,7 +303,7 @@ module.exports = class userService {
     }
   }
 
-  // find user for unique checks
+  // find user for unique checks 
   static async findOneUser(query, projection) {
     try {
       projection = projection ? projection : {}

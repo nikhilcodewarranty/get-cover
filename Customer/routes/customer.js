@@ -26,6 +26,7 @@ router.post('/getCustomerContract/:customerId', [verifyToken], customerControlle
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer); //editCustomer route
 
 //GET Routes
+
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
 
 router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById); //getCustomerById route

@@ -320,7 +320,7 @@ exports.getContracts = async (req, res) => {
     }
 
     let orderIds = []
-
+    
     if (orderAndCondition.length > 0) {
       let getOrders = await orderService.getOrders({
         $and: orderAndCondition
