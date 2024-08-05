@@ -588,7 +588,6 @@ exports.changePrimaryUser = async (req, res) => {
   try {
     let data = req.body
     let checkUser = await userService.findOneUser({ _id: req.params.userId }, {})
-    console.log(checkUser);
     if (!checkUser) {
       res.send({
         code: constant.errorCode,
@@ -1298,7 +1297,6 @@ exports.getCustomerContract = async (req, res) => {
         orderIds = await getOrders.map(order => order._id)
       }
     }
-    console.log("getOrders-------------------", orderIds)
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
@@ -1417,7 +1415,6 @@ exports.getCustomerContract = async (req, res) => {
     }
 
 
-    // console.log("sssssss", contractFilterWithPaging)
     let getContracts = await contractService.getAllContracts2(mainQuery, { allowDiskUse: true })
     let totalCount = getContracts[0]?.totalRecords[0]?.total ? getContracts[0]?.totalRecords[0].total : 0
     let result1 = getContracts[0]?.data ? getContracts[0]?.data : []
@@ -1822,37 +1819,6 @@ exports.customerClaims = async (req, res) => {
     })
   }
 }
-
-//----------- not used ---------------//
-
-// uddate customer api
-exports.updateCustomer = async (req, res, next) => {
-  try {
-    const updatedCustomer = await customerService.updateCustomer(req.body);
-    if (!updatedCustomer) {
-      res.status(404).json("There are no customer updated yet!");
-    }
-    res.json(updatedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
-exports.deleteCustomer = async (req, res, next) => {
-  try {
-    const deletedCustomer = await customerService.deleteCustomer(req.body.id);
-    if (!deletedCustomer) {
-      res.status(404).json("There are no customer deleted yet!");
-    }
-    res.json(deletedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
 
 
 

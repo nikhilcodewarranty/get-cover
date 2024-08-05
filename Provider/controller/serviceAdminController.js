@@ -978,22 +978,6 @@ exports.updateServiceProvide = async (req, res, next) => {
   }
 };
 
-exports.deleteServiceProvider = async (req, res, next) => {
-  try {
-    const deletedServiceProvide = await providerService.deleteServiceProvide(
-      req.body.id
-    );
-    if (!deletedServiceProvide) {
-      res.status(404).json("There are no service provider deleted yet!");
-    }
-    res.json(deletedServiceProvide);
-  } catch (error) {
-    res
-      .status(serviceResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
 //Register Servicer
 /**---------------------------------------------Register Service Provider---------------------------------------- */
 exports.registerServiceProvider = async (req, res) => {

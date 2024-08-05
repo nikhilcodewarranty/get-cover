@@ -12,8 +12,6 @@ router.post("/register", validator('register_dealer'), dealerController.register
 
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser); // add dealer user route
 
-router.post("/uploadsDealerPriceBook", [verifyToken], uploadMiddleware.singleFileUpload, dealerController.uploadPriceBook); // upload dealer price book route
-
 router.post("/dealers", [verifyToken], dealerController.getAllDealers); // get dealers list
 
 router.post("/getUserByDealerId/:dealerId", [verifyToken], dealerController.getUserByDealerId); // get dealer detail with ID
@@ -54,8 +52,6 @@ router.get("/dealerPriceBooks", [verifyToken], dealerController.getAllDealerPric
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerController.getDealerPriceBookById); // get dealer price book by ID
 
 router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], dealerController.getDealerPriceBookByDealerId); // get dealer price book by dealer ID
-
-router.get("/getDealerRequest", [verifyToken], dealerController.getDealerRequest); // get dealer request
 
 router.get("/getServicersList/:dealerId", [verifyToken], dealerController.getServicersList); // get servicers list
 

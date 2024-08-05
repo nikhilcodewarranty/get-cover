@@ -114,5 +114,4 @@ module.exports = app;
 
 
 // app.listen(port, () => {
-//   console.log(`Order server is running on port ${port}`);
 // });

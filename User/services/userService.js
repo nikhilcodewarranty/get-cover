@@ -5,8 +5,6 @@ const terms = require("../model/terms");
 const dealerModel = require("../../Dealer/model/dealer");
 const { userConnection } = require("../../db");
 
-//-------------------------- user's services ------------------------------//
-
 module.exports = class userService {
   // get all users with role Id
   static async getAllUsers(query, projection) {
@@ -40,7 +38,7 @@ module.exports = class userService {
       ]).sort({ "createdAt": -1 });
 
       return allUsers;
-    } catch (error) {
+    } catch (error) {       
       console.log(`Could not fetch users ${error}`);
     }
   }

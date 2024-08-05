@@ -1387,11 +1387,13 @@ exports.getResellerById = async (req, res) => {
             },
         },
     ]
+
     let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
     const claimData = {
         numberOfClaims: numberOfClaims.length,
         valueClaim: valueClaim[0]?.totalAmount
     }
+
     const result_Array = resellerUser.map(user => {
         let matchItem = checkReseller.find(reseller => reseller._id.toString() == user.accountId.toString());
         let order = ordersResult.find(order => order._id.toString() === user.accountId.toString())
@@ -1452,7 +1454,6 @@ exports.getResellerUsers = async (req, res) => {
     });
     return;
 }
-
 //Get reseller details
 exports.getResellerDetails = async (req, res) => {
     try {
@@ -3981,6 +3982,7 @@ exports.getDashboardInfo = async (req, res) => {
             },
         ]
         const lastFiveOrder = await orderService.getOrderWithContract1(orderQuery, 1, 5)
+
         const claimQuery = [
             {
                 $match: {
@@ -4020,6 +4022,7 @@ exports.getDashboardInfo = async (req, res) => {
                 }
             },
         ]
+        
         const getLastNumberOfClaims = await claimService.getClaimWithAggregate(claimQuery, {})
 
         const result = {

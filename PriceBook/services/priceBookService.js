@@ -138,16 +138,6 @@ module.exports = class priceBookService {
     }
   }
 
-  //delete price book
-  static async deletePriceBook(criteria, newValue, option) {
-    try {
-      const deletedResponse = await priceBook.findOneAndUpdate(criteria, newValue, option);
-      return deletedResponse;
-    } catch (error) {
-      console.log(`Could not delete price book ${error}`);
-    }
-  }
-
   //get price category by id 
   static async getPriceCatById(ID, projection) {
     try {

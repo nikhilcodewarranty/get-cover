@@ -18,12 +18,10 @@ const reportingController = require('../../User/controller/reportingController')
 
 const LOG = require('../../User/model/logs')
 
-
 // orders API's
 exports.customerOrders = async (req, res) => {
   try {
     let data = req.body
-    console.log("req.userId", req.userId)
     let checkCustomer = await customerService.getCustomerById({ _id: req.userId }, {})
     if (!checkCustomer) {
        res.send({
@@ -454,7 +452,6 @@ exports.editCustomer = async (req, res) => {
 exports.getCustomerContract = async (req, res) => {
   try {
     let data = req.body
-    console.log("data------------------")
     let pageLimit = data.pageLimit ? Number(data.pageLimit) : 100
     let skipLimit = data.page > 0 ? ((Number(req.body.page) - 1) * Number(pageLimit)) : 0
     let limitData = Number(pageLimit)
@@ -498,7 +495,6 @@ exports.getCustomerContract = async (req, res) => {
         orderIds = await getOrders.map(order => order._id)
       }
     }
-    console.log("getOrders-------------------")
     let contractFilterWithEligibilty = []
     if (data.eligibilty != '') {
       contractFilterWithEligibilty = [
@@ -1623,9 +1619,6 @@ exports.getDashboardGraph = async (req, res) => {
         $sort: { _id: 1 } // Sort by date in ascending order
       }
     ];
-
-
-    console.log(startOfMonth, endOfMonth, dailyQuery)
 
     let getData = await claimService.getClaimWithAggregate(dailyQuery)
     let getData2 = await orderService.getAllOrders1(dailyQuery1)

@@ -98,10 +98,12 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
+
         let checkDealer = await dealerService.getDealerById(
             data.dealerId,
             projection
         );
+
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -109,6 +111,7 @@ exports.createOrder1 = async (req, res) => {
             });
             return;
         }
+
         if (!checkDealer.status) {
             res.send({
                 code: constant.errorCode,
@@ -158,6 +161,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
+        
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
@@ -288,9 +292,10 @@ exports.createOrder1 = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
+
         let notificationData = {
             title: "New order created",
-            description: data.dealerPurchaseOrder + " " + "order has been created",
+            description: "The new order " + savedResponse.unique_key + " has been created",
             userId: req.teammateId,
             contentId: null,
             flag: 'order',

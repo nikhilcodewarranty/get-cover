@@ -1154,6 +1154,7 @@ exports.claimWeeklyReporting = async (data) => {
             }
         ];
 
+        
 
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
@@ -1162,7 +1163,7 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
-        console.log("data++++++++++++++++++++++++++++++++++++++", data)
+
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = servicerId
@@ -1626,7 +1627,6 @@ exports.getReportingDropdowns = async (req, res) => {
             label: item.name
         }));
 
-        console.log(getPriceBooks);
         let priceBook = getPriceBooks.map(item => ({
             value: item._id,
             label: item.name
@@ -1685,8 +1685,6 @@ exports.getReportingDropdowns = async (req, res) => {
                 value: item._id,
                 label: item.name
             }));
-            console.log("priceBook------------------", priceBook)
-            console.log("getPriceBooks2------------------", getPriceBooks2)
             result = {
                 getDealers: [],
                 getPriceBooks: priceBook,
@@ -1713,8 +1711,6 @@ exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body
         let result;
-
-        console.log("dfsfsfsdf")
 
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
@@ -1881,7 +1877,6 @@ exports.claimReportinDropdown = async (req, res) => {
 
         }
 
-        console.log("fsdsdfddsdsd");
         res.send({
             code: constant.successCode,
             message: "Success",

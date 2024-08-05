@@ -83,16 +83,13 @@ var cronOptions = {
 
 cron.schedule(' 2 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/order/cronJobStatus`)   //live
-  // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 cron.schedule(' 4 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/contract/cronJobEligible`)   //live
-  // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 
 cron.schedule(' 6 0 * * *', () => {
   axios.get(`${process.env.API_ENDPOINT}api-v1/claim/statusClaim`)   //live
-  // axios.get("http://localhost:3002/api-v1/order/cronJobStatus")   // local 
 });
 //common routing for server
 app.use("/api-v1/user", userRoutes);
@@ -115,7 +112,6 @@ app.use("/api-v1/resellerPortal", resellerUserRoutes);
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   res.redirect(process.env.SITE_URL)
-  // res.status(404).json({ code: 404, message: "Not Foundsddsd" })
 
 });
 // error handler

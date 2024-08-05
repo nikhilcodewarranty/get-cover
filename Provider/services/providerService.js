@@ -70,17 +70,6 @@ module.exports = class providerService {
       return `Could not update service provider: ${error}`;
     }
   }
-
-  // Delete a service provider by ID
-  static async deleteServiceProvider(serviceProviderId) {
-    try {
-      const deletedResponse = await serviceProvider.findOneAndDelete(serviceProviderId);
-      return deletedResponse;
-    } catch (error) {
-      return `Could not delete service provider: ${error}`;
-    }
-  }
-
   // Register a new service provider
   static async registerServiceProvider(data) {
     try {

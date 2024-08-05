@@ -230,7 +230,7 @@ module.exports = class orderService {
       return `Could not update orders: ${error}`;
     }
   }
-
+  
   // Change date for orders
   static async changeDate(criteria, data, option) {
     try {
@@ -240,4 +240,5 @@ module.exports = class orderService {
       return `Could not change order date: ${error}`;
     }
   }
+
 };

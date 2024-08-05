@@ -43,7 +43,6 @@ const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, file, cb) => {
-    console.log("rfile_-------------------------------------",req.file)
     cb(null, { fieldName: file.fieldname });
   },
   key: (req, file, cb) => {
@@ -52,19 +51,6 @@ const StorageP = multerS3({
     cb(null, fullPath);
   }
 });
-
-// multer function to upload the files
-// var StorageP = multer.diskStorage({
-//   destination: function (req, files, cb) {
-//     cb(null, path.join(__dirname, "../../uploads/claimFile"));
-//   },
-//   filename: function (req, files, cb) {
-//     cb(
-//       null,
-//       files.fieldname + "-" + Date.now() + path.extname(files.originalname)
-//     );
-//   },
-// });
 
 var imageUpload = multer({
   storage: StorageP,
@@ -2684,8 +2670,9 @@ exports.sendMessages = async (req, res) => {
       redirectionId: checkClaim.unique_key,
       notificationFor: IDs
     };
-    let createNotification = await userService.createNotification(notificationData1);
 
+    let createNotification = await userService.createNotification(notificationData1);
+    
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
@@ -2844,7 +2831,7 @@ exports.statusClaim = async (req, res) => {
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
       sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
-      if (new Date() === sevenDaysAfterShippedDate) {
+      if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
           {
@@ -2859,12 +2846,15 @@ exports.statusClaim = async (req, res) => {
         }, { new: true })
 
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+
         let checkContract = await contractService.getContractById({ _id: contractId })
+
         let claimTotalQuery = [
           { $match: query },
           { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
         ]
+
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
         // Update Eligibilty true and false
@@ -2954,7 +2944,6 @@ const StorageP1 = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,
   metadata: (req, files, cb) => {
-    console.log("rfile_-------------------------------------",req.files)
     cb(null, { fieldName: files.fieldname });
   },
   key: (req, files, cb) => {

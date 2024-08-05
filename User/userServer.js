@@ -13,8 +13,6 @@ const createHttpError = require('http-errors')
 // const { databaseConnect } = require("./db");
 const userRoutes = require("./routes/user");
 
-console.log('user server++++++++++++++++++')
-
 var app = express();
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
@@ -60,9 +58,6 @@ app.use((req, res, next) => {
   next(createHttpError(404));
 })
 
-
-
-console.log('check+++++++++++++++++222222')
 
 const PORT = process.env.USER_API_ENDPOINT || 8080
 httpServer.listen(PORT, () => console.log(`users Server is running on port ${PORT}`))

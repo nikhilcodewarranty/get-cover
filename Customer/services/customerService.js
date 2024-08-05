@@ -81,23 +81,4 @@ module.exports = class customerService {
     }
   }
 
-  // Delete Customer 
-  static async deleteCustomer(customerId) {
-    try {
-      const deletedResponse = await customer.findOneAndDelete(customerId);
-      return deletedResponse;
-    } catch (error) {
-      return `Could not delete customer ${error}`;
-    }
-  }
-
-  // Update customer data in bulk 
-  static async updateCustomerData(criteria, data, option) {
-    try {
-      const updatedResponse = await customer.updateMany(criteria, data, option);
-      return updatedResponse;
-    } catch (error) {
-      return `Could not update customer ${error}`;
-    }
-  }
 };

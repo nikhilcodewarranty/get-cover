@@ -2183,10 +2183,10 @@ exports.deleteUser = async (req, res) => {
       content: "Your account has been deleted by Get-Cover team.",
       subject: "Delete User"
     }
+
     let notificationDataUpdate = primaryUser.notificationTo.filter(email => email != checkUser.email);
     let updateUser = await userService.updateSingleUser({ _id: primaryUser._id }, { notificationTo: notificationDataUpdate }, { new: true })
 
-    console.log("checking+++++++++++++--------------", notificationDataUpdate, updateUser, checkUser)
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(checkUser.email, primaryUser.email, emailData))
     //Save Logs delete user
     let logData = {
@@ -2622,13 +2622,19 @@ exports.addMembers = async (req, res) => {
     };
 
     let notificationEmails = await supportingFunction.getUserEmails();
-    // let emailData = {
-    //   senderName: data.firstName,
-    //   content: "Dear " + data.firstName + " we are delighted to inform you that your admin account has been created by super admin. Please set the password for the system login",
-    //   subject: "Account Creation"
-    // }
 
-    // let mailing = sgMail.send(emailConstant.sendEmailTemplate(data.email, notificationEmails, emailData))
+    let IDs = await supportingFunction.getUserIds()
+
+    let notificationData = {
+      title: "New member created",
+      description: "The new member " + data.firstName + " has been created",
+      userId: req.teammateId,
+      contentId: null,
+      flag: 'Member Created',
+      notificationFor: IDs
+    };
+
+    let createNotification = await userService.createNotification(notificationData);
 
     let resetPasswordCode = randtoken.generate(4, '123456789')
     let checkPrimaryEmail2 = await userService.updateSingleUser({ email: data.email }, { resetPasswordCode: resetPasswordCode }, { new: true });
@@ -2912,6 +2918,11 @@ exports.getDashboardInfo = async (req, res) => {
 
   let lookupQuery = [
     {
+      $match:{
+        accountStatus:true
+      }
+    },
+    {
       $lookup: {
         from: "users",
         localField: "_id",
@@ -2948,7 +2959,6 @@ exports.getDashboardInfo = async (req, res) => {
         ]
       }
     },
-
     {
       $project: {
         name: 1,
@@ -2970,7 +2980,6 @@ exports.getDashboardInfo = async (req, res) => {
 
       }
     },
-
     { "$sort": { totalAmount: -1 } },
     { "$limit": 5 }  // Apply limit again after sorting
   ]
@@ -2981,7 +2990,8 @@ exports.getDashboardInfo = async (req, res) => {
     {
       $match: {
         dealerId: null,
-        resellerId: null
+        resellerId: null,
+        status:true
       }
     },
     {
