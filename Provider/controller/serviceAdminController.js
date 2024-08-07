@@ -17,9 +17,10 @@ const dealerService = require("../../Dealer/services/dealerService");
 const mongoose = require('mongoose')
 const supportingFunction = require('../../config/supportingFunction');
 const orderService = require("../../Order/services/orderService");
-
 require("dotenv").config();
 const randtoken = require('rand-token').generator()
+
+
 //Created customer
 exports.createServiceProvider = async (req, res, next) => {
   try {
@@ -1636,6 +1637,7 @@ exports.getServicerDealers1 = async (req, res) => {
   }
 }
 
+// get dealer list by servicer id
 exports.getDealerList = async (req, res) => {
   try {
     let data = req.body

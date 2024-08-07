@@ -2407,7 +2407,7 @@ exports.readAllNotification = async (req, res) => {
   }
 }
 
-//
+//email check validation functions
 exports.checkEmail = async (req, res) => {
   try {
     // Check if the email already exists
@@ -2515,6 +2515,7 @@ exports.updateProfile = async (req, res) => {
     })
   }
 };
+
 // Update Password
 exports.updatePassword = async (req, res) => {
   try {
@@ -2560,6 +2561,7 @@ exports.updatePassword = async (req, res) => {
     })
   }
 };
+
 //Get User by jwt token
 exports.getUserByToken = async (req, res) => {
   try {
@@ -2594,6 +2596,7 @@ exports.getUserByToken = async (req, res) => {
     })
   }
 };
+
 //Add members
 exports.addMembers = async (req, res) => {
   try {
@@ -2654,6 +2657,7 @@ exports.addMembers = async (req, res) => {
     })
   }
 };
+
 //Get Members
 exports.getMembers = async (req, res) => {
   try {

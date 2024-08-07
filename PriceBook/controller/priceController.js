@@ -750,6 +750,7 @@ exports.getPriceBookCat = async (req, res) => {
   }
 }
 
+// get active price book categories  by price book ids
 exports.getActivePriceBookCategories = async (req, res) => {
   try {
     let data = req.body
@@ -784,9 +785,6 @@ exports.getActivePriceBookCategories = async (req, res) => {
         ]
       }
     }
-
-
-
 
     let getPriceBook1 = await priceBookService.getAllPriceIds(queryPrice, {})
     let catIds = getPriceBook1.map(catId => new mongoose.Types.ObjectId(catId.category))
@@ -1108,7 +1106,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
   }
 }
 
-//get category and price books
+// get category bu price book name
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body

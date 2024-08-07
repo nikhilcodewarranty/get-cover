@@ -1754,7 +1754,9 @@ exports.editServicer = async (req, res) => {
     if (req.body.servicerId == "") {
       req.body.servicerId = null
     }
+    let isPureServicer = ''
     if (req.body.servicerId != "") {
+      console.log("check _----------------------------------------1")
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
         $or: [
@@ -1763,6 +1765,9 @@ exports.editServicer = async (req, res) => {
           { resellerId: req.body.servicerId },
         ]
       })
+      isPureServicer = checkServicer.dealerId != null ? false : checkServicer.resellerId == null ? true : false
+      console.log("check _----------------------------------------1", isPureServicer)
+
       if (!checkServicer) {
         res.send({
           code: constant.errorCode,
@@ -1770,7 +1775,10 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
+
     }
+    console.log("check _------------------------------------weeeeee----1", isPureServicer)
+
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
     if (!updateServicer) {
@@ -1792,6 +1800,7 @@ exports.editServicer = async (req, res) => {
       return;
     }
 
+
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1799,7 +1808,7 @@ exports.editServicer = async (req, res) => {
       body: data,
       response: {
         code: constant.successCode,
-        message: updateServicer
+        message: updateServicer,
       }
     }
 
@@ -1836,7 +1845,8 @@ exports.editServicer = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: updateServicer
+      result: updateServicer,
+      isPureServicer: isPureServicer
     })
 
   }
@@ -2672,7 +2682,7 @@ exports.sendMessages = async (req, res) => {
     };
 
     let createNotification = await userService.createNotification(notificationData1);
-    
+
     // Send Email code here
     let notificationEmails = await supportingFunction.getUserEmails();
 
