@@ -39,7 +39,7 @@ module.exports = class userService {
 
       return allUsers;
     } catch (error) {       
-      console.log(`Could not fetch users ${error}`);
+      return `Could not fetch users: ${error}`;
     }
   }
 

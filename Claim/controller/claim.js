@@ -2944,9 +2944,7 @@ exports.getCoverageType = async (req, res) => {
   }
 }
 
-
 // s3 bucket 
-
 const StorageP1 = multerS3({
   s3: s3,
   bucket: process.env.bucket_name,

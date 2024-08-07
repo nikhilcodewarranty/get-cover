@@ -1,8 +1,6 @@
 require("dotenv").config()
 const mongoose = require('mongoose')
 const dbUrl = process.env.DB_URL + process.env.dbName
-
-console.log('mongo calll----------------------',dbUrl)
 const connection = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
@@ -10,7 +8,7 @@ const connection = {
 mongoose
     .connect(dbUrl, connection)
     .then((res) => {
-        console.info('Connected to db')
+        console.info('Connected to db',res)
     })
     .catch((e) => {
         console.log('Unable to connect to the db', e)
