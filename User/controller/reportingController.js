@@ -1,12 +1,8 @@
 require("dotenv").config();
-
 const bcrypt = require("bcrypt");
-
 const jwt = require("jsonwebtoken");
 const moment = require('moment')
-
 const randtoken = require('rand-token').generator()
-
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
@@ -33,13 +29,10 @@ const multer = require('multer');
 const path = require('path');
 // Promisify fs.createReadStream for asynchronous file reading
 const logs = require('../../User/model/logs');
-
 const csvParser = require('csv-parser');
 const customerService = require("../../Customer/services/customerService");
 const supportingFunction = require('../../config/supportingFunction');
 const orderService = require("../../Order/services/orderService");
-
-
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
 const claimService = require("../../Claim/services/claimService");

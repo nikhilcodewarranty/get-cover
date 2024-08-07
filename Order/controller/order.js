@@ -43,9 +43,7 @@ const s3 = new S3Client({
         secretAccessKey: process.env.aws_secret_access_key,
     }
 });
-
 const folderName = 'orderFile'; // Replace with your specific folder name
-
 const StorageP = multerS3({
     s3: s3,
     bucket: process.env.bucket_name,
@@ -58,7 +56,6 @@ const StorageP = multerS3({
         cb(null, fullPath);
     }
 });
-
 const Storage = multerS3({
     s3: s3,
     bucket: process.env.bucket_name,
@@ -79,7 +76,6 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
-
 var uploadP = multer({
     storage: Storage,
     limits: {
@@ -161,7 +157,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
-        
+
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
@@ -1117,6 +1113,7 @@ exports.getAllArchieveOrders = async (req, res) => {
     });
 };
 
+//check file validation for orders
 exports.checkFileValidation = async (req, res) => {
     try {
         uploadP(req, res, async (err) => {
@@ -1594,6 +1591,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
     }
 };
 
+// validating of edit file in order
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
@@ -2071,6 +2069,7 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+
 //Get Dealer Resellers
 exports.getDealerResellers = async (req, res) => {
     try {
@@ -2167,6 +2166,7 @@ exports.getDealerResellers = async (req, res) => {
     }
 };
 
+// get servicer list by order ID
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
@@ -4086,6 +4086,7 @@ exports.getOrderContract = async (req, res) => {
     }
 };
 
+// get the pdf file with order ID
 exports.getOrderPdf = async (req, res) => {
     try {
         let data = req.body
@@ -4810,6 +4811,7 @@ exports.cronJobStatus = async (req, res) => {
     }
 };
 
+// update the eligibility statuses (cron job function)
 exports.cronJobStatusWithDate = async (req, res) => {
     try {
         const startDate = new Date(req.body.startDate)
@@ -4923,6 +4925,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
     }
 };
 
+//get reseller by dealer and customer
 exports.getResellerByDealerAndCustomer = async (req, res) => {
     try {
         let data = req.body
@@ -4965,6 +4968,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
     }
 }
 
+// reporting data creating script for all orders 
 exports.reportingDataCreation = async (req, res) => {
     try {
         let getAllOrders = await orderService.getAllOrders1([
@@ -5046,6 +5050,7 @@ exports.reportingDataCreation = async (req, res) => {
     }
 };
 
+// reporting data recreation for the missing orders(order with no reporting data)
 exports.reportingDataReCreation = async (req, res) => {
     try {
 
