@@ -12,7 +12,7 @@ Ensure you have Node.js version 20.12.1 and MongoDB version 6.3 installed.
     Dealer: Manages dealer-specific price books, orders, contracts, and claims. Can also act as a servicer.
     Reseller: Manages reseller-specific price books, orders, contracts, and claims. Can also act as a servicer.
     Servicer: Manages services related to insurance claims.
-    Customer: Views and manages their insurance policies, orders, and claims.
+    Customer: Views and manages their insurance policies, orders, and claims.{portNumber}
 
 ## Sections
 
@@ -76,14 +76,14 @@ Ensure you have Node.js version 20.12.1 and MongoDB version 6.3 installed.
             -Navigate to your project directory if you're not already there.
             -Run the following command to start the application "node index.js" (do not forget to include the .env file in the root)
             -output shoult be like this:-
-                        users Server is running on port 8080
-                        Service server is running on port 8084
-                        customer Server is running on port 8085
-                        Contract server is running on port 8089
-                        Dealer server is running on port 8082
-                        Contract server is running on port 8087
-                        Service server is running on port 8086
-                        Price server is running on port 8083
-                        app listening at http://localhost:3002
-                        MongoDB :: connected getcover_test1
-                        MongoDB :: connected getcover_reporting_test1
+                        users Server is running on port {portNumber}
+                        Service server is running on port {portNumber}
+                        customer Server is running on port {portNumber}
+                        Contract server is running on port {portNumber}
+                        Dealer server is running on port {portNumber}
+                        Contract server is running on port {portNumber}
+                        Service server is running on port {portNumber}
+                        Price server is running on port {portNumber}
+                        app listening at http://localhost:{portNumber}
+                        MongoDB :: connected {db_name}
+                        MongoDB :: connected {db_name}
