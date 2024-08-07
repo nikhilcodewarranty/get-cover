@@ -30,30 +30,44 @@ const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
 
 const PDFDocument = require('pdfkit');
-const { createPdf } = require("pdfmake");
 const claimService = require("../../Claim/services/claimService");
-{/* <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link> */ }
-var StorageP = multer.diskStorage({
-    destination: function (req, files, cb) {
-        cb(null, path.join(__dirname, "../../uploads/orderFile"));
-    },
-    filename: function (req, files, cb) {
-        cb(
-            null,
-            files.fieldname + "-" + Date.now() + path.extname(files.originalname)
-        );
-    },
+
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
+
+// s3 bucket connections
+const s3 = new S3Client({
+    region: process.env.region,
+    credentials: {
+        accessKeyId: process.env.aws_access_key_id,
+        secretAccessKey: process.env.aws_secret_access_key,
+    }
 });
-var Storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join(__dirname, "../../uploads/orderFile"));
+const folderName = 'orderFile'; // Replace with your specific folder name
+const StorageP = multerS3({
+    s3: s3,
+    bucket: process.env.bucket_name,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
     },
-    filename: function (req, file, cb) {
-        cb(
-            null,
-            file.fieldname + "-" + Date.now() + path.extname(file.originalname)
-        );
+    key: (req, file, cb) => {
+        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        const fullPath = `${folderName}/${fileName}`;
+        cb(null, fullPath);
+    }
+});
+const Storage = multerS3({
+    s3: s3,
+    bucket: process.env.bucket_name,
+    metadata: (req, file, cb) => {
+        cb(null, { fieldName: file.fieldname });
     },
+    key: (req, file, cb) => {
+        const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+        const fullPath = `${folderName}/${fileName}`;
+        cb(null, fullPath);
+    }
 });
 
 var upload = multer({
@@ -62,7 +76,6 @@ var upload = multer({
         fileSize: 500 * 1024 * 1024, // 500 MB limit
     },
 }).array("file", 100);
-
 var uploadP = multer({
     storage: Storage,
     limits: {
@@ -77,10 +90,12 @@ exports.createOrder1 = async (req, res) => {
         data.resellerId = data.resellerId == 'null' ? null : data.resellerId;
         data.venderOrder = data.dealerPurchaseOrder;
         let projection = { isDeleted: 0 };
+
         let checkDealer = await dealerService.getDealerById(
             data.dealerId,
             projection
         );
+
         if (!checkDealer) {
             res.send({
                 code: constant.errorCode,
@@ -88,6 +103,7 @@ exports.createOrder1 = async (req, res) => {
             });
             return;
         }
+
         if (!checkDealer.status) {
             res.send({
                 code: constant.errorCode,
@@ -137,6 +153,7 @@ exports.createOrder1 = async (req, res) => {
                 return;
             }
         }
+
         data.createdBy = req.userId;
         data.servicerId = data.servicerId != "" ? data.servicerId : null;
         data.resellerId = data.resellerId != "" ? data.resellerId : null;
@@ -266,9 +283,10 @@ exports.createOrder1 = async (req, res) => {
         let IDs = await supportingFunction.getUserIds()
         let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
+
         let notificationData = {
             title: "New order created",
-            description: data.dealerPurchaseOrder + " " + "order has been created",
+            description: "The new order " + savedResponse.unique_key + " has been created",
             userId: req.teammateId,
             contentId: null,
             flag: 'order',
@@ -1116,7 +1134,7 @@ exports.getAllArchieveOrders = async (req, res) => {
     });
 };
 
-//check File Validate or not
+//check file validation for orders
 exports.checkFileValidation = async (req, res) => {
     try {
         uploadP(req, res, async (err) => {
@@ -1594,6 +1612,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
     }
 };
 
+// validating of edit file in order
 exports.editFileCase = async (req, res) => {
     try {
         let data = req.body;
@@ -2071,6 +2090,7 @@ exports.getServicerInOrders = async (req, res) => {
         result: result_Array,
     });
 };
+
 //Get Dealer Resellers
 exports.getDealerResellers = async (req, res) => {
     try {
@@ -2167,7 +2187,7 @@ exports.getDealerResellers = async (req, res) => {
     }
 };
 
-//Get Servicer by order Id
+// get servicer list by order ID
 exports.getServicerByOrderId = async (req, res) => {
     try {
         let query = { _id: req.params.orderId }
@@ -2630,7 +2650,7 @@ exports.archiveOrder = async (req, res) => {
 
             return;
         }
-        if(checkOrder.status == "Active"){
+        if (checkOrder.status == "Active") {
             res.send({
                 code: constant.errorCode,
                 message: "Order is already active",
@@ -3524,7 +3544,6 @@ exports.markAsPaid = async (req, res) => {
             { status: "Active" },
             { new: true }
         );
-        //let count1 = await contractService.getContractsCount(); 
         let count1 = await contractService.getContractsCountNew();
         var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
         let checkLength = savedResponse.productsArray.length - 1
@@ -3798,9 +3817,8 @@ exports.markAsPaid = async (req, res) => {
                     let reportingData = {
                         orderId: savedResponse._id,
                         products: pricebookDetail,
-                        orderAmount: data.orderAmount,
-                        dealerId: data.dealerId,
-                        // dealerPriceBook: dealerBookDetail
+                        orderAmount: checkOrder.orderAmount,
+                        dealerId: checkOrder.dealerId,
                     }
                     await supportingFunction.reportingData(reportingData)
                 }
@@ -4186,6 +4204,7 @@ exports.getOrderContract = async (req, res) => {
     }
 };
 
+// get the pdf file with order ID
 exports.getOrderPdf = async (req, res) => {
     try {
         let data = req.body
@@ -5339,6 +5358,7 @@ exports.cronJobStatus = async (req, res) => {
     }
 };
 
+// update the eligibility statuses (cron job function)
 exports.cronJobStatusWithDate = async (req, res) => {
     try {
         const startDate = new Date(req.body.startDate)
@@ -5452,6 +5472,7 @@ exports.cronJobStatusWithDate = async (req, res) => {
     }
 };
 
+//get reseller by dealer and customer
 exports.getResellerByDealerAndCustomer = async (req, res) => {
     try {
         let data = req.body
@@ -5494,6 +5515,7 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
     }
 }
 
+// reporting data creating script for all orders 
 exports.reportingDataCreation = async (req, res) => {
     try {
         let getAllOrders = await orderService.getAllOrders1([
@@ -5575,6 +5597,7 @@ exports.reportingDataCreation = async (req, res) => {
     }
 };
 
+// reporting data recreation for the missing orders(order with no reporting data)
 exports.reportingDataReCreation = async (req, res) => {
     try {
 

@@ -1,7 +1,5 @@
 const { claim } = require("../model/claim");
-const { claimPart } = require("../model/claimPart");
 const path = require("path");
-const { claimStatus } = require("../model/claimStatus");
 const { comments } = require("../model/comments");
 const claimResourceResponse = require("../utils/constant");
 const claimService = require("../services/claimService");
@@ -26,19 +24,32 @@ const customerService = require("../../Customer/services/customerService");
 const providerService = require("../../Provider/services/providerService");
 const resellerService = require("../../Dealer/services/resellerService");
 const dealerService = require("../../Dealer/services/dealerService");
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+  }
+});
 
-// multer function to upload the files
-var StorageP = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, "../../uploads/claimFile"));
+const folderName = 'claimFile'; // Replace with your specific folder name
+
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
   },
-  filename: function (req, files, cb) {
-    cb(
-      null,
-      files.fieldname + "-" + Date.now() + path.extname(files.originalname)
-    );
-  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
 });
 
 var imageUpload = multer({
@@ -1808,7 +1819,9 @@ exports.editServicer = async (req, res) => {
     if (req.body.servicerId == "") {
       req.body.servicerId = null
     }
+    let isPureServicer = ''
     if (req.body.servicerId != "") {
+      console.log("check _----------------------------------------1")
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
         $or: [
@@ -1817,6 +1830,9 @@ exports.editServicer = async (req, res) => {
           { resellerId: req.body.servicerId },
         ]
       })
+      isPureServicer = checkServicer.dealerId != null ? false : checkServicer.resellerId == null ? true : false
+      console.log("check _----------------------------------------1", isPureServicer)
+
       if (!checkServicer) {
         res.send({
           code: constant.errorCode,
@@ -1824,7 +1840,10 @@ exports.editServicer = async (req, res) => {
         })
         return
       }
+
     }
+    console.log("check _------------------------------------weeeeee----1", isPureServicer)
+
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
     if (!updateServicer) {
@@ -1846,6 +1865,7 @@ exports.editServicer = async (req, res) => {
       return;
     }
 
+
     //Save Logs
     let logData = {
       userId: req.userId,
@@ -1853,7 +1873,7 @@ exports.editServicer = async (req, res) => {
       body: data,
       response: {
         code: constant.successCode,
-        message: updateServicer
+        message: updateServicer,
       }
     }
 
@@ -1894,7 +1914,8 @@ exports.editServicer = async (req, res) => {
     res.send({
       code: constant.successCode,
       message: 'Success!',
-      result: updateServicer
+      result: updateServicer,
+      isPureServicer: isPureServicer
     })
 
   }
@@ -2255,6 +2276,9 @@ exports.saveBulkClaim = async (req, res) => {
         }
       })
       const updateArray = await Promise.all(updateArrayPromise);
+      let existArray = {
+        data: {}
+      };
       let emailServicerId = [];
       totalDataComing.map((data, index) => {
         let servicerId = data.servicerData?._id
@@ -2264,7 +2288,6 @@ exports.saveBulkClaim = async (req, res) => {
         if (data.servicerData?.resellerId) {
           servicerId = data.servicerData?.resellerId
         }
-        emailServicerId.push(servicerId);
         // emailDealerId.push(data.orderData?.order?.dealerId);
         if (!data.exit) {
           let obj = {
@@ -2291,73 +2314,71 @@ exports.saveBulkClaim = async (req, res) => {
           finalArray.push(obj)
           data.status = 'Add claim successfully!'
         }
+
       })
       //save bulk claim
       const saveBulkClaim = await claimService.saveBulkClaim(finalArray)
 
       let IDs = await supportingFunction.getUserIds()
       let adminEmail = await supportingFunction.getUserEmails();
-      //get email of all servicer
-      const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
-      let existArray = {
-        data: {}
-      };
-
-      totalDataComing.map((data, i) => {
-        let servicerId = data.servicerData?._id;
-        if (data.servicerData?.dealerId) {
-          servicerId = data.servicerData?.dealerId;
-        }
-        if (data.servicerData?.resellerId) {
-          servicerId = data.servicerData?.resellerId;
-        }
-        if (!existArray.data[servicerId] && servicerId != undefined) {
-          existArray.data[servicerId] = [];
-        }
-        if (servicerId != undefined) {
-          existArray.data[servicerId].push({
-            contractId: data.contractId ? data.contractId : "",
-            lossDate: data.lossDate ? data.lossDate : '',
-            diagnosis: data.diagnosis ? data.diagnosis : '',
-            status: data.status ? data.status : '',
-          });
-        }
-
-
-
-
-      });
-
-      // If you need to convert existArray.data to a flat array format
-      if (emailServicer.length > 0) {
-        IDs = IDs.concat(emailServicerId)
-        let flatArray = [];
-        for (let servicerId in existArray.data) {
-          let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
-          let email = matchData ? matchData.email : servicerId; // Replace servicerId with email if matchData is found
-          flatArray.push({
-            email: email,
-            response: existArray.data[servicerId]
-          });
-        }
-        //send email to servicer      
-        for (const item of flatArray) {
-          const htmlTableString = convertArrayToHTMLTable(item.response);
-          let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
-        }
-      }
       let new_admin_array = adminEmail.concat(emailArray)
       let toMail = [];
       let ccMail;
       const csvArray = await Promise.all(totalDataComing.map(async (item, i) => {
         // Build bulk csv for dealer only 
+        let servicerId = item.servicerData?._id
+        if (item.servicerData?.dealerId) {
+          servicerId = item.servicerData?.dealerId
+        }
+        if (item.servicerData?.resellerId) {
+          servicerId = item.servicerData?.resellerId
+        }
         if (req.role === 'Dealer') {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
           let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
           toMail = userData.email;
-          // if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2365,7 +2386,6 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         }
         // Build bulk csv for Reseller only 
         else if (req.role === 'Reseller') {
@@ -2382,7 +2402,46 @@ exports.saveBulkClaim = async (req, res) => {
           new_admin_array.push(dealerData.email);
           toMail = resellerData.email;
           ccMail = new_admin_array;
-          //if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.resellerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2390,7 +2449,6 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         }
         // Build bulk csv for Customer only 
         else if (req.role === 'Customer') {
@@ -2415,7 +2473,46 @@ exports.saveBulkClaim = async (req, res) => {
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
           IDs.push(dealerData._id);
-          //if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+          if (req.userId.toString() === item.orderData?.order?.customerId?.toString()) {
+            // For servicer
+            if (!existArray.data[servicerId] && servicerId != undefined) {
+              emailServicerId.push(servicerId);
+              existArray.data[servicerId] = [];
+            }
+
+            if (servicerId != undefined) {
+              existArray.data[servicerId].push({
+                contractId: data.contractId ? data.contractId : "",
+                lossDate: data.lossDate ? data.lossDate : '',
+                diagnosis: data.diagnosis ? data.diagnosis : '',
+                status: data.status ? data.status : '',
+              });
+            }
+
+            //get email of all servicer
+            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            // If you need to convert existArray.data to a flat array format
+            if (emailServicer.length > 0) {
+              IDs = IDs.concat(emailServicerId)
+              let flatArray = [];
+              for (let servicerId in existArray.data) {
+                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+                flatArray.push({
+                  email: email,
+                  response: existArray.data[servicerId]
+                });
+              }
+              //send email to servicer      
+              for (const item of flatArray) {
+                if (item.email != '') {
+                  const htmlTableString = convertArrayToHTMLTable(item.response);
+                  let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+                }
+
+              }
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2423,10 +2520,47 @@ exports.saveBulkClaim = async (req, res) => {
             diagnosis: item.diagnosis || '',
             status: item.status || '',
           };
-          //}
         } else {
           toMail = new_admin_array;
           ccMail = '';
+          // For servicer
+          if (!existArray.data[servicerId] && servicerId != undefined) {
+            emailServicerId.push(servicerId);
+            existArray.data[servicerId] = [];
+          }
+
+          if (servicerId != undefined) {
+            existArray.data[servicerId].push({
+              contractId: data.contractId ? data.contractId : "",
+              lossDate: data.lossDate ? data.lossDate : '',
+              diagnosis: data.diagnosis ? data.diagnosis : '',
+              status: data.status ? data.status : '',
+            });
+          }
+
+          //get email of all servicer
+          const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+          // If you need to convert existArray.data to a flat array format
+          if (emailServicer.length > 0) {
+            IDs = IDs.concat(emailServicerId)
+            let flatArray = [];
+            for (let servicerId in existArray.data) {
+              let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+              let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
+              flatArray.push({
+                email: email,
+                response: existArray.data[servicerId]
+              });
+            }
+            //send email to servicer      
+            for (const item of flatArray) {
+              if (item.email != '') {
+                const htmlTableString = convertArrayToHTMLTable(item.response);
+                let mailing_servicer = await sgMail.send(emailConstant.sendCsvFile(item.email, adminEmail, htmlTableString));
+              }
+
+            }
+          }
           return {
             contractId: item.contractId || "",
             servicerName: item.servicerName || "",
@@ -2475,11 +2609,9 @@ exports.saveBulkClaim = async (req, res) => {
       }
 
       const htmlTableString = convertArrayToHTMLTable(csvArray);
-
       //send Email to admin 
 
       let mailing = sgMail.send(emailConstant.sendCsvFile(toMail, ccMail, htmlTableString));
-
       if (saveBulkClaim.length > 0) {
         let notificationData1 = {
           title: "Bulk Report",
@@ -2617,6 +2749,7 @@ exports.sendMessages = async (req, res) => {
       redirectionId: checkClaim.unique_key,
       notificationFor: IDs
     };
+
     let createNotification = await userService.createNotification(notificationData1);
 
     // Send Email code here
@@ -2774,34 +2907,14 @@ exports.statusClaim = async (req, res) => {
       let contractId = result[i].contractId;
       const claimId = result[i]._id;
       const customerStatus = result[i].customerStatus;
-
       //Get latest Servicer Shipped Status
-      const latestServicerShipped = repairStatus.reduce((latest, current) => {
-        if (current.status === "Servicer Shipped" && new Date(current.date) > new Date(latest.date)) {
-          return current;
-        }
-        return latest;
-      }, repairStatus[0]);
-
+      const latestServicerShipped = repairStatus[0]?.date
       //Get Customer last response
-      const customerLastResponseDate = customerStatus.reduce((latest, current) => {
-        if (new Date(current.date) > new Date(latest.date)) {
-          return current;
-        }
-        return latest;
-      }, customerStatus[0]);
-
-      const latestServicerShippedDate = new Date(latestServicerShipped.date);
+      const customerLastResponseDate = customerStatus[0]?.date
+      const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getHours() + 1);
-
-      if (
-        customerLastResponseDate > latestServicerShippedDate &&
-        customerLastResponseDate < sevenDaysAfterShippedDate
-      ) {
-        console.log("Customer response is within 7 days after the last servicer shipped date."); //tondon
-      } else {
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
+      if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [
           {
@@ -2816,12 +2929,15 @@ exports.statusClaim = async (req, res) => {
         }, { new: true })
 
         const query = { contractId: new mongoose.Types.ObjectId(contractId) }
+
         let checkContract = await contractService.getContractById({ _id: contractId })
+
         let claimTotalQuery = [
           { $match: query },
           { $group: { _id: null, amount: { $sum: "$totalAmount" } } }
 
         ]
+
         let claimTotal = await claimService.getClaimWithAggregate(claimTotalQuery);
 
         // Update Eligibilty true and false
@@ -2897,6 +3013,50 @@ exports.getCoverageType = async (req, res) => {
 
   }
   catch (err) {
+    res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+
+// s3 bucket 
+
+const StorageP1 = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name,
+  metadata: (req, files, cb) => {
+    cb(null, { fieldName: files.fieldname });
+  },
+  key: (req, files, cb) => {
+    const fileName = files.fieldname + '-' + Date.now() + path.extname(files.originalname);
+    const fullPath = `${folderName}/${fileName}`;
+    cb(null, fullPath);
+  }
+});
+
+var imageUploadS3 = multer({
+  storage: StorageP1,
+  limits: {
+    fileSize: 500 * 1024 * 1024, // 500 MB limit
+  },
+}).any([
+  { name: "file" },
+  { name: "termCondition" },
+])
+
+
+
+exports.s3Bucket = async (req, res) => {
+  try {
+    imageUploadS3(req, res, (err) => {
+      if (err) {
+        return res.send(err.message);
+      }
+      res.send({ ddd: 'File uploaded successfully', ttt: req.files });
+    });
+  } catch (err) {
     res.send({
       code: constant.errorCode,
       message: err.message

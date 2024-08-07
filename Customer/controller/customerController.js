@@ -1846,37 +1846,6 @@ exports.customerClaims = async (req, res) => {
   }
 }
 
-//----------- not used ---------------//
-
-// uddate customer api
-exports.updateCustomer = async (req, res, next) => {
-  try {
-    const updatedCustomer = await customerService.updateCustomer(req.body);
-    if (!updatedCustomer) {
-      res.status(404).json("There are no customer updated yet!");
-    }
-    res.json(updatedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
-exports.deleteCustomer = async (req, res, next) => {
-  try {
-    const deletedCustomer = await customerService.deleteCustomer(req.body.id);
-    if (!deletedCustomer) {
-      res.status(404).json("There are no customer deleted yet!");
-    }
-    res.json(deletedCustomer);
-  } catch (error) {
-    res
-      .status(customerResourceResponse.serverError.statusCode)
-      .json({ error: "Internal server error" });
-  }
-};
-
 
 
 

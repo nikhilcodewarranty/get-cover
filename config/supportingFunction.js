@@ -5,7 +5,6 @@ const REPORTING = require('../Order/model/reporting')
 
 exports.getUserIds = async () => {
     const getSuperId = await userService.findUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isDeleted: false, status: true }, {});
-    console.log("getSuperId++++++++++++++++++++++", getSuperId)
     return getSuperId.map(ID => ID._id);
 }
 
@@ -30,7 +29,6 @@ exports.reportingData = async (data) => {
         dealerId: data.dealerId
     }
     const saveData = await REPORTING(reportingData).save()
-    console.log("check ak ------------------", saveData)
 
     return saveData
 }

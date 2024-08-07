@@ -797,7 +797,7 @@ exports.claimReportinDropdown = async (req, res) => {
         })
     }
 };
-
+ 
 //get dashboard data for graph
 exports.getDashboardGraph = async (req, res) => {
     try {

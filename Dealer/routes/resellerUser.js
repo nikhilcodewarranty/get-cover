@@ -4,40 +4,71 @@ const resellerController = require("../controller/resellerUserController");
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
 
-router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller)
-router.post('/getAllResellers', [verifyToken], resellerController.getAllResellers)
-router.post("/getResellerServicers", [verifyToken], resellerController.getResellerServicers)
-router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId);
-router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser);
-router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerController.getResselerByCustomer);
-router.post("/changeResellerStatus", [verifyToken], resellerController.changeResellerStatus);
-router.post("/getResellerClaims", [verifyToken], resellerController.getResellerClaims);
-router.post("/getResellerCustomers", [verifyToken], resellerController.getResellerCustomers);
-router.post("/create-customer", [verifyToken], validator('create_customer'), [verifyToken], resellerController.createCustomer);
-router.post('/getCustomerInOrder', [verifyToken], resellerController.getCustomerInOrder)
-router.post('/getServicerInOrders', [verifyToken], resellerController.getServicerInOrders)
-router.post('/createOrder', [verifyToken], resellerController.createOrder)
-router.post('/getArchieveOrder', [verifyToken], resellerController.getAllArchieveOrders)
-router.get("/getResellerById", [verifyToken], resellerController.getResellerById);
-router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData);
-router.get("/getDealerByReseller", [verifyToken], resellerController.getDealerByReseller);
-router.post("/getResellerPriceBook", [verifyToken], resellerController.getResellerPriceBook);
-router.post("/getResellerUsers", [verifyToken], resellerController.getResellerUsers);
-router.post("/getResellerDetails", [verifyToken], resellerController.getResellerDetails);
-router.post("/resellerOrders", [verifyToken], resellerController.getResellerOrders);
-router.post("/getResellerContract", [verifyToken], resellerController.getResellerContract);
-router.post('/getCategoryAndPriceBooks', [verifyToken], resellerController.getCategoryAndPriceBooks)
-router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail)
-router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
+// POST routes
+router.post('/createReseller', [verifyToken], validator('create_reseller'), resellerController.createReseller); // create a new reseller
 
-router.put("/editResellers", [verifyToken], resellerController.editResellers);
+router.post('/getAllResellers', [verifyToken], resellerController.getAllResellers); // get all resellers
 
-router.post('/saleReporting', [verifyToken], resellerController.saleReporting)
-router.post('/claimReporting', [verifyToken], resellerController.claimReporting)
-router.post('/saleReportinDropDown', [verifyToken], resellerController.saleReportinDropDown)
-router.post('/claimReportinDropdown', [verifyToken], resellerController.claimReportinDropdown)
-router.get('/getDashboardGraph', [verifyToken], resellerController.getDashboardGraph)
-router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo)
+router.post("/getResellerServicers", [verifyToken], resellerController.getResellerServicers); // get reseller servicers
+
+router.post("/getResellerByDealerId/:dealerId", [verifyToken], resellerController.getResellerByDealerId); // get reseller by dealer ID
+
+router.post("/addResellerUser", [verifyToken], resellerController.addResellerUser); // add a user to a reseller
+
+router.post("/getResselerByCustomer/:customerId", [verifyToken], resellerController.getResselerByCustomer); // get reseller by customer ID
+
+router.post("/changeResellerStatus", [verifyToken], resellerController.changeResellerStatus); // change reseller status
+
+router.post("/getResellerClaims", [verifyToken], resellerController.getResellerClaims); // get reseller claims
+
+router.post("/getResellerCustomers", [verifyToken], resellerController.getResellerCustomers); // get reseller customers
+
+router.post("/create-customer", [verifyToken], validator('create_customer'), resellerController.createCustomer); // create a new customer
+
+router.post('/getCustomerInOrder', [verifyToken], resellerController.getCustomerInOrder); // get customer in an order
+
+router.post('/getServicerInOrders', [verifyToken], resellerController.getServicerInOrders); // get servicer in orders
+
+router.post('/createOrder', [verifyToken], resellerController.createOrder); // create a new order
+
+router.post('/getArchieveOrder', [verifyToken], resellerController.getAllArchieveOrders); // get all archived orders
+
+router.post("/getResellerPriceBook", [verifyToken], resellerController.getResellerPriceBook); // get reseller price book
+
+router.post("/getResellerUsers", [verifyToken], resellerController.getResellerUsers); // get reseller users
+
+router.post("/getResellerDetails", [verifyToken], resellerController.getResellerDetails); // get reseller details
+
+router.post("/resellerOrders", [verifyToken], resellerController.getResellerOrders); // get reseller orders
+
+router.post("/getResellerContract", [verifyToken], resellerController.getResellerContract); // get reseller contract
+
+router.post('/getCategoryAndPriceBooks', [verifyToken], resellerController.getCategoryAndPriceBooks); // get category and price books
+
+router.post('/editOrderDetail/:orderId', [verifyToken], resellerController.editOrderDetail); // edit order details
+
+router.post('/saleReporting', [verifyToken], resellerController.saleReporting); // sale reporting
+
+router.post('/claimReporting', [verifyToken], resellerController.claimReporting); // claim reporting
+
+router.post('/saleReportinDropDown', [verifyToken], resellerController.saleReportinDropDown); // sale reporting dropdown
+
+router.post('/claimReportinDropdown', [verifyToken], resellerController.claimReportinDropdown); // claim reporting dropdown
+
+// GET routes
+router.get("/getResellerById", [verifyToken], resellerController.getResellerById); // get reseller by ID
+
+router.get("/getDashboardData", [verifyToken], resellerController.getDashboardData); // get dashboard data
+
+router.get("/getDealerByReseller", [verifyToken], resellerController.getDealerByReseller); // get dealer by reseller
+
+router.get('/getDashboardGraph', [verifyToken], resellerController.getDashboardGraph); // get dashboard graph
+
+router.get('/getDashboardInfo', [verifyToken], resellerController.getDashboardInfo); // get dashboard info
+
+// PUT routes
+router.put("/editResellers", [verifyToken], resellerController.editResellers); // edit reseller details
 
 
-module.exports = router; 
+
+module.exports = router;

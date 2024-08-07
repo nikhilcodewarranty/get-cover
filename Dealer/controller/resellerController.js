@@ -777,7 +777,7 @@ exports.editResellers = async (req, res) => {
             address: settingData[0]?.address,
             websiteSetting: settingData[0],
             senderName: checkReseller.name,
-            content: "Information has been updated successfully! effective immediately.",
+            content: "The information has been updated successfully! effective immediately.",
             subject: "Update Info"
         }
 

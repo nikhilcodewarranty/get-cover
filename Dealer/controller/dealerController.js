@@ -42,16 +42,32 @@ const logs = require('../../User/model/logs');
 const supportingFunction = require('../../config/supportingFunction');
 const providerService = require('../../Provider/services/providerService');
 
+const { S3Client } = require('@aws-sdk/client-s3');
+const { Upload } = require('@aws-sdk/lib-storage');
+const multerS3 = require('multer-s3');
 
-
-var StorageP = multer.diskStorage({
-  destination: function (req, files, cb) {
-    cb(null, path.join(__dirname, '../../uploads'));
-  },
-  filename: function (req, files, cb) {
-    cb(null, files.fieldname + '-' + Date.now() + path.extname(files.originalname))
+// s3 bucket connections
+const s3 = new S3Client({
+  region: process.env.region,
+  credentials: {
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
   }
-})
+});
+
+
+const StorageP = multerS3({
+  s3: s3,
+  bucket: process.env.bucket_name, // Ensure this environment variable is set
+  metadata: (req, file, cb) => {
+    cb(null, { fieldName: file.fieldname });
+  },
+  key: (req, file, cb) => {
+    const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
+    cb(null, fileName);
+  }
+});
+
 
 var uploadP = multer({
   storage: StorageP,
@@ -59,8 +75,6 @@ var uploadP = multer({
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single('file');
-
-
 
 
 const checkObjectId = async (Id) => {
@@ -168,7 +182,6 @@ exports.getAllDealers = async (req, res) => {
 //Get Pending Request dealers
 exports.getPendingDealers = async (req, res) => {
   try {
-
     let data = req.body
     if (req.role != "Super Admin") {
        res.send({
@@ -186,6 +199,7 @@ exports.getPendingDealers = async (req, res) => {
       ]
 
     };
+
     let projection = { __v: 0, isDeleted: 0 }
     let dealers = await dealerService.getAllDealers(dealerFilter, projection);
     //-------------Get All Dealers Id's------------------------
@@ -239,7 +253,6 @@ exports.getPendingDealers = async (req, res) => {
     })
   }
 };
-
 
 //get dealer detail by ID
 exports.getDealerById = async (req, res) => {
@@ -526,39 +539,6 @@ exports.updateDealer = async (req, res) => {
       message: err.message
     });
   };
-};
-
-// delete dealer with dealer ID
-exports.deleteDealer = async (req, res) => {
-  try {
-    let data = req.body;
-    let criteria = { _id: req.params.dealerId };
-    let newValue = {
-      $set: {
-        isDeleted: true
-      }
-    };
-    let option = { new: true };
-    const deletedDealer = await dealerService.deleteDealer(criteria, newValue, option);
-
-    if (!deletedDealer) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to delete the dealer"
-      })
-      return;
-    };
-
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  } catch (error) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
 };
 
 //Upload term and condition
@@ -1012,7 +992,7 @@ exports.changeDealerStatus = async (req, res) => {
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "Dealer status update",
-        description: singleDealer.name + " , " + "your status has been updated",
+        description: singleDealer.name + ", " + "your status has been updated",
         userId: req.teammateId,
         redirectionId: singleDealer.name,
         flag: 'dealer',
@@ -1035,9 +1015,6 @@ exports.changeDealerStatus = async (req, res) => {
         subject: "Update Status"
       }
       let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-
-
-
       let logData = {
         userId: req.teammateId,
         endpoint: "dealer/changeDealerStatus",
@@ -1404,324 +1381,6 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
       code: constant.errorCode,
       message: err.message
     })
-  }
-};
-
-function uniqByKeepLast(data, key) {
-
-  return [
-
-    ...new Map(
-
-      data.map(x => [key(x), x])
-
-    ).values()
-
-  ]
-
-}
-
-//UPload price book
-exports.uploadPriceBook = async (req, res) => {
-  try {
-    // Check if a file is uploaded
-
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    if (!req.file) {
-       res.send({
-        code: constant.errorCode,
-        message: "No file uploaded"
-      })
-      return;
-    }
-    let csvName = req.file.filename
-    const csvWriter = createCsvWriter({
-      path: './uploads/resultFile/' + csvName,
-      header: [
-        { id: 'priceBook', title: 'Price Book' },
-        { id: 'status', title: 'Status' },
-        { id: 'reason', title: 'Reason' },
-        // Add more headers as needed
-      ],
-    });
-
-
-    //check Dealer Exist
-    let checkDealer = await dealerService.getSingleDealerById({ _id: req.body.dealerId }, { isDeleted: false })
-    // Your array of objects
-    if (checkDealer.length == 0) {
-       res.send({
-        code: constant.errorCode,
-        message: "Dealer Not found"
-      })
-      return;
-    }
-    let priceBookName = [];
-    let csvStatus = [];
-    let newArray1;
-    let allPriceBooks;
-    let passedEnteries = []
-    let upload
-    const wb = XLSX.readFile(req.file.path);
-    const sheets = wb.SheetNames;
-    const ws = wb.Sheets[sheets[0]];
-    const headers = [];
-    for (let cell in ws) {
-      // Check if the cell is in the first row and has a non-empty value
-      if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-        headers.push(ws[cell].v);
-      }
-    }
-    if (sheets.length > 0) {
-      let original_csv_array = ['priceBook', 'retailPrice'];
-
-      if (original_csv_array.length != headers.length) {
-          res.send({
-        code: constant.errorCode,
-          message: 'The uploaded file coloumn is not match.Please check the uploaded file'
-        });
-        return;
-      }
-
-      let equality = Array.isArray(original_csv_array) &&
-        Array.isArray(headers) &&
-        original_csv_array.length === headers.length &&
-        original_csv_array.every((val, index) => val === headers[index]);
-
-      if (!equality) {
-          res.send({
-        code: constant.errorCode,
-          message: 'Invalid uploaded file! '
-        });
-        return;
-      }
-
-      const data = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
-      //Get data from csv when priceBooks and retailPrice is not undefined
-      let results = data
-        .filter(obj => obj.priceBook !== undefined && obj.retailPrice !== undefined)
-        .map(obj => ({
-          priceBook: obj.priceBook,
-          retailPrice: obj.retailPrice,
-        }));
-
-      let allResults = data
-        .map(obj => ({
-          priceBook: obj.priceBook,
-          retailPrice: obj.retailPrice,
-        }));
-      // Get only unique data from csv
-      let unique = uniqByKeepLast(results, it => it.priceBook)
-      // Get only name from unique
-      priceBookName = unique.map(obj => obj.priceBook);
-      const priceBookName1 = results.map(name => new RegExp(`^${name.priceBook}$`, 'i'));
-      //Get founded products
-      const foundProducts = await priceBookService.findByName(priceBookName1);
-      if (foundProducts.length > 0) {
-        const count = await dealerPriceService.getDealerPriceCount();
-        // Extract the names and ids of found products
-        let foundProductData1 = foundProducts.map(product => {
-          if (product.status) {
-            return {
-              priceBook: product._id,
-              name: product.name,
-              dealerId: req.body.dealerId,
-              status: true,
-              wholePrice: (Number(product.frontingFee) + Number(product.reserveFutureFee) + Number(product.reinsuranceFee) + Number(product.adminFee)).toFixed(2)
-            }
-          }
-        });
-        //Get inactive products
-        const inactiveData = foundProducts.filter(inactive => inactive.status === false);
-        const foundProductData = foundProductData1.filter(item1 => item1 !== undefined);
-
-        if (inactiveData.length > 0) {
-          inactiveData.map(inactive => {
-            let csvData = {
-              'priceBook': inactive.name,
-              'status': 'Failed',
-              'reason': 'The product is inactive',
-
-            }
-            csvStatus.push(csvData)
-          })
-
-        }
-        const inactiveNames = inactiveData.map(inactive => inactive.name.toLowerCase());
-        // Remove product from csv based on inactive name
-        priceBookName = priceBookName.filter(name => !inactiveNames.includes(name.toLowerCase()));
-
-        const missingProductNames = allResults.filter(name => {
-          const lowercaseName = name.priceBook != '' ? name.priceBook.toLowerCase() : name.priceBook;
-          return !foundProductData.some(product => product.name.toLowerCase() === lowercaseName);
-        });
-
-        if (missingProductNames.length > 0) {
-          missingProductNames.map(product => {
-            let csvData = {
-              'priceBook': product,
-              'status': 'Failed',
-              'reason': 'The product is not exist in the catalog',
-
-            }
-            csvStatus.push(csvData)
-          })
-        }
-        // Extract _id values from priceBookIds
-        const allpriceBookIds = foundProductData.map(obj => new mongoose.Types.ObjectId(obj.priceBook));
-        // Check for duplicates and return early if found
-        if (allpriceBookIds.length > 0) {
-          let query = {
-            $and: [
-              { 'priceBook': { $in: allpriceBookIds } },
-              { 'dealerId': new mongoose.Types.ObjectId(req.body.dealerId) }
-            ]
-          }
-          let existingData = await dealerPriceService.findByIds(query);
-          if (existingData.length > 0) {
-            allPriceBooks = existingData.map(obj => obj.priceBooks).flat();
-            newArray1 = results
-              .filter(obj => !allPriceBooks.some(existingObj => existingObj.name.toLowerCase().includes(obj.priceBook.toLowerCase())))
-              .map(obj => ({
-                priceBook: obj.priceBook,
-                status: true,
-                retailPrice: obj.retailPrice,
-                dealerId: req.body.dealerId,
-              }));
-            // Merge brokerFee from newArray into foundProductData based on priceBook
-            const mergedArray = foundProductData.map(foundProduct => {
-              const matchingItem = newArray1.find(item => item.priceBook.toLowerCase() === foundProduct.name.toLowerCase());
-
-              if (matchingItem != undefined) {
-                let csvData = {
-                  'priceBook': foundProduct.name,
-                  'status': 'Passed',
-                  'reason': 'Successfull Processed!',
-                }
-                csvStatus.push(csvData)
-                passedEnteries.push(csvData)
-                return {
-                  ...foundProduct,
-                  retailPrice: matchingItem.retailPrice,
-                  brokerFee: ((matchingItem.retailPrice) - foundProduct.wholePrice).toFixed(2),
-                  unique_key: Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + 1,
-                  wholesalePrice: foundProduct.wholePrice
-                };
-              }
-            });
-            const mergedArrayWithoutUndefined = mergedArray.filter(item => item !== undefined);
-            existingData.forEach(product => {
-              product.priceBooks.forEach(priceBook => {
-                const matchedData = unique.filter(item => priceBook.name == item.priceBook);
-                let newValue = {
-                  $set: {
-                    retailPrice: matchedData[0].retailPrice
-                  }
-                };
-                let option = { new: true }
-                let update = dealerPriceService.updateDealerPrice({ dealerId: req.body.dealerId, priceBook: priceBook._id, status: true }, newValue, option);
-                let csvData = {
-                  'priceBook': priceBook.name,
-                  'status': 'Passed',
-                  'reason': 'Successfull Processed!',
-                }
-                csvStatus.push(csvData)
-                passedEnteries.push(csvData)
-              });
-            });
-
-            upload = await dealerPriceService.uploadPriceBook(mergedArrayWithoutUndefined);
-          }
-          else {
-            newArray1 = results
-              .filter(obj => foundProductData.some(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase()))
-              .map((obj, index) => {
-                const matchingProduct = foundProductData.find(existingObj => existingObj.name.toLowerCase() == obj.priceBook.toLowerCase());
-                if (matchingProduct) {
-                  let csvData = {
-                    'priceBook': obj.priceBook,
-                    'status': 'Passed',
-                    'reason': 'Successfull Processed!',
-                  }
-                  csvStatus.push(csvData)
-                  passedEnteries.push(csvData)
-                }
-                const updatedCount = Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1;
-                //Print the value of updatedCount
-                return {
-                  priceBook: matchingProduct.priceBook,
-                  status: true,
-                  dealerId: req.body.dealerId,
-                  unique_key: updatedCount,
-                  retailPrice: obj.retailPrice,
-                  brokerFee: (Number(obj.retailPrice) - Number(matchingProduct.wholePrice)).toFixed(2),
-                  wholesalePrice: matchingProduct ? matchingProduct.wholePrice : null, // Use wholePrice from matching product or null if not found
-                };
-              });
-
-            upload = await dealerPriceService.uploadPriceBook(newArray1);
-          }
-        }
-      }
-      else {
-        if (results.length > 0) {
-          results.map(product => {
-            let csvData = {
-              'priceBook': product.priceBook,
-              'status': 'Failed',
-              'reason': 'The product is not exist in the catalog',
-            }
-            csvStatus.push(csvData)
-          })
-        }
-      }
-      // Write the data to the CSV file
-      const res12 = await csvWriter.writeRecords(csvStatus);
-      // Construct the base URL link
-      const base_url_link = `${process.env.SITE_URL}:3002/uploads/resultFile`;
-      // Get the CSV name from the csvWriter path
-      const csvName1 = csvName;
-
-      // Construct the complete URL
-      const complete_url = `${base_url_link}/${csvName1}`;
-
-      let entriesData = {
-        userName: checkDealer[0].name,
-        totalEntries: Number(results.length),
-        SuccessEntries: Number(passedEnteries.length),
-        failedEntries: Number(results.length) - Number(passedEnteries.length),
-        routeLink: complete_url
-      }
-
-      // Send email with the CSV file link
-      const mailing = sgMail.send(emailConstant.sendCsvFile('yashasvi@codenomad.net', [], entriesData));
-      if (mailing) {
-        res.send({
-          code: constant.successCode,
-          data: upload
-        });
-      }
-
-      res.send({
-        code: constant.successCode,
-        data: upload
-      });
-
-
-    }
-
-  } catch (err) {
-    // Handle errors and respond with an error message
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
   }
 };
 
@@ -2480,7 +2139,6 @@ exports.uploadDealerPriceBook = async (req, res) => {
 
     })
   } catch (err) {
-    console.log(err)
      res.send({
       code: constant.errorCode,
       message: err.message
@@ -2782,24 +2440,6 @@ exports.getServicersList = async (req, res) => {
       code: constant.successCode,
       message: "Success",
       result: filteredData
-    });
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-//Filter dealer
-exports.filterDealer = async (req, res) => {
-  try {
-    let data = req.body
-    let response = await dealerService.getAllDealers1(data)
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: response
     });
   } catch (err) {
      res.send({
@@ -3181,56 +2821,6 @@ exports.getDealerOrders = async (req, res) => {
       code: constant.errorCode,
       message: err.message
     })
-  }
-}
-
-//Get dealer request unused
-exports.getDealerRequest = async (req, res) => {
-  try {
-    let data = req.body
-    Promise.all([client1.connect(), client2.connect()])
-      .then(async () => {
-        console.log('Connected to both databases');
-
-        // Specify the databases
-        const db1 = client1.db();
-        const db2 = client2.db();
-
-        // Specify the collections
-        const collection1 = db1.collection('dealers');
-        const collection2 = db2.collection('users');
-
-        // Perform a $lookup aggregation across databases
-        let data1 = await dealer.aggregate([
-          {
-            $match: { _id: new mongoose.Types.ObjectId("6579815d97bf5c1bb11be1d9") } // Match documents with the common ID
-          },
-          {
-            $lookup: {
-              from: collection2.namespace,
-              localField: '_id',
-              foreignField: 'accountId', // Replace with the actual common field in collection2
-              as: 'result'
-            }
-          }
-        ])
-
-          res.send({
-        code: constant.errorCode,
-          message: data1
-        })
-        // Close the connections
-        client1.close();
-        client2.close();
-        // });
-      })
-      .catch(err => {
-        console.error('Error connecting to databases:', err);
-      });
-
-
-  } catch (err) {
-    console.log("Err in getDealerRequest : ", err);
   }
 }
 
