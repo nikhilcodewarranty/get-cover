@@ -461,6 +461,7 @@ exports.createOrder = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+
             let count1 = await contractService.getContractsCountNew();
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {

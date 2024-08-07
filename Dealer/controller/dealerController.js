@@ -718,7 +718,7 @@ exports.registerDealer = async (req, res) => {
 
     let settingData = await userService.getSetting({});
 
-    // if (createNotification) {
+    // if (createNotification) { 
     let emailData = {
       dealerName: createdDealer.name,
       darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,

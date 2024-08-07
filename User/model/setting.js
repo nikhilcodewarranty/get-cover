@@ -38,7 +38,7 @@ const settingSchema = new mongoose.Schema({
     paymentDetail: {
         type: String,
         default: ''
-    }
-
+    },
+    
 });
 module.exports = connection.userConnection.model("setting", settingSchema);
