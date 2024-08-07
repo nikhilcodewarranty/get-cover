@@ -1108,7 +1108,7 @@ exports.getPriceBookByCategoryId = async (req, res) => {
   }
 }
 
-//
+//get category and price books
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body

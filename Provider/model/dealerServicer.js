@@ -4,10 +4,12 @@ const connection = require('../../db')
 
 const servicerDealerRelation = new Schema({
     dealerId:{
-        type:mongoose.Schema.Types.ObjectId,ref:'dealers'
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'dealers'
     },
     servicerId:{
-        type:mongoose.Schema.Types.ObjectId,ref:'serviceproviders'
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'serviceproviders'
     },
     status:{
         type:Boolean,
