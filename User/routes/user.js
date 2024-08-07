@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const userController = require("../controller/usersController"); // user controller
+const supportingApiAdmin = require("../controller/supportingApiAdmin"); // admin supporting function for creation role controller
+const graphdataController = require("../controller/graphdataController"); // admin graph data  controller
 const dealerController = require("../../Dealer/controller/dealerController"); // dealer controller
 const servicerAdminController = require("../../Provider/controller/serviceAdminController"); // servicer admin controller
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
@@ -36,11 +38,8 @@ router.get("/readNotification/:notificationId", [verifyToken], userController.re
 
 router.get("/getCountNotification", [verifyToken], userController.getCountNotification); // get notification count
 
-router.get("/getDashboardInfo", [verifyToken], userController.getDashboardInfo); // get dashboard info
 
-router.get("/getDashboardGraph", [verifyToken], userController.getDashboardGraph); // get dashboard graph
 
-router.get("/getSkuData", [verifyToken], userController.getSkuData); // get SKU data
 
 //-------------------- get api's endpoints--------------------------//
 
@@ -74,30 +73,37 @@ router.put("/updateUserData/:userId", [verifyToken], userController.updateUserDa
 
 router.put("/updateUser/:userId", [verifyToken], userController.updateUser); // update user
 
-router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), userController.createDealer); // approve dealer
-
 router.post("/checkEmail", [verifyToken], validator("email_validation"), userController.checkEmail); // check email
 
 router.post("/validateData", [verifyToken], userController.validateData); // validate data
-
-// create dealer API from super admin
-router.post("/createDealer", [verifyToken], userController.createDealer); // create dealer
 
 router.get("/checkToken", [verifyToken], userController.checkToken); // check token
 
 router.get("/getAccountInfo", [verifyToken], userController.getAccountInfo); // get account info
 
-// create service provider API from super admin
-router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), userController.createServiceProvider); // create service provider
-
 router.delete('/deleteUser/:userId', [verifyToken], userController.deleteUser); // delete user
 
-router.post('/saleReporting', [verifyToken], userController.saleReporting); // sale reporting
-
-router.post('/saleReporting1', [verifyToken], userController.saleReporting1); // sale reporting 1
-
-router.post('/claimReporting', [verifyToken], userController.claimReporting); // claim reporting
-
 router.get('/checkIdAndToken/:userId/:code', userController.checkIdAndToken); // check ID and token
+
+router.get("/getDashboardInfo", [verifyToken], graphdataController.getDashboardInfo); // get dashboard info
+
+router.get("/getDashboardGraph", [verifyToken], graphdataController.getDashboardGraph); // get dashboard graph
+
+router.get("/getSkuData", [verifyToken], graphdataController.getSkuData); // get SKU data
+
+router.post('/saleReporting', [verifyToken], graphdataController.saleReporting); // sale reporting
+
+router.post('/claimReporting', [verifyToken], graphdataController.claimReporting); // claim reporting
+
+router.post("/approveDealer", [verifyToken], validator("create_dealer_validation"), supportingApiAdmin.createDealer); // approve dealer
+
+// create dealer API from super admin
+router.post("/createDealer", [verifyToken], supportingApiAdmin.createDealer); // create dealer
+
+// create service provider API from super admin
+router.post('/createServicer', [verifyToken], validator("create_service_provider_validation"), supportingApiAdmin.createServiceProvider); // create service provider
+
+
+
 
 module.exports = router;

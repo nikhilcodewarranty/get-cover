@@ -1,37 +1,19 @@
 require("dotenv").config();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 const moment = require('moment')
-const randtoken = require('rand-token').generator()
 const mongoose = require('mongoose')
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey('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');
-const XLSX = require("xlsx");
-const userResourceResponse = require("../utils/constant");
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
-const userService = require("../services/userService");
-const userMetaService = require("../services/userMetaService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const dealerService = require('../../Dealer/services/dealerService')
 const servicerService = require("../../Provider/services/providerService")
 const resellerService = require('../../Dealer/services/resellerService')
 const dealerPriceService = require('../../Dealer/services/dealerPriceService')
-const uploadMiddleware = require('../../Dealer/middleware/uploadMiddleware')
 const priceBookService = require('../../PriceBook/services/priceBookService')
 const providerService = require('../../Provider/services/providerService')
-const users = require("../model/users");
 const role = require("../model/role");
 const constant = require('../../config/constant');
-const emailConstant = require('../../config/emailConstant');
 const mail = require("@sendgrid/mail");
-const fs = require('fs');
-const multer = require('multer');
-const path = require('path');
-// Promisify fs.createReadStream for asynchronous file reading
 const logs = require('../../User/model/logs');
-const csvParser = require('csv-parser');
-const customerService = require("../../Customer/services/customerService");
-const supportingFunction = require('../../config/supportingFunction');
 const orderService = require("../../Order/services/orderService");
 const REPORTING = require('../../Order/model/reporting');
 const { message } = require("../../Dealer/validators/register_dealer");
@@ -158,7 +140,6 @@ exports.weeklySales = async (data, req, res) => {
             getOrders1[0]._id = datesArray[0]
         }
         // Example: Logging MongoDB aggregation results for debugging
-
         // Prepare response data based on datesArray and MongoDB results
         const result = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
@@ -181,20 +162,16 @@ exports.weeklySales = async (data, req, res) => {
                 total_reserve_future_fee: order ? order.total_reserve_future_fee : 0,
                 total_reinsurance_fee: order ? order.total_reinsurance_fee : 0,
                 total_contracts: order ? order.total_contracts : 0,
-                // total_orders: order ? order.total_orders : 0
             };
         });
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
-
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
             const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
             const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
-
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
-
             if (data.role == 'Super Admin') {
                 return {
                     ...item,
@@ -217,14 +194,12 @@ exports.weeklySales = async (data, req, res) => {
                     wholesale_price: wholesale_price
                 };
             }
-
             if (data.role == 'Reseller') {
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
                 };
             }
-
             if (data.role == 'Customer') {
                 return {
                     total_order_amount: item.total_order_amount
@@ -267,13 +242,10 @@ exports.daySale = async (data) => {
         // Get the current date
         data.dayDate = data.startDate
         const today = new Date(data.dayDate);
-
         // Set the start of the day
         const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-
         let dailyQuery = [
             {
                 $match: {
@@ -291,7 +263,6 @@ exports.daySale = async (data) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -317,25 +288,20 @@ exports.daySale = async (data) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = dealerId
             dailyQuery1[0].$match.dealerId = dealerId
         }
-
-
         if (data.orderId) {
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
-
         if (data.categoryId != "") {
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
 
         }
-
         if (data.priceBookId.length != 0) {
             dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
@@ -361,7 +327,6 @@ exports.daySale = async (data) => {
             total_order_amount: getOrders.length ? getOrders[0].total_order_amount : 0,
             total_orders: getOrders.length ? getOrders[0].total_orders : 0
         }];
-
         let result1 = [{
             weekStart: new Date(checkdate).toLocaleDateString('en-US', options),
             total_broker_fee: getOrders1.length ? getOrders1[0].total_broker_fee : 0,
@@ -380,7 +345,6 @@ exports.daySale = async (data) => {
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
             const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
             const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
-
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
             if (data.role == 'Super Admin') {
@@ -395,7 +359,6 @@ exports.daySale = async (data) => {
                     wholesale_price: wholesale_price
                 };
             }
-
             if (data.role == 'Dealer') {
                 return {
                     ...item,
@@ -405,21 +368,18 @@ exports.daySale = async (data) => {
                     wholesale_price: wholesale_price
                 };
             }
-
             if (data.role == 'Reseller') {
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
                 };
             }
-
             if (data.role == 'Customer') {
                 return {
                     total_order_amount: item.total_order_amount
                 };
 
             }
-
         });
 
         let totalFees = []
@@ -493,7 +453,6 @@ exports.dailySales1 = async (data, req, res) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -519,39 +478,33 @@ exports.dailySales1 = async (data, req, res) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = dealerId
             dailyQuery1[0].$match.dealerId = dealerId
         }
-
         if (data.orderId) {
             dailyQuery[0].$match.orderId = { $in: data.orderId }
             dailyQuery1[0].$match.orderId = { $in: data.orderId }
         }
-
-
         if (data.categoryId != "") {
             dailyQuery[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
             dailyQuery1[0].$match.products = { $elemMatch: { categoryId: data.categoryId } }
         }
-
         if (data.priceBookId.length != 0) {
             dailyQuery[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
             dailyQuery1[0].$match.products = { $elemMatch: { name: { $in: data.priceBookId } } }
         }
 
-
         let getOrders = await REPORTING.aggregate(dailyQuery);
         let getOrders1 = await REPORTING.aggregate(dailyQuery1);
+
         if (!getOrders) {
             return {
                 code: constant.errorCode,
                 message: "Unable to fetch the details"
             }
         }
-
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
@@ -564,7 +517,6 @@ exports.dailySales1 = async (data, req, res) => {
 
             };
         });
-
         const result1 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getOrders1.find(item => item._id === dateString);
@@ -591,12 +543,10 @@ exports.dailySales1 = async (data, req, res) => {
 
         const mergedResult = result.map(item => {
             const match = result1.find(r1 => r1.weekStart === item.weekStart);
-
             const total_admin_fee = match ? match.total_admin_fee : item.total_admin_fee;
             const total_reinsurance_fee = match ? match.total_reinsurance_fee : item.total_reinsurance_fee;
             const total_reserve_future_fee = match ? match.total_reserve_future_fee : item.total_reserve_future_fee;
             const total_fronting_fee = match ? match.total_fronting_fee : item.total_fronting_fee;
-
             const wholesale_price = total_admin_fee + total_reinsurance_fee + total_reserve_future_fee + total_fronting_fee;
 
             if (data.role == 'Super Admin') {
@@ -612,7 +562,6 @@ exports.dailySales1 = async (data, req, res) => {
                     wholesale_price: wholesale_price
                 };
             }
-
             if (data.role == 'Dealer') {
                 return {
                     ...item,
@@ -622,23 +571,18 @@ exports.dailySales1 = async (data, req, res) => {
                     wholesale_price: wholesale_price
                 };
             }
-
             if (data.role == 'Reseller') {
                 return {
                     ...item,
                     total_contracts: match ? match.total_contracts : item.total_contracts,
                 };
             }
-
             if (data.role == 'Customer') {
                 return {
                     total_order_amount: item.total_order_amount
                 };
-
             }
-
         });
-
 
         let totalFees = []
         if (data.role == 'Super Admin') {
@@ -658,12 +602,10 @@ exports.dailySales1 = async (data, req, res) => {
             });
         }
 
-
         return {
             graphData: mergedResult,
             totalFees: totalFees
         }
-
 
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
@@ -710,7 +652,6 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -732,7 +673,6 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery2 = [
             {
                 $match: {
@@ -755,7 +695,6 @@ exports.claimDailyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery3 = [
             {
                 $match: {
@@ -783,7 +722,6 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
-
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = data.servicerId
@@ -791,7 +729,6 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery2[0].$match.servicerId = data.servicerId
             dailyQuery3[0].$match.servicerId = data.servicerId
         }
-
         if (data.customerId) {
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
             dailyQuery[0].$match.customerId = data.customerId
@@ -799,15 +736,14 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery2[0].$match.customerId = data.customerId
             dailyQuery3[0].$match.customerId = data.customerId
         }
-
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             if (!getOrders) {
-               return{
+                return {
                     code: constant.errorCode,
                     message: "Invalid price book ID"
                 }
-              
+
             }
             let orderIds = getOrders.map(ID => ID.unique_key)
             dailyQuery[0].$match.orderId = { $in: orderIds }
@@ -831,7 +767,6 @@ exports.claimDailyReporting = async (data) => {
 
             };
         });
-
         const result1 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData1.find(item => item._id === dateString);
@@ -842,7 +777,6 @@ exports.claimDailyReporting = async (data) => {
 
             };
         });
-
         const result2 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData2.find(item => item._id === dateString);
@@ -853,7 +787,6 @@ exports.claimDailyReporting = async (data) => {
 
             };
         });
-
         const result3 = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
             const order = getData3.find(item => item._id === dateString);
@@ -864,11 +797,11 @@ exports.claimDailyReporting = async (data) => {
             };
         });
 
-
         const mergedArray = result.map(item => {
             const result1Item = result1.find(r1 => r1.weekStart === item.weekStart);
             const result2Item = result2.find(r2 => r2.weekStart === item.weekStart);
             const result3Item = result3.find(r2 => r2.weekStart === item.weekStart);
+
             if (data.role == 'Super Admin') {
                 return {
                     weekStart: item.weekStart,
@@ -901,9 +834,7 @@ exports.claimDailyReporting = async (data) => {
                         total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                     };
                 }
-
             }
-
             if (data.role == 'Reseller') {
                 if (data.isServicer) {
                     return {
@@ -924,9 +855,7 @@ exports.claimDailyReporting = async (data) => {
                         total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                     };
                 }
-
             }
-
             if (data.role == 'Customer') {
                 return {
                     weekStart: item.weekStart,
@@ -938,9 +867,7 @@ exports.claimDailyReporting = async (data) => {
                     total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
                     total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                 };
-
             }
-
             if (data.role == "Servicer") {
                 return {
                     weekStart: item.weekStart,
@@ -953,7 +880,6 @@ exports.claimDailyReporting = async (data) => {
                     total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                 };
             }
-
         });
 
         let totalFees = []
@@ -992,7 +918,6 @@ exports.claimWeeklyReporting = async (data) => {
         // Parse startDate and endDate from request body
         const startDate = moment(data.startDate).startOf('day');
         const endDate = moment(data.endDate).endOf('day');
-
         // Example: Adjusting dates with moment.js if needed
         // Calculate start and end of the week for the given dates
         const startOfWeekDate = moment(startDate).startOf('isoWeek');
@@ -1008,7 +933,6 @@ exports.claimWeeklyReporting = async (data) => {
             currentDate1 = currentDate
             currentDate.add(1, 'week');
         }
-
 
         let dailyQuery = [
             {
@@ -1043,7 +967,6 @@ exports.claimWeeklyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -1078,7 +1001,6 @@ exports.claimWeeklyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery2 = [
             {
                 $match: {
@@ -1113,7 +1035,6 @@ exports.claimWeeklyReporting = async (data) => {
                 $sort: { _id: 1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery3 = [
             {
                 $match: {
@@ -1147,8 +1068,6 @@ exports.claimWeeklyReporting = async (data) => {
             }
         ];
 
-        
-
         if (data.dealerId != "") {
             let dealerId = new mongoose.Types.ObjectId(data.dealerId)
             dailyQuery[0].$match.dealerId = dealerId
@@ -1156,7 +1075,6 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = dealerId
             dailyQuery3[0].$match.dealerId = dealerId
         }
-
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = servicerId
@@ -1164,7 +1082,6 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.servicerId = servicerId
             dailyQuery3[0].$match.servicerId = servicerId
         }
-
         if (data.customerId) {
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
             dailyQuery[0].$match.customerId = data.customerId
@@ -1172,7 +1089,6 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery2[0].$match.customerId = data.customerId
             dailyQuery3[0].$match.customerId = data.customerId
         }
-
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
             let orderIds = getOrders.map(ID => ID.unique_key)
@@ -1180,7 +1096,6 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery1[0].$match.orderId = { $in: orderIds }
             dailyQuery2[0].$match.orderId = { $in: orderIds }
             dailyQuery3[0].$match.orderId = { $in: orderIds }
-
         }
 
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
@@ -1210,7 +1125,6 @@ exports.claimWeeklyReporting = async (data) => {
                 total_claim: order ? order.total_claim : 0
             };
         });
-
         const result1 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
             const order = getData1.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
@@ -1218,10 +1132,8 @@ exports.claimWeeklyReporting = async (data) => {
                 weekStart: dateString,
                 total_unpaid_amount: order ? order.total_unpaid_amount : 0,
                 total_unpaid_claim: order ? order.total_unpaid_claim : 0,
-
             };
         });
-
         const result2 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
             const order = getData2.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
@@ -1232,7 +1144,6 @@ exports.claimWeeklyReporting = async (data) => {
 
             };
         });
-
         const result3 = datesArray.map(date => {
             const dateString = date.format('YYYY-MM-DD');
             const order = getData3.find(item => moment(item._id).format('YYYY-MM-DD') === dateString);
@@ -1282,7 +1193,6 @@ exports.claimWeeklyReporting = async (data) => {
                 }
 
             }
-
             if (data.role == 'Reseller') {
                 if (data.isServicer) {
                     return {
@@ -1304,7 +1214,6 @@ exports.claimWeeklyReporting = async (data) => {
                     };
                 }
             }
-
             if (data.role == 'Customer') {
                 return {
                     weekStart: item.weekStart,
@@ -1316,9 +1225,7 @@ exports.claimWeeklyReporting = async (data) => {
                     total_paid_claim: result2Item ? result2Item.total_paid_claim : 0,
                     total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                 };
-
             }
-
             if (data.role == "Servicer") {
                 return {
                     weekStart: item.weekStart,
@@ -1331,8 +1238,8 @@ exports.claimWeeklyReporting = async (data) => {
                     total_rejected_claim: result3Item ? result3Item.total_rejected_claim : 0
                 };
             }
-
         });
+
         let totalFees = []
         if (data.role = "Super Admin") {
             totalFees = mergedArray.reduce((acc, curr) => {
@@ -1354,10 +1261,7 @@ exports.claimWeeklyReporting = async (data) => {
                 total_rejected_claim: 0,
             });
         }
-
-
         return { graphData: mergedArray, totalFees }
-
     } catch (err) {
         return { code: constant.errorCode, message: err.message }
     }
@@ -1370,7 +1274,6 @@ exports.claimDayReporting = async (data) => {
         const today = new Date(data.dayDate);
         // Set the start of the day
         const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
         // Set the end of the day
         const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
 
@@ -1391,7 +1294,6 @@ exports.claimDayReporting = async (data) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery1 = [
             {
                 $match: {
@@ -1413,8 +1315,6 @@ exports.claimDayReporting = async (data) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
-
         let dailyQuery2 = [
             {
                 $match: {
@@ -1436,7 +1336,6 @@ exports.claimDayReporting = async (data) => {
                 $sort: { _id: -1 } // Sort by date in ascending order
             }
         ];
-
         let dailyQuery3 = [
             {
                 $match: {
@@ -1464,7 +1363,6 @@ exports.claimDayReporting = async (data) => {
             dailyQuery2[0].$match.dealerId = data.dealerId
             dailyQuery3[0].$match.dealerId = data.dealerId
         }
-
         if (data.servicerId != "") {
             let servicerId = new mongoose.Types.ObjectId(data.servicerId)
             dailyQuery[0].$match.servicerId = data.servicerId
@@ -1472,7 +1370,6 @@ exports.claimDayReporting = async (data) => {
             dailyQuery2[0].$match.servicerId = data.servicerId
             dailyQuery3[0].$match.servicerId = data.servicerId
         }
-
         if (data.customerId) {
             let servicerId = new mongoose.Types.ObjectId(data.customerId)
             dailyQuery[0].$match.customerId = data.customerId
@@ -1595,10 +1492,7 @@ exports.claimDayReporting = async (data) => {
                 total_rejected_claim: 0,
             });
         }
-
-
         return { result, totalFees }
-
     } catch (err) {
         return {
             code: constant.errorCode,
@@ -1641,17 +1535,14 @@ exports.getReportingDropdowns = async (req, res) => {
             let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
             let categoriesIds = getPriceBooks1.map(ID => ID.category)
             let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
             priceBook = getPriceBooks1.map(item => ({
                 value: item._id,
                 label: item.name
             }));
-
             categories = getCategories1.map(item => ({
                 value: item._id,
                 label: item.name
             }));
-
             result = {
                 getDealers: convertedData,
                 getPriceBooks: priceBook,
@@ -1671,7 +1562,6 @@ exports.getReportingDropdowns = async (req, res) => {
                 }
             }
         }
-
         if (data.categoryId != "" && data.dealerId == "") {
             let getPriceBooks2 = await priceBookService.getAllPriceIds({ category: data.categoryId })
             priceBook = getPriceBooks2.map(item => ({
@@ -1684,13 +1574,11 @@ exports.getReportingDropdowns = async (req, res) => {
                 getCategories: categories
             }
         }
-
         res.send({
             code: constant.successCode,
             message: "Success",
             result: result
         })
-
     } catch (err) {
         res.send({
             code: constant.errorCode,
@@ -1704,7 +1592,6 @@ exports.claimReportinDropdown = async (req, res) => {
     try {
         let data = req.body
         let result;
-
         let getDealers = await dealerService.getAllDealers({ status: "Approved" })
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
         let getCategories = await priceBookService.getAllPriceCat({}, { name: 1, _id: 1 })
@@ -1716,23 +1603,17 @@ exports.claimReportinDropdown = async (req, res) => {
             priceBooks: getPriceBooks,
             categories: getCategories
         }
-
         if (data.primary == "dealer") {
-
             if (data.dealerId != "") {
-
                 let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: data.dealerId })
                 let ids = getServicersIds?.map((item) => item.servicerId)
                 let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
                 // Get Dealer Reseller Servicer
                 let dealerResellerServicer = await resellerService.getResellers({ dealerId: data.dealerId, isServicer: true })
-
                 if (dealerResellerServicer.length > 0) {
                     servicer.unshift(...dealerResellerServicer);
                 }
-
                 let checkDealer = await dealerService.getDealerByName({ _id: data.dealerId })
-
                 if (!checkDealer) {
                     res.send({
                         code: constant.errorCode,
@@ -1743,22 +1624,17 @@ exports.claimReportinDropdown = async (req, res) => {
                 if (checkDealer.isServicer) {
                     servicer.unshift(checkDealer);
                 };
-
                 let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: data.dealerId })
                 let priceBookIds = getDealerBooks?.map(ID => ID.priceBook)
                 let getPriceBooks1 = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } })
                 let categoriesIds = getPriceBooks1?.map(ID => ID.category)
                 let getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds } })
-
                 if (data.categoryId != "") {
                     getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
-
                 }
-
                 if (data.priceBookId.length != 0 && data.categoryId == "") {
                     getCategories1 = []
                 }
-
                 result = {
                     dealers: getDealers,
                     priceBooks: getPriceBooks1,
@@ -1773,9 +1649,7 @@ exports.claimReportinDropdown = async (req, res) => {
                     categories: []
                 }
             }
-
         }
-
         if (data.primary == "servicer") {
             let servicerId;
             if (data.servicerId != "") {
@@ -1783,7 +1657,6 @@ exports.claimReportinDropdown = async (req, res) => {
             } else {
                 servicerId = getServicer.map(ID => new mongoose.Types.ObjectId(ID._id))
             }
-
             //getting servicers dealers ----------
             let query = [
                 {
@@ -1825,15 +1698,12 @@ exports.claimReportinDropdown = async (req, res) => {
                 let categoriesIds1 = getPriceBooks1.map(ID => ID.category)
                 getCategories1 = await priceBookService.getAllPriceCat({ _id: { $in: categoriesIds1 } })
             }
-
             if (data.categoryId != "") {
                 getPriceBooks1 = getPriceBooks1.filter(book => book.category.toString() === data.categoryId.toString());
             }
-
             if (data.priceBookId.length != 0 && data.categoryId == "") {
                 getCategories1 = []
             }
-
             filteredData = {
                 dealers: filteredData.map(dealer => {
                     return {
@@ -1842,7 +1712,6 @@ exports.claimReportinDropdown = async (req, res) => {
                     };
                 })
             };
-
             result = {
                 dealers: filteredData.dealers,
                 priceBooks: getPriceBooks1,
@@ -1856,11 +1725,9 @@ exports.claimReportinDropdown = async (req, res) => {
             if (data.categoryId != "") {
                 getPriceBooks = await priceBookService.getAllPriceIds({ category: data.categoryId })
             }
-
             if (data.priceBookId.length != 0) {
                 getCategories = []
             }
-
             result = {
                 dealers: [],
                 servicers: [],
