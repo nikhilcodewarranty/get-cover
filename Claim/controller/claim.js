@@ -2973,8 +2973,6 @@ var imageUploadS3 = multer({
   { name: "termCondition" },
 ])
 
-
-
 exports.s3Bucket = async (req, res) => {
   try {
     imageUploadS3(req, res, (err) => {

@@ -26,8 +26,6 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
 const path = require('path');
-// Promisify fs.createReadStream for asynchronous file reading
-
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
@@ -41,7 +39,6 @@ const contractService = require('../../Contract/services/contractService');
 const logs = require('../../User/model/logs');
 const supportingFunction = require('../../config/supportingFunction');
 const providerService = require('../../Provider/services/providerService');
-
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
@@ -54,8 +51,6 @@ const s3 = new S3Client({
     secretAccessKey: process.env.aws_secret_access_key,
   }
 });
-
-
 const StorageP = multerS3({
   s3: s3,
   bucket: process.env.bucket_name, // Ensure this environment variable is set
@@ -67,15 +62,12 @@ const StorageP = multerS3({
     cb(null, fileName);
   }
 });
-
-
 var uploadP = multer({
   storage: StorageP,
   limits: {
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single('file');
-
 
 const checkObjectId = async (Id) => {
   // Check if the potentialObjectId is a valid ObjectId
@@ -85,417 +77,6 @@ const checkObjectId = async (Id) => {
     return false;
   }
 }
-
-// get all dealers 
-exports.getAllDealers = async (req, res) => {
-  try {
-
-    let data = req.body
-
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    let dealerFilter = {
-      $and: [
-        { isDeleted: false },
-        { status: "Approved" },
-        { 'name': { '$regex': req.body.name ? req.body.name.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
-      ]
-    };
-
-    let projection = { __v: 0, isDeleted: 0 }
-    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
-    const dealerIds = dealers.map(obj => obj._id);
-    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
-
-    //-------------Get All Dealers Id's------------------------
-
-    let dealarUser = await userService.getMembers(query1, projection)
-
-    //Get Dealer Order Data     
-    let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    }
-
-    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
-
-    if (!dealers) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-
-    const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
-      if (matchingItem || orders) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject(),
-          ordersData: orders ? orders : {}
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
-    const filteredData = result_Array.filter(entry => {
-      return (
-        nameRegex.test(entry.dealerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
-
-    res.send({
-      code: constant.successCode,
-      data: filteredData
-    });
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
-
-//Get Pending Request dealers
-exports.getPendingDealers = async (req, res) => {
-  try {
-    let data = req.body
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    let dealerFilter = {
-      $and: [
-        { isDeleted: false },
-        { status: "Pending" },
-        { 'name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
-      ]
-
-    };
-
-    let projection = { __v: 0, isDeleted: 0 }
-    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
-    //-------------Get All Dealers Id's------------------------
-
-    const dealerIds = dealers.map(obj => obj._id);
-
-    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
-    let dealarUser = await userService.getMembers(query1, projection)
-
-    if (!dealers) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-
-    const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-
-      if (matchingItem) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject()
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
-
-    const filteredData = result_Array.filter(entry => {
-      return (
-        nameRegex.test(entry.dealerData.name) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
-
-    res.send({
-      code: constant.successCode,
-      data: filteredData
-    });
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
-
-//get dealer detail by ID
-exports.getDealerById = async (req, res) => {
-  try {
-    //fetching data from user table
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
-
-    if (!dealers[0]) {
-       res.send({
-        code: constant.errorCode,
-        message: "No data found"
-      });
-      return
-    }
-
-    const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
-    let dealarUser = await userService.getMembers(query1, { isDeleted: false })
-
-    if (!dealarUser) {
-       res.send({
-        code: constant.errorCode,
-        message: "No any user of this dealer"
-      });
-      return
-    }
-
-    let project = {
-      productsArray: 1,
-      dealerId: 1,
-      unique_key: 1,
-      servicerId: 1,
-      customerId: 1,
-      resellerId: 1,
-      paymentStatus: 1,
-      status: 1,
-      venderOrder: 1,
-      orderAmount: 1,
-    }
-
-    let query = {
-      $and: [
-        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: "Active" }
-      ]
-    }
-    let ordersResult = await orderService.getAllOrderInCustomers(query, project, "$dealerId");
-    //Get Claim Result 
-    const claimQuery = { claimFile: 'Completed' }
-    let lookupQuery = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
-          ]
-        },
-      },
-      {
-        "$group": {
-          "_id": "",
-          "totalAmount": {
-            "$sum": {
-              "$sum": "$totalAmount"
-            }
-          },
-        },
-
-      },
-    ]
-
-    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
-    const rejectedQuery = { claimFile: "Completed" }
-    //Get number of claims
-    let numberOfCompleletedClaims = [
-      {
-        $match: claimQuery
-      },
-      {
-        $lookup: {
-          from: "contracts",
-          localField: "contractId",
-          foreignField: "_id",
-          as: "contracts",
-        }
-      },
-      {
-        $unwind: "$contracts"
-      },
-      {
-        $lookup: {
-          from: "orders",
-          localField: "contracts.orderId",
-          foreignField: "_id",
-          as: "contracts.orders",
-        },
-
-      },
-      {
-        $unwind: "$contracts.orders"
-      },
-      {
-        $match:
-        {
-          $and: [
-            { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
-          ]
-        },
-      },
-    ]
-    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
-    const claimData = {
-      numberOfClaims: numberOfClaims.length,
-      valueClaim: valueClaim[0]?.totalAmount
-    }
-    const result_Array = dealarUser.map(item1 => {
-      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
-      if (matchingItem) {
-        return {
-          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          dealerData: matchingItem.toObject(),
-          ordersResult: ordersResult,
-          claimData: claimData
-        };
-      } else {
-        return dealerData.toObject();
-      }
-    });
-
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: result_Array,
-    })
-
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
-  };
-};
-
-//get dealer detail by ID
-exports.getUserByDealerId = async (req, res) => {
-  try {
-    let data = req.body
-    //fetching data from user table
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    const dealers = await dealerService.getDealerById(req.params.dealerId);
-    if (!dealers) {
-       res.send({
-        code: constant.errorCode,
-        message: "Dealer not found"
-      });
-      return;
-    };
-
-    const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
-
-    let name = data.firstName ? data.firstName : ""
-    let nameArray = name.trim().split(" ");
-    // Create new keys for first name and last name
-    let newObj = {
-      f_name: nameArray[0],  // First name
-      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
-    };
-    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-    let filteredData = users.filter(entry => {
-      return (
-        firstNameRegex.test(entry.firstName) &&
-        lastNameRegex.test(entry.lastName) &&
-        emailRegex.test(entry.email) &&
-        phoneRegex.test(entry.phoneNumber)
-      );
-    });
-
-    if (!users) {
-       res.send({
-        code: constant.errorCode,
-        message: "No data found"
-      });
-      return
-    }
-
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: filteredData,
-      dealerData: dealers,
-      dealerStatus: dealers.accountStatus,
-      isAccountCreate: dealers.isAccountCreate,
-      userAccount: dealers.userAccount,
-    })
-
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    });
-  };
-};
 
 //update dealer detail with ID
 exports.updateDealer = async (req, res) => {
@@ -871,39 +452,6 @@ exports.statusUpdate = async (req, res) => {
   }
 };
 
-// All Dealer Books
-exports.getAllDealerPriceBooks = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    let projection = { isDeleted: 0, __v: 0 }
-    let query = { isDeleted: false }
-    let getDealerPrice = await dealerPriceService.getAllDealerPrice(query, projection)
-    if (!getDealerPrice) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to get the dealer price books"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: getDealerPrice
-      })
-    }
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
 //Change Dealer Status
 exports.changeDealerStatus = async (req, res) => {
   try {
@@ -1030,334 +578,6 @@ exports.changeDealerStatus = async (req, res) => {
     })
   }
 }
-
-//Get dealer price book by id 
-exports.getDealerPriceBookById = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    let projection = {
-      _id: 1,
-      name: 1,
-      wholesalePrice: {
-        $sum: [
-          "$priceBooks.reserveFutureFee",
-          "$priceBooks.reinsuranceFee",
-          "$priceBooks.adminFee",
-          "$priceBooks.frontingFee",
-        ],
-      },
-      "priceBook": 1,
-      "dealerId": 1,
-      "status": 1,
-      "retailPrice": 1,
-      "description": 1,
-      "isDeleted": 1,
-      "unique_key": 1,
-      "__v": 1,
-      "createdAt": 1,
-      "updatedAt": 1,
-      priceBooks: 1,
-      dealer: 1
-    }
-
-    let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
-    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
-
-    if (!getDealerPrice) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to get the dealer price books"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: getDealerPrice
-      })
-    }
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-//Get Dealer Price Books
-exports.getDealerPriceBookByDealerId = async (req, res) => {
-  try {
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    let checkDealer = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { isDeleted: false })
-
-    if (checkDealer.length == 0) {
-       res.send({
-        code: constant.errorCode,
-        message: "Dealer Not found"
-      })
-      return;
-    }
-    let projection = {
-
-      _id: 1,
-      name: 1,
-      wholesalePrice: {
-        $sum: [
-          "$priceBooks.reserveFutureFee",
-          "$priceBooks.reinsuranceFee",
-          "$priceBooks.adminFee",
-          "$priceBooks.frontingFee",
-        ],
-      },
-      "priceBook": 1,
-      "dealerId": 1,
-      "status": 1,
-      "retailPrice": 1,
-      "description": 1,
-      "isDeleted": 1,
-      "unique_key": 1,
-      "__v": 1,
-      "createdAt": 1,
-      "updatedAt": 1,
-      priceBooks: 1,
-      dealer: 1
-
-    }
-    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.params.dealerId) }
-    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
-    if (!getDealerPrice) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to get the dealer price books"
-      })
-    } else {
-      res.send({
-        code: constant.successCode,
-        message: "Success",
-        result: getDealerPrice
-      })
-    }
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
-//Get price book by filteration
-exports.getAllPriceBooksByFilter = async (req, res, next) => {
-  try {
-    let data = req.body
-    data.status = typeof (data.status) == "string" ? "all" : data.status
-    let categorySearch = req.body.category ? req.body.category : ''
-    let queryCategories = {
-      $and: [
-        { isDeleted: false },
-        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
-      ]
-    };
-    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
-    let catIdsArray = getCatIds.map(category => category._id)
-    let searchName = req.body.name ? req.body.name : ''
-    let query
-
-    if (data.status != 'all' && data.status != undefined) {
-      if (data.coverageType != "") {
-        query = {
-          $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.coverageType': data.coverageType },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            { 'status': data.status },
-            {
-              dealerId: new mongoose.Types.ObjectId(data.dealerId)
-            }
-          ]
-        };
-      } else {
-        query = {
-          $and: [
-            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-            { 'priceBooks.category._id': { $in: catIdsArray } },
-            { 'status': data.status },
-            {
-              dealerId: new mongoose.Types.ObjectId(data.dealerId)
-            }
-          ]
-        };
-      }
-
-    } else if (data.coverageType != "") {
-      query = {
-        $and: [
-          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-          { 'priceBooks.coverageType': data.coverageType },
-          { 'priceBooks.category._id': { $in: catIdsArray } },
-          {
-            dealerId: new mongoose.Types.ObjectId(data.dealerId)
-          }
-        ]
-      };
-    } else {
-      query = {
-        $and: [
-          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
-          { 'priceBooks.category._id': { $in: catIdsArray } },
-          {
-            dealerId: new mongoose.Types.ObjectId(data.dealerId)
-          }
-        ]
-      };
-    }
-    if (data.term != "") {
-      query.$and.push({ 'priceBooks.term': Number(data.term) });
-    }
-
-    if (data.priceType != '') {
-      query.$and.push({ 'priceBooks.priceType': data.priceType });
-      if (data.priceType == 'Flat Pricing') {
-
-        if (data.range != '') {
-          query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-          query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
-        }
-      }
-    }
-
-    let projection = { isDeleted: 0, __v: 0 }
-
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-
-    let limit = req.body.limit ? req.body.limit : 10000
-    let page = req.body.page ? req.body.page : 1
-    const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
-
-    if (!priceBooks) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      })
-      return;
-    }
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: priceBooks
-    })
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
-
-//Get dealer price book by filteration
-exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
-  try {
-    let data = req.body
-    if (req.role != "Super Admin") {
-       res.send({
-        code: constant.errorCode,
-        message: "Only super admin allow to do this action"
-      })
-      return;
-    }
-    data.status = typeof (data.status) == "string" ? "all" : data.status
-    let categorySearch = req.body.category ? req.body.category : ''
-    let queryCategories = {
-      $and: [
-        { isDeleted: false },
-        { 'name': { '$regex': req.body.category ? req.body.category.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
-      ]
-    };
-    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
-    let catIdsArray = getCatIds.map(category => category._id)
-    let searchDealerName = req.body.name ? req.body.name : ''
-    let query
-    let matchConditions = [];
-    matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
-
-    if (data.status != 'all' && data.status != undefined) {
-      matchConditions.push({ 'status': data.status });
-    }
-
-    if (data.term) {
-      matchConditions.push({ 'priceBooks.term': Number(data.term) });
-    }
-
-    if (data.priceType != '') {
-      matchConditions.push({ 'priceBooks.priceType': data.priceType });
-      if (data.priceType == 'Flat Pricing') {
-        if (data.range != '') {
-          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
-          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
-        }
-
-      }
-    }
-
-    if (data.coverageType) {
-      matchConditions.push({ 'priceBooks.coverageType': data.coverageType });
-    }
-
-    if (data.name) {
-      matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
-    }
-
-    if (data.pName) {
-      matchConditions.push({ 'priceBooks.pName': { '$regex': req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
-    }
-
-    if (data.dealerName) {
-      matchConditions.push({ 'dealer.name': { '$regex': req.body.dealerName ? req.body.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
-    }
-
-    const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
-    let projection = { isDeleted: 0, __v: 0 }
-    let limit = req.body.limit ? req.body.limit : 10000
-    let page = req.body.page ? req.body.page : 1
-    const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
-
-    if (!priceBooks) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      })
-      return;
-    }
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      result: priceBooks,
-    })
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-};
 
 //Create Dealer Price Book
 exports.createDealerPriceBook = async (req, res) => {
@@ -2188,136 +1408,6 @@ exports.createDeleteRelation = async (req, res) => {
   }
 }
 
-//Get dealer servicer
-exports.getDealerServicers = async (req, res) => {
-  try {
-    let data = req.body
-
-    let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
-    if (!checkDealer) {
-       res.send({
-        code: constant.errorCode,
-        message: "Invalid dealer ID"
-      })
-      return;
-    }
-    let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
-    if (!getServicersIds) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the servicer"
-      })
-      return;
-    }
-    let ids = getServicersIds.map((item) => item.servicerId)
-    let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
-    if (!servicer) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the servicers"
-      })
-      return;
-    }
-    // Get Dealer Reseller Servicer
-
-    let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
-
-    if (dealerResellerServicer.length > 0) {
-      servicer.unshift(...dealerResellerServicer);
-    }
-
-    if (checkDealer.isServicer) {
-      servicer.unshift(checkDealer);
-    };
-    const servicerIds = servicer.map(obj => obj._id);
-    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
-    let servicerUser = await userService.getMembers(query1, {});
-    if (!servicerUser) {
-       res.send({
-        code: constant.errorCode,
-        message: "Unable to fetch the data"
-      });
-      return;
-    };
-    // Get servicer with claim
-    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-
-    const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
-    let claimAggregateQuery1 = [
-      {
-        $match: servicerCompleted
-      },
-      {
-        "$group": {
-          "_id": "$servicerId",
-          "totalAmount": {
-            "$sum": {
-              "$sum": "$totalAmount"
-            }
-          },
-        },
-
-      },
-    ]
-
-    let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
-    let claimAggregateQuery = [
-      {
-        $match: servicerClaimsIds
-      },
-      {
-        $group: {
-          _id: "$servicerId",
-          noOfOrders: { $sum: 1 },
-        }
-      },
-    ]
-    let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
-
-    const result_Array = servicer.map(item1 => {
-      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
-      const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
-      const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
-
-      if (matchingItem) {
-        return {
-          ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
-          servicerData: item1.toObject(),
-          claimNumber: claimNumber ? claimNumber : 0,
-          claimValue: claimValue ? claimValue : 0
-        };
-      }
-      else {
-        return {
-          servicerData: {}
-        };
-      }
-    });
-
-    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
-    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
-    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
-    const filteredData = result_Array.filter(entry => {
-      return (
-        nameRegex.test(entry.servicerData?.name) &&
-        emailRegex.test(entry?.email) &&
-        phoneRegex.test(entry?.phoneNumber)
-      );
-    });
-    res.send({
-      code: constant.successCode,
-      message: "Success",
-      data: filteredData
-    });
-
-  } catch (err) {
-     res.send({
-      code: constant.errorCode,
-      message: err.message
-    })
-  }
-}
-
 //Unassign the servicer
 exports.unAssignServicer = async (req, res) => {
   try {
@@ -2358,6 +1448,39 @@ exports.unAssignServicer = async (req, res) => {
       }
     }
     await LOG(logData).save()
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+// All Dealer Books
+exports.getAllDealerPriceBooks = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    let projection = { isDeleted: 0, __v: 0 }
+    let query = { isDeleted: false }
+    let getDealerPrice = await dealerPriceService.getAllDealerPrice(query, projection)
+    if (!getDealerPrice) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
      res.send({
       code: constant.errorCode,
       message: err.message
@@ -3372,3 +2495,872 @@ exports.getDealerClaims = async (req, res) => {
     })
   }
 }
+
+//Get dealer servicer
+exports.getDealerServicers = async (req, res) => {
+  try {
+    let data = req.body
+
+    let checkDealer = await dealerService.getDealerByName({ _id: req.params.dealerId })
+    if (!checkDealer) {
+       res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer ID"
+      })
+      return;
+    }
+    let getServicersIds = await dealerRelationService.getDealerRelations({ dealerId: req.params.dealerId })
+    if (!getServicersIds) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicer"
+      })
+      return;
+    }
+    let ids = getServicersIds.map((item) => item.servicerId)
+    let servicer = await servicerService.getAllServiceProvider({ _id: { $in: ids }, status: true }, {})
+    if (!servicer) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the servicers"
+      })
+      return;
+    }
+    // Get Dealer Reseller Servicer
+
+    let dealerResellerServicer = await resellerService.getResellers({ dealerId: req.params.dealerId, isServicer: true })
+
+    if (dealerResellerServicer.length > 0) {
+      servicer.unshift(...dealerResellerServicer);
+    }
+
+    if (checkDealer.isServicer) {
+      servicer.unshift(checkDealer);
+    };
+    const servicerIds = servicer.map(obj => obj._id);
+    const query1 = { accountId: { $in: servicerIds }, isPrimary: true };
+    let servicerUser = await userService.getMembers(query1, {});
+    if (!servicerUser) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+    // Get servicer with claim
+    const servicerClaimsIds = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+
+    const servicerCompleted = { servicerId: { $in: servicerIds }, claimFile: "Completed" };
+    let claimAggregateQuery1 = [
+      {
+        $match: servicerCompleted
+      },
+      {
+        "$group": {
+          "_id": "$servicerId",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
+
+      },
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(claimAggregateQuery1);
+    let claimAggregateQuery = [
+      {
+        $match: servicerClaimsIds
+      },
+      {
+        $group: {
+          _id: "$servicerId",
+          noOfOrders: { $sum: 1 },
+        }
+      },
+    ]
+    let numberOfClaims = await claimService.getClaimWithAggregate(claimAggregateQuery)
+
+    const result_Array = servicer.map(item1 => {
+      const matchingItem = servicerUser.find(item2 => item2.accountId?.toString() === item1?._id.toString());
+      const claimValue = valueClaim.find(claim => claim._id?.toString() === item1._id?.toString())
+      const claimNumber = numberOfClaims.find(claim => claim._id?.toString() === item1._id?.toString())
+
+      if (matchingItem) {
+        return {
+          ...matchingItem.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          servicerData: item1.toObject(),
+          claimNumber: claimNumber ? claimNumber : 0,
+          claimValue: claimValue ? claimValue : 0
+        };
+      }
+      else {
+        return {
+          servicerData: {}
+        };
+      }
+    });
+
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.servicerData?.name) &&
+        emailRegex.test(entry?.email) &&
+        phoneRegex.test(entry?.phoneNumber)
+      );
+    });
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      data: filteredData
+    });
+
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get dealer price book by id 
+exports.getDealerPriceBookById = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let projection = {
+      _id: 1,
+      name: 1,
+      wholesalePrice: {
+        $sum: [
+          "$priceBooks.reserveFutureFee",
+          "$priceBooks.reinsuranceFee",
+          "$priceBooks.adminFee",
+          "$priceBooks.frontingFee",
+        ],
+      },
+      "priceBook": 1,
+      "dealerId": 1,
+      "status": 1,
+      "retailPrice": 1,
+      "description": 1,
+      "isDeleted": 1,
+      "unique_key": 1,
+      "__v": 1,
+      "createdAt": 1,
+      "updatedAt": 1,
+      priceBooks: 1,
+      dealer: 1
+    }
+
+    let query = { isDeleted: false, _id: new mongoose.Types.ObjectId(req.params.dealerPriceBookId) }
+    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+
+    if (!getDealerPrice) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get Dealer Price Books
+exports.getDealerPriceBookByDealerId = async (req, res) => {
+  try {
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let checkDealer = await dealerService.getSingleDealerById({ _id: req.params.dealerId }, { isDeleted: false })
+
+    if (checkDealer.length == 0) {
+       res.send({
+        code: constant.errorCode,
+        message: "Dealer Not found"
+      })
+      return;
+    }
+    let projection = {
+
+      _id: 1,
+      name: 1,
+      wholesalePrice: {
+        $sum: [
+          "$priceBooks.reserveFutureFee",
+          "$priceBooks.reinsuranceFee",
+          "$priceBooks.adminFee",
+          "$priceBooks.frontingFee",
+        ],
+      },
+      "priceBook": 1,
+      "dealerId": 1,
+      "status": 1,
+      "retailPrice": 1,
+      "description": 1,
+      "isDeleted": 1,
+      "unique_key": 1,
+      "__v": 1,
+      "createdAt": 1,
+      "updatedAt": 1,
+      priceBooks: 1,
+      dealer: 1
+
+    }
+    let query = { isDeleted: false, dealerId: new mongoose.Types.ObjectId(req.params.dealerId) }
+    let getDealerPrice = await dealerPriceService.getDealerPriceBookById(query, projection)
+    if (!getDealerPrice) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to get the dealer price books"
+      })
+    } else {
+      res.send({
+        code: constant.successCode,
+        message: "Success",
+        result: getDealerPrice
+      })
+    }
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+}
+
+//Get price book by filteration
+exports.getAllPriceBooksByFilter = async (req, res, next) => {
+  try {
+    let data = req.body
+    data.status = typeof (data.status) == "string" ? "all" : data.status
+    let categorySearch = req.body.category ? req.body.category : ''
+    let queryCategories = {
+      $and: [
+        { isDeleted: false },
+        { 'name': { '$regex': req.body.category ? req.body.category : '', '$options': 'i' } }
+      ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchName = req.body.name ? req.body.name : ''
+    let query
+
+    if (data.status != 'all' && data.status != undefined) {
+      if (data.coverageType != "") {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.coverageType': data.coverageType },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': data.status },
+            {
+              dealerId: new mongoose.Types.ObjectId(data.dealerId)
+            }
+          ]
+        };
+      } else {
+        query = {
+          $and: [
+            { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+            { 'priceBooks.category._id': { $in: catIdsArray } },
+            { 'status': data.status },
+            {
+              dealerId: new mongoose.Types.ObjectId(data.dealerId)
+            }
+          ]
+        };
+      }
+
+    } else if (data.coverageType != "") {
+      query = {
+        $and: [
+          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.coverageType': data.coverageType },
+          { 'priceBooks.category._id': { $in: catIdsArray } },
+          {
+            dealerId: new mongoose.Types.ObjectId(data.dealerId)
+          }
+        ]
+      };
+    } else {
+      query = {
+        $and: [
+          { 'priceBooks.name': { '$regex': searchName, '$options': 'i' } },
+          { 'priceBooks.category._id': { $in: catIdsArray } },
+          {
+            dealerId: new mongoose.Types.ObjectId(data.dealerId)
+          }
+        ]
+      };
+    }
+    if (data.term != "") {
+      query.$and.push({ 'priceBooks.term': Number(data.term) });
+    }
+
+    if (data.priceType != '') {
+      query.$and.push({ 'priceBooks.priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+
+        if (data.range != '') {
+          query.$and.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          query.$and.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        }
+      }
+    }
+
+    let projection = { isDeleted: 0, __v: 0 }
+
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    const priceBooks = await dealerPriceService.getAllPriceBooksByFilter(query, projection, limit, page);
+
+    if (!priceBooks) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks
+    })
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+//Get dealer price book by filteration
+exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
+  try {
+    let data = req.body
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    data.status = typeof (data.status) == "string" ? "all" : data.status
+    let categorySearch = req.body.category ? req.body.category : ''
+    let queryCategories = {
+      $and: [
+        { isDeleted: false },
+        { 'name': { '$regex': req.body.category ? req.body.category.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
+      ]
+    };
+    let getCatIds = await priceBookService.getAllPriceCat(queryCategories, {})
+    let catIdsArray = getCatIds.map(category => category._id)
+    let searchDealerName = req.body.name ? req.body.name : ''
+    let query
+    let matchConditions = [];
+    matchConditions.push({ 'priceBooks.category._id': { $in: catIdsArray } });
+
+    if (data.status != 'all' && data.status != undefined) {
+      matchConditions.push({ 'status': data.status });
+    }
+
+    if (data.term) {
+      matchConditions.push({ 'priceBooks.term': Number(data.term) });
+    }
+
+    if (data.priceType != '') {
+      matchConditions.push({ 'priceBooks.priceType': data.priceType });
+      if (data.priceType == 'Flat Pricing') {
+        if (data.range != '') {
+          matchConditions.push({ 'priceBooks.rangeStart': { $lte: Number(data.range) } });
+          matchConditions.push({ 'priceBooks.rangeEnd': { $gte: Number(data.range) } });
+        }
+
+      }
+    }
+
+    if (data.coverageType) {
+      matchConditions.push({ 'priceBooks.coverageType': data.coverageType });
+    }
+
+    if (data.name) {
+      matchConditions.push({ 'priceBooks.name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+    }
+
+    if (data.pName) {
+      matchConditions.push({ 'priceBooks.pName': { '$regex': req.body.pName ? req.body.pName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+    }
+
+    if (data.dealerName) {
+      matchConditions.push({ 'dealer.name': { '$regex': req.body.dealerName ? req.body.dealerName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } });
+    }
+
+    const matchStage = matchConditions.length > 0 ? { $match: { $and: matchConditions } } : {};
+    let projection = { isDeleted: 0, __v: 0 }
+    let limit = req.body.limit ? req.body.limit : 10000
+    let page = req.body.page ? req.body.page : 1
+    const priceBooks = await dealerPriceService.getAllDealerPriceBooksByFilter(matchStage, projection, limit, page);
+
+    if (!priceBooks) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      })
+      return;
+    }
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: priceBooks,
+    })
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+// get all dealers 
+exports.getAllDealers = async (req, res) => {
+  try {
+
+    let data = req.body
+
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let dealerFilter = {
+      $and: [
+        { isDeleted: false },
+        { status: "Approved" },
+        { 'name': { '$regex': req.body.name ? req.body.name.trim().replace(/\s+/g, ' ') : '', '$options': 'i' } }
+      ]
+    };
+
+    let projection = { __v: 0, isDeleted: 0 }
+    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
+    const dealerIds = dealers.map(obj => obj._id);
+    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+
+    //-------------Get All Dealers Id's------------------------
+
+    let dealarUser = await userService.getMembers(query1, projection)
+
+    //Get Dealer Order Data     
+    let orderQuery = { dealerId: { $in: dealerIds }, status: "Active" };
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let orderData = await orderService.getAllOrderInCustomers(orderQuery, project, "$dealerId");
+
+    if (!dealers) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = dealarUser.map(item1 => {
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const orders = orderData.find(order => order._id.toString() === item1.accountId.toString())
+      if (matchingItem || orders) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject(),
+          ordersData: orders ? orders : {}
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber : '', 'i')
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.dealerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: filteredData
+    });
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+//Get Pending Request dealers
+exports.getPendingDealers = async (req, res) => {
+  try {
+    let data = req.body
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    let dealerFilter = {
+      $and: [
+        { isDeleted: false },
+        { status: "Pending" },
+        { 'name': { '$regex': req.body.name ? req.body.name.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } }
+      ]
+
+    };
+
+    let projection = { __v: 0, isDeleted: 0 }
+    let dealers = await dealerService.getAllDealers(dealerFilter, projection);
+    //-------------Get All Dealers Id's------------------------
+
+    const dealerIds = dealers.map(obj => obj._id);
+
+    let query1 = { accountId: { $in: dealerIds }, isPrimary: true };
+    let dealarUser = await userService.getMembers(query1, projection)
+
+    if (!dealers) {
+       res.send({
+        code: constant.errorCode,
+        message: "Unable to fetch the data"
+      });
+      return;
+    };
+
+    const result_Array = dealarUser.map(item1 => {
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject()
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phoneNumber ? data.phoneNumber.replace(/\s+/g, ' ').trim() : '', 'i')
+
+    const filteredData = result_Array.filter(entry => {
+      return (
+        nameRegex.test(entry.dealerData.name) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    res.send({
+      code: constant.successCode,
+      data: filteredData
+    });
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    })
+  }
+};
+
+//get dealer detail by ID
+exports.getDealerById = async (req, res) => {
+  try {
+    //fetching data from user table
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+    const dealers = await dealerService.getSingleDealerById({ _id: req.params.dealerId });
+
+    if (!dealers[0]) {
+       res.send({
+        code: constant.errorCode,
+        message: "No data found"
+      });
+      return
+    }
+
+    const query1 = { accountId: { $in: [dealers[0]._id] }, isPrimary: true };
+    let dealarUser = await userService.getMembers(query1, { isDeleted: false })
+
+    if (!dealarUser) {
+       res.send({
+        code: constant.errorCode,
+        message: "No any user of this dealer"
+      });
+      return
+    }
+
+    let project = {
+      productsArray: 1,
+      dealerId: 1,
+      unique_key: 1,
+      servicerId: 1,
+      customerId: 1,
+      resellerId: 1,
+      paymentStatus: 1,
+      status: 1,
+      venderOrder: 1,
+      orderAmount: 1,
+    }
+
+    let query = {
+      $and: [
+        { dealerId: new mongoose.Types.ObjectId(req.params.dealerId), status: "Active" }
+      ]
+    }
+    let ordersResult = await orderService.getAllOrderInCustomers(query, project, "$dealerId");
+    //Get Claim Result 
+    const claimQuery = { claimFile: 'Completed' }
+    let lookupQuery = [
+      {
+        $match: claimQuery
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts",
+        }
+      },
+      {
+        $unwind: "$contracts"
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "contracts.orderId",
+          foreignField: "_id",
+          as: "contracts.orders",
+        },
+
+      },
+      {
+        $unwind: "$contracts.orders"
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
+          ]
+        },
+      },
+      {
+        "$group": {
+          "_id": "",
+          "totalAmount": {
+            "$sum": {
+              "$sum": "$totalAmount"
+            }
+          },
+        },
+
+      },
+    ]
+
+    let valueClaim = await claimService.getClaimWithAggregate(lookupQuery);
+    const rejectedQuery = { claimFile: "Completed" }
+    //Get number of claims
+    let numberOfCompleletedClaims = [
+      {
+        $match: claimQuery
+      },
+      {
+        $lookup: {
+          from: "contracts",
+          localField: "contractId",
+          foreignField: "_id",
+          as: "contracts",
+        }
+      },
+      {
+        $unwind: "$contracts"
+      },
+      {
+        $lookup: {
+          from: "orders",
+          localField: "contracts.orderId",
+          foreignField: "_id",
+          as: "contracts.orders",
+        },
+
+      },
+      {
+        $unwind: "$contracts.orders"
+      },
+      {
+        $match:
+        {
+          $and: [
+            { "contracts.orders.dealerId": new mongoose.Types.ObjectId(req.params.dealerId) },
+          ]
+        },
+      },
+    ]
+    let numberOfClaims = await claimService.getClaimWithAggregate(numberOfCompleletedClaims);
+    const claimData = {
+      numberOfClaims: numberOfClaims.length,
+      valueClaim: valueClaim[0]?.totalAmount
+    }
+    const result_Array = dealarUser.map(item1 => {
+      const matchingItem = dealers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      if (matchingItem) {
+        return {
+          ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
+          dealerData: matchingItem.toObject(),
+          ordersResult: ordersResult,
+          claimData: claimData
+        };
+      } else {
+        return dealerData.toObject();
+      }
+    });
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: result_Array,
+    })
+
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
+};
+
+//get dealer detail by ID
+exports.getUserByDealerId = async (req, res) => {
+  try {
+    let data = req.body
+    //fetching data from user table
+    if (req.role != "Super Admin") {
+       res.send({
+        code: constant.errorCode,
+        message: "Only super admin allow to do this action"
+      })
+      return;
+    }
+
+    const dealers = await dealerService.getDealerById(req.params.dealerId);
+    if (!dealers) {
+       res.send({
+        code: constant.errorCode,
+        message: "Dealer not found"
+      });
+      return;
+    };
+
+    const users = await dealerService.getUserByDealerId({ accountId: req.params.dealerId, isDeleted: false });
+
+    let name = data.firstName ? data.firstName : ""
+    let nameArray = name.trim().split(" ");
+    // Create new keys for first name and last name
+    let newObj = {
+      f_name: nameArray[0],  // First name
+      l_name: nameArray.slice(1).join(" ")  // Last name (if there are multiple parts)
+    };
+    const firstNameRegex = new RegExp(data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const lastNameRegex = new RegExp(data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', 'i')
+    const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
+    const phoneRegex = new RegExp(data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', 'i')
+    let filteredData = users.filter(entry => {
+      return (
+        firstNameRegex.test(entry.firstName) &&
+        lastNameRegex.test(entry.lastName) &&
+        emailRegex.test(entry.email) &&
+        phoneRegex.test(entry.phoneNumber)
+      );
+    });
+
+    if (!users) {
+       res.send({
+        code: constant.errorCode,
+        message: "No data found"
+      });
+      return
+    }
+
+    res.send({
+      code: constant.successCode,
+      message: "Success",
+      result: filteredData,
+      dealerData: dealers,
+      dealerStatus: dealers.accountStatus,
+      isAccountCreate: dealers.isAccountCreate,
+      userAccount: dealers.userAccount,
+    })
+
+  } catch (err) {
+     res.send({
+      code: constant.errorCode,
+      message: err.message
+    });
+  };
+};

@@ -8,8 +8,6 @@ const orderService = require("../services/orderService");
 const supportingFunction = require('../../config/supportingFunction')
 const LOG = require('../../User/model/logs')
 const emailConstant = require('../../config/emailConstant');
-
-// const contractService = require("../../Contract/services/contractService");
 const dealerService = require("../../Dealer/services/dealerService");
 const dealerRelationService = require("../../Dealer/services/dealerRelationService");
 const resellerService = require("../../Dealer/services/resellerService");
@@ -27,10 +25,8 @@ const fs = require("fs");
 const moment = require("moment");
 const dealerPriceService = require("../../Dealer/services/dealerPriceService");
 const userService = require("../../User/services/userService");
-
 const PDFDocument = require('pdfkit');
 const claimService = require("../../Claim/services/claimService");
-
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
@@ -1010,7 +1006,7 @@ exports.getPriceBooksInOrder = async (req, res) => {
             message: err.messsage
         })
     }
-}
+};
 
 //Check Purchase order
 exports.checkPurchaseOrder = async (req, res) => {
@@ -1798,7 +1794,7 @@ exports.getPendingAmount = async (req, res) => {
             message: err.message
         })
     }
-}
+};
 
 //Update servicer by order id
 exports.updateServicerByOrder = async (req, res) => {
@@ -1882,4 +1878,4 @@ exports.getResellerByDealerAndCustomer = async (req, res) => {
             message: err.message
         })
     }
-}
+};

@@ -3691,7 +3691,7 @@ exports.claimReportinDropdown = async (req, res) => {
         let getDealers = await dealerService.getAllDealers({ status: "Approved" }) // not using
         let getServicer = await providerService.getAllServiceProvider({
             $or: [
-                { dealerId: checkReseller._id },
+                { dealerId: checkReseller.dealerId },
                 {
                     $and: [
                         { accountStatus: "Approved" }, { _id: { $in: ids } }
@@ -3753,9 +3753,6 @@ exports.claimReportinDropdown = async (req, res) => {
             }
 
         }
-
-
-
         res.send({
             code: constant.successCode,
             message: "Success",
