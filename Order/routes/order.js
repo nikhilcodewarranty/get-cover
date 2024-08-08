@@ -1,10 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const orderController = require("../controller/order");
-const orderCreateController = require("../controller/orderCreateController");
-const supportingController = require("../controller/supportingController");
+const orderController = require("../controller/order"); // order controller
+const orderCreateController = require("../controller/orderCreateController"); // order create and edit controller
+const supportingController = require("../controller/supportingController"); // supporting function for order section
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
-
 
 router.post('/createOrder', [verifyToken], orderCreateController.createOrder1); // create order
 router.post('/editOrderDetail/:orderId', [verifyToken], orderCreateController.editOrderDetail); // edit order detail
@@ -12,7 +11,6 @@ router.post('/checkFileValidation', [verifyToken], orderCreateController.checkFi
 router.post('/checkMultipleFileValidation', [verifyToken], orderCreateController.checkMultipleFileValidation); // check multiple file validation
 router.post('/editFileCase', [verifyToken], orderCreateController.editFileCase); // edit file case
 router.post('/getOrderContract/:orderId', [verifyToken], orderCreateController.getOrderContract); // get order contract
-
 
 router.post('/archiveOrder/:orderId', [verifyToken], orderController.archiveOrder); // archive order
 router.post('/processOrder/:orderId', [verifyToken], orderController.processOrder); // process order
