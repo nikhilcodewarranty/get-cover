@@ -26,7 +26,6 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.sendgrid_key);
 const multer = require('multer');
 const path = require('path');
-// Promisify fs.createReadStream for asynchronous file reading
 const csvParser = require('csv-parser');
 const { id } = require('../validators/register_dealer');
 const { isBoolean } = require('util');
