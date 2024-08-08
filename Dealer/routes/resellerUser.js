@@ -26,7 +26,7 @@ router.post("/getResellerClaims", [verifyToken], resellerUserGetController.getRe
 router.post("/getResellerCustomers", [verifyToken], resellerUserGetController.getResellerCustomers); // get reseller customers
 router.post('/getCustomerInOrder', [verifyToken], resellerUserGetController.getCustomerInOrder); // get customer in order
 router.post('/getServicerInOrders', [verifyToken], resellerUserGetController.getServicerInOrders); // get servicer in orders
-router.post('/getArchieveOrder', [verifyToken], resellerUserGetController.getAllArchieveOrders); // get archive order
+router.post('/getArchieveOrder', [verifyToken], resellerUserGetController.getAllArchieveOrders); // get archive order 
 router.post("/getResellerPriceBook", [verifyToken], resellerUserGetController.getResellerPriceBook); // get reseller price book
 router.post("/getResellerUsers", [verifyToken], resellerUserGetController.getResellerUsers); // get reseller users
 router.post("/getResellerDetails", [verifyToken], resellerUserGetController.getResellerDetails); // get reseller details
