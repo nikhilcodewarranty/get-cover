@@ -1349,7 +1349,6 @@ exports.createDealer = async (req, res) => {
     }
 };
 
-
 //Create new service provider By SA
 exports.createServiceProvider = async (req, res) => {
     try {
