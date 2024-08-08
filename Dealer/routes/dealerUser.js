@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const dealerUserController = require("../controller/dealerUserController");
-const dealerUserSupportingController = require("../controller/dealerUserSupporting");
+const dealerUserController = require("../controller/dealerUserController"); // dealer user controller
+const dealerUserSupportingController = require("../controller/dealerUserSupporting"); // dealer user get functions controller
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
 
