@@ -1098,6 +1098,7 @@ exports.editServicer = async (req, res) => {
     }
     let isPureServicer = ''
     if (req.body.servicerId != "") {
+      console.log("check _----------------------------------------1")
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
         $or: [
@@ -1107,6 +1108,7 @@ exports.editServicer = async (req, res) => {
         ]
       })
       isPureServicer = checkServicer.dealerId != null ? false : checkServicer.resellerId == null ? true : false
+      console.log("check _----------------------------------------1", isPureServicer)
 
       if (!checkServicer) {
         res.send({
@@ -1117,6 +1119,7 @@ exports.editServicer = async (req, res) => {
       }
 
     }
+    console.log("check _------------------------------------weeeeee----1", isPureServicer)
 
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })
@@ -2978,29 +2981,6 @@ exports.getCoverageType = async (req, res) => {
   }
 }
 
-// s3 bucket 
-const StorageP1 = multerS3({
-  s3: s3,
-  bucket: process.env.bucket_name,
-  metadata: (req, files, cb) => {
-    cb(null, { fieldName: files.fieldname });
-  },
-  key: (req, files, cb) => {
-    const fileName = files.fieldname + '-' + Date.now() + path.extname(files.originalname);
-    const fullPath = `${folderName}/${fileName}`;
-    cb(null, fullPath);
-  }
-});
-
-var imageUploadS3 = multer({
-  storage: StorageP1,
-  limits: {
-    fileSize: 500 * 1024 * 1024, // 500 MB limit
-  },
-}).any([
-  { name: "file" },
-  { name: "termCondition" },
-])
 
 
 
