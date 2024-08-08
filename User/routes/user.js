@@ -4,6 +4,7 @@ const userController = require("../controller/usersController"); // user control
 const supportingApiAdmin = require("../controller/supportingApiAdmin"); // admin supporting function for creation role controller
 const graphdataController = require("../controller/graphdataController"); // admin graph data  controller
 const dealerController = require("../../Dealer/controller/dealerController"); // dealer controller
+const dealerSupportingController = require("../../Dealer/controller/dealerSupporting"); // dealer controller
 const servicerAdminController = require("../../Provider/controller/serviceAdminController"); // servicer admin controller
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation'); // validation middleware
@@ -20,11 +21,11 @@ router.post("/checkEmailForSingle", [verifyToken], userController.checkEmailForS
 
 router.get("/roles", [verifyToken], userController.getAllRoles); // get all roles
 
-router.post("/approveDealers", [verifyToken], validator("filter_dealer"), dealerController.getAllDealers); // get all dealers
+router.post("/approveDealers", [verifyToken], validator("filter_dealer"), dealerSupportingController.getAllDealers); // get all dealers
 
 router.get("/approveServicer", [verifyToken], servicerAdminController.getAllServiceProviders); // get all service providers
 
-router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealerController.getPendingDealers); // get pending dealers
+router.post("/pendingDealers", [verifyToken], validator("filter_dealer"), dealerSupportingController.getPendingDealers); // get pending dealers
 
 router.get("/servicer", [verifyToken], servicerAdminController.getAllServiceProviders); // get all service providers
 

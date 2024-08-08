@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const validator = require('../config/validation');
 const dealerController = require("../controller/dealerController"); // dealer controller 
+const dealerSupportingController = require("../controller/dealerSupporting"); // dealer controller 
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware 
 const upload = multer({ dest: 'uploads/' });
 const uploadMiddleware = require('../middleware/uploadMiddleware'); 
@@ -12,23 +13,23 @@ router.post("/register", validator('register_dealer'), dealerController.register
 
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser); // add dealer user route
 
-router.post("/dealers", [verifyToken], dealerController.getAllDealers); // get dealers list
+router.post("/dealers", [verifyToken], dealerSupportingController.getAllDealers); // get dealers list
 
-router.post("/getUserByDealerId/:dealerId", [verifyToken], dealerController.getUserByDealerId); // get dealer detail with ID
+router.post("/getUserByDealerId/:dealerId", [verifyToken], dealerSupportingController.getUserByDealerId); // get dealer detail with ID
 
-router.post("/dealerOrders/:dealerId", [verifyToken], dealerController.getDealerOrders); // get dealer orders
+router.post("/dealerOrders/:dealerId", [verifyToken], dealerSupportingController.getDealerOrders); // get dealer orders
 
-router.post("/getDealerContract/:dealerId", [verifyToken], dealerController.getDealerContract); // get dealer contract
+router.post("/getDealerContract/:dealerId", [verifyToken], dealerSupportingController.getDealerContract); // get dealer contract
 
-router.post("/getDealerClaims/:dealerId", [verifyToken], dealerController.getDealerClaims); // get dealer claims
+router.post("/getDealerClaims/:dealerId", [verifyToken], dealerSupportingController.getDealerClaims); // get dealer claims
 
 router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTermAndCondition); // upload terms and conditions
 
-router.post("/getAllPriceBooksByFilter", [verifyToken], validator('filter_price_book'), dealerController.getAllPriceBooksByFilter); // get all price books by filter
+router.post("/getAllPriceBooksByFilter", [verifyToken], validator('filter_price_book'), dealerSupportingController.getAllPriceBooksByFilter); // get all price books by filter
 
-router.post("/getAllDealerPriceBooksByFilter", [verifyToken], validator('filter_dealer_price'), dealerController.getAllDealerPriceBooksByFilter); // get all dealer price books by filter
+router.post("/getAllDealerPriceBooksByFilter", [verifyToken], validator('filter_dealer_price'), dealerSupportingController.getAllDealerPriceBooksByFilter); // get all dealer price books by filter
 
-router.post("/getDealerResellers/:dealerId", [verifyToken], dealerController.getDealerResellers); // get dealer resellers
+router.post("/getDealerResellers/:dealerId", [verifyToken], dealerSupportingController.getDealerResellers); // get dealer resellers
 
 router.post("/createDealerPriceBook", [verifyToken], validator('create_dealer_price_book_validation'), dealerController.createDealerPriceBook); // create dealer price book
 
@@ -38,22 +39,22 @@ router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDeal
 
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], dealerController.createDeleteRelation); // create relation with servicer
 
-router.post("/getDealerServicers/:dealerId", [verifyToken], dealerController.getDealerServicers); // get dealer servicers
+router.post("/getDealerServicers/:dealerId", [verifyToken], dealerSupportingController.getDealerServicers); // get dealer servicers
 
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
 
 //--------------------------------------------------- get api's endpoints ---------------------------//
 
 
-router.get("/getDealerById/:dealerId", [verifyToken], dealerController.getDealerById); // get dealer detail with ID
+router.get("/getDealerById/:dealerId", [verifyToken], dealerSupportingController.getDealerById); // get dealer detail with ID
 
-router.get("/dealerPriceBooks", [verifyToken], dealerController.getAllDealerPriceBooks); // get all dealer price books
+router.get("/dealerPriceBooks", [verifyToken], dealerSupportingController.getAllDealerPriceBooks); // get all dealer price books
 
-router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerController.getDealerPriceBookById); // get dealer price book by ID
+router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerSupportingController.getDealerPriceBookById); // get dealer price book by ID
 
-router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], dealerController.getDealerPriceBookByDealerId); // get dealer price book by dealer ID
+router.get("/getDealerPriceBookByDealerId/:dealerId", [verifyToken], dealerSupportingController.getDealerPriceBookByDealerId); // get dealer price book by dealer ID
 
-router.get("/getServicersList/:dealerId", [verifyToken], dealerController.getServicersList); // get servicers list
+router.get("/getServicersList/:dealerId", [verifyToken], dealerSupportingController.getServicersList); // get servicers list
 
 //--------------------------------------------------- Put api's endpoints ---------------------------//
 
