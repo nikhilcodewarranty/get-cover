@@ -11,7 +11,7 @@ router.post("/getServicerDealers", [verifyToken], servicerController.getServicer
 router.post("/createRelationWithDealer", [verifyToken], servicerController.createDeleteRelation); // create relation with dealer
 router.post("/saleReporting", [verifyToken], servicerController.saleReporting); // sale reporting
 router.post("/claimReporting", [verifyToken], servicerController.claimReporting); // claim reporting
-router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown); // claim reporting dropdown
+router.post("/claimReportinDropdown", [verifyToken], servicerController.claimReportinDropdown); // claim reporting dropdown 
 // PUT routes
 router.put("/changePrimaryUser", [verifyToken], servicerController.changePrimaryUser); // change primary user
 router.put("/editUserDetail/:userId", [verifyToken], servicerController.editUserDetail); // edit user detail
