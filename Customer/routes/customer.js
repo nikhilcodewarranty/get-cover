@@ -14,7 +14,9 @@ router.post('/createCustomer', [verifyToken], validator('createCustomerValidatio
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser); //addCustomerUser route
 router.post('/customerOrders/:customerId', [verifyToken], customerController.customerOrders); //customerOrders route
 router.post('/getCustomerContract/:customerId', [verifyToken], customerController.getCustomerContract); //getCustomerContract route
+//PUT Routes
 router.put('/editCustomer/:customerId', [verifyToken], customerController.editCustomer); //editCustomer route
+//GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); //changePrimaryUser route
 router.get('/getCustomerById/:customerId', [verifyToken], customerController.getCustomerById); //getCustomerById route
 router.get("/create-customer", [verifyToken], validator('createCustomerValidation'), [verifyToken], customerController.createCustomer); // createCustomer route

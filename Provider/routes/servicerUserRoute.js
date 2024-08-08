@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require("express"); 
 const router = express.Router();
 const validator = require('../config/validation'); // validation handler as a middleware
 const servicerController = require("../controller/servicerController");

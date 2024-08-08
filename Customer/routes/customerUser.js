@@ -3,7 +3,7 @@ const router = express.Router();// Create a new router instance
 const customerController = require("../controller/customerUserController");// Import customer portal controller
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');// Import the validator for request validation
-
+//POST Routes
 router.post("/getCustomerOrder", [verifyToken], customerController.customerOrders); // getCustomerOrder route
 router.post('/saleReporting', [verifyToken], customerController.saleReporting); // saleReporting route
 router.post('/claimReporting', [verifyToken], customerController.claimReporting); // claimReporting route
@@ -11,6 +11,7 @@ router.post('/getCustomerContract', [verifyToken], customerController.getCustome
 router.post('/addCustomerUser', [verifyToken], customerController.addCustomerUser); // addCustomerUser route
 router.post('/getCustomerUsers', [verifyToken], customerController.getCustomerUsers); // getCustomerUsers route
 router.post('/getOrderContract/:orderId', [verifyToken], customerController.getOrderContract); // getOrderContract route
+//GET Routes
 router.get('/changePrimaryUser/:userId', [verifyToken], customerController.changePrimaryUser); // changePrimaryUser route
 router.get('/getCustomerById', [verifyToken], customerController.getCustomerById); // getCustomerById route
 router.get('/getContractById/:contractId', [verifyToken], customerController.getContractById); // getContractById route

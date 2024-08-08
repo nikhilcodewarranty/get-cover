@@ -8,7 +8,6 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 const upload = multer({ dest: 'uploads/' });
 const uploadMiddleware = require('../middleware/uploadMiddleware');
 
-
 router.post("/register", validator('register_dealer'), dealerController.registerDealer); // register dealer route
 router.post("/addDealerUser", [verifyToken], dealerController.addDealerUser); // add dealer user route
 router.post("/uploadTermAndCondition", [verifyToken], dealerController.uploadTermAndCondition); // upload terms and conditions
@@ -17,6 +16,7 @@ router.post("/checkDealerPriceBook", [verifyToken], dealerController.checkDealer
 router.post("/uploadDealerPriceBook", [verifyToken], dealerController.uploadDealerPriceBook); // upload dealer price book
 router.post("/createRelationWithServicer/:dealerId", [verifyToken], dealerController.createDeleteRelation); // create relation with servicer
 router.post("/unAssignServicer", [verifyToken], dealerController.unAssignServicer); // unassign servicer
+
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], validator('update_dealer_price_validation'), dealerController.statusUpdate); // update price book detail with ID
 router.put("/updateDealerMeta", [verifyToken], dealerController.updateDealerMeta); // update dealer meta
 router.put("/changeDealerStatus/:dealerId", [verifyToken], validator('change_status_dealer'), dealerController.changeDealerStatus); // change dealer status
@@ -31,6 +31,7 @@ router.post("/getAllPriceBooksByFilter", [verifyToken], validator('filter_price_
 router.post("/getAllDealerPriceBooksByFilter", [verifyToken], validator('filter_dealer_price'), dealerSupportingController.getAllDealerPriceBooksByFilter); // get all dealer price books by filter
 router.post("/getDealerResellers/:dealerId", [verifyToken], dealerSupportingController.getDealerResellers); // get dealer resellers
 router.post("/getDealerServicers/:dealerId", [verifyToken], dealerSupportingController.getDealerServicers); // get dealer servicers
+
 router.get("/getDealerById/:dealerId", [verifyToken], dealerSupportingController.getDealerById); // get dealer detail with ID
 router.get("/dealerPriceBooks", [verifyToken], dealerSupportingController.getAllDealerPriceBooks); // get all dealer price books
 router.get("/getDealerPriceBookById/:dealerPriceBookId", [verifyToken], dealerSupportingController.getDealerPriceBookById); // get dealer price book by ID
