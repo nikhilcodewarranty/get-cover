@@ -5,8 +5,6 @@ const dealerUserSupportingController = require("../controller/dealerUserSupporti
 const { verifyToken } = require('../../middleware/auth'); // authentication with jwt as middleware
 const validator = require('../config/validation');
 
-
-
 router.post('/createOrder', [verifyToken], dealerUserController.createOrder); // create order
 router.post('/editOrderDetail/:orderId', [verifyToken], dealerUserController.editOrderDetail); // edit order detail
 router.post('/createDealerPriceBook', [verifyToken], dealerUserController.createDealerPriceBook); // create dealer price book
@@ -20,7 +18,6 @@ router.post("/claimReporting", [verifyToken], dealerUserController.claimReportin
 router.post("/saleReportinDropDown", [verifyToken], dealerUserController.saleReportinDropDown); // sale reporting dropdown
 router.post("/claimReportinDropdown", [verifyToken], dealerUserController.claimReportinDropdown); // claim reporting dropdown
 router.put("/updateDealerPriceBook/:dealerPriceBookId", [verifyToken], dealerUserController.statusUpdate); // update dealer price book
-
 
 router.post('/getDealerUsers', [verifyToken], dealerUserSupportingController.getDealerUsers); // get dealer users
 router.post('/getPriceBooks', [verifyToken], dealerUserSupportingController.getPriceBooks); // get price books
@@ -46,6 +43,5 @@ router.get('/getDealerPriceBookById/:dealerPriceBookId', [verifyToken], dealerUs
 router.get('/getServicersList', [verifyToken], dealerUserSupportingController.getServicersList); // get servicers list
 router.get("/getDashboardGraph", [verifyToken], dealerUserSupportingController.getDashboardGraph); // get dashboard graph
 router.get("/getDashboardInfo", [verifyToken], dealerUserSupportingController.getDashboardInfo); // get dashboard info
-
 
 module.exports = router;
