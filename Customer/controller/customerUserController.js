@@ -701,7 +701,7 @@ exports.addCustomerUser = async (req, res) => {
 
     data.accountId = checkCustomer._id
     data.metaId = checkCustomer._id
-    data.roleId = '656f080e1eb1acda244af8c7'
+    data.roleId = process.env.customer
     let saveData = await userService.createUser(data)
     if (!saveData) {
       //Save Logs
