@@ -73,7 +73,6 @@ module.exports = class customerService {
   static async updateDealerName(criteria, data, option) {
     try {
       const updatedResponse = await customer.updateMany(criteria, data, option);
-
       return updatedResponse;
     } catch (error) {
       return `Could not update dealer ${error}`;

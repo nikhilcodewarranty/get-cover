@@ -12,8 +12,8 @@ module.exports = class userService {
             projection = projection ? projection : {}
             const user = await user.findOne(query, projection);
             return user;
-        } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+        }  catch (error) {
+            return `Could not fetch user meta: ${error}`;
         }
     }
 
@@ -24,7 +24,7 @@ module.exports = class userService {
             const user = await user.find(query, projection).sort({ createdAt: -1 });
             return user;
         } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+            return `Could not fetch user meta list: ${error}`;
         }
     }
 
@@ -34,7 +34,7 @@ module.exports = class userService {
             const user = await user(data).save();
             return user;
         } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+            return `Could not create user meta: ${error}`;
         }
     }
 
@@ -44,7 +44,7 @@ module.exports = class userService {
             const user = await user.insertMany(data);
             return user;
         } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+            return `Could not create user meta in bulk: ${error}`;
         }
     }
 
@@ -54,7 +54,7 @@ module.exports = class userService {
             const user = await user.aggregate(query).sort({ "createdAt": -1 });
             return user;
         } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+            return `Could not fetch aggregated user meta: ${error}`;
         }
     }
 
@@ -63,7 +63,7 @@ module.exports = class userService {
             const user = await user.findOneAndUpdate(criteria, data, option);
             return user;
         } catch (error) {
-            console.log(`Could not fetch users ${error}`);
+            return `Could not update user meta: ${error}`;
         }
     }
 
