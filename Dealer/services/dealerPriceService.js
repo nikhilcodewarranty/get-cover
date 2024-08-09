@@ -203,6 +203,7 @@ module.exports = class dealerPriceService {
 
   // Get all dealer price books by filter with additional details
   static async getAllDealerPriceBooksByFilter(query, projection) {
+
     try {
       const result = await dealerPrice.aggregate([
         {

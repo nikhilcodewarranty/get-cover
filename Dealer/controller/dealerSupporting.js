@@ -1531,6 +1531,7 @@ exports.getAllDealerPriceBooksByFilter = async (req, res, next) => {
             code: constant.successCode,
             message: "Success",
             result: priceBooks,
+            matchStage
         })
     } catch (err) {
         res.send({
