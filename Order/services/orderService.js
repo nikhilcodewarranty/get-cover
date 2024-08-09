@@ -24,7 +24,7 @@ module.exports = class orderService {
       ]).sort({ createdAt: -1 })
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -34,7 +34,7 @@ module.exports = class orderService {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 }).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -44,7 +44,7 @@ module.exports = class orderService {
       const allOrders = await order.aggregate(query).sort({ unique_key_number: -1 }).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -54,7 +54,7 @@ module.exports = class orderService {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 })
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -64,7 +64,7 @@ module.exports = class orderService {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 });
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -89,7 +89,7 @@ module.exports = class orderService {
       ])
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -117,7 +117,7 @@ module.exports = class orderService {
       ])
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -150,7 +150,7 @@ module.exports = class orderService {
       ])
       return allOrders;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
 
@@ -160,7 +160,7 @@ module.exports = class orderService {
       const getOrder = await order.findOne(query, projection)
       return getOrder;
     } catch (error) {
-      console.log(`Could not fetch order ${error}`);
+      return `Could not fetch order: ${error}`;
     }
   }
   // Get orders with query and projection
@@ -169,7 +169,7 @@ module.exports = class orderService {
       let orders = await order.find(query, projection)
       return orders
     } catch (err) {
-      console.log(`Could not fetch order ${err}`);
+      return `Could not fetch order: ${err}`;
     }
   }
   // Get orders count
@@ -178,7 +178,7 @@ module.exports = class orderService {
       const count = await order.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
-      console.log(`Could not fetch order count ${error}`);
+      return `Could not fetch order count: ${error}`;
     }
   }
  // Get orders count with query
@@ -187,7 +187,7 @@ module.exports = class orderService {
       const count = await order.find(query).countDocuments();
       return count;
     } catch (error) {
-      console.log(`Could not fetch order count ${error}`);
+      return `Could not fetch order count: ${error}`;
     }
   }
  // Get last five orders
@@ -196,7 +196,7 @@ module.exports = class orderService {
       const lastFive = await order.find(query).sort({ unique_key_number: -1 }).limit(5)
       return lastFive;
     } catch (error) {
-      console.log(`Could not fetch order count ${error}`);
+      return `Could not fetch orders: ${error}`;
     }
   }
 
@@ -206,7 +206,7 @@ module.exports = class orderService {
       const createOrder = await order(data).save();
       return createOrder;
     } catch (error) {
-      console.log(`Could not add order ${error}`);
+      return `Could not add order: ${error}`;
     }
   }
   // Update order
@@ -215,7 +215,7 @@ module.exports = class orderService {
       const createOrder = await order.findOneAndUpdate(criteria, data, option);
       return createOrder;
     } catch (error) {
-      console.log(`Could not add order ${error}`);
+      return `Could not update order: ${error}`;
     }
   }
   // Update many orders
@@ -224,7 +224,7 @@ module.exports = class orderService {
       const createOrder = await order.updateMany(criteria, data, option);
       return createOrder;
     } catch (error) {
-      console.log(`Could not add order ${error}`);
+      return `Could not update orders: ${error}`;
     }
   }
   // Change date for orders
@@ -233,7 +233,7 @@ module.exports = class orderService {
       const createOrder = await order.updateMany(criteria, data, option);
       return createOrder;
     } catch (error) {
-      console.log(`Could not add order ${error}`);
+      return `Could not change order date: ${error}`;
     }
   }
 

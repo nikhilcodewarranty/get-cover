@@ -7,7 +7,7 @@ module.exports = class providerService {
       const allServiceProvider = await serviceProvider.find(query, projection).sort({ "createdAt": -1 });
       return allServiceProvider;
     } catch (error) {
-      console.log(`Could not fetch service provider ${error}`);
+      return `Could not fetch service provider: ${error}`;
     }
   }
 
@@ -17,7 +17,7 @@ module.exports = class providerService {
       const count = await serviceProvider.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch servicer count: ${error}`;
     }
   }
   // Get top five service providers based on a query
@@ -26,7 +26,7 @@ module.exports = class providerService {
       const topServicer = await serviceProvider.aggregate(query);
       return topServicer;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not find servicer: ${error}`;
     }
 
   }
@@ -37,7 +37,7 @@ module.exports = class providerService {
       const response = await new serviceProvider(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create service provider: ${error}`;
     }
   }
 
@@ -47,7 +47,7 @@ module.exports = class providerService {
       const response = await serviceProvider.aggregate(query)
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not fetch aggregate servicer: ${error}`;
     }
   }
 
@@ -57,7 +57,7 @@ module.exports = class providerService {
       const singleServiceProviderResponse = await serviceProvider.findOne(query);
       return singleServiceProviderResponse;
     } catch (error) {
-      console.log(`Service provider not found. ${error}`);
+      return `Could not fetch servicer: ${error}`;
     }
   }
   // Update a service provider based on criteria and new data
@@ -66,7 +66,7 @@ module.exports = class providerService {
       const updatedResponse = await serviceProvider.findOneAndUpdate(criteria, data, { new: true });
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update service provider ${error}`);
+      return `Could not update service provider: ${error}`;
     }
   }
 
@@ -77,7 +77,7 @@ module.exports = class providerService {
       const response = await new serviceProvider(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not register service provider: ${error}`;
     }
   }
 
@@ -91,7 +91,7 @@ module.exports = class providerService {
       );
       return updatedResult;
     } catch (error) {
-      console.log(error);
+      return `Could not update status: ${error}`;
     }
   }
 
@@ -101,7 +101,7 @@ module.exports = class providerService {
       const singleDealerResponse = await serviceProvider.findOne(query, projection);
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not find servicer: ${error}`;
     }
   }
   // Delete a service provider by query
@@ -110,7 +110,7 @@ module.exports = class providerService {
       const singleDealerResponse = await serviceProvider.deleteOne(query);
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not delete servicer: ${error}`;
     }
   }
 
