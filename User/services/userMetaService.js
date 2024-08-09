@@ -1,67 +1,69 @@
 const user = require("../model/userMeta");
 const role = require("../model/role");
 const { userConnection } = require("../../db");
+
+//-------------------------- user's services ------------------------------//
+
 module.exports = class userService {
 
-    // Get a single user meta based on a query and projection
+    // get meta dealer/customer/servicers/resellers
     static async findMeta(query, projection) {
         try {
             projection = projection ? projection : {}
-            const userMeta = await user.findOne(query, projection);
-            return userMeta;
+            const user = await user.findOne(query, projection);
+            return user;
         } catch (error) {
-            return `Could not fetch user meta: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
-    // Get a list of user metas based on a query and projection
+    // get all meta 
     static async findMetaList(query, projection) {
         try {
             projection = projection ? projection : {}
-            const userMetaList = await user.find(query, projection).sort({ createdAt: -1 });
-            return userMetaList;
+            const user = await user.find(query, projection).sort({ createdAt: -1 });
+            return user;
         } catch (error) {
-            return `Could not fetch user meta list: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
-    // Create a new user meta
+    //create meta api
     static async createMeta(data) {
         try {
-            const newUserMeta = await user(data).save();
-            return newUserMeta;
+            const user = await user(data).save();
+            return user;
         } catch (error) {
-            return `Could not create user meta: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
-    // Create multiple user metas in bulk
+    //create meta api
     static async createBulkMeta(data) {
         try {
-            const bulkUserMeta = await user.insertMany(data);
-            return bulkUserMeta;
+            const user = await user.insertMany(data);
+            return user;
         } catch (error) {
-            return `Could not create user meta in bulk: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
-    // Get aggregated user meta data based on a query
+    //aggreaget meta api
     static async aggregateMeta(query) {
         try {
-            const aggregatedUserMeta = await user.aggregate(query).sort({ "createdAt": -1 });
-            return aggregatedUserMeta;
+            const user = await user.aggregate(query).sort({ "createdAt": -1 });
+            return user;
         } catch (error) {
-            return `Could not fetch aggregated user meta: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
-    // Update a user meta based on criteria and new data
     static async updateMeta(criteria, data, option) {
         try {
-            const updatedUserMeta = await user.findOneAndUpdate(criteria, data, option);
-            return updatedUserMeta;
+            const user = await user.findOneAndUpdate(criteria, data, option);
+            return user;
         } catch (error) {
-            return `Could not update user meta: ${error}`;
+            console.log(`Could not fetch users ${error}`);
         }
     }
 
