@@ -1109,7 +1109,7 @@ exports.archiveOrder = async (req, res) => {
             description: "The order " + checkOrder.unique_key + " has been archeived!.",
             userId: req.teammateId,
             contentId: checkOrder._id,
-            flag: 'order',
+            flag: 'Order Archieved',
             redirectionId: checkOrder.unique_key,
             notificationFor: IDs
         };

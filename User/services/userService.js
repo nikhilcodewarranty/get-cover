@@ -39,14 +39,9 @@ module.exports = class userService {
         }
       ]).sort({ "createdAt": -1 });
 
-
-      /**--------------------------Get account name from accoun ID iN diffrent database-------------------------- */
-
-
-
       return allUsers;
     } catch (error) {
-      console.log(`Could not fetch users ${error}`);
+      return `Could not fetch users ${error}`;
     }
   }
 
@@ -56,7 +51,7 @@ module.exports = class userService {
       const allUsers = await user.find(query).sort(sorting);
       return allUsers;
     } catch (error) {
-      console.log(`Could not fetch users ${error}`);
+      return `Could not fetch users: ${error}`;
     }
   }
 
@@ -66,16 +61,16 @@ module.exports = class userService {
       const response = await new user(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create users: ${error}`;
     }
   };
-
+  // Save bulk users
   static async insertManyUser(data) {
     try {
       const response = await user.insertMany(data);
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create users: ${error}`;
     }
   };
 
@@ -85,7 +80,7 @@ module.exports = class userService {
       const singleUserResponse = await user.findById({ _id: userId, }, { projection });
       return singleUserResponse;
     } catch (error) {
-      console.log(`User not found. ${error}`);
+      return `Could not find user: ${error}`;
     }
   };
 
@@ -94,7 +89,7 @@ module.exports = class userService {
       const singleUserResponse = await user.findOne(userId, projection);
       return singleUserResponse;
     } catch (error) {
-      console.log(`User not found. ${error}`);
+      return `Could not find users: ${error}`;
     }
   };
 
@@ -105,7 +100,7 @@ module.exports = class userService {
 
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update user ${error}`);
+      return `Could not update user: ${error}`;
     }
   };
 
@@ -115,7 +110,7 @@ module.exports = class userService {
       const deletedResponse = await user.deleteMany(criteria);
       return deletedResponse;
     } catch (error) {
-      console.log(`Could not delete user ${error}`);
+      return `Could not delete user: ${error}`;
     }
   };
 
@@ -125,7 +120,7 @@ module.exports = class userService {
       const roles = await role.find(query, projection).sort({ "createdAt": -1 });
       return roles;
     } catch (error) {
-      console.log(`Could not find role ${error}`);
+      return `Could not find role: ${error}`;
     }
   };
 
@@ -136,7 +131,7 @@ module.exports = class userService {
       const allTerms = await terms.find(query, projection).sort({ "terms": 1 });
       return allTerms;
     } catch (error) {
-      console.log(`Could not find role ${error}`);
+      return `Could not find terms: ${error}`;
     }
   };
 
@@ -146,7 +141,7 @@ module.exports = class userService {
       const response = await new role(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not add role: ${error}`;
     }
   };
 
@@ -156,7 +151,7 @@ module.exports = class userService {
       const response = await terms.insertMany(data);
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create term: ${error}`;
     }
   };
 
@@ -166,8 +161,7 @@ module.exports = class userService {
       const response = await role.findOne(query, projection)
       return response
     } catch (err) {
-      console.log(err);
-
+      return `Could not get role: ${err}`;
     }
   }
 
@@ -196,80 +190,71 @@ module.exports = class userService {
 
       return response;
     } catch (err) {
-      console.log(err);
+      return `Could not find user: ${err}`;
 
     }
   }
 
-
-  static async createTerms(data) {
-    try {
-      const response = await terms.insertMany(data);
-      return response;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  //get role by id
+  // get dealers user
   static async getDealersUser(query, projection) {
     try {
       const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response
     } catch (err) {
-      console.log(err);
+      return `Could not get dealer user: ${err}`;
 
     }
   }
 
+  // get servicer user
   static async getServicerUser(query, projection) {
     try {
       const response = await user.find(query, projection).sort({ "createdAt": -1 });
       return response
     } catch (err) {
-      console.log(err);
-
+      return `Could not get servicer user: ${err}`;
     }
   }
 
-  //create user 
+  //create notification 
   static async createNotification(data) {
     try {
       const response = await new notification(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create notification: ${error}`;
     }
   };
 
-  //get all roles
+
+  // get all notifications
   static async getAllNotifications(query, skipLimit, limitData) {
     try {
       const roles = await notification.find(query).populate("userId").sort({ "createdAt": -1 }).skip(skipLimit).limit(limitData);
       return roles;
     } catch (error) {
-      console.log(`Could not find role ${error}`);
+      return `Could not find notifications: ${error}`;
     }
   };
-
+  // get count notification
   static async getCountNotification(query) {
     try {
       const roles = await notification.countDocuments(query)
       return roles;
     } catch (error) {
-      console.log(`Could not find role ${error}`);
+      return `Could not find notification count: ${error}`;
     }
   };
-
+  // update notification
   static async updateNotification(criteria, newValue, option) {
     try {
       const updatedResponse = await notification.updateMany(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer book ${error}`);
+      return `Could not update notification: ${error}`;
     }
   }
-
+  // find user for customer
   static async findUserforCustomer(query) {
     try {
       const fetchUser = await user.aggregate([
@@ -279,38 +264,37 @@ module.exports = class userService {
       ]).sort({ createdAt: -1 });
       return fetchUser;
     } catch (error) {
-      console.log(`Could not get user ${error}`);
+      return `Could not get user: ${error}`;
     }
   }
-
+  // find customer members new
   static async findUserforCustomer1(query) {
     try {
       const fetchUser = await user.aggregate(query).sort({ createdAt: -1 });
       return fetchUser;
     } catch (error) {
-      console.log(`Could not get user ${error}`);
+      return `Could not get user: ${error}`;
     }
   }
-
+  // update only single data
   static async updateSingleUser(criteria, newValue, option) {
     try {
       const updatedResponse = await user.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer book ${error}`);
+      return `Could not update user: ${error}`;
     }
   }
-
+  // get user by email
   static async getSingleUserByEmail(query, project) {
     try {
       let getUser = await user.findOne(query)
       return getUser;
     } catch (err) {
-      console.log("service error:-", err.message)
+      return `Could not get user: ${err}`;
     }
   }
 
-  //-------------------------------------------------------------New Services-----------------------------------------------------------------------------------//
   //find user for unique checks
   static async findOneUser(query, projection) {
     try {
@@ -318,17 +302,17 @@ module.exports = class userService {
       const loggedInUser = await user.findOne(query, projection);
       return loggedInUser;
     } catch (error) {
-      console.log(`Could not fetch users ${error}`);
+      return `Could not fetch user: ${error}`;
     }
   }
 
+  // find member
   static async getMembers(query, projection) {
     try {
       const response = await user.find(query, projection).sort({ isPrimary: -1, "createdAt": -1 });
       return response
     } catch (err) {
-      console.log(err);
-
+      return `Could not fetch members: ${err}`;
     }
   }
 
