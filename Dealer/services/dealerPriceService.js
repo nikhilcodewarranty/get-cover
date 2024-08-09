@@ -2,7 +2,7 @@ const { default: mongoose } = require("mongoose");
 const dealerPrice = require("../model/dealerPrice");
 
 module.exports = class dealerPriceService {
-  // get all dealer prices 
+  // Get all dealer prices with additional lookups and calculations
   static async getAllDealerPrice() {
     try {
       const AllDealerPrice = await dealerPrice.aggregate([
@@ -82,6 +82,7 @@ module.exports = class dealerPriceService {
     }
   }
 
+    // Find all dealer prices based on a query
   static async findAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.find(query)
@@ -90,7 +91,7 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
+  // Aggregate dealer prices based on a query
   static async aggregateAllDealerPrice(query) {
     try {
       const AllDealerPrice = await dealerPrice.aggregate(query)
@@ -99,7 +100,7 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
+  // Get dealer price book by ID with additional lookups
   static async getDealerPriceBookById(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate([
@@ -159,7 +160,7 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
+  // Get all price books by filter
   static async getAllPriceBooksByFilter(query, projection) {
     try {
       const result = await dealerPrice.aggregate([
@@ -205,7 +206,7 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
+  // Get all dealer price books by filter with additional details
   static async getAllDealerPriceBooksByFilter(query, projection) {
 
     try {
@@ -279,7 +280,7 @@ module.exports = class dealerPriceService {
       console.log(`Could not fetch dealer price ${error}`);
     }
   }
-
+  // Get the count of dealer prices
   static async getDealerPriceCount() {
     try {
       const count = await dealerPrice.find().sort({ "unique_key": -1 });
@@ -298,7 +299,7 @@ module.exports = class dealerPriceService {
       console.log(error);
     }
   }
-
+  // Insert multiple dealer prices
   static async insertManyPrices(data) {
     try {
       const response = await dealerPrice.insertMany(data);
@@ -317,7 +318,7 @@ module.exports = class dealerPriceService {
       console.log(`Dealer price not found. ${error}`);
     }
   }
-
+ // Update dealer prices based on criteria
   static async updateDealerPrice(criteria, newValue, option) {
     try {
       const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);

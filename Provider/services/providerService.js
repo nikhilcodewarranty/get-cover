@@ -1,6 +1,7 @@
 const serviceProvider = require("../model/serviceProvider");
 
 module.exports = class providerService {
+  // Get all service providers based on a query and projection
   static async getAllServiceProvider(query, projection) {
     try {
       const allServiceProvider = await serviceProvider.find(query, projection).sort({ "createdAt": -1 });
@@ -10,7 +11,7 @@ module.exports = class providerService {
     }
   }
 
-
+  // Get the count of service providers
   static async getServicerCount() {
     try {
       const count = await serviceProvider.find().sort({ "unique_key": -1 });
@@ -19,8 +20,8 @@ module.exports = class providerService {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-
-  static async getTopFiveServicer(query){
+  // Get top five service providers based on a query
+  static async getTopFiveServicer(query) {
     try {
       const topServicer = await serviceProvider.aggregate(query);
       return topServicer;
@@ -29,7 +30,7 @@ module.exports = class providerService {
     }
 
   }
-
+  // Create a new service provider
   static async createServiceProvider(data) {
     try {
       console.log(data)
@@ -40,6 +41,7 @@ module.exports = class providerService {
     }
   }
 
+  // Get aggregated data of service providers based on a query
   static async getAggregateServicer(query) {
     try {
       const response = await serviceProvider.aggregate(query)
@@ -49,7 +51,7 @@ module.exports = class providerService {
     }
   }
 
-
+  // Get a single service provider by query
   static async getServiceProviderById(query) {
     try {
       const singleServiceProviderResponse = await serviceProvider.findOne(query);
@@ -58,7 +60,7 @@ module.exports = class providerService {
       console.log(`Service provider not found. ${error}`);
     }
   }
-
+  // Update a service provider based on criteria and new data
   static async updateServiceProvider(criteria, data) {
     try {
       const updatedResponse = await serviceProvider.findOneAndUpdate(criteria, data, { new: true });
@@ -68,17 +70,7 @@ module.exports = class providerService {
     }
   }
 
-  static async deleteServiceProvider(serviceProviderId) {
-    try {
-      const deletedResponse = await serviceProvider.findOneAndDelete(
-        serviceProviderId
-      );
-      return deletedResponse;
-    } catch (error) {
-      console.log(`Could not delete service provider ${error}`);
-    }
-  }
-
+  // Register a new service provider
   static async registerServiceProvider(data) {
 
     try {
@@ -89,8 +81,7 @@ module.exports = class providerService {
     }
   }
 
-
-
+  // Update the status of a service provider based on criteria and new values
   static async statusUpdate(criteria, newValue, option) {
     try {
       const updatedResult = await serviceProvider.findByIdAndUpdate(
@@ -104,7 +95,7 @@ module.exports = class providerService {
     }
   }
 
-  // Get servicer detail with Name
+  // Get a service provider by name
   static async getServicerByName(query, projection) {
     try {
       const singleDealerResponse = await serviceProvider.findOne(query, projection);
@@ -113,7 +104,7 @@ module.exports = class providerService {
       console.log(`Dealer not found. ${error}`);
     }
   }
-
+  // Delete a service provider by query
   static async deleteServicer(query) {
     try {
       const singleDealerResponse = await serviceProvider.deleteOne(query);
