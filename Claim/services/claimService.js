@@ -123,7 +123,7 @@ module.exports = class claimService {
     }
   }
 
-  // Get all claims with aggregation based on a query
+  // not using
   static async getAllClaims(query) {
     try {
       const allClaims = await claim.aggregate(query);

@@ -39,7 +39,7 @@ module.exports = class orderService {
 
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
-      const allOrders = await order.aggregate(query).sort({unique_key_number:-1}).skip(skipLimit).limit(limitData)
+      const allOrders = await order.aggregate(query).sort({ unique_key_number: -1 }).skip(skipLimit).limit(limitData)
       return allOrders;
     } catch (error) {
       console.log(`Could not fetch order ${error}`);
@@ -228,5 +228,5 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
-  
+
 };
