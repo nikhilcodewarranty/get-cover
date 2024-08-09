@@ -530,7 +530,7 @@ exports.editCustomer = async (req, res) => {
       description: "The customer information has been changed!",
       userId: req.teammateId,
       redirectionId: req.params.customerId,
-      flag: "Customer",
+      flag: "customer",
       notificationFor: IDs
     };
 

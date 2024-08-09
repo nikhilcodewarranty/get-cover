@@ -635,7 +635,7 @@ exports.createDealerPriceBook = async (req, res) => {
         title: "New dealer price book created",
         description: data.priceBook + " , " + "new price book has been created",
         userId: req.teammateId,
-        flag: 'dealer',
+        flag: 'Dealer Price Book',
         contentId: createDealerPrice._id,
         redirectionId: createDealerPrice._id,
         notificationFor: IDs
@@ -1287,7 +1287,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
           title: "Dealer Price Book Uploaded",
           description: "The priceBook has been successfully uploaded",
           userId: req.teammateId,
-          flag: 'priceBook',
+          flag: 'Dealer Price Book',
           notificationFor: IDs
         };
 

@@ -1098,7 +1098,6 @@ exports.editServicer = async (req, res) => {
     }
     let isPureServicer = ''
     if (req.body.servicerId != "") {
-      console.log("check _----------------------------------------1")
       criteria = { _id: req.body.servicerId }
       let checkServicer = await servicerService.getServiceProviderById({
         $or: [
@@ -1108,7 +1107,6 @@ exports.editServicer = async (req, res) => {
         ]
       })
       isPureServicer = checkServicer.dealerId != null ? false : checkServicer.resellerId == null ? true : false
-      console.log("check _----------------------------------------1", isPureServicer)
 
       if (!checkServicer) {
         res.send({
@@ -1119,7 +1117,6 @@ exports.editServicer = async (req, res) => {
       }
 
     }
-    console.log("check _------------------------------------weeeeee----1", isPureServicer)
 
 
     let updateServicer = await claimService.updateClaim({ _id: req.params.claimId }, data, { new: true })

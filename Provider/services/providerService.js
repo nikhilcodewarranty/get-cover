@@ -33,7 +33,6 @@ module.exports = class providerService {
   // Create a new service provider
   static async createServiceProvider(data) {
     try {
-      console.log(data)
       const response = await new serviceProvider(data).save();
       return response;
     } catch (error) {
