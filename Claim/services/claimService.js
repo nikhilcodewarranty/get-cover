@@ -156,7 +156,7 @@ module.exports = class claimService {
             "_id": groupBy,
             "totalAmount": { "$sum": { "$sum": "$totalAmount" } },
           }
-        } 
+        }
       ]);
       return allOrders;
     } catch (error) {
