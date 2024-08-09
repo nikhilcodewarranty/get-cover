@@ -8,7 +8,7 @@ module.exports = class resellerService {
             let createReseller = await new reseller(data).save();
             return createReseller;
         } catch (err) {
-            return `Could not create reseller: ${err}`;
+            return `Could not create reseller: ${err}`; 
         }
     }
   // Retrieve resellers based on a query and projection
