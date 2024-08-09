@@ -3,7 +3,7 @@ const priceCategory = require("../model/priceCategory");
 
 module.exports = class priceBookService {
 
-  //get all price book 
+   //get all price book with category
   static async getAllPriceBook(query, projection, limit, page) {
     try {
       const allPriceBook = await priceBook.aggregate([
@@ -56,7 +56,7 @@ module.exports = class priceBookService {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-
+  //Get latest category data 
   static async getTotalCount() {
     try {
       const count = await priceCategory.find().sort({ "unique_key": -1 })
@@ -66,7 +66,7 @@ module.exports = class priceBookService {
     }
   }
 
-
+//Get latest price book data
   static async getPriceBookCount() {
     try {
       const count = await priceBook.find().sort({ "unique_key": -1 });
@@ -113,6 +113,7 @@ module.exports = class priceBookService {
     }
   }
 
+   //Get all price books ids
   static async getAllPriceIds(query, projection) {
     try {
       const allIds = await priceBook.find(query, projection);
@@ -146,9 +147,7 @@ module.exports = class priceBookService {
     }
   }
 
-  // ---------------------PRIVE CATEGORY SERVICES-------------- //
-
-  //get price category by id service
+  //get price category by id 
   static async getPriceCatById(ID, projection) {
     try {
       const singlePriceCatResponse = await priceCategory.findOne(ID, projection);
@@ -158,7 +157,7 @@ module.exports = class priceBookService {
     }
   }
 
-  //get price category by name service
+  //get price category by name 
   static async getPriceCatByName(name, projection) {
     try {
       const singlePriceCatResponse = await priceCategory.findOne(name, projection);
@@ -168,7 +167,7 @@ module.exports = class priceBookService {
     }
   }
 
-  //create price category  service
+  //create price category  
   static async createPriceCat(data) {
     try {
       const response = await new priceCategory(data).save();
@@ -178,7 +177,7 @@ module.exports = class priceBookService {
     }
   }
 
-  //get price categories service
+  //get price categories 
   static async getAllPriceCat(query, projection) {
     try {
       const allPriceCategories = await priceCategory.find(query, projection).sort({ "createdAt": -1 });
@@ -188,7 +187,7 @@ module.exports = class priceBookService {
     }
   }
 
-  // /get active price categories service
+  // /get active price categories 
   static async getAllActivePriceCat(query, projection) {
     try {
       const allPriceCategories = await priceCategory.find(query, projection).sort({ status: 1 });
@@ -212,6 +211,7 @@ module.exports = class priceBookService {
     }
   }
 
+
   // Find By Name
   static async findByName(priceBooksName) {
     try {
@@ -221,7 +221,7 @@ module.exports = class priceBookService {
       console.log(`Could not fetch price book ${error}`);
     }
   }
-
+  //Find by name alternative method
   static async findByName1(priceBooksName) {
     try {
       const response = await priceBook.findOne(priceBooksName);
@@ -231,6 +231,7 @@ module.exports = class priceBookService {
     }
   }
 
+  // Get multiple price book based on query
   static async getMultiplePriceBok(query, projection, limit, page) {
     try {
       const allPriceBook = await priceBook.find(query, projection)
