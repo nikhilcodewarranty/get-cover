@@ -1,6 +1,7 @@
 const customer = require("../model/customer");
 
 module.exports = class customerService {
+  // Get all customer  
   static async getAllCustomers(query, projection) {
     try {
       const allCustomers = await customer.find(query, projection).sort({ 'createdAt': -1 });
@@ -10,6 +11,7 @@ module.exports = class customerService {
     }
   }
 
+  // Get latest customer information based on query 
   static async getCustomersCount(query) {
     try {
       const allCustomers = await customer.find(query).sort({ 'unique_key': -1 });
@@ -19,6 +21,7 @@ module.exports = class customerService {
     }
   }
 
+  // Create customer 
   static async createCustomer(data) {
     try {
       const response = await new customer(data).save();
@@ -28,6 +31,7 @@ module.exports = class customerService {
     }
   }
 
+  // Get customer by name or any query  
   static async getCustomerByName(query) {
     try {
       const singleCustomerResponse = await customer.findOne(query);
@@ -36,7 +40,7 @@ module.exports = class customerService {
       console.log(`Customer not found. ${error}`);
     }
   }
-
+  // Get customer by id 
   static async getCustomerById(customerId) {
     try {
       const singleCustomerResponse = await customer.findOne(customerId);
@@ -45,7 +49,7 @@ module.exports = class customerService {
       console.log(`Customer not found. ${error}`);
     }
   }
-
+  // Get customer information with its related information  
   static async getCustomerByAggregate(query) {
     try {
       const singleCustomerResponse = await customer.aggregate(query);
@@ -54,7 +58,7 @@ module.exports = class customerService {
       console.log(`Customer not found. ${error}`);
     }
   }
-
+  // Update customer 
   static async updateCustomer(criteria, data, option) {
     try {
       const updatedResponse = await customer.updateOne(criteria, data, option);
@@ -65,7 +69,7 @@ module.exports = class customerService {
     }
   }
 
-
+  // Update dealer  of the customer
   static async updateDealerName(criteria, data, option) {
     try {
       const updatedResponse = await customer.updateMany(criteria, data, option);
@@ -75,26 +79,4 @@ module.exports = class customerService {
       console.log(`Could not update customer ${error}`);
     }
   }
-
-  static async deleteCustomer(customerId) {
-    try {
-      const deletedResponse = await customer.findOneAndDelete(customerId);
-      return deletedResponse;
-    } catch (error) {
-      console.log(`Could  not delete customer ${error}`);
-    }
-  }
-
-  // Inactive Dealer Customer
-  static async updateCustomerData(criteria, data, option) {
-    try {
-      const updatedResponse = await customer.updateMany(criteria, data, option);
-
-      return updatedResponse;
-    } catch (error) {
-      console.log(`Could not update customer ${error}`);
-    }
-  }
-
-
 };

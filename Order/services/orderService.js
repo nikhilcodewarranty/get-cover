@@ -1,6 +1,7 @@
 const order = require("../model/order");
 
 module.exports = class orderService {
+  // Get all orders
   static async getAllOrders(query, project) {
     try {
       const allOrders = await order.aggregate([
@@ -27,6 +28,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get order with contract
   static async getOrderWithContract(query, skipLimit, limitData) {
     try {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 }).skip(skipLimit).limit(limitData)
@@ -36,7 +38,7 @@ module.exports = class orderService {
     }
   }
 
-
+  // Get order with contract with unique key number
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
       const allOrders = await order.aggregate(query).sort({ unique_key_number: -1 }).skip(skipLimit).limit(limitData)
@@ -46,6 +48,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get all orders with query
   static async getAllOrders1(query) {
     try {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 })
@@ -55,6 +58,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get order with contract sorted by createdAt
   static async getOrderWithContract1(query, skipLimit, limitData) {
     try {
       const allOrders = await order.aggregate(query).sort({ createdAt: -1 });
@@ -64,6 +68,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get dashboard data
   static async getDashboardData(query, project) {
     try {
       const allOrders = await order.aggregate([
@@ -88,6 +93,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get all orders in customers
   static async getAllOrderInCustomers(query, project, groupBy) {
     try {
       const allOrders = await order.aggregate([
@@ -115,6 +121,7 @@ module.exports = class orderService {
     }
   }
 
+  // Get grouping order
   static async getGroupingOrder(query, project) {
     try {
       const allOrders = await order.aggregate([
@@ -147,6 +154,7 @@ module.exports = class orderService {
     }
   }
 
+    // Get order with query and projection
   static async getOrder(query, projection) {
     try {
       const getOrder = await order.findOne(query, projection)
@@ -155,7 +163,7 @@ module.exports = class orderService {
       console.log(`Could not fetch order ${error}`);
     }
   }
-
+  // Get orders with query and projection
   static async getOrders(query, projection) {
     try {
       let orders = await order.find(query, projection)
@@ -164,7 +172,7 @@ module.exports = class orderService {
       console.log(`Could not fetch order ${err}`);
     }
   }
-
+  // Get orders count
   static async getOrdersCount() {
     try {
       const count = await order.find({}, { unique_key_number: 1 }).sort({ unique_key_number: -1 });
@@ -173,7 +181,7 @@ module.exports = class orderService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
-
+ // Get orders count with query
   static async getOrdersCount1(query) {
     try {
       const count = await order.find(query).countDocuments();
@@ -182,7 +190,7 @@ module.exports = class orderService {
       console.log(`Could not fetch order count ${error}`);
     }
   }
-
+ // Get last five orders
   static async getLastFive(query) {
     try {
       const lastFive = await order.find(query).sort({ unique_key_number: -1 }).limit(5)
@@ -201,7 +209,7 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
-
+  // Update order
   static async updateOrder(criteria, data, option) {
     try {
       const createOrder = await order.findOneAndUpdate(criteria, data, option);
@@ -210,7 +218,7 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
-
+  // Update many orders
   static async updateManyOrder(criteria, data, option) {
     try {
       const createOrder = await order.updateMany(criteria, data, option);
@@ -219,7 +227,7 @@ module.exports = class orderService {
       console.log(`Could not add order ${error}`);
     }
   }
-
+  // Change date for orders
   static async changeDate(criteria, data, option) {
     try {
       const createOrder = await order.updateMany(criteria, data, option);
