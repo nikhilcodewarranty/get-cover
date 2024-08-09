@@ -7,7 +7,7 @@ module.exports = class contractService {
       const allContracts = await contract.aggregate(query, { allowDiskUse: true }).skip(pageLimit).limit(page);
       return allContracts;
     } catch (error) {
-      console.log(`Could not fetch contracts ${error}`);
+      return `Could not fetch contracts ${error}`
     }
   }
 
@@ -17,7 +17,7 @@ module.exports = class contractService {
       const allContracts = await contract.aggregate(query)
       return allContracts;
     } catch (error) {
-      console.log(`Could not fetch contracts ${error}`);
+      return `Could not fetch contracts ${error}`
     }
   }
 
@@ -27,7 +27,7 @@ module.exports = class contractService {
       const response = await new contract(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create contract: ${error}`;
     }
   }
 
@@ -36,7 +36,7 @@ module.exports = class contractService {
       const count = await contract.find();
       return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
     } catch (error) {
-      console.log(`Could not fetch contract count ${error}`);
+      return`Could not fetch contract count ${error}`;
     }
   }
   // Find contracts based on a query with pagination and sorting by createdAt
@@ -48,7 +48,7 @@ module.exports = class contractService {
         .exec();
       return contracts
     } catch (error) {
-      console.log(`Could not fetch contract count ${error}`);
+      return `Could not fetch contracts: ${error}`;
     }
   }
 
@@ -58,7 +58,7 @@ module.exports = class contractService {
       const count = await contract.find().sort({ unique_key_number: -1 }).limit(1);
       return count;
     } catch (error) {
-      console.log(`Could not fetch contract count ${error}`);
+      return `Could not fetch contract count: ${error}`;
     }
   }
 
@@ -68,7 +68,7 @@ module.exports = class contractService {
       const count = await contract.find(query).sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch contract count ${error}`);
+      return `Could not fetch contracts: ${error}`;
     }
   }
 
@@ -78,7 +78,7 @@ module.exports = class contractService {
       const count = await contract.find(query).countDocuments();
       return count
     } catch (error) {
-      console.log(`Could not fetch contract count ${error}`);
+      return `Could not fetch contract count: ${error}`;
     }
   }
 
@@ -89,7 +89,7 @@ module.exports = class contractService {
       return bulkContract;
     }
     catch (error) {
-      console.log(`Contract not found ${error}`)
+      return `Could not create bulk contracts: ${error}`;
     }
   }
 
@@ -99,7 +99,7 @@ module.exports = class contractService {
       const singleContractResponse = await contract.findOne(contractId, projection);
       return singleContractResponse;
     } catch (error) {
-      console.log(`Contract not found. ${error}`);
+      return `Could not contract not found: ${error}`;
     }
   }
 
@@ -110,7 +110,7 @@ module.exports = class contractService {
 
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update contract ${error}`);
+      return `Could not update contract: ${error}`;
     }
   }
 
@@ -120,7 +120,7 @@ module.exports = class contractService {
       const deletedResponse = await contract.findOneAndDelete(contractId);
       return deletedResponse;
     } catch (error) {
-      console.log(`Could  not delete contract ${error}`);
+      return `Could not delete contract: ${error}`;
     }
   }
 
@@ -130,7 +130,7 @@ module.exports = class contractService {
       const getResponse = await contract.aggregate(query, pageLimit, page).skip(pageLimit).limit(page);
       return getResponse;
     } catch (error) {
-      console.log(`Could  not delete contract ${error}`);
+      return `Could not fetch contracts: ${error}`;
     }
   }
 
@@ -140,7 +140,7 @@ module.exports = class contractService {
       const getResponse = await contract.aggregate(query);
       return getResponse;
     } catch (error) {
-      console.log(`Could  not delete contract ${error}`);
+      return `Could not fetch contract for PDF: ${error}`;
     }
   }
   // Perform bulk update operations on contracts based on a query
@@ -149,7 +149,7 @@ module.exports = class contractService {
       const getResponse = await contract.bulkWrite(query);
       return getResponse;
     } catch (error) {
-      console.log(`Could  not update contract ${error}`);
+      return `Could not update contracts: ${error}`;
     }
   }
 

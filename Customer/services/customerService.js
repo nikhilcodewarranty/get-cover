@@ -7,7 +7,7 @@ module.exports = class customerService {
       const allCustomers = await customer.find(query, projection).sort({ 'createdAt': -1 });
       return allCustomers;
     } catch (error) {
-      console.log(`Could not fetch customer ${error}`);
+      return `Could not fetch customer ${error}`;
     }
   }
 
@@ -17,7 +17,7 @@ module.exports = class customerService {
       const allCustomers = await customer.find(query).sort({ 'unique_key': -1 });
       return allCustomers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch customer ${error}`);
+      return `Could not fetch customer count ${error}`;
     }
   }
 
@@ -27,7 +27,7 @@ module.exports = class customerService {
       const response = await new customer(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create customer ${error}`;
     }
   }
 
@@ -37,7 +37,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.findOne(query);
       return singleCustomerResponse;
     } catch (error) {
-      console.log(`Customer not found. ${error}`);
+      return `Could not find customer ${error}`;
     }
   }
   // Get customer by id 
@@ -46,7 +46,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.findOne(customerId);
       return singleCustomerResponse;
     } catch (error) {
-      console.log(`Customer not found. ${error}`);
+      return `Could not find the customer. ${error}`;
     }
   }
   // Get customer information with its related information  
@@ -55,7 +55,7 @@ module.exports = class customerService {
       const singleCustomerResponse = await customer.aggregate(query);
       return singleCustomerResponse;
     } catch (error) {
-      console.log(`Customer not found. ${error}`);
+      return `Could not find the customer. ${error}`;
     }
   }
   // Update customer 
@@ -65,7 +65,7 @@ module.exports = class customerService {
 
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update customer ${error}`);
+      return `Could not update customer ${error}`;
     }
   }
 
@@ -76,7 +76,7 @@ module.exports = class customerService {
 
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update customer ${error}`);
+      return `Could not update dealer ${error}`;
     }
   }
 };
