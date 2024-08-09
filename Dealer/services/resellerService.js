@@ -67,5 +67,5 @@ module.exports = class resellerService {
             return `Could not update reseller: ${err}`;
         }
     }
-
+ 
 }
