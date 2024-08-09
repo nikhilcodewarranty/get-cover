@@ -8,7 +8,7 @@ module.exports = class resellerService {
             let createReseller = await new reseller(data).save();
             return createReseller;
         } catch (err) {
-            console.log(`Unable to create the reseller ${err}`)
+            return `Could not create reseller: ${err}`;
         }
     }
   // Retrieve resellers based on a query and projection
@@ -17,7 +17,7 @@ module.exports = class resellerService {
             let getResellers = await reseller.find(query, projection)
             return getResellers;
         } catch (err) {
-            console.log(`Unable to get the resellers err: ${err}`)
+            return `Could not fetch reseller data: ${err}`;
         }
     }
   // Retrieve a single reseller based on a query and projection
@@ -26,7 +26,7 @@ module.exports = class resellerService {
             let getResellers = await reseller.findOne(query, projection)
             return getResellers;
         } catch (err) {
-            console.log(`Unable to get the resellers err: ${err}`)
+            return `Could not fetch reseller: ${err}`;
         }
     }
   // Retrieve and sort resellers count based on a query
@@ -35,7 +35,7 @@ module.exports = class resellerService {
             const allReselers = await reseller.find(query).sort({ 'unique_key': -1 });
             return allReselers.sort((a, b) => b.unique_key - a.unique_key);
         } catch (error) {
-            console.log(`Could not fetch customer ${error}`);
+            return `Could not fetch resellers count: ${error}`;
         }
     }
   // Retrieve resellers using aggregation
@@ -44,7 +44,7 @@ module.exports = class resellerService {
             const singleResellerResponse = await reseller.aggregate(query);
             return singleResellerResponse;
         } catch (error) {
-            console.log(`Customer not found. ${error}`);
+            return `Could not fetch reseller: ${error}`;
         }
 
     }
@@ -55,7 +55,7 @@ module.exports = class resellerService {
             return updateMeta
         }
         catch (err) {
-            console.log(`Unable to update the name ${err}`)
+            return `Could not update meta data: ${err}`;
         }
     }
   // Update a single reseller based on criteria
@@ -64,7 +64,7 @@ module.exports = class resellerService {
             let updateMeta = await reseller.findOneAndUpdate(criteria, data, { new: true });
             return updateMeta
         } catch (err) {
-            console.log(`Unable to update the name ${err}`)
+            return `Could not update reseller: ${err}`;
         }
     }
 

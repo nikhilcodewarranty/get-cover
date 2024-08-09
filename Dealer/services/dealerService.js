@@ -10,7 +10,7 @@ module.exports = class dealerService {
       const AllDealers = await dealer.find(query, projection).sort({ "unique_key": 1 });
       return AllDealers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch dealers ${error}`);
+      return `Could not fetch dealers: ${error}`;
     }
   }
 
@@ -20,7 +20,7 @@ module.exports = class dealerService {
       const singleResellerResponse = await dealer.aggregate(query);
       return singleResellerResponse;
     } catch (error) {
-      console.log(`Customer not found. ${error}`);
+      return `Could not fetch dealers and claims: ${error}`;
     }
 
   }
@@ -31,7 +31,7 @@ module.exports = class dealerService {
       const topDealers = await dealer.aggregate(query);
       return topDealers;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not fetch dealers: ${error}`;
     }
 
   }
@@ -41,7 +41,7 @@ module.exports = class dealerService {
       const count = await dealer.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not dealer latest data: ${error}`;
     }
   }
 
@@ -52,7 +52,7 @@ module.exports = class dealerService {
       const response = await new dealer(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create dealer: ${error}`;
     }
   }
 
@@ -62,7 +62,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.findOne({ _id: dealerId }, projection);
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not fetch dealer: ${error}`;
     }
   }
     // Get single dealer by ID
@@ -71,7 +71,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.find(dealerId, projection);
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not fetch dealer: ${error}`;
     }
   }
   // Get user by dealer ID
@@ -80,7 +80,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await users.find(query).sort({ isPrimary: -1, createdAt: -1 });
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not fetch user: ${error}`;
     }
   }
 
@@ -90,7 +90,7 @@ module.exports = class dealerService {
       const singleDealerResponse = await dealer.findOne(query, projection);
       return singleDealerResponse;
     } catch (error) {
-      console.log(`Dealer not found. ${error}`);
+      return `Could not fetch dealer: ${error}`;
     }
   }
 
@@ -100,7 +100,7 @@ module.exports = class dealerService {
       const updatedResponse = await dealer.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer ${error}`);
+      return `Could not update dealer: ${error}`;
     }
   }
   // Update dealer status
@@ -109,7 +109,7 @@ module.exports = class dealerService {
       const updatedResponse = await dealer.findOneAndUpdate(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer ${error}`);
+      return `Could not update dealer status: ${error}`;
     }
   }
 
@@ -119,7 +119,7 @@ module.exports = class dealerService {
       const deletedResponse = await dealer.deleteOne(criteria);
       return deletedResponse;
     } catch (error) {
-      console.log(`Could  not delete dealer ${error}`);
+      return `Could not delete dealer: ${error}`;
     }
   }
   // Create price book
@@ -128,7 +128,7 @@ module.exports = class dealerService {
       const response = await new dealerPrice(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create dealer price book: ${error}`;
     }
   }
 
@@ -138,7 +138,7 @@ module.exports = class dealerService {
       const response = await new dealer(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not register dealer: ${error}`;
     }
   }
   // Status update
@@ -152,7 +152,7 @@ module.exports = class dealerService {
       );
       return updatedResult;
     } catch (error) {
-      console.log(error);
+      return `Could not update status: ${error}`;
     }
   }
 

@@ -11,7 +11,7 @@ module.exports = class dealerService {
             const relations = await relationTable.save(data)
             return relations;;
         } catch (error) {
-            console.log(`Could not create the relation ${error}`);
+            return `Could not create the relations: ${error}`;
         }
     }
 
@@ -21,7 +21,7 @@ module.exports = class dealerService {
             const relations = await relationTable.insertMany(data)
             return relations;;
         } catch (error) {
-            console.log(`Could not create the relation ${error}`);
+            return `Could not fetch the relations: ${error}`;
         }
     }
 
@@ -40,7 +40,7 @@ module.exports = class dealerService {
             const relations = await relationTable.aggregate(query)
             return relations;
         } catch (error) {
-            console.log(`Could not fetch the relations ${error}`);
+            return `Could not fetch the relations using aggregation: ${error}`;
         }
     }
     // Retrieve a single dealer relation based on a query
@@ -49,7 +49,7 @@ module.exports = class dealerService {
             const relations = await relationTable.findOne(query, projection)
             return relations;
         } catch (error) {
-            console.log(`Could not fetch the relation ${error}`);
+            return `Could not fetch the relation: ${error}`;
         }
     }
 
@@ -59,19 +59,28 @@ module.exports = class dealerService {
             const editData = await relationTable.findOneAndUpdate(criteria, data, option)
             return editData;
         } catch (error) {
-            console.log("Unable to update the dealer realtion")
+            return `Unable to update the dealer relation: ${error}`;
         }
     }
-    
+
     // Delete a single dealer relation based on criteria
     static async deleteRelation(criteria) {
-        const deleteRelation = await relationTable.deleteOne(criteria)
-        return deleteRelation;
+        try {
+            const deletedRelation = await relationTable.deleteOne(criteria);
+            return deletedRelation;
+        }
+        catch (error) {
+            return `Could not delete the relation: ${error}`;
+        }
     }
 
     // Delete multiple dealer relations based on criteria
     static async deleteRelations(criteria) {
-        const deleteRelation = await relationTable.deleteMany(criteria)
-        return deleteRelation;
+        try {
+            const deletedRelations = await relationTable.deleteMany(criteria);
+            return deletedRelations;
+        } catch (error) {
+            return `Could not delete the relations: ${error}`;
+        }
     }
 };

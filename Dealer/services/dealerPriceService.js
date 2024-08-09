@@ -78,7 +78,7 @@ module.exports = class dealerPriceService {
       // const AllDealerPrice = await dealerPrice.find().sort({"createdAt":-1});
       return AllDealerPrice;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch dealer price ${error}`;
     }
   }
 
@@ -88,7 +88,7 @@ module.exports = class dealerPriceService {
       const AllDealerPrice = await dealerPrice.find(query)
       return AllDealerPrice;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+     return `Could not fetch dealer price ${error}`;
     }
   }
   // Aggregate dealer prices based on a query
@@ -97,7 +97,7 @@ module.exports = class dealerPriceService {
       const AllDealerPrice = await dealerPrice.aggregate(query)
       return AllDealerPrice;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch dealer prices: ${error}`;
     }
   }
   // Get dealer price book by ID with additional lookups
@@ -148,16 +148,16 @@ module.exports = class dealerPriceService {
       ]).sort({ "createdAt": -1 });
       return SingleDealerPrice;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch dealer price book: ${error}`;
     }
   }
-
+  // Get dealer price book by ID with a custom query
   static async getDealerPriceBookById1(query, projection) {
     try {
       const SingleDealerPrice = await dealerPrice.aggregate(query).sort({ "createdAt": -1 });
       return SingleDealerPrice;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch dealer price book: ${error}`;
     }
   }
   // Get all price books by filter
@@ -203,7 +203,7 @@ module.exports = class dealerPriceService {
 
       return result;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch price books by filter: ${error}`;
     }
   }
   // Get all dealer price books by filter with additional details
@@ -277,7 +277,7 @@ module.exports = class dealerPriceService {
 
       return result;
     } catch (error) {
-      console.log(`Could not fetch dealer price ${error}`);
+      return `Could not fetch dealer price books by filter: ${error}`;
     }
   }
   // Get the count of dealer prices
@@ -286,7 +286,7 @@ module.exports = class dealerPriceService {
       const count = await dealerPrice.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch dealer price count: ${error}`;
     }
   }
 
@@ -296,7 +296,7 @@ module.exports = class dealerPriceService {
       const response = await new dealerPrice(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create dealer price: ${error}`;
     }
   }
   // Insert multiple dealer prices
@@ -306,7 +306,7 @@ module.exports = class dealerPriceService {
       return response;
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not insert multiple dealer prices: ${error}`;
     }
   }
   // get dealer price detail with ID
@@ -315,7 +315,7 @@ module.exports = class dealerPriceService {
       const singleDealerPriceResponse = await dealerPrice.findOne(ID, projection);
       return singleDealerPriceResponse;
     } catch (error) {
-      console.log(`Dealer price not found. ${error}`);
+      return `Dealer price not found: ${error}`;
     }
   }
  // Update dealer prices based on criteria
@@ -324,7 +324,7 @@ module.exports = class dealerPriceService {
       const updatedResponse = await dealerPrice.updateMany(criteria, newValue, option);
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update dealer book ${error}`);
+      return `Could not update dealer price: ${error}`;
     }
   }
 
@@ -334,7 +334,7 @@ module.exports = class dealerPriceService {
       const deletedResponse = await dealerPrice.findOneAndDelete(dealerPriceId);
       return deletedResponse;
     } catch (error) {
-      console.log(`Could not delete dealer price ${error}`);
+      return `Could not delete dealer price: ${error}`;
     }
   }
 
@@ -344,7 +344,7 @@ module.exports = class dealerPriceService {
       const uploadPriceBook = await dealerPrice.insertMany(dealerPriceId);
       return uploadPriceBook;
     } catch (error) {
-      console.log(`Could not delete dealer price ${error}`);
+      return `Could not upload price book: ${error}`;
     }
   }
 
@@ -368,7 +368,7 @@ module.exports = class dealerPriceService {
 
       return response;
     } catch (error) {
-      console.log(`Could not delete dealer price ${error}`);
+      return `Could not find dealer prices by IDs: ${error}`;
     }
   }
 };
