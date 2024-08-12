@@ -26,7 +26,7 @@ module.exports = class priceBookService {
       ]).sort({ 'createdAt': -1 }).skip(page > 0 ? ((page - 1) * limit) : 0).limit(limit);
       return allPriceBook;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book ${error}`;
     }
   }
 
@@ -53,27 +53,26 @@ module.exports = class priceBookService {
       ]).sort({ 'createdAt': -1 });
       return allPriceBook;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book ${error}`;
     }
   }
-
   //Get latest category data 
   static async getTotalCount() {
     try {
       const count = await priceCategory.find().sort({ "unique_key": -1 })
       return count.sort((a, b) => b.unique_key - a.unique_key);
     } catch (error) {
-      console.log(`Could not fetch price book category${error}`);
+      return `Could not fetch total count ${error}`;
     }
   }
 
-//Get latest price book data
+  //Get latest price book data
   static async getPriceBookCount() {
     try {
       const count = await priceBook.find().sort({ "unique_key": -1 });
       return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book count ${error}`;
     }
   }
 
@@ -83,7 +82,7 @@ module.exports = class priceBookService {
       const response = await new priceBook(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create price book ${error}`
     }
   }
 
@@ -110,7 +109,7 @@ module.exports = class priceBookService {
       ]).sort({ 'createdAt': -1 });
       return singlePriceBookResponse;
     } catch (error) {
-      console.log(`Price book not found. ${error}`);
+      return `Could not fetch price book ${error}`
     }
   }
 
@@ -120,11 +119,11 @@ module.exports = class priceBookService {
       const allIds = await priceBook.find(query, projection);
       return allIds;
     } catch (error) {
-      console.log(`Price book not found. ${error}`);
+      return `Could not fetch id ${error}`;
     }
   }
 
-  // update price book in bulk
+  // update price book
   static async updatePriceBook(criteria, newValue, option) {
     try {
       const updatedResponse = await priceBook.updateMany(
@@ -134,7 +133,17 @@ module.exports = class priceBookService {
       );
       return updatedResponse;
     } catch (error) {
-      console.log(`Could not update price book ${error}`);
+      return `Could not update price book ${error}`;
+    }
+  }
+
+  //delete price book
+  static async deletePriceBook(criteria, newValue, option) {
+    try {
+      const deletedResponse = await priceBook.findOneAndUpdate(criteria, newValue, option);
+      return deletedResponse;
+    } catch (error) {
+      return `Could not delete price book ${error}`;
     }
   }
 
@@ -144,7 +153,7 @@ module.exports = class priceBookService {
       const singlePriceCatResponse = await priceCategory.findOne(ID, projection);
       return singlePriceCatResponse;
     } catch (error) {
-      console.log(`Price category not found. ${error}`);
+      return `Could not fetch category. ${error}`;
     }
   }
 
@@ -154,7 +163,7 @@ module.exports = class priceBookService {
       const singlePriceCatResponse = await priceCategory.findOne(name, projection);
       return singlePriceCatResponse;
     } catch (error) {
-      console.log(`Price category not found. ${error}`);
+      return `Could not fetch category. ${error}`;
     }
   }
 
@@ -164,7 +173,7 @@ module.exports = class priceBookService {
       const response = await new priceCategory(data).save();
       return response;
     } catch (error) {
-      console.log(error);
+      return `Could not create category. ${error}`;
     }
   }
 
@@ -174,7 +183,7 @@ module.exports = class priceBookService {
       const allPriceCategories = await priceCategory.find(query, projection).sort({ "createdAt": -1 });
       return allPriceCategories;
     } catch (error) {
-      console.log(`Could not fetch price categories ${error}`);
+      return `Could not fetch categories. ${error}`;
     }
   }
 
@@ -184,7 +193,7 @@ module.exports = class priceBookService {
       const allPriceCategories = await priceCategory.find(query, projection).sort({ status: 1 });
       return allPriceCategories;
     } catch (error) {
-      console.log(`Could not fetch price categories ${error}`);
+      return `Could not fetch price categories ${error}`;
     }
   }
 
@@ -198,9 +207,10 @@ module.exports = class priceBookService {
       );
       return updatedPriceCat;
     } catch (error) {
-      console.log(`Could not fetch price categories ${error}`);
+      return `Could not update price categories ${error}`;
     }
   }
+
 
   // Find By Name
   static async findByName(priceBooksName) {
@@ -208,17 +218,16 @@ module.exports = class priceBookService {
       const response = await priceBook.find({ 'name': { $in: priceBooksName } });
       return response;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book ${error}`;
     }
   }
-
   //Find by name alternative method
   static async findByName1(priceBooksName) {
     try {
       const response = await priceBook.findOne(priceBooksName);
       return response;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book ${error}`;
     }
   }
 
@@ -228,9 +237,8 @@ module.exports = class priceBookService {
       const allPriceBook = await priceBook.find(query, projection)
       return allPriceBook;
     } catch (error) {
-      console.log(`Could not fetch price book ${error}`);
+      return `Could not fetch price book ${error}`;
     }
   }
 }
-
 

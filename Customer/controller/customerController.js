@@ -116,7 +116,7 @@ exports.createCustomer = async (req, res, next) => {
       return;
     };
 
-    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: '656f080e1eb1acda244af8c7' }));
+    teamMembers = teamMembers.map(member => ({ ...member, accountId: createdCustomer._id, status: !data.status ? false : member.status, metaId: createdCustomer._id, roleId: process.env.customer }));
     // create members account 
     let saveMembers = await userService.insertManyUser(teamMembers)
 
@@ -545,7 +545,7 @@ exports.editCustomer = async (req, res) => {
       description: "The customer information has been changed!",
       userId: req.teammateId,
       redirectionId: req.params.customerId,
-      flag: "Customer",
+      flag: "customer",
       notificationFor: IDs
     };
 
@@ -752,7 +752,7 @@ exports.addCustomerUser = async (req, res) => {
     data.accountId = checkCustomer._id
     data.metaId = checkCustomer._id
     data.status = checkUser.status ? true : false;
-    data.roleId = '656f080e1eb1acda244af8c7'
+    data.roleId = process.env.customer
     let saveData = await userService.createUser(data)
     if (!saveData) {
       //Save Logs

@@ -6,6 +6,7 @@ const connection = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 }
+
 mongoose
     .connect(dbUrl, connection)
     .then((res) => {

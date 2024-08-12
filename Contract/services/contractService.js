@@ -4,22 +4,20 @@ module.exports = class contractService {
   // Fetch all contracts based on a query with pagination
   static async getAllContracts(query, pageLimit, page) {
     try {
-      const allContracts = await contract.aggregate(query, { allowDiskUse: true })
-        .skip(pageLimit * (page - 1))
-        .limit(pageLimit);
+      const allContracts = await contract.aggregate(query, { allowDiskUse: true }).skip(pageLimit).limit(page);
       return allContracts;
     } catch (error) {
-      return `Could not fetch contracts: ${error}`;
+      return `Could not fetch contracts ${error}`
     }
   }
 
   // Fetch all contracts based on a query without pagination
-  static async getAllContracts2(query) {
+  static async getAllContracts2(query, pageLimit, page) {
     try {
-      const allContracts = await contract.aggregate(query);
+      const allContracts = await contract.aggregate(query)
       return allContracts;
     } catch (error) {
-      return `Could not fetch contracts: ${error}`;
+      return `Could not fetch contracts ${error}`
     }
   }
 
@@ -33,15 +31,22 @@ module.exports = class contractService {
     }
   }
 
+  static async getContractsCount() {
+    try {
+      const count = await contract.find();
+      return count.sort((a, b) => b.unique_key_number - a.unique_key_number);;
+    } catch (error) {
+      return`Could not fetch contract count ${error}`;
+    }
+  }
   // Find contracts based on a query with pagination and sorting by createdAt
   static async findContracts2(query, limit, page) {
     try {
       const contracts = await contract.find(query).sort({ createdAt: -1 })
         .skip(page * limit)
-        .limit(limit)
-        .lean()
+        .limit(limit).lean()
         .exec();
-      return contracts;
+      return contracts
     } catch (error) {
       return `Could not fetch contracts: ${error}`;
     }
@@ -61,7 +66,7 @@ module.exports = class contractService {
   static async findContracts(query) {
     try {
       const count = await contract.find(query).sort({ "unique_key": -1 });
-      return count.sort((a, b) => b.unique_key - a.unique_key);
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       return `Could not fetch contracts: ${error}`;
     }
@@ -71,7 +76,7 @@ module.exports = class contractService {
   static async findContractCount(query) {
     try {
       const count = await contract.find(query).countDocuments();
-      return count;
+      return count
     } catch (error) {
       return `Could not fetch contract count: ${error}`;
     }
@@ -82,7 +87,8 @@ module.exports = class contractService {
     try {
       let bulkContract = await contract.insertMany(data);
       return bulkContract;
-    } catch (error) {
+    }
+    catch (error) {
       return `Could not create bulk contracts: ${error}`;
     }
   }
@@ -101,6 +107,7 @@ module.exports = class contractService {
   static async updateContract(criteria, data, option) {
     try {
       const updatedResponse = await contract.findOneAndUpdate(criteria, data, option);
+
       return updatedResponse;
     } catch (error) {
       return `Could not update contract: ${error}`;
@@ -120,9 +127,7 @@ module.exports = class contractService {
   // Fetch contracts based on a query with pagination
   static async getContracts(query, pageLimit, page) {
     try {
-      const getResponse = await contract.aggregate(query)
-        .skip(pageLimit * (page - 1))
-        .limit(pageLimit);
+      const getResponse = await contract.aggregate(query, pageLimit, page).skip(pageLimit).limit(page);
       return getResponse;
     } catch (error) {
       return `Could not fetch contracts: ${error}`;
@@ -138,7 +143,6 @@ module.exports = class contractService {
       return `Could not fetch contract for PDF: ${error}`;
     }
   }
-
   // Perform bulk update operations on contracts based on a query
   static async allUpdate(query) {
     try {
@@ -148,4 +152,5 @@ module.exports = class contractService {
       return `Could not update contracts: ${error}`;
     }
   }
+
 };

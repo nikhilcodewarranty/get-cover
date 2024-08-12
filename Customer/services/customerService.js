@@ -15,7 +15,7 @@ module.exports = class customerService {
   static async getCustomersCount(query) {
     try {
       const allCustomers = await customer.find(query).sort({ 'unique_key': -1 });
-      return allCustomers.sort((a, b) => b.unique_key - a.unique_key);
+      return allCustomers.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       return `Could not fetch customer count ${error}`;
     }
@@ -40,7 +40,6 @@ module.exports = class customerService {
       return `Could not find customer ${error}`;
     }
   }
-
   // Get customer by id 
   static async getCustomerById(customerId) {
     try {
@@ -50,7 +49,6 @@ module.exports = class customerService {
       return `Could not find the customer. ${error}`;
     }
   }
-
   // Get customer information with its related information  
   static async getCustomerByAggregate(query) {
     try {
@@ -60,11 +58,11 @@ module.exports = class customerService {
       return `Could not find the customer. ${error}`;
     }
   }
-
   // Update customer 
   static async updateCustomer(criteria, data, option) {
     try {
       const updatedResponse = await customer.updateOne(criteria, data, option);
+
       return updatedResponse;
     } catch (error) {
       return `Could not update customer ${error}`;
@@ -80,5 +78,4 @@ module.exports = class customerService {
       return `Could not update dealer ${error}`;
     }
   }
-
 };

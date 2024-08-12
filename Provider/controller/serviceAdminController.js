@@ -498,7 +498,7 @@ exports.getServicer = async (req, res) => {
       } else {
         return servicerData.toObject();
       }
-    });
+    }); 
 
     const nameRegex = new RegExp(data.name ? data.name.replace(/\s+/g, ' ').trim() : '', 'i')
     const emailRegex = new RegExp(data.email ? data.email.replace(/\s+/g, ' ').trim() : '', 'i')
@@ -614,14 +614,13 @@ exports.rejectServicer = async (req, res) => {
       websiteSetting: settingData[0],
       senderName: getServicer.name,
       content: "Dear " + getServicer.name + ",\n\nWe regret to inform you that your registration as an authorized dealer has been rejected by our admin team. If you have any questions or require further assistance, please feel free to contact us.\n\nBest regards,\nAdmin Team",
-
       subject: "Rejection Account"
     }
     // Send Email code here
     let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
     res.send({
       code: constant.successCode,
-      message: "Deleted"
+      message: "Deleted Successfully!"
     })
 
   } catch (err) {

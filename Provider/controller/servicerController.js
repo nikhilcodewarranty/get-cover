@@ -727,10 +727,18 @@ exports.claimReportinDropdown = async (req, res) => {
         let dealerIds = filteredData.map(ID => ID.dealerData._id)
         let getDealerBooks = await dealerPriceService.findAllDealerPrice({ dealerId: { $in: dealerIds } })
         let priceBookIds = getDealerBooks.map(ID => ID.priceBook)
-        let getDealers = filteredData
+        filteredData = {
+            dealers: filteredData.map(dealer => {
+                return {
+                    _id: dealer.dealerData._id,
+                    name: dealer.dealerData.name
+                };
+            })
+        };
+        let getDealers = filteredData.dealers
         let getServicer = await providerService.getAllServiceProvider({ accountStatus: "Approved", dealerId: null, resellerId: null })
-        let getPriceBooks = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } }, { _id: 0, name: 1, pName: 1, coverageType: 1 })
-        let cateId = getPriceBooks.map(ID => ID._id)
+        let getPriceBooks = await priceBookService.getAllPriceIds({ _id: { $in: priceBookIds } }, { _id: 1, name: 1, pName: 1, coverageType: 1, category: 1 })
+        let cateId = getPriceBooks.map(ID => ID.category)
         let getCategories = await priceBookService.getAllPriceCat({ _id: { $in: cateId } }, { name: 1, _id: 1 })
         result = {
             dealers: getDealers,
@@ -797,7 +805,7 @@ exports.claimReportinDropdown = async (req, res) => {
         })
     }
 };
- 
+
 //get dashboard data for graph
 exports.getDashboardGraph = async (req, res) => {
     try {
@@ -974,7 +982,7 @@ exports.getDashboardGraph = async (req, res) => {
         })
     }
 };
- 
+
 //get dashboard info
 exports.getDashboardInfo = async (req, res) => {
 

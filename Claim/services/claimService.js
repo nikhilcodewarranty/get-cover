@@ -3,7 +3,7 @@ const comments = require("../model/comments");
 
 module.exports = class claimService {
 
-  // Fetch all messages based on a query
+   // Fetch all messages based on a query
   static async getAllMessages(query) {
     try {
       const allMessages = await comments.aggregate(query);
@@ -123,7 +123,7 @@ module.exports = class claimService {
     }
   }
 
-  // Get all claims with aggregation based on a query
+  // not using
   static async getAllClaims(query) {
     try {
       const allClaims = await claim.aggregate(query);

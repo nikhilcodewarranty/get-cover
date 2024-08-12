@@ -15,12 +15,11 @@ module.exports = class providerService {
   static async getServicerCount() {
     try {
       const count = await serviceProvider.find().sort({ "unique_key": -1 });
-      return count.sort((a, b) => b.unique_key - a.unique_key);
+      return count.sort((a, b) => b.unique_key - a.unique_key);;
     } catch (error) {
       return `Could not fetch servicer count: ${error}`;
     }
   }
-
   // Get top five service providers based on a query
   static async getTopFiveServicer(query) {
     try {
@@ -29,8 +28,8 @@ module.exports = class providerService {
     } catch (error) {
       return `Could not find servicer: ${error}`;
     }
-  }
 
+  }
   // Create a new service provider
   static async createServiceProvider(data) {
     try {
@@ -44,7 +43,7 @@ module.exports = class providerService {
   // Get aggregated data of service providers based on a query
   static async getAggregateServicer(query) {
     try {
-      const response = await serviceProvider.aggregate(query);
+      const response = await serviceProvider.aggregate(query)
       return response;
     } catch (error) {
       return `Could not fetch aggregate servicer: ${error}`;
@@ -60,7 +59,6 @@ module.exports = class providerService {
       return `Could not fetch servicer: ${error}`;
     }
   }
-
   // Update a service provider based on criteria and new data
   static async updateServiceProvider(criteria, data) {
     try {
@@ -70,8 +68,10 @@ module.exports = class providerService {
       return `Could not update service provider: ${error}`;
     }
   }
+
   // Register a new service provider
   static async registerServiceProvider(data) {
+
     try {
       const response = await new serviceProvider(data).save();
       return response;
@@ -83,7 +83,11 @@ module.exports = class providerService {
   // Update the status of a service provider based on criteria and new values
   static async statusUpdate(criteria, newValue, option) {
     try {
-      const updatedResult = await serviceProvider.findByIdAndUpdate(criteria, newValue, option);
+      const updatedResult = await serviceProvider.findByIdAndUpdate(
+        criteria,
+        newValue,
+        option
+      );
       return updatedResult;
     } catch (error) {
       return `Could not update status: ${error}`;
@@ -99,7 +103,6 @@ module.exports = class providerService {
       return `Could not find servicer: ${error}`;
     }
   }
-
   // Delete a service provider by query
   static async deleteServicer(query) {
     try {
@@ -109,4 +112,5 @@ module.exports = class providerService {
       return `Could not delete servicer: ${error}`;
     }
   }
+
 };

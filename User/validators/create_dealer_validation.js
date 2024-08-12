@@ -15,7 +15,6 @@ const create_dealer_validation = Joi.object({
         wholesalePrice: Joi.number().required(),
     }).unknown(true)).unique((a, b) => a.priceBookId === b.priceBookId).message("Each dealer's price must be unique."),
 
-
     name: Joi.string().trim().required(),
     street: Joi.string().trim().required(), 
     city: Joi.string().trim().required(),

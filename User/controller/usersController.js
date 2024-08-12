@@ -20,7 +20,7 @@ const setting = require("../model/setting");
 const constant = require('../../config/constant');
 const emailConstant = require('../../config/emailConstant');
 const multer = require('multer');
-const path = require('path');
+const path = require('path'); 
 // Promisify fs.createReadStream for asynchronous file reading
 const logs = require('../../User/model/logs');
 const customerService = require("../../Customer/services/customerService");
@@ -517,7 +517,7 @@ exports.updateUserData = async (req, res) => {
 
     IDs.push(getPrimary._id)
     let notificationData = {
-      title: checkRole.role + " " + "user has been change",
+      title: checkRole.role + " " + "user change",
       description: "The  user has been changed!",
       userId: req.teammateId,
       flag: checkRole.role,
@@ -729,7 +729,7 @@ exports.resetPassword = async (req, res) => {
         message: "Link has been expired"
       })
       return;
-    };
+    }; 
     let hash = await bcrypt.hashSync(data.password, 10);
     let newValues = {
       $set: {
