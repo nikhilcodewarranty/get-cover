@@ -1134,12 +1134,8 @@ exports.getPriceBookByCategoryId = async (req, res) => {
     })
   }
 }
-<<<<<<< HEAD
-//
-=======
 
 // get category bu price book name
->>>>>>> 668780a1ff9921ea5d932a0d933b402283dcc38a
 exports.getCategoryByPriceBook = async (req, res) => {
   try {
     let data = req.body

@@ -224,6 +224,11 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let emailData = {
         senderName: admin.firstName,
+        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
+        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
+        address: settingData[0]?.address,
+        title: settingData[0]?.title,
+        websiteSetting: settingData[0],
         content: "We are delighted to inform you that the servicer account for " + checkDetail.name + " has been created.",
         subject: "Servicer Account Approved - " + checkDetail.name
       }
@@ -232,18 +237,7 @@ exports.createServiceProvider = async (req, res, next) => {
 
       let primaryEmail = teamMembers[0].email
       let settingData = await userService.getSetting({});
-      let emailData = {
-        darkLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoDark.fileName,
-        lightLogo: process.env.API_ENDPOINT + "uploads/logo/" + settingData[0]?.logoLight.fileName,
-        address: settingData[0]?.address,
-        websiteSetting: settingData[0],
-        senderName: teamMembers[0]?.firstName,
-        content: "Dear " + teamMembers[0]?.firstName + " we are delighted to inform you that your registration as an authorized servicer " + updateServicer.name + " has been approved",
-        subject: "Welcome to " + settingData[0]?.title + " servicer Registration Approved"
-      }
 
-      // Send Email code here
-      let mailing = sgMail.send(emailConstant.sendEmailTemplate(primaryEmail, notificationEmails, emailData))
       let primaryCode = randtoken.generate(4, '123456789')
       let updatePrimaryCode = await userService.updateSingleUser({ email: primaryEmail }, { resetPasswordCode: primaryCode, status: data.status ? true : false }, { new: true });
       let updatePrimaryLInk = `${process.env.SITE_URL}newPassword/${updatePrimaryCode._id}/${primaryCode}`
