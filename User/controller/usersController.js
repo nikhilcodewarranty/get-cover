@@ -710,7 +710,7 @@ exports.resetPassword = async (req, res) => {
         message: "Link has been expired"
       })
       return;
-    };
+    }; 
     let hash = await bcrypt.hashSync(data.password, 10);
     let newValues = {
       $set: {
