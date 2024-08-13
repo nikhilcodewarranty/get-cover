@@ -160,7 +160,6 @@ exports.checkFileValidation = async (req, res) => {
                         };
                     });
 
-
                     const serialNumberArray = totalDataComing1.map((item) => {
                         const keys = Object.keys(item);
                         return {
@@ -213,20 +212,19 @@ exports.checkFileValidation = async (req, res) => {
                         });
                         return;
                     }
-                }
 
+                    res.send({
+                        code: constant.successCode,
+                        message: "Verified",
+                        orderFile: {
+                            fileName: csvName,
+                            name: originalName,
+                            size: size,
+                        },
+                    });
+                }
             })
 
-
-            res.send({
-                code: constant.successCode,
-                message: "Verified",
-                orderFile: {
-                    fileName: csvName,
-                    name: originalName,
-                    size: size,
-                },
-            });
         });
     } catch (err) {
         res.send({
