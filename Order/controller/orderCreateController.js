@@ -34,8 +34,8 @@ const multerS3 = require('multer-s3');
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
-  });
-  const S3Bucket = new aws.S3();
+});
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
@@ -66,7 +66,7 @@ const Storage = multerS3({
     key: (req, file, cb) => {
         const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
         const fullPath = `${folderName}/${fileName}`;
-        console.log("fullPath----------------",fullPath)
+        console.log("fullPath----------------", fullPath)
         cb(null, fullPath);
     }
 });
@@ -92,7 +92,7 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("file--------------------",file)
+            console.log("file--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -108,117 +108,115 @@ exports.checkFileValidation = async (req, res) => {
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
                     // Extract the data from the first sheet
                     const sheetName = wb.SheetNames[0];
-                     ws = wb.Sheets[sheetName];
+                    ws = wb.Sheets[sheetName];
                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    console.log("sfsdfsdsfsdfsdfsd--------------------",totalDataComing1)
+                    const headers = [];
+                    for (let cell in ws) {
+                        // Check if the cell is in the first row and has a non-empty value
+                        if (
+                            /^[A-Z]1$/.test(cell) &&
+                            ws[cell].v !== undefined &&
+                            ws[cell].v !== null &&
+                            ws[cell].v.trim() !== ""
+                        ) {
+                            headers.push(ws[cell].v);
+                        }
+                    }
+
+                    if (headers.length !== 8) {
+                        // fs.unlink('../../uploads/orderFile/' + req.file.filename)
+                        res.send({
+                            code: constant.successCode,
+                            message:
+                                "Invalid file format detected. The sheet should contain exactly eight columns.",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: file.size,
+                            },
+                        });
+                        return;
+                    }
+
+                    const isValidLength = totalDataComing1.every(
+                        (obj) => Object.keys(obj).length === 5
+                    );
+                    if (!isValidLength) {
+                        res.send({
+                            code: constant.successCode,
+                            message: "Invalid fields value",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: size,
+                            },
+                        });
+                        return;
+                    }
+                    const totalDataComing = totalDataComing1.map((item) => {
+                        const keys = Object.keys(item);
+                        return {
+                            retailValue: item[keys[4]],
+                        };
+                    });
+
+
+                    const serialNumberArray = totalDataComing1.map((item) => {
+                        const keys = Object.keys(item);
+                        return {
+                            serial: item[keys[2]].toString().toLowerCase(),
+                        };
+                    });
+
+                    const serialNumbers = serialNumberArray.map(number => number.serial);
+                    const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
+
+                    if (duplicateSerials.length > 0) {
+                        res.send({
+                            code: constant.successCode,
+                            message: "Serial numbers are not unique for this product",
+                            orderFile: {
+                                fileName: csvName,
+                                name: originalName,
+                                size: size,
+                            },
+                        })
+                        return
+                    }
+
+                    // Check retail price is in between rangeStart and rangeEnd
+                    const isValidRetailPrice = totalDataComing.map((obj) => {
+                        // Check if 'noOfProducts' matches the length of 'data'
+                        if (
+                            obj.retailValue < Number(data.rangeStart) ||
+                            obj.retailValue > Number(data.rangeEnd)
+                        ) {
+                            message.push({
+                                code: constant.successCode,
+                                retailPrice: obj.retailValue,
+                                message: "Invalid Retail Price!",
+                                fileName: csvName,
+                                name: originalName,
+                                orderFile: {
+                                    fileName: csvName,
+                                    name: originalName,
+                                    size: size,
+                                },
+                            });
+                        }
+                    });
+
+                    if (message.length > 0) {
+                        res.send({
+                            data: message,
+
+                        });
+                        return;
+                    }
                 }
 
             })
-            console.log("totalDataComing1--------------------",totalDataComing1)
 
-            const headers = []; 
-            for (let cell in ws) {
-                // Check if the cell is in the first row and has a non-empty value
-                if (
-                    /^[A-Z]1$/.test(cell) &&
-                    ws[cell].v !== undefined &&
-                    ws[cell].v !== null &&
-                    ws[cell].v.trim() !== ""
-                ) {
-                    headers.push(ws[cell].v);
-                }
-            }
-
-            if (headers.length !== 8) {
-                // fs.unlink('../../uploads/orderFile/' + req.file.filename)
-                res.send({
-                    code: constant.successCode,
-                    message:
-                        "Invalid file format detected. The sheet should contain exactly eight columns.",
-                    orderFile: {
-                        fileName: csvName,
-                        name: originalName,
-                        size: file.size,
-                    },
-                });
-                return;
-            }
-
-            const isValidLength = totalDataComing1.every(
-                (obj) => Object.keys(obj).length === 5
-            );
-            if (!isValidLength) {
-                res.send({
-                    code: constant.successCode,
-                    message: "Invalid fields value",
-                    orderFile: {
-                        fileName: csvName,
-                        name: originalName,
-                        size: size,
-                    },
-                });
-                return;
-            }
-            const totalDataComing = totalDataComing1.map((item) => {
-                const keys = Object.keys(item);
-                return {
-                    retailValue: item[keys[4]],
-                };
-            });
-
-
-            const serialNumberArray = totalDataComing1.map((item) => {
-                const keys = Object.keys(item);
-                return {
-                    serial: item[keys[2]].toString().toLowerCase(),
-                };
-            });
-
-            const serialNumbers = serialNumberArray.map(number => number.serial);
-            const duplicateSerials = serialNumbers.filter((serial, index) => serialNumbers.indexOf(serial) !== index);
-
-            if (duplicateSerials.length > 0) {
-                res.send({
-                    code: constant.successCode,
-                    message: "Serial numbers are not unique for this product",
-                    orderFile: {
-                        fileName: csvName,
-                        name: originalName,
-                        size: size,
-                    },
-                })
-                return
-            }
-
-            // Check retail price is in between rangeStart and rangeEnd
-            const isValidRetailPrice = totalDataComing.map((obj) => {
-                // Check if 'noOfProducts' matches the length of 'data'
-                if (
-                    obj.retailValue < Number(data.rangeStart) ||
-                    obj.retailValue > Number(data.rangeEnd)
-                ) {
-                    message.push({
-                        code: constant.successCode,
-                        retailPrice: obj.retailValue,
-                        message: "Invalid Retail Price!",
-                        fileName: csvName,
-                        name: originalName,
-                        orderFile: {
-                            fileName: csvName,
-                            name: originalName,
-                            size: size,
-                        },
-                    });
-                }
-            });
-
-            if (message.length > 0) {
-                res.send({
-                    data: message,
-
-                });
-                return;
-            }
 
             res.send({
                 code: constant.successCode,
