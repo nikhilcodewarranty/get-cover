@@ -270,8 +270,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    const bucketReadUrl = productsWithFiles[j].products.file
-              
+                    const bucketReadUrl = productsWithFiles[j].products.file              
                     // Await the getObjectFromS3 function to complete
                     const result = await getObjectFromS3(bucketReadUrl);
               
@@ -291,12 +290,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     });
                   }
               
-                  // Log after all operations are completed
-                  console.log('allHeaders1---------------------', allHeaders);
-                  console.log('allDataComing2---------------------', allDataComing);
-              
-                console.log("allheade22r---------------------",allHeaders)
-                console.log("22---------------------",allDataComing)
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
