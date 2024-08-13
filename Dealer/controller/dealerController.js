@@ -130,22 +130,22 @@ exports.uploadTermAndCondition = async (req, res, next) => {
       }
       let file = req.file;
       //constant params
-      const constantParams = {
-        Bucket: process.env.bucket_name
-      }
-      const downloadParams = {
-        Delimiter: '/',
-        ...constantParams,
-        Prefix: file.key
-      };
-      S3Bucket.listObjects(downloadParams, function (err, data) {
-        if (err) throw err;
-        console.log(data);
-      });
+      // const constantParams = {
+      //   Bucket: process.env.bucket_name
+      // }
+      // const downloadParams = {
+      //   Delimiter: '/',
+      //   ...constantParams,
+      //   Prefix: file.key
+      // };
+      // S3Bucket.listObjects(downloadParams, function (err, data) {
+      //   if (err) throw err;
+      //   console.log(data);
+      // });
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        
+        file
       })
     })
   }
