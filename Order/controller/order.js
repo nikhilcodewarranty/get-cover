@@ -1284,6 +1284,7 @@ exports.getSingleOrder = async (req, res) => {
             code: constant.successCode,
             message: "Success!",
             result: checkOrder,
+            location: `https://${process.env.bucket_name}.s3.us-east-1.amazonaws.com/${checkOrder.orderFile.fileName}`,
             orderUserData: userData,
             servicers: result_Array
         });
@@ -1390,11 +1391,11 @@ exports.markAsPaid = async (req, res) => {
             pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
             pricebookDetail.push(pricebookDetailObject)
             dealerBookDetail.push(dealerPriceBookObject)
-            const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+            const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
             // Await the getObjectFromS3 function to complete
             const result = await getObjectFromS3(bucketReadUrl);
 
-            const totalDataComing1 =result.data;
+            const totalDataComing1 = result.data;
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
