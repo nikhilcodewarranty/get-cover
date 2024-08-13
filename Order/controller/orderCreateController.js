@@ -1169,22 +1169,22 @@ exports.editFileCase = async (req, res) => {
                 console.log("productsWithFiles-----------------------------",productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
-                        const bucketReadUrl = productsWithFiles[j].products.file
+                        const bucketReadUrl = productsWithFiles[j].file
                         // Await the getObjectFromS3 function to complete
                         const result = await getObjectFromS3(bucketReadUrl);
                    
                         allDataComing.push({
                             key: productsWithFiles[j].products.key,
-                            checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
-                            noOfProducts: productsWithFiles[j].products.noOfProducts,
-                            priceType: productsWithFiles[j].products.priceType,
-                            rangeStart: productsWithFiles[j].products.rangeStart,
-                            rangeEnd: productsWithFiles[j].products.rangeEnd,
+                            checkNumberProducts: productsWithFiles[j].checkNumberProducts,
+                            noOfProducts: productsWithFiles[j].noOfProducts,
+                            priceType: productsWithFiles[j].priceType,
+                            rangeStart: productsWithFiles[j].rangeStart,
+                            rangeEnd: productsWithFiles[j].rangeEnd,
                             data: result.data,
                           });
                     
                           allHeaders.push({
-                            key: productsWithFiles[j].products.key,
+                            key: productsWithFiles[j].key,
                             headers: result.headers,
                           });
                     }
