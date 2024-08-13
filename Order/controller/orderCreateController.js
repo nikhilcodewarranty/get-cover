@@ -1174,7 +1174,7 @@ exports.editFileCase = async (req, res) => {
                         const result = await getObjectFromS3(bucketReadUrl);
                    
                         allDataComing.push({
-                            key: productsWithFiles[j].products.key,
+                            key: productsWithFiles[j].key,
                             checkNumberProducts: productsWithFiles[j].checkNumberProducts,
                             noOfProducts: productsWithFiles[j].noOfProducts,
                             priceType: productsWithFiles[j].priceType,
