@@ -321,6 +321,10 @@ exports.checkMultipleFileValidation = async (req, res) => {
                                     headers: headers,
                                 });
 
+
+                                console.log("allDataComing2---------------------------",allDataComing)
+                                console.log("allHeaders2---------------------------",allHeaders)
+
                             }
 
                         })
