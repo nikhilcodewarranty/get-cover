@@ -6,6 +6,7 @@ const validator = require('../config/validation'); // Import the verifyToken mid
 
 //POST Routes
 router.post("/customer", [verifyToken], customerController.getAllCustomers); //  getAllCustomers route
+router.post("/customer", [verifyToken], customerController.getAllCustomers); //  getAllCustomers route
 router.post("/getDealerCustomers/:dealerId", [verifyToken], customerController.getDealerCustomers); // getDealerCustomers route
 router.post("/getResellerCustomers/:resellerId", [verifyToken], customerController.getResellerCustomers); //getResellerCustomers route
 router.post('/getCustomerUsers/:customerId', [verifyToken], customerController.getCustomerUsers); //getCustomerUsers route

@@ -1847,5 +1847,23 @@ exports.customerClaims = async (req, res) => {
 }
 
 
+exports.addCustomerNew = async(req,res)=>{
+  try{
+    let data = req.body
+    let checkEmail = await customerService.getCustomerByName({email:data.email})
+    if(!checkEmail){
+
+    }else{
+      
+    }
+  }catch(err){
+    res.send({
+      code:constant.errorCode,
+      message:err.message
+    })
+  }
+}
+
+
 
 
