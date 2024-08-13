@@ -92,7 +92,6 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            console.log("file--------------------", file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
@@ -240,6 +239,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
+            console.log("data------------------------",data.productsArray)
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
