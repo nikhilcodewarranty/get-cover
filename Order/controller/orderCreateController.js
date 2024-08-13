@@ -110,7 +110,7 @@ exports.checkFileValidation = async (req, res) => {
                     const sheetName = wb.SheetNames[0];
                      ws = wb.Sheets[sheetName];
                     totalDataComing1 = XLSX.utils.sheet_to_json(ws);
-                    console.log("totalDataComing1--------------------",totalDataComing1)
+                    console.log("sfsdfsdsfsdfsdfsd--------------------",totalDataComing1)
                 }
 
             })
