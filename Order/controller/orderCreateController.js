@@ -270,70 +270,33 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    if (productsWithFiles[j].products.file != undefined) {
-                        let bucketReadUrl = productsWithFiles[j].products.file;
-                        const readOpts = { // <--- need these settings in readFile options
-                            //cellText:false, 
-                            cellDates: true
-                        };
-
-                        var jsonOpts = {
-                            //header: 1,
-                            defval: '',
-                            // blankrows: true,
-                            raw: false,
-                            dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
-                        }
-                        //S3 Bucket code
-                        S3Bucket.getObject(bucketReadUrl, function (err, data) {
-                            if (err) {
-                                console.log(err);
-                            } else {
-                                // Parse the buffer as an Excel file
-                                const wb = XLSX.read(data.Body, { type: 'buffer' }, readOpts);
-                                // Extract the data from the first sheet
-                                const sheetName = wb.SheetNames[0];
-                                const sheet = wb.Sheets[sheetName];
-                                for (let cell in sheet) {
-                                    // Check if the cell is in the first row and has a non-empty value
-                                    if (
-                                        /^[A-Z]1$/.test(cell) &&
-                                        sheet[cell].v !== undefined &&
-                                        sheet[cell].v !== null &&
-                                        sheet[cell].v.trim() !== ""
-                                    ) {
-                                        headers.push(sheet[cell].v);
-                                    }
-                                }
-
-                                allDataComing.push({
-                                    key: productsWithFiles[j].products.key,
-                                    checkNumberProducts:
-                                        productsWithFiles[j].products.checkNumberProducts,
-                                    noOfProducts: productsWithFiles[j].products.noOfProducts,
-                                    priceType: productsWithFiles[j].products.priceType,
-                                    rangeStart: productsWithFiles[j].products.rangeStart,
-                                    rangeEnd: productsWithFiles[j].products.rangeEnd,
-                                    data: XLSX.utils.sheet_to_json(sheet, jsonOpts),
-                                });
-                                allHeaders.push({
-                                    key: productsWithFiles[j].products.key,
-                                    headers: headers,
-                                });
-
-
-                                console.log("allDataComing2---------------------------",allDataComing)
-                                console.log("allHeaders2---------------------------",allHeaders)
-
-                            }
-
-                        })
-
-                    }
-                }
-
-                console.log("allheader---------------------",allHeaders)
-                console.log("allDataComing---------------------",allDataComing)
+                    const bucketReadUrl = productsWithFiles[j].products.file
+              
+                    // Await the getObjectFromS3 function to complete
+                    const result = await getObjectFromS3(bucketReadUrl);
+              
+                    allDataComing.push({
+                      key: productsWithFiles[j].products.key,
+                      checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                      noOfProducts: productsWithFiles[j].products.noOfProducts,
+                      priceType: productsWithFiles[j].products.priceType,
+                      rangeStart: productsWithFiles[j].products.rangeStart,
+                      rangeEnd: productsWithFiles[j].products.rangeEnd,
+                      data: result.data,
+                    });
+              
+                    allHeaders.push({
+                      key: productsWithFiles[j].products.key,
+                      headers: result.headers,
+                    });
+                  }
+              
+                  // Log after all operations are completed
+                  console.log('allHeaders1---------------------', allHeaders);
+                  console.log('allDataComing2---------------------', allDataComing);
+              
+                console.log("allheade22r---------------------",allHeaders)
+                console.log("22---------------------",allDataComing)
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
@@ -584,6 +547,40 @@ exports.checkMultipleFileValidation = async (req, res) => {
     }
 };
 
+
+const getObjectFromS3 = (bucketReadUrl) => {
+    return new Promise((resolve, reject) => {
+      S3Bucket.getObject(bucketReadUrl, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          const wb = XLSX.read(data.Body, { type: 'buffer' });
+          const sheetName = wb.SheetNames[0];
+          const sheet = wb.Sheets[sheetName];
+          let headers = [];
+  
+          for (let cell in sheet) {
+            if (
+              /^[A-Z]1$/.test(cell) &&
+              sheet[cell].v !== undefined &&
+              sheet[cell].v !== null &&
+              sheet[cell].v.trim() !== ""
+            ) {
+              headers.push(sheet[cell].v);
+            }
+          }
+  
+          const result = {
+            headers: headers,
+            data: XLSX.utils.sheet_to_json(sheet),
+          };
+  
+          resolve(result);
+        }
+      });
+    });
+  };
+  
 // Create Order
 exports.createOrder1 = async (req, res) => {
     try {
