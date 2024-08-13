@@ -108,7 +108,7 @@ exports.checkFileValidation = async (req, res) => {
                     // Extract the data from the first sheet
                     const sheetName = wb.SheetNames[0];
                      ws = wb.Sheets[sheetName];
-                    totalDataComing1 = XLSX.utils.sheet_to_json(worksheet);
+                    totalDataComing1 = XLSX.utils.sheet_to_json(ws);
                 }
 
             })
