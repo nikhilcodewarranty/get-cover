@@ -313,7 +313,7 @@ exports.addClaim = async (req, res, next) => {
 
     if (checkContract.status != 'Active') {
       res.send({
-        code: constant.errorCode,
+        code: constant.errorCode, 
         message: 'The contract is not active!'
       });
       return;
@@ -1977,7 +1977,7 @@ exports.sendMessages = async (req, res) => {
 
       res.send({
         code: constant.errorCode,
-        message: 'Unable to send message!'
+        message: 'Unable to send message!' 
       });
       return;
     }
