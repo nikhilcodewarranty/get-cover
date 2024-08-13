@@ -34,8 +34,8 @@ const multerS3 = require('multer-s3');
 aws.config.update({
     accessKeyId: process.env.aws_access_key_id,
     secretAccessKey: process.env.aws_secret_access_key,
-});
-const S3Bucket = new aws.S3();
+  });
+  const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
@@ -91,10 +91,12 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
+            console.log("file--------------------",file)
             let csvName = file.key;
             let originalName = file.originalname;
             let size = file.size;
             let totalDataComing1 = [];
+            let ws;
             //S3 Bucket Read Code
             var params = { Bucket: process.env.bucket_name, Key: file.key };
             S3Bucket.getObject(params, function (err, data) {
@@ -105,11 +107,13 @@ exports.checkFileValidation = async (req, res) => {
                     const wb = XLSX.read(data.Body, { type: 'buffer' });
                     // Extract the data from the first sheet
                     const sheetName = wb.SheetNames[0];
-                    const worksheet = wb.Sheets[sheetName];
+                     ws = wb.Sheets[sheetName];
                     totalDataComing1 = XLSX.utils.sheet_to_json(worksheet);
                 }
 
             })
+            console.log("totalDataComing1--------------------",totalDataComing1)
+
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
@@ -231,6 +235,7 @@ exports.checkFileValidation = async (req, res) => {
         });
     }
 };
+
 
 //checking uploaded file is valid
 exports.checkMultipleFileValidation = async (req, res) => {

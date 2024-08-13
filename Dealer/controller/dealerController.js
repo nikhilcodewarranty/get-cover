@@ -151,7 +151,6 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         } else {
           // Parse the buffer as an Excel file
           const workbook = XLSX.read(data.Body, { type: 'buffer' });
-
           // Extract the data from the first sheet
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
