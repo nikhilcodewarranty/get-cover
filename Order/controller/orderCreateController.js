@@ -239,7 +239,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-            console.log("data------------------------",data.productsArray)
+            console.log("data------------------------", data.productsArray)
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
@@ -247,7 +247,7 @@ exports.checkMultipleFileValidation = async (req, res) => {
                     if (data1.fileValue == 'true') {
                         let checkFile = JSON.parse(data1.orderFile)
                         // Check if data1.file is not blank
-                        file1 = process.env.LOCAL_FILE_PATH + "/" + checkFile.fileName;
+                        file1 = { Bucket: process.env.bucket_name, Key: checkFile.fileName };
                         fileIndex++;
                     }
                     return {
@@ -267,9 +267,11 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 let allDataComing = [];
                 let message = [];
                 let finalRetailValue = [];
+                const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].products.file != undefined) {
+                        let bucketReadUrl = productsWithFiles[j].products.file;
                         const readOpts = { // <--- need these settings in readFile options
                             //cellText:false, 
                             cellDates: true
@@ -282,38 +284,52 @@ exports.checkMultipleFileValidation = async (req, res) => {
                             raw: false,
                             dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                         }
-                        const wb = XLSX.readFile(productsWithFiles[j].products.file, readOpts);
-                        const sheets = wb.SheetNames;
-                        const sheet = wb.Sheets[sheets[0]];
-                        const headers = [];
-                        for (let cell in sheet) {
-                            // Check if the cell is in the first row and has a non-empty value
-                            if (
-                                /^[A-Z]1$/.test(cell) &&
-                                sheet[cell].v !== undefined &&
-                                sheet[cell].v !== null &&
-                                sheet[cell].v.trim() !== ""
-                            ) {
-                                headers.push(sheet[cell].v);
+                        //S3 Bucket code
+                        S3Bucket.getObject(bucketReadUrl, function (err, data) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                // Parse the buffer as an Excel file
+                                const wb = XLSX.read(data.Body, { type: 'buffer' }, readOpts);
+                                // Extract the data from the first sheet
+                                const sheetName = wb.SheetNames[0];
+                                const sheet = wb.Sheets[sheetName];
+                                for (let cell in sheet) {
+                                    // Check if the cell is in the first row and has a non-empty value
+                                    if (
+                                        /^[A-Z]1$/.test(cell) &&
+                                        sheet[cell].v !== undefined &&
+                                        sheet[cell].v !== null &&
+                                        sheet[cell].v.trim() !== ""
+                                    ) {
+                                        headers.push(sheet[cell].v);
+                                    }
+                                }
+
+                                allDataComing.push({
+                                    key: productsWithFiles[j].products.key,
+                                    checkNumberProducts:
+                                        productsWithFiles[j].products.checkNumberProducts,
+                                    noOfProducts: productsWithFiles[j].products.noOfProducts,
+                                    priceType: productsWithFiles[j].products.priceType,
+                                    rangeStart: productsWithFiles[j].products.rangeStart,
+                                    rangeEnd: productsWithFiles[j].products.rangeEnd,
+                                    data: XLSX.utils.sheet_to_json(sheet, jsonOpts),
+                                });
+                                allHeaders.push({
+                                    key: productsWithFiles[j].products.key,
+                                    headers: headers,
+                                });
+
                             }
-                        }
-                        allDataComing.push({
-                            key: productsWithFiles[j].products.key,
-                            checkNumberProducts:
-                                productsWithFiles[j].products.checkNumberProducts,
-                            noOfProducts: productsWithFiles[j].products.noOfProducts,
-                            priceType: productsWithFiles[j].products.priceType,
-                            rangeStart: productsWithFiles[j].products.rangeStart,
-                            rangeEnd: productsWithFiles[j].products.rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], jsonOpts),
-                        });
-                        allHeaders.push({
-                            key: productsWithFiles[j].products.key,
-                            headers: headers,
-                        });
+
+                        })
+
                     }
                 }
 
+                console.log("allheader---------------------",allHeaders)
+                console.log("allDataComing---------------------",allDataComing)
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
