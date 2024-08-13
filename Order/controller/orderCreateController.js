@@ -1068,6 +1068,9 @@ exports.createOrder1 = async (req, res) => {
                     dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                // Await the getObjectFromS3 function to complete
+                const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
@@ -1078,10 +1081,8 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-                const wb = XLSX.readFile(pathFile, readOpts);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
+           
+                const totalDataComing1 = result.data
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
@@ -1976,7 +1977,6 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)                
                 const totalDataComing1 = result.data;
-                console.log("totalDataComing1------------------------",totalDataComing1);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
