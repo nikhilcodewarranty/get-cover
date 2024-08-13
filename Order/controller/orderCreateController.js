@@ -1134,7 +1134,7 @@ exports.editFileCase = async (req, res) => {
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (Object.keys(data.productsArray[i]?.orderFile).length > 0 && data.productsArray[i]?.orderFile.fileName != '') {
-                    let fileName = { Bucket: process.env.bucket_name, Key: checkFile.fileName };
+                    let fileName = { Bucket: process.env.bucket_name, Key: data.productsArray[i]?.orderFile.fileName };
                     const readOpts = { // <--- need these settings in readFile options
                         //cellText:false, 
                         cellDates: true
