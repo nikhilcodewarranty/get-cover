@@ -405,10 +405,10 @@ exports.addClaim = async (req, res, next) => {
 
     //Send notification to all
     let IDs = await supportingFunction.getUserIds()
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: data?.servicerId, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: data?.servicerId, isPrimary: true })
 
     if (resellerPrimary) {
       IDs.push(resellerPrimary._id)
@@ -544,7 +544,7 @@ exports.editClaim = async (req, res) => {
       }
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
       if (servicerPrimary) {
         IDs.push(servicerPrimary._id)
@@ -765,10 +765,10 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -844,10 +844,10 @@ exports.editClaimStatus = async (req, res) => {
 
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -927,10 +927,10 @@ exports.editClaimStatus = async (req, res) => {
       //Send notification to all
       let IDs = await supportingFunction.getUserIds()
       const admin = await supportingFunction.getPrimaryUser({ roleId: new mongoose.Types.ObjectId("656f0550d0d6e08fc82379dc"), isPrimary: true });
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-      let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-      let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder?.resellerId, isPrimary: true })
-      let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkClaim?.servicerId, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+      let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+      let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder?.resellerId, isPrimary: true })
+      let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkClaim?.servicerId, isPrimary: true })
 
       if (resellerPrimary) {
         IDs.push(resellerPrimary._id)
@@ -1155,7 +1155,7 @@ exports.editServicer = async (req, res) => {
 
     //send notification to admin and dealer 
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.servicerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.servicerId, isPrimary: true })
     if (getPrimary) {
       IDs.push(getPrimary._id)
     }
@@ -1607,7 +1607,7 @@ exports.saveBulkClaim = async (req, res) => {
           const userId = req.userId;
           ccMail = new_admin_array;
           IDs.push(req.teammateId);
-          let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
           toMail = userData.email;
           if (req.userId.toString() === item.orderData?.order?.dealerId?.toString()) {
             // For servicer
@@ -1626,13 +1626,13 @@ exports.saveBulkClaim = async (req, res) => {
             }
 
             //get email of all servicer
-            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
             // If you need to convert existArray.data to a flat array format
             if (emailServicer.length > 0) {
               IDs = IDs.concat(emailServicerId)
               let flatArray = [];
               for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
                 flatArray.push({
                   email: email,
@@ -1664,9 +1664,9 @@ exports.saveBulkClaim = async (req, res) => {
           const reseller = await resellerService.getReseller({ _id: req.userId }, {});
           // Get dealer by id
           const dealer = await dealerService.getDealerById(reseller.dealerId, {});
-          let resellerData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          let resellerData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
           // Get dealer info
-          let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
+          let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
           IDs.push(req.teammateId);
           IDs.push(dealerData._id);
           new_admin_array.push(dealerData.email);
@@ -1689,13 +1689,13 @@ exports.saveBulkClaim = async (req, res) => {
             }
 
             //get email of all servicer
-            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
             // If you need to convert existArray.data to a flat array format
             if (emailServicer.length > 0) {
               IDs = IDs.concat(emailServicerId)
               let flatArray = [];
               for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
                 flatArray.push({
                   email: email,
@@ -1728,16 +1728,16 @@ exports.saveBulkClaim = async (req, res) => {
           if (customer?.resellerId) {
             // Get Reseller by id
             const reseller = await resellerService.getReseller({ _id: customer.resellerId }, {});
-            let resellerData = await userService.getUserById1({ accountId: reseller._id, isPrimary: true }, {});
+            let resellerData = await userService.getUserById1({ metaId: reseller._id, isPrimary: true }, {});
             new_admin_array.push(resellerData.email);
             IDs.push(resellerData._id);
           }
           // Get dealer by customer
           const dealer = await dealerService.getDealerById(customer.dealerId, {});
           // Get dealer info
-          let dealerData = await userService.getUserById1({ accountId: dealer._id, isPrimary: true }, {});
+          let dealerData = await userService.getUserById1({ metaId: dealer._id, isPrimary: true }, {});
           // Get customer user info
-          let userData = await userService.getUserById1({ accountId: userId, isPrimary: true }, {});
+          let userData = await userService.getUserById1({ metaId: userId, isPrimary: true }, {});
           new_admin_array.push(dealerData.email);
           toMail = userData.email;
           ccMail = new_admin_array;
@@ -1760,13 +1760,13 @@ exports.saveBulkClaim = async (req, res) => {
             }
 
             //get email of all servicer
-            const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+            const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
             // If you need to convert existArray.data to a flat array format
             if (emailServicer.length > 0) {
               IDs = IDs.concat(emailServicerId)
               let flatArray = [];
               for (let servicerId in existArray.data) {
-                let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+                let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
                 let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
                 flatArray.push({
                   email: email,
@@ -1809,13 +1809,13 @@ exports.saveBulkClaim = async (req, res) => {
           }
 
           //get email of all servicer
-          const emailServicer = await userService.getMembers({ accountId: { $in: emailServicerId }, isPrimary: true }, {})
+          const emailServicer = await userService.getMembers({ metaId: { $in: emailServicerId }, isPrimary: true }, {})
           // If you need to convert existArray.data to a flat array format
           if (emailServicer.length > 0) {
             IDs = IDs.concat(emailServicerId)
             let flatArray = [];
             for (let servicerId in existArray.data) {
-              let matchData = emailServicer.find(matchServicer => matchServicer.accountId.toString() === servicerId.toString());
+              let matchData = emailServicer.find(matchServicer => matchServicer.metaId.toString() === servicerId.toString());
               let email = matchData ? matchData.email : ''; // Replace servicerId with email if matchData is found
               flatArray.push({
                 email: email,
@@ -1944,19 +1944,19 @@ exports.sendMessages = async (req, res) => {
     emailTo = await supportingFunction.getPrimaryUser({ _id: req.teammateId, isPrimary: true })
     if (data.type == 'Reseller') {
       data.commentedTo = orderData.resellerId
-      emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.resellerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.resellerId, isPrimary: true })
     }
     else if (data.type == 'Dealer') {
       data.commentedTo = orderData.dealerId
-      emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.dealerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.dealerId, isPrimary: true })
     }
     else if (data.type == 'Customer') {
       data.commentedTo = orderData.customerId
-      emailTo = await supportingFunction.getPrimaryUser({ accountId: orderData.customerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaId: orderData.customerId, isPrimary: true })
     }
     else if (data.type == 'Servicer') {
       data.commentedTo = orderData.servicerId
-      emailTo = await supportingFunction.getPrimaryUser({ accountId: checkClaim.servicerId, isPrimary: true })
+      emailTo = await supportingFunction.getPrimaryUser({ metaId: checkClaim.servicerId, isPrimary: true })
     }
 
     let sendMessage = await claimService.addMessage(data)
@@ -1996,10 +1996,10 @@ exports.sendMessages = async (req, res) => {
 
     //Send notification to all
     let IDs = await supportingFunction.getUserIds()
-    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: orderData.dealerId, isPrimary: true })
-    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: orderData.customerId, isPrimary: true })
-    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: orderData?.resellerId, isPrimary: true })
-    let servicerPrimary = await supportingFunction.getPrimaryUser({ accountId: orderData?.servicerId, isPrimary: true })
+    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData.dealerId, isPrimary: true })
+    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData.customerId, isPrimary: true })
+    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData?.resellerId, isPrimary: true })
+    let servicerPrimary = await supportingFunction.getPrimaryUser({ metaId: orderData?.servicerId, isPrimary: true })
 
     if (resellerPrimary) {
       IDs.push(resellerPrimary._id)
