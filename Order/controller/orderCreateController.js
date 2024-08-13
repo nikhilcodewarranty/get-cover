@@ -114,7 +114,7 @@ exports.checkFileValidation = async (req, res) => {
             })
             console.log("totalDataComing1--------------------",totalDataComing1)
 
-            const headers = [];
+            const headers = []; 
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
                 if (
