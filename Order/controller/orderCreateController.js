@@ -1692,6 +1692,7 @@ exports.editOrderDetail = async (req, res) => {
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(dealerPrimary.email, notificationEmails, emailData))
 
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+
             let savedResponse = await orderService.updateOrder(
                 { _id: req.params.orderId },
                 { status: "Active" },
@@ -1724,6 +1725,9 @@ exports.editOrderDetail = async (req, res) => {
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                // Await the getObjectFromS3 function to complete
+                const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;
@@ -1754,11 +1758,9 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)
-                const wb = XLSX.readFile(pathFile, readOpts);
-                const sheets = wb.SheetNames;
-                const ws = wb.Sheets[sheets[0]];
-                const totalDataComing1 = XLSX.utils.sheet_to_json(ws, jsonOpts);
+                dealerBookDetail.push(dealerPriceBookObject)                
+                const totalDataComing1 = result.data;
+                console.log("totalDataComing1------------------------",totalDataComing1);
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
                     return {
