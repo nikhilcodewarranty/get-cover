@@ -239,7 +239,6 @@ exports.checkMultipleFileValidation = async (req, res) => {
     try {
         upload(req, res, async (err) => {
             let data = req.body;
-            console.log("data------------------------", data.productsArray)
             if (data.productsArray.length > 0) {
                 let fileIndex = 0;
                 const productsWithFiles = data.productsArray.map((data1, index) => {
@@ -270,26 +269,26 @@ exports.checkMultipleFileValidation = async (req, res) => {
                 const headers = [];
                 //Collect all header length for all csv
                 for (let j = 0; j < productsWithFiles.length; j++) {
-                    const bucketReadUrl = productsWithFiles[j].products.file              
+                    const bucketReadUrl = productsWithFiles[j].products.file
                     // Await the getObjectFromS3 function to complete
                     const result = await getObjectFromS3(bucketReadUrl);
-              
+
                     allDataComing.push({
-                      key: productsWithFiles[j].products.key,
-                      checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
-                      noOfProducts: productsWithFiles[j].products.noOfProducts,
-                      priceType: productsWithFiles[j].products.priceType,
-                      rangeStart: productsWithFiles[j].products.rangeStart,
-                      rangeEnd: productsWithFiles[j].products.rangeEnd,
-                      data: result.data,
+                        key: productsWithFiles[j].products.key,
+                        checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                        noOfProducts: productsWithFiles[j].products.noOfProducts,
+                        priceType: productsWithFiles[j].products.priceType,
+                        rangeStart: productsWithFiles[j].products.rangeStart,
+                        rangeEnd: productsWithFiles[j].products.rangeEnd,
+                        data: result.data,
                     });
-              
+
                     allHeaders.push({
-                      key: productsWithFiles[j].products.key,
-                      headers: result.headers,
+                        key: productsWithFiles[j].products.key,
+                        headers: result.headers,
                     });
-                  }
-              
+                }
+
                 const errorMessages = allHeaders
                     .filter((headerObj) => headerObj.headers.length !== 8)
                     .map((headerObj) => ({
@@ -543,37 +542,37 @@ exports.checkMultipleFileValidation = async (req, res) => {
 
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
-      S3Bucket.getObject(bucketReadUrl, (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          const wb = XLSX.read(data.Body, { type: 'buffer' });
-          const sheetName = wb.SheetNames[0];
-          const sheet = wb.Sheets[sheetName];
-          let headers = [];
-  
-          for (let cell in sheet) {
-            if (
-              /^[A-Z]1$/.test(cell) &&
-              sheet[cell].v !== undefined &&
-              sheet[cell].v !== null &&
-              sheet[cell].v.trim() !== ""
-            ) {
-              headers.push(sheet[cell].v);
+        S3Bucket.getObject(bucketReadUrl, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                let headers = [];
+
+                for (let cell in sheet) {
+                    if (
+                        /^[A-Z]1$/.test(cell) &&
+                        sheet[cell].v !== undefined &&
+                        sheet[cell].v !== null &&
+                        sheet[cell].v.trim() !== ""
+                    ) {
+                        headers.push(sheet[cell].v);
+                    }
+                }
+
+                const result = {
+                    headers: headers,
+                    data: XLSX.utils.sheet_to_json(sheet),
+                };
+
+                resolve(result);
             }
-          }
-  
-          const result = {
-            headers: headers,
-            data: XLSX.utils.sheet_to_json(sheet),
-          };
-  
-          resolve(result);
-        }
-      });
+        });
     });
-  };
-  
+};
+
 // Create Order
 exports.createOrder1 = async (req, res) => {
     try {
@@ -1133,7 +1132,7 @@ exports.editFileCase = async (req, res) => {
         if (data.productsArray.length > 0) {
             for (let i = 0; i < data.productsArray.length; i++) {
                 if (Object.keys(data.productsArray[i]?.orderFile).length > 0 && data.productsArray[i]?.orderFile.fileName != '') {
-                    let fileName = process.env.LOCAL_FILE_PATH + "/" + data.productsArray[i].orderFile.fileName
+                    let fileName = { Bucket: process.env.bucket_name, Key: checkFile.fileName };
                     const readOpts = { // <--- need these settings in readFile options
                         //cellText:false, 
                         cellDates: true
@@ -1167,36 +1166,24 @@ exports.editFileCase = async (req, res) => {
             if (productsWithFiles.length > 0) {
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
-                        const wb = XLSX.readFile(productsWithFiles[j].file, {
-                            cellDates: true,
-                        });
-                        const sheets = wb.SheetNames;
-                        const sheet = wb.Sheets[sheets[0]];
-                        const headers = [];
-                        for (let cell in sheet) {
-                            if (
-                                /^[A-Z]1$/.test(cell) &&
-                                sheet[cell].v !== undefined &&
-                                sheet[cell].v !== null &&
-                                sheet[cell].v.trim() !== ""
-                            ) {
-                                headers.push(sheet[cell].v);
-                            }
-                        }
+                        const bucketReadUrl = productsWithFiles[j].products.file
+                        // Await the getObjectFromS3 function to complete
+                        const result = await getObjectFromS3(bucketReadUrl);
+                   
                         allDataComing.push({
-                            key: productsWithFiles[j].key,
-                            checkNumberProducts:
-                                productsWithFiles[j].checkNumberProducts,
-                            noOfProducts: productsWithFiles[j].noOfProducts,
-                            priceType: productsWithFiles[j].priceType,
-                            rangeStart: productsWithFiles[j].rangeStart,
-                            rangeEnd: productsWithFiles[j].rangeEnd,
-                            data: XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], jsonOpts),
-                        });
-                        allHeaders.push({
-                            key: productsWithFiles[j].key,
-                            headers: headers,
-                        });
+                            key: productsWithFiles[j].products.key,
+                            checkNumberProducts: productsWithFiles[j].products.checkNumberProducts,
+                            noOfProducts: productsWithFiles[j].products.noOfProducts,
+                            priceType: productsWithFiles[j].products.priceType,
+                            rangeStart: productsWithFiles[j].products.rangeStart,
+                            rangeEnd: productsWithFiles[j].products.rangeEnd,
+                            data: result.data,
+                          });
+                    
+                          allHeaders.push({
+                            key: productsWithFiles[j].products.key,
+                            headers: result.headers,
+                          });
                     }
                 }
 
