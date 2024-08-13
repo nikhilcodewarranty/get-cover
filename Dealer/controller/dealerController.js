@@ -4,6 +4,7 @@ const dealerService = require("../services/dealerService");
 const dealerRelationService = require("../services/dealerRelationService");
 const customerService = require("../../Customer/services/customerService");
 const dealerPriceService = require("../services/dealerPriceService");
+const axios = require('axios');
 const priceBookService = require("../../PriceBook/services/priceBookService");
 const dealerRelation = require("../../Provider/model/dealerServicer");
 const servicerService = require("../../Provider/services/providerService");
@@ -142,10 +143,32 @@ exports.uploadTermAndCondition = async (req, res, next) => {
       //   if (err) throw err;
       //   console.log(data);
       // });
+      var params = { Bucket: process.env.bucket_name, Key: 'claimFile/file-1723548786241.xlsx' };
+      S3Bucket.getObject(params, function (err, data) {
+
+        if (err) {
+          console.log(err);
+        } else {
+          // Parse the buffer as an Excel file
+          const workbook = XLSX.read(data.Body, { type: 'buffer' });
+
+          // Extract the data from the first sheet
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+          console.log(jsonData);
+        }
+
+      })
+
+
+      // Log or process the content as needed
+
       res.send({
         code: constant.successCode,
         message: 'Success!',
         file
+        
       })
     })
   }

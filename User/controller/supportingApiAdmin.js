@@ -66,7 +66,7 @@ exports.createDealer = async (req, res) => {
         upload(req, res, async () => {
             const data = req.body;
             data.name = data.name.trim().replace(/\s+/g, ' ');
-            const loginUser = await userService.getUserById1({ accountId: req.userId, isPrimary: true }, {});
+            const loginUser = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {});
 
             let priceFile
             let termFile;

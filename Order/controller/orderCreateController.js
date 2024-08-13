@@ -28,9 +28,14 @@ const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
 const claimService = require("../../Claim/services/claimService");
 const { S3Client } = require('@aws-sdk/client-s3');
+const aws = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
-
+aws.config.update({
+    accessKeyId: process.env.aws_access_key_id,
+    secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
@@ -86,27 +91,25 @@ exports.checkFileValidation = async (req, res) => {
         uploadP(req, res, async (err) => {
             let data = req.body;
             let file = req.file;
-            let csvName = req.file.filename;
-            let originalName = req.file.originalname;
-            let size = req.file.size;
-            const csvWriter = createCsvWriter({
-                path: "./uploads/resultFile/" + csvName,
-                header: [
-                    { id: "Brand", title: "Brand" },
-                    { id: "Model", title: "Model" },
-                    { id: "Serial", title: "Serial" },
-                    { id: "Class", title: "Class" },
-                    { id: "Condition", title: "Condition" },
-                    { id: "Retail Value", title: "Retail Value" },
-                    // Add more headers as needed
-                ],
-            });
-            const fileUrl = req.file.destination + '/' + req.file.filename
-            const wb = XLSX.readFile(fileUrl);
-            const sheets = wb.SheetNames;
-            const ws = wb.Sheets[sheets[0]];
-            let message = [];
-            const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+            let csvName = file.key;
+            let originalName = file.originalname;
+            let size = file.size;
+            let totalDataComing1 = [];
+            //S3 Bucket Read Code
+            var params = { Bucket: process.env.bucket_name, Key: file.key };
+            S3Bucket.getObject(params, function (err, data) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    // Parse the buffer as an Excel file
+                    const wb = XLSX.read(data.Body, { type: 'buffer' });
+                    // Extract the data from the first sheet
+                    const sheetName = wb.SheetNames[0];
+                    const worksheet = wb.Sheets[sheetName];
+                    totalDataComing1 = XLSX.utils.sheet_to_json(worksheet);
+                }
+
+            })
             const headers = [];
             for (let cell in ws) {
                 // Check if the cell is in the first row and has a non-empty value
@@ -129,7 +132,7 @@ exports.checkFileValidation = async (req, res) => {
                     orderFile: {
                         fileName: csvName,
                         name: originalName,
-                        size: size,
+                        size: file.size,
                     },
                 });
                 return;
