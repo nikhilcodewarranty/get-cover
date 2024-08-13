@@ -143,7 +143,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
       //   if (err) throw err;
       //   console.log(data);
       // });
-      var params = { Bucket: process.env.bucket_name, Key: 'claimFile/file-1723548786241.xlsx' };
+      var params = { Bucket: process.env.bucket_name, Key: 'orderFile/file-1723564622427.xlsx' };
       S3Bucket.getObject(params, function (err, data) {
 
         if (err) {
