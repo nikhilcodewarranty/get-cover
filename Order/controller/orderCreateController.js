@@ -799,6 +799,8 @@ exports.createOrder1 = async (req, res) => {
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
         if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
+
+            console.log("sdfsdfsdfsdfdddsdf",)
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
