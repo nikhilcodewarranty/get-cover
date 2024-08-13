@@ -30,9 +30,14 @@ const logs = require('../../User/model/logs');
 const supportingFunction = require('../../config/supportingFunction');
 const providerService = require('../../Provider/services/providerService');
 const { S3Client } = require('@aws-sdk/client-s3');
+const aws = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
-
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
   region: process.env.region,
@@ -124,10 +129,23 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         return;
       }
       let file = req.file;
+      //constant params
+      const constantParams = {
+        Bucket: process.env.bucket_name
+      }
+      const downloadParams = {
+        Delimiter: '/',
+        ...constantParams,
+        Prefix: file.key
+      };
+      S3Bucket.listObjects(downloadParams, function (err, data) {
+        if (err) throw err;
+        console.log(data);
+      });
       res.send({
         code: constant.successCode,
         message: 'Success!',
-        file
+        
       })
     })
   }

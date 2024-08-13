@@ -235,7 +235,7 @@ exports.login = async (req, res) => {
     let getRole = await userService.getRoleById(roleQuery, roleProjection)
 
     if (getRole.role == "Dealer") {
-      let checkDealer = await dealerService.getDealerById(user.accountId)
+      let checkDealer = await dealerService.getDealerById(user.metaId)
       if (!checkDealer?.accountStatus) {
         res.send({
           code: constant.errorCode,
@@ -246,7 +246,7 @@ exports.login = async (req, res) => {
     }
 
     if (getRole.role == "Reseller") {
-      let checkReseller = await resellerService.getReseller({ _id: user.accountId })
+      let checkReseller = await resellerService.getReseller({ _id: user.metaId })
       if (!checkReseller?.status) {
         res.send({
           code: constant.errorCode,
@@ -257,7 +257,7 @@ exports.login = async (req, res) => {
     }
 
     if (getRole.role == "Servicer") {
-      let checkServicer = await providerService.getServiceProviderById({ _id: user.accountId })
+      let checkServicer = await providerService.getServiceProviderById({ _id: user.metaId })
       if (!checkServicer?.status) {
         res.send({
           code: constant.errorCode,
@@ -287,7 +287,7 @@ exports.login = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign(
-      { userId: user.accountId ? user.accountId : user._id, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
+      { userId: user.metaId ? user.metaId : user._id, teammateId: user._id, email: user.email, role: getRole.role, status: user.status },
       process.env.JWT_SECRET, // Replace with your secret key
       { expiresIn: "1d" }
     );
@@ -354,7 +354,6 @@ exports.createSuperAdmin = async (req, res) => {
     const savedUser = await userService.createUser(userData);
 
     let updateUser = {
-      accountId: savedUser._id,
       metaId: savedUser._id,
     }
 
@@ -433,7 +432,7 @@ exports.getUserById = async (req, res) => {
     };
 
     let mainStatus;
-    let criteria = { _id: singleUser.accountId }
+    let criteria = { _id: singleUser.metaId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
@@ -510,7 +509,7 @@ exports.updateUserData = async (req, res) => {
 
     //send notification to dealer when status change
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: updateUser.accountId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: updateUser.metaId, isPrimary: true })
 
     IDs.push(getPrimary._id)
     let notificationData = {
@@ -771,7 +770,7 @@ exports.deleteUser = async (req, res) => {
     };
     const checkRole = await userService.getRoleById({ _id: checkUser.roleId }, {});
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ accountId: checkUser.accountId, isPrimary: true })
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: checkUser.metaId, isPrimary: true })
 
     //send notification to dealer when deleted
     let IDs = await supportingFunction.getUserIds()
@@ -1130,7 +1129,7 @@ exports.getUserByToken = async (req, res) => {
     };
 
     let mainStatus;
-    let criteria = { _id: singleUser.accountId }
+    let criteria = { _id: singleUser.metaId }
     let checkStatus = await providerService.getServiceProviderById(criteria)
     let checkDealer = await dealerService.getDealerById(criteria)
     let checkReseller = await resellerService.getReseller(criteria, {})
@@ -1165,7 +1164,6 @@ exports.addMembers = async (req, res) => {
     data.isPrimary = false;
     let getRole = await userService.getRoleById({ role: req.role })
     data.metaId = req.userId
-    data.accountId = req.userId
     data.roleId = getRole._id
     let saveData = await userService.createUser(data)
 
@@ -1216,20 +1214,6 @@ exports.getMembers = async (req, res) => {
   try {
     let data = req.body
     data.isPrimary = false;
-    let query = {
-      $and: [
-        {
-          $or: [
-            { accountId: req.userId },
-            { _id: req.userId },
-          ]
-        },
-        { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { lastName: { '$regex': data.lastName ? data.lastName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { email: { '$regex': data.email ? data.email.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-        { phone: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
-      ]
-    }
     let userMembers = await userService.getMembers({
       $and: [
         { firstName: { '$regex': data.firstName ? data.firstName.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
@@ -1238,7 +1222,7 @@ exports.getMembers = async (req, res) => {
         { phoneNumber: { '$regex': data.phone ? data.phone.replace(/\s+/g, ' ').trim() : '', '$options': 'i' } },
         {
           $or: [
-            { accountId: req.userId },
+            { metaId: req.userId },
             { _id: req.userId },
           ]
         },
@@ -1307,7 +1291,7 @@ exports.changePrimaryUser = async (req, res) => {
       return;
     };
 
-    let updateLastPrimary = await userService.updateSingleUser({ accountId: checkUser.accountId, isPrimary: true }, { isPrimary: false }, { new: true })
+    let updateLastPrimary = await userService.updateSingleUser({ metaId: checkUser.metaId, isPrimary: true }, { isPrimary: false }, { new: true })
     let updatePrimary = await userService.updateSingleUser({ _id: checkUser._id }, { isPrimary: true }, { new: true })
 
     if (!updatePrimary) {

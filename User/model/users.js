@@ -26,6 +26,7 @@ const userSchema = new mongoose.Schema({
   },
   accountId: {
     type: String,
+    default:''
   },
   metaId: {
     type: mongoose.Schema.Types.ObjectId,

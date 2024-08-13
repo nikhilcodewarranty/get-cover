@@ -271,7 +271,7 @@ exports.uploadCommentImage = async (req, res, next) => {
 
 }
 
-//add claim
+//add claim Done
 exports.addClaim = async (req, res, next) => {
   try {
     let data = req.body;
@@ -480,7 +480,7 @@ exports.addClaim = async (req, res, next) => {
   }
 }
 
-// Edit Repair part 
+// Edit Repair part Done
 exports.editClaim = async (req, res) => {
   try {
     let data = req.body
@@ -702,7 +702,7 @@ exports.editClaimType = async (req, res) => {
   }
 }
 
-// Claim Paid and unpaid api
+// Claim Paid and unpaid api Done
 exports.editClaimStatus = async (req, res) => {
   try {
     let data = req.body
@@ -1079,7 +1079,7 @@ exports.editClaimStatus = async (req, res) => {
   }
 }
 
-//Edit servicer in claim
+//Edit servicer in claim Done
 exports.editServicer = async (req, res) => {
   try {
     let data = req.body
@@ -1911,7 +1911,7 @@ exports.saveBulkClaim = async (req, res) => {
 
 }
 
-//Send message
+//Send message Done
 exports.sendMessages = async (req, res) => {
   try {
     let data = req.body
