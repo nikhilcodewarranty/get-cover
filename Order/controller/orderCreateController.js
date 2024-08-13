@@ -1166,6 +1166,7 @@ exports.editFileCase = async (req, res) => {
             let message = [];
             let finalRetailValue = [];
             if (productsWithFiles.length > 0) {
+                console.log("productsWithFiles-----------------------------",productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         const bucketReadUrl = productsWithFiles[j].products.file
