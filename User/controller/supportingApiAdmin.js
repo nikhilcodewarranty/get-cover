@@ -147,7 +147,7 @@ exports.createDealer = async (req, res) => {
                     }
                 }
 
-                const singleDealerUser = await userService.findOneUser({ accountId: data.dealerId }, {});
+                const singleDealerUser = await userService.findOneUser({ metaId: data.dealerId }, {});
                 const singleDealer = await dealerService.getDealerById({ _id: data.dealerId });
                 if (!singleDealer) {
                     res.send({
@@ -225,7 +225,7 @@ exports.createDealer = async (req, res) => {
                         'unique_key': Number(count.length > 0 && count[0].unique_key ? count[0].unique_key : 0) + index + 1,
                     }));
                     //Primary information edit
-                    let userQuery = { accountId: { $in: [data.dealerId] }, isPrimary: true }
+                    let userQuery = { metaId: { $in: [data.dealerId] }, isPrimary: true }
                     let newValues1 = {
                         $set: {
                             email: allUserData[0].email,
@@ -276,7 +276,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: data.dealerId,
                         metaId: data.dealerId,
                         isPrimary: index === 0 ? true : false,
                         status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
@@ -319,7 +318,7 @@ exports.createDealer = async (req, res) => {
                     }
 
 
-                    let statusUpdateCreateria = { accountId: { $in: [data.dealerId] } }
+                    let statusUpdateCreateria = { metaId: { $in: [data.dealerId] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -608,7 +607,7 @@ exports.createDealer = async (req, res) => {
                         const htmlTableString = convertArrayToHTMLTable(csvArray);
                         const mailing = sgMail.send(emailConstant.sendCsvFile(notificationEmail, ['noreply@getcover.com'], htmlTableString));
                     }
-                    let userQuery = { accountId: { $in: [req.body.dealerId] }, isPrimary: true }
+                    let userQuery = { metaId: { $in: [req.body.dealerId] }, isPrimary: true }
                     let newValues1 = {
                         $set: {
                             email: allUserData[0].email,
@@ -625,7 +624,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: req.body.dealerId,
                         metaId: req.body.dealerId,
                         isPrimary: index === 0 ? true : false,
                         status: !req.body.isAccountCreate || req.body.isAccountCreate == 'false' ? false : obj.status
@@ -701,7 +699,7 @@ exports.createDealer = async (req, res) => {
                         notificationFor: IDs
                     };
                     let createNotification = await userService.createNotification(notificationData);
-                    let statusUpdateCreateria = { accountId: { $in: [req.body.dealerId] } }
+                    let statusUpdateCreateria = { metaId: { $in: [req.body.dealerId] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -900,7 +898,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: createMetaData._id,
                         metaId: createMetaData._id,
                         position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
                         isPrimary: index === 0 ? true : false,
@@ -1233,7 +1230,6 @@ exports.createDealer = async (req, res) => {
                     let allUsersData = allUserData.map((obj, index) => ({
                         ...obj,
                         roleId: '656f08041eb1acda244af8c6',
-                        accountId: createMetaData._id,
                         metaId: createMetaData._id,
                         position: obj.position || '', // Using the shorthand for conditional (obj.position ? obj.position : '')
                         isPrimary: index === 0 ? true : false,
@@ -1264,7 +1260,7 @@ exports.createDealer = async (req, res) => {
                         return;
                     }
 
-                    let statusUpdateCreateria = { accountId: { $in: [createMetaData._id] } }
+                    let statusUpdateCreateria = { metaId: { $in: [createMetaData._id] } }
                     let updateData = {
                         $set: {
                             approvedStatus: 'Approved'
@@ -1411,11 +1407,11 @@ exports.createServiceProvider = async (req, res) => {
         const resultProviderData = accountCreationFlag
             ? await Promise.all(resultProvider.map(async (obj) => {
                 const hashedPassword = await bcrypt.hash(obj.password, 10);
-                return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, status: true, password: hashedPassword };
+                return { ...obj, roleId: checkRole._id, metaId: createMetaData._id, status: true, password: hashedPassword };
             }))
             : await Promise.all(resultProvider.map(async (obj) => {
                 const hashedPassword = await bcrypt.hash(obj.password, 10);
-                return { ...obj, roleId: checkRole._id, accountId: createMetaData._id, metaId: createMetaData._id, password: hashedPassword };
+                return { ...obj, roleId: checkRole._id,  metaId: createMetaData._id, password: hashedPassword };
             }));
 
         // Map provider data

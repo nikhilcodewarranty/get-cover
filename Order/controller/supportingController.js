@@ -30,7 +30,8 @@ const claimService = require("../../Claim/services/claimService");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
-
+const AWS = require('aws-sdk');
+const S3 = new AWS.S3();
 // s3 bucket connections
 const s3 = new S3Client({
     region: process.env.region,
@@ -663,7 +664,8 @@ exports.generateHtmltopdf = async (req, res) => {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -727,6 +729,10 @@ exports.generateHtmltopdf = async (req, res) => {
                 // -------------------merging pdfs 
                 const { PDFDocument, rgb } = require('pdf-lib');
                 const fs = require('fs').promises;
+                const fileContent = await fs.readFile(orderFile);
+                const bucketName = process.env.bucket_name
+                const s3Key = `pdfs/${mergeFileName}`;
+                await uploadToS3(orderFile, bucketName, s3Key);
 
                 async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
                     // Load the PDFs
@@ -783,6 +789,27 @@ exports.generateHtmltopdf = async (req, res) => {
     }
 }
 
+//Upload to S3
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fs = require('fs').promises;
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return S3.upload(params).promise();
+};
+
+//Download to S3
+const downloadFromS3 = async (bucketName, key) => {
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+    };
+    const data = await s3.getObject(params).promise();
+    return data.Body;
+};
 // reporting data creating script for all orders 
 exports.reportingDataCreation = async (req, res) => {
     try {
@@ -837,7 +864,7 @@ exports.reportingDataCreation = async (req, res) => {
                 reportingToSave.push(reportingData)
             }
         }
-        console.log("check++++++++++++++++++++++++++",reportingToSave)
+        console.log("check++++++++++++++++++++++++++", reportingToSave)
         let saveData = await supportingFunction.insertManyReporting(reportingToSave)
         if (saveData) {
             res.send({
@@ -1015,9 +1042,9 @@ exports.getServicerInOrders = async (req, res) => {
         $and: [
             {
                 $or: [
-                    { accountId: { $in: servicerIds } },
-                    { accountId: { $in: resellerIdss } },
-                    { accountId: { $in: dealerIdss } },
+                    { metaId: { $in: servicerIds } },
+                    { metaId: { $in: resellerIdss } },
+                    { metaId: { $in: dealerIdss } },
                 ]
             },
             { isPrimary: true }
@@ -1036,9 +1063,9 @@ exports.getServicerInOrders = async (req, res) => {
 
     const result_Array = servicer.map((item1) => {
         const matchingItem = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?._id.toString());
+            (item2) => item2.metaId.toString() === item1?._id.toString());
         let matchingItem2 = servicerUser.find(
-            (item2) => item2.accountId.toString() === item1?.resellerId?.toString() || item2.accountId.toString() === item1?.dealerId?.toString());
+            (item2) => item2.metaId.toString() === item1?.resellerId?.toString() || item2.metaId.toString() === item1?.dealerId?.toString());
         if (matchingItem) {
             return {
                 ...item1.toObject(), // Use toObject() to convert Mongoose document to plain JavaScript object
@@ -1088,7 +1115,7 @@ exports.getDealerResellers = async (req, res) => {
         const resellerId = resellers.map(obj => obj._id.toString());
 
         const orderResellerId = resellers.map(obj => obj._id);
-        const queryUser = { accountId: { $in: resellerId }, isPrimary: true };
+        const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
 
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
 
@@ -1115,8 +1142,8 @@ exports.getDealerResellers = async (req, res) => {
         let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$resellerId');
 
         const result_Array = getPrimaryUser.map(item1 => {
-            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.accountId.toString());
-            const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+            const matchingItem = resellers.find(item2 => item2._id.toString() === item1.metaId.toString());
+            const order = ordersResult.find(order => order._id.toString() === item1.metaId)
 
             if (matchingItem || order) {
                 return {

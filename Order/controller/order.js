@@ -1397,11 +1397,11 @@ exports.markAsPaid = async (req, res) => {
             const result = await getObjectFromS3(bucketReadUrl);
             headerLength = result.headers
             if (headerLength.length !== 8) {
-              res.send({
-                code: constant.errorCode,
-                message: "Invalid file format detected. The sheet should contain exactly four columns."
-              })
-              return
+                res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly four columns."
+                })
+                return
             }
             const totalDataComing1 = result.data;
             const totalDataComing = totalDataComing1.map((item) => {
@@ -1634,8 +1634,6 @@ exports.markAsPaid = async (req, res) => {
         })
     }
 };
-
-
 //Get File data from S3 bucket
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
@@ -2006,7 +2004,8 @@ async function generateTC(orderData) {
             }
         }
         let mergeFileName = checkOrder.unique_key + '.pdf'
-        const orderFile = 'pdfs/' + mergeFileName;
+        //  const orderFile = 'pdfs/' + mergeFileName;
+        const orderFile = `/tmp/${mergeFileName}`; // Temporary local storage
         const html = `<head>
         <link rel="stylesheet" href="https://gistcdn.githack.com/mfd/09b70eb47474836f25a21660282ce0fd/raw/e06a670afcb2b861ed2ac4a1ef752d062ef6b46b/Gilroy.css"></link>
         </head>
@@ -2062,6 +2061,10 @@ async function generateTC(orderData) {
             // -------------------merging pdfs 
             const { PDFDocument, rgb } = require('pdf-lib');
             const fs = require('fs').promises;
+            // Upload the generated order PDF to S3
+            const bucketName = process.env.bucket_name
+            const s3Key = `pdfs/${mergeFileName}`;
+            await uploadToS3(orderFile, bucketName, s3Key);
 
             async function mergePDFs(pdfPath1, pdfPath2, outputPath) {
                 // Load the PDFs
@@ -2091,8 +2094,8 @@ async function generateTC(orderData) {
 
             const termConditionFile = checkOrder.termCondition.fileName ? checkOrder.termCondition.fileName : checkOrder.termCondition.filename
             // Usage
-            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const pdfPath1 = process.env.MAIN_FILE_PATH + "uploads/" + termConditionFile;
+            const pdfPath2 = process.env.MAIN_FILE_PATH + orderFile;
             const outputPath = process.env.MAIN_FILE_PATH + "uploads/" + "mergedFile/" + mergeFileName;
             link = `${process.env.SITE_URL}:3002/uploads/" + "mergedFile/` + mergeFileName;
             let pathTosave = await mergePDFs(pdfPath1, pdfPath2, outputPath).catch(console.error);
@@ -2137,3 +2140,13 @@ async function generateTC(orderData) {
         return;
     }
 }
+
+const uploadToS3 = async (filePath, bucketName, key) => {
+    const fileContent = await fs.readFile(filePath);
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Body: fileContent,
+    };
+    return s3.upload(params).promise();
+};
