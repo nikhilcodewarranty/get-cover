@@ -319,7 +319,7 @@ exports.getAllResellers = async (req, res) => {
         };
 
 
-        const resellerId = resellers.map(obj => obj._id.toString());
+        const resellerId = resellers.map(obj => obj._id);
         const resellerOrderIds = resellers.map(obj => obj._id);
         const queryUser = { metaId: { $in: resellerId }, isPrimary: true };
 
@@ -563,7 +563,7 @@ exports.getResellerByDealerId = async (req, res) => {
         return;
     };
     let resellerData = await resellerService.getResellers({ dealerId: req.params.dealerId }, { isDeleted: 0 })
-    const resellerIds = resellerData.map(reseller => reseller._id.toString())
+    const resellerIds = resellerData.map(reseller => reseller._id)
     const queryUser = { metaId: { $in: resellerIds }, isPrimary: true };
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
@@ -880,7 +880,7 @@ exports.getResellerCustomers = async (req, res) => {
             return;
         };
 
-        const customersId = customers.map(obj => obj._id.toString());
+        const customersId = customers.map(obj => obj._id);
         const orderCustomerIds = customers.map(obj => obj._id);
         const queryUser = { metaId: { $in: customersId }, isPrimary: true };
         let getPrimaryUser = await userService.findUserforCustomer(queryUser)
@@ -1306,7 +1306,7 @@ exports.getCustomerInOrder = async (req, res) => {
             return;
         }
 
-        const customerIds = getCustomers.map(customer => customer._id.toString());
+        const customerIds = getCustomers.map(customer => customer._id);
         let query1 = { metaId: { $in: customerIds }, isPrimary: true };
         let projection = { __v: 0, isDeleted: 0 }
 
@@ -1503,7 +1503,7 @@ exports.getResellerOrders = async (req, res) => {
         let userDealerIds = ordersResult.map((result) => result.dealerId.toString());
         let userResellerIds = ordersResult
             .filter(result => result.resellerId !== null)
-            .map(result => result.resellerId?.toString());
+            .map(result => result.resellerId);
 
         let mergedArray = userDealerIds.concat(userResellerIds);
         //Get Respective Dealers
@@ -1552,7 +1552,7 @@ exports.getResellerOrders = async (req, res) => {
 
         let userCustomerIds = ordersResult
             .filter(result => result.customerId !== null)
-            .map(result => result.customerId?.toString());
+            .map(result => result.customerId);
 
         const allUserIds = mergedArray.concat(userCustomerIds);
 
