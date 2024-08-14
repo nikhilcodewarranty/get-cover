@@ -94,7 +94,7 @@ exports.updateDealer = async (req, res) => {
       return;
     };
 
-    let primaryUser = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+    let primaryUser = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
     let IDs = await supportingFunction.getUserIds()
     IDs.push(primaryUser._id)
@@ -187,7 +187,7 @@ exports.registerDealer = async (req, res) => {
     // Check if the email already exists
     const pendingUser = await userService.findOneUser({ email: req.body.email });
     if (pendingUser) {
-      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.accountId })
+      let checkDealer = await dealerService.getDealerByName({ _id: pendingUser.metaId })
       if (checkDealer) {
         if (checkDealer.status == "Pending") {
           res.send({
@@ -247,7 +247,6 @@ exports.registerDealer = async (req, res) => {
       lastName: data.lastName,
       phoneNumber: data.phoneNumber,
       roleId: checkRole._id,
-      accountId: createdDealer._id,
       metaId: createdDealer._id,
     };
 
@@ -388,7 +387,7 @@ exports.statusUpdate = async (req, res) => {
     }
 
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: existingDealerPriceBook.dealerId, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: existingDealerPriceBook.dealerId, isPrimary: true })
     IDs.push(getPrimary._id)
     let getDealerDetail = await dealerService.getDealerByName({ _id: existingDealerPriceBook.dealerId })
     let notificationData = {
@@ -472,7 +471,7 @@ exports.changeDealerStatus = async (req, res) => {
     }
     //Update Dealer User Status if inactive
     if (!req.body.status) {
-      let dealerUserCreateria = { accountId: req.params.dealerId };
+      let dealerUserCreateria = { metaId: req.params.dealerId };
       let newValue = {
         $set: {
           status: req.body.status
@@ -490,7 +489,7 @@ exports.changeDealerStatus = async (req, res) => {
 
     else {
       if (singleDealer.isAccountCreate) {
-        let dealerUserCreateria = { accountId: req.params.dealerId, isPrimary: true };
+        let dealerUserCreateria = { metaId: req.params.dealerId, isPrimary: true };
         let newValue = {
           $set: {
             status: req.body.status
@@ -515,7 +514,7 @@ exports.changeDealerStatus = async (req, res) => {
     const changedDealerStatus = await dealerService.updateDealerStatus({ _id: req.params.dealerId }, newValue, option);
     if (changedDealerStatus) {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: req.params.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: req.params.dealerId, isPrimary: true })
 
       IDs.push(getPrimary._id)
       let notificationData = {
@@ -638,7 +637,7 @@ exports.createDealerPriceBook = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
       IDs.push(getPrimary._id)
       let notificationData = {
         title: "New dealer price book created",
@@ -653,7 +652,7 @@ exports.createDealerPriceBook = async (req, res) => {
       let createNotification = await userService.createNotification(notificationData);
       // Send Email code here
       let notificationEmails = await supportingFunction.getUserEmails();
-      let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+      let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       let emailData = {
         senderName: checkDealer.name,
         content: "The price book name" + " " + checkPriceBookMain[0]?.pName + " has been created successfully! effective immediately.",
@@ -761,9 +760,9 @@ exports.rejectDealer = async (req, res) => {
     //if status is rejected
     if (req.body.status == 'Rejected') {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: singleDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: singleDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
-      const deleteUser = await userService.deleteUser({ accountId: req.params.dealerId })
+      const deleteUser = await userService.deleteUser({ metaId: req.params.dealerId })
       if (!deleteUser) {
         res.send({
           code: constant.errorCode,
@@ -908,7 +907,7 @@ exports.updateDealerMeta = async (req, res) => {
       await userService.updateUser({ metaId: checkDealer._id }, { status: false }, { new: true })
     }
     let IDs = await supportingFunction.getUserIds()
-    let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+    let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
     IDs.push(getPrimary._id)
     let notificationData = {
       title: "Dealer updated",
@@ -989,7 +988,6 @@ exports.addDealerUser = async (req, res) => {
       return;
     }
 
-    data.accountId = checkDealer._id
     data.metaId = checkDealer._id
     data.roleId = '656f08041eb1acda244af8c6'
     let statusCheck;
@@ -1022,7 +1020,7 @@ exports.addDealerUser = async (req, res) => {
       })
     } else {
       let IDs = await supportingFunction.getUserIds()
-      let getPrimary = await supportingFunction.getPrimaryUser({ accountId: checkDealer._id, isPrimary: true })
+      let getPrimary = await supportingFunction.getPrimaryUser({ metaId: checkDealer._id, isPrimary: true })
       IDs.push(getPrimary._id)
 
       let notificationData = {
@@ -1283,7 +1281,7 @@ exports.uploadDealerPriceBook = async (req, res) => {
         //Send notification to admin,dealer,reseller
 
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: req.body.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: req.body.dealerId, isPrimary: true })
         IDs.push(dealerPrimary?._id)
         let notificationData = {
           title: "Dealer Price Book Uploaded",
