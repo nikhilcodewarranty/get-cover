@@ -1141,7 +1141,7 @@ exports.changeResellerStatus = async (req, res) => {
         else {
             let resellerUserCreateria = { metaId: req.userId, isPrimary: true };
             let newValue = {
-                $set: {
+                $set: { 
                     status: req.body.status
                 }
             };
