@@ -7,13 +7,13 @@ const userSchema = new mongoose.Schema({
     default: ''
   },
   lastName: {
-    type: String, 
+    type: String,
     default: ''
   },
   notificationTo: {
     type: Array,
     default: []
-  }, 
+  },
   email: {
     type: String,
     default: '',
@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
   metaId: {
     type: mongoose.Schema.Types.ObjectId,
     default: null
+  },
+  customerData: {
+    type: [],
+    default: []
   },
   resetPasswordCode: {
     type: String,

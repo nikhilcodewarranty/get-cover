@@ -1849,14 +1849,96 @@ exports.customerClaims = async (req, res) => {
 
 exports.addCustomerNew = async (req, res) => {
   try {
-    let data = req.body
-    console.log("data-----------------", data)
-    let checkEmail = await customerService.getCustomerByName({ email: data.email })
-    if (!checkEmail) {
+    let data = req.body;
+    data.accountName = data.accountName.trim().replace(/\s+/g, ' ');
+    let getCount = await customerService.getCustomersCount({})
+    data.unique_key = getCount[0] ? getCount[0].unique_key + 1 : 1
 
-    } else {
+    // check dealer ID
+    let checkDealer = await dealerService.getDealerByName({ _id: data.dealerName }, {});
+    let IDs = await supportingFunction.getUserIds()
+    if (!checkDealer) {
+      res.send({
+        code: constant.errorCode,
+        message: "Invalid dealer"
+      })
+      return;
+    };
+
+    // check reseller valid or not
+    if (data.resellerName && data.resellerName != "") {
+      var checkReseller = await resellerService.getReseller({ _id: data.resellerName }, {})
+      if (!checkReseller) {
+        res.send({
+          code: constant.errorCode,
+          message: "Invalid Reseller."
+        })
+        return;
+      }
 
     }
+
+    // check customer acccount name 
+    let checkAccountName = await customerService.getCustomerByName({
+      username: new RegExp(`^${data.accountName}$`, 'i'), dealerId: data.dealerName
+    });
+
+    let checkCustomerEmail = await userService.findOneUser({ email: data.email });
+    if (checkCustomerEmail) {
+      res.send({
+        code: constant.errorCode,
+        message: "Primary user email already exist"
+      })
+      return;
+    }
+
+    let customerObject = {
+      username: data.accountName,
+      street: data.street,
+      city: data.city,
+      isAccountCreate: data?.isAccountCreate ? data.isAccountCreate : data.status,
+      dealerId: checkDealer._id,
+      resellerId: checkReseller ? checkReseller._id : null,
+      resellerId1: checkReseller ? checkReseller._id : null,
+      zip: data.zip,
+      state: data.state,
+      country: data.country,
+      status: data.status,
+      unique_key: data.unique_key,
+      accountStatus: "Approved",
+      dealerName: checkDealer.name,
+    }
+    const createdCustomer = await customerService.createCustomer(customerObject);
+    if (!createdCustomer) {
+      //Save Logs create Customer
+      let logData = {
+        userId: req.userId,
+        endpoint: "/create-customer",
+        body: data,
+        response: {
+          code: constant.errorCode,
+          message: createdCustomer
+        }
+      }
+      await LOG(logData).save()
+
+      res.send({
+        code: constant.errorCode,
+        message: "Unable to create the customer"
+      })
+      return;
+    };
+    for (let m = 0; m < data.members.length; m++) {
+      let user = data.members[m]
+      let userEmail = user.email
+      let checkEmail = await customerService.getCustomerByName({ email: userEmail })
+      if (!checkEmail) {
+
+      } else {
+
+      }
+    }
+
   } catch (err) {
     res.send({
       code: constant.errorCode,
