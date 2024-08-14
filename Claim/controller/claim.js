@@ -230,8 +230,8 @@ const getObjectFromS3 = (bucketReadUrl) => {
       if (err) {
         reject(err);
       } else {
-        const wb = XLSX.read(data.Body, { type: 'buffer' },{
-          type: 'binary',
+        const wb = XLSX.read(data.Body,{
+          type: 'buffer',
           cellDates: true,
           cellNF: false,
           cellText: false
