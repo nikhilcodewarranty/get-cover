@@ -1624,7 +1624,7 @@ exports.getResellerContract = async (req, res) => {
     }
 }
 
-//Change reseller status
+//Change reseller status 
 exports.changeResellerStatus = async (req, res) => {
     try {
         const singleReseller = await resellerService.getReseller({ _id: req.params.resellerId });
