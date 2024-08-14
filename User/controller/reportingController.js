@@ -730,11 +730,11 @@ exports.claimDailyReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = servicerId
         }
         if (data.customerId) {
-            let servicerId = new mongoose.Types.ObjectId(data.customerId)
-            dailyQuery[0].$match.customerId = data.customerId
-            dailyQuery1[0].$match.customerId = data.customerId
-            dailyQuery2[0].$match.customerId = data.customerId
-            dailyQuery3[0].$match.customerId = data.customerId
+            let customerId = new mongoose.Types.ObjectId(data.customerId)
+            dailyQuery[0].$match.customerId = customerId
+            dailyQuery1[0].$match.customerId = customerId
+            dailyQuery2[0].$match.customerId = customerId
+            dailyQuery3[0].$match.customerId = customerId
         }
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
@@ -757,6 +757,8 @@ exports.claimDailyReporting = async (data) => {
         let getData1 = await claimService.getClaimWithAggregate(dailyQuery1)
         let getData2 = await claimService.getClaimWithAggregate(dailyQuery2)
         let getData3 = await claimService.getClaimWithAggregate(dailyQuery3)
+        console.log("data++++++++++++++++++++++++++++++++",getData,getData1,getData2,getData3)
+
 
         const result = datesArray.map(date => {
             const dateString = date.toISOString().slice(0, 10);
@@ -1084,11 +1086,11 @@ exports.claimWeeklyReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = servicerId
         }
         if (data.customerId) {
-            let servicerId = new mongoose.Types.ObjectId(data.customerId)
-            dailyQuery[0].$match.customerId = data.customerId
-            dailyQuery1[0].$match.customerId = data.customerId
-            dailyQuery2[0].$match.customerId = data.customerId
-            dailyQuery3[0].$match.customerId = data.customerId
+            let customerId = new mongoose.Types.ObjectId(data.customerId)
+            dailyQuery[0].$match.customerId = customerId
+            dailyQuery1[0].$match.customerId = customerId
+            dailyQuery2[0].$match.customerId = customerId
+            dailyQuery3[0].$match.customerId = customerId
         }
         if (data.priceBookId.length != 0) {
             let getOrders = await orderService.getOrders({ productsArray: { $elemMatch: { priceBookId: { $in: data.priceBookId } } } })
@@ -1372,11 +1374,11 @@ exports.claimDayReporting = async (data) => {
             dailyQuery3[0].$match.servicerId = data.servicerId
         }
         if (data.customerId) {
-            let servicerId = new mongoose.Types.ObjectId(data.customerId)
-            dailyQuery[0].$match.customerId = data.customerId
-            dailyQuery1[0].$match.customerId = data.customerId
-            dailyQuery2[0].$match.customerId = data.customerId
-            dailyQuery3[0].$match.customerId = data.customerId
+            let customerId = new mongoose.Types.ObjectId(data.customerId)
+            dailyQuery[0].$match.customerId = customerId
+            dailyQuery1[0].$match.customerId = customerId
+            dailyQuery2[0].$match.customerId = customerId
+            dailyQuery3[0].$match.customerId = customerId
         }
 
         let getData = await claimService.getClaimWithAggregate(dailyQuery)
