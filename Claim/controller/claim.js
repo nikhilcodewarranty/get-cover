@@ -1315,7 +1315,6 @@ exports.saveBulkClaim = async (req, res) => {
 
       //const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       const totalDataComing1 = result.data;
-      console.log("totalDataComing10000000000000000000000",totalDataComing1)
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
@@ -2125,7 +2124,7 @@ exports.statusClaim = async (req, res) => {
       const customerLastResponseDate = customerStatus[0]?.date
       const latestServicerShippedDate = new Date(latestServicerShipped);
       const sevenDaysAfterShippedDate = new Date(latestServicerShippedDate);
-      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 1);
+      sevenDaysAfterShippedDate.setDate(sevenDaysAfterShippedDate.getDate() + 7);
       if (new Date() === sevenDaysAfterShippedDate || new Date() > sevenDaysAfterShippedDate) {
         // Update status for track status
         messageData.trackStatus = [

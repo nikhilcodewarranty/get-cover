@@ -25,6 +25,7 @@ const resellerService = require("../../Dealer/services/resellerService");
 const dealerService = require("../../Dealer/services/dealerService");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
+
 const multerS3 = require('multer-s3');
 
 // s3 bucket connections
