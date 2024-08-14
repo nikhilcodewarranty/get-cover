@@ -890,7 +890,7 @@ exports.createOrder1 = async (req, res) => {
         }
 
         if (data.billTo == "Dealer") {
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -904,7 +904,7 @@ exports.createOrder1 = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -989,7 +989,7 @@ exports.createOrder1 = async (req, res) => {
         returnField.push(obj);
         //send notification to admin and dealer 
         let IDs = await supportingFunction.getUserIds()
-        let getPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
+        let getPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
         IDs.push(getPrimary._id)
 
         let notificationData = {
@@ -1242,9 +1242,9 @@ exports.createOrder1 = async (req, res) => {
                     }
                     //send notification to admin and dealer 
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: data.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: data.resellerId, isPrimary: true })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
@@ -1745,7 +1745,7 @@ exports.editOrderDetail = async (req, res) => {
             let checkDealer1 = await dealerService.getDealerById(
                 data.dealerId
             );
-            let getUser = await userService.getSingleUserByEmail({ accountId: checkDealer1._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: checkDealer1._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Dealer",
                 detail: {
@@ -1758,7 +1758,7 @@ exports.editOrderDetail = async (req, res) => {
         }
         if (data.billTo == "Reseller") {
             let getReseller = await resellerService.getReseller({ _id: data.resellerId })
-            let getUser = await userService.getSingleUserByEmail({ accountId: getReseller._id, isPrimary: true })
+            let getUser = await userService.getSingleUserByEmail({ metaId: getReseller._id, isPrimary: true })
             data.billDetail = {
                 billTo: "Reseller",
                 detail: {
@@ -1890,7 +1890,7 @@ exports.editOrderDetail = async (req, res) => {
         returnField.push(obj);
         //send notification to dealer,reseller,admin,customer
         let IDs = await supportingFunction.getUserIds()
-        let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
+        let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
         IDs.push(dealerPrimary._id)
         let notificationData = {
             title: "Order update",
@@ -2133,9 +2133,9 @@ exports.editOrderDetail = async (req, res) => {
                     }
                     // send notification to dealer,admin, customer
                     let IDs = await supportingFunction.getUserIds()
-                    let dealerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.dealerId, isPrimary: true })
-                    let customerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.customerId, isPrimary: true })
-                    let resellerPrimary = await supportingFunction.getPrimaryUser({ accountId: checkOrder.resellerId, isPrimary: true })
+                    let dealerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.dealerId, isPrimary: true })
+                    let customerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.customerId, isPrimary: true })
+                    let resellerPrimary = await supportingFunction.getPrimaryUser({ metaId: checkOrder.resellerId, isPrimary: true })
                     if (resellerPrimary) {
                         IDs.push(resellerPrimary._id)
                     }
