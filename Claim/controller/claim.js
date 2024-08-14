@@ -26,7 +26,13 @@ const dealerService = require("../../Dealer/services/dealerService");
 const { S3Client } = require('@aws-sdk/client-s3');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
+const aws = require('aws-sdk');
 
+aws.config.update({
+  accessKeyId: process.env.aws_access_key_id,
+  secretAccessKey: process.env.aws_secret_access_key,
+});
+const S3Bucket = new aws.S3();
 // s3 bucket connections
 const s3 = new S3Client({
   region: process.env.region,
@@ -55,6 +61,7 @@ var imageUpload = multer({
     fileSize: 500 * 1024 * 1024, // 500 MB limit
   },
 }).single("file");
+
 var uploadP = multer({
   storage: StorageP,
   limits: {
@@ -216,6 +223,45 @@ exports.searchClaim = async (req, res, next) => {
 
 }
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' },{
+          type: 'binary',
+          cellDates: true,
+          cellNF: false,
+          cellText: false
+        });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet,{ defval: "" }),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
+
 //upload receipt data for claim
 exports.uploadReceipt = async (req, res, next) => {
   try {
@@ -313,7 +359,7 @@ exports.addClaim = async (req, res, next) => {
 
     if (checkContract.status != 'Active') {
       res.send({
-        code: constant.errorCode, 
+        code: constant.errorCode,
         message: 'The contract is not active!'
       });
       return;
@@ -1216,6 +1262,11 @@ exports.saveBulkClaim = async (req, res) => {
       let data = req.body
       let message = [];
       let checkDuplicate = [];
+      let headerLength;
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: req.files[0].key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);
+
       const emailField = req.body.email;
 
       // Parse the email field
@@ -1246,24 +1297,14 @@ exports.saveBulkClaim = async (req, res) => {
         raw: false,
         dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
       }
-      const wb = XLSX.readFile(fileUrl, {
-        type: 'binary',
-        cellDates: true,
-        cellNF: false,
-        cellText: false
-      });
-
-      // sheet data to json
-      const sheets = wb.SheetNames;
-      const ws = wb.Sheets[sheets[0]];
-      const headers = [];
-      for (let cell in ws) {
-        // Check if the cell is in the first row and has a non-empty value
-        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-          headers.push(ws[cell].v);
-        }
-      }
-      if (headers.length !== 4) {
+      // const wb = XLSX.readFile(fileUrl, {
+      //   type: 'binary',
+      //   cellDates: true,
+      //   cellNF: false,
+      //   cellText: false
+      // });
+      headerLength = result.headers
+      if (headerLength.length !== 4) {
         res.send({
           code: constant.errorCode,
           message: "Invalid file format detected. The sheet should contain exactly four columns."
@@ -1271,7 +1312,8 @@ exports.saveBulkClaim = async (req, res) => {
         return
       }
 
-      const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
+      //const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
+      const totalDataComing1 = result.data;
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
@@ -1977,7 +2019,7 @@ exports.sendMessages = async (req, res) => {
 
       res.send({
         code: constant.errorCode,
-        message: 'Unable to send message!' 
+        message: 'Unable to send message!'
       });
       return;
     }

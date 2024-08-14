@@ -66,7 +66,6 @@ const Storage = multerS3({
     key: (req, file, cb) => {
         const fileName = file.fieldname + '-' + Date.now() + path.extname(file.originalname);
         const fullPath = `${folderName}/${fileName}`;
-        console.log("fullPath----------------", fullPath)
         cb(null, fullPath);
     }
 });
@@ -1015,9 +1014,7 @@ exports.createOrder1 = async (req, res) => {
 
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
-
-            console.log("sdfsdfsdfsdfdddsdf",)
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {    
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -1103,7 +1100,6 @@ exports.createOrder1 = async (req, res) => {
                 let dealerBookDetail = []
 
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: data.dealerId, priceBook: priceBookId })
-
 
                 totalDataComing.forEach((data, index1) => {
                     let unique_key_number1 = increamentNumber
@@ -1384,7 +1380,6 @@ exports.editFileCase = async (req, res) => {
             let message = [];
             let finalRetailValue = [];
             if (productsWithFiles.length > 0) {
-                console.log("productsWithFiles-----------------------------", productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         const bucketReadUrl = productsWithFiles[j].file

@@ -130,37 +130,6 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         return;
       }
       let file = req.file;
-      //constant params
-      // const constantParams = {
-      //   Bucket: process.env.bucket_name
-      // }
-      // const downloadParams = {
-      //   Delimiter: '/',
-      //   ...constantParams,
-      //   Prefix: file.key
-      // };
-      // S3Bucket.listObjects(downloadParams, function (err, data) {
-      //   if (err) throw err;
-      //   console.log(data);
-      // });
-      var params = { Bucket: process.env.bucket_name, Key: 'orderFile/file-1723564622427.xlsx' };
-      S3Bucket.getObject(params, function (err, data) {
-
-        if (err) {
-          console.log(err);
-        } else {
-          // Parse the buffer as an Excel file
-          const workbook = XLSX.read(data.Body, { type: 'buffer' });
-          // Extract the data from the first sheet
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-          console.log(jsonData);
-        }
-
-      })
-
-
       // Log or process the content as needed
 
       res.send({
