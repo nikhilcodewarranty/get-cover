@@ -1014,7 +1014,7 @@ exports.createOrder1 = async (req, res) => {
 
 
         let mailing = sgMail.send(emailConstant.sendEmailTemplate(getPrimary.email, notificationEmails, emailData))
-        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {    
+        if (obj.customerId && obj.paymentStatus && obj.coverageStartDate && obj.fileName) {
             let paidDate = {
                 name: "processOrder",
                 date: new Date()
@@ -1030,6 +1030,7 @@ exports.createOrder1 = async (req, res) => {
             var pricebookDetail = []
             let checkLength = savedResponse.productsArray.length - 1
             let mapOnProducts = savedResponse.productsArray.map(async (product, index) => {
+                let headerLength;
                 if (data.adh && isNaN(data.adh)) {
 
                     res.send({
@@ -1070,6 +1071,14 @@ exports.createOrder1 = async (req, res) => {
                 const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Invalid file format detected. The sheet should contain exactly four columns."
+                    })
+                    return
+                }
                 let priceBookId = product.priceBookId;
                 let coverageStartDate = product.coverageStartDate;
                 let coverageEndDate = product.coverageEndDate;
@@ -1912,6 +1921,7 @@ exports.editOrderDetail = async (req, res) => {
                 { status: "Active" },
                 { new: true }
             );
+
             let checkDealer1 = await dealerService.getDealerById(
                 savedResponse.dealerId
             );
@@ -1930,6 +1940,7 @@ exports.editOrderDetail = async (req, res) => {
             var increamentNumber = count1[0]?.unique_key_number ? count1[0].unique_key_number + 1 : 100000
             let checkLength = savedResponse.productsArray.length - 1
             let save = savedResponse.productsArray.map(async (product, index) => {
+                let headerLength;
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
                 const readOpts = { // <--- need these settings in readFile options
                     cellDates: true
@@ -1942,6 +1953,14 @@ exports.editOrderDetail = async (req, res) => {
                 const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                    res.send({
+                        code: constant.errorCode,
+                        message: "Invalid file format detected. The sheet should contain exactly four columns."
+                    })
+                    return
+                }
                 let priceBookId = product.priceBookId;
                 let orderProductId = product._id;
                 let coverageStartDate = product.coverageStartDate;

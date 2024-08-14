@@ -1348,6 +1348,7 @@ exports.markAsPaid = async (req, res) => {
         let checkLength = savedResponse.productsArray.length - 1
         let save = savedResponse.productsArray.map(async (product, index) => {
             const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+            let headerLength;
             const readOpts = {
                 // <--- need these settings in readFile options //cellText:false, 
                 cellDates: true
@@ -1394,9 +1395,15 @@ exports.markAsPaid = async (req, res) => {
             const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
             // Await the getObjectFromS3 function to complete
             const result = await getObjectFromS3(bucketReadUrl);
-
+            headerLength = result.headers
+            if (headerLength.length !== 8) {
+              res.send({
+                code: constant.errorCode,
+                message: "Invalid file format detected. The sheet should contain exactly four columns."
+              })
+              return
+            }
             const totalDataComing1 = result.data;
-            console.log("totalDataComing1-----------------------",totalDataComing1)
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {

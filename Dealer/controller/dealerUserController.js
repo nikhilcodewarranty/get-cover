@@ -1312,6 +1312,7 @@ exports.editOrderDetail = async (req, res) => {
             await savedResponse.productsArray.map(async (product, index) => {
                 let getDealerPriceBookDetail = await dealerPriceService.getDealerPriceById({ dealerId: checkOrder.dealerId, priceBook: product.priceBookId })
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
+                let headerLength;
                 const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
@@ -1344,6 +1345,15 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
                 dealerBookDetail.push(dealerPriceBookObject)
+
+                headerLength = result.headers
+                if (headerLength.length !== 8) {
+                  res.send({
+                    code: constant.errorCode,
+                    message: "Invalid file format detected. The sheet should contain exactly four columns."
+                  })
+                  return
+                }
 
                 const totalDataComing1 = result.data
                 
