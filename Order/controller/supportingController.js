@@ -837,7 +837,7 @@ exports.reportingDataCreation = async (req, res) => {
                 reportingToSave.push(reportingData)
             }
         }
-
+        console.log("check++++++++++++++++++++++++++",reportingToSave)
         let saveData = await supportingFunction.insertManyReporting(reportingToSave)
         if (saveData) {
             res.send({
