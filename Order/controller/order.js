@@ -1396,6 +1396,7 @@ exports.markAsPaid = async (req, res) => {
             const result = await getObjectFromS3(bucketReadUrl);
 
             const totalDataComing1 = result.data;
+            console.log("totalDataComing1-----------------------",totalDataComing1)
             const totalDataComing = totalDataComing1.map((item) => {
                 const keys = Object.keys(item);
                 return {
