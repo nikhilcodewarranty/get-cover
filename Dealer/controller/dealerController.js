@@ -136,7 +136,7 @@ exports.uploadTermAndCondition = async (req, res, next) => {
         code: constant.successCode,
         message: 'Success!',
         file
-        
+
       })
     })
   }
@@ -1095,25 +1095,18 @@ exports.uploadDealerPriceBook = async (req, res) => {
         })
         return;
       }
-
-      let csvName = req.file.filename
-      const wb = XLSX.readFile(req.file.path);
-      const sheets = wb.SheetNames;
-      const ws = wb.Sheets[sheets[0]];
-      let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+      //Get from S3 Bucket
+      const bucketReadUrl = { Bucket: process.env.bucket_name, Key: file.key };
+      // Await the getObjectFromS3 function to complete
+      const result = await getObjectFromS3(bucketReadUrl);  
+      let totalDataComing1 = result.data;
       totalDataComing1 = totalDataComing1.map(item => {
         if (!item['Product SKU']) {
           return { priceBook: '', 'RetailPrice': item['retailPrice'] };
         }
         return item;
       });
-      const headers = [];
-      for (let cell in ws) {
-        // Check if the cell is in the first row and has a non-empty value
-        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-          headers.push(ws[cell].v);
-        }
-      }
+      const headers = result.headers    
 
       if (headers.length !== 2) {
         res.send({
@@ -1319,6 +1312,39 @@ exports.uploadDealerPriceBook = async (req, res) => {
   }
 }
 
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+  return new Promise((resolve, reject) => {
+    S3Bucket.getObject(bucketReadUrl, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        const wb = XLSX.read(data.Body, { type: 'buffer' });
+        const sheetName = wb.SheetNames[0];
+        const sheet = wb.Sheets[sheetName];
+        let headers = [];
+
+        for (let cell in sheet) {
+          if (
+            /^[A-Z]1$/.test(cell) &&
+            sheet[cell].v !== undefined &&
+            sheet[cell].v !== null &&
+            sheet[cell].v.trim() !== ""
+          ) {
+            headers.push(sheet[cell].v);
+          }
+        }
+
+        const result = {
+          headers: headers,
+          data: XLSX.utils.sheet_to_json(sheet),
+        };
+
+        resolve(result);
+      }
+    });
+  });
+};
 //Create relation with dealer
 exports.createDeleteRelation = async (req, res) => {
   try {

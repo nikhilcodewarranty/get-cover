@@ -67,7 +67,6 @@ exports.createDealer = async (req, res) => {
             const data = req.body;
             data.name = data.name.trim().replace(/\s+/g, ' ');
             const loginUser = await userService.getUserById1({ metaId: req.userId, isPrimary: true }, {});
-
             let priceFile
             let termFile;
             let isAccountCreate = req.body.isAccountCreate
@@ -82,7 +81,7 @@ exports.createDealer = async (req, res) => {
             }
 
             let termData = {
-                fileName: termFile ? termFile.filename : '',
+                fileName: termFile ? termFile.key : '',
                 name: termFile ? termFile.originalname : '',
                 size: termFile ? termFile.size : '',
             }
@@ -417,27 +416,12 @@ exports.createDealer = async (req, res) => {
                             return
                         }
                     }
+                    //Get from S3 Bucket
+                    const bucketReadUrl = { Bucket: process.env.bucket_name, Key: priceFile.key };
+                    // Await the getObjectFromS3 function to complete
+                    const result = await getObjectFromS3(bucketReadUrl);
 
-                    let csvName = priceFile.filename
-                    const csvWriter = createCsvWriter({
-                        path: './uploads/resultFile/' + csvName,
-                        header: [
-                            { id: 'priceBook', title: 'Price Book' },
-                            { id: 'status', title: 'Status' },
-                            { id: 'reason', title: 'Reason' },
-                            // Add more headers as needed
-                        ],
-                    });
-                    const wb = XLSX.readFile(priceFile.path);
-                    const sheets = wb.SheetNames;
-                    const ws = wb.Sheets[sheets[0]];
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+                    const headers = result.headers
 
                     if (headers.length !== 2) {
                         res.send({
@@ -446,7 +430,7 @@ exports.createDealer = async (req, res) => {
                         })
                         return
                     }
-                    let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+                    let totalDataComing1 = result.data;
                     totalDataComing1 = totalDataComing1.map(item => {
                         if (!item['Product SKU']) {
                             return { priceBook: '', 'RetailPrice': item['retailPrice'] };
@@ -992,29 +976,13 @@ exports.createDealer = async (req, res) => {
 
                 else if (savePriceBookType == 'no') {
 
-                    let csvName = priceFile.filename
-                    const csvWriter = createCsvWriter({
-                        path: './uploads/resultFile/' + csvName,
-                        header: [
-                            { id: 'priceBook', title: 'Price Book' },
-                            { id: 'status', title: 'Status' },
-                            { id: 'reason', title: 'Reason' },
-                            // Add more headers as needed
-                        ],
-                    });
-
                     const count = await dealerService.getDealerCount();
-                    const results = [];
-                    const wb = XLSX.readFile(priceFile.path);
-                    const sheets = wb.SheetNames;
-                    const ws = wb.Sheets[sheets[0]];
-                    const headers = [];
-                    for (let cell in ws) {
-                        // Check if the cell is in the first row and has a non-empty value
-                        if (/^[A-Z]1$/.test(cell) && ws[cell].v !== undefined && ws[cell].v !== null && ws[cell].v.trim() !== '') {
-                            headers.push(ws[cell].v);
-                        }
-                    }
+                    //Get from S3 Bucket
+                    const bucketReadUrl = { Bucket: process.env.bucket_name, Key: priceFile.key };
+                    // Await the getObjectFromS3 function to complete
+                    const result = await getObjectFromS3(bucketReadUrl);
+
+                    const headers = result.headers
 
                     if (headers.length !== 2) {
                         res.send({
@@ -1024,7 +992,7 @@ exports.createDealer = async (req, res) => {
                         return
                     }
 
-                    let totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]]);
+                    let totalDataComing1 = result.data
                     totalDataComing1 = totalDataComing1.map(item => {
                         if (!item['Product SKU']) {
                             return { priceBook: '', 'RetailPrice': item['retailPrice'] };
@@ -1347,6 +1315,40 @@ exports.createDealer = async (req, res) => {
             message: err.message
         });
     }
+};
+
+//Get File data from S3 bucket
+const getObjectFromS3 = (bucketReadUrl) => {
+    return new Promise((resolve, reject) => {
+        S3Bucket.getObject(bucketReadUrl, (err, data) => {
+            if (err) {
+                reject(err);
+            } else {
+                const wb = XLSX.read(data.Body, { type: 'buffer' });
+                const sheetName = wb.SheetNames[0];
+                const sheet = wb.Sheets[sheetName];
+                let headers = [];
+
+                for (let cell in sheet) {
+                    if (
+                        /^[A-Z]1$/.test(cell) &&
+                        sheet[cell].v !== undefined &&
+                        sheet[cell].v !== null &&
+                        sheet[cell].v.trim() !== ""
+                    ) {
+                        headers.push(sheet[cell].v);
+                    }
+                }
+
+                const result = {
+                    headers: headers,
+                    data: XLSX.utils.sheet_to_json(sheet),
+                };
+
+                resolve(result);
+            }
+        });
+    });
 };
 
 //Create new service provider By SA
