@@ -329,17 +329,19 @@ exports.getDealerCustomers = async (req, res) => {
       ]
     }
     let ordersResult = await orderService.getAllOrderInCustomers(orderQuery, project, '$customerId');
-
-
     //Get Resseler
     const resellerId = customers.map(obj => new mongoose.Types.ObjectId(obj.resellerId ? obj.resellerId : '61c8c7d38e67bb7c7f7eeeee'));
     const queryReseller = { _id: { $in: resellerId } }
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
+    console.log("=4333333333333333333333")
     const result_Array = getPrimaryUser.map(item1 => {
+      console.log("=22222222222222222222222")
       const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
-      const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id.toString() === matchingItem.resellerId.toString()) : {};
-      const order = ordersResult.find(order => order._id.toString() === item1.metaId)
+      console.log("=33333333333333333333333333")
+      const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id?.toString() === matchingItem.resellerId?.toString()) : {};
+      console.log("=4444444444444444444444444444444444444")
+      const order = ordersResult.find(order => order._id.toString() === item1.metaId.toString())
 
       if (matchingItem || order || matchingReseller) {
         return {
