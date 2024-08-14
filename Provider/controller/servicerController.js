@@ -1089,6 +1089,28 @@ exports.getDashboardInfo = async (req, res) => {
             }
         },
         {
+            $lookup: {
+                from: "claims",
+                localField: "_id",
+                foreignField: "dealerId",
+                as: "claim",
+                pipeline: [
+                    {
+                        $match: { status: "Active" }
+                    },
+                    {
+                        "$group": {
+                            _id: "$order.dealerId",
+                            "totalClaim": { "$sum": 1 },
+                            "claimAmount": {
+                                "$sum": "$totalAmount"
+                            }
+                        }
+                    },
+                ]
+            }
+        },
+        {
             $project: {
                 name: 1,
                 totalAmount: {
@@ -1102,6 +1124,20 @@ exports.getDashboardInfo = async (req, res) => {
                     $cond: {
                         if: { $gt: [{ $arrayElemAt: ["$order.totalOrder", 0] }, 0] },
                         then: { $arrayElemAt: ["$order.totalOrder", 0] },
+                        else: 0
+                    }
+                },
+                claimAmount: {
+                    $cond: {
+                        if: { $gte: [{ $arrayElemAt: ["$claims.claimAmount", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.claimAmount", 0] },
+                        else: 0
+                    }
+                },
+                totalClaim: {
+                    $cond: {
+                        if: { $gt: [{ $arrayElemAt: ["$claims.totalClaim", 0] }, 0] },
+                        then: { $arrayElemAt: ["$claims.totalClaim", 0] },
                         else: 0
                     }
                 },
