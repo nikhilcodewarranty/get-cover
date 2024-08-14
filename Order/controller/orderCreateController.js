@@ -28,6 +28,7 @@ const userService = require("../../User/services/userService");
 const PDFDocument = require('pdfkit');
 const claimService = require("../../Claim/services/claimService");
 const { S3Client } = require('@aws-sdk/client-s3');
+const AWS = require('aws-sdk');
 const { Upload } = require('@aws-sdk/lib-storage');
 const multerS3 = require('multer-s3');
 
@@ -78,7 +79,13 @@ var uploadP = multer({
     },
 }).single("file");
 
-
+const kkkk = new AWS.S3({
+    region: process.env.region,
+    credentials: {
+        accessKeyId: process.env.aws_access_key_id,
+        secretAccessKey: process.env.aws_secret_access_key,
+    }// Your AWS region
+});
 
 //check file validation for orders
 exports.checkFileValidation = async (req, res) => {
@@ -101,6 +108,32 @@ exports.checkFileValidation = async (req, res) => {
                     // Add more headers as needed
                 ],
             });
+
+            const params = {
+                Bucket: file.bucket, // replace with your bucket name
+                Key: file.key // replace with the path and file name in the bucket
+            };
+
+            kkkk.getObject(params, (err, data) => {
+                if (err) {
+                    console.error('Error getting file from S3:', err);
+                } else {
+                    // If successful, the file contents are in data.Body
+                    console.log('File retrieved successfully:', data.Body.toString('utf-8'));
+                    let csvData = data.Body.toString('utf-8')
+                    const rows = XLSX.utils.sheet_to_json(XLSX.utils.csv_to_sheet(csvData));
+                    const worksheet = XLSX.utils.json_to_sheet(rows);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+                    XLSX.writeFile(workbook, 'output.xlsx');
+                }
+            });
+
+
+            return;
+
+
+
             const fileUrl = req.file.destination + '/' + req.file.filename
             const wb = XLSX.readFile(fileUrl);
             const sheets = wb.SheetNames;
@@ -1122,7 +1155,7 @@ exports.editFileCase = async (req, res) => {
                         //cellText:false, 
                         cellDates: true
                     };
- 
+
                     var jsonOpts = {
                         //header: 1, 
                         defval: '',

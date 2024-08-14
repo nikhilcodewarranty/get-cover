@@ -7,7 +7,7 @@ const { verifyToken } = require('../../middleware/auth'); // authentication with
 
 router.post('/createOrder', [verifyToken], orderCreateController.createOrder1); // create order
 router.post('/editOrderDetail/:orderId', [verifyToken], orderCreateController.editOrderDetail); // edit order detail
-router.post('/checkFileValidation', [verifyToken], orderCreateController.checkFileValidation); // check file validation
+router.post('/checkFileValidation',  orderCreateController.checkFileValidation); // check file validation
 router.post('/checkMultipleFileValidation', [verifyToken], orderCreateController.checkMultipleFileValidation); // check multiple file validation
 router.post('/editFileCase', [verifyToken], orderCreateController.editFileCase); // edit file case
 router.post('/getOrderContract/:orderId', [verifyToken], orderCreateController.getOrderContract); // get order contract
