@@ -755,6 +755,8 @@ async function generateTC(orderData) {
     }
 }
 
+//Get File data from S3 bucket
+
 const getObjectFromS3 = (bucketReadUrl) => {
     return new Promise((resolve, reject) => {
         S3Bucket.getObject(bucketReadUrl, (err, data) => {
@@ -1068,7 +1070,7 @@ exports.createOrder1 = async (req, res) => {
                     dateNF: '"m"/"d"/"yyyy"' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
                 const pathFile = process.env.LOCAL_FILE_PATH + '/' + product.orderFile.fileName
-                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
@@ -1081,7 +1083,7 @@ exports.createOrder1 = async (req, res) => {
                     query,
                     projection
                 );
-           
+
                 const totalDataComing1 = result.data
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
@@ -1382,13 +1384,13 @@ exports.editFileCase = async (req, res) => {
             let message = [];
             let finalRetailValue = [];
             if (productsWithFiles.length > 0) {
-                console.log("productsWithFiles-----------------------------",productsWithFiles);
+                console.log("productsWithFiles-----------------------------", productsWithFiles);
                 for (let j = 0; j < productsWithFiles.length; j++) {
                     if (productsWithFiles[j].file != undefined) {
                         const bucketReadUrl = productsWithFiles[j].file
                         // Await the getObjectFromS3 function to complete
                         const result = await getObjectFromS3(bucketReadUrl);
-                   
+
                         allDataComing.push({
                             key: productsWithFiles[j].key,
                             checkNumberProducts: productsWithFiles[j].checkNumberProducts,
@@ -1397,12 +1399,12 @@ exports.editFileCase = async (req, res) => {
                             rangeStart: productsWithFiles[j].rangeStart,
                             rangeEnd: productsWithFiles[j].rangeEnd,
                             data: result.data,
-                          });
-                    
-                          allHeaders.push({
+                        });
+
+                        allHeaders.push({
                             key: productsWithFiles[j].key,
                             headers: result.headers,
-                          });
+                        });
                     }
                 }
 
@@ -1942,7 +1944,7 @@ exports.editOrderDetail = async (req, res) => {
                     raw: false,
                     dateNF: 'm"/"d"/"yyyy' // <--- need dateNF in sheet_to_json options (note the escape chars)
                 }
-                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };             
+                const bucketReadUrl = { Bucket: process.env.bucket_name, Key: product.orderFile.fileName };
                 // Await the getObjectFromS3 function to complete
                 const result = await getObjectFromS3(bucketReadUrl);
                 let priceBookId = product.priceBookId;
@@ -1975,7 +1977,7 @@ exports.editOrderDetail = async (req, res) => {
                 pricebookDetailObject.brokerFee = product.dealerPriceBookDetails.brokerFee
                 pricebookDetailObject.dealerPriceId = product.dealerPriceBookDetails._id
                 pricebookDetail.push(pricebookDetailObject)
-                dealerBookDetail.push(dealerPriceBookObject)                
+                dealerBookDetail.push(dealerPriceBookObject)
                 const totalDataComing1 = result.data;
                 const totalDataComing = totalDataComing1.map((item) => {
                     const keys = Object.keys(item);
