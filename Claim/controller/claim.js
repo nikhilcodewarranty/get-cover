@@ -1278,6 +1278,7 @@ exports.saveBulkClaim = async (req, res) => {
       let existResellerId = {
         data: {}
       }
+
       let match = {}
       if (req.role == 'Dealer') {
         match = { "order.dealer._id": new mongoose.Types.ObjectId(req.userId) }
@@ -1314,6 +1315,7 @@ exports.saveBulkClaim = async (req, res) => {
 
       //const totalDataComing1 = XLSX.utils.sheet_to_json(wb.Sheets[sheets[0]], { defval: "" });
       const totalDataComing1 = result.data;
+      console.log("totalDataComing10000000000000000000000",totalDataComing1)
       let totalDataComing = totalDataComing1.map((item, i) => {
         const keys = Object.keys(item);
         let dateLoss = item[keys[2]]
