@@ -302,9 +302,9 @@ exports.getDealerCustomers = async (req, res) => {
       });
       return;
     };
-    const customersId = customers.map(obj => obj._id.toString());
+    const customersId = customers.map(obj => obj._id);
     const orderCustomerId = customers.map(obj => obj._id);
-    const queryUser = { accountId: { $in: customersId }, isPrimary: true };
+    const queryUser = { metaId: { $in: customersId }, isPrimary: true };
 
     //Get Dealer Customer Orders
     let project = {
@@ -337,9 +337,9 @@ exports.getDealerCustomers = async (req, res) => {
     const resellerData = await resellerService.getResellers(queryReseller, { isDeleted: 0 })
     let getPrimaryUser = await userService.findUserforCustomer(queryUser)
     const result_Array = getPrimaryUser.map(item1 => {
-      const matchingItem = customers.find(item2 => item2._id.toString() === item1.accountId.toString());
+      const matchingItem = customers.find(item2 => item2._id.toString() === item1.metaId.toString());
       const matchingReseller = matchingItem ? resellerData.find(reseller => reseller._id.toString() === matchingItem.resellerId.toString()) : {};
-      const order = ordersResult.find(order => order._id.toString() === item1.accountId)
+      const order = ordersResult.find(order => order._id.toString() === item1.metaId)
 
       if (matchingItem || order || matchingReseller) {
         return {
