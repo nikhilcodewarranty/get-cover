@@ -300,7 +300,7 @@ exports.uploadCommentImage = async (req, res, next) => {
         code: constant.successCode,
         message: 'Success!',
         messageFile: {
-          fileName: file.filename,
+          fileName: file.key,
           originalName: file.originalname,
           size: file.size
         }
